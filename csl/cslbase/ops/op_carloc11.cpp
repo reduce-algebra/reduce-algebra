@@ -11,20 +11,14 @@
                 }
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CARLOC11:
                 mov(B_reg, A_reg);
-                mov(A_reg, ptr(spreg, -88));
-                test(A_reg, TAG_BITS);
-                jne(carError);
-                mov(A_reg, ptr(A_reg));
+                loadloc(A_reg, 11);
+                JITcarvalid(A_reg);
+                loadreg(A_reg, A_reg, 0);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_CARLOC11:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_CARLOC11:

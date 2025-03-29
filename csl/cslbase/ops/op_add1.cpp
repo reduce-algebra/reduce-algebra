@@ -7,14 +7,14 @@
                     continue;
                 }
 #ifdef ARITHLIB
-                A_reg = Add1::A_reg);
+                A_reg = Add1::op(A_reg);
 #else // ARITHLIB
                 A_reg = plus2(A_reg, fixnum_of_int(1));
 #endif
                 errexit();
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_ADD1:
                 {   Label notFixnum = newLabel();
@@ -29,36 +29,15 @@
                     add(A_reg, 0x10);
                     jmp(endAdd1);
                 bind(notFixnum);
-#ifdef ARITHLIB
-                    mov(w, ptr(nilreg, JIToffset(OJITshim1)));
-                    mov(w1, ptr(nilreg, JIToffset(OJITsub1));
-                    JITcall(w, A_reg,
-                           w1, A_reg);
-#else // ARITHLIB
-                    mov(w, ptr(nilreg, JIToffset(OJITshim2)));
-                    mov(w1, ptr(nilreg, JIToffset(OJITplus2)));
+                    loadstatic(w, OJITshim1);
+                    loadstatic(w1, OJITplus2);
                     mov(B_reg, fixnum_of_int(1));
                     JITcall(w, A_reg,
-                           w1, A_reg, B_reg);  
-#endif // ARITHLIB
-                    cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
-                    jne(callFailed);
+                            w1, A_reg, B_reg);  
+                    JITerrorcheck();
                 bind(endAdd1);
                 }
                 break;
-
-
-#elif defined __aarch64__
-
-//            case OP_ADD1:
-//                if (is_fixnum(A_reg) && A_reg != MOST_POSITIVE_FIXNUM) {
-//                    A_reg += 0x10;  // adding 1 directly
-//                } else {
-//                    // in more complicated cases, using plus2 ???
-//                    A_reg = plus2(A_reg, fixnum_of_int(1));
-//                    errexit();
-//                }
-//                break; // use breaks for all endings for now 
 
 #else
             case OP_ADD1:

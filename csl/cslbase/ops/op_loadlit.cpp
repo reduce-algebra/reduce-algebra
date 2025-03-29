@@ -11,18 +11,13 @@
                 A_reg = basic_elt(litvec, next_byte);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOADLIT:
                 next = bytes[ppc++];
                 mov(B_reg, A_reg);
-                mov(A_reg, ptr(litvec, 8*next+CELL-TAG_VECTOR));
+                loadlit(A_reg, next);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_LOADLIT:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_LOADLIT:

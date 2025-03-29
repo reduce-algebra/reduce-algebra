@@ -11,20 +11,14 @@
                 }
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CDRLOC2:
                 mov(B_reg, A_reg);
-                mov(A_reg, ptr(spreg, -16));
-                test(A_reg, TAG_BITS);
-                jne(cdrError);
-                mov(A_reg, ptr(A_reg, 8));
+                loadloc(A_reg, 2);
+                JITcdrvalid(A_reg);
+                loadreg(A_reg, A_reg, 8);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_CDRLOC2:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_CDRLOC2:

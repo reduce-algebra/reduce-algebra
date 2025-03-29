@@ -316,12 +316,187 @@ void JITcall(Register& target, Register& result,
     in->setRet(0, result);
 }
 
+#ifdef __aarch64__
+
+// To make cross-platform coding easier I define functions named for
+// all the x86_64 jump instructions such that they expand into and
+// generate the equivalent aarch64 variant on branch. Then I can use
+// just one name for a jump whichever architecture is involved.
+
+Error ja(Label& lab)
+{   return bhi(lab);
+}
+
+Error jae(Label& lab)
+{   return bhs(lab);
+}
+
+Error jb(Label& lab)
+{   return blo(lab);
+}
+
+Error jbe(Label& lab)
+{   return bls(lab);
+}
+
+Error jc(Label& lab)
+{   return blo(lab);
+}
+
+Error je(Label& lab)
+{   return beq(lab);
+}
+
+//Error jecxz(Label& lab)
+//{   return b(lab);
+//}
+
+Error jg(Label& lab)
+{   return bgt(lab);
+}
+
+Error jge(Label& lab)
+{   return bge(lab);
+}
+
+Error jl(Label& lab)
+{   return blt(lab);
+}
+
+Error jle(Label& lab)
+{   return ble(lab);
+}
+
+Error jmp(Label& lab)
+{   return b(lab);
+}
+
+Error jna(Label& lab)
+{   return bls(lab);
+}
+
+Error jnae(Label& lab)
+{   return blo(lab);
+}
+
+Error jnb(Label& lab)
+{   return bhs(lab);
+}
+
+Error jnbe(Label& lab)
+{   return bhi(lab);
+}
+
+Error jnc(Label& lab)
+{   return bhs(lab);
+}
+
+Error jne(Label& lab)
+{   return bne(lab);
+}
+
+Error jng(Label& lab)
+{   return ble(lab);
+}
+
+Error jnge(Label& lab)
+{   return bge(lab);
+}
+
+Error jnl(Label& lab)
+{   return bge(lab);
+}
+
+Error jnle(Label& lab)
+{   return bgt(lab);
+}
+
+//Error jno(Label& lab)
+//{   return b(lab);
+//}
+
+Error jnp(Label& lab)
+{   return bmi(lab);
+}
+
+Error jns(Label& lab)
+{   return bne(lab);
+}
+
+Error jnz(Label& lab)
+{   return bne(lab);
+}
+
+//Error jo(Label& lab)
+//{   return b(lab);
+//}
+
+Error jp(Label& lab)
+{   return bpl(lab);
+}
+
+Error jpe(Label& lab)
+{   return bpl(lab);
+}
+
+//Error jpo(Label& lab)
+//{   return b(lab);
+//}
+
+Error js(Label& lab)
+{   return bmi(lab);
+}
+
+Error jz(Label& lab)
+{   return beq(lab);
+}
+
+// Also test vs tst.
+
+Error test(Register& r, int n)
+{   tst(r, n);
+}
+
+#endif // __aarch64__
+
+// After many (but not all!) calls it is necessary to check for any
+// reported error state:
+
+void JITerrorcheck()
+{
+#if defined __x86_64__
+    cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+#elif defined __aarch64__
+    ldr(w, ptr(nilreg, JIToffset(OJITerrflag), 1));
+    cmp(w, 0);
+#endif
+    jne(callFailed);
+}
+
+void JITatomic(Register& r, Label& l)
+{   test(r, TAG_BITS);
+    jne(l);
+}
+
+void JITnotatomic(Register& r, Label& l)
+{   test(r, TAG_BITS);
+    je(l);
+}
+
+void JITcarvalid(Register& r)
+{   JITatomic(r, carError);
+}
+
+void JITcdrvalid(Register& r)
+{   JITatomic(r, cdrError);
+}
+
 // When a function is potentially going to be JIT compiled it will
 // have one of jitcoded_0 to jitcoded_4up in a function call where otherwise
 // it would have had bytecoded_0 etc. At present I an not considering
 // byteopt_0... , hardopt_0... byteoptrest_0... or hardoptrest_0...
 // because they are not used by Reduce and I will be pleased if I can get the
-// simpler cases with a known number of arguments dealt with micely.
+// simpler cases with a known number of arguments dealt with nicely.
 
 // When such a function is first called it will call jitcompile, passing
 // the vector of byte instructions. If this returns nullptr that will
@@ -508,8 +683,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 //          if ((w1 & TAG_BITS) != TAG_CONS) goto tooFewArgs;
 //          aX = w1[0];
 //          w1 = w1[1];
-            test(w1, TAG_BITS);
-            jne(tooFewArgs);
+            JITatomic(w1, tooFewArgs);
             loadreg(argregs[i], w1, 0);
             loadreg(w1, w1, 8);
             add(spreg, 8);
@@ -533,14 +707,13 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     if (nargs>=4)
     {   mov(w1, w);
         for (int i=4; i<=nargs; i++)
-        {   tst(w1, TAG_BITS);
-            b_ne(tooFewArgs);
+        {   JITatomic(w1, tooFewArgs);
             ldr(argregs[i], ptr(w1));
             ldr(w1, ptr(w1, 8));
             str(argregs[i], ptr_pre(spreg));
         }
         cmp(w1, nilreg);
-        b_ne(tooManyArgs);
+        jne(tooManyArgs);
     }
 #else
 #error unrecognised architecture for JIT

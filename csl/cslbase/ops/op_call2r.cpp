@@ -25,8 +25,7 @@
                 loadfromsymbol(w1, w2, Ofunction2);
                 JITcall(w, A_reg,
                        w1, w2, A_reg, B_reg);
-                cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
-                jne(callFailed);
+                JITerrorcheck();
                 break;
 
 #elif defined __aarch64__

@@ -15,21 +15,14 @@
                 }
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CAAR:
-                test(A_reg, TAG_BITS);
-                jne(carError);
-                mov(A_reg, ptr(A_reg));
-                test(A_reg, TAG_BITS);
-                jne(carError);
-                mov(A_reg, ptr(A_reg));
+                JITcarvalid(A_reg);
+                loadreg(A_reg, A_reg, 0);
+                JITcarvalid(A_reg);
+                loadreg(A_reg, A_reg, 0);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_CAAR:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_CAAR:

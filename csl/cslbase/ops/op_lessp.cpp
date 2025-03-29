@@ -3,7 +3,7 @@
 #if defined BYTECODE
             case OP_LESSP:
 #ifdef ARITHLIB
-                w = Lessp::B_reg, A_reg);
+                w = Lessp::op(B_reg, A_reg);
 #else // ARITHLIB
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg < A_reg;
                 else
@@ -14,9 +14,9 @@
                 A_reg = Lispify_predicate(w);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
-// This case is a LOT more stressful than the odes that merely
+// This case is a LOT more stressful than the codes that merely
 // shuffle stuff around on the stack! It is the first case I am
 // implementing that can do a genuine function call. So we have four
 // things of note here:
@@ -64,20 +64,13 @@
 // [I offset label-setting by 4 spaces to highlight it]
                 bind(yes);
 // Deliver T (lisp_true) here.
-                    mov(A_reg, ptr(nilreg, JIToffset(Olisp_true)));
+                    loadstatic(A_reg, Olisp_true);
                     jmp(endLessp);
                 bind(notFixnums);
 // Here one or other is not a Fixnum - call external function "lessp".
-                    mov(w, ptr(nilreg, JIToffset(OJITshim2B)));
-#ifdef ARITHLIB
-                    mov(w1, ptr(nilreg, JIToffset(OJITlessp));
-#else // ARITHLIB
-                    mov(w1, ptr(nilreg, JIToffset(OJITlessp2)));
-#endif // ARITHLIB
+                    loadstatic(w, OJITshim2B);
+                    loadstatic(w1, OJITlessp2);
 // Args to "JITcall" are:
-//      cc      The Compiler object I am generating via
-//      nilreg  Register holding the value of nil
-//      spreg   Register for the Lisp stack pointer
 //      target  Register that contains the entrypoint of the function to call
 //      result  Register to receive result of the call
 //      a1, a2... Registers holding arguments to pass.
@@ -88,10 +81,9 @@
 // so here w is JITshim2B and w is a function of 2 arguments that returns
 // a boolean value.
                     JITcall(w, A_reg,
-                           w1, B_reg, A_reg);
+                            w1, B_reg, A_reg);
 // See if that reported failure. Test the low bytes of JITerrflag.
-                    cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
-                    jne(callFailed);
+                    JITerrorcheck();
 // If lessp() succeeded turn result from a bool to either T or NIL.
                     test(A_reg, 0xff);
                     jne(yes);
@@ -101,11 +93,6 @@
                 bind(endLessp);
                 }
                 break;
-
-#elif defined __aarch64__
-
-            case OP_LESSP:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_LESSP:

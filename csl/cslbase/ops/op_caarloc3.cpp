@@ -6,23 +6,16 @@
                 A_reg = stack[-3];
                 goto caar;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CAARLOC3:
                 mov(B_reg, A_reg);
-                mov(A_reg, ptr(spreg, -24));
-                test(A_reg, TAG_BITS);
-                jne(carError);
-                mov(A_reg, ptr(A_reg));
-                test(A_reg, TAG_BITS);
-                jne(carError);
-                mov(A_reg, ptr(A_reg));
+                loadloc(A_reg, 3);
+                JITcarvalid(A_reg);
+                loadreg(A_reg, A_reg, 0);
+                JITcarvalid(A_reg);
+                loadreg(A_reg, A_reg, 0);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_CAARLOC3:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_CAARLOC3:

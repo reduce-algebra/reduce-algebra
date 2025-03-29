@@ -15,16 +15,10 @@
 
             case OP_CARLOC6:
                 mov(B_reg, A_reg);
-                mov(A_reg, ptr(spreg, -48));
-                test(A_reg, TAG_BITS);
-                jne(carError);
-                mov(A_reg, ptr(A_reg));
+                loadloc(A_reg, 6);
+                JITcarvalid(A_reg);
+                loadreg(A_reg, A_reg, 0);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_CARLOC6:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_CARLOC6:

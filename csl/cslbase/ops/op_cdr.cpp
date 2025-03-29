@@ -9,18 +9,12 @@
                 }
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CDR:
-                test(A_reg, TAG_BITS);
-                jne(cdrError);
-                mov(A_reg, ptr(A_reg, 8));
+                JITcdrvalid(A_reg);
+                loadreg(A_reg, A_reg, 8);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_CDR:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_CDR:

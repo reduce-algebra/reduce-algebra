@@ -24,10 +24,11 @@
                 errexit();
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CALL4:
                 next = bytes[ppc++];
+                loadstatic(w, OJITshim4);
                 loadlit(w2, next);
 // w2 is now the symbol that names the function to be called. Now fetch
 // from that the entrypoint to be used when it is a function of 4+ args.
@@ -40,17 +41,10 @@
 //           entrypoint of Lisp function to be called (in w1)
 //           name of function being called (as "env" parameter for it) in w2
 //           the four honest arguments it needs (w4, w3, B_reg and A_reg).
-                loadstatic(w, OJITshim3);
                 JITcall(w, A_reg,
                         w1, w2, w4, w3, B_reg, A_reg);
-                cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
-                jne(callFailed);
+                JITerrorcheck();
                 break;
-
-#elif defined __aarch64__
-
-            case OP_CALL4:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_CALL4:

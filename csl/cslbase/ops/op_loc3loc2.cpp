@@ -6,17 +6,12 @@
                 A_reg = stack[-2];
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOC3LOC2:
-                mov(B_reg, ptr(spreg, -24));
-                mov(A_reg, ptr(spreg, -16));
+                loadloc(B_reg, 3);
+                loadloc(A_reg, 2);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_LOC3LOC2:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_LOC3LOC2:

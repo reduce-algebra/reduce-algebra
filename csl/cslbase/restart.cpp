@@ -1916,14 +1916,17 @@ LispObject set_up_variables(int restart_flag)
 //     JITshim5 = JITshim;
     JITshim1B = JITshim;
     JITshim2B = JITshim;
+    JITmostNegativeFixnum = MOST_NEGATIVE_FIXNUM;
+    JITmostPositiveFixnum = MOST_POSITIVE_FIXNUM;
 #ifdef ARITHLIB
-    JITlesspop = Lessp::op;
-    JITleqop = Leq::op;
     JITsub1op = Sub1::op;
-    JITplusop = Plus::op;
-    JITtimesop = Times::op
-    JITquotientop = Quotient::op
-    JITremainderop = Remainder::op
+    JITlessp2 = Lessp::op;
+    JITleq2 = Leq::op;
+    JITplus2 = Plus::op;
+    JITtimes2 = Times::op;
+    JITquotient2 = Quotient::op;
+    JITremainder = Remainder::op;
+    JITmake_int_from_ptr = arithlib_implementation::intToBignum;
 #else // ARITHLIB
     JITlessp2 = lessp2; 
     JITleq2 = lesseq2;
@@ -1931,8 +1934,8 @@ LispObject set_up_variables(int restart_flag)
     JITtimes2 = times2;
     JITquotient2 = quot2;
     JITremainder = Cremainder;
-#endif // ARITHLIB
     JITmake_int_from_ptr = make_lisp_integerptr;
+#endif // ARITHLIB
     JITcar_fails = car_fails;
     JITcdr_fails = cdr_fails;
     JITtoofew = toofew;

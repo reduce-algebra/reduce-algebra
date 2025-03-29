@@ -330,25 +330,19 @@ enum NilOffset
     OJITshim5,
     OJITshim1B,
     OJITshim2B,
-//#ifdef ARITHLIB
 // For use with Arithlib generic arithmetic code...
+    OJITadd1op,
     OJITsub1op,
-    OJITlesspop,
-    OJITleqop,
-    OJITplusop,
-    OJITtimesop,
-    OJITquotientop,
-    OJITremainderop,
-//#else // ARITHLIB
-// For use with original generic arithmetic code...
+// For use with either generic arithmetic code...
     OJITlessp2,
     OJITleq2,
     OJITplus2,
     OJITtimes2,
     OJITquotient2,
     OJITremainder,
+    OJITmostNegativeFixnum,
+    OJITmostPositiveFixnum,
     OJITmake_int_from_ptr,
-//#endif ARITHLIB
 // Some specific error cases.
     OJITcar_fails,
     OJITcdr_fails,
@@ -412,27 +406,27 @@ inline boolshim2& JITshim2B = staticdata[JITgap(OJITshim2B)].genericSh2B;
 
 // A number of functions that perform arithmetic have to be callable, and
 // there will be different versions depending on whether CSL has been built
-// with the forthcoming "arithlib" or its older version of the code.
+// with the forthcoming "arithlib" or its older version of the code. Most of
+// that discrepancy is handled in restart.cpp where the entrypoints are set
+// to refer to the version of the arithmetic code that is in use.
 #ifdef ARITHLIB
-inline func2B& JITlesspop   = staticdata[JITgap(OJITlesspop)].genericF2B;
-inline func2B& JITleqop     = staticdata[JITgap(OJITleqop)].genericF2B;
 inline func1& JITsub1op     = staticdata[JITgap(OJITsub1op)].genericF1;
-inline func2& JITplusop     = staticdata[JITgap(OJITplusop)].genericF2;
-inline func2& JITtimesop    = staticdata[JITgap(OJITtimesop)].genericF2;
-inline func2& JITquotientop = staticdata[JITgap(OJITquotientop)].genericF2;
-inline func2& JITremainderop= staticdata[JITgap(OJITremainderop)].genericF2;
-#else // ARITHLIB
+inline func1& JITadd1op     = staticdata[JITgap(OJITsub1op)].genericF1;
+#endif // ARITHLIB
 inline boolfunc2& JITlessp2 = staticdata[JITgap(OJITlessp2)].genericF2B;
 inline boolfunc2& JITleq2   = staticdata[JITgap(OJITleq2)].genericF2B;
 inline func2& JITplus2      = staticdata[JITgap(OJITplus2)].genericF2;
 inline func2& JITtimes2     = staticdata[JITgap(OJITtimes2)].genericF2;
 inline func2& JITquotient2  = staticdata[JITgap(OJITquotient2)].genericF2;
 inline func2& JITremainder  = staticdata[JITgap(OJITremainder)].genericF2;
+inline LispObject JITmostNegativeFixnum =
+                        staticdata[JITgap(OJITmostNegativeFixnum)].genericL;
+inline LispObject JITmostPositiveFixnum =
+                        staticdata[JITgap(OJITmostPositiveFixnum)].genericL;
 inline func1& JITmake_int_from_ptr =
                               staticdata[JITgap(OJITmake_int_from_ptr)].genericF1;
-#endif // ARITHLIB
 
-// The JIT needs some error exits for problems it detectes in-line.
+// The JIT needs some error exits for problems it detects in-line.
 inline func0& JITcar_fails   = staticdata[JITgap(OJITcar_fails)].genericF0;
 inline func0& JITcdr_fails   = staticdata[JITgap(OJITcdr_fails)].genericF0;
 inline func0& JITtoofew     = staticdata[JITgap(OJITtoofew)].genericF0;

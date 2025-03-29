@@ -9,18 +9,12 @@
                 qvalue(basic_elt(litvec, 2)) = A_reg;
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_STOREFREE2:
-                mov(w, ptr(litvec, 16+CELL-TAG_VECTOR));
-                mov(ptr(A_reg, offsetof(Symbol_Head, value)-TAG_SYMBOL),
-                       A_reg);
+                loadlit(w, 2);
+                storetosymbol(A_reg, w, Ovalue);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_STOREFREE2:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_STOREFREE2:
