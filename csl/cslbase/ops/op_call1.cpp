@@ -19,7 +19,7 @@
 
             case OP_CALL1:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim1);
+                loadstatic(w, OJITshim1L);
                 loadlit(w2, next);
                 loadfromsymbol(w1, w2, Ofunction1);
                 JITcall(w, A_reg,

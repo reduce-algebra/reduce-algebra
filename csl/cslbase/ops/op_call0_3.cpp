@@ -8,7 +8,7 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_CALL0_3:
-                loadstatic(w, OJITshim1);
+                loadstatic(w, OJITshim1L);
                 loadlit(w2, 3);
 // w2 is now the symbol that names the function to be called. Now fetch
 // from that the entrypoint to be used when it is a function of 0 args.

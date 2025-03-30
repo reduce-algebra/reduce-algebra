@@ -1913,7 +1913,7 @@ LispObject set_up_variables(int restart_flag)
     JITshim2 = JITshim;
     JITshim3 = JITshim;
     JITshim4 = JITshim;
-//     JITshim5 = JITshim;
+    JITshim5 = JITshim;
     JITshim1B = JITshim;
     JITshim2B = JITshim;
     JITmostNegativeFixnum = MOST_NEGATIVE_FIXNUM;

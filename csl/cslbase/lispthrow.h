@@ -968,6 +968,21 @@ inline LispObject jitthrow()
 
 // I now need variants of JITshim passing various numbers of arguments.
 
+inline LispObject JITshim(func0 FF)
+{   LispObject r;
+    TRY
+        r = (*FF)();
+    CATCH_ANY()
+        JITerrflag = 1;
+#ifndef NO_THROW
+        JITerr_ptr = std::current_exception();
+#endif // NO_THROW
+        return nil;
+    END_CATCH;
+    JITerrflag = 0;
+    return r;
+}
+
 inline LispObject JITshim(func2 FF,
                           LispObject env, LispObject a1)
 {   LispObject r;

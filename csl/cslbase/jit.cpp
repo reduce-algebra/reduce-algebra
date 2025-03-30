@@ -145,22 +145,22 @@ std::vector<Label> perInstruction;
 
 #if defined __x86_64__
 
-void loadreg(Register& r, Register& base, intptr_t offset)
-{   mov(r, ptr(base, offset));
+Error loadreg(Register& r, Register& base, intptr_t offset)
+{   return mov(r, ptr(base, offset));
 }
 
-void storereg(Register& r, Register& base, intptr_t offset)
-{   mov(ptr(base, offset), r);
+Error storereg(Register& r, Register& base, intptr_t offset)
+{   return mov(ptr(base, offset), r);
 }
 
 #elif defined __aarch64__
 
-void loadreg(Register& r, Register& base, intptr_t offset)
-{   ldr(r, ptr(base, offset));
+Error loadreg(Register& r, Register& base, intptr_t offset)
+{   return ldr(r, ptr(base, offset));
 }
 
-void storereg(Register& r, Register& base, intptr_t offset)
-{   str(r, ptr(base, offset));
+Error storereg(Register& r, Register& base, intptr_t offset)
+{   return str(r, ptr(base, offset));
 }
 
 #else
@@ -173,12 +173,12 @@ void storereg(Register& r, Register& base, intptr_t offset)
 // storage involved is addressed relative to a register that holds the
 // nalue of nil.
 
-void loadstatic(Register& r, NilOffset n)
-{   loadreg(r, nilreg, JIToffset(n));
+Error loadstatic(Register& r, NilOffset n)
+{   return loadreg(r, nilreg, JIToffset(n));
 }
 
-void storestatic(Register& r, NilOffset n)
-{   storereg(r, nilreg, JIToffset(n));
+Error storestatic(Register& r, NilOffset n)
+{   return storereg(r, nilreg, JIToffset(n));
 }
 
 // litvec holds a (tagged) pointer to a vector of the literals that the
@@ -186,36 +186,36 @@ void storestatic(Register& r, NilOffset n)
 // Entry 0 must always be the name of the function (that is relied upon
 // when generating diagnostics).
 
-void loadlit(Register& r, int n)
-{   loadreg(r, litvec, 8*n+CELL-TAG_VECTOR);
+Error loadlit(Register& r, int n)
+{   return loadreg(r, litvec, 8*n+CELL-TAG_VECTOR);
 }
 
-void storelit(Register& r, int n)
-{   storereg(r, litvec, 8*n+CELL-TAG_VECTOR);
+Error storelit(Register& r, int n)
+{   return storereg(r, litvec, 8*n+CELL-TAG_VECTOR);
 }
 
 // Now functions that move values between the (Lisp) stack and registers.
 // The stack grows upwards so the nth item is 8*n bytes down from its
 // fringe.
 
-void loadloc(Register& r, int n)
-{   loadreg(r, spreg, -8*n);
+Error loadloc(Register& r, int n)
+{   return loadreg(r, spreg, -8*n);
 }
 
-void storeloc(Register& r, int n)
-{   storereg(r, spreg, -8*n);
+Error storeloc(Register& r, int n)
+{   return storereg(r, spreg, -8*n);
 }
 
 // The register sym points to a Lisp symbol, and these two access fields
 // within it using Ovalue, Oenv, Ofunction0 etc to identify what needs
 // to be worked upon.
 
-void loadfromsymbol(Register& r,  Register& sym, size_t n)
-{   loadreg(r, sym, n-TAG_SYMBOL);
+Error loadfromsymbol(Register& r,  Register& sym, size_t n)
+{   return loadreg(r, sym, n-TAG_SYMBOL);
 }
 
-void storetosymbol(Register& r,  Register& sym, size_t n)
-{   storereg(r, sym, n-TAG_SYMBOL);
+Error storetosymbol(Register& r,  Register& sym, size_t n)
+{   return storereg(r, sym, n-TAG_SYMBOL);
 }
 
 // Some overloads for setting up function calls with 0, 1,... args,
@@ -223,94 +223,100 @@ void storetosymbol(Register& r,  Register& sym, size_t n)
 // registers. This means that the arguments can be (u)intptr_t, T* or
 // LispObject at the C++ level.
 
-void JITcall(Register& target, Register& result)
+Error JITcall(Register& target, Register& result)
 {   InvokeNode *in;
 // I must bring the Lisp variable holding a stack pointer up to date.
-    storestatic(spreg, Ostack);
-    invoke(&in, target,
-        FuncSignature::build<LispObject>());
+    ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
+    ASMJIT_PROPAGATE(invoke(&in, target,
+        FuncSignature::build<LispObject>()));
     in->setRet(0, result);
+    return kErrorOk;
 }
 
-void JITcall(Register& target, Register& result,
+Error JITcall(Register& target, Register& result,
              Register& a1)
 {   InvokeNode *in;
-    storestatic(spreg, Ostack);
-    invoke(&in, target,
+    ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
+    ASMJIT_PROPAGATE(invoke(&in, target,
         FuncSignature::build<LispObject,
-                             LispObject>());
+                             LispObject>()));
     in->setArg(0, a1);
     in->setRet(0, result);
+    return kErrorOk;
 }
 
-void JITcall(Register& target, Register& result,
+Error JITcall(Register& target, Register& result,
              Register& a1, Register& a2)
 {   InvokeNode *in;
-    storestatic(spreg, Ostack);
-    invoke(&in, target,
+    ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
+    ASMJIT_PROPAGATE(invoke(&in, target,
         FuncSignature::build<LispObject,
-                             LispObject, LispObject>());
+                             LispObject, LispObject>()));
     in->setArg(0, a1);
     in->setArg(1, a2);
     in->setRet(0, result);
+    return kErrorOk;
 }
 
-void JITcall(Register& target, Register& result,
+Error JITcall(Register& target, Register& result,
              Register& a1, Register& a2, Register& a3)
 {   InvokeNode *in;
-    storestatic(spreg, Ostack);
-    invoke(&in, target,
+    ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
+    ASMJIT_PROPAGATE(invoke(&in, target,
         FuncSignature::build<LispObject,
-                             LispObject, LispObject, LispObject>());
+                             LispObject, LispObject, LispObject>()));
     in->setArg(0, a1);
     in->setArg(1, a2);
     in->setArg(2, a3);
     in->setRet(0, result);
+    return kErrorOk;
 }
 
-void JITcall(Register& target, Register& result,
+Error JITcall(Register& target, Register& result,
              Register& a1, Register& a2, Register& a3, Register& a4)
 {   InvokeNode *in;
-    storestatic(spreg, Ostack);
-    invoke(&in, target,
+    ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
+    ASMJIT_PROPAGATE(invoke(&in, target,
         FuncSignature::build<LispObject,
                              LispObject, LispObject,
-                             LispObject, LispObject>());
+                             LispObject, LispObject>()));
     in->setArg(0, a1);
     in->setArg(1, a2);
     in->setArg(2, a3);
     in->setArg(3, a4);
     in->setRet(0, result);
+    return kErrorOk;
 }
 
-void JITcall(Register& target, Register& result,
+Error JITcall(Register& target, Register& result,
              Register& a1, Register& a2,
              Register& a3, Register& a4,
              Register& a5)
 {   InvokeNode *in;
-    storestatic(spreg, Ostack);
-    invoke(&in, target,
+    ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
+    ASMJIT_PROPAGATE(invoke(&in, target,
         FuncSignature::build<LispObject,
                              LispObject, LispObject, LispObject,
-                             LispObject, LispObject>());
+                             LispObject, LispObject>()));
     in->setArg(0, a1);
     in->setArg(1, a2);
     in->setArg(2, a3);
     in->setArg(3, a4);
     in->setArg(4, a5);
     in->setRet(0, result);
+    return kErrorOk;
 }
 
-void JITcall(Register& target, Register& result,
+Error JITcall(Register& target, Register& result,
              Register& a1, Register& a2,
              Register& a3, Register& a4,
              Register& a5, Register& a6)
 {   InvokeNode *in;
-    storestatic(spreg, Ostack);
-    invoke(&in, target,
+    ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
+    ASMJIT_PROPAGATE(invoke(&in, target,
         FuncSignature::build<LispObject,
                              LispObject, LispObject, LispObject,
-                             LispObject, LispObject, LispObject>());
+                             LispObject, LispObject, LispObject>()));
     in->setArg(0, a1);
     in->setArg(1, a2);
     in->setArg(2, a3);
@@ -318,6 +324,7 @@ void JITcall(Register& target, Register& result,
     in->setArg(4, a5);
     in->setArg(5, a6);
     in->setRet(0, result);
+    return kErrorOk;
 }
 
 #ifdef __aarch64__
@@ -455,46 +462,128 @@ Error jz(Label& lab)
 {   return b_eq(lab);
 }
 
-// Also test vs tst.
+// Also test vs tst and a few others
 
-Error test(Register& r, int n)
-{   return tst(r, Imm(n));
+Error test(Register& r, Imm n)
+{   return tst(r, n);
+}
+
+Error sar(Register& r, Imm n)
+{   return asr(r, r, n);
+}
+
+Error add2(Register& r1, Imm n)
+{   return add(r1, r1, n);
+}
+
+Error add2(Register& r1, Register& r2)
+{   return add(r1, r1, r2);
+}
+
+Error and2(Register& r1, Imm n)
+{   return and_(r1, r1, n);
+}
+
+Error and2(Register& r1, Register& r2)
+{   return and_(r1, r1, r2);
+}
+
+Error add3(Register& r1, Register& r2, Imm n)
+{   return add(r1, r2, n);
+}
+
+Error add3(Register& r1, Register& r2, Register& r3)
+{   return add(r1, r2, r3);
+}
+
+Error and3(Register& r1, Register& r2, Imm n)
+{   return and_(r1, r2, n);
+}
+
+Error and3(Register& r1, Register& r2, Register& r3)
+{   return and_(r1, r2, r3);
 }
 
 #endif // __aarch64__
 
+#ifdef __x86_64__
+
+// These let me write 3-arg versions of these functions even in x86_64 mode
+// eg in cases where that would be better on ARM.
+
+Error add2(Register& r1, Imm n)
+{   return add(r1, n);
+}
+
+Error add2(Register& r1, Register& r2)
+{   return add(r1, r2);
+}
+
+Error and2(Register& r1, Imm n)
+{   return and_(r1, n);
+}
+
+Error and2(Register& r1, Register& r2)
+{   return and_(r1, r2);
+}
+
+Error add3(Register& r1, Register& r2, Imm n)
+{   if (r1 != r2) ASMJIT_PROPAGATE(mov(r1, r2));
+    return add(r1, n);
+}
+
+Error add3(Register& r1, Register& r2, Register& r3)
+{   if (r1 == r2) return add(r1, r3);
+    if (r2 == r3) return add(r1, r2);
+    ASMJIT_PROPAGATE(mov(r1, r2));
+    return add(r1, r3);
+}
+
+Error and3(Register& r1, Register& r2, Imm n)
+{   if (r1 != r2) ASMJIT_PROPAGATE(mov(r1, r2));
+    return and_(r1, n);
+}
+
+Error and3(Register& r1, Register& r2, Register& r3)
+{   if (r1 == r2) return and_(r1, r3);
+    if (r2 == r3) return and_(r1, r2);
+    ASMJIT_PROPAGATE(mov(r1, r2));
+    return and_(r1, r3);
+}
+
+#endif // _x86_64__
+
 // After many (but not all!) calls it is necessary to check for any
 // reported error state:
 
-// I should really check error codes everywhere...
 
-void JITerrorcheck()
+Error JITerrorcheck()
 {
 #if defined __x86_64__
-    cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+    ASMJIT_PROPAGATE(cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0));
 #elif defined __aarch64__
-    ldrb(w, ptr(nilreg, JIToffset(OJITerrflag)));
-    cmp(w, 0);
+    ASMJIT_PROPAGATE(ldrb(w, ptr(nilreg, JIToffset(OJITerrflag))));
+    ASMJIT_PROPAGATE(cmp(w, 0));
 #endif
-    jne(callFailed);
+    return jne(callFailed);
 }
 
-void JITatomic(Register& r, Label& l)
-{   test(r, TAG_BITS);
-    jne(l);
+Error JITatomic(Register& r, Label& l)
+{   ASMJIT_PROPAGATE(test(r, TAG_BITS));
+    return jne(l);
 }
 
-void JITnotatomic(Register& r, Label& l)
-{   test(r, TAG_BITS);
-    je(l);
+Error JITnotatomic(Register& r, Label& l)
+{   ASMJIT_PROPAGATE(test(r, TAG_BITS));
+    return je(l);
 }
 
-void JITcarvalid(Register& r)
-{   JITatomic(r, carError);
+Error JITcarvalid(Register& r)
+{   return JITatomic(r, carError);
 }
 
-void JITcdrvalid(Register& r)
-{   JITatomic(r, cdrError);
+Error JITcdrvalid(Register& r)
+{   return JITatomic(r, cdrError);
 }
 
 // When a function is potentially going to be JIT compiled it will
@@ -675,7 +764,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // If I do change the C++ version I will need to restore it from spentry
 // before I exit.
     for (int i=1; i<=nargs&&i<4; i++)
-    {   add(spreg, 8);
+    {   add2(spreg, 8);
         storeloc(argregs[i], 0);
     }
     if (nargs>=4)
@@ -692,7 +781,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
             JITatomic(w1, tooFewArgs);
             loadreg(argregs[i], w1, 0);
             loadreg(w1, w1, 8);
-            add(spreg, 8);
+            add2(spreg, 8);
             storeloc(argregs[i], 0);
         }
         cmp(w1, nilreg);

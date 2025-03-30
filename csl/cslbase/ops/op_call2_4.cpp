@@ -8,7 +8,7 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_CALL2_4:
-                loadstatic(w, OJITshim2);
+                loadstatic(w, OJITshim2L);
                 loadlit(w2, 4);
                 loadfromsymbol(w1, w2, Ofunction2);
                 JITcall(w, A_reg,
