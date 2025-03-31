@@ -135,7 +135,7 @@ inline int nlz(uint64_t x)
         }
         return r;
     };
-// The way this is written out is tolerable because 6y is a reasonably
+// The way this is written out is tolerable because 67 is a reasonably
 // small number, but it would have been neater if C++ provided a way to
 // initialize arrays a bit like this. It does if one uses std::vector
 // rather than a plain array.

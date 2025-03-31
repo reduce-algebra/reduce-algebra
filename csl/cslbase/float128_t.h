@@ -316,7 +316,8 @@ extern int f128_print_G(int width, int precision, float128_t p);
 // of QuadFloat literals to compile-time. At least with a sufficiently
 // good compiler implementing sufficiently recent C++ features.
 
-inline constexpr uint64_t f160_leftshift(uint64_t m[5], uint64_t carry, int bits=1)
+inline constexpr uint64_t f160_leftshift(
+    uint64_t m[5], uint64_t carry, int bits=1)
 {   for (int i=0; i<5; i++)
     {   uint64_t w = (m[i]<<bits) + carry;
         m[i] = w & 0xffffffffU;
@@ -376,6 +377,10 @@ inline constexpr int f160_z(unsigned int n)
     }
     return r;
 };
+
+// The hope is that setting up this table will not even come close to
+// compiler limits for the work that can be done while expanding constexpr
+// function calls.
 
 constexpr static int8_t f160_ntzTable[67] =
 {   f160_z( 0), f160_z( 1), f160_z( 2), f160_z( 3), f160_z( 4),

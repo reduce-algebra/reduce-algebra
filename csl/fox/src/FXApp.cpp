@@ -743,13 +743,23 @@ FXApp::FXApp(const FXString& name,const FXString& vendor):registry(name,vendor){
   dragDelta=6;
   wheelLines=10;
   scrollBarSize=15;
+// I am going to make the font used for menus (3/4) of the size of the one
+// used for text. This will not be updated when you reset your font - but
+// if you exit cleanly the new size will be in force for your next run.
+  registry.read();
+  int fontsize = registry.readIntEntry("screen", "fontsize", -1);
+  fontsize = (3*fontsize+3)/4;
 
   // Make font
+  char fontname[32];
 #ifdef HAVE_XFT_H
-  normalFont=new FXFont(this,"Sans,90");
+  snprintf(fontname, sizeof(fontname), "Sans,%d", fontsize);
+  normalFont=new FXFont(this,fontname);
 #else
-  normalFont=new FXFont(this,"helvetica,90");
-//  normalFont=new FXFont(this,"helvetica,90,,,,iso10646-1");
+  snprintf(fontname, sizeof(fontname), "helvetica,%d", fontsize);
+  normalFont=new FXFont(this,fontname);
+//  snprintf(fontname, sizeof(fontname),
+//           "helvetica,%d,,,,iso10646-1", fontsize);
 #endif
 
   // We delete the stock font
@@ -4580,7 +4590,6 @@ void FXApp::setNormalFont(FXFont* font){
   if(!font){ fxerror("%s::setNormalFont: NULL font.\n",getClassName()); }
   normalFont=font;
   }
-
 
 // Set root Window
 void FXApp::setRootWindow(FXRootWindow* rt){
