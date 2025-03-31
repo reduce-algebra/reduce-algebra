@@ -119,16 +119,13 @@ inline const char* tagName(LispObject p)
     return tagNameTable[p & XTAG_BITS];
 }
 
-typedef LispObject no_args(LispObject env);
-typedef LispObject one_arg(LispObject env,
-                           LispObject a1);
-typedef LispObject two_args(LispObject env,
-                            LispObject a1, LispObject a2);
-typedef LispObject three_args(LispObject env,
-                            LispObject a1, LispObject a2, LispObject a3);
-typedef LispObject fourup_args(LispObject env,
-                               LispObject a1, LispObject a2,
-                               LispObject a3, LispObject a4up);
+// Ha ha there is a potential source of confusion here. A function coded
+// directly in C++ has a certain number of arguments and its type may be
+// func0 .. func6. A function that is to be callable from Lisp and that from
+// the Lisp perespective has N arguments will have an additional implicit
+// fist argument (often called "env") and furthermore if in the Lisp world it
+// has 4 or more arguments the last ones are passed to the C++-level version of
+// it in a lisp, so the types no_arge .. fourup_args apply.
 typedef LispObject (*func0)();
 typedef LispObject (*func1)(LispObject a1);
 typedef LispObject (*func2)(LispObject a1, LispObject a2);
@@ -139,20 +136,31 @@ typedef LispObject (*func5)(LispObject a1, LispObject a2, LispObject a3,
                             LispObject a4, LispObject a5);
 typedef LispObject (*func6)(LispObject a1, LispObject a2, LispObject a3, 
                             LispObject a4, LispObject a5, LispObject a6);
+typedef LispObject no_args(LispObject env);
+typedef LispObject one_arg(LispObject env,
+                           LispObject a1);
+typedef LispObject two_args(LispObject env,
+                            LispObject a1, LispObject a2);
+typedef LispObject three_args(LispObject env,
+                            LispObject a1, LispObject a2, LispObject a3);
+typedef LispObject fourup_args(LispObject env,
+                               LispObject a1, LispObject a2,
+                               LispObject a3, LispObject a4up);
 typedef bool (*boolfunc1)(LispObject a1);
 typedef bool (*boolfunc2)(LispObject a1, LispObject a2);
-typedef LispObject (*shim0)(no_args,
-                            LispObject env);
-typedef LispObject (*shim1)(one_arg,
-                            LispObject env, LispObject a1);
-typedef LispObject (*shim2)(two_args,
-                            LispObject env, LispObject a1, LispObject a2);
-typedef LispObject (*shim3)(three_args,
-                            LispObject env, LispObject a1,
-                            LispObject a2, LispObject a3);
-typedef LispObject (*shim4)(fourup_args,
-                            LispObject env, LispObject a1,
-                            LispObject a2, LispObject a3, LispObject a4up);
+typedef LispObject (*shim0)(func0);
+typedef LispObject (*shim1)(func1,
+                            LispObject a1);
+typedef LispObject (*shim2)(func2,
+                            LispObject a1, LispObject a2);
+typedef LispObject (*shim3)(func3,
+                            LispObject a1, LispObject a2, LispObject a3);
+typedef LispObject (*shim4)(func4,
+                            LispObject a1, LispObject a2,
+                            LispObject a3, LispObject a4);
+typedef LispObject (*shim5)(func5,
+                            LispObject a1, LispObject a2,
+                            LispObject a3, LispObject a4, LispObject a5);
 typedef LispObject (*boolshim1)(boolfunc1,
                                 LispObject a1);
 typedef LispObject (*boolshim2)(boolfunc2,
@@ -247,6 +255,7 @@ union Generic
     shim2       genericSh2;
     shim3       genericSh3;
     shim4       genericSh4;
+    shim5       genericSh5;
     boolshim1   genericSh1B;
     boolshim2   genericSh2B;
     errfunc0    genericErr0;
@@ -347,8 +356,16 @@ enum NilOffset
     OJITcar_fails,
     OJITcdr_fails,
     OJITtoofew,
-    OJITtoomany,                 // this uses 26 of the 50 so far!
-    EndOfJitOffsetEnumeration
+    OJITtoomany,                 // this uses 30 of the 50 so far!
+
+// These are used for calling Lisp functions that have an extra implicit "env"
+// argument so that they take one more real (C++) argument than perhaps expected.
+    OJITshim0L = OJITshim1,
+    OJITshim1L = OJITshim2,
+    OJITshim2L = OJITshim3,
+    OJITshim3L = OJITshim4,
+    OJITshim4L = OJITshim5
+
 };
 
 // The JIT can generate code to access eg stack if it has the value if nil
@@ -401,6 +418,14 @@ inline shim1& JITshim1 = staticdata[JITgap(OJITshim1)].genericSh1;
 inline shim2& JITshim2 = staticdata[JITgap(OJITshim2)].genericSh2;
 inline shim3& JITshim3 = staticdata[JITgap(OJITshim3)].genericSh3;
 inline shim4& JITshim4 = staticdata[JITgap(OJITshim4)].genericSh4;
+inline shim5& JITshim5 = staticdata[JITgap(OJITshim5)].genericSh5;
+// Now alternate names for the same shim functions that allow for the
+// additional implicit first argument.
+inline shim1& JITshim0L = staticdata[JITgap(OJITshim0L)].genericSh1;
+inline shim2& JITshim1L = staticdata[JITgap(OJITshim1L)].genericSh2;
+inline shim3& JITshim2L = staticdata[JITgap(OJITshim2L)].genericSh3;
+inline shim4& JITshim3L = staticdata[JITgap(OJITshim3L)].genericSh4;
+inline shim5& JITshim4L = staticdata[JITgap(OJITshim4L)].genericSh5;
 inline boolshim1& JITshim1B = staticdata[JITgap(OJITshim1B)].genericSh1B;
 inline boolshim2& JITshim2B = staticdata[JITgap(OJITshim2B)].genericSh2B;
 
@@ -2702,7 +2727,7 @@ INLINE_VAR constexpr uintptr_t UNWIND_RETURN   = 0x2;   // RETURN, to support no
 INLINE_VAR constexpr uintptr_t UNWIND_THROW    = 0x3;   // THROW is obvious
 INLINE_VAR constexpr uintptr_t UNWIND_RESTART  = 0x4;   // (restart!-csl ...)
 INLINE_VAR constexpr uintptr_t UNWIND_RESOURCE = 0x5;   // used with (resource!-limit ...)
-//static constexpr uintptr_t UNWIND_SIGINT = 0x6;   // SIGINT
+//  static constexpr uintptr_t UNWIND_SIGINT   = 0x6;   // SIGINT
 
 INLINE_VAR constexpr uintptr_t UNWIND_FNAME    = 0x100; // at least short backtrace is needed
 INLINE_VAR constexpr uintptr_t UNWIND_ARGS     = 0x200; // produce long form backtrace

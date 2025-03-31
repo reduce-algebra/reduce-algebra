@@ -1091,7 +1091,7 @@ bool fourup_arg_traceflags[sizeof(fourup_arg_functions)/sizeof(
                                fourup_arg_functions[0])];
 
 
-#ifdef WITH_JIT
+#ifdef ENABLE_JIT
 
 // Here def will be the name of the function being called, and qenv(def)
 // will give access to the bytecodes.
@@ -1220,7 +1220,7 @@ LispObject Lmake_jit(LispObject env, LispObject fname)
     return fname;
 }
 
-#else // WITH_JIT
+#else // ENABLE_JIT
 
 LispObject jitcoded_0(LispObject def)
 {   return aerror("jitcoded_0");
@@ -1246,10 +1246,10 @@ LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
 
 
 LispObject Lmake_jit(LispObject env, LispObject fname)
-{   SingleValued fn;
-    return fname;
+{   aerror("no KIT compiler built into this version");
+    return nil;
 }
 
-#endif // WITH_JIT
+#endif // ENABLE_JIT
 
 // end of eval4.cpp

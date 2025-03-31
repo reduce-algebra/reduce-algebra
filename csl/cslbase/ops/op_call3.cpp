@@ -21,17 +21,13 @@
 
             case OP_CALL3:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim3);
+                loadstatic(w, OJITshim3L);
                 loadlit(w2, next);
 // w2 is now the symbol that names the function to be called. Now fetch
 // from that the entrypoint to be used when it is a function of 3 args.
                 loadfromsymbol(w1, w2, Ofunction3);
                 loadloc(w3, 0);
-#ifdef __x86_64__
-                add(spreg, -8);
-#else
-                add(spreg, spreg, -8);
-#endif
+                add2(spreg, -8);
 // Here I call JITshim with arguments
 //           entrypoint of Lisp function to be called (in w1)
 //           name of function being called (as "env" parameter for it) in w2
