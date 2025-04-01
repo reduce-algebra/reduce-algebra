@@ -14,21 +14,15 @@
                 errexit();
                 continue;
 
-//
-// Now here in a neat block I will have the cases that seem to occur most
-// frequently, at least when I tested things running REDUCE. By collecting
-// these together I h to (slightly) improve the cache locality behaviour
-// for this code - maybe...
-//
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_BUILTIN3:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_BUILTIN3:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                loadstatic(w, OJITshim1);
+                loadstatic(w1, OJITtimes2);
+                JITcall(w, A_reg,
+                        w1, B_reg, A_reg);
+                JITerrorcheck();
+                break;
 
 #else
             case OP_BUILTIN3:

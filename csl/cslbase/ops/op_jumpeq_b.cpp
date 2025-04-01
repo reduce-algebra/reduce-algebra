@@ -7,19 +7,13 @@
                 if (A_reg == B_reg) short_jump_back(ppc, xppc, A_reg, codevec);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPEQ_B:
                 next = bytes[ppc++];
                 cmp(A_reg, B_reg);
                 je(perInstruction[ppc-next]);
                 break;
-
-
-#elif defined __aarch64__
-
-            case OP_JUMPEQ_B:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMPEQ_B:

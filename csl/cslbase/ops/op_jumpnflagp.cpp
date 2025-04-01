@@ -30,15 +30,10 @@
 // all lo will be interruptible.
 //
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPNFLAGP:
                 unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_JUMPNFLAGP:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMPNFLAGP:

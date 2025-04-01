@@ -4,6 +4,11 @@
 // Just-in-time compiler framework
 //
 
+// Parts of the code here have been developed by and with Miriam Brody
+// and Ella Zhu while they were visiting the University of Cambridge as
+// part of their studies at Pomona College, Claremont in the first half
+// of 2025.
+
 /**************************************************************************
  * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
@@ -53,6 +58,12 @@
 #include <asmjit/a64.h>
 #endif
 
+#ifdef __linux__
+#include <execinfo.h>
+#include <cstdio>
+#include <cstdlib>
+#endif // __linux__
+
 using namespace asmjit;
 
 struct JitFailed : public std::exception
@@ -99,6 +110,27 @@ typedef a64::Compiler LocalCompiler;
 #error unrecognised architecture for JIT
 #endif
 
+#ifdef __linux__
+
+// The GNU library on Linux provides functions that make it possible
+// to display a backtrace. While I am not certain that this information
+// will be useful I will use it for when asmjit needs to report issue
+// regarding the way I use it.
+
+void print_trace()
+{   void* array[10];
+    int size = backtrace(array, 10);
+    char** strings = backtrace_symbols(array, size);
+    if (strings != NULL)
+    {   printf("Obtained %d stack frames.\n", size);
+        for (int i = 0; i<size; i++)
+            printf ("%s\n", strings[i]);
+    }
+    free(strings);
+}
+
+#endif // __linux__
+
 // This class will be used if the way I try to call asmjit is bad.
 
 class JitError : public ErrorHandler
@@ -106,6 +138,9 @@ class JitError : public ErrorHandler
 public:
     void handleError(Error err, const char* msg, BaseEmitter* origin) override
     {   stdout_printf("+++ AsmJit error: %s\n", msg);
+#ifdef __linux__
+        print_trace();
+#endif // __linux__
         throw JitFailed("asmjit reported trouble");
     }
 };
@@ -124,7 +159,8 @@ FileLogger myFileLogger(stdout);
 // rather than
 //     cc.mov(B_reg, A_reg);
 // For this to be useful I also want A_reg and its friends and all the
-// labels I need to use to be fields within the class.
+// labels I need to use to be fields within the class so that accessing
+// them is utterly straightforward.
 
 
 
@@ -132,16 +168,20 @@ class JITCompile : public LocalCompiler
 {
 public:
 
-JITCompile(CodeHolder* ch) : LocalCompiler(ch)
-{}
+    JITCompile(CodeHolder* ch) : LocalCompiler(ch)
+    {}
 
-Register A_reg, B_reg, litvec, nilreg, spreg, spentry, w, w1, w2, w3, w4;
-Register argregs[16];
+    Register A_reg, B_reg, litvec, nilreg, spreg, spentry, w, w1, w2, w3, w4;
+    Register argregs[16];
 
-size_t ppc;
+    size_t ppc;
 
-Label tooFewArgs, tooManyArgs, callFailed, carError, cdrError, returnA;    
-std::vector<Label> perInstruction;
+    Label tooFewArgs, tooManyArgs, callFailed, carError, cdrError, returnA;    
+    std::vector<Label> perInstruction;
+
+// I am not going to indent the remainder of the code here but making the
+// first bits of the definition of the class stress its structures should
+// help readers...
 
 #if defined __x86_64__
 
@@ -402,9 +442,9 @@ Error jnc(Label& lab)
 {   return b_hs(lab);
 }
 
-Error jne(Label& lab)
-{   return b_ne(lab);
-}
+//Error jne(Label& lab)
+//{   return b_ne(lab);
+//}
 
 Error jng(Label& lab)
 {   return b_le(lab);
@@ -480,6 +520,14 @@ Error add2(Register& r1, Register& r2)
 {   return add(r1, r1, r2);
 }
 
+Error sub2(Register& r1, Imm n)
+{   return sub(r1, r1, n);
+}
+
+Error sub2(Register& r1, Register& r2)
+{   return sub(r1, r1, r2);
+}
+
 Error and2(Register& r1, Imm n)
 {   return and_(r1, r1, n);
 }
@@ -519,6 +567,14 @@ Error add2(Register& r1, Register& r2)
 {   return add(r1, r2);
 }
 
+Error sub2(Register& r1, Imm n)
+{   return sub(r1, n);
+}
+
+Error sub2(Register& r1, Register& r2)
+{   return sub(r1, r2);
+}
+
 Error and2(Register& r1, Imm n)
 {   return and_(r1, n);
 }
@@ -539,6 +595,18 @@ Error add3(Register& r1, Register& r2, Register& r3)
     return add(r1, r3);
 }
 
+Error sub3(Register& r1, Register& r2, Imm n)
+{   if (r1 != r2) ASMJIT_PROPAGATE(mov(r1, r2));
+    return sub(r1, n);
+}
+
+Error sub3(Register& r1, Register& r2, Register& r3)
+{   if (r1 == r2) return sub(r1, r3);
+    if (r2 == r3) return sub(r1, r2);
+    ASMJIT_PROPAGATE(mov(r1, r2));
+    return sub(r1, r3);
+}
+
 Error and3(Register& r1, Register& r2, Imm n)
 {   if (r1 != r2) ASMJIT_PROPAGATE(mov(r1, r2));
     return and_(r1, n);
@@ -556,9 +624,9 @@ Error and3(Register& r1, Register& r2, Register& r3)
 // After many (but not all!) calls it is necessary to check for any
 // reported error state:
 
-
 Error JITerrorcheck()
 {
+// This checks if the bottom byte of JITerrflag is zero.
 #if defined __x86_64__
     ASMJIT_PROPAGATE(cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0));
 #elif defined __aarch64__
@@ -688,12 +756,12 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // the value in the A register, and a vector of labels where I set one
 // on the expansion of each bytecode so that if there is a branch to
 // it I can handle that.
-    Label tooFewArgs  = newLabel();   printf("tooFewArgs: %" PRIu32 "\n", tooFewArgs.id());
-    Label tooManyArgs = newLabel();
-    Label callFailed  = newLabel();
-    Label carError    = newLabel();
-    Label cdrError    = newLabel();
-    Label returnA     = newLabel();
+    tooFewArgs  = newLabel();
+    tooManyArgs = newLabel();
+    callFailed  = newLabel();
+    carError    = newLabel();
+    cdrError    = newLabel();
+    returnA     = newLabel();
 // I am going to set a label on the code that corresponds to each bytecode
 // so that I can handle the jumps there.
     for (size_t i=0; i<len; i++)
@@ -844,7 +912,6 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     }
     END_CATCH;
 
-    stdout_printf("Set the labels that I ought to\n");
 // There are labels here for error exits.
     bind(tooFewArgs);
 // At this stage litvec holds the name of the function involved... So that
@@ -859,7 +926,10 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         loadstatic(A_reg, OJITtoomany);
         chain(A_reg);
 // This is to do with the asmjit-generated code not being able to participate
-// fully in C++ exception handling.
+// fully in C++ exception handling. After any call from the JIT code into
+// a function via a "shim" an error flag is checked and if it is set the
+// code end up here where it chains to JITthrow which reinstates a C++
+// style unwind state.
     bind(callFailed);
         storestatic(spentry, Ostack);
         loadstatic(A_reg, OJITthrow);

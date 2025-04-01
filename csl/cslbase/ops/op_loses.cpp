@@ -5,17 +5,12 @@
                 stack -= next_byte;
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOSES:
                 next = bytes[ppc++];
-                sub(spreg, next);
+                sub2(spreg, next);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_LOSES:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_LOSES:

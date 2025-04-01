@@ -5,16 +5,11 @@
                 stack--;
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOSE:
-                sub(spreg, 8);;
+                sub2(spreg, 8);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_LOSE:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_LOSE:

@@ -9,7 +9,7 @@
                                                    (reinterpret_cast<unsigned char *>(codevec))[xppc]);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPT_L:
                 next = bytes[ppc++];
@@ -17,11 +17,6 @@
                 cmp(A_reg, nilreg);
                 jne(perInstruction[ppc+next]);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_JUMPT_L:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMPT_L:

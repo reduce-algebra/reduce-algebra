@@ -7,15 +7,14 @@
                 if (stack[-4] != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPL4T:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_JUMPL4T:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                next = bytes[ppc++];
+                loadloc(w, 4);
+                cmp(w, nilreg);
+                jne(perInstruction[ppc+next]);
+                break;
 
 #else
             case OP_JUMPL4T:

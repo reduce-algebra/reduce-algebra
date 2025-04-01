@@ -34,15 +34,15 @@
 #define SL_OR_CL_EQUAL equal
 #endif
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_APPLY4:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_APPLY4:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                loadstatic(w, OJITshim1);
+                loadstatic(w1, OJITtimes2);
+                JITcall(w, A_reg,
+                        w1, B_reg, A_reg);
+                JITerrorcheck();
+                break;
 
 #else
             case OP_APPLY4:

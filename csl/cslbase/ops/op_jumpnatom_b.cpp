@@ -7,19 +7,13 @@
                 if (consp(A_reg)) short_jump_back(ppc, xppc, A_reg, codevec);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPNATOM_B:
                 next = bytes[ppc++];
                 test(A_reg, TAG_BITS);
                 je(perInstruction[ppc-next]);
                 break;
-
-
-#elif defined __aarch64__
-
-            case OP_JUMPNATOM_B:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMPNATOM_B:

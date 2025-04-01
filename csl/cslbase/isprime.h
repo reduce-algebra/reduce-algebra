@@ -62,43 +62,54 @@
 
 // I need an auxiliary function to find the top bit in a word.
 
-constexpr inline int constexpr_nlz(uint64_t x)
+constexpr inline int constexpr_nlz(uint32_t x)
 {   int n = 0;
-    if (x <= 0x00000000FFFFFFFFU)
-    {   n = n +32;
-        x = x <<32;
+    if (x <= 0x0000FFFFU)
+    {   n = n + 16;
+        x = x << 16;
     }
-    if (x <= 0x0000FFFFFFFFFFFFU)
-    {   n = n +16;
-        x = x <<16;
-    }
-    if (x <= 0x00FFFFFFFFFFFFFFU)
+    if (x <= 0x00FFFFFFU)
     {   n = n + 8;
         x = x << 8;
     }
-    if (x <= 0x0FFFFFFFFFFFFFFFU)
+    if (x <= 0x0FFFFFFFU)
     {   n = n + 4;
         x = x << 4;
     }
-    if (x <= 0x3FFFFFFFFFFFFFFFU)
+    if (x <= 0x3FFFFFFFU)
     {   n = n + 2;
         x = x << 2;
     }
-    if (x <= 0x7FFFFFFFFFFFFFFFU)
+    if (x <= 0x7FFFFFFFU)
     {   n = n + 1;
     }
     return n;
 }
 
-constexpr inline bool constexpr_isprime(uint64_t n)
-{   for (uint64_t k=2; k*k<=n; k++)
-    {   if (n%k == 0) return false;
+// Code that implements Miller-Rabin.
+
+// Compute x^n mod p
+
+constexpr inline uint32_t constexpr_exptmod(uint32_t x, uint32_t n, uint32_t p)
+{   uint64_t xx = x, y = 1;
+    while (n > 1)
+    {   if (n%2 != 0) y = (xx * y) % p;
+        xx = (xx * xx) % p;
+        n = n / 2;
     }
-    return true;
+    return (xx * y) % p;
+}
+
+constexpr inline bool constexpr_isprime(uint64_t n)
+{   if (n <= 7) return true; // All udd numbers up to 7 are prime!
+    if (n%3 == 0) return false;
+// Here 3 is an adequate witness!!!! Well actually just a simple
+// Fermat test suffices and it is slightly simpler so I use it.
+    return (constexpr_exptmod(3, n-1, n) == 1);
 }
 
 constexpr inline auto goodPrime(int n)
-{   uint64_t p = (1ULL<<n) - 1;
+{   uint32_t p = (1UL<<n) - 1;
     while (!constexpr_isprime(p)) p -= 2;
     return p;
 }
@@ -111,18 +122,13 @@ constexpr inline auto goodPrime(int n)
 // The table starts off with:
 // 0, 1, 3, 7, 13, 31, 61, 127, 251, 509, 1021, 2039, 4093, ...
 // and continues up to values that are in fact ridiculously larger
-// than I could ever use:
-//     ... 1073741789.
-// and that would correspond to using a hash table that occupied
-// over 8 Gbytes of memory even before the space used by the symbols
-// stored in it. So that should be adequate for the next few years.
-// Of course I am aware that the first couple of entries are not
-// useful. I include them because they are what emerges from the
-// code that sets the table up.
+// than I could ever use, ie up to almost 2^31 which would support
+// billions of symbols and the table size plus the size of those
+// symbols would stretch many 2025 computers.
 
 #ifdef DEFINE_GOODPRIMES
 
-constexpr inline uint64_t goodPrimes[31] =
+constexpr inline uint64_t goodPrimes[32] =
 {   goodPrime( 0), goodPrime( 1), goodPrime( 2), goodPrime( 3),
     goodPrime( 4), goodPrime( 5), goodPrime( 6), goodPrime( 7),
     goodPrime( 8), goodPrime( 9), goodPrime(10), goodPrime(11),
@@ -130,43 +136,24 @@ constexpr inline uint64_t goodPrimes[31] =
     goodPrime(16), goodPrime(17), goodPrime(18), goodPrime(19),
     goodPrime(20), goodPrime(21), goodPrime(22), goodPrime(23),
     goodPrime(24), goodPrime(25), goodPrime(26), goodPrime(27),
-    goodPrime(28), goodPrime(29), goodPrime(30)
+    goodPrime(28), goodPrime(29), goodPrime(30), goodPrime(31)
 };
 
 #else // DEFINE_GOODPRIMES
-extern uint64_t goodPrimes[31];
+extern uint64_t goodPrimes[32];
 #endif // DEFINE_GOODPRIMES
 
 constexpr inline unsigned int goodPrimesCount =
     sizeof(goodPrimes)/sizeof(goodPrimes[0]);
 
-#ifdef __GNUC__
-
-// Note that __GNUC__ also gets defined by clang on the Macintosh, so
-// this code is probably optimized there too. So I am expecting that this
-// will be the version is use almost all the time, and on several key
-// platforms it ought to compile into a single instruction!
-
-inline int inline_nlz(uint64_t x)
-{   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
-}
-
-#else // __GNUC__
-
-// This fallback is at least properly portable.
-
-inline int inline_nlz(uint64_t x)
-{   return constexpr_nlz(x);
-}
-
-#endif // __GNUC__
-
-inline int primeIndex(uint64_t x)
-{   return 64 - inline_nlz(x);
+inline int primeIndex(uint32_t x)
+{   return 32 - constexpr_nlz(x);
 }
 
 // These two functions ought only to be called with one of my
-// "good" primes as an argument.
+// "good" primes as an argument. Because these are just under a power of
+// 2 I can identify which one I have by counting the leading zeros in its
+// representation. 
 
 inline uint64_t previousGoodPrime(uint64_t p)
 {   return p == goodPrimes[0] ? p : goodPrimes[primeIndex(p)-1];
