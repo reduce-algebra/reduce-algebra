@@ -303,6 +303,7 @@ Aug 2024.     If the user closes the window in the GUI on an X-based version
               down thereby avoiding an issue where the GUI failed to terminate
               at all until explicty killed.
 
-
+March 2025.   Make font size for menus track the size that the main window
+              font will have at the start of a particular run.
 
 <end of CHANGED>

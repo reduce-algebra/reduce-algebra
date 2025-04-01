@@ -60,13 +60,6 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
-// Given a, b and c as 64-bit unnsigned values with c!=0, compute (a*b)%c.
-// The issue here is that the intermediate product a*b can use up to
-// 128-bits.
-// The division/remainder method used here is the one from Warren's book
-// "Hacker's Delight" which in turn derives it by specialising and further
-// optimising the scheme from Knuth's Art of Computer Programming volume 2.
-//
 // I need an auxiliary function to find the top bit in a word.
 
 constexpr inline int constexpr_nlz(uint64_t x)
@@ -97,146 +90,11 @@ constexpr inline int constexpr_nlz(uint64_t x)
     return n;
 }
 
-
-constexpr inline uint64_t constexpr_mulmod64(uint64_t a, uint64_t b, uint64_t c)
-{   uint64_t a1 = a >> 32,           // top half
-             a0 = a & 0xFFFFFFFFU;   // low half
-    uint64_t b1 = b >> 32,           // top half
-             b0 = b & 0xFFFFFFFFU;   // low half
-    uint64_t u1 = a1*b1, u0 = a0*b0; // for the double length product
-    uint64_t w = a0*b1;
-    u1 += w >> 32;
-    w <<= 32;
-    u0 += w;
-    if (u0 < w) u1++;
-    w = a1*b0;
-    u1 += w >> 32;
-    w <<= 32;
-    u0 += w;
-    if (u0 < w) u1++;
-// See the Hacker's Delight for commentary about what follows. The associated
-// web-site explains usage rights:
-// "You are free to use, copy, and distribute any of the code on this web
-// site (www.hackersdelight.org) , whether modified by you or not. You need
-// not give attribution. This includes the algorithms (some of which appear
-// in Hacker's Delight), the Hacker's Assistant, and any code submitted by
-// readers. Submitters implicitly agree to this." and then "The author has
-// taken care in the preparation of this material, but makes no expressed
-// or implied warranty of any kind and assumes no responsibility for errors
-// or omissions. No liability is assumed for incidental or consequential
-// damages in connection with or arising out of the use of the information
-// or programs contained herein."
-// I may not be obliged to give attribution, but I view it as polite to!
-// Any error that have crept in in my adapaptation of the original code
-// will be my fault, but you see in the BSD license at the top of this
-// file that I disclaim any possible liability for consequent loss or damage.
-    const uint64_t base = 0x100000000U; // Number base (32 bits).
-// I must always initialise every variable that I declare in a constexpr
-// function.
-    int s = constexpr_nlz(c);        // Shift amount for norm. 0 <= s <= 63.
-    c = c << s;                      // Normalize divisor.
-    uint64_t vn1 = c >> 32;          // Break divisor up into
-    uint64_t vn0 = c & 0xFFFFFFFFU;  // two 32-bit digits.
-    uint64_t un32=0;
-    if (s == 0) un32 = u1;
-    else un32 = (u1 << s) | (u0 >> (64 - s));
-    uint64_t un10 = u0 << s;           // Shift dividend left.
-    uint64_t un1 = un10 >> 32;         // Break right half of
-    uint64_t un0 = un10 & 0xFFFFFFFFU; // dividend into two digits.
-    uint64_t q1 = un32/vn1;            // Compute the first
-    uint64_t rhat = un32 - q1*vn1;     // quotient digit, q1.
-    while (true)
-    {   if (q1 >= base || q1*vn0 > base*rhat + un1)
-        {   q1 = q1 - 1;
-            rhat = rhat + vn1;
-            if (rhat < base) continue;
-        }
-        break;
-    }
-    uint64_t un21 = un32*base + un1 - q1*c;  // Multiply and subtract.
-    uint64_t q0 = un21/vn1;            // Compute the second
-    rhat = un21 - q0*vn1;     // quotient digit, q0.
-    while (true)
-    {   if (q0 >= base || q0*vn0 > base*rhat + un0)
-        {   q0 = q0 - 1;
-            rhat = rhat + vn1;
-            if (rhat < base) continue;
-        }
-        break;
-    }
-    return (un21*base + un0 - q0*c) >> s;     // return the remainder.
-}
-
-// Now code that implements Miller-Rabin.
-
-// Compute x^n mod p
-
-constexpr inline uint64_t constexpr_exptmod(uint64_t x, uint64_t n, uint64_t p)
-{   uint64_t y = 1;
-    while (n > 1)
-    {   if (n%2 != 0) y = constexpr_mulmod64(x, y, p);
-        x = constexpr_mulmod64(x, x, p);
-        n = n / 2;
-    }
-    return constexpr_mulmod64(x, y, p);
-}
-
-// Use Miller-Rabin with base a to check whether n is a (pseudo-)prime. The
-// way this is used here should ensure that it is in fact 100% reliable in
-// identifying primes. If this was used in a probabilistic context then this
-// function would be called repeatedly with random first arguments. In my
-// use if is called with selected first arguments so as to avoid
-// strong pseudo-primes for all inputs up to 2^64
-
-constexpr inline bool constexpr_miller_rabin_isprime(uint64_t a, uint64_t n)
-{   uint64_t d = n-1;
-    int s = 0;
-    while ((d % 2) == 0)  // Find largest power of 2 dividing n-1
-    {   d = d/2;
-        ++s;
-    }
-    uint64_t x = constexpr_exptmod(a, d, n);
-    if (x == 1 || x == n-1) return true;
-    while (s > 1)
-    {   x = constexpr_mulmod64(x, x, n);
-        if (x == 1) return false;
-        else if (x == n-1) return true;
-        --s;
-    }
-    return false;
-}
-
 constexpr inline bool constexpr_isprime(uint64_t n)
-{   if (n <= 1000)
-    {   for (uint64_t k=2; k*k<=n; k++)
-        {   if (n%k == 0) return false;
-        }
-        return true;
+{   for (uint64_t k=2; k*k<=n; k++)
+    {   if (n%k == 0) return false;
     }
-// Note I must not use a witness that is equal to the value that I am
-// testing, so I have checked small numbers the traditional way first.
-//
-// And then HA HA it turns out that for the cases that arise here the
-// witness 3 is always reliable, so I can use just it and speed up
-// my testing by about a factor of 12! I leave the other cases here in
-// the code but potentially commented out so that anybody who wants to
-// speed up compilation somewhat can so do at the cost of trusting my
-// assertion that 3 is an adequate witness in this context!
-    else if (!constexpr_miller_rabin_isprime(3, n)) return false;
-#ifndef TRUST_3_AS_A_WITNESS_HERE
-    else if (!constexpr_miller_rabin_isprime(2, n)) return false;
-    else if (!constexpr_miller_rabin_isprime(5, n)) return false;
-    else if (!constexpr_miller_rabin_isprime(7, n)) return false;
-    else if (!constexpr_miller_rabin_isprime(11, n)) return false;
-    else if (!constexpr_miller_rabin_isprime(13, n)) return false;
-    else if (!constexpr_miller_rabin_isprime(17, n)) return false;
-    else if (!constexpr_miller_rabin_isprime(19, n)) return false;
-    else if (!constexpr_miller_rabin_isprime(23, n)) return false;
-    else if (!constexpr_miller_rabin_isprime(29, n)) return false;
-    else if (!constexpr_miller_rabin_isprime(31, n)) return false;
-    else if (!constexpr_miller_rabin_isprime(37, n)) return false;
-#endif // TRUST_3_AS_A_WITNESS_HERE
-    else return true;
+    return true;
 }
 
 constexpr inline auto goodPrime(int n)
@@ -254,7 +112,10 @@ constexpr inline auto goodPrime(int n)
 // 0, 1, 3, 7, 13, 31, 61, 127, 251, 509, 1021, 2039, 4093, ...
 // and continues up to values that are in fact ridiculously larger
 // than I could ever use:
-//     ... 281474976710597, 562949953421231, 1125899906842597.
+//     ... 1073741789.
+// and that would correspond to using a hash table that occupied
+// over 8 Gbytes of memory even before the space used by the symbols
+// stored in it. So that should be adequate for the next few years.
 // Of course I am aware that the first couple of entries are not
 // useful. I include them because they are what emerges from the
 // code that sets the table up.
@@ -301,7 +162,7 @@ inline int inline_nlz(uint64_t x)
 #endif // __GNUC__
 
 inline int primeIndex(uint64_t x)
-{   return 64 - constexpr_nlz(x);
+{   return 64 - inline_nlz(x);
 }
 
 // These two functions ought only to be called with one of my

@@ -44,6 +44,13 @@
 #include <type_traits>
 #include <utility>
 
+// For parts of the code that multiplies "medium size" numbers I want
+// to expand out some loops into inline code. I had started by doing that
+// using the standard template-based compile-time loops, but I found
+// that with some compilers that left in function calls where I had
+// used lambda-expressions. So here I have support for loops that
+// combined templates and constexpr and which seems to behave as I
+// want it to.
 
 // This is to provide me with compile-time "for loops" which I can
 // write as
@@ -59,7 +66,7 @@
 // prints the values from 7 to 11. The introduction of ii there is just
 // to illustrate that the control variable is a constexpr.
 
-// The synytax for use there is not a disaster but I provide a #define
+// The syntax for use there is not a disaster but I provide a #define
 // macro that some may fine more to their taste, used as
 //    forconstexpr (i, 7, 12,
 //    {   constexpr size_t ii = i;

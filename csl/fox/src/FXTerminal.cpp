@@ -2425,7 +2425,7 @@ void FXTerminal::setFont(FXFont *font0)
     int fs = font0->getSize();
     fs = 10*((fs + 5)/10); // Round to a multiple of 10
     if (fs < 80) fs = 80;
-    else if (fs > 200) fs = 200;
+    else if (fs > 500) fs = 500;
     else if (fs > 120 &&
              ((fs/10) & 1) != 0) fs += 10;
     reg->writeIntEntry("screen", "fontsize",     fs);

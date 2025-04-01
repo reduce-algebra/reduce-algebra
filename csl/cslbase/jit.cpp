@@ -688,7 +688,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // the value in the A register, and a vector of labels where I set one
 // on the expansion of each bytecode so that if there is a branch to
 // it I can handle that.
-    Label tooFewArgs  = newLabel();
+    Label tooFewArgs  = newLabel();   printf("tooFewArgs: %" PRIu32 "\n", tooFewArgs.id());
     Label tooManyArgs = newLabel();
     Label callFailed  = newLabel();
     Label carError    = newLabel();
