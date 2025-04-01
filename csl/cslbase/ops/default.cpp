@@ -1,4 +1,4 @@
-// default.cpp
+// default.cpp $Id$
 
 #if defined BYTECODE
             default:

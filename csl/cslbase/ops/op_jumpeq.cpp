@@ -1,4 +1,4 @@
-// jumpeq.cpp
+// jumpeq.cpp $Id$
 
 #if defined BYTECODE
             case OP_JUMPEQ:

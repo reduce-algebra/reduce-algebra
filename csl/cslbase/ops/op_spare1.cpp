@@ -1,4 +1,4 @@
-// spare1.cpp
+// spare1.cpp $Id$
 
 #if defined BYTECODE
 

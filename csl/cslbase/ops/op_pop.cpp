@@ -1,4 +1,4 @@
-// op_pop.cpp
+// op_pop.cpp $Id$
 
 #if defined BYTECODE
             case OP_POP:

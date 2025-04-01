@@ -1,4 +1,4 @@
-// fastget.cpp
+// fastget.cpp $Id$
 
 #if defined BYTECODE
             case OP_FASTGET:

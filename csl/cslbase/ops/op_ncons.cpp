@@ -1,4 +1,4 @@
-// ncons.cpp
+// ncons.cpp $Id$
 
 #if defined BYTECODE
             case OP_NCONS:                          // A_reg = cons(A_reg, nil);

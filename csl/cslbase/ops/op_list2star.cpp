@@ -1,4 +1,4 @@
-// list2star.cpp
+// list2star.cpp $Id$
 
 #if defined BYTECODE
             case OP_LIST2STAR:              // A_reg = list2!*(p), B_reg, A_reg);

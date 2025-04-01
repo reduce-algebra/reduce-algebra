@@ -1,4 +1,4 @@
-// eqcar.cpp
+// eqcar.cpp $Id$
 
 #if defined BYTECODE
             case OP_EQCAR:

@@ -1,4 +1,4 @@
-// freerstr.cpp
+// freerstr.cpp $Id$
 
 #if defined BYTECODE
             case OP_FREERSTR:

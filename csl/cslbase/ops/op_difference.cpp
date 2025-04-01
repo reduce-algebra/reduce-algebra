@@ -1,4 +1,4 @@
-// difference.cpp
+// difference.cpp $Id$
 
 #if defined BYTECODE
             case OP_DIFFERENCE:

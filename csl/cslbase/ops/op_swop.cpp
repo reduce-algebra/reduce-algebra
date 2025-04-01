@@ -1,4 +1,4 @@
-// swcpp
+// swcpp $Id$
 
 #if defined BYTECODE
             case OP_SWOP:

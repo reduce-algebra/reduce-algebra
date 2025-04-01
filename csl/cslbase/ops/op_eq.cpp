@@ -1,4 +1,4 @@
-// eq.cpp
+// eq.cpp $Id$
 
 #if defined BYTECODE
             case OP_EQ:                                     // A = eq(B, A)

@@ -1,4 +1,4 @@
-// catch_b.cpp
+// catch_b.cpp $Id$
 
 #if defined BYTECODE
             case OP_CATCH_B:

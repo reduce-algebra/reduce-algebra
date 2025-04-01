@@ -1,4 +1,4 @@
-// loc1loc2.cpp
+// loc1loc2.cpp $Id$
 
 #if defined BYTECODE
             case OP_LOC1LOC2:

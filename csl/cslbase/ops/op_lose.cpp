@@ -1,4 +1,4 @@
-// lose.cpp
+// lose.cpp $Id$
 
 #if defined BYTECODE
             case OP_LOSE:

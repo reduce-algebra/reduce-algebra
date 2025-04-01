@@ -1,4 +1,4 @@
-// length.cpp
+// length.cpp $Id$
 
 #if defined BYTECODE
             case OP_LENGTH:
