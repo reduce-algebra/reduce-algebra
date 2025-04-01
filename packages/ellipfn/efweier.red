@@ -36,7 +36,7 @@ module efweier;  % Procedures and Rules for Weierstrass Elliptic functions.
 algebraic;
 
 % WEIERSTRASS and SIGMA FUNCTIONS
-operator weierstrass, weierstrassZeta;
+operator weierstrass, weierstrassZeta, epsilon_w;
 operator weierstrass_sigma, weierstrass_sigma1;
 operator weierstrass_sigma2, weierstrass_sigma3;
 operator eta1, eta2, eta3;
@@ -46,7 +46,7 @@ operator lattice_omega1, lattice_omega3;
 operator weierstrass1, weierstrassZeta1, weierstrass_sigma0;
 
 flag ('(weierstrass1 weierstrassZeta1 weierstrass_sigma0), 'realvalued);
-
+flag ('(epsilon_w), 'alwaysrealvalued);
 %######################################################################
 
 sigma_rules :=
@@ -189,8 +189,13 @@ weierstrass_rules :=
    weierstrass(~w3, ~w1, ~w3)  => lattice_e3(w1,w3),
    weierstrass(~w1+~w3, ~w1, ~w3) => lattice_e2(w1,w3),
 
-   df(weierstrass(~u,~w1,~w3),u) =>
-       -sqrt(4*weierstrass(u,w1,w3)^3
+   epsilon_w(~u, ~w1, ~w3)^2 => 1,
+   df(epsilon_w(~u, ~w1, ~w3), ~v) => 0,
+
+   % epsilon_w = +/-1 and changes sign at poles of the Weierstrass fn and 
+   % at when Weierstrass fn is equal to a lattice-root e_1, e_2 or e_3
+  df(weierstrass(~u,~w1,~w3),u) =>
+      epsilon_w(u,w1,w3)*sqrt(4*weierstrass(u,w1,w3)^3
              - lattice_g2(w1,w3)*weierstrass(u,w1,w3) - lattice_g3(w1,w2)),
 
    % double periodicity
@@ -323,8 +328,8 @@ weierstrass1_rules :=
           num_elliptic(num_weierSigma, u, g2, g3)
       when lisp !*rounded and numberp u and numberp g2 and numberp g3,
    
-   df(weierstrass1(~u,~g2,~g3),u) =>
-       -sqrt(4*weierstrass1(u,g2,g3)^3 - g2*weierstrass1(u,g2,g3) - g3),
+   df(weierstrass1(~u,~g2,~g3),u) => epsilon_w(u,g2,g3)*
+      sqrt(4*weierstrass1(u,g2,g3)^3 - g2*weierstrass1(u,g2,g3) - g3),
 
    df(weierstrassZeta1(~u,~g2,~g3),~u)  => -weierstrass1(u,g2,g3),
 
@@ -831,17 +836,20 @@ put('weierstrass_sigma0, 'prifn, 'plain!-weier);
 
 put('weierstrass, 'fancy!-functionsymbol, "\wp");
 put('weierstrassZeta, 'fancy!-functionsymbol,"\zeta_w");
+put('epsilon_w, 'fancy!-functionsymbol, "\epsilon_w");
 put('weierstrass_sigma, 'fancy!-functionsymbol,"\sigma");
 put('weierstrass_sigma1, 'fancy!-functionsymbol,"\sigma_1");
 put('weierstrass_sigma2, 'fancy!-functionsymbol,"\sigma_2");
 put('weierstrass_sigma3, 'fancy!-functionsymbol,"\sigma_3");
 put('weierstrassZeta, 'fancy!-symbol!-length, 4);
+put('epsilon_w, 'fancy!-symbol!-length, 4);
 put('weierstrass_sigma1, 'fancy!-symbol!-length, 4);
 put('weierstrass_sigma2, 'fancy!-symbol!-length, 4);
 put('weierstrass_sigma3, 'fancy!-symbol!-length, 4);
 
 put('weierstrass, 'prifn, 'plain!-symbol);
 put('weierstrassZeta, 'prifn, 'plain!-symbol);
+put('epsilon_w, 'prifn, 'plain!-symbol);
 
 put('weierstrass_sigma, 'prifn, 'plain!-symbol);
 put('weierstrass_sigma1, 'prifn, 'plain!-symbol);
@@ -850,6 +858,7 @@ put('weierstrass_sigma3, 'prifn, 'plain!-symbol);
 
 put('weierstrass, 'plain!-functionsymbol, "P_w");
 put('weierstrasszeta, 'plain!-functionsymbol, "zeta_w");
+put('epsilon_w, 'plain!-functionsymbol, "epsilon_w");
 put('weierstrass_sigma, 'plain!-functionsymbol, "sigma");
 put('weierstrass_sigma1, 'plain!-functionsymbol, "sigma_1");
 put('weierstrass_sigma2, 'plain!-functionsymbol, "sigma_2");
@@ -909,14 +918,14 @@ flag('(weierstrass_sigma weierstrass_sigma1 weierstrass_sigma2
        eta1 eta2 eta3 lattice_e1 lattice_e2 lattice_e3
        lattice_g2 lattice_g3  lattice_delta lattice_g
        lattice_omega1 lattice_omega3 weierstrass1
-       weierstrasszeta1 weierstrass_sigma0	     
+       weierstrasszeta1 weierstrass_sigma0 epsilon_w	     
       ), 'specfn);
 
 
 deflist('((weierstrass_sigma 3) (weierstrass_sigma1 3)
           (weierstrass_sigma2 3) (weierstrass_sigma3 3)
-          (weierstrass 3) (weierstrassZeta 3) (eta1 2) (eta2 2)
-	  (eta3 2) (lattice_e1 2) (lattice_e3 2) (lattice_e3 2)
+          (weierstrass 3) (weierstrassZeta 3) (epsilon_w 3) (eta1 2)
+ 	  (eta2 2) (eta3 2) (lattice_e1 2) (lattice_e3 2) (lattice_e3 2)
 	  (lattice_roots 2) (lattice_invariants 2)
 	  (lattice_g2 2) (lattice_g3 2)  (lattice_delta 2) (lattice_g 2)
 	  (weierstrass1 3) (weierstrassZeta1 3) (weierstrass_sigma0 3)

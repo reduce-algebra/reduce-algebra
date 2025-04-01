@@ -212,6 +212,10 @@ The second declaration would cause \texttt{k(a,y)} to be evaluated as
 \texttt{a\textasciicircum y}, but would have no effect on \texttt{k(a,z)} since the rule
 didn't say \texttt{for all y} \ldots .
 
+As with simple \texttt{let} rules for backward compatibility with earlier
+versions of \REDUCE, an equals sign may be used instead of \texttt{=>}
+in \texttt{for all} commands and rule lists (see below).
+
 Where we used \texttt{x} and \texttt{y} in the examples, any variables could
 have been used.  This use of a variable doesn't affect the value it may
 have outside the \texttt{let} statement.  However, you should remember what
