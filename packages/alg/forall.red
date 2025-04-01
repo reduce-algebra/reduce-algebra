@@ -187,12 +187,10 @@ symbolic procedure let1 u;
             else if eqcar(y := listeval0(x := car u),'list)
              then rule!-list(reverse cdr y,t)
             else if idp x then revalruletst x
-            else if car x eq 'replaceby
-             then if frasc!*
-                    then rerror(alg,100,
-                                "=> invalid in FOR ALL statement")
-                   else rule!-list(list x,t)
-            else if car x eq 'equal
+            else if not frasc!* and car x eq 'replaceby then
+                    rule!-list(list x,t)
+            else if  car x eq 'replaceby or car x eq 'equal
+	           % allow => in for all   Alan Barnes April 2025
                     then if smemq('!~,x)
                            then if frasc!* then typerr(x,"rule")
                                  else rule!-list(list x,t)
@@ -717,8 +715,15 @@ symbolic procedure match u;
    match00 u where frasc!* = nil;
 
 symbolic procedure match00 u;
-   <<for each x in u do let2(cadr x,caddr x,t,t);
+   % suggested by Rainer Schoepf April 2025
+   <<for each x in u do
+       if car x eq 'replaceby or car x eq 'equal then let2(cadr x,caddr x,t,t)
+       else typerr(x,"rule");
      frasc!* := mcond!* := nil>>;
+
+%% symbolic procedure match00 u;
+%%    <<for each x in u do let2(cadr x,caddr x,t,t);
+%%      frasc!* := mcond!* := nil>>;
 
 symbolic procedure clear u;
    begin
