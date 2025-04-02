@@ -442,9 +442,9 @@ Error jnc(Label& lab)
 {   return b_hs(lab);
 }
 
-//Error jne(Label& lab)
-//{   return b_ne(lab);
-//}
+Error jne(Label& lab)
+{   return b_ne(lab);
+}
 
 Error jng(Label& lab)
 {   return b_le(lab);
@@ -630,7 +630,7 @@ Error JITerrorcheck()
 #if defined __x86_64__
     ASMJIT_PROPAGATE(cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0));
 #elif defined __aarch64__
-    ASMJIT_PROPAGATE(ldrb(w, ptr(nilreg, JIToffset(OJITerrflag))));
+    ASMJIT_PROPAGATE(ldursb(w, ptr(nilreg, JIToffset(OJITerrflag))));
     ASMJIT_PROPAGATE(cmp(w, 0));
 #endif
     return jne(callFailed);
@@ -900,6 +900,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // be some of the labels that are neither defined nor used.
             bind(perInstruction[ppc]);
             stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
+            cmp(nilreg, ppc);   // Marks start of instrn at ppc!
             switch (bytes[ppc++])
             {
 #include "ops/bytes_include.cpp"

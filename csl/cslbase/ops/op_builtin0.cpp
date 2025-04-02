@@ -20,7 +20,7 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_BUILTIN0:
-                next = bytecodes[ppc++];
+                next = bytes[ppc++];
                 loadstatic(w, OJITshim0L);
                 mov(w1, no_arg_functions[next]);
                 JITcall(w, A_reg,

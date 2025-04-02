@@ -5,17 +5,12 @@
                 *++stack = A_reg;
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_PUSH:
-                add(spreg, 8);;
+                add2(spreg, 8);
                 storeloc(A_reg, 0);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_PUSH:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_PUSH:

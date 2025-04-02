@@ -24,12 +24,12 @@
                     jne(notFixnum);
                     loadstatic(w, OJITmostNegativeFixnum);
                     cmp(A_reg, w);
-                    jne(notFixnum);
-                    add2(A_reg, -0x10);
+                    je(notFixnum);
+                    sub2(A_reg, 0x10);
 // Could I do an overflow check here rather than the pre-check?
                     jmp(endSub1);
                 bind(notFixnum);
-                    loadstatic(w, OJITshim1);
+                    loadstatic(w, OJITshim2);
                     loadstatic(w1, OJITplus2);
                     mov(B_reg, fixnum_of_int(-1));
                     JITcall(w, A_reg,

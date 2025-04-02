@@ -24,11 +24,11 @@
                     jne(notFixnum);
                     mov(w, MOST_POSITIVE_FIXNUM);
                     cmp(A_reg, w);
-                    jne(notFixnum);
+                    je(notFixnum);
                     add2(A_reg, 0x10);
                     jmp(endAdd1);
                 bind(notFixnum);
-                    loadstatic(w, OJITshim1);
+                    loadstatic(w, OJITshim2);
                     loadstatic(w1, OJITplus2);
                     mov(B_reg, fixnum_of_int(1));
                     JITcall(w, A_reg,
