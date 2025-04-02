@@ -1,4 +1,4 @@
-// jumplit2ne.cpp
+// jumplit2ne.cpp $Id$
 
 #if defined BYTECODE
             case OP_JUMPLIT2NE:
@@ -8,15 +8,14 @@
                     short_jump(ppc, xppc, codevec);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPLIT2NE:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_JUMPLIT2NE:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                next = bytes[ppc++];
+                loadlit(w, 2);
+                cmp(w, A_reg);
+                jne(perInstruction[ppc+next]);
+                break;
 
 #else
             case OP_JUMPLIT2NE:

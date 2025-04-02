@@ -1043,9 +1043,14 @@ $\wp$, $\zeta_w$ and $\sigma$ are homogenous of degrees -2, -1 and +1 respective
 \[ \wp(u) = -\zeta_w'(u),\qquad\qquad \zeta_w(u) = \sigma'(u)/\sigma(u),\]
 where the lattice parameters have been omitted for conciseness.
 
-Rule sets are provided which implement all the properties such as double periodicity discussed above. For numerical evaluation
+Rule sets are provided which implement all the properties such as double periodicity
+discussed above. The rule for the derivative of the Weierstrass function has recently
+been corrected; it now involves the operator \f{epsilon\_w} whose value is either +1 or -1.
+Its value changes at the poles of the Weierstrass function and at points where the value
+of the Weierstrass function is one of the three lattice roots $e_1,\ e_2$ or $e_3$.   Currently numerical evaluation of of $\epsilon_w$ is not available. 
+Similar changes apply to the function Weierstrass1 below. For numerical evaluation
 the switches \sw{rounded}\ and \sw{complex}\ must both be ON and all three parameters must be numeric. It is not, however,
-necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third parameters will be swapped if required.
+necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third parameters will be swapped if required. 
 
 \subsubsection{Alternative forms of the Weierstrass Functions}
 \hypertarget{WEIERSTRASS1}{}

@@ -346,6 +346,7 @@ enum NilOffset
     OJITlessp2,
     OJITleq2,
     OJITplus2,
+    OJITdifference2,
     OJITtimes2,
     OJITquotient2,
     OJITremainder,
@@ -358,14 +359,14 @@ enum NilOffset
     OJITtoofew,
     OJITtoomany,                 // this uses 30 of the 50 so far!
 
-// These are used for calling Lisp functions that have an extra implicit "env"
-// argument so that they take one more real (C++) argument than perhaps expected.
+// These are used for calling Lisp functions that have an extra implicit
+// "env" argument so that they take one more real (C++) argument than
+// perhaps expected.
     OJITshim0L = OJITshim1,
     OJITshim1L = OJITshim2,
     OJITshim2L = OJITshim3,
     OJITshim3L = OJITshim4,
     OJITshim4L = OJITshim5
-
 };
 
 // The JIT can generate code to access eg stack if it has the value if nil
@@ -441,6 +442,7 @@ inline func1& JITadd1op     = staticdata[JITgap(OJITsub1op)].genericF1;
 inline boolfunc2& JITlessp2 = staticdata[JITgap(OJITlessp2)].genericF2B;
 inline boolfunc2& JITleq2   = staticdata[JITgap(OJITleq2)].genericF2B;
 inline func2& JITplus2      = staticdata[JITgap(OJITplus2)].genericF2;
+inline func2& JITdifference2= staticdata[JITgap(OJITdifference2)].genericF2;
 inline func2& JITtimes2     = staticdata[JITgap(OJITtimes2)].genericF2;
 inline func2& JITquotient2  = staticdata[JITgap(OJITquotient2)].genericF2;
 inline func2& JITremainder  = staticdata[JITgap(OJITremainder)].genericF2;

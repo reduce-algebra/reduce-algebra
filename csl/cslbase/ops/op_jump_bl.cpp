@@ -1,4 +1,4 @@
-// jump_bl.cpp
+// jump_bl.cpp $Id$
 
 #if defined BYTECODE
             case OP_JUMP_BL:
@@ -7,7 +7,7 @@
                 long_jump_back(w, ppc, ppc-1, A_reg, codevec);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMP_BL:
                 next = bytes[ppc++];
@@ -15,11 +15,6 @@
                 jmp(perInstruction[ppc-next]);
                 break;
 
-
-#elif defined __aarch64__
-
-            case OP_JUMP_BL:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMP_BL:

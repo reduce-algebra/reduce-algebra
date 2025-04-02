@@ -1,4 +1,4 @@
-// qgetv.cpp
+// qgetv.cpp $Id$
 
 #if defined BYTECODE
             case OP_QGETV:                          // A_reg = getv(B_reg, A_reg)
@@ -15,15 +15,15 @@
                             (CELL*int_of_fixnum(A_reg)));
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
-            case OP_QGETV:                          // A_reg = getv(B_reg, A_reg)
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_QGETV:                          // A_reg = getv(B_reg, A_reg)
-                unfinished(__FILE__ " not yet implemented for ARM");
+            case OP_QGETV:
+                loadstatic(w, OJITshim1);
+                loadstatic(w1, OJITtimes2);
+                JITcall(w, A_reg,
+                        w1, B_reg, A_reg);
+                JITerrorcheck();
+                break;
 
 #else
             case OP_QGETV:                          // A_reg = getv(B_reg, A_reg)

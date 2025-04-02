@@ -1,4 +1,4 @@
-// jumplit2eq.cpp
+// jumplit2eq.cpp $Id$
 
 #if defined BYTECODE
             case OP_JUMPLIT2EQ:
@@ -8,7 +8,7 @@
                     short_jump(ppc, xppc, codevec);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPLIT2EQ:
                 next = bytes[ppc++];
@@ -17,11 +17,6 @@
                 je(perInstruction[ppc+next]);
                 break;
    
-#elif defined __aarch64__
-
-            case OP_JUMPLIT2EQ:
-                unfinished(__FILE__ " not yet implemented for ARM");
-
 #else
             case OP_JUMPLIT2EQ:
                 unfinished("Unsupported architecture");

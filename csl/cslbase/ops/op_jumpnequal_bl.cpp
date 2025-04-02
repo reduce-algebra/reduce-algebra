@@ -1,4 +1,4 @@
-// jumpnequal_bl.cpp
+// jumpnequal_bl.cpp $Id$
 
 #if defined BYTECODE
             case OP_JUMPNEQUAL_BL:
@@ -9,15 +9,10 @@
                             A_reg, codevec);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPNEQUAL_BL:
                 unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_JUMPNEQUAL_BL:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMPNEQUAL_BL:

@@ -1,4 +1,4 @@
-// bytes_head.cpp
+// bytes_head.cpp $Id$
 
 // bytes2.cpp                              Cright (C) 1991-2025 Codemist
 //
@@ -37,7 +37,7 @@
  *************************************************************************/
 
 
-// $Id: bytes2.cpp 6935 2025-01-17 21:44:27Z arthurcnorman $
+// $Id$
 
 
 #ifdef SIMPLIFIED_MERELY_TO_SERVE_AS_DOCUMENTATION

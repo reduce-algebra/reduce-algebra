@@ -1,4 +1,4 @@
-// jumpnil_l.cpp
+// jumpnil_l.cpp $Id$
 
 #if defined BYTECODE
             case OP_JUMPNIL_L:
@@ -9,7 +9,7 @@
                                                    (reinterpret_cast<unsigned char *>(codevec))[xppc]);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPNIL_L:
                 next = bytes[ppc++];
@@ -17,11 +17,6 @@
                 cmp(A_reg, nilreg);
                 je(perInstruction[ppc+next]);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_JUMPNIL_L:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMPNIL_L:

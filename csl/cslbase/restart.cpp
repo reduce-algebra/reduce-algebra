@@ -1923,6 +1923,7 @@ LispObject set_up_variables(int restart_flag)
     JITlessp2 = Lessp::op;
     JITleq2 = Leq::op;
     JITplus2 = Plus::op;
+    JITdifference2 = Difference::op;
     JITtimes2 = Times::op;
     JITquotient2 = Quotient::op;
     JITremainder = Remainder::op;
@@ -1931,6 +1932,7 @@ LispObject set_up_variables(int restart_flag)
     JITlessp2 = lessp2; 
     JITleq2 = lesseq2;
     JITplus2 = plus2;
+    JITdifference2 = difference2;
     JITtimes2 = times2;
     JITquotient2 = quot2;
     JITremainder = Cremainder;

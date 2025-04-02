@@ -1,4 +1,4 @@
-// protect.cpp
+// protect.cpp $Id$
 
 #if defined BYTECODE
             case OP_PROTECT:

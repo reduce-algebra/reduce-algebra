@@ -1,4 +1,4 @@
-// jumpeq.cpp
+// jumpeq.cpp $Id$
 
 #if defined BYTECODE
             case OP_JUMPEQ:
@@ -7,18 +7,13 @@
                 if (A_reg == B_reg) short_jump(ppc, xppc, codevec);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPEQ:
                 next = bytes[ppc++];
                 cmp(A_reg, B_reg);
                 je(perInstruction[ppc+next]);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_JUMPEQ:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMPEQ:

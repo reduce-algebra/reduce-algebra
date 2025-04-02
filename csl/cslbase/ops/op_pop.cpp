@@ -1,4 +1,4 @@
-// op_pop.cpp
+// op_pop.cpp $Id$
 
 #if defined BYTECODE
             case OP_POP:
@@ -6,18 +6,13 @@
                 A_reg = *stack--;
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_POP:
                 mov(B_reg, A_reg);
                 loadloc(A_reg, 0);
-                add(spreg, -8);
+                sub2(spreg, 8);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_POP:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_POP:

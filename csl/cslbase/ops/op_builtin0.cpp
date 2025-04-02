@@ -1,4 +1,4 @@
-// builtin0.cpp
+// builtin0.cpp $Id$
 
 #if defined BYTECODE
             case OP_BUILTIN0:
@@ -17,15 +17,16 @@
                 errexit();
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_BUILTIN0:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_BUILTIN0:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                next = bytes[ppc++];
+                loadstatic(w, OJITshim0L);
+                mov(w1, no_arg_functions[next]);
+                JITcall(w, A_reg,
+                        w1, nilreg);
+                JITerrorcheck();
+                break;
 
 #else
             case OP_BUILTIN0:

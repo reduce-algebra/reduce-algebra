@@ -1,4 +1,4 @@
-// exit.cpp
+// exit.cpp $Id$
 
 #if defined BYTECODE
             case OP_EXIT:

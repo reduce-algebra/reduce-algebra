@@ -1,4 +1,4 @@
-// jumpne_bl.cpp
+// jumpne_bl.cpp $Id$
 
 #if defined BYTECODE
             case OP_JUMPNE_BL:
@@ -8,7 +8,7 @@
                 if (A_reg != B_reg) long_jump_back(w, ppc, xppc, A_reg, codevec);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPNE_BL:
                 next = bytes[ppc++];
@@ -16,11 +16,6 @@
                 cmp(A_reg, B_reg);
                 jne(perInstruction[ppc-next]);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_JUMPNE_BL:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMPNE_BL:

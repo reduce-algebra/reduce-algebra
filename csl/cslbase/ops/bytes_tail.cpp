@@ -1,9 +1,9 @@
-// bytes_tail.cpp
+// bytes_tail.cpp $Id$
 
         }
 
 //*****************************************************************************
-// End of the main block of odes.
+// End of the main block of bytecodes.
 //*****************************************************************************
     } // end of switch block
     CATCH(LispException)

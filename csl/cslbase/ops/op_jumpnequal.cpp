@@ -1,4 +1,4 @@
-// jumpnequal.cpp
+// jumpnequal.cpp $Id$
 
 #if defined BYTECODE
             case OP_JUMPNEQUAL:
@@ -8,15 +8,10 @@
                 errexit();
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPNEQUAL:
                 unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_JUMPNEQUAL:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMPNEQUAL:

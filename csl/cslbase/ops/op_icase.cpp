@@ -1,4 +1,4 @@
-// icase.cpp
+// icase.cpp $Id$
 
 #if defined BYTECODE
             case OP_ICASE:
