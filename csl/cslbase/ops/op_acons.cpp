@@ -1,8 +1,8 @@
 // acons.cpp $Id$
 
 #if defined BYTECODE
-            case OP_ACONS:                  // A_reg = acons(p), B_reg, A_reg);
-                // = (p) . B) . A
+            case OP_ACONS:                  // A_reg = acons(p, B_reg, A_reg);
+                // = (p . B) . A
                 r1 = *stack--;
                 A_reg = acons(r1, B_reg, A_reg);
                 errexit();
@@ -11,15 +11,16 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_ACONS:
-                loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITtimes2);
+                loadstatic(w, OJITshim3);
+                loadstatic(w1, OJITacons);
+                loadreg_post(w2, spreg, -8);
                 JITcall(w, A_reg,
-                        w1, B_reg, A_reg);
+                        w1, w2, B_reg, A_reg);
                 JITerrorcheck();
                 break;
 
 #else
-            case OP_ACONS:                  // A_reg = acons(p), B_reg, A_reg);
+            case OP_ACONS:                  // A_reg = acons(p, B_reg, A_reg);
                 unfinished("Unsupported architecture");
 
 #endif

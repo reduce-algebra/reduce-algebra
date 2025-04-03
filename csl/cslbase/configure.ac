@@ -855,19 +855,19 @@ if test "$with_ccache" != "no"
 then
   AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
   RAWCC="`which $CC 2> /dev/null`"
-  RAWCXX="`which $XX 2> /dev/null`"
+  RAWCXX="`which $CXX 2> /dev/null`"
   if test "with_ccache" != "no" &&
      test "$CC$CXX" = ""
   then
     RAWCC="`which $CC 2> /dev/null`"
-    RAWCXX="`which $XX 2> /dev/null`"
+    RAWCXX="`which $CXX 2> /dev/null`"
     case "$CC$CXX `ls -l $RAWCC 2>/dev/null` `ls -l $RAWCXX 2>/dev/null`" in
     *ccache*)
       ;;
     *)
       d=`pwd`
-      printf "#! /bin/sh\nccache $CC \"\$@\"\n" > d/cachecc.sh
-      printf "#! /bin/sh\nccache $CXX \"\$@\"\n" > d/cachecxx.sh
+      printf "#! /bin/sh\nLANG=C TERM=dumb ccache $CC \"\$@\"\n" > $d/cachecc.sh
+      printf "#! /bin/sh\nLANG=C TERM=dumb ccache $CXX \"\$@\"\n" > $d/cachecxx.sh
       chmod +x $d/cachecc.sh $d/cachecxx.sh
       CC="$d/cachecc.sh"
       CXX="$d/cachecxx.sh"
@@ -1179,7 +1179,7 @@ fi
 # the log file. Some people may have alternative work flows and so will
 # want to comment out this adjustment.
 OLDCPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS -fno-diagnostics-color"
+CPPFLAGS="$CPPFLAGS -fmessage-length=80 -fdiagnostics-plain-output"
 AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
                                 [[std::printf("\n");]])],
   [],

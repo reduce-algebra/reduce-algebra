@@ -999,7 +999,7 @@ inline LispObject JITshim(func2 FF,
     return r;
 }
 
-inline LispObject JITshim(boolfunc1 FF,
+inline LispObject JITshim(func1b FF,
                           LispObject a1)
 {   bool r;
     TRY
@@ -1016,7 +1016,7 @@ inline LispObject JITshim(boolfunc1 FF,
 }
 
 
-inline LispObject JITshim(boolfunc2 FF,
+inline LispObject JITshim(func2b FF,
                           LispObject a1, LispObject a2)
 {   LispObject r;
     TRY

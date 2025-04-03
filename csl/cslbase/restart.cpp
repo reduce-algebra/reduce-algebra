@@ -1906,42 +1906,6 @@ LispObject set_up_variables(int restart_flag)
     JITstring = "";
     JITarg1 = nil;
     JITarg2 = nil;
-
-    JITthrow = jitthrow;
-    JITshim0 = JITshim;  // These lines disabiguate by types.
-    JITshim1 = JITshim;
-    JITshim2 = JITshim;
-    JITshim3 = JITshim;
-    JITshim4 = JITshim;
-    JITshim5 = JITshim;
-    JITshim1B = JITshim;
-    JITshim2B = JITshim;
-    JITmostNegativeFixnum = MOST_NEGATIVE_FIXNUM;
-    JITmostPositiveFixnum = MOST_POSITIVE_FIXNUM;
-#ifdef ARITHLIB
-    JITsub1op = Sub1::op;
-    JITlessp2 = Lessp::op;
-    JITleq2 = Leq::op;
-    JITplus2 = Plus::op;
-    JITdifference2 = Difference::op;
-    JITtimes2 = Times::op;
-    JITquotient2 = Quotient::op;
-    JITremainder = Remainder::op;
-    JITmake_int_from_ptr = arithlib_implementation::intToBignum;
-#else // ARITHLIB
-    JITlessp2 = lessp2; 
-    JITleq2 = lesseq2;
-    JITplus2 = plus2;
-    JITdifference2 = difference2;
-    JITtimes2 = times2;
-    JITquotient2 = quot2;
-    JITremainder = Cremainder;
-    JITmake_int_from_ptr = make_lisp_integerptr;
-#endif // ARITHLIB
-    JITcar_fails = car_fails;
-    JITcdr_fails = cdr_fails;
-    JITtoofew = toofew;
-    JITtoomany = toomany;
 #endif // ENABLE_JIT
     return nil;
 }

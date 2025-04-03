@@ -55,6 +55,8 @@
 // where there is any proper chance for conflict. Note that I need some
 // header files scanned before the "using" statement.
 
+#include <cstddef>
+#include <cstdlib>
 #include <cstdint>
 #include <cinttypes>
 #include <iostream>

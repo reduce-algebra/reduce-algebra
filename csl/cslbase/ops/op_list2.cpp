@@ -9,8 +9,8 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_LIST2:
-                loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITtimes2);
+                loadstatic(w, OJITshim2);
+                loadstatic(w1, OJITlist2);
                 JITcall(w, A_reg,
                         w1, B_reg, A_reg);
                 JITerrorcheck();

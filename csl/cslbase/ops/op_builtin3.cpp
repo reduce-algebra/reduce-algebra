@@ -17,10 +17,12 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_BUILTIN3:
-                loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITtimes2);
+                next = bytes[ppc++];
+                loadstatic(w, OJITshim3L);
+                mov(w1, three_arg_functions[next]);
+                loadreg_post(w2, spreg, -8);
                 JITcall(w, A_reg,
-                        w1, B_reg, A_reg);
+                        w1, nilreg, w2, B_reg, A_reg);
                 JITerrorcheck();
                 break;
 

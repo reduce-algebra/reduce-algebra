@@ -132,9 +132,9 @@ typedef LispObject (*func2)(LispObject a1, LispObject a2);
 typedef LispObject (*func3)(LispObject a1, LispObject a2, LispObject a3);
 typedef LispObject (*func4)(LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4);
-typedef LispObject (*func5)(LispObject a1, LispObject a2, LispObject a3, 
+typedef LispObject (*func5)(LispObject a1, LispObject a2, LispObject a3,
                             LispObject a4, LispObject a5);
-typedef LispObject (*func6)(LispObject a1, LispObject a2, LispObject a3, 
+typedef LispObject (*func6)(LispObject a1, LispObject a2, LispObject a3,
                             LispObject a4, LispObject a5, LispObject a6);
 typedef LispObject no_args(LispObject env);
 typedef LispObject one_arg(LispObject env,
@@ -146,8 +146,8 @@ typedef LispObject three_args(LispObject env,
 typedef LispObject fourup_args(LispObject env,
                                LispObject a1, LispObject a2,
                                LispObject a3, LispObject a4up);
-typedef bool (*boolfunc1)(LispObject a1);
-typedef bool (*boolfunc2)(LispObject a1, LispObject a2);
+typedef bool (*func1b)(LispObject a1);
+typedef bool (*func2b)(LispObject a1, LispObject a2);
 typedef LispObject (*shim0)(func0);
 typedef LispObject (*shim1)(func1,
                             LispObject a1);
@@ -161,9 +161,9 @@ typedef LispObject (*shim4)(func4,
 typedef LispObject (*shim5)(func5,
                             LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4, LispObject a5);
-typedef LispObject (*boolshim1)(boolfunc1,
+typedef LispObject (*boolshim1)(func1b,
                                 LispObject a1);
-typedef LispObject (*boolshim2)(boolfunc2,
+typedef LispObject (*boolshim2)(func2b,
                                 LispObject a1, LispObject a2);
 typedef LispObject (*errfunc0)(const char*);
 typedef LispObject (*errfunc1)(const char*, LispObject);
@@ -212,153 +212,127 @@ inline const size_t Ofunction2   = offsetof(Symbol_Head, function2);
 inline const size_t Ofunction3   = offsetof(Symbol_Head, function3);
 inline const size_t Ofunction4up = offsetof(Symbol_Head, function4up);
 
-// Perhaps the most important value here is nil! Well I am going to arrange
-// that nil is represented as a block of memory but that a range of
-// other important items are clustered in memory near it. This can have
-// two potential benefits. First keeping important variables close together
-// may help with locality and cache performance. But also this scheme will
-// make it possible to address the other items using instructions that index
-// using nil as a base.
+// The next section (and a few lines at the end of headers.h) have been
+// a bit stressful to set up. So here is an explanation of what is
+// going on. For a JIT I want generated code to be able to access a
+// number of variables and entrypoints easily. The way I do that is to
+// arrange that in generated code there the value of NIL is kept in
+// a register (nilreg). This is a tagged value, so it is not nicely
+// aligned but refers 4 bytes into the Symbol_Head for nil. If I can
+// store key values close to NIL then I can use indexed addressing modes
+// based on nilreg to access them. Eg on ARM that will be code along the
+// lines of "LDR dest, [nilreg,NNN]", and a similar concept applies
+// on x86_64. However because the offset NNN is not a multiple of the
+// word-size on 64-bit systems the ARM64 only supports offsets in the range
+// -256 to 255. Allowing for the tag on the NIL pointer and the size
+// of the Symbol-Head for NIL this means I can have 31 pointer-sized
+// addresses below NIL and 19 after, for a total of 50 favoured locations.
+// To keep values consecutive in memory and allow me to use offsetof to
+// track offsets I put these (up to) 50 values within a struct.
+//
+// For an entrypoint to a function "maud" of type T I will have:
+// (1) Define a structure with a field called Imaud (and also one for NIL).
+//   struct NilBlock
+//   {   ...
+//       T Imaud;
+//       ...
+//       nil_as_data Inil_symbol;
+//       ...
+//   };
+// (2) Set up an enumeration type that records the offset of Imaud
+//     relative to tagged NIL.
+//   enum NilOffset
+//   {
+//      ...
+//       Omaud = static_cast<int>(offsetof(struct NilBlock,Imaud)) -
+//               static_cast<int>(offsetof(struct NilBlock,Inil_symbol) - 4),
+//      ...
+//   };
+// (3) Declare an external name for the item so it can be accessed through
+//     the rest of the code as if it was a simple value.
+//   extern T& maud;
+// (4) Now I can have code that refers to maud and that will define the
+//     maud_entrypoint that it will be set to refer to.
+// (5) Set up an instance of the struct and initialise the field within it.
+//   inline struct NilBlock myNilBlock =
+//   {
+//      ...
+//      maud_entrypoint,
+//      ...
+//   };
+// (6) Fill in the previously established external name for the value
+//     so it is just a reference to the field within the struct.
+//   inline T& maud = myNilBlock.Imaud;
 
-// Here is a union type for things that should all fit into a machine
-// register. Use of this alows me to set up a vector of locations where
-// each can use different data but where their addresses are related.
-// In some sense this a distressingly large number of cases, but when it
-// it comes down to it there are not really very many that are "seriously"
-// distinct:
-//    LispObject = intptr_t,   Header = uintptr_t     Simple data
-//    LispObject*, [const] char*, void*               Simple pointers
-//    func0 .. errfunc2s                              Many sorts of functions
-// So much of the length of this list is because there can be functions
-// with many different signatures and I separate them all out.
 
-union Generic
+// Here is a table of FF(type, name, initial_value). By defining FF
+// as a macro in various ways I can make this generate the various
+// bits of material that I require while keeping all the parallel
+// versions in step with one another.
+
+#define NIL_BLOCK_CONTENTS \
+/* 1*/ FF(LispObject,  lisp_true,        0) \
+/* 2*/ FF(LispObject*, stack,            nullptr) \
+/* 3*/ FF(intptr_t,    JITerrflag,       0) \
+/* 4*/ FF(const char*, JITstring,        "") \
+/* 5*/ FF(LispObject,  JITarg1,          TAG_FIXNUM) \
+/* 6*/ FF(LispObject,  JITarg2,          TAG_FIXNUM) \
+/* 7*/ FF(func0,       JITthrow,         jitthrow) \
+/* 8*/ FF(shim0,       JITshim0,         JITshim) \
+/* 9*/ FF(shim1,       JITshim1,         JITshim) \
+/*10*/ FF(shim2,       JITshim2,         JITshim) \
+/*11*/ FF(shim3,       JITshim3,         JITshim) \
+/*12*/ FF(shim4,       JITshim4,         JITshim) \
+/*13*/ FF(shim5,       JITshim5,         JITshim) \
+/*14*/ FF(boolshim1,   JITshim1B,        JITshim) \
+/*15*/ FF(boolshim2,   JITshim2B,        JITshim) \
+/*16*/ FF(func2b,      JITlessp2,        JITlessp2Val) \
+/*17*/ FF(func2b,      JITleq2,          JITleq2Val) \
+/*18*/ FF(func2,       JITplus2,         JITplus2Val) \
+/*19*/ FF(func2,       JITdifference2,   JITdifference2Val) \
+/*20*/ FF(func2,       JITtimes2,        JITtimes2Val) \
+/*21*/ FF(func2,       JITquotient2,     JITquotient2Val) \
+/*22*/ FF(func2,       JITremainder,     JITremainderVal) \
+/*23*/ FF(func1,       JITint_from_ptr,  JITmake_int_from_ptrVal) \
+/*24*/ FF(func0,       JITcar_fails,     car_fails) \
+/*25*/ FF(func0,       JITcdr_fails,     cdr_fails) \
+/*26*/ FF(func0,       JITtoofew,        toofew) \
+/*27*/ FF(func0,       JITtoomany,       toomany) \
+/*28*/ FF(func1,       JITncons,         ncons) \
+/*29*/ FF(func2,       JITcons,          cons) \
+/*30*/ FF(func2,       JITlist2,         list2) \
+/*31*/ FF(func3,       JITlist2star,     list2star) \
+/* There may be no more then 31 items before nil_symbol */ \
+    FF(Symbol_Head,     nil_symbol,      {0}) \
+/* There may be up to 19 items after nil_symbol */ \
+/* 1*/ FF(func3,       JITlist3,         list3) \
+/* 2*/ FF(func3,       JITacons,         acons) \
+/* 3*/ FF(func3,       JITget,           get) \
+/* 4*/ FF(func4,       JITapply,         apply) \
+/* 5*/ FF(two_args*,   JITLflagp,        Lflagp) \
+/* 6*/ FF(two_args*,   JITLequal,        Lequal) \
+/* 7*/ FF(two_args*,   JITLgetv,         Lgetv) \
+/* 8*/ FF(one_arg*,    JITLlength,       Llength)
+
+
+// First define the layout of the block...
+#define FF(a,b,c) a I##b;
+struct NilBlock
 {
-    LispObject  genericL;
-    LispObject* genericP;
-    Header      genericH;
-    intptr_t    genericI;
-    uintptr_t   genericU;
-    void*       genericV;
-    const char* genericS;
-    func0       genericF0;
-    func1       genericF1;
-    func2       genericF2;
-    func3       genericF3;
-    func4       genericF4;
-    func5       genericF5;
-    func6       genericF6;
-    boolfunc1   genericF1B;
-    boolfunc2   genericF2B;
-    shim0       genericSh0;
-    shim1       genericSh1;
-    shim2       genericSh2;
-    shim3       genericSh3;
-    shim4       genericSh4;
-    shim5       genericSh5;
-    boolshim1   genericSh1B;
-    boolshim2   genericSh2B;
-    errfunc0    genericErr0;
-    errfunc1    genericErr1;
-    errfunc2    genericErr2;
-    errfunc2s   genericErr2s;
-};
-
-// The setup here is based on a really horrid bit of low-level
-// planning! I would like to be able to have nil stored in a register
-// quite a lot of the time and address various other important things
-// using indexed addressing based on that register. The proper pointer
-// to nil is tagged and so is not a multiple of 8. The 64-bit ARM provides
-// an indexed address mode that can use and offset in the range -256 to 255
-// with byte offsets. For offsets beyond that the offset must be positive
-// and is scaled by the size of data being accessed (typically 8 here).
-// So if I has a pointer to the 8-byte aligned Symbol_Head head I could
-// address 32 words before that and 31 after. Since the value of nil is
-// offset (by 4) I can only reach 31 back but I can manage 32 forward.
-// However the nil object uses 13 words so I have 20 left for general use.
-// That gives me 50 privileged locations!
-
-// What is also pretty bad here is that TAG_SYMBOL has the value 4 and so
-// the representation of NIL for Lisp purposes is the address of the
-// symbol head plus 4. I handle that using padder1 to get myself an item
-// that I expect to be 4 bytes down from nil_symbol. Then when I set up
-// the value nil itself it is merely the address of that thing. The reason
-// I do this is so that there is reduced risk of any run-time arithmetic
-// (such as adding TAG_SYMBOL) when nil is reference in the C++ code. 
-
-inline struct NilBlock
-{   union
-    {   Generic misc[64];
-        struct
-        {   Generic padder[31];
-            union
-            {   Symbol_Head nil_symbol;  // 13 8-byte words used here.
-                struct
-                {   int32_t padder1;
-                    int32_t tagged_nil;
-                };
-            };
-            Generic misc2[20];
-        };
-    };
+    NIL_BLOCK_CONTENTS
     LispObject workbaseVec[51];
-} nilBlock;
+};
+#undef FF
 
-inline const LispObject& nilHead =
-    reinterpret_cast<LispObject>(&nilBlock.nil_symbol);
+// Provide names for offsets within it.
 
-inline const LispObject nil =
-    reinterpret_cast<LispObject>(&nilBlock.tagged_nil);
-
-inline Generic* staticdata = reinterpret_cast<Generic*>(nilHead);
-
-inline LispObject* const workbase = &nilBlock.workbaseVec[0]; 
-
-// Now there are a number of variables that I view as especially important
-// and also some that are used by the (experimental) JIT. A number of the
-// JIT ones will need to be initialized properly... but few of them
-// need protection by the Garbage Collector since most are used in
-// really transient ways.
+#define FF(a,b,c) \
+    O##b = static_cast<int>(offsetof(struct NilBlock,I##b)) - \
+           static_cast<int>(offsetof(struct NilBlock,Inil_symbol)) - 4,
 
 enum NilOffset
 {
-// Varius predicates need to return T or NIL and this is T
-    Olisp_true = -31,
-    Ostack,
-    OJITerrflag,
-    OJITthrow,
-    OJITstring,
-    OJITarg1,
-    OJITarg2,
-// Interface code to the C++ world where catch/throw may be used.
-    OJITshim0,
-    OJITshim1,
-    OJITshim2,
-    OJITshim3,
-    OJITshim4,
-    OJITshim5,
-    OJITshim1B,
-    OJITshim2B,
-// For use with Arithlib generic arithmetic code...
-    OJITadd1op,
-    OJITsub1op,
-// For use with either generic arithmetic code...
-    OJITlessp2,
-    OJITleq2,
-    OJITplus2,
-    OJITdifference2,
-    OJITtimes2,
-    OJITquotient2,
-    OJITremainder,
-    OJITmostNegativeFixnum,
-    OJITmostPositiveFixnum,
-    OJITmake_int_from_ptr,
-// Some specific error cases.
-    OJITcar_fails,
-    OJITcdr_fails,
-    OJITtoofew,
-    OJITtoomany,                 // this uses 30 of the 50 so far!
-
+   NIL_BLOCK_CONTENTS
 // These are used for calling Lisp functions that have an extra implicit
 // "env" argument so that they take one more real (C++) argument than
 // perhaps expected.
@@ -366,98 +340,25 @@ enum NilOffset
     OJITshim1L = OJITshim2,
     OJITshim2L = OJITshim3,
     OJITshim3L = OJITshim4,
-    OJITshim4L = OJITshim5
+    OJITshim4L = OJITshim5,
 };
+#undef FF
 
-// The JIT can generate code to access eg stack if it has the value if nil
-// in a register by using an indexed addressing mode [nilReg, N] where
-// N = 8*Ostack - TAG_SYMBOL. The offsets run from -31 to -1 and then
-// 0 to 18 where the positive ones need to be adjusted to allow space for
-// the symbol object that is nil.
+#define FF(a,b,c) cout << "I" << #b << " at offset " << O##b << "\n";
+inline int print_during_static_init = ([]{
+    NIL_BLOCK_CONTENTS
+    return 0;})();
+#undef FF
 
-// This allows for indexes (o) to run from -31 upwards but mapping
-// onto a sequence that avoids 0-12 which are the cells used for the
-// symbol-head of NIL.
-inline constexpr int JITgap(int o)
-{    return o<0 ? o : o+13;
-}
+// Leter on I will introduce top-level variables with all those names,
+// so set of for forward references.
 
-// Now the (byte) offset from the value that will live in a register that
-// points at the Lisp symbol NIL.
-inline constexpr int JIToffset(int o)
-{   return 8*JITgap(o) - TAG_SYMBOL;
-}
+#define FF(a,b,c) extern a& b;
+NIL_BLOCK_CONTENTS
+#undef FF
 
-// The symbol "T". This is used throughout the system and is a list-base
-inline LispObject& lisp_true = staticdata[JITgap(Olisp_true)].genericL;
-
-// The "lisp stack" pointer.
-inline LispObject*& stack = staticdata[JITgap(Ostack)].genericP;
-
-// The exception handling scheme for the JIT arranges that this flag is
-// set non-zero it a call wished to report an exception.
-inline intptr_t& JITerrflag = staticdata[JITgap(OJITerrflag)].genericI;
-
-// The next 3 are used when JIT code wants to report an error by doing
-// a tail-call that ends in car_fails or aerror or suchlike. It can not
-// pass arguments "naturally" so it deposits them in these static
-// locations.
-inline const char*& JITstring = staticdata[JITgap(OJITstring)].genericS;
-inline LispObject& JITarg1 = staticdata[JITgap(OJITarg1)].genericL;
-inline LispObject& JITarg2 = staticdata[JITgap(OJITarg2)].genericL;
-
-// If a JITted function needs to report failure it chains to JITthrow
-// which can throw a C++ exception for it
-inline func0& JITthrow = staticdata[JITgap(OJITthrow)].genericF0;
-
-// To be able to handle errors raised by called functions all calls
-// out from JIT code go via a "shim". There are versions for normal
-// Lisp functions and a couple for predicates that just return a boolen
-// value.
-inline shim0& JITshim0 = staticdata[JITgap(OJITshim0)].genericSh0;
-inline shim1& JITshim1 = staticdata[JITgap(OJITshim1)].genericSh1;
-inline shim2& JITshim2 = staticdata[JITgap(OJITshim2)].genericSh2;
-inline shim3& JITshim3 = staticdata[JITgap(OJITshim3)].genericSh3;
-inline shim4& JITshim4 = staticdata[JITgap(OJITshim4)].genericSh4;
-inline shim5& JITshim5 = staticdata[JITgap(OJITshim5)].genericSh5;
-// Now alternate names for the same shim functions that allow for the
-// additional implicit first argument.
-inline shim1& JITshim0L = staticdata[JITgap(OJITshim0L)].genericSh1;
-inline shim2& JITshim1L = staticdata[JITgap(OJITshim1L)].genericSh2;
-inline shim3& JITshim2L = staticdata[JITgap(OJITshim2L)].genericSh3;
-inline shim4& JITshim3L = staticdata[JITgap(OJITshim3L)].genericSh4;
-inline shim5& JITshim4L = staticdata[JITgap(OJITshim4L)].genericSh5;
-inline boolshim1& JITshim1B = staticdata[JITgap(OJITshim1B)].genericSh1B;
-inline boolshim2& JITshim2B = staticdata[JITgap(OJITshim2B)].genericSh2B;
-
-// A number of functions that perform arithmetic have to be callable, and
-// there will be different versions depending on whether CSL has been built
-// with the forthcoming "arithlib" or its older version of the code. Most of
-// that discrepancy is handled in restart.cpp where the entrypoints are set
-// to refer to the version of the arithmetic code that is in use.
-#ifdef ARITHLIB
-inline func1& JITsub1op     = staticdata[JITgap(OJITsub1op)].genericF1;
-inline func1& JITadd1op     = staticdata[JITgap(OJITsub1op)].genericF1;
-#endif // ARITHLIB
-inline boolfunc2& JITlessp2 = staticdata[JITgap(OJITlessp2)].genericF2B;
-inline boolfunc2& JITleq2   = staticdata[JITgap(OJITleq2)].genericF2B;
-inline func2& JITplus2      = staticdata[JITgap(OJITplus2)].genericF2;
-inline func2& JITdifference2= staticdata[JITgap(OJITdifference2)].genericF2;
-inline func2& JITtimes2     = staticdata[JITgap(OJITtimes2)].genericF2;
-inline func2& JITquotient2  = staticdata[JITgap(OJITquotient2)].genericF2;
-inline func2& JITremainder  = staticdata[JITgap(OJITremainder)].genericF2;
-inline LispObject JITmostNegativeFixnum =
-                        staticdata[JITgap(OJITmostNegativeFixnum)].genericL;
-inline LispObject JITmostPositiveFixnum =
-                        staticdata[JITgap(OJITmostPositiveFixnum)].genericL;
-inline func1& JITmake_int_from_ptr =
-                              staticdata[JITgap(OJITmake_int_from_ptr)].genericF1;
-
-// The JIT needs some error exits for problems it detects in-line.
-inline func0& JITcar_fails   = staticdata[JITgap(OJITcar_fails)].genericF0;
-inline func0& JITcdr_fails   = staticdata[JITgap(OJITcdr_fails)].genericF0;
-inline func0& JITtoofew     = staticdata[JITgap(OJITtoofew)].genericF0;
-inline func0& JITtoomany    = staticdata[JITgap(OJITtoomany)].genericF0;
+extern const LispObject nil;
+extern LispObject* workbase;
 
 // In earlier days I could not readily test whether I was on a 32 or 64-bit
 // system at preprocessor time, and so "#ifdef SIXTY_FOUR_BIT" was not
@@ -776,10 +677,10 @@ typedef LispObject Special_Form(LispObject, LispObject);
 // A newer scheme will have entries for 0, 1, 2, 3 and more than that. For
 // 4 or more arguments a count is passed. For exactly four arguments the
 // final argument is passed directly.
-//   (F 4 a1 a2 a3 a4)
+//   (FF 4 a1 a2 a3 a4)
 // For the 5 up case arguments 4, 5, ...
 // are passed as a list much as if the call had been
-//   (F n a1 a2 a3 (list a4 a5 a6 ... an))
+//   (FF n a1 a2 a3 (list a4 a5 a6 ... an))
 
 // Objects will have a header word with the following format:
 //   xxxx:xxxx:xxxx:xxxx:xxxx:xx  yy:yyy z:z 010
@@ -1427,7 +1328,7 @@ inline LispObject& basic_elt(LispObject v, size_t n)
     limit = (limit - sizeof(LispObject))/sizeof(LispObject);
 // on 32-bit platforms I have to pad the array of digits so I end up with
 // and even number of words in all, and that is an odd number of digits
-// because of the header word. 
+// because of the header word.
     if (!SIXTY_FOUR_BIT) limit |= 1;
     my_assert(n < limit, "basic_elt index out of range");
 #endif // DEBUG
@@ -1887,7 +1788,7 @@ inline double& basic_delt(LispObject v, size_t n)
 // system means that a normal Lisp vector can only have up to around half
 // a million elements. Using a two-level structure with TYPE_INDEXVEC for
 // the upper one allows vectors to get MUCH MUCH bigger. This scheme
-// builds vectors out of 
+// builds vectors out of
 
 INLINE_VAR constexpr size_t LOG2_VECTOR_CHUNK_BYTES = PAGE_BITS-2;
 INLINE_VAR constexpr size_t VECTOR_CHUNK_BYTES =
@@ -2459,7 +2360,7 @@ inline uint32_t& bignum_digit(LispObject b, size_t n)
     limit = (limit - sizeof(LispObject))/sizeof(uint32_t);
 // on 32-bit platforms I have to pad the array of digits so I end up with
 // and even number of words in all, and that is an odd number of digits
-// because of the header word. 
+// because of the header word.
     if (!SIXTY_FOUR_BIT) limit |= 1;
     my_assert(n < limit, "bignum_digit out of range");
 #endif // DEBUG
@@ -2479,7 +2380,7 @@ inline int32_t signed_bignum_digit(LispObject b, size_t n)
     limit = (limit - sizeof(LispObject))/sizeof(uint32_t);
 // on 32-bit platforms I have to pad the array of digits so I end up with
 // and even number of words in all, and that is an odd number of digits
-// because of the header word. 
+// because of the header word.
     if (!SIXTY_FOUR_BIT) limit |= 1;
     my_assert(n < limit, "bignum_digit out of range");
 #endif // DEBUG
@@ -2593,7 +2494,7 @@ inline int32_t& intfloat32_t_val(LispObject v)
 //  typedef struct Double_Float_
 //  {
 //      Header header;
-//  // I want the data to 
+//  // I want the data to
 //      alignas (8) union double_or_ints {
 //          double f;
 //          float64_t f64;

@@ -9,10 +9,10 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_GETV:
-                loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITtimes2);
+                loadstatic(w, OJITshim2L);
+                loadstatic(w1, OJITLgetv);
                 JITcall(w, A_reg,
-                        w1, B_reg, A_reg);
+                        w1, nilreg, B_reg, A_reg);
                 JITerrorcheck();
                 break;
 

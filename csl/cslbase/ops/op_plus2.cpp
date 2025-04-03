@@ -37,7 +37,7 @@
 // handles all that mess. In easy cases it will just shift left by 4 bits
 // and add TAG_FIXNUM. In hard cases it needs to create a bignum.
                     loadstatic(w, OJITshim1);
-                    loadstatic(w1, OJITmake_int_from_ptr);
+                    loadstatic(w1, OJITint_from_ptr);
                     JITcall(w, A_reg,
                             w1, A_reg);
 // Remember to check for failure!

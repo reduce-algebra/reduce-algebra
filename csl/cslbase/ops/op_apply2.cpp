@@ -24,10 +24,17 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_APPLY2:
-                loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITtimes2);
+                loadstatic(w, OJITshim2);
+                loadstatic(w1, OJITlist2);
                 JITcall(w, A_reg,
                         w1, B_reg, A_reg);
+                JITerrorcheck();
+                loadstatic(w, OJITshim4);
+                loadstatic(w1, OJITapply);
+                loadlit(w2, 0);
+                loadreg_post(w3, spreg, -8);
+                JITcall(w, A_reg,
+                        w1, w3, A_reg, nilreg, w2);
                 JITerrorcheck();
                 break;
 

@@ -1,7 +1,7 @@
 // ncons.cpp $Id$
 
 #if defined BYTECODE
-            case OP_NCONS:                          // A_reg = cons(A_reg, nil);
+            case OP_NCONS:                   // A_reg = cons(A_reg, nil);
                 {   A_reg = ncons(A_reg);
                     errexit();
                 }
@@ -11,14 +11,14 @@
 
             case OP_NCONS:
                 loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITtimes2);
+                loadstatic(w1, OJITncons);
                 JITcall(w, A_reg,
-                        w1, B_reg, A_reg);
+                        w1, A_reg);
                 JITerrorcheck();
                 break;
 
 #else
-            case OP_NCONS:                          // A_reg = cons(A_reg, nil);
+            case OP_NCONS:                   // A_reg = cons(A_reg, nil);
                 unfinished("Unsupported architecture");
 
 #endif

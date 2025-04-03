@@ -22,7 +22,7 @@
                     and3(w, A_reg, XTAG_BITS);
                     cmp(w, TAG_FIXNUM);
                     jne(notFixnum);
-                    loadstatic(w, OJITmostNegativeFixnum);
+                    mov(w, MOST_NEGATIVE_FIXNUM);
                     cmp(A_reg, w);
                     je(notFixnum);
                     sub2(A_reg, 0x10);
