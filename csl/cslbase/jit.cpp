@@ -974,9 +974,14 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // fully in C++ exception handling. After any call from the JIT code into
 // a function via a "shim" an error flag is checked and if it is set the
 // code end up here where it chains to JITthrow which reinstates a C++
-// style unwind state.
+// style unwind state. Well when I enter JITthrow I will have the C++
+// variable stack set to the stack where the issue arose and JITarg1 to
+// where it must end up at. In simple cases the code could merely copy
+// from one to the other. However by scanning the stack locations involved
+// it will be possible to unwind and fluid bindings that need to be sorted
+// out.
     bind(callFailed);
-        storestatic(spentry, Ostack);
+        storestatic(spentry, OJITarg1);
         loadstatic(A_reg, OJITthrow);
         chain(A_reg);
 // Error exits from some basic low level operations.

@@ -255,6 +255,25 @@ inline func2 JITremainderVal = Cremainder;
 inline func1 JITmake_int_from_ptrVal = make_lisp_integerptr;
 #endif // ARITHLIB
 
+inline LispObject do_tailcall()
+{   int nargs = JITerrflag;
+    JITerrflag = 0;
+    LispObject tocall = JITarg0;
+    switch (nargs)
+    {
+    case 0:
+        return qfn0(tocall)(qenv(tocall));
+    case 1:
+        return qfn1(tocall)(qenv(tocall), JITarg1);
+    case 2:
+        return qfn2(tocall)(qenv(tocall), JITarg1,JITarg2);
+    case 3:
+        return qfn3(tocall)(qenv(tocall), JITarg1,JITarg2,JITarg3);
+    default:
+        return qfn4up(tocall)(qenv(tocall), JITarg1,JITarg2,JITarg3,JITarg4);
+    }
+}
+
 // Now that I have all functions declared I can set up an instance of
 // the NilBlock and initialize all elements.
 

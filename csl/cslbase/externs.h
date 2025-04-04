@@ -747,6 +747,7 @@ extern const volatile char* errorset_msg;
 extern int errorset_code;
 extern LispObject do_freebind(LispObject);
 extern LispObject do_freerstr();
+extern LispObject do_tailcall(void);
 extern void unwind_stack(LispObject* , bool findcatch);
 extern bool segvtrap;
 extern bool batch_flag;
