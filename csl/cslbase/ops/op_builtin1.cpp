@@ -18,10 +18,11 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_BUILTIN1:
-                loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITtimes2);
+                next = bytes[ppc++];
+                loadstatic(w, OJITshim1L);
+                mov(w1, one_arg_functions[next]);
                 JITcall(w, A_reg,
-                        w1, B_reg, A_reg);
+                        w1, nilreg, A_reg);
                 JITerrorcheck();
                 break;
 

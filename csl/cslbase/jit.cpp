@@ -193,6 +193,26 @@ Error storereg(Register& r, Register& base, intptr_t offset)
 {   return mov(ptr(base, offset), r);
 }
 
+Error loadreg_pre(Register& r, Register& base, intptr_t offset)
+{   ASMJIT_PROPAGATE(add(base, offset));
+    return mov(r, ptr(base));
+}
+
+Error storereg_pre(Register& r, Register& base, intptr_t offset)
+{   ASMJIT_PROPAGATE(add(base, offset));
+    return mov(ptr(base), r);
+}
+
+Error loadreg_post(Register& r, Register& base, intptr_t offset)
+{   ASMJIT_PROPAGATE(mov(r, ptr(base)));
+    return add(base, offset);
+}
+
+Error storereg_post(Register& r, Register& base, intptr_t offset)
+{   ASMJIT_PROPAGATE(mov(ptr(base), r));
+    return add(base, offset);
+}
+
 #elif defined __aarch64__
 
 Error loadreg(Register& r, Register& base, intptr_t offset)
@@ -201,6 +221,22 @@ Error loadreg(Register& r, Register& base, intptr_t offset)
 
 Error storereg(Register& r, Register& base, intptr_t offset)
 {   return str(r, ptr(base, offset));
+}
+
+Error loadreg_pre(Register& r, Register& base, intptr_t offset)
+{   return ldr(r, ptr_pre(base, offset));
+}
+
+Error storereg_pre(Register& r, Register& base, intptr_t offset)
+{   return str(r, ptr_pre(base, offset));
+}
+
+Error loadreg_post(Register& r, Register& base, intptr_t offset)
+{   return ldr(r, ptr_post(base, offset));
+}
+
+Error storereg_post(Register& r, Register& base, intptr_t offset)
+{   return str(r, ptr_post(base, offset));
 }
 
 #else
@@ -214,11 +250,11 @@ Error storereg(Register& r, Register& base, intptr_t offset)
 // nalue of nil.
 
 Error loadstatic(Register& r, NilOffset n)
-{   return loadreg(r, nilreg, JIToffset(n));
+{   return loadreg(r, nilreg, n);
 }
 
 Error storestatic(Register& r, NilOffset n)
-{   return storereg(r, nilreg, JIToffset(n));
+{   return storereg(r, nilreg, n);
 }
 
 // litvec holds a (tagged) pointer to a vector of the literals that the
@@ -374,131 +410,134 @@ Error JITcall(Register& target, Register& result,
 // generate the equivalent aarch64 variant of branch. Then I can use
 // just one name for a jump whichever architecture is involved.
 
-Error ja(Label& lab)
+Error ja(Label& lab)          // above            >U
 {   return b_hi(lab);
 }
 
-Error jae(Label& lab)
+Error jae(Label& lab)         // above or equal   >=U
 {   return b_hs(lab);
 }
 
-Error jb(Label& lab)
+Error jb(Label& lab)          // below            <U
 {   return b_lo(lab);
 }
 
-Error jbe(Label& lab)
+Error jbe(Label& lab)         // below or equal   <=U
 {   return b_ls(lab);
 }
 
-Error jc(Label& lab)
+Error jc(Label& lab)          // (unsigned) carry
 {   return b_lo(lab);
 }
 
-Error je(Label& lab)
+Error je(Label& lab)          // equal            ==
 {   return b_eq(lab);
 }
 
-//Error jecxz(Label& lab)
+//Error jecxz(Label& lab)     // 64-bit register ecx==0
 //{   return b(lab);
 //}
 
-Error jg(Label& lab)
+Error jg(Label& lab)          // greater           >
 {   return b_gt(lab);
 }
 
-Error jge(Label& lab)
+Error jge(Label& lab)         // greater or equal  >=
 {   return b_ge(lab);
 }
 
-Error jl(Label& lab)
+Error jl(Label& lab)          // less              <
 {   return b_lt(lab);
 }
 
-Error jle(Label& lab)
+Error jle(Label& lab)         // less or equal     <=
 {   return b_le(lab);
 }
 
-Error jmp(Label& lab)
+Error jmp(Label& lab)         // unconditional
 {   return b(lab);
 }
 
-Error jna(Label& lab)
+Error jna(Label& lab)         // not above         <=U
 {   return b_ls(lab);
 }
 
-Error jnae(Label& lab)
+Error jnae(Label& lab)        // not above or equal <U
 {   return b_lo(lab);
 }
 
-Error jnb(Label& lab)
+Error jnb(Label& lab)         // not below          >=U
 {   return b_hs(lab);
 }
 
-Error jnbe(Label& lab)
+Error jnbe(Label& lab)        // not below or equal >U
 {   return b_hi(lab);
 }
 
-Error jnc(Label& lab)
+Error jnc(Label& lab)         // (unsigned) carry clear
 {   return b_hs(lab);
 }
 
-Error jne(Label& lab)
+Error jne(Label& lab)         // not equal           !=
 {   return b_ne(lab);
 }
 
-Error jng(Label& lab)
+Error jng(Label& lab)         // not greater         <=
 {   return b_le(lab);
 }
 
-Error jnge(Label& lab)
+Error jnge(Label& lab)        // not greater or equal <
+{   return b_lt(lab);
+}
+
+Error jnl(Label& lab)         // not less             >=
 {   return b_ge(lab);
 }
 
-Error jnl(Label& lab)
-{   return b_ge(lab);
-}
-
-Error jnle(Label& lab)
+Error jnle(Label& lab)        // not less or equal    >
 {   return b_gt(lab);
 }
 
-//Error jno(Label& lab)
-//{   return b(lab);
-//}
+Error jno(Label& lab)         // no overflow
+{   return bvc(lab);
+}
 
-Error jnp(Label& lab)
+Error jnp(Label& lab)         // not positive         <0
 {   return b_mi(lab);
 }
 
-Error jns(Label& lab)
+Error jns(Label& lab)         // not same             !=
 {   return b_ne(lab);
 }
 
-Error jnz(Label& lab)
+Error jnz(Label& lab)         // not zero             !=0
 {   return b_ne(lab);
 }
 
-//Error jo(Label& lab)
-//{   return b(lab);
-//}
+Error jo(Label& lab)          // (signed) overflow
+{   return bvs(lab);
+}
 
-Error jp(Label& lab)
+Error jp(Label& lab)          // positive             >0
 {   return b_pl(lab);
 }
 
-Error jpe(Label& lab)
-{   return b_pl(lab);
-}
+// Note that aarch64 provides a "cnt" instruction that counts the 1-bits
+// in a register and that makes finding parity easy.
 
-//Error jpo(Label& lab)
-//{   return b(lab);
+//Error jpe(Label& lab)       // parity even
+//{   return b_pl(lab);          not available on ARM
 //}
 
-Error js(Label& lab)
+//Error jpo(Label& lab)       // parity odd
+//{   return b(lab);             not available on ARM
+//}
+
+Error js(Label& lab)          // sign bit set         <0
 {   return b_mi(lab);
 }
 
-Error jz(Label& lab)
+Error jz(Label& lab)          // zero                 =0
 {   return b_eq(lab);
 }
 
@@ -513,7 +552,8 @@ Error sar(Register& r, Imm n)
 }
 
 Error add2(Register& r1, Imm n)
-{   return add(r1, r1, n);
+{   if (n < 0) return sub(r1, r1, -n);
+    return add(r1, r1, n);
 }
 
 Error add2(Register& r1, Register& r2)
@@ -521,7 +561,8 @@ Error add2(Register& r1, Register& r2)
 }
 
 Error sub2(Register& r1, Imm n)
-{   return sub(r1, r1, n);
+{   if (n < 0) return add(r1, r1, -n);
+    return sub(r1, r1, n);
 }
 
 Error sub2(Register& r1, Register& r2)
@@ -628,9 +669,9 @@ Error JITerrorcheck()
 {
 // This checks if the bottom byte of JITerrflag is zero.
 #if defined __x86_64__
-    ASMJIT_PROPAGATE(cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0));
+    ASMJIT_PROPAGATE(cmp(ptr(nilreg, OJITerrflag, 1), 0));
 #elif defined __aarch64__
-    ASMJIT_PROPAGATE(ldursb(w, ptr(nilreg, JIToffset(OJITerrflag))));
+    ASMJIT_PROPAGATE(ldursb(w, ptr(nilreg, OJITerrflag)));
     ASMJIT_PROPAGATE(cmp(w, 0));
 #endif
     return jne(callFailed);
@@ -832,9 +873,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // If I do change the C++ version I will need to restore it from spentry
 // before I exit.
     for (int i=1; i<=nargs&&i<4; i++)
-    {   add2(spreg, 8);
-        storeloc(argregs[i], 0);
-    }
+        storereg_pre(argregs[i], spreg, 0);
     if (nargs>=4)
     {   mov(w1, w);
         for (int i=4; i<=nargs; i++)
@@ -849,8 +888,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
             JITatomic(w1, tooFewArgs);
             loadreg(argregs[i], w1, 0);
             loadreg(w1, w1, 8);
-            add2(spreg, 8);
-            storeloc(argregs[i], 0);
+            storereg_pre(argregs[i], spreg, 8);
         }
         cmp(w1, nilreg);
         jne(tooManyArgs);
@@ -864,7 +902,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // base register that is used and then updates the register. So I do not
 // need the "add" that you saw in the x86_64 version.
     for (int i=1; i<=nargs&&i<4; i++)
-    {   str(argregs[i], ptr_pre(spreg, 8));
+    {   storereg_pre(argregs[i], spreg, 8);
         stdout_printf("Just moved arg %d to stack\n", i);
     }
     if (nargs>=4)
@@ -873,7 +911,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         {   JITatomic(w1, tooFewArgs);
             ldr(argregs[i], ptr(w1));
             ldr(w1, ptr(w1, 8));
-            str(argregs[i], ptr_pre(spreg));
+            storereg_pre(argregs[i], spreg, 8);
         }
         cmp(w1, nilreg);
         jne(tooManyArgs);
@@ -900,7 +938,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // be some of the labels that are neither defined nor used.
             bind(perInstruction[ppc]);
             stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
-            cmp(nilreg, ppc);   // Marks start of instrn at ppc!
+            cmp(nilreg, 1000+ppc);   // Marks start of instrn at ppc!
             switch (bytes[ppc++])
             {
 #include "ops/bytes_include.cpp"

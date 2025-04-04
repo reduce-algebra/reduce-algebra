@@ -2,7 +2,7 @@
 
 #if defined BYTECODE
             case OP_APPLY1:
-                if (is_symbol(B_reg))   // can imise this case, I guess
+                if (is_symbol(B_reg))   // can optimise this case, I guess
                 {   f1 = qfn1(B_reg);
                     RECORD_CALL(list2(B_reg, A_reg));
                     *++stack = B_reg;
@@ -23,9 +23,15 @@
 
             case OP_APPLY1:
                 loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITtimes2);
+                loadstatic(w1, OJITncons);
                 JITcall(w, A_reg,
-                        w1, B_reg, A_reg);
+                        w1, A_reg);
+                JITerrorcheck();
+                loadstatic(w, OJITshim4);
+                loadstatic(w1, OJITapply);
+                loadlit(w2, 0);
+                JITcall(w, A_reg,
+                        w1, B_reg, A_reg, nilreg, w2);
                 JITerrorcheck();
                 break;
 
