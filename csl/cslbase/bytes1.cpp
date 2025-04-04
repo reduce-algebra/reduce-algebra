@@ -859,7 +859,22 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
     return nil;
 }
 
-inline void do_freebind(LispObject bvec)
+// Binding a fluid variable is done here - well potentially several
+// at once. Suppose for tis exposition that we are binding x, y and z.
+// First the existing values of x, y and z ars pushed on the (Lisp) stack.
+// Then the vector [x,y,z] giving their names is pushed.
+// finally a value SPID_FBIND is pushed. Life is easy if the execution
+// continues smoothly and a freerstr is found. The fun will be if
+// a throw or and error needs to unwind. For that case the (Lisp) stack will
+// be popped one element at time until the lebel associated with entry to
+// the current function (or a CATCH or UNWIND_PROTECT) is seen. If a value
+// SPID_FBIND is spotted some fluids get restored. But a major point to
+// note here is that in the absence of error or throw unwinding everything
+// is actually rather simple!
+// This does not have a useful result to hand back, but for the convenience
+// of the JIT I make its signature show it as returning a LispObject.
+
+inline LispObject do_freebind(LispObject bvec)
 {   int32_t n, k;
     n = length_of_header(vechdr(bvec));
     for (k=CELL; k<n; k+=CELL)
@@ -872,9 +887,12 @@ inline void do_freebind(LispObject bvec)
 // and so it unambiguously marks a block of fluid bindings on that stack.
     *++stack = bvec;
     *++stack = static_cast<LispObject>(SPID_FBIND);
+    return nil;
 }
 
-inline void do_freerstr()
+// This can just undo the work of freebind.
+
+inline LispObject do_freerstr()
 {   LispObject bv;
     size_t n;
 #ifdef DEBUG
@@ -890,6 +908,7 @@ inline void do_freerstr()
         LispObject v1 = *stack--;;
         qvalue(v) = v1;
     }
+    return nil;
 }
 
 inline int countdown = 100000;
@@ -903,6 +922,15 @@ ALWAYSINLINE inline void poll_jump_back(LispObject& A_reg)
                 resource_exceeded();
     }
 }
+
+// "pvbind" is basically a Common Lisp Abomination used to support
+// (PROGV '(v1 v2 ...) '(VAL1 VAL2 ...) body) that takes a dynamic
+// list of names that are to be bound. This is supported by stacking
+// an association-list style record of the original values of all
+// the names followed by the value SPID_PVBIND. A simple "pvrestore"
+// pops this information and can restore values easily, so as with
+// "freebind" the entertainment is that in error/throw processing
+// the SPID_PVBIND must be spotted and handled nicely.
 
 static inline LispObject do_pvbind(LispObject vals, LispObject vars)
 {   RealSave save(nil,// This will be a list ((var . old-value) ...)

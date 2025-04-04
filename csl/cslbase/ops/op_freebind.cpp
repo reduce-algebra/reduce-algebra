@@ -5,15 +5,18 @@
                 do_freebind(basic_elt(litvec, next_byte));
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_FREEBIND:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_FREEBIND:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                next = bytes[ppc++];
+                loadstatic(w, OJITfreebind);
+                loadlit(w1, next);
+                JITcall(w, w,
+                        w1);
+// freebind() can not generate an exception so I do not need to check for
+// one here, but it does alter the stack, so I need to update spreg.
+                loadstatic(spreg, Ostack);
+                break;
 
 #else
             case OP_FREEBIND:

@@ -12,7 +12,7 @@
                 // contains a few bits selecting which ration is to be
                 // performed, plus an extension to the address byte that follows.
                 //
-                w = next_byte;             // contains sub-ode
+                w = next_byte;             // contains sub-opcode
                 switch (w & 0xc0)
                 {   case 0x00:                  // LOADLOC extended
                         B_reg = A_reg;

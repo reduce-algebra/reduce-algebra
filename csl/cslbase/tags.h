@@ -312,8 +312,9 @@ inline const size_t Ofunction4up = offsetof(Symbol_Head, function4up);
 /* 5*/ FF(two_args*,   JITLflagp,        Lflagp) \
 /* 6*/ FF(two_args*,   JITLequal,        Lequal) \
 /* 7*/ FF(two_args*,   JITLgetv,         Lgetv) \
-/* 8*/ FF(one_arg*,    JITLlength,       Llength)
-
+/* 8*/ FF(one_arg*,    JITLlength,       Llength) \
+/* 9*/ FF(func1,       JITfreebind,      do_freebind) \
+/*10*/ FF(func0,       JITfreerstr,      do_freerstr)
 
 // First define the layout of the block...
 #define FF(a,b,c) a I##b;
@@ -328,7 +329,8 @@ struct NilBlock
 
 #define FF(a,b,c) \
     O##b = static_cast<int>(offsetof(struct NilBlock,I##b)) - \
-           static_cast<int>(offsetof(struct NilBlock,Inil_symbol)) - 4,
+           static_cast<int>(offsetof(struct NilBlock,Inil_symbol)) - \
+           TAG_SYMBOL,
 
 enum NilOffset
 {
@@ -344,11 +346,14 @@ enum NilOffset
 };
 #undef FF
 
-#define FF(a,b,c) cout << "I" << #b << " at offset " << O##b << "\n";
-inline int print_during_static_init = ([]{
-    NIL_BLOCK_CONTENTS
-    return 0;})();
-#undef FF
+// The next few lines show how to use static initialization to display
+// all the offsets. This lets me confirm how much slack I have
+// in hand. At the time I put this comment in I have 11 spare slots...
+// #define FF(a,b,c) cout << "I" << #b << " at offset " << O##b << "\n";
+// inline int print_during_static_init = ([]{
+//     NIL_BLOCK_CONTENTS
+//     return 0;})();
+// #undef FF
 
 // Leter on I will introduce top-level variables with all those names,
 // so set of for forward references.
@@ -365,8 +370,6 @@ extern LispObject* workbase;
 // supportable. But now I am relying in SIZE_MAX as a predefined macro
 // and the fact that I can compare its value against 2^32, and that should
 // do the trick.
-//INLINE_VAR constexpr bool SIXTY_FOUR_BIT = sizeof(intptr_t) == 8;
-// I keep this as a "#define" because I will still use if with "#if"
 
 #define SIXTY_FOUR_BIT (SIZE_MAX >= 4294967296ULL)
 

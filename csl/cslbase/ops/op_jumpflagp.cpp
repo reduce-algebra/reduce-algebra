@@ -24,7 +24,17 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPFLAGP:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                loadstatic(w, OJITshim2L);
+                loadstatic(w1, OJITLflagp);
+                loadlit(w2, next);
+                JITcall(w, w,
+                        w1, nilreg, A_reg, w2);
+                JITerrorcheck();
+                cmp(w, nilreg);
+                next = bytes[ppc++];
+                jne(perInstruction[ppc+next]);
+                break;
 
 #else
             case OP_JUMPFLAGP:
