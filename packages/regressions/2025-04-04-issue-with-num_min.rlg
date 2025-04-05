@@ -1,0 +1,30 @@
+
+COMMENT Problem with num_min reported by ACN:
+        An invalid accuracy parameter (i.e. not a positivie integer)
+        triggered an internal lisp error. Now it is detected and reported correctly;
+
+
+on backtrace;
+
+
+
+num_min(cos x^2 + cos y^2, {x=1, y=2}, accuracy=1.0e-36, iterations=100);
+
+
+***** 1.0e-36 invalid as accuracy
+
+
+num_min(cos x^2 + cos y^2, {x=1, y=2}, accuracy=36, iterations=100);
+
+
+*** precision increased to 18 
+
+*** precision increased to 19 
+
+*** precision increased to 20 
+
+{0.0,{x=1.57079632679,y=1.57079632679}}
+
+
+end;
+

@@ -282,8 +282,8 @@ symbolic procedure typerr(u,v);
    <<if not !*protfg
       then  <<terpri!* t;
               prin2!* "***** ";
-              if not atom u and atom car u and cdr u and atom cadr u
-                 and null cddr u
+              if not atom u and atom car u and cdr u and not atom cdr u
+                 and atom cadr u and null cddr u
                 then <<prin2!* car u; prin2!* " "; prin2!* cadr u>>
                else if null u then prin2!* u
                else maprin u;
