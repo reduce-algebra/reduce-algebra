@@ -1100,6 +1100,12 @@ const unsigned char* raw_bytecodes(LispObject v)
 {   return reinterpret_cast<const unsigned char*>(v+CELL-TAG_VECTOR);
 }
 
+// This function does nothing - but exists so that it is possible
+// to set a breakpoint on it.
+
+static void breakable()
+{}
+
 LispObject jitcoded_0(LispObject def)
 {   STACK_SANITY;
     LispObject d = qenv(def);
@@ -1117,6 +1123,7 @@ LispObject jitcoded_0(LispObject def)
 // When it is in native code only the latter is needed.
     d = cdr(d);
     qenv(def) = d;
+    breakable();
     return reinterpret_cast<no_args*>(code)(def);
 }
 
@@ -1134,6 +1141,7 @@ LispObject jitcoded_1(LispObject def, LispObject a)
     qfn1(def) = reinterpret_cast<one_arg*>(code);
     d = cdr(d);
     qenv(def) = d;
+    breakable();
     return reinterpret_cast<one_arg*>(code)(def, a);
 }
 
@@ -1151,6 +1159,7 @@ LispObject jitcoded_2(LispObject def, LispObject a, LispObject b)
     qfn2(def) = reinterpret_cast<two_args*>(code);
     d = cdr(d);
     qenv(def) = d;
+    breakable();
     return reinterpret_cast<two_args*>(code)(def, a, b);
 }
 
@@ -1169,6 +1178,7 @@ LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
     qfn3(def) = reinterpret_cast<three_args*>(code);
     d = cdr(d);
     qenv(def) = d;
+    breakable();
     return reinterpret_cast<three_args*>(code)(def, a, b, c);
 }
 
@@ -1201,6 +1211,7 @@ LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
     qfn4up(def) = reinterpret_cast<fourup_args*>(code);
     d = cdr(d);
     qenv(def) = d;
+    breakable();
     return reinterpret_cast<fourup_args*>(code)(def, a1, a2, a3, a4up);
 }
 

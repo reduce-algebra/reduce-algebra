@@ -12,7 +12,16 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPB1T:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                loadstatic(w, OJITshim1L);
+                mov(w1, one_arg_functions[next]);
+                JITcall(w, w,
+                        w1, nilreg, A_reg);
+                JITerrorcheck();
+                cmp(w, nilreg);
+                next = bytes[ppc++];
+                jne(perInstruction[ppc+next]);
+                break;
 
 #else
             case OP_JUMPB1T:

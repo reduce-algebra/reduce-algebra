@@ -13,8 +13,6 @@
                 errexit();
                 continue;
 
-#elif defined __x86_64__
-
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_BUILTIN1:

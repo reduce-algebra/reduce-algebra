@@ -44,8 +44,9 @@ symbolic procedure accuracycontrol(u,da,di);
    <<x:=car v; v:= cdr v;
      if eqcar(x,'equal) and cadr x memq'(accuracy iterations) then
      <<u:=delete(x,u); n:=caddr x;
-       if cadr x='accuracy then accuracy!*:=n
-           else iterations!*:=n;
+       if not fixp n or n <= 0 then typerr(caddr x,cadr x)
+        else if cadr x='accuracy then accuracy!*:=n
+        else iterations!*:=n;
    >>>>;
    return u;
  end;

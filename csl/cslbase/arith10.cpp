@@ -1351,6 +1351,7 @@ static LispObject Lhypot(LispObject env, LispObject a, LispObject b)
 
 LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
+    if (!is_number(a) || !is_number(b)) return aerror2("expt", a, b);
     double d, e;
     FloatType restype, n;
     int64_t nn;

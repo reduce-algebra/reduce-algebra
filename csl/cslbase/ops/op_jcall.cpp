@@ -3,10 +3,10 @@
 #if defined BYTECODE
             case OP_JCALL:
 // This version has the number of args and the target packed into a
-// single rand byte.  Cases where the offset does not fit into this
+// single operand byte.  Cases where the offset does not fit into this
 // will go via BIGCALL.
 // Note that the argument count can only ever be 0, 1, 2, 3 or 4, so
-// codes 5, 6 and 7 are not used. Hmmm I could provide a JCALL2R ion
+// codes 5, 6 and 7 are not used. Hmmm I could provide a JCALL2R
 // if I wanted!
                 w = next_byte;
                 fname = w & 0x1f;
@@ -238,15 +238,48 @@
 //              return A_reg;
                 return nil;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_JCALL:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_JCALL:
-                unfinished(__FILE__ " not yet implemented for ARM");
+// The operand byte have 3 bits at the top that explains how many
+// arguments are to be passed and then 5 bits that give an offset
+// into the literal vector to identify the function that control
+// should be transferred to.
+                next = bytes[ppc++];
+                loadlit(w, next & 0x1f);
+                next = (next >> 5) & 0x7;
+// Well what I will do here is I will dump arguments that are to be
+// passed to the next function in JITarg1 to JITarg4. I then need to
+// put the identify of the function involved and the number of args
+// into static storage too. I can abuse JITerrflag for the argument
+// count but need something new for the function being called. I will
+// invent JITarg0 for that. Then I can chain to code that merely finishes
+// the job.
+                storestatic(w, OJITarg0);
+                mov(w, next);
+                storestatic(w, OJITerrflag);
+// Now store such of arg1-arg4 in JITarg1,...
+                switch (next)
+                {
+                    default:goto jcall4;
+                    case 3: goto jcall3;
+                    case 2: goto jcall2;
+                    case 1: goto jcall1;
+                    case 0: goto jcall0;
+                }
+            jcall0:
+// This case may now be complete once I implement do_tailcall
+                loadstatic(A_reg, OJITtailcall);
+                chain(A_reg);
+                break;                
+            jcall1:
+                unfinished(__FILE__ " jcall1 not yet implemented for x86_64");
+            jcall2:
+                unfinished(__FILE__ " jcall2 not yet implemented for x86_64");
+            jcall3:
+                unfinished(__FILE__ " jcall3 not yet implemented for x86_64");
+            jcall4:
+                unfinished(__FILE__ " jcall4 not yet implemented for x86_64");
 
 #else
             case OP_JCALL:

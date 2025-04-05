@@ -8,15 +8,12 @@
                 (reinterpret_cast<LispObject *>(r1))[next_byte] = A_reg;
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
+
+// As with LOADLEX this is easier than one might have feared.
 
             case OP_STORELEX:
                 unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_STORELEX:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_STORELEX:

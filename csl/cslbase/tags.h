@@ -230,6 +230,19 @@ inline const size_t Ofunction4up = offsetof(Symbol_Head, function4up);
 // To keep values consecutive in memory and allow me to use offsetof to
 // track offsets I put these (up to) 50 values within a struct.
 //
+// A number of the entries here are just fixed entrypoints of functions
+// and the code I generate is basically
+//     mov   w, [nilreg+NNN]
+//     call  w
+// but note that without the magic table entry here it would be possible
+// to go
+//     call function_entrypoint
+// directly. But that would in general be an 8-bit address embedded within
+// the call instruction and so perhaps bulkier? But really the various
+// read-only fields here are not essential and if I run short of slots
+// I can purge some!
+
+
 // For an entrypoint to a function "maud" of type T I will have:
 // (1) Define a structure with a field called Imaud (and also one for NIL).
 //   struct NilBlock
@@ -275,45 +288,50 @@ inline const size_t Ofunction4up = offsetof(Symbol_Head, function4up);
 /* 2*/ FF(LispObject*, stack,            nullptr) \
 /* 3*/ FF(intptr_t,    JITerrflag,       0) \
 /* 4*/ FF(const char*, JITstring,        "") \
-/* 5*/ FF(LispObject,  JITarg1,          TAG_FIXNUM) \
-/* 6*/ FF(LispObject,  JITarg2,          TAG_FIXNUM) \
-/* 7*/ FF(func0,       JITthrow,         jitthrow) \
-/* 8*/ FF(shim0,       JITshim0,         JITshim) \
-/* 9*/ FF(shim1,       JITshim1,         JITshim) \
-/*10*/ FF(shim2,       JITshim2,         JITshim) \
-/*11*/ FF(shim3,       JITshim3,         JITshim) \
-/*12*/ FF(shim4,       JITshim4,         JITshim) \
-/*13*/ FF(shim5,       JITshim5,         JITshim) \
-/*14*/ FF(boolshim1,   JITshim1B,        JITshim) \
-/*15*/ FF(boolshim2,   JITshim2B,        JITshim) \
-/*16*/ FF(func2b,      JITlessp2,        JITlessp2Val) \
-/*17*/ FF(func2b,      JITleq2,          JITleq2Val) \
-/*18*/ FF(func2,       JITplus2,         JITplus2Val) \
-/*19*/ FF(func2,       JITdifference2,   JITdifference2Val) \
-/*20*/ FF(func2,       JITtimes2,        JITtimes2Val) \
-/*21*/ FF(func2,       JITquotient2,     JITquotient2Val) \
-/*22*/ FF(func2,       JITremainder,     JITremainderVal) \
-/*23*/ FF(func1,       JITint_from_ptr,  JITmake_int_from_ptrVal) \
-/*24*/ FF(func0,       JITcar_fails,     car_fails) \
-/*25*/ FF(func0,       JITcdr_fails,     cdr_fails) \
-/*26*/ FF(func0,       JITtoofew,        toofew) \
-/*27*/ FF(func0,       JITtoomany,       toomany) \
-/*28*/ FF(func1,       JITncons,         ncons) \
-/*29*/ FF(func2,       JITcons,          cons) \
-/*30*/ FF(func2,       JITlist2,         list2) \
-/*31*/ FF(func3,       JITlist2star,     list2star) \
+/* 5*/ FF(LispObject,  JITarg0,          TAG_FIXNUM) \
+/* 6*/ FF(LispObject,  JITarg1,          TAG_FIXNUM) \
+/* 7*/ FF(LispObject,  JITarg2,          TAG_FIXNUM) \
+/* 8*/ FF(LispObject,  JITarg3,          TAG_FIXNUM) \
+/* 9*/ FF(LispObject,  JITarg4,          TAG_FIXNUM) \
+/*10*/ FF(func0,       JITthrow,         jitthrow) \
+/*11*/ FF(shim0,       JITshim0,         JITshim) \
+/*12*/ FF(shim1,       JITshim1,         JITshim) \
+/*13*/ FF(shim2,       JITshim2,         JITshim) \
+/*14*/ FF(shim3,       JITshim3,         JITshim) \
+/*15*/ FF(shim4,       JITshim4,         JITshim) \
+/*16*/ FF(shim5,       JITshim5,         JITshim) \
+/*17*/ FF(boolshim1,   JITshim1B,        JITshim) \
+/*18*/ FF(boolshim2,   JITshim2B,        JITshim) \
+/*19*/ FF(func2b,      JITlessp2,        JITlessp2Val) \
+/*10*/ FF(func2b,      JITleq2,          JITleq2Val) \
+/*21*/ FF(func2,       JITplus2,         JITplus2Val) \
+/*22*/ FF(func2,       JITdifference2,   JITdifference2Val) \
+/*23*/ FF(func2,       JITtimes2,        JITtimes2Val) \
+/*24*/ FF(func2,       JITquotient2,     JITquotient2Val) \
+/*25*/ FF(func2,       JITremainder,     JITremainderVal) \
+/*26*/ FF(func1,       JITint_from_ptr,  JITmake_int_from_ptrVal) \
+/*27*/ FF(func0,       JITcar_fails,     car_fails) \
+/*28*/ FF(func0,       JITcdr_fails,     cdr_fails) \
+/*29*/ FF(func0,       JITtoofew,        toofew) \
+/*30*/ FF(func0,       JITtoomany,       toomany) \
+/*31*/ FF(func1,       JITncons,         ncons) \
 /* There may be no more then 31 items before nil_symbol */ \
     FF(Symbol_Head,     nil_symbol,      {0}) \
 /* There may be up to 19 items after nil_symbol */ \
-/* 1*/ FF(func3,       JITlist3,         list3) \
-/* 2*/ FF(func3,       JITacons,         acons) \
-/* 3*/ FF(func3,       JITget,           get) \
-/* 4*/ FF(func4,       JITapply,         apply) \
-/* 5*/ FF(two_args*,   JITLflagp,        Lflagp) \
-/* 6*/ FF(two_args*,   JITLequal,        Lequal) \
-/* 7*/ FF(two_args*,   JITLgetv,         Lgetv) \
-/* 8*/ FF(one_arg*,    JITLlength,       Llength)
-
+/* 1*/ FF(func2,       JITcons,          cons) \
+/* 2*/ FF(func2,       JITlist2,         list2) \
+/* 3*/ FF(func3,       JITlist2star,     list2star) \
+/* 4*/ FF(func3,       JITlist3,         list3) \
+/* 5*/ FF(func3,       JITacons,         acons) \
+/* 6*/ FF(func3,       JITget,           get) \
+/* 7*/ FF(func4,       JITapply,         apply) \
+/* 8*/ FF(two_args*,   JITLflagp,        Lflagp) \
+/* 9*/ FF(two_args*,   JITLequal,        Lequal) \
+/*10*/ FF(two_args*,   JITLgetv,         Lgetv) \
+/*11*/ FF(one_arg*,    JITLlength,       Llength) \
+/*12*/ FF(func1,       JITfreebind,      do_freebind) \
+/*13*/ FF(func0,       JITfreerstr,      do_freerstr) \
+/*14*/ FF(func0,       JITtailcall,      do_tailcall)
 
 // First define the layout of the block...
 #define FF(a,b,c) a I##b;
@@ -328,9 +346,10 @@ struct NilBlock
 
 #define FF(a,b,c) \
     O##b = static_cast<int>(offsetof(struct NilBlock,I##b)) - \
-           static_cast<int>(offsetof(struct NilBlock,Inil_symbol)) - 4,
+           static_cast<int>(offsetof(struct NilBlock,Inil_symbol)) - \
+           static_cast<int>(TAG_SYMBOL),
 
-enum NilOffset
+enum NilOffset:int
 {
    NIL_BLOCK_CONTENTS
 // These are used for calling Lisp functions that have an extra implicit
@@ -344,11 +363,14 @@ enum NilOffset
 };
 #undef FF
 
-#define FF(a,b,c) cout << "I" << #b << " at offset " << O##b << "\n";
-inline int print_during_static_init = ([]{
-    NIL_BLOCK_CONTENTS
-    return 0;})();
-#undef FF
+// The next few lines show how to use static initialization to display
+// all the offsets. This lets me confirm how much slack I have
+// in hand. At the time I put this comment in I have 11 spare slots...
+// #define FF(a,b,c) cout << "I" << #b << " at offset " << O##b << "\n";
+// inline int print_during_static_init = ([]{
+//     NIL_BLOCK_CONTENTS
+//     return 0;})();
+// #undef FF
 
 // Leter on I will introduce top-level variables with all those names,
 // so set of for forward references.
@@ -365,8 +387,6 @@ extern LispObject* workbase;
 // supportable. But now I am relying in SIZE_MAX as a predefined macro
 // and the fact that I can compare its value against 2^32, and that should
 // do the trick.
-//INLINE_VAR constexpr bool SIXTY_FOUR_BIT = sizeof(intptr_t) == 8;
-// I keep this as a "#define" because I will still use if with "#if"
 
 #define SIXTY_FOUR_BIT (SIZE_MAX >= 4294967296ULL)
 

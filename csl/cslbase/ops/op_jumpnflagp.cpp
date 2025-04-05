@@ -24,16 +24,20 @@
                 continue;
 #endif
 
-//
-// Now the general jumps.  Each has four variants - forwards and backwards
-// and long and short offsets.  Backwards jumps poll for interrupts so that
-// all lo will be interruptible.
-//
-
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_JUMPNFLAGP:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                loadstatic(w, OJITshim2L);
+                loadstatic(w1, OJITLflagp);
+                loadlit(w2, next);
+                JITcall(w, w,
+                        w1, nilreg, A_reg, w2);
+                JITerrorcheck();
+                cmp(w, nilreg);
+                next = bytes[ppc++];
+                je(perInstruction[ppc+next]);
+                break;
 
 #else
             case OP_JUMPNFLAGP:

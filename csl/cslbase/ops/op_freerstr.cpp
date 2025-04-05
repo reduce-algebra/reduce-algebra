@@ -5,15 +5,15 @@
                 do_freerstr();
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_FREERSTR:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_FREERSTR:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                loadstatic(w, OJITfreerstr);
+                JITcall(w, w);
+// freerstr() can not generate an exception so I do not need to check for
+// one here, but it does alter the stack, so I need to update spreg.
+                loadstatic(spreg, Ostack);
+                break;
 
 #else
             case OP_FREERSTR:

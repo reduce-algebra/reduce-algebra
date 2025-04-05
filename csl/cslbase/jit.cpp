@@ -175,6 +175,7 @@ public:
     Register argregs[16];
 
     size_t ppc;
+    bool freebind_used;
 
     Label tooFewArgs, tooManyArgs, callFailed, carError, cdrError, returnA;    
     std::vector<Label> perInstruction;
@@ -306,6 +307,10 @@ Error JITcall(Register& target, Register& result)
     ASMJIT_PROPAGATE(invoke(&in, target,
         FuncSignature::build<LispObject>()));
     in->setRet(0, result);
+// In general I do not restore spreg from the global variable here because
+// the value in that register will have been preserved for me. If the
+// function I am calling could legitimately alter the Lisp stack pointer I
+// will need to deal with that explicitly.
     return kErrorOk;
 }
 
@@ -873,7 +878,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // If I do change the C++ version I will need to restore it from spentry
 // before I exit.
     for (int i=1; i<=nargs&&i<4; i++)
-        storereg_pre(argregs[i], spreg, 0);
+        storereg_pre(argregs[i], spreg, 8);
     if (nargs>=4)
     {   mov(w1, w);
         for (int i=4; i<=nargs; i++)
@@ -930,6 +935,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     loadfromsymbol(litvec, litvec, Oenv);
     TRY
     {   ppc = 0;
+        freebind_used = false;
         intptr_t next;
         while (ppc<len)
         {
@@ -968,9 +974,14 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // fully in C++ exception handling. After any call from the JIT code into
 // a function via a "shim" an error flag is checked and if it is set the
 // code end up here where it chains to JITthrow which reinstates a C++
-// style unwind state.
+// style unwind state. Well when I enter JITthrow I will have the C++
+// variable stack set to the stack where the issue arose and JITarg1 to
+// where it must end up at. In simple cases the code could merely copy
+// from one to the other. However by scanning the stack locations involved
+// it will be possible to unwind and fluid bindings that need to be sorted
+// out.
     bind(callFailed);
-        storestatic(spentry, Ostack);
+        storestatic(spentry, OJITarg1);
         loadstatic(A_reg, OJITthrow);
         chain(A_reg);
 // Error exits from some basic low level operations.
@@ -1030,6 +1041,7 @@ void Ljit_unfinished()
     for (size_t i=0; i<sizeof(bytes); i++) bytes[i] = 0;
     ppc = 0;
     intptr_t next;
+    freebind_used = false;
     testingForUnfinished = true;
     stdout_printf("\nThe following opcodes are not yet coded for %s\n", ARCH);
     for (unsigned int code=0; code<256; code++)

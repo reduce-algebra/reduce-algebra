@@ -942,6 +942,16 @@ inline LispObject JITshim(func1 FF,
 
 inline LispObject jitthrow()
 {
+// Put stack pointer back where it needs to be, unbinding any fluids
+// encountered on the way.
+    LispObject* oldsp = reinterpret_cast<LispObject*>(JITarg1);
+    while (stack != oldsp)
+    {   if (*stack == SPID_FBIND)
+        {   do_freerstr();
+        }
+        else stack--;
+    }
+    JITarg1 = nil;
 #ifndef NO_THROW
     std::rethrow_exception(JITerr_ptr);
 #endif // NO_THROW
