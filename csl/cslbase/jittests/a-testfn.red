@@ -19,20 +19,34 @@ on comp;
 off pwrds;
 !*argnochk := nil;
 
-fluid '(failcount);
+fluid '(failcount names);
 failcount := 0;
+names := '("hex1" "hex2" "hex3" "hex4" "hex5"
+           "hex6" "hex7" "hex8" "hex9" "hex10"
+           "hex11" "hex12" "hex13" "hex14" "hex15");
 
 symbolic macro procedure testjit u;
    begin
      scalar ra, rb, vars;
      for each x in cddr u do vars := gensym() . vars;
      on pgwd;
+     remd 'testcaseA;
+     remd 'testcaseB;
      eval list('de, 'testcaseA, vars, "string", cadr u . vars);
      off pgwd;
      eval list('de, 'testcaseB, vars, "string", cadr u . vars);
      make!-jit 'testcaseB;
      ra := errorset('testcaseA . evlis cddr u, t, t);
      rb := errorset('testcaseB . evlis cddr u, t, t);
+     print plist 'testcaseA;
+     print plist 'testcaseB;
+     print symbol!-env 'testcaseA;
+     print symbol!-env 'testcaseB;
+     print symbol!-fn!-cell 'testcaseA;
+     print symbol!-fn!-cell 'testcaseB;
+     system("dis86 hex");
+     system bldmsg("mv hex %s", car names);
+     names := cdr names;
      if ra = rb then <<
        princ "Success:";
        print cdr u;
@@ -45,23 +59,22 @@ symbolic macro procedure testjit u;
      if (failcount := add1 failcount) > 3 then stop 1
   end;
 
-testjit(plus, 1, 1);
+testjit(add1, 10);
+testjit(add1, 10000000000000000000000);
+testjit(add1, -10000000000000000000000);
+testjit(add1, "bad");
 
-testjit(plus, 1, 1);
-
-testjit(sub1, 0);
-
-testjit(plus, 1, 1);
-
+testjit(sub1, 10);
 testjit(sub1, 10000000000000000000000);
 testjit(sub1, -10000000000000000000000);
-testjit(sub1, -10000000000000000000000);
-testjit(sub1, "nonnumeric-argument");
+testjit(sub1, "bad");
 
 testjit(plus, 1, 1);
-
-%testjit(plus, 100000000000000000000, 1);
-%testjit(plus, 1, 100000000000000000000);
-%testjit(plus, 100000000000000000000, 100000000000000000000);
+testjit(plus, 100000000000000000000, 1);
+testjit(plus, 1, 100000000000000000000);
+testjit(plus, 100000000000000000000, 100000000000000000000);
+testjit(plus, "bad1", 0);
+testjit(plus, 0, "bad2");
+testjit(plus, "bad1", "bad2");
 
 end;

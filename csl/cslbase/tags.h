@@ -309,7 +309,7 @@ inline const size_t Ofunction4up = offsetof(Symbol_Head, function4up);
 /*23*/ FF(func2,       JITtimes2,        JITtimes2Val) \
 /*24*/ FF(func2,       JITquotient2,     JITquotient2Val) \
 /*25*/ FF(func2,       JITremainder,     JITremainderVal) \
-/*26*/ FF(func1,       JITint_from_ptr,  JITmake_int_from_ptrVal) \
+/*26*/ FF(func1,       JITint_from_ptr,  JITint_from_ptrVal) \
 /*27*/ FF(func0,       JITcar_fails,     car_fails) \
 /*28*/ FF(func0,       JITcdr_fails,     cdr_fails) \
 /*29*/ FF(func0,       JITtoofew,        toofew) \
