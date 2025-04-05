@@ -7,18 +7,13 @@
                 A_reg = r1;
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_SWOP:
                 mov(w, B_reg);
                 mov(B_reg, A_reg);
                 mov(A_reg, w);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_SWOP:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_SWOP:

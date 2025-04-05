@@ -7,17 +7,12 @@
                 exit_count = 1;
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_ONEVALUE:
 // Do I really support multiple values? I think not so here I just leave
 // this as a no-ration.
                 break;
-
-#elif defined __aarch64__
-
-            case OP_ONEVALUE:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_ONEVALUE:

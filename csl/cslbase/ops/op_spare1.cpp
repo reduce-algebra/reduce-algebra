@@ -5,15 +5,10 @@
             case OP_SPARE1:
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_SPARE1:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_SPARE1:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                break;
 
 #else
             case OP_SPARE1:

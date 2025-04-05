@@ -502,7 +502,7 @@ Error jnle(Label& lab)        // not less or equal    >
 }
 
 Error jno(Label& lab)         // no overflow
-{   return bvc(lab);
+{   return b_vc(lab);
 }
 
 Error jnp(Label& lab)         // not positive         <0
@@ -518,7 +518,7 @@ Error jnz(Label& lab)         // not zero             !=0
 }
 
 Error jo(Label& lab)          // (signed) overflow
-{   return bvs(lab);
+{   return b_vs(lab);
 }
 
 Error jp(Label& lab)          // positive             >0
@@ -555,7 +555,7 @@ Error sar(Register& r, Imm n)
 }
 
 Error add2(Register& r1, Imm n)
-{   if (n < 0) return sub(r1, r1, -n);
+{   // if (n < 0) return sub(r1, r1, -n);
     return add(r1, r1, n);
 }
 
@@ -564,7 +564,7 @@ Error add2(Register& r1, Register& r2)
 }
 
 Error sub2(Register& r1, Imm n)
-{   if (n < 0) return add(r1, r1, -n);
+{   // if (n < 0) return add(r1, r1, -n);
     return sub(r1, r1, n);
 }
 
@@ -943,7 +943,6 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // be some of the labels that are neither defined nor used.
             bind(perInstruction[ppc]);
             stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
-            cmp(nilreg, 6400+ppc);   // Marks start of instrn at ppc!
             switch (bytes[ppc++])
             {
 #include "ops/bytes_include.cpp"
