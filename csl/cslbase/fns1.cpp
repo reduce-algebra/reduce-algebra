@@ -551,7 +551,7 @@ LispObject Lcddddr(LispObject, LispObject a)
 
 LispObject Lrplaca(LispObject, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!consp(a)) return error(1, err_bad_rplac, a);
+    if (!consp(a)) return error(1, err_bad_rplaca, a);
     car(a) = b;
     return a;
 }
@@ -562,7 +562,7 @@ LispObject Lrplaca(LispObject, LispObject a, LispObject b)
 
 LispObject Lrplacd(LispObject, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!consp(a)) return error(1, err_bad_rplac, a);
+    if (!consp(a)) return error(1, err_bad_rplacd, a);
     cdr(a) = b;
     return a;
 }
@@ -570,14 +570,14 @@ LispObject Lrplacd(LispObject, LispObject a, LispObject b)
 
 LispObject Lsetcar(LispObject, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!consp(a)) return error(1, err_bad_rplac, a);
+    if (!consp(a)) return error(1, err_bad_rplaca, a);
     car(a) = b;
     return b;
 }
 
 LispObject Lsetcdr(LispObject, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!consp(a)) return error(1, err_bad_rplac, a);
+    if (!consp(a)) return error(1, err_bad_rplacd, a);
     cdr(a) = b;
     return b;
 }

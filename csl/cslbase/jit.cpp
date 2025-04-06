@@ -555,7 +555,7 @@ Error sar(Register& r, Imm n)
 }
 
 Error add2(Register& r1, Imm n)
-{   // if (n < 0) return sub(r1, r1, -n);
+{   if (n.value() < 0) return sub(r1, r1, -n.value());
     return add(r1, r1, n);
 }
 
@@ -564,7 +564,7 @@ Error add2(Register& r1, Register& r2)
 }
 
 Error sub2(Register& r1, Imm n)
-{   // if (n < 0) return add(r1, r1, -n);
+{   if (n.value() < 0) return add(r1, r1, -n.value());
     return sub(r1, r1, n);
 }
 
@@ -943,6 +943,14 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // be some of the labels that are neither defined nor used.
             bind(perInstruction[ppc]);
             stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
+// While I am debugging it will sometimes be nice to be able to navigate the
+// generated assembly code relating what is there to the bytes it came from.
+// I generate a spurius "mov" instruction that loads a register not relevent
+// between bytes with a value that has the address within the bytecode stream
+// in its low 3 digits. This is arranged so that the information there will
+// be readily visible whether I display the operand of the "mov" in decimal
+// or hex.
+            mov(w2, 1024000+ppc);
             switch (bytes[ppc++])
             {
 #include "ops/bytes_include.cpp"

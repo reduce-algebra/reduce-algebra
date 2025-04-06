@@ -231,7 +231,8 @@ X(err_undefined_function_3,   "undefined function (3 args)")                \
 X(err_undefined_function_4up, "undefined function (4 or more args)")        \
 X(err_wrong_no_args,          "wrong number of arguments")                  \
 X(err_unbound_lexical,        "unbound lexical variable")                   \
-X(err_bad_rplac,              "bad rplaca/rplacd")                          \
+X(err_bad_rplaca,             "bad rplaca")                                 \
+X(err_bad_rplacd,             "bad rplacd")                                 \
 X(err_bad_arith,              "bad argument for an arithmetic function")    \
 X(err_redef_special,          "attempt to redefine a special form")         \
 X(err_bad_arg,                "not a variable")                             \
