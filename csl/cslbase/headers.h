@@ -236,23 +236,23 @@ inline double CSLpow(double x, double y)
 // active or not. But I want to be able to initialize the table of
 // entyrypoints ina  tiday way, so this fragment sets up names that
 // refer to either old or new functions so I can initialise from them.
-inline func2b JITlessp2Val = Lessp::op;
-inline func2b JITleq2Val = Leq::op;
-inline func2 JITplus2Val = Plus::op;
-inline func2 JITdifference2Val = Difference::op;
-inline func2 JITtimes2Val = Times::op;
-inline func2 JITquotient2Val = Quotient::op;
-inline func2 JITremainderVal = Remainder::op;
-inline func1 JITmake_int_from_ptrVal = arithlib_implementation::intToBignum;
+inline const auto& JITlessp2Val = Lessp::op;
+inline const auto& JITleq2Val = Leq::op;
+inline const auto& JITplus2Val = Plus::op;
+inline const auto& JITdifference2Val = Difference::op;
+inline const auto& JITtimes2Val = Times::op;
+inline const auto& JITquotient2Val = Quotient::op;
+inline const auto& JITremainderVal = Remainder::op;
+inline const auto& JITint_from_ptrVal = arithlib_implementation::intToBignum;
 #else // ARITHLIB
-inline func2b JITlessp2Val = lessp2;
-inline func2b JITleq2Val = lesseq2;
-inline func2 JITplus2Val = plus2;
-inline func2 JITdifference2Val = difference2;
-inline func2 JITtimes2Val = times2;
-inline func2 JITquotient2Val = quot2;
-inline func2 JITremainderVal = Cremainder;
-inline func1 JITmake_int_from_ptrVal = make_lisp_integerptr;
+inline const auto& JITlessp2Val = lessp2;
+inline const auto& JITleq2Val = lesseq2;
+inline const auto& JITplus2Val = plus2;
+inline const auto& JITdifference2Val = difference2;
+inline const auto& JITtimes2Val = times2;
+inline const auto& JITquotient2Val = quot2;
+inline const auto& JITremainderVal = Cremainder;
+inline const auto& JITint_from_ptrVal = make_lisp_integerptr;
 #endif // ARITHLIB
 
 inline LispObject do_tailcall()

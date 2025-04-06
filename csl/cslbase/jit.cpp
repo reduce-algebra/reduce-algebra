@@ -145,9 +145,6 @@ public:
     }
 };
 
-JitRuntime rt;
-CodeHolder myCodeHolder;
-bool codeHolderInitialized = false;
 JitError jitError;
 FileLogger myFileLogger(stdout);
 
@@ -163,6 +160,7 @@ FileLogger myFileLogger(stdout);
 // them is utterly straightforward.
 
 
+JitRuntime rt;
 
 class JITCompile : public LocalCompiler 
 {
@@ -504,7 +502,7 @@ Error jnle(Label& lab)        // not less or equal    >
 }
 
 Error jno(Label& lab)         // no overflow
-{   return bvc(lab);
+{   return b_vc(lab);
 }
 
 Error jnp(Label& lab)         // not positive         <0
@@ -520,7 +518,7 @@ Error jnz(Label& lab)         // not zero             !=0
 }
 
 Error jo(Label& lab)          // (signed) overflow
-{   return bvs(lab);
+{   return b_vs(lab);
 }
 
 Error jp(Label& lab)          // positive             >0
@@ -557,7 +555,7 @@ Error sar(Register& r, Imm n)
 }
 
 Error add2(Register& r1, Imm n)
-{   if (n < 0) return sub(r1, r1, -n);
+{   // if (n < 0) return sub(r1, r1, -n);
     return add(r1, r1, n);
 }
 
@@ -566,7 +564,7 @@ Error add2(Register& r1, Register& r2)
 }
 
 Error sub2(Register& r1, Imm n)
-{   if (n < 0) return add(r1, r1, -n);
+{   // if (n < 0) return add(r1, r1, -n);
     return sub(r1, r1, n);
 }
 
@@ -724,7 +722,8 @@ Error JITcdrvalid(Register& r)
 // need to worry about that until and unless the schere is working.
 
 void* jitcompile(const unsigned char* bytes, size_t len,
-                 LispObject env, int nargs)
+                 LispObject env, int nargs,
+                 CodeHolder& myCodeHolder)
 {
 // I am going to start by printing the byte-stream
     stdout_printf("\nCalling jitcompile on ");
@@ -944,7 +943,6 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // be some of the labels that are neither defined nor used.
             bind(perInstruction[ppc]);
             stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
-            cmp(nilreg, 1000+ppc);   // Marks start of instrn at ppc!
             switch (bytes[ppc++])
             {
 #include "ops/bytes_include.cpp"
@@ -1013,7 +1011,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     if (func != nullptr)
     {   FILE* hex = fopen("hex", "w");
         for (int i=0; i<(int)size; i++)
-        {   fprintf(hex, "0x%.2x", reinterpret_cast<unsigned char*>(func)[i]);
+        {   fprintf(hex, "0x%.2x",
+                    reinterpret_cast<unsigned char*>(func)[i]);
             if ((i%8) == 7) fprintf(hex, "\n");
             else fprintf(hex, " ");
         }
@@ -1103,31 +1102,27 @@ void Ljit_unfinished()
 
 void* jitcompile(const unsigned char* bytes, size_t len,
                  LispObject env, int nargs)
-{   if (!codeHolderInitialized)
-    {   Environment localEnv = rt.environment();;
-#ifdef __CYGWIN__
-        localEnv._platformABI = PlatformABI::kMSVC;
-#endif
-        myCodeHolder.init(localEnv, rt.cpuFeatures());
-        myCodeHolder.setErrorHandler(&jitError);
-// The next line will lead to the generated assembly
-// code being displayed on the standard output. This is going to be
-// really useful while developing, but it obviously gets switched off for
-// most production use.
-        myCodeHolder.setLogger(&myFileLogger);
-        codeHolderInitialized = true;
-    }
-    JITCompile cc(&myCodeHolder);
-    return cc.jitcompile(bytes, len, env, nargs);
-}
-
-LispObject Ljit_unfinished(LispObject env)
-{   CodeHolder scrap;
+{
+    CodeHolder myCodeHolder;
     Environment localEnv = rt.environment();;
 #ifdef __CYGWIN__
     localEnv._platformABI = PlatformABI::kMSVC;
 #endif
-    scrap.init(localEnv, rt.cpuFeatures());
+    myCodeHolder.init(localEnv, rt.cpuFeatures());
+    myCodeHolder.setErrorHandler(&jitError);
+// The next line will lead to the generated assembly
+// code being displayed on the standard output. This is going to be
+// really useful while developing, but it obviously gets switched off for
+// most production use.
+    myCodeHolder.setLogger(&myFileLogger);
+    JITCompile cc(&myCodeHolder);
+    return cc.jitcompile(bytes, len, env, nargs, myCodeHolder);
+}
+
+LispObject Ljit_unfinished(LispObject env)
+{   CodeHolder scrap;
+    Environment localEnv;
+    scrap.init(localEnv);
     scrap.setErrorHandler(&jitError);
     JITCompile cc(&scrap);
     cc.Ljit_unfinished();

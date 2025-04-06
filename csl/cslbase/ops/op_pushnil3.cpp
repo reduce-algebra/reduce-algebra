@@ -7,19 +7,13 @@
                 *++stack = nil;
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_PUSHNIL3:
-                add(spreg, 24);
-                storeloc(nilreg, 0);
-                storeloc(nilreg, -8);
-                storeloc(nilreg, -16);
+                storereg_pre(nilreg, spreg, 8);
+                storereg_pre(nilreg, spreg, 8);
+                storereg_pre(nilreg, spreg, 8);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_PUSHNIL3:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_PUSHNIL3:

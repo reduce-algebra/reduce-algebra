@@ -121,6 +121,8 @@ static const char *c_fn4up(fourup_args *p, setup_type const s[])
     return nullptr;
 }
 
+static char unknown_function[32];
+
 const char *show_fn0(no_args *p)
 {   int i;
     const char *r;
@@ -131,7 +133,9 @@ const char *show_fn0(no_args *p)
 // There are more entries in setup_tables after the first nullptr!
     for (i++; setup_tables[i]!=nullptr; i++)
         if ((r = c_fn0(p, setup_tables[i])) != nullptr) return r;
-    return "unknown";
+    snprintf(unknown_function, sizeof(unknown_function),
+             "unknown:%p", reinterpret_cast<void*>(p));
+    return unknown_function;
 }
 
 const char *show_fn1(one_arg *p)
@@ -144,7 +148,9 @@ const char *show_fn1(one_arg *p)
 // There are more entries in setup_tables after the first nullptr!
     for (i++; setup_tables[i]!=nullptr; i++)
         if ((r = c_fn1(p, setup_tables[i])) != nullptr) return r;
-    return "unknown";
+    snprintf(unknown_function, sizeof(unknown_function),
+             "unknown:%p", reinterpret_cast<void*>(p));
+    return unknown_function;
 }
 
 const char *show_fn2(two_args *p)
@@ -156,7 +162,9 @@ const char *show_fn2(two_args *p)
         if ((r = c_fn2(p, setup_tables[i])) != nullptr) return r;
     for (i++; setup_tables[i]!=nullptr; i++)
         if ((r = c_fn2(p, setup_tables[i])) != nullptr) return r;
-    return "unknown";
+    snprintf(unknown_function, sizeof(unknown_function),
+             "unknown:%p", reinterpret_cast<void*>(p));
+    return unknown_function;
 }
 
 const char *show_fn3(three_args *p)
@@ -168,7 +176,9 @@ const char *show_fn3(three_args *p)
         if ((r = c_fn3(p, setup_tables[i])) != nullptr) return r;
     for (i++; setup_tables[i]!=nullptr; i++)
         if ((r = c_fn3(p, setup_tables[i])) != nullptr) return r;
-    return "unknown";
+    snprintf(unknown_function, sizeof(unknown_function),
+             "unknown:%p", reinterpret_cast<void*>(p));
+    return unknown_function;
 }
 
 const char *show_fn4up(fourup_args *p)
@@ -180,7 +190,9 @@ const char *show_fn4up(fourup_args *p)
         if ((r = c_fn4up(p, setup_tables[i])) != nullptr) return r;
     for (i++; setup_tables[i]!=nullptr; i++)
         if ((r = c_fn4up(p, setup_tables[i])) != nullptr) return r;
-    return "unknown";
+    snprintf(unknown_function, sizeof(unknown_function),
+             "unknown:%p", reinterpret_cast<void*>(p));
+    return unknown_function;
 }
 
 LispObject Lsymbol_fn_cell(LispObject env, LispObject a)
