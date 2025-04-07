@@ -10,8 +10,7 @@
 
             case OP_POP:
                 mov(B_reg, A_reg);
-                loadloc(A_reg, 0);
-                sub2(spreg, 8);
+                loadreg_post(A_reg, spreg, 8);
                 break;
 
 #else

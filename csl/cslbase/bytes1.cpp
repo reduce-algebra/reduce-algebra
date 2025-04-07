@@ -1217,7 +1217,7 @@ LispObject cdr_fails()
 }
 
 LispObject rplaca_fails(LispObject a)
-{   return error(1, err_bad_rplac, a);
+{   return error(1, err_bad_rplaca, a);
 }
 
 LispObject rplaca_fails()
@@ -1225,7 +1225,7 @@ LispObject rplaca_fails()
 }
 
 LispObject rplacd_fails(LispObject a)
-{   return error(1, err_bad_rplac, a);
+{   return error(1, err_bad_rplacd, a);
 }
 
 LispObject rplacd_fails()
