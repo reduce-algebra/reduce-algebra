@@ -24,6 +24,8 @@
 // so this jiffy-program is to be run just once as I move to this new
 // file layout.
 
+#error "This file was used once but should not be used again"
+
 void alternatives(FILE* dest, const char* labelLine)
 {
     std::fprintf(dest, "#elif defined __x86_64__\n\n");

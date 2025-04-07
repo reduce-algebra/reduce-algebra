@@ -118,7 +118,7 @@ LispObject allow_key_key, declare_symbol, special_symbol, large_modulus;
 LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
 LispObject supervisor, B_reg;
 LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
-LispObject compiler_symbol, tracedfn, lisp_terminal_io;
+LispObject jit_symbol, compiler_symbol, tracedfn, lisp_terminal_io;
 LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 LispObject prompt_thing, prinl_symbol, s_prinl2_symbol;
@@ -133,8 +133,9 @@ LispObject standard_output, standard_input, debug_io, error_output;
 LispObject query_io, terminal_io, trace_output, fasl_stream, startup_symbol;
 LispObject mv_call_symbol, traceprint_symbol, load_source_symbol;
 LispObject load_selected_source_symbol, bytecoded_symbol, funcall_symbol;
-LispObject gchook, resources, callstack, procstack, procmem, trap_time;
-LispObject used_space, avail_space, eof_symbol, call_stack;
+LispObject qbytecoded_0, qbytecoded_1, qbytecoded_2, qbytecoded_3;
+LispObject qbytecoded_4up, gchook, resources, callstack, procstack;
+LispObject procmem, trap_time, used_space, avail_space, eof_symbol, call_stack;
 LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol, not_symbol;
 LispObject reader_workspace, named_character, read_float_format, short_float;
 LispObject single_float, double_float, long_float, bit_symbol;
@@ -166,6 +167,7 @@ entry_point0 entries_table0[] =
     {interpreted_0,                     "interpreted_0"},
     {funarged_0,                        "funarged_0"},
     {bytecoded_0,                       "bytecoded_0"},
+    {jitcoded_0,                        "jitcoded_0"},
     {byteopt_0,                         "byteopt_0"},
     {hardopt_0,                         "hardopt_0"},
     {byteoptrest_0,                     "byteoptrest_0"},
@@ -201,6 +203,7 @@ entry_point1 entries_table1[] =
     {interpreted_1,                     "interpreted_1"},
     {funarged_1,                        "funarged_1"},
     {bytecoded_1,                       "bytecoded_1"},
+    {jitcoded_1,                        "jitcoded_1"},
     {byteopt_1,                         "byteopt_1"},
     {hardopt_1,                         "hardopt_1"},
     {byteoptrest_1,                     "byteoptrest_1"},
@@ -239,6 +242,7 @@ entry_point2 entries_table2[] =
     {interpreted_2,                     "interpreted_2"},
     {funarged_2,                        "funarged_2"},
     {bytecoded_2,                       "bytecoded_2"},
+    {jitcoded_2,                        "jitcoded_2"},
     {byteopt_2,                         "byteopt_2"},
     {hardopt_2,                         "hardopt_2"},
     {byteoptrest_2,                     "byteoptrest_2"},
@@ -261,6 +265,7 @@ entry_point3 entries_table3[] =
     {interpreted_3,                     "interpreted_3"},
     {funarged_3,                        "funarged_3"},
     {bytecoded_3,                       "bytecoded_3"},
+    {jitcoded_3,                        "jitcoded_3"},
     {byteopt_3,                         "byteopt_3"},
     {hardopt_3,                         "hardopt_3"},
     {byteoptrest_3,                     "byteoptrest_3"},
@@ -288,6 +293,7 @@ entry_point4up entries_table4up[] =
     {interpreted_4up,                   "interpreted_4up"},
     {funarged_4up,                      "funarged_4up"},
     {bytecoded_4up,                     "bytecoded_4up"},
+    {jitcoded_4up,                      "jitcoded_4up"},
     {byteopt_4up,                       "byteopt_4up"},
     {hardopt_4up,                       "hardopt_4up"},
     {byteoptrest_4up,                   "byteoptrest_4up"},
@@ -756,6 +762,12 @@ static void cold_setup()
     lower_symbol        = make_undefined_fluid("*lower");
     echo_symbol         = make_undefined_fluid("*echo");
     comp_symbol         = make_undefined_fluid("*comp");
+    jit_symbol          = make_undefined_fluid("*jit");
+    qbytecoded_0        = make_undefined_symbol("bytecoded_0");
+    qbytecoded_1        = make_undefined_symbol("bytecoded_1");
+    qbytecoded_2        = make_undefined_symbol("bytecoded_2");
+    qbytecoded_3        = make_undefined_symbol("bytecoded_3");
+    qbytecoded_4up      = make_undefined_symbol("bytecoded_4up");
     print_hash_symbol   = make_undefined_fluid("*print-hashtable");
     qvalue(print_hash_symbol) = lisp_true;
     compiler_symbol     = make_undefined_symbol("compile");

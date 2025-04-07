@@ -373,9 +373,10 @@ extern LispObject current_package, startfn, karaWork;
 extern LispObject gensym_base, string_char_sym, boffo;
 extern LispObject err_table, progn_symbol, gccount_symbol;
 extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
-extern LispObject echo_symbol, supervisor, B_reg;
+extern LispObject echo_symbol, supervisor, B_reg, qbytecoded_0;
+extern LispObject qbytecoded_1, qbytecoded_2, qbytecoded_3, qbytecoded_4up;
 extern LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
-extern LispObject compiler_symbol, tracedfn, lisp_terminal_io;
+extern LispObject jit_symbol, compiler_symbol, tracedfn, lisp_terminal_io;
 extern LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 extern LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 extern LispObject prompt_thing;
@@ -814,6 +815,7 @@ extern void        drop_heap_segments();
 extern LispObject  gcd(LispObject a, LispObject b);
 extern LispObject  get_pname(LispObject a);
 extern LispObject  get(LispObject a, LispObject b, LispObject c=nil);
+extern LispObject  remprop(LispObject a, LispObject b);
 extern LispObject  get_basic_vector(int tag, int type, size_t length);
 extern LispObject  get_basic_vector_init(size_t n, LispObject v);
 extern LispObject  reduce_basic_vector_size(LispObject v, size_t len);
@@ -1144,8 +1146,11 @@ extern setup_type const om_parse_setup[];
     X(break_function),             X(builtin0_symbol),            \
     X(builtin1_symbol),            X(builtin2_symbol),            \
     X(builtin3_symbol),            X(builtin4_symbol),            \
-    X(bytecoded_symbol),           X(callStack),                  \
-    X(call_stack),                 X(callstack),                  \
+    X(qbytecoded_0),               X(qbytecoded_1),               \
+    X(qbytecoded_2),               X(qbytecoded_3),               \
+    X(qbytecoded_4up),             X(bytecoded_symbol),           \
+    X(callStack),                  X(call_stack),                 \
+    X(callstack),                                                 \
     X(catch_tags),                 X(cfunarg),                    \
     X(char_0_symbol),              X(charvec),                    \
     X(cl_equal_symbol),            X(comma_at_symbol),            \
@@ -1173,6 +1178,7 @@ extern setup_type const om_parse_setup[];
     X(help_index),                 X(infinity_symbol),            \
     X(inherited_symbol),           X(initial_element),            \
     X(input_libraries),            X(internal_symbol),            \
+    X(jit_symbol),                                                \
     X(karaWork),                   X(key_key),                    \
     X(keyword_package),            X(lambda),                     \
     X(large_modulus),              X(lex_words),                  \

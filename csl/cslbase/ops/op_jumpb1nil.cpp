@@ -15,10 +15,10 @@
                 next = bytes[ppc++];
                 loadstatic(w, OJITshim1L);
                 mov(w1, one_arg_functions[next]);
-                JITcall(w, w,
+                JITcall(w, w2,
                         w1, nilreg, A_reg);
                 JITerrorcheck();
-                cmp(w, nilreg);
+                cmp(w2, nilreg);
                 next = bytes[ppc++];
                 je(perInstruction[ppc+next]);
                 break;

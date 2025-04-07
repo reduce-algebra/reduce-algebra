@@ -13,11 +13,6 @@
                 loadloc(A_reg, 2);
                 break;
 
-#elif defined __aarch64__
-
-            case OP_LOADLOC2:
-                unfinished(__FILE__ " not yet implemented for ARM");
-
 #else
             case OP_LOADLOC2:
                 unfinished("Unsupported architecture");

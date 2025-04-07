@@ -310,6 +310,7 @@ extern LispObject Lttab(LispObject env, LispObject a);
 extern LispObject Ltyo(LispObject env, LispObject a);
 extern LispObject Lunintern(LispObject env, LispObject a);
 extern LispObject Lunmake_global(LispObject env, LispObject a);
+extern LispObject Lunmake_jit(LispObject env, LispObject a);
 extern LispObject Lunmake_keyword(LispObject env, LispObject a);
 extern LispObject Lunmake_special(LispObject env, LispObject a);
 extern LispObject Luntrace(LispObject env, LispObject a);

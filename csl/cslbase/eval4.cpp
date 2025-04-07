@@ -1120,9 +1120,12 @@ LispObject jitcoded_0(LispObject def)
     qfn0(def) = reinterpret_cast<no_args*>(code);
 // When a funcion is bytecoded its environment cell holds a dotted pair
 // of the bytecode-vector and a vector of literals that it can refer to.
-// When it is in native code only the latter is needed.
-    d = cdr(d);
-    qenv(def) = d;
+// When it is in native code only the latter is needed. But I will save the
+// bytecode-vector on the property list and the presence of that can
+// mark something that has been through the JIT. The property-names I
+// will use will explain how many arguments were involved...
+    putprop(def, qbytecoded_0, car(d));
+    qenv(def) = cdr(d);
     breakable();
     return reinterpret_cast<no_args*>(code)(def);
 }
@@ -1139,8 +1142,8 @@ LispObject jitcoded_1(LispObject def, LispObject a)
         return bytecoded_1(def, a);
     }
     qfn1(def) = reinterpret_cast<one_arg*>(code);
-    d = cdr(d);
-    qenv(def) = d;
+    putprop(def, qbytecoded_1, car(d));
+    qenv(def) = cdr(d);
     breakable();
     return reinterpret_cast<one_arg*>(code)(def, a);
 }
@@ -1157,8 +1160,8 @@ LispObject jitcoded_2(LispObject def, LispObject a, LispObject b)
         return bytecoded_2(def, a, b);
     }
     qfn2(def) = reinterpret_cast<two_args*>(code);
-    d = cdr(d);
-    qenv(def) = d;
+    putprop(def, qbytecoded_2, car(d));
+    qenv(def) = cdr(d);
     breakable();
     return reinterpret_cast<two_args*>(code)(def, a, b);
 }
@@ -1176,8 +1179,8 @@ LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
         return bytecoded_3(def, a, b, c);
     }
     qfn3(def) = reinterpret_cast<three_args*>(code);
-    d = cdr(d);
-    qenv(def) = d;
+    putprop(def, qbytecoded_3, car(d));
+    qenv(def) = cdr(d);
     breakable();
     return reinterpret_cast<three_args*>(code)(def, a, b, c);
 }
@@ -1209,8 +1212,8 @@ LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
         return bytecoded_4up(def, a1, a2, a3, a4up);
     }
     qfn4up(def) = reinterpret_cast<fourup_args*>(code);
-    d = cdr(d);
-    qenv(def) = d;
+    putprop(def, qbytecoded_4up, car(d));
+    qenv(def) = cdr(d);
     breakable();
     return reinterpret_cast<fourup_args*>(code)(def, a1, a2, a3, a4up);
 }
@@ -1228,6 +1231,43 @@ LispObject Lmake_jit(LispObject env, LispObject fname)
     if (qfn2(fname) == bytecoded_2) qfn2(fname) = jitcoded_2;
     if (qfn3(fname) == bytecoded_3) qfn3(fname) = jitcoded_3;
     if (qfn4up(fname) == bytecoded_4up) qfn4up(fname) = jitcoded_4up;
+// There are a number of further bytecode support functions to handle
+// &optional and &rest arguments. At the very least at present I am
+// not allowing such functions to participate in JIT compilation. If
+// it became important enough I could probably just expand what I have
+// done alread to cover the extra cases.
+    return fname;
+}
+
+LispObject Lunmake_jit(LispObject env, LispObject fname)
+{   SingleValued fn;
+    if (!is_symbol(fname)) return nil;
+    LispObject b;
+    if ((b = get(fname, qbytecoded_0, nil)) != nil)
+    {   qfn0(fname) = bytecoded_0;
+        qenv(fname) = cons(b, qenv(fname));
+        remprop(fname, qbytecoded_0);
+    }
+    else if ((b = get(fname, qbytecoded_1, nil)) != nil)
+    {   qfn1(fname) = bytecoded_1;
+        qenv(fname) = cons(b, qenv(fname));
+        remprop(fname, qbytecoded_1);
+    }
+    else if ((b = get(fname, qbytecoded_2, nil)) != nil)
+    {   qfn2(fname) = bytecoded_2;
+        qenv(fname) = cons(b, qenv(fname));
+        remprop(fname, qbytecoded_2);
+    }
+    else if ((b = get(fname, qbytecoded_3, nil)) != nil)
+    {   qfn3(fname) = bytecoded_3;
+        qenv(fname) = cons(b, qenv(fname));
+        remprop(fname, qbytecoded_3);
+    }
+    else if ((b = get(fname, qbytecoded_4up, nil)) != nil)
+    {   qfn4up(fname) = bytecoded_4up;
+        qenv(fname) = cons(b, qenv(fname));
+        remprop(fname, qbytecoded_4up);
+    }
     return fname;
 }
 
@@ -1257,7 +1297,12 @@ LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
 
 
 LispObject Lmake_jit(LispObject env, LispObject fname)
-{   aerror("no KIT compiler built into this version");
+{   aerror("no JIT compiler built into this version");
+    return nil;
+}
+
+LispObject Lunmake_jit(LispObject env, LispObject fname)
+{   aerror("no JIT compiler built into this version");
     return nil;
 }
 

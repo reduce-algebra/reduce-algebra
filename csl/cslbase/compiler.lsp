@@ -194,6 +194,9 @@ carcheckflag savedef r2i)) (quote switch))
 (cond ((not (boundp (quote !*comp))) (progn (fluid (quote (!*comp))) (setq 
 !*comp t))))
 
+(cond ((not (boundp (quote !*jit))) (progn (fluid (quote (!*jit))) (setq 
+!*jit nil))))
+
 (cond ((not (boundp (quote !*nocompile))) (progn (fluid (quote (!*nocompile))
 ) (setq !*nocompile nil))))
 
@@ -2896,9 +2899,9 @@ princ "+++ ") (prin name) (princ " was already compiled") (terpri)))))) (t (
 prog (s!:other_defs) (cond (!*savedef (put name (quote !*savedef) (cons (
 quote lambda) (cons args (s!:fully_macroexpand_list defn)))))) (s!:compile1 
 name args defn nil) (prog (var1195) (setq var1195 s!:other_defs) lab1194 (
-cond ((null var1195) (return nil))) (prog (p) (setq p (car var1195)) (
-symbol!-set!-definition (car p) (cdr p))) (setq var1195 (cdr var1195)) (go 
-lab1194))))))))))))
+cond ((null var1195) (return nil))) (prog (p) (setq p (car var1195)) (progn (
+symbol!-set!-definition (car p) (cdr p)) (cond (!*jit (make!-jit (car p))))))
+(setq var1195 (cdr var1195)) (go lab1194))))))))))))
 
 (de s!:fully_macroexpand_list (l) (cond ((atom l) l) (t (prog (var1197 
 var1198) (setq var1197 l) lab1196 (cond ((null var1197) (return (reversip 

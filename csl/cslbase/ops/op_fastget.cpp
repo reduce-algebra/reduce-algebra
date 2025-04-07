@@ -33,7 +33,7 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_FASTGET:
-                {   next = bytes[ppc];
+                {   next = bytes[ppc++];
                     Label fastgetsymbol = newLabel();
                     Label fastgetend = newLabel();
                     Label fastgetnil = newLabel();

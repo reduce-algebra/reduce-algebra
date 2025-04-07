@@ -284,54 +284,59 @@ inline const size_t Ofunction4up = offsetof(Symbol_Head, function4up);
 // versions in step with one another.
 
 #define NIL_BLOCK_CONTENTS \
-/* 1*/ FF(LispObject,  lisp_true,        0) \
-/* 2*/ FF(LispObject*, stack,            nullptr) \
-/* 3*/ FF(intptr_t,    JITerrflag,       0) \
-/* 4*/ FF(const char*, JITstring,        "") \
-/* 5*/ FF(LispObject,  JITarg0,          TAG_FIXNUM) \
-/* 6*/ FF(LispObject,  JITarg1,          TAG_FIXNUM) \
-/* 7*/ FF(LispObject,  JITarg2,          TAG_FIXNUM) \
-/* 8*/ FF(LispObject,  JITarg3,          TAG_FIXNUM) \
-/* 9*/ FF(LispObject,  JITarg4,          TAG_FIXNUM) \
-/*10*/ FF(func0,       JITthrow,         jitthrow) \
-/*11*/ FF(shim0,       JITshim0,         JITshim) \
-/*12*/ FF(shim1,       JITshim1,         JITshim) \
-/*13*/ FF(shim2,       JITshim2,         JITshim) \
-/*14*/ FF(shim3,       JITshim3,         JITshim) \
-/*15*/ FF(shim4,       JITshim4,         JITshim) \
-/*16*/ FF(shim5,       JITshim5,         JITshim) \
-/*17*/ FF(boolshim1,   JITshim1B,        JITshim) \
-/*18*/ FF(boolshim2,   JITshim2B,        JITshim) \
-/*19*/ FF(func2b,      JITlessp2,        JITlessp2Val) \
-/*10*/ FF(func2b,      JITleq2,          JITleq2Val) \
-/*21*/ FF(func2,       JITplus2,         JITplus2Val) \
-/*22*/ FF(func2,       JITdifference2,   JITdifference2Val) \
-/*23*/ FF(func2,       JITtimes2,        JITtimes2Val) \
-/*24*/ FF(func2,       JITquotient2,     JITquotient2Val) \
-/*25*/ FF(func2,       JITremainder,     JITremainderVal) \
-/*26*/ FF(func1,       JITint_from_ptr,  JITint_from_ptrVal) \
-/*27*/ FF(func0,       JITcar_fails,     car_fails) \
-/*28*/ FF(func0,       JITcdr_fails,     cdr_fails) \
-/*29*/ FF(func0,       JITtoofew,        toofew) \
-/*30*/ FF(func0,       JITtoomany,       toomany) \
-/*31*/ FF(func1,       JITncons,         ncons) \
+/* 1 -252   */ FF(LispObject,  lisp_true,        0) \
+/* 2 -244   */ FF(LispObject*, stack,            nullptr) \
+/* 3 -236   */ FF(intptr_t,    JITerrflag,       0) \
+/* 4 -228   */ FF(const char*, JITstring,        "") \
+/* 5 -220   */ FF(LispObject,  JITarg0,          TAG_FIXNUM) \
+/* 6 -212   */ FF(LispObject,  JITarg1,          TAG_FIXNUM) \
+/* 7 -204   */ FF(LispObject,  JITarg2,          TAG_FIXNUM) \
+/* 8 -196   */ FF(LispObject,  JITarg3,          TAG_FIXNUM) \
+/* 9 -188   */ FF(LispObject,  JITarg4,          TAG_FIXNUM) \
+/*10 -180   */ FF(func0,       JITthrow,         jitthrow) \
+/*11 -172   */ FF(shim0,       JITshim0,         JITshim) \
+/*12 -164   */ FF(shim1,       JITshim1,         JITshim) \
+/*13 -156   */ FF(shim2,       JITshim2,         JITshim) \
+/*14 -148   */ FF(shim3,       JITshim3,         JITshim) \
+/*15 -140   */ FF(shim4,       JITshim4,         JITshim) \
+/*16 -132   */ FF(shim5,       JITshim5,         JITshim) \
+/*17 -124   */ FF(boolshim1,   JITshim1B,        JITshim) \
+/*18 -116   */ FF(boolshim2,   JITshim2B,        JITshim) \
+/*19 -108   */ FF(func2b,      JITlessp2,        JITlessp2Val) \
+/*10 -100   */ FF(func2b,      JITleq2,          JITleq2Val) \
+/*21  -92   */ FF(func2,       JITplus2,         JITplus2Val) \
+/*22  -84   */ FF(func2,       JITdifference2,   JITdifference2Val) \
+/*23  -76   */ FF(func2,       JITtimes2,        JITtimes2Val) \
+/*24  -68   */ FF(func2,       JITquotient2,     JITquotient2Val) \
+/*25  -60   */ FF(func2,       JITremainder,     JITremainderVal) \
+/*26  -52   */ FF(func1,       JITint_from_ptr,  JITint_from_ptrVal) \
+/*27  -44   */ FF(func0,       JITcar_fails,     car_fails) \
+/*28  -36   */ FF(func0,       JITcdr_fails,     cdr_fails) \
+/*29  -28   */ FF(func0,       JITtoofew,        toofew) \
+/*30  -20   */ FF(func0,       JITtoomany,       toomany) \
+/*31  -12   */ FF(func1,       JITncons,         ncons) \
 /* There may be no more then 31 items before nil_symbol */ \
-    FF(Symbol_Head,     nil_symbol,      {0}) \
+/*32    4   */ FF(Symbol_Head, nil_symbol,       {0}) \
 /* There may be up to 19 items after nil_symbol */ \
-/* 1*/ FF(func2,       JITcons,          cons) \
-/* 2*/ FF(func2,       JITlist2,         list2) \
-/* 3*/ FF(func3,       JITlist2star,     list2star) \
-/* 4*/ FF(func3,       JITlist3,         list3) \
-/* 5*/ FF(func3,       JITacons,         acons) \
-/* 6*/ FF(func3,       JITget,           get) \
-/* 7*/ FF(func4,       JITapply,         apply) \
-/* 8*/ FF(two_args*,   JITLflagp,        Lflagp) \
-/* 9*/ FF(two_args*,   JITLequal,        Lequal) \
-/*10*/ FF(two_args*,   JITLgetv,         Lgetv) \
-/*11*/ FF(one_arg*,    JITLlength,       Llength) \
-/*12*/ FF(func1,       JITfreebind,      do_freebind) \
-/*13*/ FF(func0,       JITfreerstr,      do_freerstr) \
-/*14*/ FF(func0,       JITtailcall,      do_tailcall)
+/* 1  100   */ FF(func2,       JITcons,          cons) \
+/* 2  108   */ FF(func2,       JITlist2,         list2) \
+/* 3  116   */ FF(func3,       JITlist2star,     list2star) \
+/* 4  124   */ FF(func3,       JITlist3,         list3) \
+/* 5  130   */ FF(func3,       JITacons,         acons) \
+/* 6  138   */ FF(func3,       JITget,           get) \
+/* 7  146   */ FF(func4,       JITapply,         apply) \
+/* 8  154   */ FF(two_args*,   JITLflagp,        Lflagp) \
+/* 9  162   */ FF(two_args*,   JITLequal,        Lequal) \
+/*10  170   */ FF(two_args*,   JITLgetv,         Lgetv) \
+/*11  178   */ FF(one_arg*,    JITLlength,       Llength) \
+/*12  186   */ FF(func1,       JITfreebind,      do_freebind) \
+/*13  194   */ FF(func0,       JITfreerstr,      do_freerstr) \
+/*14  202   */ FF(func0,       JITtailcall,      do_tailcall)
+/*15  210   */
+/*16  218   */
+/*17  226   */
+/*18  234   */
+/*19  252   */
 
 // First define the layout of the block...
 #define FF(a,b,c) a I##b;
