@@ -280,11 +280,11 @@ int32_t write_action_file(int32_t op, LispObject f)
     {   case WRITE_CLOSE:
             if ((std::FILE *)stream_file(f) == nullptr) op = 0;
             else op = std::fclose(stream_file(f));
-            set_stream_write_fn(f, char_to_illegal);
-            set_stream_write_other(f, write_action_illegal);
-            set_stream_read_fn(f, char_from_illegal);
-            set_stream_read_other(f, read_action_illegal);
-            set_stream_file(f, nullptr);
+            stream_write_fn(f) = char_to_illegal;
+            stream_write_other(f) = write_action_illegal;
+            stream_read_fn(f) = char_from_illegal;
+            stream_read_other(f) = read_action_illegal;
+            stream_file(f) = nullptr;
             return op;
         case WRITE_FLUSH:
             return std::fflush(stream_file(f));
@@ -316,9 +316,9 @@ int32_t write_action_pipe(int32_t op, LispObject f)
     else switch (op & 0xf0000000)
         {   case WRITE_CLOSE:
                 my_pclose(stream_file(f));
-                set_stream_write_fn(f, char_to_illegal);
-                set_stream_write_other(f, write_action_illegal);
-                set_stream_file(f, nullptr);
+                stream_write_fn(f) = char_to_illegal;
+                stream_write_other(f) = write_action_illegal;
+                stream_file(f) = nullptr;
                 return 0;
             case WRITE_FLUSH:
                 return my_pipe_flush(stream_file(f));
@@ -452,9 +452,9 @@ int32_t write_action_list(int32_t op, LispObject f)
     if (op < 0) return -1;
     else switch (op & 0xf0000000)
         {   case WRITE_CLOSE:
-                set_stream_write_fn(f, char_to_illegal);
-                set_stream_write_other(f, write_action_illegal);
-                set_stream_file(f, nullptr);
+                stream_write_fn(f) = char_to_illegal;
+                stream_write_other(f) = write_action_illegal;
+                stream_file(f) = nullptr;
                 return 0;
             case WRITE_FLUSH:
                 return 0;
@@ -497,16 +497,16 @@ LispObject make_stream_handle()
     stream_type(w) = nil;
     stream_write_data(w) = nil;
     stream_read_data(w) = nil;
-    set_stream_file(w, 0);
-    set_stream_write_fn(w, char_to_illegal);
-    set_stream_write_other(w, write_action_illegal);
+    stream_file(w) = nullptr;
+    stream_extra(w) = 0;
+    stream_write_fn(w) = char_to_illegal;
+    stream_write_other(w) = write_action_illegal;
     stream_line_length(w) = 80;
     stream_byte_pos(w) = 0;
     stream_char_pos(w) = 0;
-    set_stream_read_fn(w, char_from_illegal);
-    set_stream_read_other(w, read_action_illegal);
+    stream_read_fn(w) = char_from_illegal;
+    stream_read_other(w) = read_action_illegal;
     stream_pushed_char(w) = NOT_CHAR;
-    stream_spare(w) = 0;  // Not used at present
     return w;
 }
 
@@ -521,8 +521,8 @@ LispObject Lmake_broadcast_stream_4up(LispObject env,
     errexit();
     LispObject w = make_stream_handle();
     errexit();
-    set_stream_write_fn(w, char_to_broadcast);
-    set_stream_write_other(w, write_action_broadcast);
+    stream_write_fn(w) = char_to_broadcast;
+    stream_write_other(w) = write_action_broadcast;
     stream_write_data(w) = a4up;
     return w;
 }
@@ -560,8 +560,8 @@ LispObject Lmake_concatenated_stream_4up(LispObject env,
     errexit();
     LispObject w = make_stream_handle();
     errexit();
-    set_stream_read_fn(w, char_from_concatenated);
-    set_stream_read_other(w, read_action_concatenated);
+    stream_read_fn(w) = char_from_concatenated;
+    stream_read_other(w) = read_action_concatenated;
     stream_read_data(w) = a4up;
     return w;
 }
@@ -594,11 +594,11 @@ LispObject Lmake_synonym_stream(LispObject env, LispObject a)
     if (!is_symbol(a)) return aerror1("make-synonym-stream", a);
     w = make_stream_handle();
     errexit();
-    set_stream_write_fn(w, char_to_synonym);
-    set_stream_write_other(w, write_action_synonym);
+    stream_write_fn(w) = char_to_synonym;
+    stream_write_other(w) = write_action_synonym;
     stream_write_data(w) = a;
-    set_stream_read_fn(w, char_from_synonym);
-    set_stream_read_other(w, read_action_synonym);
+    stream_read_fn(w) = char_from_synonym;
+    stream_read_other(w) = read_action_synonym;
     stream_read_data(w) = a;
     return w;
 }
@@ -610,11 +610,11 @@ LispObject Lmake_two_way_stream(LispObject env, LispObject a, LispObject b)
     if (!is_symbol(b)) return aerror1("make-two-way-stream", b);
     w = make_stream_handle();
     errexit();
-    set_stream_write_fn(w, char_to_synonym);
-    set_stream_write_other(w, write_action_synonym);
+    stream_write_fn(w) = char_to_synonym;
+    stream_write_other(w) = write_action_synonym;
     stream_write_data(w) = b;
-    set_stream_read_fn(w, char_from_synonym);
-    set_stream_read_other(w, read_action_synonym);
+    stream_read_fn(w) = char_from_synonym;
+    stream_read_other(w) = read_action_synonym;
     stream_read_data(w) = a;
     return w;
 }
@@ -626,11 +626,11 @@ LispObject Lmake_echo_stream(LispObject env, LispObject a, LispObject b)
     if (!is_symbol(b)) return aerror1("make-echo-stream", b);
     w = make_stream_handle();
     errexit();
-    set_stream_write_fn(w, char_to_synonym);
-    set_stream_write_other(w, write_action_synonym);
+    stream_write_fn(w) = char_to_synonym;
+    stream_write_other(w) = write_action_synonym;
     stream_write_data(w) = b;
-    set_stream_read_fn(w, char_from_echo);
-    set_stream_read_other(w, read_action_synonym);
+    stream_read_fn(w) = char_from_echo;
+    stream_read_other(w) = read_action_synonym;
     stream_read_data(w) = a;
     return w;
 }
@@ -674,8 +674,8 @@ LispObject Lmake_string_output_stream(LispObject env)
     LispObject w;
     w = make_stream_handle();
     errexit();
-    set_stream_write_fn(w, code_to_list);
-    set_stream_write_other(w, write_action_list);
+    stream_write_fn(w) = code_to_list;
+    stream_write_other(w) = write_action_list;
     return w;
 }
 
@@ -712,8 +712,8 @@ LispObject Lmake_function_stream(LispObject env, LispObject a)
     if (!is_symbol(a)) return aerror1("make-function-stream", a);
     w = make_stream_handle();
     errexit();
-    set_stream_write_fn(w, char_to_function);
-    set_stream_write_other(w, write_action_list);
+    stream_write_fn(w) = char_to_function;
+    stream_write_other(w) = write_action_list;
     stream_write_data(w) = a;
     return w;
 }
@@ -851,9 +851,9 @@ int32_t write_action_synonym(int32_t c, LispObject f)
     }
     r = other_write_action(c, f1);
     if (c == WRITE_CLOSE)
-    {   set_stream_write_fn(f, char_to_illegal);
-        set_stream_write_other(f, write_action_illegal);
-        set_stream_file(f, nullptr);
+    {   stream_write_fn(f) = char_to_illegal;
+        stream_write_other(f) = write_action_illegal;
+        stream_file(f) = nullptr;
     }
     return r;
 }
@@ -871,9 +871,9 @@ int32_t write_action_broadcast(int32_t c, LispObject f)
         if (r == 0) r = r1;
     }
     if (c == WRITE_CLOSE)
-    {   set_stream_write_fn(f, char_to_illegal);
-        set_stream_write_other(f, write_action_illegal);
-        set_stream_file(f, nullptr);
+    {   stream_write_fn(f) = char_to_illegal;
+        stream_write_other(f) = write_action_illegal;
+        stream_file(f) = nullptr;
     }
     return r;
 }
@@ -922,9 +922,9 @@ int32_t read_action_pipe(int32_t op, LispObject f)
         {   case READ_CLOSE:
                 if ((std::FILE *)stream_file(f) == nullptr) op = 0;
                 else my_pclose(stream_file(f));
-                set_stream_read_fn(f, char_from_illegal);
-                set_stream_read_other(f, read_action_illegal);
-                set_stream_file(f, nullptr);
+                stream_read_fn(f) = char_from_illegal;
+                stream_read_other(f) = read_action_illegal;
+                stream_file(f) = nullptr;
                 return 0;
             case READ_FLUSH:
                 stream_pushed_char(f) = NOT_CHAR;
@@ -1282,30 +1282,30 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
     r = make_stream_handle();
     errexit();
     stream_type(r) = name;
-    set_stream_file(r, file);
+    stream_file(r) = file;
     switch (d & (DIRECTION_MASK | OPEN_PIPE))
     {   case DIRECTION_INPUT | OPEN_PIPE:
-            set_stream_read_fn(r, char_from_pipe);
-            set_stream_read_other(r, read_action_pipe);
+            stream_read_fn(r) =  char_from_pipe;
+            stream_read_other(r) = read_action_pipe;
             break;
         case DIRECTION_INPUT:
-            set_stream_read_fn(r, char_from_file);
-            set_stream_read_other(r, read_action_file);
+            stream_read_fn(r) = char_from_file;
+            stream_read_other(r) = read_action_file;
             break;
         case DIRECTION_OUTPUT | OPEN_PIPE:
-            set_stream_write_fn(r, char_to_pipeout);
-            set_stream_write_other(r, write_action_pipe);
+            stream_write_fn(r) = char_to_pipeout;
+            stream_write_other(r) = write_action_pipe;
             break;
         case DIRECTION_OUTPUT:
-            set_stream_write_fn(r, char_to_file);
-            set_stream_write_other(r, write_action_file);
-            set_stream_read_other(r, read_action_output_file);
+            stream_write_fn(r) = char_to_file;
+            stream_write_other(r) = write_action_file;
+            stream_read_other(r) = read_action_output_file;
             break;
         case DIRECTION_IO:
-            set_stream_read_fn(r, char_from_file);
-            set_stream_read_other(r, read_action_output_file);
-            set_stream_write_fn(r, char_to_file);
-            set_stream_write_other(r, write_action_file);
+            stream_read_fn(r) = char_from_file;
+            stream_read_other(r) = read_action_output_file;
+            stream_write_fn(r) = char_to_file;
+            stream_write_other(r) = write_action_file;
             break;
     }
     return r;
@@ -3749,8 +3749,8 @@ int char_to_list(int c, LispObject f)
 
 static LispObject explode(LispObject u)
 {   stream_write_data(lisp_work_stream) = nil;
-    set_stream_write_fn(lisp_work_stream, char_to_list);
-    set_stream_write_other(lisp_work_stream, write_action_list);
+    stream_write_fn(lisp_work_stream) = char_to_list;
+    stream_write_other(lisp_work_stream) = write_action_list;
     active_stream = lisp_work_stream;
     internal_prin(u, 0);
     u = stream_write_data(lisp_work_stream);
@@ -3772,8 +3772,8 @@ int char_to_checksum(int c, LispObject)
 
 void checksum(LispObject u)
 {   escaped_printing = escape_yes+escape_nolinebreak+escape_checksum;
-    set_stream_write_fn(lisp_work_stream, char_to_checksum);
-    set_stream_write_other(lisp_work_stream, write_action_list); // sic
+    stream_write_fn(lisp_work_stream) = char_to_checksum;
+    stream_write_other(lisp_work_stream) = write_action_list; // sic
     active_stream = lisp_work_stream;
     CSL_MD5_Init();
     local_gensym_count = checksum_count = 0;
@@ -3821,8 +3821,8 @@ int code_to_list(int c, LispObject f)
 
 static LispObject exploden(LispObject u)
 {   stream_write_data(lisp_work_stream) = nil;
-    set_stream_write_fn(lisp_work_stream, code_to_list);
-    set_stream_write_other(lisp_work_stream, write_action_list);
+    stream_write_fn(lisp_work_stream) = code_to_list;
+    stream_write_other(lisp_work_stream) = write_action_list;
     active_stream = lisp_work_stream;
     internal_prin(u, 0);
     u = stream_write_data(lisp_work_stream);
@@ -4045,9 +4045,9 @@ LispObject Llengthc(LispObject env, LispObject a)
 // This counts a TAB as having width 1. It counts the number of bytes
 // used to print the argument.
     escaped_printing = escape_nolinebreak;
-    set_stream_write_fn(lisp_work_stream, count_character);
+    stream_write_fn(lisp_work_stream) = count_character;
     memory_print_buffer[0] = 0;
-    set_stream_write_other(lisp_work_stream, write_action_list);
+    stream_write_other(lisp_work_stream) = write_action_list;
     stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
@@ -4061,9 +4061,9 @@ LispObject Lwidelengthc(LispObject env, LispObject a)
 // Like lengthc but counts characters (by ignoring bytes that
 //& are 10xxxxxx in binary).
     escaped_printing = escape_nolinebreak;
-    set_stream_write_fn(lisp_work_stream, count_character);
+    stream_write_fn(lisp_work_stream) = count_character;
     memory_print_buffer[0] = 0;
-    set_stream_write_other(lisp_work_stream, write_action_list);
+    stream_write_other(lisp_work_stream) = write_action_list;
     stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
@@ -4403,9 +4403,9 @@ int binary_outchar(int c, LispObject)
 static LispObject Lbinary_prin1(LispObject env, LispObject a)
 {   SingleValued fn;
     escaped_printing = escape_yes;
-    set_stream_write_fn(lisp_work_stream, binary_outchar);
-    set_stream_write_other(lisp_work_stream, write_action_file);
-    set_stream_file(lisp_work_stream, binary_outfile);
+    stream_write_fn(lisp_work_stream) = binary_outchar;
+    stream_write_other(lisp_work_stream) = write_action_file;
+    stream_file(lisp_work_stream) = binary_outfile;
     active_stream = lisp_work_stream;
     internal_prin(a, 0);
     checkResources();
@@ -4415,9 +4415,9 @@ static LispObject Lbinary_prin1(LispObject env, LispObject a)
 static LispObject Lbinary_princ(LispObject, LispObject a)
 {   SingleValued fn;
     escaped_printing = 0;
-    set_stream_write_fn(lisp_work_stream, binary_outchar);
-    set_stream_write_other(lisp_work_stream, write_action_file);
-    set_stream_file(lisp_work_stream, binary_outfile);
+    stream_write_fn(lisp_work_stream) = binary_outchar;
+    stream_write_other(lisp_work_stream) = write_action_file;
+    stream_file(lisp_work_stream) = binary_outfile;
     active_stream = lisp_work_stream;
     internal_prin(a, 0);
     checkResources();
@@ -4502,9 +4502,9 @@ static LispObject Lbinary_open_input(LispObject env, LispObject name)
     std::FILE *fh = binary_open(env, name, "rb", "binary_open_input");
     r = make_stream_handle();
     errexit();
-    set_stream_read_fn(r, char_from_file);
-    set_stream_read_other(r, read_action_file);
-    set_stream_file(r, fh);
+    stream_read_fn(r) = char_from_file;
+    stream_read_other(r) = read_action_file;
+    stream_file(r) = fh;
     return r;
 }
 
@@ -4812,9 +4812,9 @@ int32_t read_action_socket(int32_t op, LispObject f)
 #else
                     op = 0;
 #endif
-                set_stream_read_fn(f, char_from_illegal);
-                set_stream_read_other(f, read_action_illegal);
-                set_stream_file(f, nullptr);
+                stream_read_fn(f) = char_from_illegal;
+                stream_read_other(f) = read_action_illegal;
+                stream_file(f) = nullptr;
                 stream_read_data(f) = nil;
                 return op;
             case READ_FLUSH:
@@ -4997,9 +4997,9 @@ start_again:
         r = make_stream_handle();
         errexit();
         stream_type(r) = url;
-        set_stream_file(r, file);
-        set_stream_read_fn(r, char_from_file);
-        set_stream_read_other(r, read_action_file);
+        stream_file(r) = file;
+        stream_read_fn(r) = char_from_file;
+        stream_read_other(r) = read_action_file;
         return r;
     }
     if (nproto == 3 && std::strcmp(proto, "ftp") == 0 && nuser == 0)
@@ -5081,9 +5081,9 @@ start_again:
     errexit();
     ielt32(url, 0) = 0;
     stream_read_data(r) = url;
-    set_stream_file(r, (std::FILE *)(intptr_t)s);
-    set_stream_read_fn(r, char_from_socket);
-    set_stream_read_other(r, read_action_socket);
+    stream_file(r) = (std::FILE *)(intptr_t)s;
+    stream_read_fn(r) = char_from_socket;
+    stream_read_other(r) = read_action_socket;
 
 // Now fetch the status line.
     if (fetch_response(filename1, r))

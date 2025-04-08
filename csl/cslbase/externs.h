@@ -367,7 +367,7 @@ extern LispObject list_symbol, callStack, liststar_symbol, eq_symbol;
 extern LispObject eql_symbol, cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject go_symbol, cond_symbol, print_hash_symbol;
-extern LispObject h_table, v_table;
+extern LispObject h_table, v_table, fork_parent;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn, karaWork;
 extern LispObject gensym_base, string_char_sym, boffo;
@@ -1092,7 +1092,7 @@ arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
               arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
               eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
               lisphash_setup[], print_setup[], read_setup[],
-              restart_setup[], minimal_setup[], mpi_setup[];
+              restart_setup[], minimal_setup[], mpi_setup[], forks_setup[];
 #ifdef ARITHLIB
 extern setup_type const arith_setup[];
 #endif
@@ -1223,7 +1223,7 @@ extern setup_type const om_parse_setup[];
     X(user_base_5),                X(user_base_6),                \
     X(user_base_7),                X(user_base_8),                \
     X(user_base_9),                X(v_table),                    \
-    X(work_symbol),                                               \
+    X(fork_parent),                X(work_symbol),                \
     X(workbase[ 0]), X(workbase[ 1]), X(workbase[ 2]), X(workbase[ 3]), X(workbase[ 4]), \
     X(workbase[ 5]), X(workbase[ 6]), X(workbase[ 7]), X(workbase[ 8]), X(workbase[ 9]), \
     X(workbase[10]), X(workbase[11]), X(workbase[12]), X(workbase[13]), X(workbase[14]), \
@@ -1235,10 +1235,6 @@ extern setup_type const om_parse_setup[];
     X(workbase[40]), X(workbase[41]), X(workbase[42]), X(workbase[43]), X(workbase[44]), \
     X(workbase[45]), X(workbase[46]), X(workbase[47]), X(workbase[48]), X(workbase[49]), \
     X(workbase[50])
-
-/// Most of these will already be defined I expect. If there are type clashes
-// that will let me prune here!
-
 
 // If using a C++ compiler that does not support inline variables (ie
 // pre C++17, and increasingly I view that as at best "legacy support"
