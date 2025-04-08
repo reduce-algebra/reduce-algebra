@@ -13,6 +13,7 @@
             case OP_JUMPFREET:
                 next = bytes[ppc++];
                 loadlit(w, next);
+                loadfromsymbol(w, w, Ovalue);
                 next = bytes[ppc++];
                 cmp(w, nilreg);
                 jne(perInstruction[ppc+next]);

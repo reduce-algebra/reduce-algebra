@@ -246,8 +246,6 @@
 // into the literal vector to identify the function that control
 // should be transferred to.
                 next = bytes[ppc++];
-                loadlit(w, next & 0x1f);
-                next = (next >> 5) & 0x7;
 // Well what I will do here is I will dump arguments that are to be
 // passed to the next function in JITarg1 to JITarg4. I then need to
 // put the identify of the function involved and the number of args
@@ -255,11 +253,8 @@
 // count but need something new for the function being called. I will
 // invent JITarg0 for that. Then I can chain to code that merely finishes
 // the job.
-                storestatic(w, OJITarg0);
-                mov(w, next);
-                storestatic(w, OJITerrflag);
 // Now store such of arg1-arg4 in JITarg1,...
-                switch (next)
+                switch ((next>>5) & 0x7)
                 {
                     default:goto jcall4;
                     case 3: goto jcall3;
@@ -268,18 +263,109 @@
                     case 0: goto jcall0;
                 }
             jcall0:
-// This case may now be complete once I implement do_tailcall
+                loadstatic(w, OJITshim0L);
+                loadlit(w2, next & 0x1f);
+                loadfromsymbol(w, w2, Ofunction0);
+                JITcall(w, A_reg,
+                        w1, w2);
+                JITerrorcheck();
+                jmp(returnA);
+
+// At present (07/04/2025) the "chain" facility does not behave properly
+// and so while this is what I hope to be able to use the cruder version
+// which does not actually use tail recursion has to hold the fort.
+                loadlit(w, next & 0x1f);
+                storestatic(w, OJITarg0);
+                mov(w, (next>>5) & 0x7);
+                storestatic(w, OJITerrflag);
                 loadstatic(A_reg, OJITtailcall);
                 chain(A_reg);
                 break;                
+
             jcall1:
-                unfinished(__FILE__ " jcall1 not yet implemented for x86_64");
+                loadstatic(w, OJITshim1L);
+                loadlit(w2, next & 0x1f);
+                loadfromsymbol(w, w2, Ofunction1);
+                JITcall(w, A_reg,
+                        w1, w2, A_reg);
+                JITerrorcheck();
+                jmp(returnA);
+
+                loadlit(w, next & 0x1f);
+                storestatic(w, OJITarg0);
+                mov(w, (next>>5) & 0x7);
+                storestatic(w, OJITerrflag);
+                storestatic(A_reg, OJITarg1);
+                loadstatic(A_reg, OJITtailcall);
+                chain(A_reg);
+                break;                
+
             jcall2:
-                unfinished(__FILE__ " jcall2 not yet implemented for x86_64");
+                loadstatic(w, OJITshim2L);
+                loadlit(w2, next & 0x1f);
+                loadfromsymbol(w, w2, Ofunction2);
+                JITcall(w, A_reg,
+                        w1, w2, B_reg, A_reg);
+                JITerrorcheck();
+                jmp(returnA);
+
+                loadlit(w, next & 0x1f);
+                storestatic(w, OJITarg0);
+                mov(w, (next>>5) & 0x7);
+                storestatic(w, OJITerrflag);
+                storestatic(B_reg, OJITarg1);
+                storestatic(A_reg, OJITarg2);
+                loadstatic(A_reg, OJITtailcall);
+                chain(A_reg);
+                break;                
+
             jcall3:
-                unfinished(__FILE__ " jcall3 not yet implemented for x86_64");
+                loadstatic(w, OJITshim3L);
+                loadlit(w2, next);
+                loadfromsymbol(w, w2, Ofunction3);
+                loadreg_post(w3, spreg, -8);
+                JITcall(w, A_reg,
+                        w1, w2, w3, B_reg, A_reg);
+                JITerrorcheck();
+                jmp(returnA);
+
+                loadlit(w, next & 0x1f);
+                storestatic(w, OJITarg0);
+                mov(w, (next>>5) & 0x7);
+                storestatic(w, OJITerrflag);
+                loadloc(w, 0);
+                storestatic(w, OJITarg1);
+                storestatic(B_reg, OJITarg2);
+                storestatic(A_reg, OJITarg3);
+                loadstatic(A_reg, OJITtailcall);
+                chain(A_reg);
+                break;
+
             jcall4:
-                unfinished(__FILE__ " jcall4 not yet implemented for x86_64");
+                loadstatic(w, OJITshim4L);
+                loadlit(w2, next & 0x1f);
+                loadfromsymbol(w, w2, Ofunction4up);
+                loadreg_post(w3, spreg, -8);
+                loadreg_post(w4, spreg, -8);
+                JITcall(w, A_reg,
+                        w1, w2, w4, w3, B_reg, A_reg);
+                JITerrorcheck();
+                jmp(returnA);
+
+                loadlit(w, next & 0x1f);
+                storestatic(w, OJITarg0);
+                mov(w, (next>>5) & 0x7);
+                storestatic(w, OJITerrflag);
+                loadloc(w, 1);
+                storestatic(w, OJITarg1);
+                loadloc(w, 0);
+                storestatic(w, OJITarg2);
+                storestatic(B_reg, OJITarg3);
+                storestatic(A_reg, OJITarg4);
+                loadstatic(A_reg, OJITtailcall);
+                chain(A_reg);
+                break;
+
 
 #else
             case OP_JCALL:

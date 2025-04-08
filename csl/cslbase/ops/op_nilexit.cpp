@@ -9,18 +9,11 @@
                 A_reg = nil;
                 return nil;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_NILEXIT:
                 mov(A_reg, nilreg);
                 jmp(returnA);
-                break;
-
-#elif defined __aarch64__
-
-            case OP_NILEXIT:
-                mov(A_reg, nilreg);
-                b(returnA);
                 break;
 
 #else

@@ -1283,6 +1283,8 @@ void set_up_function_tables()
 // to index values, and a table (codepointers) that is an indexable array
 // of the entrypoints. For Reduce there are somewhat under
 // 4000 pointers to handle here, so costs are not too severe.
+// Of course has collisions could lead to disaster but with 64-bit CRCs
+// and only a few thousand entries the changes of that are remote.
     for (entry_point0 *p = &entries_table0[1]; p->p!=nullptr; p++)
     {   insert_codepointer0(p->p);
         crc = crc64(crc, p->s, std::strlen(p->s));
@@ -2828,7 +2830,8 @@ down:
 
         case TAG_SYMBOL:
             if (!descend_symbols)
-            {   w = qpname(p);
+            {   Lunmake_jit(nil, p);
+                w = qpname(p);
                 char msg[40];
                 bool isgensym = false;
                 size_t n = length_of_byteheader(vechdr(w)) - CELL;

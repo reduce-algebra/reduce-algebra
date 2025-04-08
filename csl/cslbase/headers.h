@@ -259,6 +259,7 @@ inline LispObject do_tailcall()
 {   int nargs = JITerrflag;
     JITerrflag = 0;
     LispObject tocall = JITarg0;
+printf("\n@@@ do_tailcall argcount=%d dest=%p\n", nargs, (void*)tocall);
     switch (nargs)
     {
     case 0:

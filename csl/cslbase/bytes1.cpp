@@ -235,7 +235,7 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     return c;
 }
 
-static LispObject remprop(LispObject a, LispObject b)
+LispObject remprop(LispObject a, LispObject b)
 {   LispObject pl, prevp;
     int n;
     if (!symbolp(a)) return nil;

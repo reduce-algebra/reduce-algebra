@@ -18,11 +18,6 @@
                 JITerrorcheck();
                 break;
 
-#elif defined __aarch64__
-
-            case OP_CALL0_3:
-                unfinished(__FILE__ " not yet implemented for ARM");
-
 #else
             case OP_CALL0_3:
                 unfinished("Unsupported architecture");

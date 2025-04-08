@@ -11,11 +11,6 @@
                 storeloc(A_reg, 3);
                 break;
 
-#elif defined __aarch64__
-
-            case OP_STORELOC3:
-                unfinished(__FILE__ " not yet implemented for ARM");
-
 #else
             case OP_STORELOC3:
                 unfinished("Unsupported architecture");

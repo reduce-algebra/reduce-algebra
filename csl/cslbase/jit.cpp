@@ -780,10 +780,18 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // nilreg.
     nilreg  = newIntPtr("nilreg");
     spreg   = newIntPtr("spreg");
-    spentry = newIntPtr("spentry");
-    litvec = newIntPtr("litvec");
     A_reg  = newIntPtr("A_reg");
     B_reg  = newIntPtr("B_reg");
+    litvec = newIntPtr("litvec");
+// I would really like some of these to end up in registers! I hope
+// that use of setWeight will coax asmjit into achieving that. However
+// what I have here in the commente dout code does not work!
+//@@    nilreg.setWeight(255);
+//@@    spreg.setWeight(255);
+//@@    A_reg.setWeight(255);
+//@@    B_reg.setWeight(128);
+//@@    litvec.setWeight(128);
+    spentry = newIntPtr("spentry");
     w      = newIntPtr("w");
     w1     = newIntPtr("w1");
     w2     = newIntPtr("w2");
@@ -1122,6 +1130,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // code being displayed on the standard output. This is going to be
 // really useful while developing, but it obviously gets switched off for
 // most production use.
+    myFileLogger.addFlags(FormatFlags::kMachineCode);
     myCodeHolder.setLogger(&myFileLogger);
     JITCompile cc(&myCodeHolder);
     return cc.jitcompile(bytes, len, env, nargs, myCodeHolder);
