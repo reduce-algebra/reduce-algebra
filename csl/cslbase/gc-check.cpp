@@ -255,8 +255,8 @@ static uint64_t*   sigOfStack = nullptr;
 
 int gc_pipes_to[2] = {0,0};
 int gc_pipes_from[2] = {0,0};
-constexpr int read_end = 0; 
-constexpr int write_end = 1; 
+static constexpr int read_end = 0; 
+static constexpr int write_end = 1; 
 
 void take_snapshot()
 {
@@ -270,7 +270,7 @@ void take_snapshot()
         pipe(gc_pipes_from) == -1)
         gc_pipes_from[0] = gc_pipes_from[1] =
         gc_pipes_to[0] = gc_pipes_to[1] = 0;
-// fork() is the ket step here. The child process will then act as a server
+// fork() is the key step here. The child process will then act as a server
 // able to return memory data based on an image from now (ie when the fork
 // is executed).
     pid_t pid = fork();

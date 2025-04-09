@@ -1297,13 +1297,11 @@ LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
 
 
 LispObject Lmake_jit(LispObject env, LispObject fname)
-{   aerror("no JIT compiler built into this version");
-    return nil;
+{   return nil;
 }
 
 LispObject Lunmake_jit(LispObject env, LispObject fname)
-{   aerror("no JIT compiler built into this version");
-    return nil;
+{   return nil;
 }
 
 #endif // ENABLE_JIT

@@ -116,7 +116,7 @@ LispObject key_key, allow_other_keys, aux_key;
 LispObject err_table, format_symbol, progn_symbol, expand_def_symbol;
 LispObject allow_key_key, declare_symbol, special_symbol, large_modulus;
 LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
-LispObject supervisor, B_reg;
+LispObject fork_parent, supervisor, B_reg;
 LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
 LispObject jit_symbol, compiler_symbol, tracedfn, lisp_terminal_io;
 LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
@@ -325,6 +325,10 @@ entry_point1 entries_tableio[] =
     {(one_arg* )read_action_file,       "read_action_file"},
     {(one_arg* )read_action_output_file,"read_action_output_file"},
     {(one_arg* )write_action_file,      "write_action_file"},
+    {(one_arg* )char_from_fork,         "char_from_fork"},
+    {(one_arg* )char_to_fork,           "char_to_fork"},
+    {(one_arg* )read_action_fork,       "read_action_fork"},
+    {(one_arg* )write_action_fork,      "write_action_fork"},
     {(one_arg* )binary_outchar,         "binary_outchar"},
     {(one_arg* )char_from_list,         "char_from_list"},
     {(one_arg* )char_to_list,           "char_to_list"},
@@ -398,7 +402,7 @@ setup_type const* setup_tables[] =
     arith06_setup, arith08_setup, arith10_setup, arith12_setup,
     arith13_setup, char_setup, eval1_setup, eval2_setup, eval3_setup,
     funcs1_setup, funcs2_setup, funcs3_setup, lisphash_setup,
-    print_setup, read_setup, restart_setup, mpi_setup,
+    print_setup, read_setup, restart_setup, mpi_setup, forks_setup,
 #ifdef ARITHLIB
     arith_setup,
 #endif
@@ -752,6 +756,8 @@ static void cold_setup()
     pathname_symbol     = make_undefined_symbol("pathname");
     print_array_sym     = make_undefined_symbol("*print-array*");
     read_base           = make_undefined_symbol("*read-base*");
+    fork_parent         = make_undefined_fluid("*fork-parent");
+    qvalue(fork_parent) = nil;
     initial_element     = make_undefined_symbol(":initial-element");
     make_constant("most-positive-fixnum", MOST_POSITIVE_FIXNUM);
     make_constant("most-negative-fixnum", MOST_NEGATIVE_FIXNUM);
@@ -971,6 +977,7 @@ LispObject set_up_functions(int restart_flag)
     create_symbols(read_setup,     restart_flag);
     create_symbols(restart_setup,  restart_flag);
     create_symbols(mpi_setup,      restart_flag);
+    create_symbols(forks_setup,    restart_flag);
 #ifdef ARITHLIB
     create_symbols(arith_setup,    restart_flag);
 #endif
