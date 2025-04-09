@@ -204,7 +204,7 @@ symbolic inline procedure search_alglist(key, l);
 symbolic inline procedure alglist_contents l;
   if null l then nil
   else hashcontents l;
-   
+
 
 symbolic inline procedure delete_from_alglist(key, l);
   if null l then nil
@@ -964,7 +964,7 @@ symbolic procedure radf(u,n);
           <<y := lnc x;
                 if y neq 1 then <<x := quotf(x,y); z := multd(y,z)>>>>;
        if x neq 1
-         then <<x := radf1(if !*precise_complex or !*modular then {x .^ 1} 
+         then <<x := radf1(if !*precise_complex or !*modular then {x .^ 1}
                             else sqfrf x,n);
                 y := car x;
                 if y neq 1 then
@@ -1281,7 +1281,7 @@ symbolic procedure valuechk(fn,u);
        then <<
           if !*strict_argcount then
               rerror(alg,17,list("Wrong number of arguments to",fn))
-          else lprim list("Wrong number of arguments to", fn) >>; 
+          else lprim list("Wrong number of arguments to", fn) >>;
       u := opfchk!!(fn . u);
       if u then return znumrnil
           ((if eqcar(u,'list) then list((u . 1) . 1) else u) ./ 1)
@@ -1646,17 +1646,26 @@ symbolic procedure unset u;
 
 rlistat '(unset);
 
+%% symbolic procedure unset1 u;
+%%   begin scalar x;
+%%     x := if atom u then get(u,'avalue)
+%%           else assoc(u,get(car u,'kvalue));
+%%     if null x or null kernp (x := cadadr x) then return;
+%%     x := numr mvar x;
+%%     if (atom x and null get(x,'avalue)) or
+%%        (null atom x and null assoc(x,get(car x,'kvalue)))
+%%        then clear u
+%%      else clear x
+%%   end;
+
+% FJW, 09/04/2025: The code above does not work as described in the
+% manual.  I claim that the version below does.  But perhaps the above
+% version is required in some cases and the two should be merged.
+
 symbolic procedure unset1 u;
-  begin scalar x;
-    x := if atom u then get(u,'avalue)
-          else assoc(u,get(car u,'kvalue));
-    if null x or null kernp (x := cadadr x) then return;
-    x := numr mvar x;
-    if (atom x and null get(x,'avalue)) or
-       (null atom x and null assoc(x,get(car x,'kvalue)))
-       then clear u
-     else clear x
-  end; 
+   clear if eqcar(u, 'mkid) then
+      apply2(function mkid, reval cadr u, reval caddr u)
+   else u;
 
 % sqrt should now have a fixed simpfn - this one - which diverts to
 % whatever is actually needed.
@@ -1726,7 +1735,7 @@ put('!*sq,'simpfn,'simp!*sq);
 
 % This introduces data of the form "(lambda ..)" as a new Reduce domain.
 % This allows lambda expressions to be passed around as values.
-%    
+%
 
 symbolic procedure simplambda u;
   ('lambda . u) . 1;
@@ -1799,4 +1808,3 @@ initdmode 'lambda;
 endmodule;
 
 end;
-
