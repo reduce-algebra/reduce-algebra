@@ -108,7 +108,8 @@ For example, the statements
         j := 23;
         set(mkid(a,j),x);
 \end{verbatim}
-assigns the value \texttt{X} to \texttt{A23}.
+assigns the value \texttt{x} to \texttt{a23}.  (See also
+\hyperlink{operator:MKID}{\texttt{mkid}}.)
 
 To remove a value from such a variable, the \texttt{unset}\ttindextype{unset}{statement}
 statement can be used with the syntax:
@@ -120,11 +121,27 @@ For example, the statement
         j := 23;
         unset(mkid(a,j));
 \end{verbatim}
-clears the value of \texttt{A23}.  In fact, the command \texttt{unset}
-is like \hyperlink{reserved:CLEAR}{\texttt{clear}}, except that it
-accepts variables constructed using
-\hyperlink{operator:MKID}{\texttt{mkid}}, which \texttt{clear} does
-not.
+clears the value of \texttt{a23}.
+
+The command \texttt{unset} also acts like an indirect version of
+\hyperlink{reserved:CLEAR}{\texttt{clear}} for operator values; for
+each operator value it clears the value assigned to the operator
+value, rather than the operator value itself.  For example
+\begin{verbatim}
+     operator a, b;
+     a(1) := x;  b(1) := 4;
+     a(2) := y;  b(2) := 3;
+     set(a(1), b(1));        % performs x := 4
+     set(a(2), b(2));        % performs y := 3
+     x*y;                    % returns  12
+     unset a(1), a(2);       % performs clear x, y
+     x*y;                    % returns  x*y
+     {a(1),b(1),a(2),b(2)};  % returns  {x,4,y,3}
+\end{verbatim}
+Note that the \texttt{unset} command clears the values of \texttt{x}
+and \texttt{y}, but leaves \texttt{a(1)}, \texttt{b(1)},
+\texttt{a(2)}, \texttt{b(2)} assigned.
+
 
 \section{Group Statements}
 \hypertarget{command:GROUP}{}
