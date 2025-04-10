@@ -120,7 +120,11 @@ For example, the statement
         j := 23;
         unset(mkid(a,j));
 \end{verbatim}
-clears the value of \texttt{A23}.
+clears the value of \texttt{A23}.  In fact, the command \texttt{unset}
+is like \hyperlink{reserved:CLEAR}{\texttt{clear}}, except that it
+accepts variables constructed using
+\hyperlink{operator:MKID}{\texttt{mkid}}, which \texttt{clear} does
+not.
 
 \section{Group Statements}
 \hypertarget{command:GROUP}{}
