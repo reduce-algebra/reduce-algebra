@@ -1646,26 +1646,21 @@ symbolic procedure unset u;
 
 rlistat '(unset);
 
-%% symbolic procedure unset1 u;
-%%   begin scalar x;
-%%     x := if atom u then get(u,'avalue)
-%%           else assoc(u,get(car u,'kvalue));
-%%     if null x or null kernp (x := cadadr x) then return;
-%%     x := numr mvar x;
-%%     if (atom x and null get(x,'avalue)) or
-%%        (null atom x and null assoc(x,get(car x,'kvalue)))
-%%        then clear u
-%%      else clear x
-%%   end;
-
-% FJW, 09/04/2025: The code above does not work as described in the
-% manual.  I claim that the version below does.  But perhaps the above
-% version is required in some cases and the two should be merged.
-
 symbolic procedure unset1 u;
-   clear if eqcar(u, 'mkid) then
-      apply2(function mkid, reval cadr u, reval caddr u)
-   else u;
+   % Clear the expression that the argument, intended to be mkid or an
+   % operator value, evaluates to (not the argument itself).
+  if eqcar(u, 'mkid) then
+     clear apply2(function mkid, reval cadr u, reval caddr u)
+  else begin scalar x;
+    x := if atom u then get(u,'avalue)
+          else assoc(u,get(car u,'kvalue));
+    if null x or null kernp (x := cadadr x) then return;
+    x := numr mvar x;
+    if (atom x and null get(x,'avalue)) or
+       (null atom x and null assoc(x,get(car x,'kvalue)))
+       then clear u
+     else clear x
+  end;
 
 % sqrt should now have a fixed simpfn - this one - which diverts to
 % whatever is actually needed.
