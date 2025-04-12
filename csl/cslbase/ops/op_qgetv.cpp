@@ -19,9 +19,8 @@
 
             case OP_QGETV:
 // I treat this as just GETV at least for now.
-                loadstatic(w, OJITshim2L);
-                loadstatic(w1, OJITLgetv);
-                JITcall(w, A_reg,
+                mov(w1, Lgetv);
+                JITcall(JITshim2L, A_reg,
                         w1, nilreg, B_reg, A_reg);
                 JITerrorcheck();
                 break;

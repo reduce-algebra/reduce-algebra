@@ -15,9 +15,8 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_TIMES2:
-                loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITtimes2);
-                JITcall(w, A_reg,
+                mov(w1, times2);
+                JITcall(JITshim2, A_reg,
                         w1, B_reg, A_reg);
                 JITerrorcheck();
                 break;

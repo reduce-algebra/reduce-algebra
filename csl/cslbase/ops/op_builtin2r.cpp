@@ -14,13 +14,11 @@
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__
-
             case OP_BUILTIN2R:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim2L);
                 mov(w1, two_arg_functions[next]);
-                JITcall(w, A_reg,
-                        w1, nilreg, B_reg, A_reg);
+                JITcall(JITshim2L, A_reg,
+                        w1, nilreg, A_reg, B_reg);
                 JITerrorcheck();
                 break;
 

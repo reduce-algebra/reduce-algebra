@@ -17,9 +17,8 @@
 
             case OP_BUILTIN1:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim1L);
                 mov(w1, one_arg_functions[next]);
-                JITcall(w, A_reg,
+                JITcall(JITshim1L, A_reg,
                         w1, nilreg, A_reg);
                 JITerrorcheck();
                 break;

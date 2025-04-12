@@ -22,15 +22,13 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_APPLY1:
-                loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITncons);
-                JITcall(w, A_reg,
+                mov(w1, ncons);
+                JITcall(JITshim1, A_reg,
                         w1, A_reg);
                 JITerrorcheck();
-                loadstatic(w, OJITshim4);
-                loadstatic(w1, OJITapply);
+                mov(w1, apply);
                 loadlit(w2, 0);
-                JITcall(w, A_reg,
+                JITcall(JITshim4, A_reg,
                         w1, B_reg, A_reg, nilreg, w2);
                 JITerrorcheck();
                 break;

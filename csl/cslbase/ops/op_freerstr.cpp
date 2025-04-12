@@ -8,8 +8,7 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_FREERSTR:
-                loadstatic(w, OJITfreerstr);
-                JITcall(w, w);
+                JITcall(do_freerstr, w);  // result of fn call not used
 // freerstr() can not generate an exception so I do not need to check for
 // one here, but it does alter the stack, so I need to update spreg.
                 loadstatic(spreg, Ostack);

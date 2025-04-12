@@ -1107,8 +1107,8 @@ then
     ;;
   *)
     d=`pwd`
-    printf "#! /bin/sh\nccache $CC \"\$@\"\n" > $d/cachecc.sh
-    printf "#! /bin/sh\nccache $CXX \"\$@\"\n" > $d/cachecxx.sh
+    printf "#! /bin/sh\nLANG=C TERM=dumb ccache $CC \"\$@\"\n" > $d/cachecc.sh
+    printf "#! /bin/sh\nLANG=C TERM=dumb ccache $CXX \"\$@\"\n" > $d/cachecxx.sh
     chmod +x $d/cachecc.sh $d/cachecxx.sh
     CC="$d/cachecc.sh"
     CXX="$d/cachecxx.sh"

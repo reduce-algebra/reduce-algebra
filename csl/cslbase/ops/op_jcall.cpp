@@ -263,10 +263,10 @@
                     case 0: goto jcall0;
                 }
             jcall0:
-                loadstatic(w, OJITshim0L);
+                std::cout << "JCALL0 not done well yet\n";
                 loadlit(w2, next & 0x1f);
-                loadfromsymbol(w, w2, Ofunction0);
-                JITcall(w, A_reg,
+                loadfromsymbol(w1, w2, Ofunction0);
+                JITcall(JITshim0L, A_reg,
                         w1, w2);
                 JITerrorcheck();
                 jmp(returnA);
@@ -274,96 +274,96 @@
 // At present (07/04/2025) the "chain" facility does not behave properly
 // and so while this is what I hope to be able to use the cruder version
 // which does not actually use tail recursion has to hold the fort.
-                loadlit(w, next & 0x1f);
-                storestatic(w, OJITarg0);
-                mov(w, (next>>5) & 0x7);
-                storestatic(w, OJITerrflag);
-                loadstatic(A_reg, OJITtailcall);
-                chain(A_reg);
+//              loadlit(w, next & 0x1f);
+//              storestatic(w, OJITarg0);
+//              mov(w, (next>>5) & 0x7);
+//              storestatic(w, OJITerrflag);
+//              loadstatic(A_reg, OJITtailcall);
+//              chain(A_reg);
                 break;                
 
             jcall1:
-                loadstatic(w, OJITshim1L);
+                std::cout << "JCALL1 not done well yet\n";
                 loadlit(w2, next & 0x1f);
-                loadfromsymbol(w, w2, Ofunction1);
-                JITcall(w, A_reg,
+                loadfromsymbol(w1, w2, Ofunction1);
+                JITcall(JITshim1L, A_reg,
                         w1, w2, A_reg);
                 JITerrorcheck();
                 jmp(returnA);
 
-                loadlit(w, next & 0x1f);
-                storestatic(w, OJITarg0);
-                mov(w, (next>>5) & 0x7);
-                storestatic(w, OJITerrflag);
-                storestatic(A_reg, OJITarg1);
-                loadstatic(A_reg, OJITtailcall);
-                chain(A_reg);
+//              loadlit(w, next & 0x1f);
+//              storestatic(w, OJITarg0);
+//              mov(w, (next>>5) & 0x7);
+//              storestatic(w, OJITerrflag);
+//              storestatic(A_reg, OJITarg1);
+//              loadstatic(A_reg, OJITtailcall);
+//              chain(A_reg);
                 break;                
 
             jcall2:
-                loadstatic(w, OJITshim2L);
+                std::cout << "JCALL2 not done well yet\n";
                 loadlit(w2, next & 0x1f);
-                loadfromsymbol(w, w2, Ofunction2);
-                JITcall(w, A_reg,
+                loadfromsymbol(w1, w2, Ofunction2);
+                JITcall(JITshim2L, A_reg,
                         w1, w2, B_reg, A_reg);
                 JITerrorcheck();
                 jmp(returnA);
 
-                loadlit(w, next & 0x1f);
-                storestatic(w, OJITarg0);
-                mov(w, (next>>5) & 0x7);
-                storestatic(w, OJITerrflag);
-                storestatic(B_reg, OJITarg1);
-                storestatic(A_reg, OJITarg2);
-                loadstatic(A_reg, OJITtailcall);
-                chain(A_reg);
+//              loadlit(w, next & 0x1f);
+//              storestatic(w, OJITarg0);
+//              mov(w, (next>>5) & 0x7);
+//              storestatic(w, OJITerrflag);
+//              storestatic(B_reg, OJITarg1);
+//              storestatic(A_reg, OJITarg2);
+//              loadstatic(A_reg, OJITtailcall);
+//              chain(A_reg);
                 break;                
 
             jcall3:
-                loadstatic(w, OJITshim3L);
+                std::cout << "JCALL3 not done well yet\n";
                 loadlit(w2, next);
-                loadfromsymbol(w, w2, Ofunction3);
+                loadfromsymbol(w1, w2, Ofunction3);
                 loadreg_post(w3, spreg, -8);
-                JITcall(w, A_reg,
+                JITcall(JITshim3L, A_reg,
                         w1, w2, w3, B_reg, A_reg);
                 JITerrorcheck();
                 jmp(returnA);
 
-                loadlit(w, next & 0x1f);
-                storestatic(w, OJITarg0);
-                mov(w, (next>>5) & 0x7);
-                storestatic(w, OJITerrflag);
-                loadloc(w, 0);
-                storestatic(w, OJITarg1);
-                storestatic(B_reg, OJITarg2);
-                storestatic(A_reg, OJITarg3);
-                loadstatic(A_reg, OJITtailcall);
-                chain(A_reg);
+//              loadlit(w, next & 0x1f);
+//              storestatic(w, OJITarg0);
+//              mov(w, (next>>5) & 0x7);
+//              storestatic(w, OJITerrflag);
+//              loadloc(w, 0);
+//              storestatic(w, OJITarg1);
+//              storestatic(B_reg, OJITarg2);
+//              storestatic(A_reg, OJITarg3);
+//              loadstatic(A_reg, OJITtailcall);
+//              chain(A_reg);
                 break;
 
             jcall4:
-                loadstatic(w, OJITshim4L);
+                std::cout << "JCALL4 not done well yet\n";
                 loadlit(w2, next & 0x1f);
-                loadfromsymbol(w, w2, Ofunction4up);
+                loadfromsymbol(w1, w2, Ofunction4up);
                 loadreg_post(w3, spreg, -8);
                 loadreg_post(w4, spreg, -8);
-                JITcall(w, A_reg,
+                JITcall(JITshim4L, A_reg,
                         w1, w2, w4, w3, B_reg, A_reg);
                 JITerrorcheck();
                 jmp(returnA);
 
-                loadlit(w, next & 0x1f);
-                storestatic(w, OJITarg0);
-                mov(w, (next>>5) & 0x7);
-                storestatic(w, OJITerrflag);
-                loadloc(w, 1);
-                storestatic(w, OJITarg1);
-                loadloc(w, 0);
-                storestatic(w, OJITarg2);
-                storestatic(B_reg, OJITarg3);
-                storestatic(A_reg, OJITarg4);
-                loadstatic(A_reg, OJITtailcall);
-                chain(A_reg);
+//              loadlit(w, next & 0x1f);
+//              storestatic(w, OJITarg0);
+//              mov(w, (next>>5) & 0x7);
+//              storestatic(w, OJITerrflag);
+//              loadloc(w, 1);
+//              storestatic(w, OJITarg1);
+//              loadloc(w, 0);
+//              storestatic(w, OJITarg2);
+//              storestatic(B_reg, OJITarg3);
+//              storestatic(A_reg, OJITarg4);
+//              loadstatic(A_reg, OJITtailcall);
+//              chain(A_reg);
                 break;
 
 

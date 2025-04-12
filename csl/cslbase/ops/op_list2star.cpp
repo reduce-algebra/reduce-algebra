@@ -11,10 +11,9 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_LIST2STAR:
-                loadstatic(w, OJITshim3);
-                loadstatic(w1, OJITlist2star);
+                mov(w1, list2star);
                 loadreg_post(w2, spreg, -1);
-                JITcall(w, A_reg,
+                JITcall(JITshim3, A_reg,
                         w1, w2, B_reg, A_reg);
                 JITerrorcheck();
                 break;

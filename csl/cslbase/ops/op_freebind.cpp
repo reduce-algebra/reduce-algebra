@@ -9,9 +9,8 @@
 
             case OP_FREEBIND:
                 next = bytes[ppc++];
-                loadstatic(w, OJITfreebind);
                 loadlit(w1, next);
-                JITcall(w, w,
+                JITcall(do_freebind, w,    // Note result of fn call not used
                         w1);
 // freebind() can not generate an exception so I do not need to check for
 // one here, but it does alter the stack, so I need to update spreg.

@@ -17,14 +17,12 @@
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__
-
             case OP_CALL2R:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim2L);
                 loadlit(w2, next);
                 loadfromsymbol(w1, w2, Ofunction2);
-                JITcall(w, A_reg,
-                       w1, w2, A_reg, B_reg);
+                JITcall(JITshim2L, A_reg,
+                        w1, w2, A_reg, B_reg);
                 JITerrorcheck();
                 break;
 

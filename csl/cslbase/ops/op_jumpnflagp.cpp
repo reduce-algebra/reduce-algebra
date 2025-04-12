@@ -28,10 +28,9 @@
 
             case OP_JUMPNFLAGP:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim2L);
-                loadstatic(w1, OJITLflagp);
+                mov(w1, Lflagp);
                 loadlit(w2, next);
-                JITcall(w, w,
+                JITcall(JITshim2L, w,
                         w1, nilreg, A_reg, w2);
                 JITerrorcheck();
                 cmp(w, nilreg);

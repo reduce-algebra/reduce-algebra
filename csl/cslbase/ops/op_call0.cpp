@@ -26,12 +26,11 @@
 
             case OP_CALL0:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim0L);
                 loadlit(w2, next);
 // w2 is now the symbol that names the function to be called. Now fetch
 // from that the entrypoint to be used when it is a function of 0 args.
                 loadfromsymbol(w1, w2, Ofunction0); 
-                JITcall(w, A_reg,
+                JITcall(JITshim0L, A_reg,
                         w1, w2);
                 JITerrorcheck();
                 break;

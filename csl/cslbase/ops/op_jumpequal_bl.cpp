@@ -13,9 +13,8 @@
             case OP_JUMPEQUAL_BL:
                 next = bytes[ppc++];
                 next = (next<<8) | bytes[ppc++];
-                loadstatic(w, OJITshim2L);
-                loadstatic(w1, OJITLequal);  // Either standard or common!
-                JITcall(w, w,
+                mov(w1, Lequal);  // Either standard or common!
+                JITcall(JITshim2L, w,
                         w1, nilreg, B_reg, A_reg);
                 JITerrorcheck();
                 test(w, 0xff);
