@@ -1,10 +1,10 @@
-;;; reduce-font-lock.el --- Syntax highlighting for REDUCE IDE  -*- lexical-binding: t; -*-
+;;; reduce-font-lock.el --- Syntax highlighting for REDUCE IDE  -*- lexical-binding:t -*-
 
-;; Copyright (C) 2022-2024 Francis J. Wright
+;; Copyright (C) 2022-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sites.google.com/site/fjwcentaur>
 ;; Created: 6 June 2022 as a separate file (was part of reduce-mode.el)
-;; Time-stamp: <2024-01-28 17:23:07 franc>
+;; Time-stamp: <2025-03-20 15:57:51 franc>
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
 
 ;; This file is part of REDUCE IDE.
@@ -66,6 +66,10 @@ literally!")
 
 (defconst reduce-font-lock--keywords-0 nil
   "Highlight strings and syntactic comments only – no keywords.")
+
+(defvar font-lock-defaults)             ; defined in ‘font-core.el’
+(defvar font-lock-multiline)            ; defined in ‘font-lock.el’
+(defvar font-lock-maximum-decoration)   ; defined in ‘font-lock.el’
 
 (defun reduce-font-lock-mode ()
   "Set up font-lock mode.  Called in ‘reduce-mode’."
@@ -330,11 +334,11 @@ constants (e.g. “pi”).")
       (1 font-lock-variable-name-face)))
 
     ;; Quoted identifiers:
-    (,(concat "'\\(" reduce-identifier-regexp "\\)")
+    (,(concat "\\(?:^\\|[^!]\\)'\\(" reduce-identifier-regexp "\\)")
      (1 font-lock-constant-face))
 
     (;; Quoted lists (arbitrarily nested and multi-line):
-     "'\\(\(\\)"
+     "\\(?:^\\|[^!]\\)'\\(\(\\)"
      (1 font-lock-constant-face)
      ("\\(?:.\\|\n\\)"     ; match anything including \n
       ;; This may be a hack but it seems to work!
@@ -500,7 +504,10 @@ which must be done in ‘reduce-mode’."
            ((eq level t) reduce-font-lock--level-max) ; t means max
            (t 0)))))                ; nil means 0
 
-(defconst reduce-font-lock--submenu
+(easy-menu-define                       ; (symbol maps doc menu)
+  reduce--fontification-submenu
+  nil
+  "REDUCE Fontification Submenu."
   '("Syntax Highlighting"
     ["In Current Buffer" font-lock-mode
      :style toggle :selected font-lock-mode :active t]
@@ -520,16 +527,10 @@ which must be done in ‘reduce-mode’."
      :style radio :selected (eq reduce-font-lock--level 0) :active t
      :help "Strings, syntactic comments, warnings, errors and trace output only"]))
 
-(easy-menu-define                       ; (symbol maps doc menu)
-  reduce-fontification-submenu
-  nil
-  "REDUCE Fontification Submenu."
-  reduce-font-lock--submenu)
-
 (defvar reduce-mode-map)                ; defined in reduce-mode.el
 
-(define-key-after (lookup-key reduce-mode-map [menu-bar REDUCE])
-  [Fontification] (cons "Syntax Highlighting" reduce-fontification-submenu)
+(keymap-set-after (keymap-lookup reduce-mode-map "<menu-bar> <reduce>")
+  "<Fontification>" (cons "Syntax Highlighting" reduce--fontification-submenu)
   t)
 
 (defun reduce-font-lock--change (level)
@@ -580,8 +581,9 @@ their names should not be taken too literally!")
   (add-to-list 'font-lock-extend-region-functions
                #'reduce-font-lock--extend-region-for-comment-statement)
   (reduce-font-lock--level)             ; for font-lock menu
-  (define-key-after (lookup-key reduce-run-mode-map [menu-bar Run\ REDUCE])
-    [Fontification] (cons "Syntax Highlighting" reduce-fontification-submenu)
+  (keymap-set-after
+    (keymap-lookup reduce-run-mode-map "<menu-bar> <reduce>")
+    "<Fontification>" (cons "Syntax Highlighting" reduce--fontification-submenu)
     t))
 
 (defconst reduce-font-lock--run-keywords-0
