@@ -13,9 +13,8 @@
 
             case OP_JUMPB2NIL:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim2L);
                 mov(w1, two_arg_functions[next]);
-                JITcall(w, w2,
+                JITcall(JITshim2L, w2,
                         w1, nilreg, B_reg, A_reg);
                 JITerrorcheck();
                 cmp(w2, nilreg);

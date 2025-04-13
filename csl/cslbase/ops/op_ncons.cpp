@@ -10,9 +10,8 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_NCONS:
-                loadstatic(w, OJITshim1);
                 loadstatic(w1, OJITncons);
-                JITcall(w, A_reg,
+                JITcall(JITshim1, A_reg,
                         w1, A_reg);
                 JITerrorcheck();
                 break;

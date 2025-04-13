@@ -13,9 +13,8 @@
 
             case OP_JUMPB1T:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim1L);
                 mov(w1, one_arg_functions[next]);
-                JITcall(w, w,
+                JITcall(JITshim1L, w,
                         w1, nilreg, A_reg);
                 JITerrorcheck();
                 cmp(w, nilreg);

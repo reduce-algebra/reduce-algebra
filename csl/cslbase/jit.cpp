@@ -149,6 +149,22 @@ JitError jitError;
 FileLogger myFileLogger(stdout);
 
 
+intptr_t savePPC, saveA, saveB, saveSP, saveSPentry;
+
+void JITdebugprint(void)
+{   std::cout << "\nppc     = " << savePPC << std::hex << "\n";
+    std::cout << "nil     = " << nil << " = "; dpr(nil);
+    std::cout << "A_reg   = " << saveA << " = "; dpr(saveA);
+    std::cout << "B_reg   = " << saveB << " = "; dpr(saveB);
+    for (intptr_t p=saveSP; p>=saveSPentry; p-=sizeof(intptr_t))
+    {   std::cout << std::dec << ((saveSP-p)/sizeof(intptr_t))
+                  << ":  " << std::hex
+                  << *reinterpret_cast<intptr_t*>(p) << " = ";
+                  dpr(*reinterpret_cast<intptr_t*>(p));
+    }
+    std::cout << std::dec;
+}
+
 // My class JITcompile extends x86::Compiler or a64::Compiler and as such
 // all the assembly code opcodes like "mov" and so on are directly available.
 // So eg code within it can go just
@@ -175,7 +191,8 @@ public:
     size_t ppc;
     bool freebind_used;
 
-    Label tooFewArgs, tooManyArgs, callFailed, carError, cdrError, returnA;    
+    Label tooFewArgs, tooManyArgs, callFailed,
+          carError, cdrError, returnA, chainA;
     std::vector<Label> perInstruction;
 
 // I am not going to indent the remainder of the code here but making the
@@ -298,7 +315,15 @@ Error storetosymbol(Register& r,  Register& sym, size_t n)
 // registers. This means that the arguments can be (u)intptr_t, T* or
 // LispObject at the C++ level.
 
-Error JITcall(Register& target, Register& result)
+template <typename T>
+Error JITcallVoid(T target)
+{   InvokeNode *in;
+    ASMJIT_PROPAGATE(invoke(&in, target, FuncSignature::build<>()));
+    return kErrorOk;
+}
+
+template <typename T>
+Error JITcall(T target, Register& result)
 {   InvokeNode *in;
 // I must bring the Lisp variable holding a stack pointer up to date.
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
@@ -312,8 +337,9 @@ Error JITcall(Register& target, Register& result)
     return kErrorOk;
 }
 
-Error JITcall(Register& target, Register& result,
-             Register& a1)
+template <typename T>
+Error JITcall(T target, Register& result,
+              Register& a1)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
     ASMJIT_PROPAGATE(invoke(&in, target,
@@ -324,8 +350,9 @@ Error JITcall(Register& target, Register& result,
     return kErrorOk;
 }
 
-Error JITcall(Register& target, Register& result,
-             Register& a1, Register& a2)
+template <typename T>
+Error JITcall(T target, Register& result,
+              Register& a1, Register& a2)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
     ASMJIT_PROPAGATE(invoke(&in, target,
@@ -337,8 +364,9 @@ Error JITcall(Register& target, Register& result,
     return kErrorOk;
 }
 
-Error JITcall(Register& target, Register& result,
-             Register& a1, Register& a2, Register& a3)
+template <typename T>
+Error JITcall(T target, Register& result,
+              Register& a1, Register& a2, Register& a3)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
     ASMJIT_PROPAGATE(invoke(&in, target,
@@ -351,8 +379,9 @@ Error JITcall(Register& target, Register& result,
     return kErrorOk;
 }
 
-Error JITcall(Register& target, Register& result,
-             Register& a1, Register& a2, Register& a3, Register& a4)
+template <typename T>
+Error JITcall(T target, Register& result,
+              Register& a1, Register& a2, Register& a3, Register& a4)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
     ASMJIT_PROPAGATE(invoke(&in, target,
@@ -367,10 +396,11 @@ Error JITcall(Register& target, Register& result,
     return kErrorOk;
 }
 
-Error JITcall(Register& target, Register& result,
-             Register& a1, Register& a2,
-             Register& a3, Register& a4,
-             Register& a5)
+template <typename T>
+Error JITcall(T target, Register& result,
+              Register& a1, Register& a2,
+              Register& a3, Register& a4,
+              Register& a5)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
     ASMJIT_PROPAGATE(invoke(&in, target,
@@ -386,10 +416,11 @@ Error JITcall(Register& target, Register& result,
     return kErrorOk;
 }
 
-Error JITcall(Register& target, Register& result,
-             Register& a1, Register& a2,
-             Register& a3, Register& a4,
-             Register& a5, Register& a6)
+template <typename T>
+Error JITcall(T target, Register& result,
+              Register& a1, Register& a2,
+              Register& a3, Register& a4,
+              Register& a5, Register& a6)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
     ASMJIT_PROPAGATE(invoke(&in, target,
@@ -698,6 +729,32 @@ Error JITcdrvalid(Register& r)
 {   return JITatomic(r, cdrError);
 }
 
+void debugHere(intptr_t ppc)
+{
+// I generate a spurius "mov" instruction that loads a register not relevent
+// between bytes with a value that has the address within the bytecode stream
+// in its low 3 digits. This is arranged so that the information there will
+// be readily visible whether I display the operand of the "mov" in decimal
+// or hex.
+            mov(w2, 1024000+ppc);
+#ifdef __x86_64__
+    if (mov(x86::Mem((uint64_t)&savePPC, 8), w2)) std::cout << "Line" << __LINE__ << "\n";
+    if (mov(x86::Mem((uint64_t)&saveA, 8), A_reg)) std::cout << "Line" << __LINE__ << "\n";
+    if (mov(x86::Mem((uint64_t)&saveB, 8), B_reg)) std::cout << "Line" << __LINE__ << "\n";
+    if (mov(x86::Mem((uint64_t)&saveSP, 8), spreg)) std::cout << "Line" << __LINE__ << "\n";
+    if( mov(x86::Mem((uint64_t)&saveSPentry, 8), spentry)) std::cout << "Line" << __LINE__ << "\n";
+    if (JITcallVoid(JITdebugprint)) std::cout << "Line" << __LINE__ << "\n";
+#endif
+}
+
+void switchBlock(const unsigned char* bytes)
+{   intptr_t next;
+    switch (bytes[ppc++])
+    {
+#include "ops/bytes_include.cpp"
+    }
+}
+
 // When a function is potentially going to be JIT compiled it will
 // have one of jitcoded_0 to jitcoded_4up in a function call where otherwise
 // it would have had bytecoded_0 etc. At present I an not considering
@@ -815,6 +872,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     carError    = newLabel();
     cdrError    = newLabel();
     returnA     = newLabel();
+    chainA      = newLabel();
 // I am going to set a label on the code that corresponds to each bytecode
 // so that I can handle the jumps there.
     for (size_t i=0; i<len; i++)
@@ -867,13 +925,27 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         break;
     }
     addFunc(funcNode);
-
+#ifdef __x86__
+// On x86_64 processors there is a security concern about wild branch
+// instructions that enter code other that at official entrypoints. So
+// in some cases there will be an insistence that the target for an
+// indirect jump should be the instruction "endbr64" and jumps that do not
+// find that at their destination may be though of as improper and may
+// raise an exception. The instruction here is a no-op and at some level
+// its presence merely wastes time and space, but it is safest to put it
+// against a future where its presence is enforced.
+    endbr64();
+#endif // __x86_64
 // Now I initialise some registers and put arguments on the Lisp stack. The
 // logic is the same on all platforms, but the instructions available to
 // do things differ.
 #ifdef __x86_64
     mov(nilreg, nil);
     mov(A_reg, nilreg);
+#ifdef DEBUG
+// Initialize if in debugging mode.
+    mov(B_reg, nilreg);
+#endif
 // Load spreg to hold the stack pointer.
     loadstatic(spreg, Ostack);
     mov(spentry, spreg);
@@ -943,7 +1015,6 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     TRY
     {   ppc = 0;
         freebind_used = false;
-        intptr_t next;
         while (ppc<len)
         {
 // Set a label on the code that derives from each opcode. Note that
@@ -951,18 +1022,13 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // be some of the labels that are neither defined nor used.
             bind(perInstruction[ppc]);
             stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
+#if 0
 // While I am debugging it will sometimes be nice to be able to navigate the
 // generated assembly code relating what is there to the bytes it came from.
-// I generate a spurius "mov" instruction that loads a register not relevent
-// between bytes with a value that has the address within the bytecode stream
-// in its low 3 digits. This is arranged so that the information there will
-// be readily visible whether I display the operand of the "mov" in decimal
-// or hex.
-            mov(w2, 1024000+ppc);
-            switch (bytes[ppc++])
-            {
-#include "ops/bytes_include.cpp"
-            }
+// However what I have here is rather heavyweight!
+            debugHere(ppc);
+#endif
+            switchBlock(bytes);
         }
     }
     CATCH (JitFailed)
@@ -978,12 +1044,12 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         loadlit(A_reg, 0);
         storestatic(A_reg, OJITarg1);
         loadstatic(A_reg, OJITtoofew);
-        chain(A_reg);
+        jmp(chainA); 
     bind(tooManyArgs);
         loadlit(A_reg, 0);
         storestatic(A_reg, OJITarg1);
         loadstatic(A_reg, OJITtoomany);
-        chain(A_reg);
+        jmp(chainA);
 // This is to do with the asmjit-generated code not being able to participate
 // fully in C++ exception handling. After any call from the JIT code into
 // a function via a "shim" an error flag is checked and if it is set the
@@ -997,18 +1063,21 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     bind(callFailed);
         storestatic(spentry, OJITarg1);
         loadstatic(A_reg, OJITthrow);
-        chain(A_reg);
+        jmp(chainA);
 // Error exits from some basic low level operations.
     bind(carError);
         storestatic(spentry, Ostack);
         storestatic(A_reg, OJITarg1);
         loadstatic(A_reg, OJITcar_fails);
-        chain(A_reg);
+        jmp(chainA);
     bind(cdrError);
         storestatic(spentry, Ostack);
         storestatic(A_reg, OJITarg1);
         loadstatic(A_reg, OJITcdr_fails);
-        chain(A_reg);
+    bind(chainA);
+        call(A_reg);    // @@@@@@@@@@@@@@@@@@@@@@
+        ret(A_reg);    // @@@@@@@@@@@@@@@@@@@@@@
+//      chain(A_reg);
 
     bind(returnA);
 // Ensure that the Lisp stack pointer is in a good state.
@@ -1055,16 +1124,12 @@ void Ljit_unfinished()
     unsigned char bytes[512];
     for (size_t i=0; i<sizeof(bytes); i++) bytes[i] = 0;
     ppc = 0;
-    intptr_t next;
     freebind_used = false;
     testingForUnfinished = true;
     stdout_printf("\nThe following opcodes are not yet coded for %s\n", ARCH);
     for (unsigned int code=0; code<256; code++)
     {   TRY
-        {   switch (code)
-            {
-#include "ops/bytes_include.cpp"
-            }
+        {   switchBlock(bytes);
         }
         CATCH (JitFailed)
         {   stdout_printf("%s", opnames[code]);
@@ -1085,10 +1150,7 @@ void Ljit_unfinished()
     for (unsigned int code=0; code<256; code++)
     {   bool failed = false;
         TRY
-        {   switch (code)
-            {
-#include "ops/bytes_include.cpp"
-            }
+        {   switchBlock(bytes);
         }
         CATCH (JitFailed)
         {   failed = true;

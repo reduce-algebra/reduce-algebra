@@ -1,10 +1,10 @@
 ;;; reduce-run.el --- Run the REDUCE computer-algebra system in a buffer  -*- lexical-binding:t -*-
 
-;; Copyright (C) 1998-2001, 2012, 2017-2019, 2022-2024 Francis J. Wright
+;; Copyright (C) 1998-2001, 2012, 2017-2019, 2022-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sites.google.com/site/fjwcentaur>
 ;; Created: late 1998
-;; Time-stamp: <2024-12-14 18:00:52 franc>
+;; Time-stamp: <2025-03-25 17:11:10 franc>
 ;; Keywords: languages, processes
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
 
@@ -268,68 +268,64 @@ It is a good place to put keybindings."
 ;; C-h (help).  Also, avoid binding C-c C-c, C-c C-d, C-c C-z and C-c
 ;; C-\, which are bound by Comint mode.
 
-(defun reduce-run--add-common-keys-to-map (map)
-  "Add common key bindings to keymap MAP.
-Bindings are common to REDUCE mode and REDUCE Run mode."
-  (define-key map "\C-x\C-e" 'reduce-eval-last-statement) ; Emacs convention
-  (define-key map "\C-c\C-\M-e" 'reduce-eval-line)
-  (define-key map "\C-c\C-f" 'reduce-input-file)
-  (define-key map "\C-c\C-\M-l" 'reduce-load-package)
-  (define-key map "\C-c\C-\M-c" 'reduce-compile-file)
-  (define-key map "\C-c\C-\M-f" 'reduce-run-file))
-
-(defvar reduce-run-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map "\r" 'reduce-run-send-input)
-    (define-key map [(shift return)] 'comint-send-input)
-    (reduce-run--add-common-keys-to-map map)
-    (define-key map "\M-\t" 'reduce-complete-symbol)
-    (define-key map "\C-c\t" 'reduce-complete-symbol)
-                                        ; since C-M-i used by flyspell
-    map))
-
-;; These commands augment REDUCE mode, so you can process REDUCE
-;; code in file editing buffers.
-(define-key reduce-mode-map "\C-\M-x"  'reduce-eval-proc) ; Emacs convention
-(define-key reduce-mode-map "\C-c\C-r" 'reduce-eval-region)
-(define-key reduce-mode-map "\C-c\C-\M-b" 'reduce-run-buffer)
-(reduce-run--add-common-keys-to-map reduce-mode-map)
-(define-key reduce-mode-map "\C-c\C-z" 'switch-to-reduce)
-(define-key reduce-mode-map "\M-R" 'run-reduce)
-
-(easy-menu-define                       ; (symbol maps doc menu)
-  nil
-  reduce-run-mode-map
-  "REDUCE Run Menu."
-  `("Run REDUCE"
+(defvar-keymap reduce-run-mode-map
+  :doc "Keymap for REDUCE Run mode."
+  "RET" #'reduce-run-send-input
+  "S-RET" #'comint-send-input
+  "M-TAB" #'reduce-complete-symbol
+  "C-c TAB" #'reduce-complete-symbol
+  :menu
+  `("REDUCE"
     ["(Re)Run REDUCE" rerun-reduce
      :help "Stop REDUCE if running in this buffer, then (re)start it"]
-    ,@reduce-mode--run-menu2
+    ,@reduce--common-run-menu-items     ; defined in reduce-mode.el
     ["Customize…" (customize-group 'reduce-run)
      :help "Customize REDUCE Run mode"]
     ["Show Version" reduce-ide-version
-     :help "Show the REDUCE IDE version"]
-    ))
+     :help "Show the REDUCE IDE version"]))
+
+(defun reduce-run--add-common-keys-to-map (map)
+  "Add common key bindings to keymap MAP.
+Bindings are common to REDUCE mode and REDUCE Run mode."
+  (define-keymap
+    :keymap map
+    "C-x C-e" #'reduce-eval-last-statement ; Emacs convention
+    "C-c C-M-e" #'reduce-eval-line
+    "C-c C-f" #'reduce-input-file
+    "C-c C-M-l" #'reduce-load-package
+    "C-c C-M-c" #'reduce-compile-file
+    "C-c C-M-f" #'reduce-run-file))     ; since C-M-i used by flyspell
+
+(reduce-run--add-common-keys-to-map reduce-run-mode-map)
+
+;; These commands augment REDUCE mode, so you can process REDUCE
+;; code in file editing buffers.
+(define-keymap
+  :keymap reduce-mode-map
+  "C-M-x"  #'reduce-eval-proc           ; Emacs convention
+  "C-c C-r" #'reduce-eval-region
+  "C-c C-M-b" #'reduce-run-buffer
+  "C-c C-z" #'switch-to-reduce
+  "M-R" #'run-reduce)
+
+(reduce-run--add-common-keys-to-map reduce-mode-map)
 
 (easy-menu-define                       ; (symbol maps doc menu)
   reduce-mode--run-menu
   nil
-  "REDUCE Mode Run Menu -- \
+  "REDUCE mode Run menu -- \
 updates autoload version when this file is loaded."
-  reduce-mode--run-menu1)
+  reduce-mode--run-menu-source)         ; defined in reduce-mode.el
 
-(let ((keymap (lookup-key reduce-mode-map [menu-bar]))
-      (definition (cons "Run REDUCE" reduce-mode--run-menu)))
-  ;; Redefine the REDUCE Mode Run menu autoload version if it exists:
-  (if (lookup-key keymap [run\ reduce])
-      (define-key keymap
-        [run\ reduce]                   ; MUST be lower case!
-        definition)
+;; Update or add the REDUCE mode Run menu:
+(let ((keymap (keymap-lookup reduce-mode-map "<menu-bar>"))
+      (definition (cons "Run-REDUCE" reduce-mode--run-menu)))
+  ;; Redefine the REDUCE mode Run menu autoload version if it exists:
+  (if (keymap-lookup keymap "<run-reduce>")
+      (keymap-set keymap "<run-reduce>" definition)
     ;; Otherwise, put the REDUCE Mode Run menu on the menu bar AFTER
     ;; the REDUCE menu:
-    (define-key-after keymap
-      [Run\ REDUCE]
-      definition 'REDUCE)))
+    (keymap-set-after keymap "<run-reduce>" definition 'REDUCE)))
 
 
 ;;; Functions to run REDUCE in a buffer
@@ -510,13 +506,18 @@ Return t if successful; otherwise return nil."
 ;;      (kill-buffer buffer-name)
 ;;      nil)))
 
+(defvar-local reduce--package-root-dir-file-name nil
+  "Buffer-local REDUCE root directory file name.
+Used by ‘reduce-run--package-completion-alist’ to locate the “packages”
+directory for the version of REDUCE running in the current buffer.")
+
 (defun reduce-run--run-reduce-1 (cmd process-name buffer-name)
   "Run CMD as REDUCE process PROCESS-NAME in buffer BUFFER-NAME.
-Set the buffer-local value of ‘reduce-root-dir-file-name’ to “root”.
-Return the process buffer if successful; nil otherwise."
+Set the (buffer-local) value of ‘reduce--package-root-dir-file-name’ to
+“root”.  Return the process buffer if successful; nil otherwise."
   (let ((root (reduce-run--run-reduce-2 cmd process-name)))
     (reduce-run-mode)
-    (setq-local reduce-root-dir-file-name root))
+    (setq reduce--package-root-dir-file-name root))
   (pop-to-buffer buffer-name))
 
 (defun reduce-run--run-reduce-2 (cmd process-name)
@@ -715,9 +716,7 @@ buffer."
      (reduce-run-autostart
       (unless switch (split-window nil nil t)) ; new window on the right
       (run-reduce)
-      ;; (reduce-run--wait-for-prompt) ; this seems to hang -- why?
-      ;; *** function modified -- may work now! ***
-      ))
+      (reduce-run--wait-for-prompt)))
     ;; Go to the end of the buffer if required:
     (when (and to-eob (not (eobp)))
       (or no-mark (push-mark))
@@ -736,15 +735,19 @@ buffer."
     (when (get-buffer-process (current-buffer))
       (insert "bye\;")                  ; show termination explicitly!
       (comint-send-input)
-      (sit-for 1))
+      (while (progn
+               (sit-for 1)
+               (get-buffer-process (current-buffer))))
+      (goto-char (point-max)))
     (insert ?\n)
-    (let* ((buf-name (buffer-name (current-buffer)))
-           (proc-name (substring buf-name 1 -1))
-           (cmd (when (> (length proc-name) 7) ; strip off " REDUCE"
-                  (cdr (assoc (substring proc-name 0 -7)
-                              reduce-run-commands)))))
-      (reduce-run--run-reduce-1
-       (or cmd (car reduce-run--history)) proc-name buf-name))))
+    (let* ((buf-name (buffer-name (current-buffer))) ; "*CMD REDUCE LABEL*"
+           (proc-name (substring buf-name 1 -1)) ; "CMD REDUCE LABEL"
+           (cmd (string-search " REDUCE" proc-name))
+                                        ; strip off " REDUCE..."
+           (cmd (or (and cmd (substring proc-name 0 cmd))
+                    (car reduce-run--history)))
+           (cmd (cdr (assoc cmd reduce-run-commands))))
+      (reduce-run--run-reduce-1 cmd proc-name buf-name))))
 
 (define-obsolete-function-alias 're-run-reduce 'rerun-reduce "REDUCE IDE 1.10.1")
 
@@ -789,16 +792,20 @@ The user always chooses interactively whether to echo file input."
            (if (y-or-n-p "Echo file input? ") ?\; ?$))))
 
 (defun reduce-run--wait-for-prompt ()
-  "Wait for REDUCE prompt in the current buffer.
-Leave point after the prompt, i.e. at end of buffer.
+  "Wait for a REDUCE prompt in the current buffer.
+After waiting for 10 seconds, throw an error.
+Otherwise, leave point after the prompt, i.e. at end of buffer.
 Assume the current buffer is a REDUCE process buffer!"
-  (while (progn
-           (goto-char (point-max))
-           ;; Unlike ‘beginning-of-line’, forward-line ignores field
-           ;; boundaries (cf. ‘comint-bol’)
-           (forward-line 0)
-           (not (looking-at reduce-run-prompt)))
-    (sit-for 1))
+  (let ((count 10))
+    (while (progn
+             (when (<= (setq count (1- count)) 0)
+               (error "Timeout waiting for REDUCE prompt"))
+             (goto-char (point-max))
+             ;; Unlike ‘beginning-of-line’, forward-line ignores field
+             ;; boundaries (cf. ‘comint-bol’)
+             (forward-line 0)
+             (not (looking-at reduce-run-prompt)))
+      (sit-for 1)))
   (goto-char (point-max)))
 
 (defalias 'reduce-fasl-file 'reduce-compile-file)
@@ -828,11 +835,11 @@ It is buffer-local and specific to each version of REDUCE.")
 (defun reduce-run--package-completion-alist ()
   "Return the value of variable ‘reduce-run--package-completion-alist’.
 Build it if necessary by processing \"$reduce/packages/package.map\"
-using the (buffer-local) value of ‘reduce-root-dir-file-name’."
+using the (buffer-local) value of ‘reduce--package-root-dir-file-name’."
   ;; Errors are trapped by customization, so report problems using
   ;; message.
   (or reduce-run--package-completion-alist
-      (let ((dir (concat reduce-root-dir-file-name "/packages/")))
+      (let ((dir (concat reduce--package-root-dir-file-name "/packages/")))
         (if (not (file-accessible-directory-p dir))
             (progn (message "Directory %s is not accessible" dir) nil)
           (let ((package.map (concat dir "package.map")))
@@ -848,7 +855,9 @@ using the (buffer-local) value of ‘reduce-root-dir-file-name’."
                         (mapcar
                          #'(lambda (x) (symbol-name (car x)))
                          packages)
-                        packages (sort packages #'string<)
+                        packages
+                        (sort packages :lessp #'string< :in-place t)
+                        ;; was (sort packages #'string<) => in place
                         reduce-run--package-completion-alist
                         (mapcar #'list packages))))))))))
 
@@ -905,6 +914,7 @@ process named from FILENAME and input FILENAME."
    (file-name-nondirectory filename)
    (format "in \"%s\"%c" filename (if echo ?\; ?$))))
 
+;;;###autoload
 (defun reduce-run-buffer ()
   "Run current buffer as a REDUCE program in a new process buffer.
 Start a new REDUCE process named from the current buffer and

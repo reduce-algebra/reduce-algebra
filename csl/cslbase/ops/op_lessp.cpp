@@ -67,8 +67,7 @@
                     jmp(endLessp);
                 bind(notFixnums);
 // Here one or other is not a Fixnum - call external function "lessp".
-                    loadstatic(w, OJITshim2B);
-                    loadstatic(w1, OJITlessp2);
+                    mov(w1, lessp2);
 // Args to "JITcall" are:
 //      target  Register that contains the entrypoint of the function to call
 //      result  Register to receive result of the call
@@ -79,7 +78,7 @@
 //      a1, a2..  Arguments for that.
 // so here w is JITshim2B and w is a function of 2 arguments that returns
 // a boolean value.
-                    JITcall(w, A_reg,
+                    JITcall(JITshim2B, A_reg,
                             w1, B_reg, A_reg);
 // See if that reported failure. Test the low bytes of JITerrflag.
                     JITerrorcheck();

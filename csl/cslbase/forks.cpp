@@ -137,8 +137,6 @@ LispObject Lcpu_count()
 
 #if defined WIN32 || !defined ENABLE_FORKS
 
-#pragma message "forks scheme not available on this builds"
-
 LispObject Lopen_fork(LispObject env)
 {   return nil;             // Always reports that it failed to open the fork.
 }
@@ -161,6 +159,22 @@ LispObject Lsend_fork_reply(LispObject env, LispObject handle)
 
 LispObject Lclose_fork(LispObject env, LispObject handle)
 {   return nil;
+}
+
+int32_t write_action_fork(int32_t op, LispObject f)
+{   return 0;
+}
+
+int32_t char_to_fork(int c, LispObject stream)
+{   return 0;
+}
+
+int char_from_fork(LispObject stream)
+{   return EOF;
+}
+
+int32_t read_action_fork(int32_t op, LispObject f)
+{   return 0;
 }
 
 #else // WIN32, ENABLE_FORKS
@@ -211,6 +225,27 @@ LispObject Lopen_fork(LispObject env)
         stream_file(r) = reinterpret_cast<FILE*>(fork_pipes_to[read_end]);
         stream_extra(r) = fork_pipes_from[write_end];
         qvalue(fork_parent) = r;
+// When a process forks all its threads will continue happily on the parent
+// but the versions in the child will not. Here I have the following
+// threads that I can worry about:
+// (1) Karatsuba. I must re-create the threads in the child process, or
+//     set things so that parallel-Karatsuba is never attempted. Note that
+//     none of the arithmetic-related threads can be doing anything at all
+//     exciting when open!-fork is called. The simpler thing to do will be
+//     to disable all attempts to use parallel Karstsuba, so that is what
+//     I do here.
+        karatsuba_parallel = 0x7fffffff;
+// (2) For a GUI run there are threads that might be involved in updating
+//     the screen and handing mouse and keyboard events. For a console
+//     mode version the keyboard would be being watched by a thread. I
+//     do not want them to get re-created because the child process should
+//     not participate in interaction with the user. I note that there is
+//     a messy issue if the user sends an interrupt to the parent thread
+//     while it has children - that could disrupt the flow of synchronization
+//     between them all. I am going to ignore that matter for the moment!
+
+
+
 // Now a loop providing service...
         for (;;)
         {   void* addr;
@@ -379,10 +414,6 @@ int32_t read_action_fork(int32_t op, LispObject f)
                 return 0;
         }
 }
-
-
-
-
 
 #endif // WIN32, ENABLE_FORKS
 

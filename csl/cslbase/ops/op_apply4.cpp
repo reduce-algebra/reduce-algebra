@@ -37,9 +37,9 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_APPLY4:
-                loadstatic(w, OJITshim1);
-                loadstatic(w1, OJITtimes2);
-                JITcall(w, A_reg,
+                std::cout << "OP_APPLY4 wrong\n";
+                mov(w1, times2);
+                JITcall(JITshim1, A_reg,
                         w1, B_reg, A_reg);
                 JITerrorcheck();
                 break;

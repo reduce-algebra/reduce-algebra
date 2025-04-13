@@ -18,10 +18,9 @@
 
             case OP_BUILTIN3:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim3L);
                 mov(w1, three_arg_functions[next]);
                 loadreg_post(w2, spreg, -8);
-                JITcall(w, A_reg,
+                JITcall(JITshim3L, A_reg,
                         w1, nilreg, w2, B_reg, A_reg);
                 JITerrorcheck();
                 break;

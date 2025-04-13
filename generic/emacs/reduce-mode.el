@@ -1,12 +1,12 @@
 ;;; reduce-mode.el --- Major mode to edit REDUCE computer-algebra code  -*- lexical-binding:t -*-
 
-;; Copyright (C) 1998-2001, 2012, 2017-2019, 2022-2024 Francis J. Wright
+;; Copyright (C) 1998-2001, 2012, 2017-2019, 2022-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sites.google.com/site/fjwcentaur>
 ;; Created: late 1992
-;; Time-stamp: <2024-12-14 17:24:26 franc>
+;; Time-stamp: <2025-04-10 17:19:01 franc>
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
-;; Package-Version: 1.13
+;; Package-Version: 1.14
 ;; Package-Requires: (cl-lib)
 
 ;; This file is part of REDUCE IDE.
@@ -124,10 +124,10 @@ such as keybindings.  By default it loads ‘reduce-extra’."
   :link '(custom-manual "(reduce-ide)Hooks")
   :group 'reduce)
 
-(defcustom reduce-mode-hook '(reduce-identifier-mode)
+(defcustom reduce-mode-hook '(reduce-word-mode)
   "List of functions to be called when REDUCE mode is entered.
 It can be used to customize buffer-local features of REDUCE mode.  By
-default it turns on ‘reduce-identifier-mode’, defined in ‘reduce-extra’."
+default it turns on ‘reduce-word-mode’, defined in ‘reduce-extra’."
   :type 'hook
   :link '(custom-manual "(reduce-ide)Hooks")
   :group 'reduce)
@@ -271,6 +271,8 @@ controlled by the standard Emacs Font Lock facilities."
   :link '(custom-manual "(reduce-ide)Font-Lock")
   :group 'reduce-display)
 
+(defvar show-paren-mode)                ; defined in ‘paren.el’
+
 (defcustom reduce-show-delim-mode-on show-paren-mode
   "If non-nil then turn on REDUCE Show Delim mode automatically.
 REDUCE Show Delim mode displays highlighting on whatever group or
@@ -338,44 +340,40 @@ Run mode when used; if it is nil then do nothing."
 ;; reserved for major modes, but do not bind C-c C-g (cancel) or C-c
 ;; C-h (help).
 
-(defvar reduce-mode-map
-  (let ((map (make-sparse-keymap)))
-    ;; (define-key map ">" 'reduce-self-insert-and-blink-matching-group-open)
-    (define-key map "\C-j" 'reindent-then-newline-and-indent)
-    (define-key map "\M-i" 'reduce-indent-line)
-    (define-key map [(control tab)] 'reduce-indent-line-always)
-    (define-key map [backtab] 'reduce-unindent-line) ; [(shift tab)]
-    ;; (define-key map [del] 'backward-delete-char-untabify)
-    (define-key map "\C-c\C-n" 'reduce-forward-statement)
-    (define-key map "\C-c\C-p" 'reduce-backward-statement)
-    (define-key map "\C-c\C-d" 'reduce-down-block-or-group)
-    (define-key map "\C-c\C-u" 'reduce-up-block-or-group)
-    (define-key map "\C-c\C-k" 'reduce-kill-statement)
-    (define-key map "\C-\M-f" 'reduce-forward-sexp)
-    (define-key map "\C-\M-b" 'reduce-backward-sexp)
-    (define-key map "\C-\M-k" 'reduce-kill-sexp)
-    (define-key map "\C-\M-e" 'reduce-forward-procedure)
-    (define-key map "\C-\M-a" 'reduce-backward-procedure)
-    (define-key map "\C-\M-h" 'reduce-mark-procedure)
-    (define-key map "\C-xnd" 'reduce-narrow-to-procedure)
-    (define-key map "\C-ck" 'reduce-kill-procedure)
-    ;; (define-key map "\C-\M-\\" 'reduce-indent-region)
-    (define-key map "\C-\M-q" 'reduce-indent-procedure)
-    (define-key map "\C-c;" 'reduce-comment-region)
-    (define-key map "\C-c:" 'reduce-comment-procedure)
-    (define-key map "\M-q" 'reduce-fill-comment)
-    (define-key map "\C-ci" 'reduce-insert-if-then)
-    (define-key map "\C-cb" 'reduce-insert-block)
-    (define-key map "\C-c<" 'reduce-insert-group)
-    (define-key map "\C-\M-l" 'reduce-reposition-window)
-    (define-key map "\C-\M-i" 'reduce-complete-symbol)
-    (define-key map [?\C-c (tab)] 'reduce-complete-symbol)
-                                        ; since C-M-i used by flyspell
-    (define-key map [(meta R)] 'run-reduce)
-    map)
-  "Keymap for REDUCE mode.")
+(defvar-keymap reduce-mode-map
+  :doc "Keymap for REDUCE mode."
+  ;; ">" #'reduce-self-insert-and-blink-matching-group-open
+  "C-j" #'reindent-then-newline-and-indent
+  "M-i" #'reduce-indent-line
+  "C-TAB" #'reduce-indent-line-always
+  "S-TAB" #'reduce-unindent-line
+  "C-c C-n" #'reduce-forward-statement
+  "C-c C-p" #'reduce-backward-statement
+  "C-c C-d" #'reduce-down-block-or-group
+  "C-c C-u" #'reduce-up-block-or-group
+  "C-c C-k" #'reduce-kill-statement
+  "C-M-f" #'reduce-forward-sexp
+  "C-M-b" #'reduce-backward-sexp
+  "C-M-k" #'reduce-kill-sexp
+  "C-M-e" #'reduce-forward-procedure
+  "C-M-a" #'reduce-backward-procedure
+  "C-M-h" #'reduce-mark-procedure
+  "C-x n d" #'reduce-narrow-to-procedure
+  "C-c k" #'reduce-kill-procedure
+  ;; "C-M-\\" #'reduce-indent-region       ; via indent-region
+  "C-M-q" #'reduce-indent-procedure
+  "C-c ;" #'reduce-comment-region
+  "C-c :" #'reduce-comment-procedure
+  "M-q" #'reduce-fill-comment
+  "C-c i" #'reduce-insert-if-then
+  "C-c b" #'reduce-insert-block
+  "C-c <" #'reduce-insert-group
+  "C-M-l" #'reduce-reposition-window
+  "C-M-i" #'reduce-complete-symbol
+  "C-c TAB" #'reduce-complete-symbol    ; since C-M-i used by flyspell
+  "M-R" #'run-reduce)
 
-(defconst reduce-mode--run-menu2
+(defconst reduce--common-run-menu-items
   '(["Run File…" reduce-run-file
      :help "Run selected REDUCE source file in a new REDUCE process"]
     "--"
@@ -385,15 +383,16 @@ Run mode when used; if it is nil then do nothing."
      :help "Load selected REDUCE package into selected REDUCE process"]
     ["Compile File…" reduce-compile-file
      :help "Compile selected REDUCE source file to selected FASL file"]
-    "--"))
+    "--")
+  "List of menu items common to REDUCE mode and REDUCE Run mode.")
 
-(defconst reduce-mode--run-menu1
-  `("Run REDUCE"
+(defconst reduce-mode--run-menu-source
+  `("Run-REDUCE"
     ["Run REDUCE" run-reduce
      :help "Start a new REDUCE process if necessary"]
     ["Run Buffer" reduce-run-buffer
      :help "Run the current buffer in a new REDUCE process"]
-    ,@reduce-mode--run-menu2
+    ,@reduce--common-run-menu-items
     ["Input Last Statement" reduce-eval-last-statement
      :help "Input the statement before point to a REDUCE process"]
     ["Input Line" reduce-eval-line
@@ -406,34 +405,37 @@ Run mode when used; if it is nil then do nothing."
     ["Switch To REDUCE" switch-to-reduce
      :help "Select and switch to a REDUCE process"]
     ["Customize…" (customize-group 'reduce-run)
-     :help "Customize REDUCE Run mode"]))
+     :help "Customize REDUCE Run mode"])
+  "REDUCE mode Run-REDUCE menu.")
 
-;; REDUCE-run menu bar and pop-up menu autoload version
+;; REDUCE-run menu autoload version
 ;; Must be defined before reduce-mode-menu so as to be displayed after!
 (when (eq reduce-run-autoload 'menu)
+  ;; Lint complains about unbound symbol ‘menu-item’ below!
   (defun reduce-mode--run-menu-item-autoload (menu-item)
     "Load Run mode and then run MENU-ITEM."
     (and (require 'reduce-run) (call-interactively menu-item)))
   (easy-menu-define                     ; (symbol maps doc menu)
     nil
     reduce-mode-map
-    "REDUCE Mode Run Menu autoload version -- \
+    "REDUCE mode Run Menu autoload version -- \
 updated when REDUCE Run is loaded."
-    (cons (car reduce-mode--run-menu1)
-          (mapcar (lambda (v) ; make menu item autoload run mode
-                    (if (and (vectorp v) (functionp (aref v 1)))
-                        (let ((vv (copy-sequence v)))
-                          (aset vv 1 `(reduce-mode--run-menu-item-autoload
-                                       #',(aref vv 1)))
-                          vv)
-                      v))
-                  (cdr reduce-mode--run-menu1)))))
+    (cons (car reduce-mode--run-menu-source)
+          (mapcar
+           (lambda (v)              ; make menu item autoload run mode
+             (if (and (vectorp v) (symbolp (aref v 1))
+                      (not (functionp (aref v 1)))) ; not already defined
+                 (let ((vv (copy-sequence v)))
+                   (aset vv 1 `(reduce-mode--run-menu-item-autoload
+                                #',(aref vv 1)))
+                   vv)
+               v))
+           (cdr reduce-mode--run-menu-source)))))
 
-;; REDUCE-mode menu bar and pop-up menu
 (easy-menu-define                       ; (symbol maps doc menu)
   nil
   reduce-mode-map
-  "REDUCE Mode Menu."
+  "REDUCE mode menu."
   '("REDUCE"
     ["Indent Line" indent-for-tab-command
      :help "Re-indent the current line"]
@@ -465,8 +467,10 @@ updated when REDUCE Run is loaded."
      :help "Kill the current procedure"]
     "--"
     ("Find / Tag"
-     ["Add “Index” Menu" (reduce--imenu-add-menubar-index t)
-      :active (not reduce--imenu-added)
+     ;; ["Add “Index” Menu" (reduce--imenu-add-menubar-index t)
+     ;; The line above leads to a mangled reduce-mode-map!
+     ["Add Index Menu" (reduce--imenu-add-menubar-index t)
+      :visible (not reduce--imenu-added)
       :help "Show an imenu of procedures, operators and variables"]
      "--"
      ["Find Tag…" xref-find-definitions
@@ -477,8 +481,7 @@ updated when REDUCE Run is loaded."
      ["Tag Directory…" reduce-tagify-dir
       :help "Tag REDUCE files in selected directory"]
      ["Tag Dir & Subdirs…" reduce-tagify-dir-recursively
-      :help "Tag REDUCE files under selected directory"]
-     )
+      :help "Tag REDUCE files under selected directory"])
     "--"
     "Templates:"
     ["Insert If-Then" reduce-insert-if-then
@@ -489,14 +492,16 @@ updated when REDUCE Run is loaded."
      :help "Insert a ‘group’ template"]
     "--"
     ["Indent Region" reduce-indent-region :active mark-active
+     :keys "C-M-\\"
      :help "Re-indent the current region"]
     ["Indent Buffer" (reduce-indent-region (point-min) (point-max))
-     :keys "C-u M-C-\\"
+     :keys "C-u C-M-\\"
      :help "Re-indent the current buffer"]
     "--"
     ["Read the Manual" (info "reduce-ide" "*REDUCE IDE*")
      :help "Read the REDUCE IDE manual in Info format"]
-    ["Command Mini Help" (apropos-command "\\`reduce\\|reduce\\'")
+    ["Command Mini Help"
+     (apropos-command "\\`reduce\\(?:-[^-]+\\)*\\'\\|reduce\\'")
      :help "Show a REDUCE IDE active command summary"]
     ["Customize…" (customize-group 'reduce)
      :help "Customize REDUCE IDE"]
@@ -520,10 +525,10 @@ updated when REDUCE Run is loaded."
       :active (featurep 'reduce-delim)
       :style toggle :selected reduce-show-delim-mode
       :help "Display matching group or block delimiters"]
-     ["Identifier Mode" reduce-identifier-mode
-      :active (featurep 'reduce-ident)
-      :style toggle :selected reduce-identifier-mode
-      :help "Treat identifiers as words"])))
+     ["Word Mode" reduce-word-mode
+      :active (featurep 'reduce-extra)
+      :style toggle :selected reduce-word-mode
+      :help "Treat identifiers and numbers as words"])))
 
 (defun reduce-ide-version ()
   "Echo version information for REDUCE IDE."
@@ -563,6 +568,8 @@ updated when REDUCE Run is loaded."
 
 (declare-function reduce-font-lock-mode "reduce-font-lock" ())
 (declare-function reduce-show-delim-mode "reduce-delim" ())
+(defvar imenu-create-index-function)    ; defined in ‘imenu.el’
+(defvar comment-column)                 ; defined in ‘newcomment.el’
 
 ;;;###autoload
 (define-derived-mode reduce-mode prog-mode "REDUCE"
@@ -969,7 +976,7 @@ header onto subsequent lines, in which case return
                ;; Check start not within procedure body:
                (reduce-forward-statement 2)
                (when (> start (point)) 0)))))
-      (t nil))))
+      (t nil))))                 ; Lint complains about use of t here!
 
 (defconst reduce--label-or-end-regexp
   ;; "[^:\n]+:[^=]\\|\\_<end\\_>"
@@ -1837,7 +1844,8 @@ return ‘point’; otherwise throw a user error."
            ((and (looking-at "\\s\(\\|\"") (reduce--unescaped-p))
             (forward-sexp))
            ((looking-at "'?\\_<\\|'\\s\(") (forward-sexp))
-           (t (user-error ""))))
+           (t (user-error "End of sexp not found"))))
+      ;; Lint complains about use of t below!
       (t (reduce--move-error start "next"))))
   (point))
 
@@ -1868,7 +1876,8 @@ return ‘point’; otherwise throw a user error."
            ((and (looking-back "\\s\)\\|\"" nil) (reduce--unescaped-p (1- (point))))
             (backward-sexp))
            ((looking-back "\\_>" nil) (backward-sexp))
-           (t (user-error ""))))
+           (t (user-error "Start of sexp not found"))))
+      ;; Lint complains about use of t below!
       (t (reduce--move-error start "previous"))))
   (point))
 
@@ -2037,7 +2046,7 @@ With argument include a correctly indented ‘else’ on a second line."
 Position point inside.
 With argument put ‘begin’ and ‘end’ on the same line
 \(see ‘reduce-insert-block-or-group’)."
-  (interactive "*P")            ; error if buffer read-only
+  (interactive "*P")                    ; error if buffer read-only
   (reduce-insert-block-or-group "begin" "end" t nosplit))
 
 (defun reduce-insert-group (&optional nosplit)
@@ -2045,7 +2054,7 @@ With argument put ‘begin’ and ‘end’ on the same line
 Position point inside.
 With argument put ‘<<’ and ‘>>’ on the same line
 \(see ‘reduce-insert-block-or-group’)."
-  (interactive "*P")            ; error if buffer read-only
+  (interactive "*P")                    ; error if buffer read-only
   (reduce-insert-block-or-group "<<" ">>" nil nosplit))
 
 (defun reduce-insert-block-or-group (open close block nosplit)
@@ -2055,43 +2064,46 @@ if point is not at the end of the line then enclose the rest of the line.
 Leave the mark at the insertion point in the body of a BLOCK.
 If NOSPLIT is non-nil then put OPEN and CLOSE on the same line."
   (let ((region-beginning (and transient-mark-mode mark-active
-                   (region-beginning)))
-    (region-end (and transient-mark-mode mark-active
-             (copy-marker (region-end))))
-    finish-marker)
-    (if region-beginning (goto-char region-beginning))
+                               (region-beginning)))
+        (region-end (and transient-mark-mode mark-active
+                         (copy-marker (region-end))))
+        finish-marker)
+    (when region-beginning (goto-char region-beginning))
+    ;; Indent or space OPEN appropriately:
+    (if (looking-back "^[ \t]*" (pos-bol))
+        (reduce-indent-line)            ; first text on line
+      (delete-horizontal-space)
+      (insert ?\s))
     (insert open)
-    (if block (progn
-        (insert " scalar ")
-        (setq finish-marker (point-marker))
-        (insert ";")))
-    (if (looking-at "[ \t]*$") ()
+    (when block
+      (insert " scalar ")
+      (setq finish-marker (point-marker))
+      (insert ";"))
+    (unless (looking-at "[ \t]*$")
       (if nosplit (insert " ") (newline-and-indent)))
     (if region-end
-    (progn              ; better to indent rigidly?
-      (reduce-indent-region (point) region-end)
-      (goto-char region-end)
-      (if (bolp) (backward-char))
-      (set-marker region-end nil) )
-      (if (looking-at "[ \t]*$") ()
-    ;; (reduce-forward-statement 1)
-    (end-of-line)
-    (setq region-end t)) )
-    (if region-end ()
-      (reduce-indent-line)
-      (if nosplit (insert " ") (newline-and-indent)) )
+        (progn                          ; better to indent rigidly?
+          (reduce-indent-region (point) region-end)
+          (goto-char region-end)
+          (if (bolp) (backward-char))
+          (set-marker region-end nil))
+      (unless (looking-at "[ \t]*$")
+        ;; (reduce-forward-statement 1)
+        (end-of-line)
+        (setq region-end t)))
+    (unless region-end
+      ;; (reduce-indent-line)              ; moved up
+      (if nosplit (insert " ") (newline-and-indent)))
     (if block (push-mark) (setq finish-marker (point-marker)))
     (if nosplit (insert " ") (newline))
     (insert close)
     (if (looking-at "[ \t]*else")
-    (just-one-space)
+        (just-one-space)
       (insert ";")
-      (if (looking-at "[ \t]*$") ()
-    (insert "  ")) )
-    (reduce-indent-line)        ; necessary AFTER inserting close
+      (unless (looking-at "[ \t]*$") (insert "  ")))
+    (reduce-indent-line)             ; necessary AFTER inserting close
     (goto-char finish-marker)
-    (set-marker finish-marker nil)
-    ))
+    (set-marker finish-marker nil)))
 
 ;; If an expansion function interprets an argument then it means that
 ;; the expansion should be kept on one line.  The following are
@@ -2109,6 +2121,9 @@ If NOSPLIT is non-nil then put OPEN and CLOSE on the same line."
 ;;;; *************************************
 ;;;; Support for matching group delimiters
 ;;;; *************************************
+
+(defvar blink-matching-paren)           ; defined in ‘simple.el’
+(defvar blink-matching-paren-distance)  ; defined in ‘simple.el’
 
 (defun reduce-self-insert-and-blink-matching-group-open ()
   "Insert character and then blink matching group opening construct."
@@ -2346,9 +2361,9 @@ But don't jump out of the current procedure!"
 
 (defconst reduce--show-proc-keymap
   (let ((map (make-sparse-keymap)))
-    (define-key map [mode-line mouse-1] #'reduce--show-proc-beginning)
-    (define-key map [mode-line mouse-2] #'reduce--show-proc-toggle-alone)
-    (define-key map [mode-line mouse-3] #'reduce--show-proc-end)
+    (keymap-set map "<mode-line> <mouse-1>" #'reduce--show-proc-beginning)
+    (keymap-set map "<mode-line> <mouse-2>" #'reduce--show-proc-toggle-alone)
+    (keymap-set map "<mode-line> <mouse-3>" #'reduce--show-proc-end)
     map)
   "Mouse menu keymap for the procedure name in the mode line.")
 
@@ -2500,9 +2515,44 @@ If non-nil the string must end with /."
   :link '(custom-manual "(reduce-ide)Tags")
   :group 'reduce-interface)
 
+(defcustom reduce-etags-regexps
+  '("/[^%\\n]*procedure[ \\t]+\\([^ \\t(;$\\n]+\\)/\\1/i"
+    "/[^%\\n]*put[ \\t]*('\
+\\([^,\\n]+\\)[ \\t]*,[ \\t]*'\\(psop\\|simp\\)fn/\\1/i"
+    "/[^%\\n]*operator[ \\t]+\
+\\([^ \\t,;$\\n]+\\)/\\1/i"             ; first name
+    "/[^%\\n]*operator[ \\t]+[^,\\n]+,\
+[ \\t]*\\([^ \\t,;$\\n]+\\)/\\1/i"      ; second name
+    "/[^%\\n]*operator[ \\t]+[^,\\n]+,[^,\\n]+,\
+[ \\t]*\\([^ \\t,;$\\n]+\\)/\\1/i"      ; third name
+    "/[^%\\n]*operator[ \\t]+[^,\\n]+,[^,\\n]+,[^,\\n]+,\
+[ \\t]*\\([^ \\t,;$\\n]+\\)/\\1/i"      ; fourth name
+    "/[^%\\n]*operator[ \\t]+[^,\\n]+,[^,\\n]+,[^,\\n]+,[^,\\n]+,\
+[ \\t]*\\([^ \\t,;$\\n]+\\)/\\1/i")     ; fifth name
+  "List of etags regular expressions to find definitions of “name”.
+Each item will have “--regex=” prepended and should match
+“procedure name”, “put(‘name, ‘psopfn, …)”, “put(‘name, ‘simpfn, …)”,
+“operator …, name, …”, etc.
+
+The syntax is
+
+     /TAGREGEXP/[NAMEREGEXP/]MODIFIERS
+
+where TAGREGEXP is always used anchored to the beginning of a line.  All
+C character escapes are supported.  Otherwise, the regular expression
+syntax is mostly the same as Emacs except that backslash escapes are the
+same as GNU grep.  But {} doesn't seem to be useful!
+
+Because REDUCE identifier syntax is unusual, NAMEREGEXP is always needed
+to match “name” reliably, typically by using a back reference like ‘\\1’
+to a parenthesized grouping ‘\\(…\\)’."
+  :type '(repeat string)
+  :link '(custom-manual "(emacs)Etags Regexps")
+  :group 'reduce-interface)
+
 (defun reduce-tagify-dir (dir)
   "Generate a REDUCE TAGS file for ‘*.red’ files in directory DIR.
-TAGS goes in DIR, which by default is the current directory."
+The TAGS file goes in DIR, which by default is the current directory."
   (interactive
    (list (read-directory-name
           "Tag files in dir: "          ; PROMPT
@@ -2530,8 +2580,10 @@ MSG is the message displayed when the tagging process started."
                  "*rtags-log*"                           ; destination
                  nil                                     ; display
                  "--lang=none"                           ; args …
-                 "--regex=/[^%]*procedure[ \\t]+\\([^ \\t\(;$]+\\)/\\1/i"
-                 files)))             ; LIST of filenames
+                 (append
+                  (mapcar #'(lambda (x) (concat "--regex=" x))
+                          reduce-etags-regexps)
+                  files))))             ; LIST of filenames
           (if (eq value 0)
               (message "%sdone" msg)
             (message "Etags failed with status: %s" value)))
@@ -2544,18 +2596,17 @@ a smaller recursion depth and tagging sub-directories separately")))))
 
 (defun reduce-tagify-dir-recursively (dir depth)
   "Generate a REDUCE TAGS file for ‘*.red’ files under directory DIR.
-Recursion DEPTH <= 0 means the search depth is unlimited.  The TAGS
-file goes in DIR, which by default is the current directory."
+Recursion DEPTH <= 0 means the search depth is unlimited.  The TAGS file
+goes in DIR, which by default is the parent of the current directory."
   (interactive
    (list (read-directory-name
           "Tag files under directory: " ; PROMPT
-          nil                           ; DIR (default cwd)
+          ".."                          ; DIR (parent of cwd)
           nil                           ; DEFAULT-DIRNAME
           t)                            ; MUSTMATCH
          (read-number
           "Search directories to depth (unlimited if <= 0): "
-          2                             ; DEFAULT
-          nil)))                        ; HIST
+          2)))                          ; DEFAULT
   (setq dir (directory-file-name (expand-file-name dir)))
   (let (;; Required by ‘reduce--directory-files-recursively’...
         (reduce--tagify-root dir)
@@ -2565,6 +2616,8 @@ file goes in DIR, which by default is the current directory."
     (reduce--tagify
      dir (reduce--directory-files-recursively dir depth)
      (message "Tagging files ‘%s/…*.red’ to depth %s…" dir depth))))
+
+(defvar directory-files-no-dot-files-regexp) ; defined in ‘files.el’
 
 (defun reduce--directory-files-recursively (dir depth)
   "Return a list of ‘*.red’ files under directory DIR to specified DEPTH.

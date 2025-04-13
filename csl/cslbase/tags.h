@@ -294,14 +294,14 @@ inline const size_t Ofunction4up = offsetof(Symbol_Head, function4up);
 /* 8 -196   */ FF(LispObject,  JITarg3,          TAG_FIXNUM) \
 /* 9 -188   */ FF(LispObject,  JITarg4,          TAG_FIXNUM) \
 /*10 -180   */ FF(func0,       JITthrow,         jitthrow) \
-/*11 -172   */ FF(shim0,       JITshim0,         JITshim) \
-/*12 -164   */ FF(shim1,       JITshim1,         JITshim) \
-/*13 -156   */ FF(shim2,       JITshim2,         JITshim) \
-/*14 -148   */ FF(shim3,       JITshim3,         JITshim) \
-/*15 -140   */ FF(shim4,       JITshim4,         JITshim) \
-/*16 -132   */ FF(shim5,       JITshim5,         JITshim) \
-/*17 -124   */ FF(boolshim1,   JITshim1B,        JITshim) \
-/*18 -116   */ FF(boolshim2,   JITshim2B,        JITshim) \
+/*11 -172   */ FF(shim0,       XJITshim0,         JITshim0) \
+/*12 -164   */ FF(shim1,       XJITshim1,         JITshim1) \
+/*13 -156   */ FF(shim2,       XJITshim2,         JITshim2) \
+/*14 -148   */ FF(shim3,       XJITshim3,         JITshim3) \
+/*15 -140   */ FF(shim4,       XJITshim4,         JITshim4) \
+/*16 -132   */ FF(shim5,       XJITshim5,         JITshim5) \
+/*17 -124   */ FF(boolshim1,   XJITshim1B,        JITshim1B) \
+/*18 -116   */ FF(boolshim2,   XJITshim2B,        JITshim2B) \
 /*19 -108   */ FF(func2b,      JITlessp2,        JITlessp2Val) \
 /*10 -100   */ FF(func2b,      JITleq2,          JITleq2Val) \
 /*21  -92   */ FF(func2,       JITplus2,         JITplus2Val) \
@@ -360,11 +360,11 @@ enum NilOffset:int
 // These are used for calling Lisp functions that have an extra implicit
 // "env" argument so that they take one more real (C++) argument than
 // perhaps expected.
-    OJITshim0L = OJITshim1,
-    OJITshim1L = OJITshim2,
-    OJITshim2L = OJITshim3,
-    OJITshim3L = OJITshim4,
-    OJITshim4L = OJITshim5,
+//@@    OJITshim0L = OJITshim1,
+//@@    OJITshim1L = OJITshim2,
+//@@    OJITshim2L = OJITshim3,
+//@@    OJITshim3L = OJITshim4,
+//@@    OJITshim4L = OJITshim5,
 };
 #undef FF
 

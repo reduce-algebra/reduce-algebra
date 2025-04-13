@@ -12,11 +12,10 @@
 
             case OP_LITGET:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim3);
-                loadstatic(w1, OJITget);
+                mov(w1, get);
                 mov(B_reg, A_reg);
                 loadlit(A_reg, next);
-                JITcall(w, A_reg,
+                JITcall(JITshim3, A_reg,
                         w1, B_reg, A_reg, nilreg);
                 JITerrorcheck();
                 break;

@@ -18,10 +18,9 @@
 
             case OP_QGETVN:
                 next = bytes[ppc++];
-                loadstatic(w, OJITshim2L);
-                loadstatic(w1, OJITLgetv);
+                mov(w1, Lgetv);
                 mov(w2, fixnum_of_int(next));
-                JITcall(w, A_reg,
+                JITcall(JITshim2L, A_reg,
                         w1, nilreg, w2, A_reg);
                 JITerrorcheck();
                 break;

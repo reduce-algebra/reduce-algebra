@@ -881,8 +881,9 @@ inline bool exceptionPending()
 // So I sidestep at least almost all of it.
 // When JIT code wants to generate a function call that I will express
 // as FFF(a,b,c) I will make it use JITshim(FFF,a,b,c) instead. I will
-// present one override of JITshim here and then explain it - and then
-// write out all the other overrides:
+// present one variant of JITshim here and then explain it - and then
+// write out all the other versions that cope with different numbers
+// of parameters:
 
 // JITerrflag is used as a flag but I make it a 64-bit integer so that I
 // do not have to wonder just how much memory your C++ compiler allocates
@@ -911,8 +912,8 @@ typedef LispObject (*errfunc1)(const char*,LispObject);
 typedef LispObject (*errfunc2)(const char*,LispObject,LispObject);
 typedef LispObject (*errfunc2s)(const char*,const char*,LispObject);
 
-inline LispObject JITshim(func1 FF,
-                          LispObject env)
+inline LispObject JITshim1(func1 FF,
+                           LispObject env)
 {   LispObject r;
     TRY
 // I will call FF(env) and use C++ facilities to catch any exceptions
@@ -978,7 +979,7 @@ inline LispObject jitthrow()
 
 // I now need variants of JITshim passing various numbers of arguments.
 
-inline LispObject JITshim(func0 FF)
+inline LispObject JITshim0(func0 FF)
 {   LispObject r;
     TRY
         r = (*FF)();
@@ -993,8 +994,8 @@ inline LispObject JITshim(func0 FF)
     return r;
 }
 
-inline LispObject JITshim(func2 FF,
-                          LispObject env, LispObject a1)
+inline LispObject JITshim2(func2 FF,
+                           LispObject env, LispObject a1)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1);
@@ -1009,8 +1010,8 @@ inline LispObject JITshim(func2 FF,
     return r;
 }
 
-inline LispObject JITshim(func1b FF,
-                          LispObject a1)
+inline LispObject JITshim1B(func1b FF,
+                            LispObject a1)
 {   bool r;
     TRY
         r = (*FF)(a1);
@@ -1026,8 +1027,8 @@ inline LispObject JITshim(func1b FF,
 }
 
 
-inline LispObject JITshim(func2b FF,
-                          LispObject a1, LispObject a2)
+inline LispObject JITshim2B(func2b FF,
+                            LispObject a1, LispObject a2)
 {   LispObject r;
     TRY
         r = (*FF)(a1, a2);
@@ -1042,8 +1043,8 @@ inline LispObject JITshim(func2b FF,
     return r;        // widens result to intptr_t
 }
 
-inline LispObject JITshim(func3 FF,
-                          LispObject env, LispObject a1, LispObject a2)
+inline LispObject JITshim3(func3 FF,
+                           LispObject env, LispObject a1, LispObject a2)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1, a2);
@@ -1058,9 +1059,9 @@ inline LispObject JITshim(func3 FF,
     return r;
 }
 
-inline LispObject JITshim(func4 FF,
-                          LispObject env, LispObject a1,
-                          LispObject a2, LispObject a3)
+inline LispObject JITshim4(func4 FF,
+                           LispObject env, LispObject a1,
+                           LispObject a2, LispObject a3)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1, a2, a3);
@@ -1075,9 +1076,9 @@ inline LispObject JITshim(func4 FF,
     return r;
 }
 
-inline LispObject JITshim(func5 FF,
-                          LispObject env, LispObject a1,
-                          LispObject a2, LispObject a3, LispObject a4up)
+inline LispObject JITshim5(func5 FF,
+                           LispObject env, LispObject a1,
+                           LispObject a2, LispObject a3, LispObject a4up)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1, a2, a3, a4up);
@@ -1092,6 +1093,11 @@ inline LispObject JITshim(func5 FF,
     return r;
 }
 
+inline auto JITshim0L = JITshim1;
+inline auto JITshim1L = JITshim2;
+inline auto JITshim2L = JITshim3;
+inline auto JITshim3L = JITshim4;
+inline auto JITshim4L = JITshim5;
 
 // If I build for debugging I will verify that the stack pointer is
 // properly unchanged across some scopes. This will help...

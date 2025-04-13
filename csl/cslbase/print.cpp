@@ -5455,6 +5455,12 @@ void dpr(LispObject x)
     simple_column = 0;
 }
 
+void dpr0(LispObject x)
+{   simple_print_extras = false;
+    simple_prin1(stdout, x);
+    simple_column = 0;
+}
+
 void simple_print(FILE* f, atomic<LispObject> &x)
 {   simple_print(f, static_cast<LispObject>(x));
 }

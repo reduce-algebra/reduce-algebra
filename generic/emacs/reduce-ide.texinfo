@@ -2,9 +2,9 @@
 @c %**start of header
 @settitle GNU Emacs REDUCE Integrated Development Environment
 @c Manual last updated:
-@set UPDATED Time-stamp: <2024-12-16 15:18:12 franc>
+@set UPDATED Time-stamp: <2025-04-10 17:31:27 franc>
 @c Software version:
-@set VERSION 1.13
+@set VERSION 1.14
 @afourpaper
 @c With different size paper the printed page breaks will need attention!
 @c Look for @page and @need commands.
@@ -22,7 +22,7 @@ This manual is for REDUCE IDE (version @value{VERSION}, updated
 @value{UPDATED}), which provides GNU Emacs major modes for editing and
 running REDUCE source code.
 
-Copyright @copyright{} 1994, 1996, 1999, 2012, 2017-2018, 2022-2024 Francis J. Wright
+Copyright @copyright{} 1994, 1996, 1999, 2012, 2017-2018, 2022-2025 Francis J. Wright
 
 @quotation
 This manual and the software that it describes are subject to the GNU
@@ -1285,8 +1285,10 @@ facilities for finding a procedure definition via a tag file.  Two
 commands (and submenu options) facilitate tagging the REDUCE files in
 one directory or in a directory and its sub-directories.  The former
 is useful for tagging all the files associated with a single project
-or package; the latter for tagging all REDUCE packages in a single tag
-file.
+or package -- the directory defaults to the directory of the current
+REDUCE file; the latter is useful for tagging all the packages in a
+standard REDUCE installation -- the directory defaults to the parent
+of the directory of the current REDUCE file.
 
 Once a TAGS file has been generated, the standard Emacs @code{xref}
 interface is available to find identifier references, in particular
@@ -1301,6 +1303,12 @@ which should be appropriate by default, but if not can be customized.
 (It is not required that the Emacs @code{bin} directory be in your
 execution path, but if it is you can optionally set
 @option{reduce-etags-directory} to nil.)
+
+The tagging commands use the list of regular expressions in the
+customizable option @code{reduce-etags-regexps} to find tags.  By
+default, these are currently all procedure names, identifiers with the
+property @code{psopfn} or @code{simpfn}, and up to the first five
+identifiers listed in the same @code{operator} declaration.
 
 @table @kbd
 @item M-.
@@ -1318,13 +1326,13 @@ goes in the specified directory.
 @item M-x reduce-tagify-dir-recursively
 @findex reduce-tagify-dir-recursively
 Generate a REDUCE TAGS file for (all @code{.red} files in) the
-specified directory, by default the current directory, and its
-sub-directories to the specified depth.  The depth defaults to 2,
-which means the specified directory and each of its immediate
+specified directory, by default the parent of the current directory,
+and its sub-directories to the specified depth.  The depth defaults to
+2, which means the specified directory and each of its immediate
 sub-directories, but no deeper sub-directories.  Specifying a depth
 less than or equal to 0 means all sub-directories with no limit.  This
-may fail on the REDUCE packages directory because it attempts to tag
-too many files.  The single TAGS file goes in the specified directory.
+may fail on the REDUCE @code{packages} directory because it attempts
+to tag too many files.  The TAGS file goes in the specified directory.
 @end table
 
 @c ===================================================================
@@ -1571,7 +1579,7 @@ defaults to @code{nil} to disable this facility.
 The main command to start REDUCE is @command{run-reduce}, which is
 bound to the key @kbd{M-R} (that's a capital @code{R}, so use
 @kbd{@key{META}-@key{SHIFT}-r}) in REDUCE mode.  It is also available
-in the REDUCE mode @emph{Run REDUCE} menu.
+in the REDUCE mode @emph{Run-REDUCE} menu.
 
 If the option @code{reduce-run-multiple} is non-nil (which by default
 it is) then @command{run-reduce} starts a new REDUCE process every
@@ -1930,10 +1938,10 @@ REDUCE mode adds a major-mode menu called ``REDUCE'' to the menu bar,
 which is also available as a pop-up menu activated by the command
 @code{mouse-major-mode-menu} on the standard key @kbd{C-down-mouse-3}.
 
-REDUCE Run mode adds a second major-mode menu called ``Run REDUCE'',
+REDUCE Run mode adds a second major-mode menu called ``Run-REDUCE'',
 which appears immediately to the right of the ``REDUCE'' menu on the
 menu bar and immediately below the ``REDUCE'' menu on the pop-up menu.
-It is possible to have the ``Run REDUCE'' menu displayed even when
+It is possible to have the ``Run-REDUCE'' menu displayed even when
 REDUCE Run mode is not loaded, which is controlled by the option
 @code{reduce-run-autoload}.  @xref{Run Customization}.
 
@@ -2161,6 +2169,12 @@ and the @code{cdr} inserted if it is a string or called if it is a
 @item reduce-etags-directory
 Directory containing the @code{etags} program, or @code{nil} if it is
 in path.  If non-nil the string must end with @code{/}.
+
+@item reduce-etags-regexps
+List of etags regular expressions to find definitions of ``names''.
+By default, these are currently all procedure names, identifiers with
+the property @code{psopfn} or @code{simpfn}, and up to the first five
+identifiers listed in the same @code{operator} declaration.
 
 @item reduce-imenu
 Obsolete; renamed to @code{reduce-imenu-add}.

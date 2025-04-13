@@ -28,10 +28,9 @@
                     add2(A_reg, 0x10);
                     jmp(endAdd1);
                 bind(notFixnum);
-                    loadstatic(w, OJITshim2);
-                    loadstatic(w1, OJITplus2);
+                    mov(w1, plus2);
                     mov(B_reg, fixnum_of_int(1));
-                    JITcall(w, A_reg,
+                    JITcall(JITshim2, A_reg,
                             w1, A_reg, B_reg);  
                     JITerrorcheck();
                 bind(endAdd1);

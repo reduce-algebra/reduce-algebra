@@ -33,9 +33,8 @@
                     loadstatic(A_reg, Olisp_true);
                     jmp(endGreaterp);
                 bind(notFixnums);
-                    loadstatic(w, OJITshim2B);
-                    loadstatic(w1, OJITlessp2);
-                    JITcall(w, A_reg,
+                    mov(w1, lessp2);
+                    JITcall(JITshim2B, A_reg,
                             w1, A_reg, B_reg);
                     JITerrorcheck();
                     test(A_reg, 0xff);

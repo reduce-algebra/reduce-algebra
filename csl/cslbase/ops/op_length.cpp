@@ -9,9 +9,8 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_LENGTH:
-                loadstatic(w, OJITshim1L);
-                loadstatic(w1, OJITLlength);
-                JITcall(w, A_reg,
+                mov(w1, Llength);
+                JITcall(JITshim1L, A_reg,
                         w1, nilreg, A_reg);
                 JITerrorcheck();
                 break;

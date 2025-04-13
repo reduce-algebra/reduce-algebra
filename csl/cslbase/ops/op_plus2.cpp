@@ -36,17 +36,16 @@
 // After adding the result could be too large for a fixnum. Call code that
 // handles all that mess. In easy cases it will just shift left by 4 bits
 // and add TAG_FIXNUM. In hard cases it needs to create a bignum.
-                    loadstatic(w, OJITshim1);
-                    loadstatic(w1, OJITint_from_ptr);
-                    JITcall(w, A_reg,
+                    mov(w1, JITint_from_ptrVal);
+                    JITcall(JITshim1, A_reg,
                             w1, A_reg);
 // Remember to check for failure!
                     JITerrorcheck();
                     jmp(endPlus2);
+
                 bind(notFixnum);
-                    loadstatic(w, OJITshim2);
-                    loadstatic(w1, OJITplus2);
-                    JITcall(w, A_reg,
+                    mov(w1, plus2);
+                    JITcall(JITshim2, A_reg,
                             w1, A_reg, B_reg);  
                     JITerrorcheck();
                 bind(endPlus2);

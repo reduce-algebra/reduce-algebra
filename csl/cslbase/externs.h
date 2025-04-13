@@ -497,6 +497,7 @@ extern void simple_string(char* p, size_t n, LispObject x);
 extern void simple_old_string(char* p, size_t n, LispObject x);
 extern bool simple_print_extras;
 extern void dpr(LispObject x);
+extern void dpr0(LispObject x);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char* s, LispObject x);
 extern void simple_print(FILE* f, LispObject x);

@@ -1509,7 +1509,8 @@ LispObject Lsymbol_value(LispObject, LispObject a)
 
 LispObject Lset(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!symbolp(a) || a == nil || a == lisp_true) return aerror("set");
+    if (!symbolp(a) || a == nil || a == lisp_true)
+        return aerror1("set", a);
     qvalue(a) = b;
     return b;
 }
