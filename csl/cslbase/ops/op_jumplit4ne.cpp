@@ -1,4 +1,4 @@
-// jumplit4ne.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_JUMPLIT4NE:

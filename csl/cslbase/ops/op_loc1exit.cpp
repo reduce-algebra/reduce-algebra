@@ -1,4 +1,4 @@
-// loc1exit.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_LOC1EXIT:

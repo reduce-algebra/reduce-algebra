@@ -1,4 +1,4 @@
-// list3.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_LIST3:                  // A_reg = list3(p), B_reg, A_reg);

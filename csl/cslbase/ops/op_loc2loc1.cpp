@@ -1,4 +1,4 @@
-// loc2loc1.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_LOC2LOC1:

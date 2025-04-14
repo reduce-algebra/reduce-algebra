@@ -1,4 +1,4 @@
-// acons.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_ACONS:                  // A_reg = acons(p, B_reg, A_reg);

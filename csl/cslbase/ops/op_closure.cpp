@@ -1,4 +1,4 @@
-// closure.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_CLOSURE:

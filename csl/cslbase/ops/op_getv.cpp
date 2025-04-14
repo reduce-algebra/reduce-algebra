@@ -1,4 +1,4 @@
-// getv.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_GETV:                           // A_reg = getv(B_reg, A_reg)

@@ -1,4 +1,4 @@
-// catch_bl.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_CATCH_BL:

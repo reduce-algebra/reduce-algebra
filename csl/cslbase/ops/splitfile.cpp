@@ -1,4 +1,5 @@
-#include <cstdio> $Id$
+// $Id$
+#include <cstdio>
 #include <iostream>
 #include <cstring>
 #include <cinttypes>

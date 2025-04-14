@@ -1,4 +1,4 @@
-// call4.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
 

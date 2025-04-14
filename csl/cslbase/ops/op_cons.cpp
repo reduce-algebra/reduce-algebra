@@ -1,4 +1,4 @@
-// cons.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_CONS:                     // A_reg = cons(B_reg, A_reg);

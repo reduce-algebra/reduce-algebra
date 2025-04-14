@@ -1,4 +1,4 @@
-// qgetvn.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_QGETVN:                         // A_reg = getv(A_reg, n)

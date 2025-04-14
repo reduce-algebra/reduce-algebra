@@ -1,4 +1,4 @@
-// bytes_tail.cpp $Id$
+// $Id$
 
         }
 

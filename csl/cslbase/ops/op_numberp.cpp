@@ -1,4 +1,4 @@
-// numberp.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_NUMBERP:                                // A = numberp(A)

@@ -152,7 +152,8 @@ FileLogger myFileLogger(stdout);
 intptr_t savePPC, saveA, saveB, saveSP, saveSPentry;
 
 void JITdebugprint(void)
-{   std::cout << "\nppc     = " << savePPC << std::hex << "\n";
+{   std::cout << "\n";
+    std::cout << "ppc     = " << savePPC << std::hex << "\n";
     std::cout << "nil     = " << nil << " = "; dpr(nil);
     std::cout << "A_reg   = " << saveA << " = "; dpr(saveA);
     std::cout << "B_reg   = " << saveB << " = "; dpr(saveB);
@@ -160,7 +161,7 @@ void JITdebugprint(void)
     {   std::cout << std::dec << ((saveSP-p)/sizeof(intptr_t))
                   << ":  " << std::hex
                   << *reinterpret_cast<intptr_t*>(p) << " = ";
-                  dpr(*reinterpret_cast<intptr_t*>(p));
+        dpr(*reinterpret_cast<intptr_t*>(p));
     }
     std::cout << std::dec;
 }
@@ -231,8 +232,23 @@ Error storereg_post(Register& r, Register& base, intptr_t offset)
 
 #elif defined __aarch64__
 
+// The ARM has a smaller range of valid offsets when the offset is not
+// a multiple of the word-size, so in cases that would overflow that I
+// insert an extra add or subtract instruction.
+
 Error loadreg(Register& r, Register& base, intptr_t offset)
-{   return ldr(r, ptr(base, offset));
+{   if ((offset & 7) != 0 && (offset < -256 || offset >= 256))
+    {   Register b1 = newIntPtr("b1");
+        int32_t n = offset & 0xfff;
+        if (offset < 0)
+        {   n |= 0xfffffffffffff000;
+            ASMJIT_PROPAGATE(sub(b1, base, -n));
+        }
+        else ASMJIT_PROPAGATE(add(b1, base, n));
+        offset -= n;
+        return ldr(r, ptr(base, offset));
+    }
+    return ldr(r, ptr(base, offset));
 }
 
 Error storereg(Register& r, Register& base, intptr_t offset)
@@ -337,12 +353,51 @@ Error JITcall(T target, Register& result)
     return kErrorOk;
 }
 
+#ifdef __aarch64__
+
+// on the ARM I will usually not be able to address function entrypoints in
+// "bl" instructions since the body of my regularly compiled code will live
+// at memory addresses remote from the place where JIT-generated code is
+// placed.
+
+Error JITinvoke(InvokeNode** out, const Imm& target, const FuncSignature& sig)
+{   Register tt = newIntPtr("tt");
+    ASMJIT_PROPAGATE(mov(tt, target));
+    return invoke(out, tt, sig);
+}
+
+Error JITinvoke(InvokeNode** out, uint64_t target, const FuncSignature& sig)
+{   Register tt = newIntPtr("tt");
+    ASMJIT_PROPAGATE(mov(tt, target));
+    return invoke(out, tt, sig);
+}
+
+Error JITinvoke(InvokeNode** out, Register& target, const FuncSignature& sig)
+{   return invoke(out, target, sig);
+}
+
+#else // __aarch64__
+
+Error JITinvoke(InvokeNode** out, const Imm& target, const FuncSignature& sig)
+{   return invoke(out, target, sig);
+}
+
+Error JITinvoke(InvokeNode** out, uint64_t target, const FuncSignature& sig)
+{   return invoke(out, target, sig);
+}
+
+Error JITinvoke(InvokeNode** out, Register& target, const FuncSignature& sig)
+{   return invoke(out, target, sig);
+}
+
+#endif // __aarch64__
+
 template <typename T>
 Error JITcall(T target, Register& result,
               Register& a1)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
-    ASMJIT_PROPAGATE(invoke(&in, target,
+    ASMJIT_PROPAGATE(JITinvoke(&in, target,
         FuncSignature::build<LispObject,
                              LispObject>()));
     in->setArg(0, a1);
@@ -355,7 +410,7 @@ Error JITcall(T target, Register& result,
               Register& a1, Register& a2)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
-    ASMJIT_PROPAGATE(invoke(&in, target,
+    ASMJIT_PROPAGATE(JITinvoke(&in, target,
         FuncSignature::build<LispObject,
                              LispObject, LispObject>()));
     in->setArg(0, a1);
@@ -369,7 +424,7 @@ Error JITcall(T target, Register& result,
               Register& a1, Register& a2, Register& a3)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
-    ASMJIT_PROPAGATE(invoke(&in, target,
+    ASMJIT_PROPAGATE(JITinvoke(&in, target,
         FuncSignature::build<LispObject,
                              LispObject, LispObject, LispObject>()));
     in->setArg(0, a1);
@@ -384,7 +439,7 @@ Error JITcall(T target, Register& result,
               Register& a1, Register& a2, Register& a3, Register& a4)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
-    ASMJIT_PROPAGATE(invoke(&in, target,
+    ASMJIT_PROPAGATE(JITinvoke(&in, target,
         FuncSignature::build<LispObject,
                              LispObject, LispObject,
                              LispObject, LispObject>()));
@@ -403,7 +458,7 @@ Error JITcall(T target, Register& result,
               Register& a5)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
-    ASMJIT_PROPAGATE(invoke(&in, target,
+    ASMJIT_PROPAGATE(JITinvoke(&in, target,
         FuncSignature::build<LispObject,
                              LispObject, LispObject, LispObject,
                              LispObject, LispObject>()));
@@ -423,7 +478,7 @@ Error JITcall(T target, Register& result,
               Register& a5, Register& a6)
 {   InvokeNode *in;
     ASMJIT_PROPAGATE(storestatic(spreg, Ostack));
-    ASMJIT_PROPAGATE(invoke(&in, target,
+    ASMJIT_PROPAGATE(JITinvoke(&in, target,
         FuncSignature::build<LispObject,
                              LispObject, LispObject, LispObject,
                              LispObject, LispObject, LispObject>()));
@@ -736,7 +791,7 @@ void debugHere(intptr_t ppc)
 // in its low 3 digits. This is arranged so that the information there will
 // be readily visible whether I display the operand of the "mov" in decimal
 // or hex.
-            mov(w2, 1024000+ppc);
+    mov(w2, 1024000+ppc);
 #ifdef __x86_64__
     if (mov(x86::Mem((uint64_t)&savePPC, 8), w2)) std::cout << "Line" << __LINE__ << "\n";
     if (mov(x86::Mem((uint64_t)&saveA, 8), A_reg)) std::cout << "Line" << __LINE__ << "\n";
@@ -783,7 +838,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
                  CodeHolder& myCodeHolder)
 {
 // I am going to start by printing the byte-stream
-    stdout_printf("\nCalling jitcompile on ");
+    stdout_printf("\n!!! jitcompile on ");
     dpr(basic_elt(env, 0));
     stdout_printf("Bytecodes...\n");
     for (size_t i=0; i<len; i++)
@@ -1022,7 +1077,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // be some of the labels that are neither defined nor used.
             bind(perInstruction[ppc]);
             stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
-#if 0
+#if 1
 // While I am debugging it will sometimes be nice to be able to navigate the
 // generated assembly code relating what is there to the bytes it came from.
 // However what I have here is rather heavyweight!
@@ -1043,12 +1098,12 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // can be left where it can be picked up for inclusion in a disgnostic message.
         loadlit(A_reg, 0);
         storestatic(A_reg, OJITarg1);
-        loadstatic(A_reg, OJITtoofew);
+        mov(A_reg, (uintptr_t)toofew);
         jmp(chainA); 
     bind(tooManyArgs);
         loadlit(A_reg, 0);
         storestatic(A_reg, OJITarg1);
-        loadstatic(A_reg, OJITtoomany);
+        mov(A_reg, (uintptr_t)toomany);
         jmp(chainA);
 // This is to do with the asmjit-generated code not being able to participate
 // fully in C++ exception handling. After any call from the JIT code into
@@ -1062,22 +1117,31 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // out.
     bind(callFailed);
         storestatic(spentry, OJITarg1);
-        loadstatic(A_reg, OJITthrow);
+        mov(A_reg, (uintptr_t)jitthrow);
         jmp(chainA);
 // Error exits from some basic low level operations.
     bind(carError);
         storestatic(spentry, Ostack);
         storestatic(A_reg, OJITarg1);
-        loadstatic(A_reg, OJITcar_fails);
+        mov(A_reg, (uintptr_t)(func0)car_fails);
         jmp(chainA);
     bind(cdrError);
         storestatic(spentry, Ostack);
         storestatic(A_reg, OJITarg1);
-        loadstatic(A_reg, OJITcdr_fails);
+        mov(A_reg, (uintptr_t)(func0)cdr_fails);
     bind(chainA);
-        call(A_reg);    // @@@@@@@@@@@@@@@@@@@@@@
-        ret(A_reg);    // @@@@@@@@@@@@@@@@@@@@@@
-//      chain(A_reg);
+// When I handle a case where a procedure call reported failure it is
+// important that I do not reset the (Lisp) stack pointer here because the
+// code that I chain to will unwrap it word by word and restore such
+// fluid bindings as it needs to.
+        mov(w, (intptr_t)&chainTarget);
+        storereg(A_reg, w, 0);
+        chain(A_reg);
+// The jump here should never be obeyed but is here in case I have not got
+// asmjit to handle its flow analysis for "chain()" in a way that understands
+// that it never returns. This will make the dataflow analysis see that
+// no (virtual) registers have their values used after it.
+        jmp(chainA);
 
     bind(returnA);
 // Ensure that the Lisp stack pointer is in a good state.

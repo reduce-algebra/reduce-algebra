@@ -1,4 +1,4 @@
-// jumpeq_bl.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_JUMPEQ_BL:
