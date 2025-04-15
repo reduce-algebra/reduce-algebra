@@ -164,9 +164,9 @@
  
 %---------------------------------------------------------
 % The following set of predicates describes certain classes of
-% register classes. RegP tests if the ophe operand is a valid 68000 register.%
+% register classes. RegP tests if the ophe operand is a valid register.%
 %
-% RegP  any 80386 register
+% RegP  any register
 % FakeRegP tests for argument register numbers greater than LastActualReg
 
  

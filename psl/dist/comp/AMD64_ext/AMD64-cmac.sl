@@ -648,9 +648,9 @@
 			 (*LBL (label TEMPLABEL2))
 			      (xchg argtwo (reg 3)))
 	   ((RegP AnyP)       (*MOVE ARGTWO (Reg T1))
-			      (*wshift argone (reg t1)))
+			      (*WShift argone (reg t1)))
 	   (                  (*MOVE ARGONE (Reg t2))
-			      (*WSHIFT (Reg t2) ARGTWO)
+			      (*WShift (Reg t2) ARGTWO)
 			      (*MOVE (Reg t2) ARGONE))
 )
  
@@ -865,19 +865,19 @@
 % majority of the CMACRO's....
  
 (DefCMacro *PutField
-((regp regP eightp fiftysixp) (*wshift argone 8)
-			      (*wshift argone -8)
-                              (*wshift argTwo -56)
-			      (*wshift argtwo 56)
+((regp regP eightp fiftysixp) (*WShift argone 8)
+			      (*WShift argone -8)
+                              (*WShift argTwo -56)
+			      (*WShift argtwo 56)
                               (*wor  argtwo ARGone))
- ((regp regp Zerop eightp)    (*wshift argone 56)
-                              (*wshift argTwo 8)
-                              (*wshift argtwo -8)
+ ((regp regp Zerop eightp)    (*WShift argone 56)
+                              (*WShift argTwo 8)
+                              (*WShift argtwo -8)
                               (*wor  argtwo ARGone))
  ((inump regp Zerop eightp)   (*move  argone (reg t2))
-                              (*wshift (reg t2) 56)
-                              (*wshift argTwo 8)
-                              (*wshift argtwo -8)
+                              (*WShift (reg t2) 56)
+                              (*WShift argTwo 8)
+                              (*WShift argtwo -8)
                               (*wor  argtwo (reg t2)))
  ((inump Anyp AnyP AnyP)	(*MOVE ARGtwo (reg t1))
             			(*PUTFIELD  ARGOne (reg t1) ARGTHREE ARGFOUR)
@@ -887,7 +887,8 @@
 (		(mov -1  (reg t5))
 	        (*move   argone (reg t4))
 	        (sll     (reg t5) (difference 32 argfour) (reg t5))
-	        (*wshift (reg t5) (minus argthree)) % for 0 opt
+		% Use *WShift instead of shl to optimize argthree=0
+	        (*WShift (reg t5) (minus argthree))
        		(sll  (reg t4) (difference 32 (plus argthree argfour)) (reg t4))
 	        (and   (reg t5) (reg t4) (reg t4))
 	        (*move argtwo (reg t6))
@@ -911,11 +912,11 @@
 			  (*WSHIFT ARGONE (DIFFERENCE ARGFOUR 64)))
   ((regp anyp eightp fiftysixp)
 			   (*move ARGTWO ARGONE)
-			   (*wshift Argone 8)
-			   (*wshift Argone -8))
+			   (*WShift Argone 8)
+			   (*WShift Argone -8))
   ((regp anyp anyp anyp) (*MOVE   ARGTWO ARGONE)
-			 (*wshift argone ARGTHREE) 
-			 (*wshift argone (difference argfour 64)))
+			 (*WShift argone ARGTHREE) 
+			 (*WShift argone (difference argfour 64)))
   (                      (*Field (reg t1) ARGTWO ARGTHREE ARGFOUR)
 			 (*Move  (reg t1) ARGONE))
 )
@@ -1247,7 +1248,7 @@ preload  (setq initload
      'opencode
      '((*move (reg t2) (reg t1))        % save  idnumber
        (*wand (reg t2)(wconst 16#7ffffff)) % remove what's left of the tag
-       (*wshift (reg t2) (wconst 3))    % 
+       (*WShift (reg t2) (wconst 3))    % 
        (*wplus2 (reg t2) ($fluid SYMFNC)) % 
        (call (indirect (reg t2)))          % jump indirect.
        ))
@@ -1256,7 +1257,7 @@ preload  (setq initload
      'exitopencode
      '((*move (reg t2) (reg t1))        % save  idnumber
        (*wand (reg t2)(wconst 16#7ffffff)) % remove what's left of the tag 
-       (*wshift (reg t2) (wconst 3))    % double ID number (ignore tag for now)
+       (*WShift (reg t2) (wconst 3))    % double ID number (ignore tag for now)
        (*wplus2 (reg t2) ($fluid SYMFNC)) % add base address to 6 times ID.
        (jmp (indirect (reg t2)))          % jump indirect.
        ))
@@ -1315,8 +1316,8 @@ preload  (setq initload
 % stack has to be aligned for SSE instructions in dyn. linking in C
                  '(!*move  (reg st) (reg 1))
                  '(sub 64 (reg st))
-		 '(!*wshift (reg st) -5)
-                 '(!*wshift (reg st) 5)
+		 '(!*WShift (reg st) -5)
+                 '(!*WShift (reg st) 5)
                  '(!*move  (reg 1) (displacement (reg st) 40))
                 %% '(!*move  (displacement (reg rdi) 0) (reg rdi))
 		 (list 'call (list 'ForeignEntry FunctionName))
