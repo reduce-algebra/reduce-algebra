@@ -209,23 +209,6 @@ symbolic procedure n_elliptic(u);
 
 put('num_elliptic, 'psopfn, 'n_elliptic);
 
-% FJW: For numeric Lisp evaluation, e.g. for plotting.  But not
-% necessary and may not work correctly, so commented out for now!
-
-% symbolic procedure weierstrass1(u, g2, g3);
-%    if u = 0 then 1.0/0.0 else           % infinity
-%    begin scalar offrounded, !*msg, res;
-%       if not !*rounded then <<
-%          offrounded := t;
-%          on1 'rounded
-%       >>;
-%       res := bf2flr reval n_elliptic{'num_weier1, u, g2, g3};
-%       if offrounded then off1 'rounded;
-%       return res
-% end;
-
-% flag('(weierstrass1), 'plotevallisp);
-
 %######################################################################
 %DESCENDING LANDEN TRANSFORMATION
 
@@ -543,7 +526,7 @@ algebraic procedure RJ(x,y,z,p);
 %%     else if x = 0 then pi/(2*z)
 %%     else if x<y then atan(z/sqrt x)/z
 %%     else 1/sqrt x) where z=>sqrt(abs(x-y));
-%% 
+%%
 %% % valid for complex arguments but needs both rounded and complex on
 %% algebraic procedure carlson_RC(x,y);
 %%     if y = 0 or (impart x = 0 and x<0) then
@@ -553,7 +536,7 @@ algebraic procedure RJ(x,y,z,p);
 %%     else (if impart y=0 and y<0 then
 %%              atanh(sqrt x/z)/z % Cauchy principal value
 %%           else atanh(z/sqrt x)/z)  where z => sqrt(x-y);
-%% 
+%%
 %% % only valid for real arguments but works when only rounded is on
 %% algebraic procedure sym_int_RFR(x,y,z);
 %%    begin scalar t0,tn,a0,an,c0,cn,tol,theta,tmp,oldprec,n:=0;
@@ -574,7 +557,7 @@ algebraic procedure RJ(x,y,z,p);
 %%       if x>y then <<tmp := y; y:=x; x:=tmp>>;
 %%       if y>z then <<tmp := z; z:=y; y:=tmp>>;
 %%       if x>y then <<tmp := y; y:=x; x:=tmp>>;
-%% 
+%%
 %%       % use the faster convergent scheme which depends on
 %%       % whether y > (x+z)/2 or not
 %%       if 2*y >= x+z then <<
@@ -583,7 +566,7 @@ algebraic procedure RJ(x,y,z,p);
 %% 	 theta :=-1;
 %%       >>
 %%       else theta :=1;
-%% 
+%%
 %%       cn := 1;
 %%       t0 := sqrt x;
 %%       a0 := sqrt(abs(x-z));
@@ -595,7 +578,7 @@ algebraic procedure RJ(x,y,z,p);
 %%          cn :=c0^2/(4*an);
 %% 	 c0:=cn; a0:=an; t0:=tn; n:=n+1;
 %%       >>;
-%% 
+%%
 %%       % write "tn = ",tn,"  an = ",an,"   cn = ",cn," count = ",n;
 %%       y:=tn^2; x:= y+theta+an^2; z:= sqrt(abs(x-y));
 %%       % Now return Carlson's hyperbolic or circular function
@@ -610,7 +593,7 @@ algebraic procedure RJ(x,y,z,p);
 %%       precision(oldprec);
 %%       return tmp;
 %%    end;
-%% 
+%%
 %% % valid for complex arguments but needs both rounded and complex on
 %% algebraic procedure sym_int_RF(x,y,z);
 %%    begin scalar t0,tn,a0,an,c0,cn,tol,tmp,oldprec,n:=0;
@@ -653,7 +636,7 @@ algebraic procedure RJ(x,y,z,p);
 %%          cn :=c0^2/(4*an);
 %% 	 c0:=cn; a0:=an; t0:=tn; n:=n+1;
 %%       >>;
-%% 
+%%
 %%       %% write "tn = ",tn,"  an = ",an,"   cn = ",cn," count = ",n;
 %%       y := tn^2; x := y + an^2; z := sqrt(x-y);
 %%       if x=y then tmp := 1/sqrt x

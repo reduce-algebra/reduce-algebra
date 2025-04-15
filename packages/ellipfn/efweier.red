@@ -43,10 +43,10 @@ operator eta1, eta2, eta3;
 operator lattice_e1, lattice_e2, lattice_e3;
 operator lattice_g2, lattice_g3, lattice_delta, lattice_g;
 operator lattice_omega1, lattice_omega3;
-operator weierstrass1, weierstrassZeta1, weierstrass_sigma0;
+operator weierstrass1, weierstrassZeta1, weierstrass_sigma0, epsilon_w1;
 
 flag ('(weierstrass1 weierstrassZeta1 weierstrass_sigma0), 'realvalued);
-flag ('(epsilon_w), 'alwaysrealvalued);
+flag ('(epsilon_w epsilon_w1), 'alwaysrealvalued);
 %######################################################################
 
 sigma_rules :=
@@ -190,13 +190,13 @@ weierstrass_rules :=
    weierstrass(~w1+~w3, ~w1, ~w3) => lattice_e2(w1,w3),
 
    epsilon_w(~u, ~w1, ~w3)^2 => 1,
-   df(epsilon_w(~u, ~w1, ~w3), ~v) => 0,
+   df(epsilon_w(~u, ~w1, ~w3), u) => 0,
 
-   % epsilon_w = +/-1 and changes sign at poles of the Weierstrass fn and 
+   % epsilon_w = +/-1 and changes sign at poles of the Weierstrass fn and
    % at when Weierstrass fn is equal to a lattice-root e_1, e_2 or e_3
   df(weierstrass(~u,~w1,~w3),u) =>
       epsilon_w(u,w1,w3)*sqrt(4*weierstrass(u,w1,w3)^3
-             - lattice_g2(w1,w3)*weierstrass(u,w1,w3) - lattice_g3(w1,w2)),
+             - lattice_g2(w1,w3)*weierstrass(u,w1,w3) - lattice_g3(w1,w3)),
 
    % double periodicity
    weierstrass((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
@@ -305,11 +305,11 @@ weierstrass1_rules :=
    weierstrass1(-~u,~g2,~g3) => weierstrass1(u,g2,g3),
    weierstrasszeta1(-~u,~g2,~g3) => -weierstrasszeta1(u,g2,g3),
    weierstrass_sigma0(-~u,~g2,~g3) => -weierstrass_sigma0(u,g2,g3),
-   
+
    weierstrass1(i*~u,~g2,~g3) => -weierstrass1(u,g2,-g3),
    weierstrassZeta1(i*~u,~g2,~g3) => -i*weierstrassZeta1(u,g2,-g3),
    weierstrass_sigma0(i*~u,~g2,~g3) => i*weierstrass_sigma0(u,g2,-g3),
-   
+
    weierstrass1(~m*~u,~g2,~g3) => weierstrass1(u, g2*m^4,g3*m^6)/m^2
            when numberp m,
    weierstrasszeta1(~m*~u,~g2,~g3) => weierstrasszeta1(u, g2*m^4,g3*m^6)/m
@@ -327,14 +327,19 @@ weierstrass1_rules :=
    weierstrass_sigma0(~u, ~g2, ~g3) =>
           num_elliptic(num_weierSigma, u, g2, g3)
       when lisp !*rounded and numberp u and numberp g2 and numberp g3,
-   
-   df(weierstrass1(~u,~g2,~g3),u) => epsilon_w(u,g2,g3)*
+
+   epsilon_w1(~u, ~g2, ~g3)^2 => 1,
+   df(epsilon_w1(~u, ~g2, ~g3), u) => 0,
+
+   % epsilon_w1 = +/-1 and changes sign at poles of the Weierstrass fn and
+   % at when Weierstrass fn is equal to a lattice-root e_1, e_2 or e_3
+   df(weierstrass1(~u,~g2,~g3),u) => epsilon_w1(u,g2,g3)*
       sqrt(4*weierstrass1(u,g2,g3)^3 - g2*weierstrass1(u,g2,g3) - g3),
 
    df(weierstrassZeta1(~u,~g2,~g3),~u)  => -weierstrass1(u,g2,g3),
 
    df(weierstrass_sigma(~u,~g2,~g3),~u)  => weierstrass_sigma(u,g2,g3)*weierstrassZeta(u,g1,g3)
-      
+
 }$
 let weierstrass1_rules;
 
@@ -458,7 +463,6 @@ begin scalar l, e1, e2, e3;
   e1 := first l;
   e2 := second l;
   e3 := third l;
-  g2 := 2*(e1^2+e2^2+e3^2);
   return 4*e1*e2*e3;
 end;
 
@@ -819,19 +823,93 @@ end;
 
 %######################################################################
 
+% Special-case numerical evaluation of epsilon_w and epsilon_w1 when
+% the Weierstrass functions take real values on the real axis.
+
+% FJW, April 2025.
+
+% According to <https://dlmf.nist.gov/23.5>, the Weierstrass functions
+% take real values on the real axis iff the lattice is fixed under
+% complex conjugation, or equivalently g2 and g3 are both real, which
+% corresponds to the following lattice configurations:
+
+% Rectangular: w1 and w3/i both real and positive.
+% (Lemniscatic special case: g3 = 0; w1 real & positive, w3 = i*w1)
+
+% Rhombic: w1 real and positive, impart(w3) > 0, repart(w3) = 1/2 w1.
+% (Equianharmonic special case: g2 = 0; w1 real & positive, w3 = exp(i*pi/3)*w1)
+
+% But don't require the positivity stated above.
+
+let epsilon_w(~u,~w1,~w3) => num!-epsilon_w(u,w1)
+   when lisp !*rounded and lisp !*complex and
+   numberp u and impart u = 0 and
+   numberp w1 and impart w1 = 0 and numberp w3 and
+   (repart w3 = 0 or
+      abs(abs repart w3 - 0.5 abs w1) < 10.0^-(symbolic !:prec!:));
+
+let epsilon_w1(~u,~g2,~g3) => num!-epsilon_w1(u,g2,g3)
+   when lisp !*rounded and numberp u and impart u = 0 and
+   numberp g2 and impart g2 = 0 and numberp g3 and impart g3 = 0;
+
+% Wp(u,w_1,w_3) is even and doubly periodic with periods 2w_j, j = 1,3.
+% Assume w_1 real, w_3 not real.
+% Reduce the argument u to the range 0 <= u < 2w_1.
+% Wp has a double pole (hence positive infinity) at u = 0.
+% Hence, for small positive u, Wp' must be negative, and Wp' changes sign at u = w_1.
+
+algebraic procedure num!-epsilon_w(u,w1);
+   % Return sign of df(weierstrass1(u,w1,w3),u), assuming u, w1 both
+   % numeric and real.
+   <<
+      w1 := abs w1;
+      u := abs u;                       % Wp even
+      u := u - floor(u/(2w1))*2w1;      % Wp has period 2w1
+      if u < w1 then -1 else +1
+   >>;
+
+algebraic procedure num!-epsilon_w1(u,g2,g3);
+   % Return sign of df(weierstrass1(u,g2,g3),u) assuming all arguments
+   % numeric and real.  lattice_generators(g2,g3) returns {w1,w3} and
+   % w1 should be real.
+   % Note that lattice_generators needs on complex, so...
+   num!-epsilon_w(u, first              % lattice_generators(g2,g3)
+      symbolic begin scalar offcomplex, !*msg, res;
+         if not !*complex then <<
+            offcomplex := t;
+            on1 'complex
+         >>;
+         % Must catch any errors here and then tidy up before
+         % re-throwing the error or returning.
+         res := errorset!*({'aeval,
+            mkquote{'lattice_generators,g2,g3}}, nil);
+         if offcomplex then off1 'complex;
+         if errorp res then
+            error(res, emsg!*)
+         else
+	    return reval car res
+      end);
+
+%######################################################################
+
 put('weierstrass1, 'fancy!-functionsymbol, "\wp");
 put('weierstrassZeta1, 'fancy!-functionsymbol, "\zeta_w");
+put('epsilon_w1, 'fancy!-functionsymbol, "\epsilon_w");
 put('weierstrass_sigma0, 'fancy!-functionsymbol, "\sigma");
 put('weierstrass1, 'fancy!-prifn, 'fancy!-weier);
 put('weierstrassZeta1, 'fancy!-prifn, 'fancy!-weier);
+put('epsilon_w1, 'fancy!-prifn, 'fancy!-weier);
 put('weierstrass_sigma0, 'fancy!-prifn, 'fancy!-weier);
 put('WeierstrassZeta1, 'fancy!-symbol!-length, 4);
+put('epsilon_w1, 'fancy!-symbol!-length, 4);
 
 put('weierstrass1, 'plain!-functionsymbol, "P_w");
 put('weierstrassZeta1, 'plain!-functionsymbol, "zeta_w");
+put('epsilon_w1, 'plain!-functionsymbol, "epsilon_w");
 put('weierstrass_sigma0, 'plain!-functionsymbol, "sigma");
 put('weierstrass1, 'prifn, 'plain!-weier);
 put('weierstrassZeta1, 'prifn, 'plain!-weier);
+put('epsilon_w1, 'prifn, 'plain!-weier);
 put('weierstrass_sigma0, 'prifn, 'plain!-weier);
 
 put('weierstrass, 'fancy!-functionsymbol, "\wp");
@@ -850,6 +928,7 @@ put('weierstrass_sigma3, 'fancy!-symbol!-length, 4);
 put('weierstrass, 'prifn, 'plain!-symbol);
 put('weierstrassZeta, 'prifn, 'plain!-symbol);
 put('epsilon_w, 'prifn, 'plain!-symbol);
+put('epsilon_w1, 'prifn, 'plain!-symbol);
 
 put('weierstrass_sigma, 'prifn, 'plain!-symbol);
 put('weierstrass_sigma1, 'prifn, 'plain!-symbol);
@@ -897,7 +976,7 @@ put('lattice_omega1, 'fancy!-symbol!-length, 4);
 put('lattice_omega3, 'fancy!-symbol!-length, 4);
 
 put('lattice_g2, 'prifn, 'plain!-symbol);
-put('lattic_g2, 'plain!-functionsymbol, 'g2);
+put('lattice_g2, 'plain!-functionsymbol, 'g2);
 put('lattice_g3, 'prifn, 'plain!-symbol);
 put('lattice_g3, 'plain!-functionsymbol, 'g3);
 put('lattice_delta, 'plain!-functionsymbol, '!Delta);
@@ -918,7 +997,7 @@ flag('(weierstrass_sigma weierstrass_sigma1 weierstrass_sigma2
        eta1 eta2 eta3 lattice_e1 lattice_e2 lattice_e3
        lattice_g2 lattice_g3  lattice_delta lattice_g
        lattice_omega1 lattice_omega3 weierstrass1
-       weierstrasszeta1 weierstrass_sigma0 epsilon_w	     
+       weierstrasszeta1 weierstrass_sigma0 epsilon_w epsilon_w1
       ), 'specfn);
 
 
@@ -927,10 +1006,10 @@ deflist('((weierstrass_sigma 3) (weierstrass_sigma1 3)
           (weierstrass 3) (weierstrassZeta 3) (epsilon_w 3) (eta1 2)
  	  (eta2 2) (eta3 2) (lattice_e1 2) (lattice_e3 2) (lattice_e3 2)
 	  (lattice_roots 2) (lattice_invariants 2)
-	  (lattice_g2 2) (lattice_g3 2)  (lattice_delta 2) (lattice_g 2)
-	  (weierstrass1 3) (weierstrassZeta1 3) (weierstrass_sigma0 3)
-	  (lattice_generators 2) (quasi_period_factors 2)
-	  (lattice_omega1 2) (lattice_omega3 2)
+	  (lattice_g2 2) (lattice_g3 2) (lattice_delta 2) (lattice_g 2)
+          (weierstrass1 3) (weierstrassZeta1 3) (epsilon_w1 3)
+          (weierstrass_sigma0 3) (lattice_generators 2)
+          (quasi_period_factors 2) (lattice_omega1 2) (lattice_omega3 2)
         ), 'number!-of!-args);
 
 fluid '(fancy!-pos!* fancy!-texpos fancy!-line!*);
