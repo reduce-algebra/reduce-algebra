@@ -321,7 +321,7 @@
 
             jcall3:
                 std::cout << "JCALL3 not done well yet\n";
-                loadlit(w2, next);
+                loadlit(w2, next & 0x1f);
                 loadfromsymbol(w1, w2, Ofunction3);
                 loadreg_post(w3, spreg, -8);
                 JITcall(JITshim3L, A_reg,

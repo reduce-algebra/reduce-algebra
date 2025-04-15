@@ -18,8 +18,8 @@
                 JITcall(JITshim2L, w,
                         w1, nilreg, B_reg, A_reg);
                 JITerrorcheck();
-                test(w, 0xff);
-                jne(perInstruction[ppc-next]);
+                cmp(w, nilreg);
+                je(perInstruction[ppc-next]);
                 break;
 
 #else

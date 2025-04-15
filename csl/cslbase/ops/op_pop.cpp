@@ -12,10 +12,6 @@
                 mov(B_reg, A_reg);
                 loadreg_post(A_reg, spreg, -8);
                 break;
-                unfinished(__FILE__ " not yet implemented for x86_64");
-                mov(B_reg, A_reg);
-                loadreg_post(A_reg, spreg, 8);
-                break;
 
 #else
             case OP_POP:

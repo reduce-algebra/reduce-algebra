@@ -8,8 +8,8 @@
 
 #include "../core/api-config.h"
 
-ASMJIT_BEGIN_NAMESPACE
-
+namespace asmjit
+{
 // To chain to somewhere the user must place the entrypoint of the function
 // concerned in chainTarget and then issue a "chain()" opcode... if they
 // fill in chainA1 etc those values will ba passed as if they had been
@@ -27,6 +27,9 @@ extern uintptr_t chainA1;
 extern uintptr_t chainA2;
 extern uintptr_t chainA3;
 extern uintptr_t chainA4;
+};
+
+ASMJIT_BEGIN_NAMESPACE
 
 //! \cond INTERNAL
 //! \addtogroup asmjit_utilities

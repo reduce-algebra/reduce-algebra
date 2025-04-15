@@ -617,21 +617,53 @@ ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame, bool chai
 // stack conventions are all happy with that.
 // Both 32-bit Windows and 32-bit x86 Linux are now obsolete so failing to
 // cope with them does not upset me much!
+// The code here is horrid. I will be able to do better but first I want
+// something that works!
     if (winABI)
-    {   ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rcx, Mem(chainA1, 8)));
-        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rdx, Mem(chainA2, 8)));
-        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::r8, Mem(chainA3, 8)));
-        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::r9, Mem(chainA4, 8)));
-        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rax, Mem(chainTarget, 8)));
-        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdJmp, x86::eax));
+    {   ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rcx, (intptr_t)&chainA1));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rcx, ptr(x86::rcx)));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rdx, (intptr_t)&chainA2));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rdx, ptr(x86::rdx)));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::r8, (intptr_t)&chainA3));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::r8, ptr(x86::r8)));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::r9, (intptr_t)&chainA4));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::r9, ptr(x86::r9)));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rax, (intptr_t)&chainTarget));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdJmp, x86::eax));
     }
     else
-    {   ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rdi, Mem(chainA1, 8)));
-        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rsi, Mem(chainA2, 8)));
-        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rdx, Mem(chainA3, 8)));
-        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rcx, Mem(chainA4, 8)));
-        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rax, Mem(chainTarget, 8)));
-        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdJmp, x86::eax));
+    {   ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rdi, (intptr_t)&chainA1));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rdi, ptr(x86::rdi)));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rsi, (intptr_t)&chainA2));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rsi, ptr(x86::rsi)));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rdx, (intptr_t)&chainA3));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rdx, ptr(x86::rdx)));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rcx, (intptr_t)&chainA4));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rcx, ptr(x86::rcx)));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rax, (intptr_t)&chainTarget));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdMov, x86::rax, ptr(x86::rax)));
+        ASMJIT_PROPAGATE(
+            emitter->emit(Inst::kIdJmp, x86::eax));
     }
   }
   return kErrorOk;
