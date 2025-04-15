@@ -1,4 +1,4 @@
-// storefree.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_STOREFREE:

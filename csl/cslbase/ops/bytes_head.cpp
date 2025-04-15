@@ -1,6 +1,6 @@
-// bytes_head.cpp $Id$
+// $Id$
 
-// bytes2.cpp                              Cright (C) 1991-2025 Codemist
+// bytes2.cpp                              Copyright (C) 1991-2025 Codemist
 //
 //
 // Bytecode interpreter for Lisp
@@ -37,7 +37,6 @@
  *************************************************************************/
 
 
-// $Id$
 
 
 #ifdef SIMPLIFIED_MERELY_TO_SERVE_AS_DOCUMENTATION

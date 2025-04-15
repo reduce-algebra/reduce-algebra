@@ -10,6 +10,24 @@
 
 ASMJIT_BEGIN_NAMESPACE
 
+// To chain to somewhere the user must place the entrypoint of the function
+// concerned in chainTarget and then issue a "chain()" opcode... if they
+// fill in chainA1 etc those values will ba passed as if they had been
+// the first few arguments of the function chained to. I will not support
+// this on 32-bit x86 targets. Even for x86_64 the Windows calling standard
+// means that I can pass at most 4 arguments, this being because there are
+// 32 bytes of stack allocated to home those values and if I chain to a
+// function with 5 or more args it will expect arguments beyond number 4
+// to be on the stack in a location that would conflict with other data.
+// ARM32 can also handle 4 arguments. ARM64 could handle twice as many but
+// exploiting that would hurt cross platform compatibility.
+
+extern uintptr_t chainTarget;
+extern uintptr_t chainA1;
+extern uintptr_t chainA2;
+extern uintptr_t chainA3;
+extern uintptr_t chainA4;
+
 //! \cond INTERNAL
 //! \addtogroup asmjit_utilities
 //! \{

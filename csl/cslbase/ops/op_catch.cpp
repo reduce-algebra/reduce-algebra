@@ -1,4 +1,4 @@
-// catch.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_CATCH:

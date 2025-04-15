@@ -50,6 +50,7 @@ class InvokeNode;
 //!
 //!   - \ref x86::Compiler - X86/X64 compiler implementation.
 //!   - \ref a64::Compiler - AArch64 compiler implementation.
+
 class ASMJIT_VIRTAPI BaseCompiler : public BaseBuilder {
 public:
   ASMJIT_NONCOPYABLE(BaseCompiler)

@@ -1410,27 +1410,12 @@ AC_ARG_ENABLE(static,
 AC_MSG_RESULT([$enable_static])
 
 # In lots of cases I will be using gcc. In that case I will use -O3 for
-# release code, but -O0 when debugging. I also stick in -Wall so I get
+# release code, but -O1 when debugging. I also stick in -Wall so I get
 # loads of comments about code style etc. For other C compilers I do
 # not set any optimisation flags but I do expect "-g" to be available
 # to enable debugging.
 
-#
-# Well as of late 2003/early 2004 some versions of gcc appears to compile
-# some of my code at -O3 in ways that hurt me, but at -O2 mostly things seem
-# better behaved. At one stage I believed that my trouble might have been
-# to do with "Strict Aliasing" but I am less convinced of that now - however
-# to be cautious I switch off that aspect of gcc. I really want this code
-# to compile and run first-time on as many systems as I can and so tuning
-# down the optimisation level from -O3 to -O2 is probably worthwhile even
-# though it hits performance a little. Furthermore in 2008 I found that
-# some things behaved in ways I did not understand with "-O1 -g" hence I
-# drop back to "-O0 -g".
-# Now in 2016 I am moving back to -O3 for production use, but will remain
-# with a very conservative -O0 for debugging builds. Please note that these
-# settings are applied if the compiler is detected as gcc.
-
-LOWOPT="-O0"
+LOWOPT="-O1"
 if test "$HIGHOPT" = ""
 then
   HIGHOPT="-O3"

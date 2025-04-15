@@ -1,4 +1,4 @@
-// list2.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_LIST2:                  // A_reg = cons(B_reg, cons(A_reg, nil));

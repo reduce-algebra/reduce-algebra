@@ -1,4 +1,4 @@
-// cdrloc2.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_CDRLOC2:

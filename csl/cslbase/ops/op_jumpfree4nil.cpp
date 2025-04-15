@@ -1,4 +1,4 @@
-// jumpfree4nil.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_JUMPFREE4NIL:

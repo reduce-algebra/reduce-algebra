@@ -1,4 +1,4 @@
-// loadlex.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
 // This opcode takes 3 byte operands.

@@ -1,4 +1,4 @@
-// call0_2.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_CALL0_2:

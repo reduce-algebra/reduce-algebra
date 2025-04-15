@@ -1,4 +1,4 @@
-// pushnil.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_PUSHNIL:

@@ -1,4 +1,4 @@
-// builtin2r.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_BUILTIN2R:

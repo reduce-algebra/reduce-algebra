@@ -1,4 +1,4 @@
-// loadlit5.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_LOADLIT5:

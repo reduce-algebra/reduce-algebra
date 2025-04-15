@@ -1,4 +1,4 @@
-// apply4.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_APPLY4:

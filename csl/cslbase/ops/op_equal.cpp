@@ -1,4 +1,4 @@
-// equal.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_EQUAL:                                  // A = equal(B, A)

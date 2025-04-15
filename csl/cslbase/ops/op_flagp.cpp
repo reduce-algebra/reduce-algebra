@@ -1,4 +1,4 @@
-// flagp.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_FLAGP:                                  // A = flagp(B, A)

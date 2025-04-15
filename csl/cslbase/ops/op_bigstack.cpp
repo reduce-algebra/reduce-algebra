@@ -1,4 +1,4 @@
-// bigstack.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_BIGSTACK:               // LOADLOC, STORELOC, CLOSURE etc

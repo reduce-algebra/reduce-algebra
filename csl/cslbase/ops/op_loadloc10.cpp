@@ -1,4 +1,4 @@
-// loadloc10.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_LOADLOC10:

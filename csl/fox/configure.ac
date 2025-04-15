@@ -169,7 +169,7 @@ AC_MSG_CHECKING(for debugging)
 AC_ARG_ENABLE(debug,[  --enable-debug          compile for debugging])
 AC_MSG_RESULT([$enable_debug])
 if test "x$enable_debug" = "xyes" ; then
-  CXXFLAGS="${CXXFLAGS} -O0 -g -DDEBUG"
+  CXXFLAGS="${CXXFLAGS} -O1 -g -DDEBUG"
   if test "${GXX}" = "yes"; then
     CXXFLAGS="${CXXFLAGS} -ffast-math -fstrict-aliasing -fno-inline-functions"
   fi

@@ -1,4 +1,4 @@
-// call0_0.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_CALL0_0:      // Calling myself...

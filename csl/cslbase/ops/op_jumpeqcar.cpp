@@ -1,4 +1,4 @@
-// jumpeqcar.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_JUMPEQCAR:     // jump if eqcar(A, <some literal>)

@@ -1,4 +1,4 @@
-// call2r.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_CALL2R:

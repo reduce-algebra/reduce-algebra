@@ -205,10 +205,10 @@
    % if X = ( _____ !*!*!*Code!*!*Pointer!*!*!* ... )
    ((equal (second x) '***code**pointer***) 
     (setq lapreturnvalue* 
-      (if *writingfaslfile currentoffset* (wplus2 codebase* currentoffset*))))
+      (if *WritingFaslFile currentoffset* (wplus2 codebase* currentoffset*))))
 
    % If depositing into memory
-   ((not *writingfaslfile) 
+   ((not *WritingFaslFile) 
     (setq entries* (cons (cons (rest x) currentoffset*) entries*)) 
     (unless lapreturnvalue* (setq lapreturnvalue*
                  (wplus2 codebase* currentoffset*))))
@@ -261,7 +261,7 @@
     (when *testlap (prin2 currentoffset*) (tab 10) (print x))
     (setq allowextrarexprefix 0)
     (setq REX-Prefix 16#48)
-    (when *writingfaslfile (setq offs currentoffset*))
+    (when *WritingFaslFile (setq offs currentoffset*))
     (cond ((and (eqcar x 'movq) (not (xmmregp (cadr x))) (not (xmmregp (caddr x))))
                           (Depositbyte  16#48)  % REX Prefix
                           (SETQ REX? (plus codebase!* currentoffset* -1))
@@ -324,8 +324,8 @@
 
 (de DepositLabel (x) 
     (when *testlap (prin2 currentoffset*) (tab 10) (print x))
-    (when (and *writingfaslfile 
-               (not (equal currentoffset* (LabelOffset x)))) 
+    (when (and *WritingFaslFile 
+	       (not (equal currentoffset* (LabelOffset x)))) 
       (StdError (BldMsg "wrong address for label %p: difference = %p" 
                         x    (difference currentoffset* (LabelOffset x)))))) 
 
@@ -712,7 +712,7 @@
 
 %------------------------------------------------------------------------
 % (displacement (reg 5) ...) has to be prefixed in order to address
-% the DS segment rther than the SS segment
+% the DS segment rather than the SS segment
 (de indexed-reg-5-p(op)
     (and (pairp op) NIL % not useful in 64 bit mode
          (or (eq (car op) 'indexed)
@@ -1124,9 +1124,9 @@
 (de labeloffset (l)
   (let (offset)
     (cond 
-     ((codep l) (if *writingfaslfile
-                  (inf l)
-                  (wdifference (inf l) codebase*)))
+     ((codep l) (if *WritingFaslFile
+		  (inf l)
+		  (wdifference (inf l) codebase*)))
      ((setq offset  (atsoc l labeloffsets*)) (cdr offset))
      (t (stderror (bldmsg "Unknown label %r" l)))
      )))
@@ -1529,7 +1529,7 @@
   % Given an OFFSET from CODEBASE*, deposit a word containing the
   % absolute address of that offset.
   (put_a_halfword (wplus2 codebase* currentoffset*)
-           (iplus2 offset (if *writingfaslfile 0 codebase*)))
+           (iplus2 offset (if *WritingFaslFile 0 codebase*)))
   (updatebittable 4 (const reloc_word))
   (setq currentoffset* (plus currentoffset* 4)))
   
@@ -1580,7 +1580,7 @@
 
 (de depositwordidnumber (x) 
   (cond
-    ((or (not *writingfaslfile) (leq (idinf x) 128)) 
+    ((or (not *WritingFaslFile) (leq (idinf x) 128)) 
      (deposit32bitword (idinf X)))
     (t
       (put_a_halfword (wplus2 codebase* currentoffset*) 

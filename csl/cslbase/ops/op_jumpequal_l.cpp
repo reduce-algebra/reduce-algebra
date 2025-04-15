@@ -1,4 +1,4 @@
-// jumpequal_l.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_JUMPEQUAL_L:

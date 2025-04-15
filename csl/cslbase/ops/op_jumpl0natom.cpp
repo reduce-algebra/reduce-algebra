@@ -1,4 +1,4 @@
-// jumpl0natom.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_JUMPL0NATOM:

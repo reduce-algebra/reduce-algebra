@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:         PXC:SYS-CONSTS.SL
-% Description:  HPUX PSL constants needed in the compiler
+% Description:  X86_64 constants needed in the compiler
 % Author:       Cris Perdue
 % Created:      24-Feb-84
 % Modified:     27-Jun-84 09:31:48
@@ -47,9 +47,9 @@
 (setq system_list* '(sixty!-four x86_64 Linux Linux_elf Intel386 i386 unix ieee))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% MACHINE DEPENDENT CONSTANTS FOR THE MC68000                           %
-% Four BYTES per LONGWORD (32 bits).                                    %
-% Four CHARACTERs per LONGWORD (32 bits).                               %
+% MACHINE DEPENDENT CONSTANTS FOR THE x86_64 (amd64)                    %
+% Eight BYTES per LONGWORD (64 bits).                                   %
+% Eight CHARACTERs per LONGWORD (64 bits).                              %
 % Stack grows down, rather than UP, used to control Stack Scan loops.   %
 % Items are placed on stack with -(SP)xx addressing  (predecrement).    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

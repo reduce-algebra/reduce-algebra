@@ -15,6 +15,7 @@
 #include "../core/support.h"
 #include "../core/type.h"
 #include "../core/radefs_p.h"
+#include "../x86/x86globals.h"
 #include "../x86/x86emithelper_p.h"
 #include "../x86/x86emitter.h"
 #include "../x86/x86formatter_p.h"
@@ -608,8 +609,30 @@ ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame, bool chai
       ASMJIT_PROPAGATE(emitter->emit(Inst::kIdRet));
   }
   else { 
-    // Emit 'jmp rax'.
-    ASMJIT_PROPAGATE(emitter->emit(Inst::kIdJmp, x86::rax));
+    // Emit 'jmp [chainTarget]'.
+    bool winABI = emitter->environment().isPlatformWindows() ||
+                  emitter->environment().isMSVC();
+// Here note that I am not supporting 32-bit (x86) here. By restricting myself
+// to 64-bits I can pass up to 4 arguments in registers and the register and
+// stack conventions are all happy with that.
+// Both 32-bit Windows and 32-bit x86 Linux are now obsolete so failing to
+// cope with them does not upset me much!
+    if (winABI)
+    {   ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rcx, Mem(chainA1, 8)));
+        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rdx, Mem(chainA2, 8)));
+        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::r8, Mem(chainA3, 8)));
+        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::r9, Mem(chainA4, 8)));
+        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rax, Mem(chainTarget, 8)));
+        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdJmp, x86::eax));
+    }
+    else
+    {   ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rdi, Mem(chainA1, 8)));
+        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rsi, Mem(chainA2, 8)));
+        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rdx, Mem(chainA3, 8)));
+        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rcx, Mem(chainA4, 8)));
+        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdMov, x86::rax, Mem(chainTarget, 8)));
+        ASMJIT_PROPAGATE(emitter->emit(Inst::kIdJmp, x86::eax));
+    }
   }
   return kErrorOk;
 }

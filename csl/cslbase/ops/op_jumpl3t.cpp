@@ -1,4 +1,4 @@
-// jumpl3t.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_JUMPL3T:

@@ -1,4 +1,4 @@
-// jumpfree1t.cpp $Id$
+// $Id$
 
 #if defined BYTECODE
             case OP_JUMPFREE1T:
