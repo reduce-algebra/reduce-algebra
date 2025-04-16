@@ -113,8 +113,8 @@ $2m\mathrm{K} +2i n\mathrm{K}'$ where $m$ and $n$ are arbitrary integers.
   Function & Period1 & Period2 & Zero & Pole & Residue\\
 $\mathop{\mathrm{sn}}$&$4\mathrm{K}$&$2i\mathrm{K}'$&$0$&$i\mathrm{K}'$&$1/k$\\
 $\mathop{\mathrm{ns}}$&$4\mathrm{K}$&$2i\mathrm{K}'$&$i\mathrm{K}'$&$0$&$1$\\
-$\mathop{\mathrm{cd}}$&$4\mathrm{K}$&$2i\mathrm{K}'$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&$-1/k$\\  
-$\mathop{\mathrm{dc}}$&$4\mathrm{K}$&$2i\mathrm{K}'$&$\mathrm{K}+i\mathrm{K}'$&$\mathrm{K}$&$-1$\\ 
+$\mathop{\mathrm{cd}}$&$4\mathrm{K}$&$2i\mathrm{K}'$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&$-1/k$\\
+$\mathop{\mathrm{dc}}$&$4\mathrm{K}$&$2i\mathrm{K}'$&$\mathrm{K}+i\mathrm{K}'$&$\mathrm{K}$&$-1$\\
 
 $\mathop{\mathrm{cn}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}')$&$\mathrm{K}$&$i\mathrm{K}'$&$-i/k$\\
 $\mathop{\mathrm{nc}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}')$&$i\mathrm{K}'$&$\mathrm{K}$&$-1/k'$\\
@@ -204,7 +204,7 @@ whilst that for $\mathrm{cd}$ is expressed in terms of $\mathrm{nd}$,
 $\mathrm{cd}$ and $\mathrm{sd}$ whereas the rules for the three `basic'
 functions are unchanged and use only $\mathrm{sn}$, $\mathrm{cn}$ and
 $\mathrm{dn}$.  Note, however, that the previous form of these rules will be
-obtained if the rule-list \texttt{NO\_GLAISHER}\ is also active. 
+obtained if the rule-list \texttt{NO\_GLAISHER}\ is also active.
 
 If the switch \sw{rounded}\ is ON and both arguments of a Jacobi function are
 purely numerical, it will be evaluated numerically (previously it was
@@ -224,7 +224,7 @@ One consequence of the use of theta functions is that occasionally
 the value of a Jacobi function with real arguments would be returned with an
 insignificantly small imaginary part due to rounding errors. Since all Jacobi
 functions are real-valued for real arguments the imaginary part is known to be
-zero; the spurious imaginary part is removed automatically. 
+zero; the spurious imaginary part is removed automatically.
 Similarly in some case where the first argument is purely imaginary and the
 modulus k<1, the result should be purely imaginary, but due to rounding the
 result is returned with an insignificantly small real part which is now ignored.
@@ -324,7 +324,7 @@ The following functions have been implemented:
 \item Complete \& Incomplete Elliptic Integrals of the Second Kind
 \item Jacobi's Epsilon \& Zeta Functions
 \item Complete \& Incomplete Ellpitic Integrals of the Third Kind
-\item Some Utility Functions  
+\item Some Utility Functions
 \end{itemize}
 
 These again differ somewhat from the originals implemented by Lisa Temme
@@ -361,7 +361,7 @@ First Kind}:
 This is actually closely related to the inverse Jacobi function
 $\mathrm{arcsn}$; in fact for $-\pi/2 <= \Re \phi <=\pi/2$:
 \[ \mathrm{F}(\phi, k) = \mathrm{arcsn}(\sin \phi, k) \].
-  
+
 \subsubsection{Elliptic K}
 \hypertarget{operator:ELLIPTICK}{}
 \hypertarget{operator:ELLIPTICK'}{}
@@ -376,7 +376,7 @@ This is one of the quarter periods of the Jacobi elliptic
 functions and is often used in the calculation of other elliptic functions.
 The complementary Elliptic K$'$ function can be used as \f{EllipticK!$'$(k)}.
 Note that $i\mathrm{K}'(k)$ is the other quarter period of the Jacobi
-elliptic functions.  
+elliptic functions.
 
 \subsubsection{Elliptic E}
 \hypertarget{operator:ELLIPTICE}{}
@@ -410,7 +410,7 @@ The numerical evaluation of the complete integrals is more robust and
  uses symmetric elliptic integrals. They should now work for all complex
 values of the modulus and return the principal value of the integral concerned.
 Note that for all complex values of $k$, the well-known identities:
-\[\mathrm{K}'(k)=\mathrm{K}(\sqrt{1-k^2})\qquad 
+\[\mathrm{K}'(k)=\mathrm{K}(\sqrt{1-k^2})\qquad
 \mathrm{E}'(k) = \mathrm{E}(\sqrt{1-k^2}).\]
 are not actually valid for the principal values of the functions concerned.
 It is necessary that $\Re k >=0$ with in addition if $\Re k=0$, $\Im k>=0$.
@@ -453,7 +453,7 @@ $\mathrm{sn}$ etc.\ are not even functions of k.
 
 The Elliptic D function also comes with either one or two arguments;
 used with two arguments as \f{EllipticD(u,k)}
-it will return the value of an alternative form of Legendre's 
+it will return the value of an alternative form of Legendre's
 \emph{Incomplete Elliptic Integral of the Second Kind}:
 \[\mathrm{D}(\phi, k)=\int_0^\phi\frac{\sin^2 \theta}{\sqrt{1-k^2\sin^2\theta}}
 \,\mathrm{d}\theta.\]
@@ -476,7 +476,7 @@ argument lies in the range  $0 <= \phi <= \pi/2$.
 If the arguments of the elliptic integral function are numeric and the switch
 \sw{rounded}\ is ON, the numerical value will be returned. As with Jacobi
 elliptic functions, if any argument is complex then numerical evaluation will
-only occur if the switch \sw{complex}\ is also ON. 
+only occur if the switch \sw{complex}\ is also ON.
 
 Numerical evaluation should now succeed for all complex values of the arguments
 provided, of course, the corresponding integral exists. The incomplete integrals
@@ -499,7 +499,7 @@ two branch points.
 
 Note also that if the contour contains a branch point, there is sign ambiguity as the
 branch point is crossed depending on which branch of the square root in the integrand is
-chosen. It seems logical to choose the principal branch. 
+chosen. It seems logical to choose the principal branch.
 
 For example when $k>1$ \& $1/k < y <1$
 \[ \int_0^y \frac{\mathrm{d}x}{\sqrt{1-x^2}\sqrt{1-k^2x^2}}\]
@@ -607,7 +607,7 @@ The first three integrals defined above are symmetric in $x,y,z$ and are termed
 \emph{symmetric elliptic integrals of the first, second and third kinds}
 respectively. $\mathrm{RD}$ and $\mathrm{RC}$ are degnerate versions of
 $\mathrm{RJ}$ and $\mathrm{RF}$ respectively as
-\[\mathrm{RD}(x,y,z) =\mathrm{RJ}(x,y,z,z) \qquad 
+\[\mathrm{RD}(x,y,z) =\mathrm{RJ}(x,y,z,z) \qquad
 \mathrm{RC}(x,y) =\mathrm{RF}(x,y,y) \]
 $\mathrm{RD}$ is an elliptic integral of the second kind and is only symmetric
 in $x,y$ whilst $\mathrm{RC}$ is an elementary integral, but can be numerically
@@ -651,7 +651,7 @@ Fortran of the code of Carlson \& Notis \cite{CarlsonNotis:81} generalised
 for complex arguments and structured to avoid GO TO.
 
 Alternatively the symmetric integral $\mathrm{RF}$ may be evaluated
-using a sequence of quadratic transformations 
+using a sequence of quadratic transformations
 which converge rapidly to the elementary hyperbolic integral:
 \[\mathrm{RC}(X^2+Y^2,X^2) = \mathrm{RF}(X^2,X^2,X^2+Y^2) = \mathrm{arctanh}
 (Y/(X^2+Y^2))/Y.\]
@@ -792,7 +792,7 @@ When $0 \leq \phi \leq \pi/2$, the fundamental integrals of the first, second
 and third kinds $\mathrm{F}(\phi,k)$, $\mathrm{E}(\phi,k)$, $\mathrm{D}(\phi,k)$
 and $\Pi(\phi,a,k)$ may be written as
 \begin{eqnarray*}
-\mathrm{F}(\phi,k) &=& \frac{1}{2}\int_0^{s^2} \frac{\mathrm{d}t}{\sqrt{t(1-t)(1-k^2t)}}\\  
+\mathrm{F}(\phi,k) &=& \frac{1}{2}\int_0^{s^2} \frac{\mathrm{d}t}{\sqrt{t(1-t)(1-k^2t)}}\\
 \mathrm{E}(\phi,k) &=& \frac{1}{2}\int_0^{s^2} \frac{\sqrt{1-k^2t}\mathrm{d}t}{\sqrt{t(1-t)}}\\
 \mathrm{D}(\phi,k) &=& \frac{1}{2}\int_0^{s^2} \frac{\sqrt{t}\mathrm{d}t}{\sqrt{(1-t)(1-k^2t)}}\\
 \Pi(\phi,a,k) &=& \frac{1}{2}\int_0^{s^2} \frac{\mathrm{d}t}{\sqrt{t(1-t)(1-k^2t)}(1-a^2t)}
@@ -1030,7 +1030,7 @@ and usually very much smaller values of $|q|$ are achieved particularly when $\t
 
 In the numerical evaluations, if a result is real (or purely imaginary) it may
 happen that the result returned has a very small imaginary part
-(resp. real part). The ratio of the `deliquent' part to the actual result is
+(resp.\ real part). The ratio of the `deliquent' part to the actual result is
 invariably smaller than current PRECISION and is due to rounding. Similarly if
 the true result is actually zero the result returned may have a very small
 absolute value -- again smaller than the current PRECISION.
@@ -1039,18 +1039,21 @@ The Weierstrassian function is even and has a pole of order 2 at all lattice poi
 The Zeta and Sigma functions are only quasi-periodic on the lattice. Zeta is odd and has simple poles of residue
 1 at all lattice points. The basic Sigma function $\sigma(u,\omega_1,\omega_3)$ is odd and regular everywhere as is
 the function $\vartheta_1(u,\tau)$ to which it is closely related. It has zeros at all lattice points. All three functions
-$\wp$, $\zeta_w$ and $\sigma$ are homogenous of degrees -2, -1 and +1 respectively. The functions are related by
+$\wp$, $\zeta_w$ and $\sigma$ are homogenous of degrees $-2$, $-1$ and $+1$ respectively. The functions are related by
 \[ \wp(u) = -\zeta_w'(u),\qquad\qquad \zeta_w(u) = \sigma'(u)/\sigma(u),\]
 where the lattice parameters have been omitted for conciseness.
 
 Rule sets are provided which implement all the properties such as double periodicity
 discussed above. The rule for the derivative of the Weierstrass function has recently
-been corrected; it now involves the operator \f{epsilon\_w} whose value is either +1 or -1.
+been corrected; it now involves the operator \f{epsilon\_w} whose value is either $+1$ or $-1$.
 Its value changes at the poles of the Weierstrass function and at points where the value
-of the Weierstrass function is one of the three lattice roots $e_1,\ e_2$ or $e_3$.   Currently numerical evaluation of of $\epsilon_w$ is not available. 
+of the Weierstrass function is one of the three lattice roots $e_1$, $e_2$ or $e_3$.
+Currently numerical evaluation of $\epsilon_w$ is available only when
+the Weierstrassian function is real on the real axis and its (first)
+argument is real.
 Similar changes apply to the function Weierstrass1 below. For numerical evaluation
 the switches \sw{rounded}\ and \sw{complex}\ must both be ON and all three parameters must be numeric. It is not, however,
-necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third parameters will be swapped if required. 
+necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third parameters will be swapped if required.
 
 \subsubsection{Alternative forms of the Weierstrass Functions}
 \hypertarget{WEIERSTRASS1}{}
@@ -1083,7 +1086,7 @@ expressed in this alternative form:
 \subsubsection{Numerical Evaluation}
 If the arguments of the Weierstrassian, sigma and lattice functions (see below)
 are all numeric, the functions will only be evaluated if both \sw{rounded}\ and
-\sw{complex}\ are ON.  The only exceptions are the functions weierstrass1, 
+\sw{complex}\ are ON.  The only exceptions are the functions weierstrass1,
 weierstrassZeta1 and weierstrass\_sigma0. These are real-valued for real
 arguments and if all three arguments are real it suffices that the switch
 \sw{rounded}\ is ON.
@@ -1341,7 +1344,7 @@ $\mathop{\mathrm{arcsn}}$: & $ |x| <=1 $ &
   $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k)+(-1)^nv$ \\
 $\mathop{\mathrm{arccn}}$: &  $ |x| <=1 $ &
-  $0 <= v <= 2\mathrm{K}(k)$ & 
+  $0 <= v <= 2\mathrm{K}(k)$ &
   $4 n\mathrm{K}(k) \pm v$ \\
 $\mathop{\mathrm{arccd}}$: & $ |x| <=1 $ &
   $0 <= v <= 2\mathrm{K}(k)$ &
@@ -1357,19 +1360,19 @@ $\mathop{\mathrm{arcdc}}$: & $ |x| >=1 $ &
   $4 n\mathrm{K}(k) \pm v$ \\
 $\mathop{\mathrm{arcdn}}$: & $ k' <= x <= 1$ &
   $0 <= v <= \mathrm{K}(k)$ &
-  $2 n\mathrm{K}(k) \pm v$ \\  
+  $2 n\mathrm{K}(k) \pm v$ \\
 $\mathop{\mathrm{arcnd}}$: & $ 1 <= x <= 1/k'$ &
   $0 <= v <= \mathrm{K}(k)$ &
-  $2 n\mathrm{K}(k) \pm v$ \\   
+  $2 n\mathrm{K}(k) \pm v$ \\
 $\mathop{\mathrm{arcds}}$: & $ |x| >= k'$ &
   $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ \& $v \neq 0$ &
-  $2 n\mathrm{K}(k)+(-1)^nv $ \\  
+  $2 n\mathrm{K}(k)+(-1)^nv $ \\
 $\mathop{\mathrm{arcsd}}$: & $  |x| <= 1/k'$ &
   $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k)+(-1)^nv $ \\
 $\mathop{\mathrm{arcsc}}$: & $ x \in \mathbb{R}$ &
   $-\mathrm{K}(k) < v < \mathrm{K}(k)$ &
-  $2 n\mathrm{K}(k) + v$ \\  
+  $2 n\mathrm{K}(k) + v$ \\
 $\mathop{\mathrm{arccs}}$: & $ x \in \mathbb{R}$ &
 $0 < v < 2\mathrm{K}(k)$  &
   $2 n\mathrm{K}(k) + v\ (v \neq 0)$ \\

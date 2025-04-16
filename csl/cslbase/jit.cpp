@@ -211,30 +211,36 @@ Error storereg(Register& r, Register& base, intptr_t offset)
 }
 
 Error loadreg_pre(Register& r, Register& base, intptr_t offset)
-{   ASMJIT_PROPAGATE(add(base, offset));
+{   if (offset < 0) ASMJIT_PROPAGATE(sub(base, -offset));
+    else ASMJIT_PROPAGATE(add(base, offset));
     return mov(r, ptr(base));
 }
 
 Error storereg_pre(Register& r, Register& base, intptr_t offset)
-{   ASMJIT_PROPAGATE(add(base, offset));
+{   if (offset < 0) ASMJIT_PROPAGATE(sub(base, -offset));
+    else ASMJIT_PROPAGATE(add(base, offset));
     return mov(ptr(base), r);
 }
 
 Error loadreg_post(Register& r, Register& base, intptr_t offset)
 {   ASMJIT_PROPAGATE(mov(r, ptr(base)));
-    return add(base, offset);
+    if (offset < 0) return sub(base, -offset);
+    else return add(base, offset);
 }
 
 Error storereg_post(Register& r, Register& base, intptr_t offset)
 {   ASMJIT_PROPAGATE(mov(ptr(base), r));
-    return add(base, offset);
+    if (offset < 0) return sub(base, -offset);
+    else return add(base, offset);
 }
 
 #elif defined __aarch64__
 
 // The ARM has a smaller range of valid offsets when the offset is not
 // a multiple of the word-size, so in cases that would overflow that I
-// insert an extra add or subtract instruction.
+// insert an extra add or subtract instruction. The code is ugly here and
+// needs re-work, and then migration into all the other variants on
+// load and store!
 
 Error loadreg(Register& r, Register& base, intptr_t offset)
 {   if ((offset & 7) != 0 && (offset < -256 || offset >= 256))
@@ -792,7 +798,9 @@ void debugHere(intptr_t ppc)
 // be readily visible whether I display the operand of the "mov" in decimal
 // or hex.
     mov(w2, 1024000+ppc);
-#ifdef __x86_64__
+#if defined __x86_64__
+// Here I have a way of printing the state of the machine (A and B registers
+// and stack)... At present I have just set it up for x86_64.
     if (mov(x86::Mem((uint64_t)&savePPC, 8), w2)) std::cout << "Line" << __LINE__ << "\n";
     if (mov(x86::Mem((uint64_t)&saveA, 8), A_reg)) std::cout << "Line" << __LINE__ << "\n";
     if (mov(x86::Mem((uint64_t)&saveB, 8), B_reg)) std::cout << "Line" << __LINE__ << "\n";
@@ -838,7 +846,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
                  CodeHolder& myCodeHolder)
 {
 // I am going to start by printing the byte-stream
-    stdout_printf("\n!!! jitcompile on ");
+    stdout_printf("\n### jitcompile on ");
     dpr(basic_elt(env, 0));
     stdout_printf("Bytecodes...\n");
     for (size_t i=0; i<len; i++)
@@ -1077,7 +1085,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // be some of the labels that are neither defined nor used.
             bind(perInstruction[ppc]);
             stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
-#if 1
+#if 0
 // While I am debugging it will sometimes be nice to be able to navigate the
 // generated assembly code relating what is there to the bytes it came from.
 // However what I have here is rather heavyweight!
