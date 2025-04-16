@@ -37,7 +37,8 @@ module with;   % Support for local switch settings.
 % or a comma-separated sequence of switch names (as for the on and off
 % commands).  The `with' operator returns the expression specified as
 % its left operand evaluated and displayed subject to the switch
-% settings specified as its right operand, applied locally.
+% settings specified as its right operand, applied locally.  Messages
+% about changes of domain mode are suppressed.
 
 % Simple test examples:
 
@@ -93,7 +94,9 @@ fluid '(semic!*);
 symbolic procedure evalwithexp u;
    % Input: a with on b, c, d, off e, f, g;
    % u = (a (list (b c d) (e f g)))
-   begin scalar onlist, offlist, i;
+   % Suppress display of null values and messages about changes of
+   % domain mode.
+   begin scalar onlist, offlist, i, !*msg;
       onlist := cadr cadr u;
       offlist := caddr cadr u;
       if i := intersection(onlist, offlist) then
@@ -103,11 +106,11 @@ symbolic procedure evalwithexp u;
       onlist := with!-set!-switches(onlist, t);
       offlist := with!-set!-switches(offlist, nil);
       %%write "Applied onlist = ", onlist, ", offlist = ", offlist;  terpri();
-      u := mk!*sq simp!* car u;
+      u := aeval car u;
 
       % Some switches affect only output display, so ensure output
       % happens here only:
-      if not (semic!* eq '!$) then mathprint u;  semic!* := '!$;
+      if u and not (semic!* eq '!$) then mathprint u;  semic!* := '!$;
       % *** THIS DOESN'T DISPLAY ASSIGNMENTS, ONLY THEIR VALUES! ***
 
       % Reset switches.  On and off are "rlistats", so use apply:
