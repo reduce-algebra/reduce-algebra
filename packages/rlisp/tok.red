@@ -585,10 +585,16 @@ fail:
     return '!#
   end;
 
+fluid '(commentmarker!*);
+
 symbolic procedure tokquote;
    begin
+      scalar commentmarker!*;
       crchar!* := readch1();
-      nxtsym!* := mkquote rread();
+      nxtsym!* := rread();
+      if commentmarker!* then
+         nxtsym!* := list('commentedquote, commentmarker!*, nxtsym!*)
+      else nxtsym!* := mkquote nxtsym!*;
       curescaped!* := nil;
       ttype!* := 4;
       return nxtsym!*
@@ -1168,8 +1174,12 @@ symbolic procedure token;
 
 symbolic procedure tokbquote;
    begin
-     crchar!* := readch1();
-      nxtsym!* := list('backquote,rread());
+      scalar commentmarker!*;
+      crchar!* := readch1();
+      nxtsym!* := rread2();
+      if commentmarker!* then
+         nxtsym!* := list('commentedbackquote, commentmarker!*, nxtsym!*)
+      else nxtsym!* := list('backquote, nxtsym!*);
       curescaped!* := nil;
       ttype!* := 3;
       return nxtsym!*
@@ -1202,6 +1212,23 @@ symbolic procedure ptoken;
         return x
    end;
 
+
+fluid '(commentcount!*);
+commentcount := 0;
+
+symbolic procedure commenttag();
+   if memq('csl, lispsystem!*) then gensym1 '!%
+   else compress ('!! . ('!% .
+      explode (commentcount!* := add1 commentcount!*)));
+
+symbolic procedure commentify x;
+   if !*rprint and !*comment!* then <<
+      if null commentmarker!* then commentmarker!* := commenttag();
+      x := commentmarker!* . x . !*comment!*;
+      !*comment!* := nil;
+      x >>
+   else x;
+
 symbolic procedure rread1;
    % Modified to use QUOTENEWNAM's for ids.
    % Note that handling of reals uses symbolic mode, regardless of
@@ -1212,14 +1239,14 @@ symbolic procedure rread1;
           then return if idp x
                         then if !*quotenewnam
                                 and (y := get(x,'quotenewnam))
-                               then y
-                              else x
+                               then commentify y
+                              else commentify x
                        else if eqcar(x,'!:dn!:)
-                        then dnform(x,nil,'symbolic)
-                       else x
+                        then commentify dnform(x,nil,'symbolic)
+                       else commentify x
          else if x eq '!( then return rrdls()
          else if null (((x eq '!+) or (x eq '!-)) and (digit crchar!*))
-           then return x;
+           then return commentify x;
         y := ptoken();
         if eqcar(y,'!:dn!:) then y := dnform(y,nil,'symbolic);
         if null numberp y then <<
@@ -1233,19 +1260,22 @@ symbolic procedure rrdls;
    begin scalar x,y,z;
     a:  x := rread1();
         if null (ttype!*=3) then go to b
-         else if x eq '!) then return z
+         else if x eq '!) then return commentify z
          else if null (x eq '!.) then go to b;
         x := rread1();
         y := ptoken();
         if (null (ttype!*=3)) or (null (y eq '!)))
           then << nxtsym!* := " "; symerr("Invalid S-expression",nil) >>
-         else return nconc(z,x);
+         else return commentify nconc(z,x);
     b: z := nconc(z,list x);
        go to a
    end;
 
 symbolic procedure rread;
-   << prin2x " '"; rread1() >>;
+   << prin2x " '"; commentify rread1() >>;
+
+symbolic procedure rread2;
+   << prin2x " `"; commentify rread1() >>;
 
 flag('(!; !$),'delchar);
 
@@ -1454,9 +1484,11 @@ skipping!* := nil;
 
 symbolic procedure read_define();
    begin
-      scalar x, w;
+      scalar x, w, !*rprint;
+% I will not support clever handling of comments here, so I switch off
+% !*rprint while reading both parts of a "#define".
       x := rread();
-      if null idp x then symerr("#define can only define a sumbol", nil);
+      if null idp x then symerr("#define can only define a symbol", nil);
       w := rread();
       if null skipping!* then put(x, 'newnam, w);
       cursym!* := '!*semicol!*;  % Forces reading of the next token.
@@ -1531,10 +1563,12 @@ symbolic procedure scan_skip();
 
 symbolic procedure read_if();
    begin
-      scalar x;
+      scalar x, !*rprint;
       skipping!* := nil;
 % Again note that eg "#if #if" will be treated as "#if !#     if"
 % rather than as a messed up attempt to nest conditionals.
+% Also comments will not get attached to or wothin the predicate for
+% an "#if". 
       x := rread();
       if (scan_state() = 'NOT_WITHIN_IF) or
          (scan_state() = 'IF_TRUE) then <<
@@ -1588,7 +1622,7 @@ put('!#else, 'scan_action!*, 'read_else);
 
 symbolic procedure read_elif();
    begin
-      scalar x;
+      scalar x, !*rprint;
       skipping!* := nil;
       x := rread();
       if scan_state() = 'NOT_WITHIN_IF then
@@ -1639,7 +1673,7 @@ symbolic procedure read_eval();
 % the item read by rread will be just !# and there is no risk of
 % the sort of confusion that could arise if the string "#if" was
 % recognised as a directive!
-      scalar x;
+      scalar x, !*rprint;
       x := rread();
       if null skipping!* then errorset(x, !*backtrace, nil);
       cursym!* := '!*semicol!*;  % Forces reading of the next token.

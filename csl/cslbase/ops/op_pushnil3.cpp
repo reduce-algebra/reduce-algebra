@@ -10,9 +10,9 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_PUSHNIL3:
-                storereg_pre(nilreg, spreg, 8);
-                storereg_pre(nilreg, spreg, 8);
-                storereg_pre(nilreg, spreg, 8);
+                storereg_pre(nilreg, spreg, 24);
+                storeloc(nilreg, 1);
+                storeloc(nilreg, 2);
                 break;
 
 #else

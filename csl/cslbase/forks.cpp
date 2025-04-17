@@ -253,7 +253,8 @@ LispObject Lopen_fork(LispObject env)
                     sizeof(addr) ||
                 addr == nullptr) break;
             uint64_t d = 0x1234567876543210U;
-            write(fork_pipes_from[write_end], &d, sizeof(d));
+            if (write(fork_pipes_from[write_end], &d, sizeof(d)) != sizeof(d))
+                stdout_printf("write failure\n");;
         }
         close(fork_pipes_from[write_end]);
         close(fork_pipes_to[read_end]);
@@ -372,8 +373,7 @@ int32_t char_to_fork(int c, LispObject stream)
         stream_char_pos(stream)++;
     }
     int h = stream_extra(stream);
-    putc(c, stream_file(stream));
-    write(h, &c, 1);
+    if (write(h, &c, 1) != 1) return 1;
     return 0;   // indicate success
 }
 
