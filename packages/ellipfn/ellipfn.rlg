@@ -372,6 +372,7 @@ a4:=weierstrass(u+3v+5w,v,w);
 
 a4 := P_w(u + v + w,v,w)
 
+
 weierstrass(2v+3w,v,w);
 
 
@@ -386,7 +387,6 @@ weierstrass(3v+5w,v,w);
 
 
 e2(v,w)
-
 
 weierstrass(-2u^3,v,w);
 
@@ -842,8 +842,8 @@ weierstrass_sigma3(-u+2v+4w,v,w);
 df(weierstrass1(u, v, w), u);
 
 
-                    3
- - sqrt(4*P_w(u|v,w)  - P_w(u|v,w)*v - w)
+                 3
+sqrt(4*P_w(u|v,w)  - P_w(u|v,w)*v - w)*epsilon_w(u,v,w)
 
 weierstrass1(2*u, v, w);
 
@@ -1236,7 +1236,7 @@ w := 0.510385193315 + 0.032296176228*i
 jacobisn(w,0.8+i);
 
 
-0.5
+0.5 - 4.65122731996e-17*i
 
 
 w:=arccn(-0.3,0.8+i);
@@ -1247,7 +1247,7 @@ w := 1.46565831705 + 0.394994134628*i
 jacobicn(w,0.8+i);
 
 
--0.3
+ - 0.3 - 7.23230611684e-17*i
 
 
 w:=arcdn(0.3+i,0.8+i);
@@ -1756,7 +1756,7 @@ weierstrass_sigma1(7.6, 4, 2.4i);
 weierstrass_sigma1(3.2i, 1, 1.6i)/exp(2*eta3(1,1.6i)*1.6i);
 
 
-1
+1 + 4.77579678036e-20*i
 
 weierstrass_sigma1(1, 1, 1.6i);
 
@@ -1803,27 +1803,27 @@ weierstrass_sigma2(1+1.6i, 1, 1.6i);
 weierstrass_sigma3(0.2, 1, 1.6i);
 
 
-1.01914973447
+1.01914973447 - 1.76182853029e-19*i
 
 weierstrass_sigma3(0.6, 3, 4.8i);
 
 
-1.01914973447
+1.01914973447 + 1.08420217249e-19*i
 
 weierstrass_sigma3(1.9, 1, 0.6i);
 
 
-1.86885620246
+1.86885620246 + 5.42101086243e-19*i
 
 weierstrass_sigma3(7.6, 4, 2.4i);
 
 
-1.86885620246
+1.86885620246 + 5.42101086243e-19*i
 
 weierstrass_sigma3(2, 1, 1.6i)/exp(2*eta1(1,1.6i));
 
 
-1
+1 - 5.03122759305e-19*i
 
 -weierstrass_sigma3(3.2i, 1, 1.6i)/exp(2*eta3(1,1.6i)*1.6i);
 
@@ -2020,7 +2020,7 @@ weierstrass1(0.5, 4, -1);
 weierstrasszeta1(0.5, 1, 2);
 
 
-1.99746907884
+1.99746907884 + 1.90834772111e-19*i
   % one real & 2 complex-conjugate roots
 weierstrasszeta1(0.5, 1, -2);
 

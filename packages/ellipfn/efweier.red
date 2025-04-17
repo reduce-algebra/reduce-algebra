@@ -861,12 +861,12 @@ let epsilon_w1(~u,~g2,~g3) => num!-epsilon_w1(u,g2,g3)
 algebraic procedure num!-epsilon_w(u,w1);
    % Return sign of df(weierstrass1(u,w1,w3),u), assuming u, w1 both
    % numeric and real.
-   <<
+begin scalar sgn:=1;
       w1 := abs w1;
-      u := abs u;                       % Wp even
+      if u <0 then <<u := -u; sgn := -sgn>>;
       u := u - floor(u/(2w1))*2w1;      % Wp has period 2w1
-      if u < w1 then -1 else +1
-   >>;
+      return if u < w1 then -sgn else +sgn;
+end;
 
 algebraic procedure num!-epsilon_w1(u,g2,g3);
    % Return sign of df(weierstrass1(u,g2,g3),u) assuming all arguments
