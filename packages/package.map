@@ -108,6 +108,7 @@
  (matrix        "matrix"      core    preloadX     test      csl psl)
  (rlisp88       "rlisp88"     core    infrequent             csl psl)
  (rprint        "rprint"      core    cons_dot_spaced        csl psl)
+ (rstyle        "rprint"      core                           csl psl)
  (fmprint       "rprint"      core    infrequent             csl psl)
  (pretty        "rtools"      core    preloadX               csl psl)
  (solve         "solve"       core    preloadX     test      csl psl)

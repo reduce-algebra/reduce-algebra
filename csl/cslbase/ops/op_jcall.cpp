@@ -224,7 +224,7 @@
             jcall4:
 // fname is the offset in the literal vector of the function to call.
 // The args are in stack[-1], stack[0], B_reg, A_reg
-// In some other JCALL cases I imise if the called function is
+// In some other JCALL cases I optimise if the called function is
 // bytecoded. I have not done that here (yet?).
                 r2 = *stack--; r1 = *stack--;
                 B_reg = list3star(r1, r2, B_reg, A_reg);
@@ -347,6 +347,16 @@
                 loadfromsymbol(w1, w2, Ofunction4up);
                 loadreg_post(w3, spreg, -8);
                 loadreg_post(w4, spreg, -8);
+#if 0
+{ Register w5 = newIntPtr("w5");
+JITcall(displayreg, w5, w1);
+JITcall(displayreg, w5, w2);
+JITcall(displayreg, w5, w4);
+JITcall(displayreg, w5, w3);
+JITcall(displayreg, w5, B_reg);
+JITcall(displayreg, w5, A_reg);
+}
+#endif
                 JITcall(JITshim4L, A_reg,
                         w1, w2, w4, w3, B_reg, A_reg);
                 JITerrorcheck();

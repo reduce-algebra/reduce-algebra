@@ -10,8 +10,9 @@
 
             case OP_PUSHNILS:
                 next = bytes[ppc++];
-                for (int k=0; k<next; k++)
-                    storereg_pre(nilreg, spreg, 8);
+                storereg_pre(nilreg, spreg, 8*next);
+                for (int k=1; k<next; k++)
+                    storeloc(nilreg, k);
                 break;
 
 #else

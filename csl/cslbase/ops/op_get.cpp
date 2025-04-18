@@ -11,7 +11,7 @@
             case OP_GET:
                 mov(w1, get);
                 JITcall(JITshim3, A_reg,
-                        w1, nilreg, B_reg, A_reg);
+                        w1, B_reg, A_reg, nilreg);
                 JITerrorcheck();
                 break;
 

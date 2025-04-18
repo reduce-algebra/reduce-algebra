@@ -519,7 +519,7 @@ if 'psl memq lispsystem!* then defautoload(prettyprint,pretty);
 % Rprint module entry point.
 
 defautoload rprint;
-
+defautoload rstyle;
 
 % SOLVE module entry points.
 

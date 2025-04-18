@@ -411,10 +411,9 @@ symbolic procedure begin11 !~x!~;
                     return nil >>
        else if !*defn
         then if erfg!* then return nil
-              else if null flagp(key!*,'ignore)
-                and null eqcar(!~x!~,'quote)
-               then << (if !~x!~ then dfprint !~x!~ else nil);
-                          if null flagp(key!*,'eval) then return nil >>;
+              else if null flagp(key!*,'ignore) and null eqcar(!~x!~,'quote)
+               then << if !~x!~ then dfprint !~x!~;
+                       if null flagp(key!*,'eval) then return nil >>;
       if !*output and ifl!* and !*echo and null !*lessspace
         then terpri();
       !~result!~ := errorset!*(!~x!~,t);

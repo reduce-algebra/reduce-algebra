@@ -810,6 +810,11 @@ void debugHere(intptr_t ppc)
 #endif
 }
 
+static LispObject displayreg(LispObject u)
+{   std::cout << u << " " << std::hex << u << std::dec << "\n";
+    return nil;
+}
+
 void switchBlock(const unsigned char* bytes)
 {   intptr_t next;
     switch (bytes[ppc++])
