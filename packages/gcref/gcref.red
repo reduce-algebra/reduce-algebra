@@ -112,13 +112,13 @@ procedure gcref_rmknode!-tgf(fnl);
 %%          return rnodes;
 %%       push(fn, rnodes);
 %%       fnl := gcref_select get(fn,'calls);
-      while fnl do <<
+      while fnl do begin
+         scalar fn;
          fn := pop fnl;
          if not memq(fn, rnodes) then <<
             push(fn, rnodes);
-            fnl := nconc(fnl, gcref_select get(fn, 'calls))
-         >>
-      >>;
+            fnl := nconc(fnl, gcref_select get(fn, 'calls)) >>
+         end;
       return rnodes
    end;
 

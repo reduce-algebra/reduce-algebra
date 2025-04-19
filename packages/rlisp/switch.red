@@ -161,7 +161,7 @@ flag ('(off on),'ignore);
 
 % Symbolic mode switches:
 
-switch backtrace,comp,defn,rprint,demo,echo,errcont,fastfor,
+switch backtrace,comp,defn,rprint,rstyle,demo,echo,errcont,fastfor,
        int,lessspace,msg,output,pret,quotenewnam,raise,lower,time,
        strict_argcount, report_colons=on;   % eoldelimp
 

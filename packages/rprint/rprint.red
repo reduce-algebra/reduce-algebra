@@ -92,6 +92,7 @@ symbolic procedure mprino1(u,v);
            then <<curmark := curmark+1;
           prin2ox "("; mprino car u; prin2ox ")";
           omark list(curmark,3); curmark := curmark - 1>>
+       else if car u = 'quote then quotox u
        else if x := get(car u,pretoprinf)
         then return begin scalar p;
            p := car v>0
@@ -351,26 +352,18 @@ symbolic procedure labox u;
 
 put('!*label,pretoprinf,'labox);
 
-symbolic procedure quotoxx u;
-   begin
-      if stringp u then return prinox u;
-      prin2ox "'";
-      u := car u;
-      if atom u then return prinox u;
-      curmark := curmark+1;
-      prin2ox "(";
-      omark '(m u);
-  a:  if atom u then <<prin2ox " . "; prinox u; u := nil>>
-       else <<mprino car u; u := cdr u;
-              if u then <<prin2ox blank; omarko curmark>>>>;
-      if u then go to a;
-      omark '(m d);
-      prin2ox ")";
-      curmark := curmark - 1
-   end;
+% quotox takes the whole (quote A) as its argument rather than just A
 
 symbolic procedure quotox u;
-   if stringp u then prinox u else <<prin2ox "'"; prinsox car u>>;
+   if atom cdr u or not null cddr u then <<
+% If QUOTE is given other than a single argument I will print it in the
+% form of a simple function call rather than using special notation.
+     prinox car u;
+     u := cdr u;
+     if null u then prin2ox "()"
+     else mprargs(u, list(0, 0)) >>
+   else if stringp cadr u then prinox cadr u
+   else <<prin2ox "'"; prinsox cadr u>>;
 
 symbolic procedure prinsox u;
    if atom u then prinox u
@@ -386,8 +379,6 @@ symbolic procedure prinsox u;
            omark '(m d);
            prin2ox ")";
            curmark := curmark - 1>>;
-
-put('quote,pretoprinf,'quotox);
 
 symbolic procedure prognox u;
    begin

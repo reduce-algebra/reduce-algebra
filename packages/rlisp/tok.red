@@ -61,6 +61,7 @@ fluid '(!*adjprec !*rprint !*defn !*eoldelimp !*minusliter
 
 !*report!_colons := t;
 within!-backquote!* := nil;
+!*rprint := nil;
 
 % Note *raise is global in the SL Report, but treated as fluid here.
 
@@ -126,12 +127,11 @@ if null comment!-mark!* then <<
     remob comment!-quote!*;
     remob comment!-backquote!* >>
   else <<
-    comment_mark!* := compress explode '!<!%!>;
+    comment!-mark!* := compress explode '!<!%!>;
     comma!-mark!* := compress explode '!<!,!>;
     comma!-at!-mark!* := compress explode '!<!,!@!>;
     comment!-quote!* := compress explode '!<quote!>;
     comment!-backquote!* := compress explode '!<backquote!> >> >>;
-
 
 % The next few are so I have clear names for functions that will
 % support strings that have utf-8 sequences packed within them. They
@@ -884,20 +884,81 @@ symbolic procedure ptoken;
         return x
    end;
 
-symbolic procedure rread1;
+COMMENT
+I want to parse Rlisp such that comments are captured. The fundamental
+provision to make this possible is that that the function token() arranges
+that is a variable !*rprint is set when it sees a comment that the text of
+the comment is collected in a variable !*comment!*. This is a list so that
+it can cope with several consecutive comments and so that it naturally has
+the value nil if there are not any such. A severe awkwardness is that the
+corrents collected will be the ones before the token that is read. This
+is because it is undesirable to read ahead by multiple characters beyond the
+end of the token. So whenever token() is called the code that builds a
+parse tree needs to inspect !*comment!* and view its contents as items to
+% attach to whatever the previous item had been. Arranging that leads to
+code that may look contorted!
+
+Within Rlisp there us a sub-language that is just traditional Lisp
+s-expressions. Interleaved with the symbols and punctuation there there
+can be comments which are introduced with a "%" and then run to end-of-line.
+The scheme here captures these rather as if each comment had been
+just a string, so input like
+   (A B % comments
+    C D)
+will be parsed as a list (A B (<%> "comments") C D) where <%> denotes
+a special marker that could not arise in genuine input. With this
+scheme comments can appear anywhere within the list icnluding at the very
+start and very end. The only special case that arises is of the input
+contains a dot with comments somewhere after it, because in normal Lisp
+dot notation there can only be a single iterm after a dot. This is coped
+with by rendering eg
+   (A B . % comment1
+          C % comment2
+   )
+as (A B <.> (<%> "comment1> C (<%> "comment2")) with <.> a special
+marker. In Rlisp these s-expressions only arise in quoted expressions
+introduced by either "'" or "`". That provides an opportunity to arrange
+for the special markers and guarantee that they can not appear through the
+user having written them by name. A quoted expression that will contain
+comments gets expression as (commented_quote ...). However nested quotes
+and backquotes have to use similarly special tokens so that input initially
+written as '(commented_quote !<!%!>) sees both of the items in the list
+as literal data rather than annotations relating to the capture of
+comments. I provide tokens <,> and <,@> with a view that those will
+not be specifically to do with comments, but so that within a backquote
+(bit not a quote) a comma (perhaps followed by an "@") can be used in the
+way that is traditional with backquote. That capability was present in
+rlisp88 but until now has not been present in the regular version. Again
+making these special symbols uninterned avoids some risk of confusion
+between use as plan data and as syntactic markers;
+
+fluid '(comment!-seen!* precomment!* within!-quote!* within!-backquote!*);
+
+% When this is called the input may have one or more comments ahead
+% of the actual item that is read. These are left in precomment!* when
+% when this returns a result. 
+
+symbolic procedure rread1();
   begin
-    scalar x,y;
+    scalar x, y, cc;
+    !*comment!* := nil;
     x := ptoken();
+    cc := !*comment!*;    % Comments before the first token on this item.
+    if cc then comment!-seen!* := t;
+    !*comment!* := nil;
     if ttype!* = 3 then <<
 % Punctuation marks here. The test for ttype!* is so that for instance
 % "!(" [with an escape mark] does not start a list and "!-1" is not viewed
 % as a number. Only a plain "(" gets detected here.
-       if x = '!( then return rrdls()
+       if x = '!( then <<
+         y := rrdls();
+         precomment!* := cc;
+         return y >>
 % Note that quote marks are detected and handled within token() so I
 % do not need to check here. But I take special action on + or -
 % if immediately followed by a digit.
        else if ((x = '!+) or (x = '!-)) and digit crchar!* then <<
-         y := ptoken();
+         y := ptoken();   % No comment possible between +/- and number.
 % The low level token-reader hands back floating point numbers using
 % a structure involving !:dn!:. This is so that in algebraic mode if
 % high precision rounded working has been enabled the input of floating
@@ -907,32 +968,66 @@ symbolic procedure rread1;
          if eqcar(y,'!:dn!:) then y := dnform(y, nil, 'symbolic);
          if null numberp y then <<
             nxtsym!* := " ";
-            symerr("Syntax error: improper number", nil) >>
+            symerr("Syntax error: improper number",nil) >>
          else if x = '!- then y := minus y;
+         precomment!* := cc;
          return y >>
-       else return x >>
-    else if idp x and
+       else <<
+         precomment!* := cc;
+         return x >> >>;
+    precomment!* := cc;
+    if idp x and
        !*quotenewnam and
        (y := get(x, 'quotenewnam)) then return y
     else if eqcar(x, '!:dn!:) then return dnform(x, nil, 'symbolic)
     else return x
   end;
 
-symbolic procedure rrdls;
+symbolic procedure rrdls();
   begin
     scalar x, y, l;
 % Here I will read items using rread1() until I find a simple "." or ")".
     while <<
       x := rread1();
-      ttype!* neq 3 or (x neq '!) and x neq '!.) >> do <<
-        l := x . l >>;
+      if eqcar(x, comment!-mark!*) then <<
+        x := cdr x;
+        comment!-seen!* := t >>;
+% There may be several comments present ahead of the item. They
+      if precomment!* then <<
+        comment!-seen!* := t;
+        l := (comment!-mark!* . precomment!*) . l >>;
+      ttype!* neq 3 or (x neq '!) and x neq '!.) >> do l := x . l;
 % I have now built up a reversed version of the list in l. If I have
 % a final item to add then x will have the value !., otherwise it will be !).
+%
+% To allow for comments I will render (A . B) as (A <.> B) if !*rprint
+% is on because that will allow for the possibility of comments on one
+% or other side of B. If !*rprint is nil I will leave it as a dotted pair.
     if x = '!. then <<
+% The situation here can be (A %C1 . %C2 B %C3) where the %Ci are
+% streams of comments. I have just read the "." using rread1 and any
+% comments ahead of that (ie %C1) are already on L. So I put comment-mark!*
+% on the list to denots the dot.
+      if !*rprint then <<
+        comment!-seen!* := t;
+        l := comment!-mark!* . l >>;
       x := rread1();
+      if eqcar(x, comment!-mark!*) then <<
+        x := cdr x;
+        comment!-seen!* := t >>;
+% Now precomment!* will be %C2. Note that if !*rprint=nil then comments
+% will not be being collected and if it is true then comment!-seen!* has
+% already been set.
+      if precomment!* then l := (comment!-mark!* . precomment!*) . l;
+      if !*rprint then l := x . l;
       y := ptoken();
+% !*comment!* will be %C3.
+      if !*comment!* then l := (comment!-mark!* .!*comment!*) . l;
+% If !&rprint is set I want this to end up as an ordinary list that contains
+% B as an element and that terminates with nil. Otherwise B is the tail.
+      if !*rprint then x := nil;
       if ttype!*=3 and y eq '!) then nil  % The expected situation
-      else <<
+      else <<   % Bad syntax detected.
         nxtsym!* := " ";
         symerr("Invalid S-expression",nil) >> >>
     else x := nil;
@@ -941,19 +1036,118 @@ symbolic procedure rrdls;
     while l do <<
       x := car l . x;
       l := cdr l >>;
+% I have just read a list and it ended with a ")" - there is no comment
+% information for me to leave around.
     return x
   end;
 
-symbolic procedure tokquote;
-   begin
+% An OUTERMOST quote or backquote that may end up containing comment
+% information will be rendered as (commented!-quote ...) or
+% (commented!-backquote ...) but inner ones stay as just quote or
+% backquote. The binding of within!-backquote!* is so that "," and ",@"
+% get detected in that context.
+% Well actually I will represent that as (<%> quote ...). The <%> at the
+% top level of a list can not stand for <dot> as the head of a list, and
+% the use of it in that position in the top-level result from rread1
+% can not denote a result that is merely a comment...
+%
+% So one might end up with output such as
+%   (<%> quote %C1 (%C2 A %C3 (quote %C4 B) %C5 <dot> %C6 C %C7))
+%
+% Well achieving that is inolves minor hoop-jumping. To be useful at the
+% top level the tokquote() function binds comment!-seen!*, and that is so
+% that it can tell whether to turn into quote or commented-quote. The way
+% the recursion works is then that an inner quote turns into one of those
+% based on whether it has or does not have comments within it. If the only
+% comments in an entite expression are inside an embedded quote then
+% the inner one must be downgraded to a mere quote and the outer one
+% upgraded. So when I am reading the contents of a quote after any call
+% to rread1() I need to check whether it has returned (commented-quote ...)
+% and if it has I change that to just (quote ...) and set comment!-seen.
+
+symbolic procedure tokquote();
+  begin
+    scalar comment!-seen!*;
+    crchar!* := readch1();
+    prin2x " '";
+    begin
+      scalar within!-quote!*;
+      within!-quote!* := t;
+      nxtsym!* := list rread1();
+      if eqcar(nxtsym!*, comment!-mark!*) then <<
+        nxtsym!* := cdr nxtsym!*;
+        comment!-seen!* := t >>
+    end;
+    if precomment!* then
+      nxtsym!* := (comment!-mark!* . precomment!*) . nxtsym!*;
+    if comment!-seen!* then nxtsym!* := comment!-mark!* . 'quote . nxtsym!*
+    else nxtsym!* := 'quote . nxtsym!*;
+    curescaped!* := nil;
+    ttype!* := 4;
+    if not within!-quote!* and eqcar(nxtsym!*, comment!-mark!*) then
+      nxtsym!* := cdr nxtsym!*;
+    return nxtsym!*
+  end;
+
+% Note that `(...) parses into (!~backquote ...) here because the
+% name backquote is already defined in PSL in a way that may clash with
+% what I am trying to do!
+
+symbolic procedure tokbquote();
+  begin
+    scalar comment!-seen!*;
+    crchar!* := readch1();
+    prin2x " `";
+    begin
+      scalar within!-quote!*, within!-backquote!*;
+      within!-quote!* := within!-backquote!* := t;
+      nxtsym!* := list rread1();
+      if eqcar(nxtsym!*, comment!-mark!*) then <<
+        nxtsym!* := cdr nxtsym!*;
+        comment!-seen!* := t >>
+    end;
+    if precomment!* then
+      nxtsym!* := (comment!-mark!* . precomment!*) . nxtsym!*;
+
+    if comment!-seen!* then
+      nxtsym!* := comment!-mark!* . '!~backquote . nxtsym!*
+    else nxtsym!* := '!~backquote . nxtsym!*;
+    curescaped!* := nil;
+    ttype!* := 4;
+    if not within!-quote!* and eqcar(nxtsym!*, comment!-mark!*) then
+      nxtsym!* := cdr nxtsym!*;
+    return nxtsym!*
+  end;
+
+% Within the scope of a backquoted form the character "," is special
+% and either an unadorned comma or one immediately followed by "@" is
+% captured specially. Anybody who wants a comma in their backquoted
+% expression should be using "!," already so this should not hurt any
+% existing sensible code - especially since at present backquotes are
+% hardly used at all.
+
+symbolic procedure tokcomma();
+  begin
+    scalar w;
+    crchar!* := readch1();
+    if crchar!* = '!@ then <<
       crchar!* := readch1();
-      prin2x " '";
-      nxtsym!* := rread1();
-      nxtsym!* := mkquote nxtsym!*;
-      curescaped!* := nil;
-      ttype!* := 4;
-      return nxtsym!*
-   end;
+      w := comma!-at!-mark!*;
+      prin2x " ,@" >>
+    else <<
+      w := comma!-mark!*;
+      prin2x " ," >>;
+    nxtsym!* := list rread1();
+    if eqcar(nxtsym!*, comment!-mark!*) then <<
+      nxtsym!* := cdr nxtsym!*;
+      comment!-seen!* := t >>;
+    if precomment!* then
+      nxtsym!* := (comment!-mark!* . precomment!*) . nxtsym!*;
+    nxtsym!* := w . nxtsym!*;
+    curescaped!* := nil;
+    ttype!* := 4;
+    return nxtsym!*
+  end;
 
 symbolic procedure token;
    begin scalar x,y,z;
@@ -1266,43 +1460,6 @@ symbolic procedure token;
         crchar!* := x;
         go to c;
    end;
-
-symbolic procedure tokbquote;
-   begin
-      crchar!* := readch1();
-      prin2x " `";
-      nxtsym!* := rread1();
-      nxtsym!* := list('backquote, nxtsym!*);
-      curescaped!* := nil;
-      ttype!* := 3;
-      return nxtsym!*
-   end;
-
-% Within the scope of a backquoted form the character "," is special
-% and either an unadorned comma or one immediately followed by "@" is
-% captured specially. Anybody who wants a comma in their backquoted
-% expression should be using "!," already so this should not hurt any
-% existing sensible code - especially since at present backquotes are
-% hardly used at all.
-
-symbolic procedure tokcomma();
-  begin
-    scalar w;
-    crchar!* := readch1();
-    if crchar!* = '!@ then <<
-      crchar!* := readch1();
-      w := comma!-at!-mark!*;
-      prin2x " ,@" >>
-    else <<
-      w := comma!-mark!*;
-      prin2x " ," >>;
-    nxtsym!* := rread1();
-    nxtsym!* := list(w, nxtsym!*);
-    curescaped!* := nil;
-    ttype!* := 3;
-    crchar!* := readch1();
-    return nxtsym!*
-  end;
 
 symbolic procedure filenderr;
    begin
@@ -1753,7 +1910,8 @@ symbolic procedure scan();
             curescaped!* := escaped!*;
 % Set nxtsym!* to the token beyond this one.
             escaped!* := nil;
-            comment!* := !*comment!*; !*comment!* := nil;
+            if !*rprint then comment!* := !*comment!*;
+            !*comment!* := nil;
             nxtsym!* := token();
 % On some platforms the end of file marker is the symbol !$eof!$ itself,
 % however when that is read because readch() returns it token() will
@@ -1794,7 +1952,8 @@ symbolic procedure scan();
          cursym!* := nxtsym!*;
          curescaped!* := escaped!*;
          escaped!* := nil;
-         comment!* := !*comment!*; !*comment!* := nil;
+         if !*rprint then comment!* := !*comment!*;
+         !*comment!* := nil;
          nxtsym!* := token();
          if (nxtsym!* eq !$eof!$) and (ttype!* = 3) then return filenderr();
          if (numberp nxtsym!*) or
@@ -1858,7 +2017,8 @@ symbolic procedure scan();
 % sane "upgrade".
       if (w := get(cursym!*, 'scan_action!*)) then return apply(w, nil);
       escaped!* := nil;
-      comment!* := !*comment!*; !*comment!* := nil;
+      if !*rprint then comment!* := !*comment!*;
+      !*comment!* := nil;
       nxtsym!* := token();
       return cursym!*;
    end;

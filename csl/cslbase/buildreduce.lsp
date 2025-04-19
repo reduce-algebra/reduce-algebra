@@ -417,7 +417,7 @@ a     (cond
           %@ (printc "else_or_endif found")
           (return nil)))
       (setq cursym!* nxtsym!*)
-      (setq nxysym!* (token))
+      (setq nxtsym!* (token))
       (go a)))
 
 (de scan nil

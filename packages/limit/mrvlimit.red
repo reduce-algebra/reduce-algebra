@@ -50,7 +50,7 @@ share !*mrv!-recursion!-level!*;
 
 !*mrv!-recursion!-level!* := 0;
 
-switch trlimit=off;			% off by default
+switch trlimit=off;                        % off by default
 
 load_package limits;
 %load_package sets;
@@ -118,28 +118,28 @@ symbolic procedure mrv!-set(u,var);
    %% Nary operators times and plus: iterate comparison
    if op memq '(plus times)
      then << %% Drop subexpressions not depending on var
-      	     while argl and mrv_constantp(first argl,var) do argl := rest argl;
-	     if null argl then return nil;
-	     %% Compute compatibility class of 1st subexpression
-	     li2 := mrv!-set(first argl,var); argl := rest argl;
-	     %% Compute compatibility class of next subexpression and compare
-	     while argl do <<
-		%% skip constant subexpressions
-		if not mrv_constantp(first argl,var)
- 		  then li2 :=  mrv_maxi(mrv!-set(first argl,var),li2,var);
-		argl := rest argl >>;
-	     return li2;
+             while argl and mrv_constantp(first argl,var) do argl := rest argl;
+             if null argl then return nil;
+             %% Compute compatibility class of 1st subexpression
+             li2 := mrv!-set(first argl,var); argl := rest argl;
+             %% Compute compatibility class of next subexpression and compare
+             while argl do <<
+                %% skip constant subexpressions
+                if not mrv_constantp(first argl,var)
+                   then li2 :=  mrv_maxi(mrv!-set(first argl,var),li2,var);
+                argl := rest argl >>;
+             return li2;
           >>
     else if op eq 'expt
     then return
        %% short cut for the case:    mrv(expt(u,cst)) => mrv(u)
        if mrv_constantp(second argl,var) then mrv!-set(first argl,var)
         else if mrv!-limit1(mrv!-logsimp u,var) member '(infinity (minus infinity))
-	 then mrv_maxi({u},mrv!-set(second argl,var),var)
-	else mrv_maxi(mrv(first argl,var),mrv!-set(second argl,var),var)
-    else if null rest argl		% length argl = 1
+         then mrv_maxi({u},mrv!-set(second argl,var),var)
+        else mrv_maxi(mrv(first argl,var),mrv!-set(second argl,var),var)
+    else if null rest argl                % length argl = 1
     then return mrv!-set(first argl,var)
-    else if null cddr argl		% length argl = 2, includes difference and quotient
+    else if null cddr argl                % length argl = 2, includes difference and quotient
     then return mrv_maxi(mrv!-set(first argl,var),mrv!-set(second argl,var),var)
     else rerror(mrvlimit,1,"mrv not implemented");
 end; % of mrv
@@ -147,16 +147,16 @@ end; % of mrv
 symbolic procedure mrv(u,var);
    begin scalar v;
       if !*trlimit then <<
-	 prin2!* "Enter mrv("; prin2!* !*mrv!-recursion!-level!*; prin2!* "): ";
-	 maprin u; terpri!* t;
+         prin2!* "Enter mrv("; prin2!* !*mrv!-recursion!-level!*; prin2!* "): ";
+         maprin u; terpri!* t;
       >>;
       v := mrv!-set(u,var);
       if !*trlimit then <<
-      	 prin2!* "Exit mrv("; prin2!* !*mrv!-recursion!-level!*; prin2!* "): ";
-	 prin2!* "Mrv set of ";
-      	 maprin u; terpri!* t;
-      	 prin2!* " is ";
-      	 maprin ('list . v); terpri!* t;
+               prin2!* "Exit mrv("; prin2!* !*mrv!-recursion!-level!*; prin2!* "): ";
+         prin2!* "Mrv set of ";
+               maprin u; terpri!* t;
+               prin2!* " is ";
+               maprin ('list . v); terpri!* t;
       >>;
       return v
    end;
@@ -177,7 +177,7 @@ symbolic inline procedure mrv!-smallest u;
    else begin scalar v,lng1,lng2;
       v := car u; lng1 := mrv!-length v;
       for each el in cdr u do
- 	 if lng1 > (lng2 := mrv!-length el) then << v := el; lng1 := lng2 >>;
+          if lng1 > (lng2 := mrv!-length el) then << v := el; lng1 := lng2 >>;
       return v;
    end;
    
@@ -188,56 +188,56 @@ symbolic procedure mrv!-rewrite(u,var,omega,w);
       %% find the smallest subexpression
       g := mrv!-smallest omega;
       if !*trlimit then <<
-      	 prin2!* "In mrv!-rewrite(";
-      	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): Rewriting ";
-	 maprin u; terpri!* t;
-	 prin2!* " omega is "; maprin ('list . omega); terpri!* t;
-	 prin2!* "Smallest subexpression is "; maprin g; terpri!* t;
+               prin2!* "In mrv!-rewrite(";
+               prin2!* !*mrv!-recursion!-level!*; prin2!* "): Rewriting ";
+         maprin u; terpri!* t;
+         prin2!* " omega is "; maprin ('list . omega); terpri!* t;
+         prin2!* "Smallest subexpression is "; maprin g; terpri!* t;
       >>;
       logw := logg := mrv!-logsimp g;
       s := mrv!-sign(logg,var);
       if s=1 then << w := {'expt,w,-1}; logw := {'minus,logw} >>;
       if !*trlimit then <<
-      	 prin2!* "In mrv!-rewrite(";
-      	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): Sign of ";
-	 maprin g; prin2!* " is "; prin2!* s; terpri!* t;
+               prin2!* "In mrv!-rewrite(";
+               prin2!* !*mrv!-recursion!-level!*; prin2!* "): Sign of ";
+         maprin g; prin2!* " is "; prin2!* s; terpri!* t;
       >>;
       rlist := for each f in omega conc
-      	 begin scalar logf,c,wexpt,expt2,repl;
-	    logf := mrv!-logsimp f;
-	    c := mrv!-leading!-term(reval {'quotient,logf,logg},var,nil);
-	    if cadr c neq 0 then rerror(mrvlimit,1,
-       	      {"mrv-rewrite: elements must be in the same compatibility class",
-		 logf,logg});
-	    c := car c; 			% coefficient
-	    %% maybe apply reval to the difference as this my be simplified
- 	    %% without consequences (Gruntz, section 3.3.2, last sentence)
-	    wexpt := if c=1 then w else {'expt,w,c};
-	    expt2 := reval {'difference,logf,{'times,c,logg}};
-	    repl := f . if expt2=0 then wexpt
- 	    else {'times,wexpt,{'expt,'e,expt2}};
-	    wexpt := if c=-1 then w else reval {'expt,w,{'minus,c}};
-	    expt2 := reval {'difference,{'times,c,logg},logf};
-	    return {repl,reval {'expt,f,-1} . if expt2=0 then wexpt
- 	    else {'times,wexpt,{'expt,'e,expt2}}}
-      	 end;
+               begin scalar logf,c,wexpt,expt2,repl;
+            logf := mrv!-logsimp f;
+            c := mrv!-leading!-term(reval {'quotient,logf,logg},var,nil);
+            if cadr c neq 0 then rerror(mrvlimit,1,
+                     {"mrv-rewrite: elements must be in the same compatibility class",
+                 logf,logg});
+            c := car c;                         % coefficient
+            %% maybe apply reval to the difference as this my be simplified
+             %% without consequences (Gruntz, section 3.3.2, last sentence)
+            wexpt := if c=1 then w else {'expt,w,c};
+            expt2 := reval {'difference,logf,{'times,c,logg}};
+            repl := f . if expt2=0 then wexpt
+             else {'times,wexpt,{'expt,'e,expt2}};
+            wexpt := if c=-1 then w else reval {'expt,w,{'minus,c}};
+            expt2 := reval {'difference,{'times,c,logg},logf};
+            return {repl,reval {'expt,f,-1} . if expt2=0 then wexpt
+             else {'times,wexpt,{'expt,'e,expt2}}}
+               end;
       if !*trlimit then <<
-      	 prin2!* "In mrv!-rewrite(";
-      	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): rewriting: ";
-	 maprin u; terpri!* t;
-	 prin2!* "Replacement list is";
-      	 terpri!* t;
-      	 for each pp in rlist do
-	    << maprin {'replaceby,car pp,cdr pp}; terpri!* t >>;
+               prin2!* "In mrv!-rewrite(";
+               prin2!* !*mrv!-recursion!-level!*; prin2!* "): rewriting: ";
+         maprin u; terpri!* t;
+         prin2!* "Replacement list is";
+               terpri!* t;
+               for each pp in rlist do
+            << maprin {'replaceby,car pp,cdr pp}; terpri!* t >>;
       >>;
       for each pp in rlist do u := subst(cdr pp,car pp,u);
       if !*trlimit then <<
-	 prin2!* "After rewriting: ";
-	 maprin u; terpri!* t >>;
+         prin2!* "After rewriting: ";
+         maprin u; terpri!* t >>;
       u := subst(logw,{'log,w},u);
       return (u . logw);
    end;
-	 
+         
 
 %----------------------------------------------------------------------------
 % procedure to determine the leading term of an expression w.r.t. var
@@ -248,61 +248,61 @@ symbolic procedure mrv!-expt!-smember(u,v);
    %% is a subexpression of v
    smember(u,v) or eqcar(u,'expt) and
       (smember(u1,v) where u1 := {'expt,cadr u,
-	 if eqcar(caddr u,'minus) then cadr caddr u else {'minus,caddr u}});
+         if eqcar(caddr u,'minus) then cadr caddr u else {'minus,caddr u}});
 
 symbolic procedure mrv!-expand!-series(f,w);
    begin scalar s,coeffs;
       if !*trlimit then <<
-	 prin2!* "In mrv!-leading!-term(";
- 	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): computing series expansion of ";
-      	 maprin f;
-      	 terpri!* t;            
+         prin2!* "In mrv!-leading!-term(";
+          prin2!* !*mrv!-recursion!-level!*; prin2!* "): computing series expansion of ";
+               maprin f;
+               terpri!* t;            
       >>;
       s := errorset!*({'simptaylor,mkquote {f,w,0,2}},!*backtrace);
       if atom s then <<
-	 if !*trlimit then <<
-	    terpri!* t;
-	    prin2!* "Error "; prin2!* s; prin2!* " during Taylor expansion of";
-	    mathprint f;
-	 >>;
-	 rerror(mrvlimit,3,{"Error in Taylor expansion"});
-	 return list 
+         if !*trlimit then <<
+            terpri!* t;
+            prin2!* "Error "; prin2!* s; prin2!* " during Taylor expansion of";
+            mathprint f;
+         >>;
+         rerror(mrvlimit,3,{"Error in Taylor expansion"});
+%%%      return list 
       >>
       else if not kernp (s := car s) then <<
-	 if !*trlimit then <<
-	    terpri!* t;
-	    prin2!* "Taylor expansion of";
-	    mathprint f;
-	    prin2!* "yields unexpected result";
-	    printsq s;
-	    terpri!* t
-	 >>;
-	 rerror(mrvlimit,3,{"mrv_limit: Error in Taylor expansion"})>>
+         if !*trlimit then <<
+            terpri!* t;
+            prin2!* "Taylor expansion of";
+            mathprint f;
+            prin2!* "yields unexpected result";
+            printsq s;
+            terpri!* t
+         >>;
+         rerror(mrvlimit,3,{"mrv_limit: Error in Taylor expansion"})>>
       else if !*trlimit then <<
-	 prin2!* "In mrv!-leading!-term(";
- 	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): series expansion of ";
-	 mathprint f;
-	 prin2!* " is ";
-      	 printsq s;
-      	 terpri!* t;
+         prin2!* "In mrv!-leading!-term(";
+          prin2!* !*mrv!-recursion!-level!*; prin2!* "): series expansion of ";
+         mathprint f;
+         prin2!* " is ";
+               printsq s;
+               terpri!* t;
          >>;
 %      resetklist('taylor!*, oldklist);
       s := mvar numr s;
       s := cadr s;
       while s and null numr cdr car s do s := cdr s;
       if null s then return {0,0}
-	 else return {prepsq cdar s,caaaar s};
+         else return {prepsq cdar s,caaaar s};
       s := aeval {'taylor,f,w,0,4};
       if !*trlimit then <<
-	 prin2!* "In mrv!-leading!-term(";
- 	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): series expansion is ";
-      	 maprin s;
-      	 terpri!* t;            
+         prin2!* "In mrv!-leading!-term(";
+          prin2!* !*mrv!-recursion!-level!*; prin2!* "): series expansion is ";
+               maprin s;
+               terpri!* t;            
       >>;
       s := taylortostandard s;
 %      if eqcar(logw,'minus)
 %      then s := subeval({{'equal,cadr logw,{'minus,{'log,w}}},s})
-%      	 else s := subeval({{'equal,logw,{'log,w}},s});
+%               else s := subeval({{'equal,logw,{'log,w}},s});
       coeffs := coeffeval {s,w};
       return {nth(cdr coeffs,lowpow!*+1),lowpow!*};
    end;
@@ -322,24 +322,24 @@ symbolic procedure mrv!-leading!-term(u,var,omega);
    else begin scalar e0,s,w,f,logw;
       e0 := u;
       omega := for each term in omega conc
-	 if mrv!-expt!-smember(term,e0) then {term};
+         if mrv!-expt!-smember(term,e0) then {term};
       if null omega then omega := mrv(e0,var);
       if !*trlimit then <<
-      	 prin2!* "Omega set of ";
-      	 maprin e0;
-      	 prin2!* " is ";
-	 maprin ('list . omega);
-	 terpri!* t;
+               prin2!* "Omega set of ";
+               maprin e0;
+               prin2!* " is ";
+         maprin ('list . omega);
+         terpri!* t;
       >>;
       if var member omega
       then return mrv!-movedown(mrv!-leading!-term(mrv!-moveup(e0,var),var,
-	 for each term in omega collect mrv!-moveup(term,var)),var);
+         for each term in omega collect mrv!-moveup(term,var)),var);
       w := gensym();
       f . logw := mrv!-rewrite(e0,var,omega,w);
       return evalletsub({{{'replaceby,{'log,w},logw}},{'mrv!-expand!-series,mkquote f,mkquote w}},nil);
 %      if eqcar(logw,'minus)
 %      then s := subeval({{'equal,cadr logw,{'minus,{'log,w}}},s})
-%      	 else s := subeval({{'equal,logw,{'log,w}},s});
+%               else s := subeval({{'equal,logw,{'log,w}},s});
 %      coeffs := coeffeval {s,w};
 %      return {nth(cdr coeffs,lowpow!*+1),lowpow!*};
    end;
@@ -364,12 +364,12 @@ symbolic procedure mrv!-moveup(u,var);
    %   sqchk reval {'sub,{'equal,var,{'expt,'e,var}},u};
    begin scalar result;
       if !*trlimit then <<
-      	 prin2!* "Moving up: replacing ";
-	 maprin var;
-	 prin2!* " by ";
-      	 maprin {'expt,'e,var};
-      	 prin2!* " gives ";
-	 terpri!* t;
+               prin2!* "Moving up: replacing ";
+         maprin var;
+         prin2!* " by ";
+               maprin {'expt,'e,var};
+               prin2!* " gives ";
+         terpri!* t;
       >>;
       result :=  mrv!-simp!-logexp subst({'expt,'e,var},var,u);
       if !*trlimit then <<maprin {'replaceby,u,result};terpri!* t>>;
@@ -379,15 +379,15 @@ symbolic procedure mrv!-moveup(u,var);
 symbolic procedure mrv!-movedown(u,var);
    begin scalar result;
       if !*trlimit then <<
-      	 prin2!* "Moving down: replacing ";
-	 maprin var;
-	 prin2!* " by ";
-      	 maprin {'log,var};
-      	 prin2!* " gives ";
-	 terpri!* t;
+               prin2!* "Moving down: replacing ";
+         maprin var;
+         prin2!* " by ";
+               maprin {'log,var};
+               prin2!* " gives ";
+         terpri!* t;
       >>;
       result := for each v in u collect
-      	 sqchk reval {'sub,{'equal,var,{'log,var}},v};
+               sqchk reval {'sub,{'equal,var,{'log,var}},v};
       if !*trlimit then <<maprin {'replaceby,'list . u,'list . result};terpri!* t;>>;
       return result;
    end;
@@ -410,12 +410,12 @@ symbolic procedure mrv!-sign(u,var);
    else if eqcar(u,'quotient) then
       (if denom!-sign = 0 then rerror(mrvlimit,2,{"Cannot compute the sign of",u})
         else mrv!-sign(cadr u,var)*denom!-sign)
-      	 where denom!-sign := mrv!-sign(caddr u,var)
+               where denom!-sign := mrv!-sign(caddr u,var)
    else if eqcar(u,'plus) or eqcar(u,'difference)
    then mrv!-sign(car mrv!-leading!-term(u,var,nil),var)
    else rerror(mrvlimit,2,{"Cannot compute the sign of",u});
-	    
-	 
+            
+         
 symbolic procedure mrv!-length u;
    if (u='list) then nil
      else if atom u then 1
@@ -438,10 +438,10 @@ symbolic procedure mrv!-limit1a(u,var);
       if s=0 then return mrv!-limit1(c0,var)
       else if s=1 then return 0
       else if s=-1 then <<
-	 s1 := mrv!-sign(c0,var);
-	 if s1=1 then return 'infinity
-	 else if s1=-1 then return '(minus infinity)
-	 else  write "mrv!_limit1a: sign of c0=",c0," is ", s1;
+         s1 := mrv!-sign(c0,var);
+         if s1=1 then return 'infinity
+         else if s1=-1 then return '(minus infinity)
+         else  write "mrv!_limit1a: sign of c0=",c0," is ", s1;
       >>;
    end;
 
@@ -460,7 +460,7 @@ symbolic procedure mrv_limit(argl);
    if length argl neq 3
       then rederr{"mrv_limit called with wrong number of arguments",argl}
    else begin scalar u,x,x0,r,newvar:= gensym(),
-	 !*protfg := not !*backtrace,!*expandlogs := t,!*expandexpt,!*combineexpt:=t,!*precise;
+         !*protfg := not !*backtrace,!*expandlogs := t,!*expandexpt,!*combineexpt:=t,!*precise;
       u := reval car argl;
       x := cadr argl;
       x0 := caddr argl;

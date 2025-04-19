@@ -216,6 +216,67 @@ symbolic procedure formpop(u, vars, mode);
 
 put('pop, 'formfn, 'formpop);
 
+% Here u is a value that may have comment markers embedded. The result
+% must be a structure with those removed.
+
+symbolic procedure remove!-comments u;
+  if atom u then u
+  else if eqcar(u, comment!-mark!*) then begin
+% This case can arise with    ( ... <dot> <%> X <%>)   and must return
+% just X. It is entitled to complain if the residual part of the input
+% does not have exactly one non-comment item.
+    scalar v, r;
+    v := cdr u;
+    if atom v then symerr("Bad commented structure", u);
+    if eqcar(car v, comment!-mark!*) then v := cdr v;
+    if atom v then symerr("Bad commented structure", u);
+    r := car v;
+    v := cdr v;
+    if null v then return r;
+    if atom v then symerr("Bad commented structure", u);
+    if eqcar(car v, comment!-mark!*) then v := cdr v;
+    if null v then return r
+    else symerr("Bad commented structure", u)
+  end
+  else if eqcar(car u, comment!-mark!*) then remove!-comments cdr u
+  else remove!-comments car u . remove!-comments cdr u;
+    
+symbolic macro procedure !~backquote u;
+  begin
+% This can be either (!~backquote A) or (!~backquote %C A) but should
+% never be anything more general.
+    u := cdr u;
+    if u and eqcar(car u, comment!-mark!*) then u := cdr u;
+    if u then u := car u;   % Now the form to expand.
+    return expand!-backquote remove!-comments u
+  end;
+
+% When I am expanding a !~backquote I will build things up as if using
+% just cons(), but this function consolidates calls to cons() into
+% ise of list, list!* or acons when it can.
+
+symbolic procedure make!-cons(a, b);
+  if eqcar(b, 'cons) then list('list!*, a, cadr b, caddr b)
+  else if eqcar(b, 'list) or eqcar(b, 'list!*) then
+    car b . a . cdr b
+  else if eqcar(a, 'cons) then
+    list('acons, cadr a, caddr a, b)
+  else if null b then list('list, a)
+  else list('cons, a, b);
+
+% There is potential "fun" here with nested use of backquote, but
+% for a first pass I will view that is unsupported and I will complain
+% if one is noticed.
+
+symbolic procedure expand!-backquote u;
+  begin
+    if null u or numberp u or stringp u then return u
+    else if atom u then return mkquote u
+    else if eqcar(u, comma!-mark!*) then return cadr u
+    else if eqcar(u, '!~backquote) then symerr("illegal nested backquote", u)
+    else return make!-cons(expand!-backquote car u, expand!-backquote cdr u)
+  end;
+
 endmodule;
 
 end;

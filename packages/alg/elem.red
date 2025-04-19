@@ -186,6 +186,8 @@ put('sign,'simpfn,'simp!-sign);
 % cannot be defined by a rule because the evaluation of abs needs
 % sign.
 
+operator tanh, cosh, sinh, exp;
+
 sign_rules :=
    {
 %%   sign ~x => (if x>0 then 1 else if x<0 then -1 else 0)
