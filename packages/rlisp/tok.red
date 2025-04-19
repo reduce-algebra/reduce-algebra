@@ -56,9 +56,11 @@ module tok; % Identifier and reserved character reading.
 
 fluid '(!*adjprec !*rprint !*defn !*eoldelimp !*minusliter
         peekchar!* !*quotenewnam !*raise !*lower semic!*
-        !*report!_colons ifl!* curline!* comment!* !*comment!*);
+        !*report!_colons ifl!* curline!* comment!* !*comment!*
+        within!-backquote!*);
 
 !*report!_colons := t;
+within!-backquote!* := nil;
 
 % Note *raise is global in the SL Report, but treated as fluid here.
 
@@ -101,6 +103,35 @@ crchar!* := blank;
 peekchar!* := nil;
 
 curline!* := 1;
+
+% Some of these are looking forward to potential enhancements.
+% I want a bunch of symbols such as <%> that are not on the object
+% list and so can never conflict with symbols read in my the user.
+% Of course I can worry about whether that state will survive fast-
+% loading and the preservation of heap images.
+
+fluid '(comment!-mark!* comma!-mark comma!-at!-mark!*
+        comment!-quote!* comment!-backquote!*);
+
+if null comment!-mark!* then <<
+  if memq('csl, lispsystem!*) then <<
+    comment!-mark!* := '!<!%!>;
+    comma!-mark!* := '!<!,!>;
+    comma!-at!-mark!* := '!<!,!@!>;
+    comment!-quote!* := '!<quote!>;
+    comment!-backquote!* := '!<backquote!>;
+    remob comment!-mark!*;
+    remob comma!-mark!*;
+    remob comma!-at!-mark!*;
+    remob comment!-quote!*;
+    remob comment!-backquote!* >>
+  else <<
+    comment_mark!* := compress explode '!<!%!>;
+    comma!-mark!* := compress explode '!<!,!>;
+    comma!-at!-mark!* := compress explode '!<!,!@!>;
+    comment!-quote!* := compress explode '!<quote!>;
+    comment!-backquote!* := compress explode '!<backquote!> >> >>;
+
 
 % The next few are so I have clear names for functions that will
 % support strings that have utf-8 sequences packed within them. They
@@ -585,22 +616,6 @@ fail:
     return '!#
   end;
 
-fluid '(commentmarker!*);
-
-symbolic procedure tokquote;
-   begin
-      scalar commentmarker!*;
-      crchar!* := readch1();
-      nxtsym!* := rread();
-      if commentmarker!* then
-         nxtsym!* := list('commentedquote, commentmarker!*, nxtsym!*)
-      else nxtsym!* := mkquote nxtsym!*;
-      curescaped!* := nil;
-      ttype!* := 4;
-      return nxtsym!*
-   end;
-
-put('!','tokprop,'tokquote);
 
 if !*csl then <<
 % I will accept input such as 1.23S0. I preserve the fact that it named
@@ -860,6 +875,86 @@ symbolic procedure seprp ch;
    (ch eq tab) or
    (ch eq !$eol!$);
 
+symbolic procedure ptoken;
+   begin scalar x;
+        x := token();
+        if x eq '!) and eqcar(outl!*,blank) then outl!*:= cdr outl!*;
+        prin2x x;
+        if null ((x eq '!() or (x eq '!))) then prin2x blank;
+        return x
+   end;
+
+symbolic procedure rread1;
+  begin
+    scalar x,y;
+    x := ptoken();
+    if ttype!* = 3 then <<
+% Punctuation marks here. The test for ttype!* is so that for instance
+% "!(" [with an escape mark] does not start a list and "!-1" is not viewed
+% as a number. Only a plain "(" gets detected here.
+       if x = '!( then return rrdls()
+% Note that quote marks are detected and handled within token() so I
+% do not need to check here. But I take special action on + or -
+% if immediately followed by a digit.
+       else if ((x = '!+) or (x = '!-)) and digit crchar!* then <<
+         y := ptoken();
+% The low level token-reader hands back floating point numbers using
+% a structure involving !:dn!:. This is so that in algebraic mode if
+% high precision rounded working has been enabled the input of floating
+% point values with very many digits is supported. Here since I am
+% wanting a raw Lisp structure I use dnform() to convert to a native
+% float.
+         if eqcar(y,'!:dn!:) then y := dnform(y, nil, 'symbolic);
+         if null numberp y then <<
+            nxtsym!* := " ";
+            symerr("Syntax error: improper number", nil) >>
+         else if x = '!- then y := minus y;
+         return y >>
+       else return x >>
+    else if idp x and
+       !*quotenewnam and
+       (y := get(x, 'quotenewnam)) then return y
+    else if eqcar(x, '!:dn!:) then return dnform(x, nil, 'symbolic)
+    else return x
+  end;
+
+symbolic procedure rrdls;
+  begin
+    scalar x, y, l;
+% Here I will read items using rread1() until I find a simple "." or ")".
+    while <<
+      x := rread1();
+      ttype!* neq 3 or (x neq '!) and x neq '!.) >> do <<
+        l := x . l >>;
+% I have now built up a reversed version of the list in l. If I have
+% a final item to add then x will have the value !., otherwise it will be !).
+    if x = '!. then <<
+      x := rread1();
+      y := ptoken();
+      if ttype!*=3 and y eq '!) then nil  % The expected situation
+      else <<
+        nxtsym!* := " ";
+        symerr("Invalid S-expression",nil) >> >>
+    else x := nil;
+% At this stage in a bootstrap build I do not have "push" and "pop". If I
+% did I could have written "while l do push(x, pop l);"
+    while l do <<
+      x := car l . x;
+      l := cdr l >>;
+    return x
+  end;
+
+symbolic procedure tokquote;
+   begin
+      crchar!* := readch1();
+      prin2x " '";
+      nxtsym!* := rread1();
+      nxtsym!* := mkquote nxtsym!*;
+      curescaped!* := nil;
+      ttype!* := 4;
+      return nxtsym!*
+   end;
+
 symbolic procedure token;
    begin scalar x,y,z;
 % This is a big ugly procedure with a lot of GOTO statements. It is overdue
@@ -875,9 +970,6 @@ symbolic procedure token;
 % and all the other supplemental characters (to say nothing of Greek letters)
 % will be a matter for the underlying Lisp to worry about.
          else if liter x then go to letter
-% '(...) and `(...) are handled here. They MIGHT have been left for
-% scan to cope with but it ends up tidier to cope at this point.
-         else if (y := get(x,'tokprop)) then return lispapply(y,nil)
 % Comments introduced by "%" are detected here in token() so that they are
 % honoured within quoted expressions. Comments starting with either the
 % word "comment" or with "/*" are handled by scan() and will not be
@@ -904,6 +996,9 @@ symbolic procedure token;
          else if x eq '!! and null(!*micro!-version and null !*defn)
           then go to escape
          else if x eq '!" then go to string
+         else if x eq '!' then return tokquote()
+         else if x eq '!` then return tokbquote()
+         else if x eq '!, and within!-backquote!* then return tokcomma()
          else if x eq '!\ then go to backslash
          else if x eq '!_ then go to underscore;
     unicode:
@@ -1174,18 +1269,40 @@ symbolic procedure token;
 
 symbolic procedure tokbquote;
    begin
-      scalar commentmarker!*;
       crchar!* := readch1();
-      nxtsym!* := rread2();
-      if commentmarker!* then
-         nxtsym!* := list('commentedbackquote, commentmarker!*, nxtsym!*)
-      else nxtsym!* := list('backquote, nxtsym!*);
+      prin2x " `";
+      nxtsym!* := rread1();
+      nxtsym!* := list('backquote, nxtsym!*);
       curescaped!* := nil;
       ttype!* := 3;
       return nxtsym!*
    end;
 
-put('!`,'tokprop,'tokbquote);
+% Within the scope of a backquoted form the character "," is special
+% and either an unadorned comma or one immediately followed by "@" is
+% captured specially. Anybody who wants a comma in their backquoted
+% expression should be using "!," already so this should not hurt any
+% existing sensible code - especially since at present backquotes are
+% hardly used at all.
+
+symbolic procedure tokcomma();
+  begin
+    scalar w;
+    crchar!* := readch1();
+    if crchar!* = '!@ then <<
+      crchar!* := readch1();
+      w := comma!-at!-mark!*;
+      prin2x " ,@" >>
+    else <<
+      w := comma!-mark!*;
+      prin2x " ," >>;
+    nxtsym!* := rread1();
+    nxtsym!* := list(w, nxtsym!*);
+    curescaped!* := nil;
+    ttype!* := 3;
+    crchar!* := readch1();
+    return nxtsym!*
+  end;
 
 symbolic procedure filenderr;
    begin
@@ -1202,80 +1319,6 @@ symbolic procedure filenderr;
 % any terribly noisy diagnostic. So I use error1().
          error1() >>
    end;
-
-symbolic procedure ptoken;
-   begin scalar x;
-        x := token();
-        if x eq '!) and eqcar(outl!*,blank) then outl!*:= cdr outl!*;
-        prin2x x;
-        if null ((x eq '!() or (x eq '!))) then prin2x blank;
-        return x
-   end;
-
-
-fluid '(commentcount!*);
-commentcount := 0;
-
-symbolic procedure commenttag();
-   if memq('csl, lispsystem!*) then gensym1 '!%
-   else compress ('!! . ('!% .
-      explode (commentcount!* := add1 commentcount!*)));
-
-symbolic procedure commentify x;
-   if !*rprint and !*comment!* then <<
-      if null commentmarker!* then commentmarker!* := commenttag();
-      x := commentmarker!* . x . !*comment!*;
-      !*comment!* := nil;
-      x >>
-   else x;
-
-symbolic procedure rread1;
-   % Modified to use QUOTENEWNAM's for ids.
-   % Note that handling of reals uses symbolic mode, regardless of
-   % actual mode.
-   begin scalar x,y;
-        x := ptoken();
-        if null (ttype!*=3)
-          then return if idp x
-                        then if !*quotenewnam
-                                and (y := get(x,'quotenewnam))
-                               then commentify y
-                              else commentify x
-                       else if eqcar(x,'!:dn!:)
-                        then commentify dnform(x,nil,'symbolic)
-                       else commentify x
-         else if x eq '!( then return rrdls()
-         else if null (((x eq '!+) or (x eq '!-)) and (digit crchar!*))
-           then return commentify x;
-        y := ptoken();
-        if eqcar(y,'!:dn!:) then y := dnform(y,nil,'symbolic);
-        if null numberp y then <<
-           nxtsym!* := " ";
-           symerr("Syntax error: improper number",nil) >>
-        else if x eq '!- then y := minus y;
-        return y
-   end;
-
-symbolic procedure rrdls;
-   begin scalar x,y,z;
-    a:  x := rread1();
-        if null (ttype!*=3) then go to b
-         else if x eq '!) then return commentify z
-         else if null (x eq '!.) then go to b;
-        x := rread1();
-        y := ptoken();
-        if (null (ttype!*=3)) or (null (y eq '!)))
-          then << nxtsym!* := " "; symerr("Invalid S-expression",nil) >>
-         else return commentify nconc(z,x);
-    b: z := nconc(z,list x);
-       go to a
-   end;
-
-symbolic procedure rread;
-   << prin2x " '"; commentify rread1() >>;
-
-symbolic procedure rread2;
-   << prin2x " `"; commentify rread1() >>;
 
 flag('(!; !$),'delchar);
 
@@ -1487,9 +1530,9 @@ symbolic procedure read_define();
       scalar x, w, !*rprint;
 % I will not support clever handling of comments here, so I switch off
 % !*rprint while reading both parts of a "#define".
-      x := rread();
+      x := rread1();
       if null idp x then symerr("#define can only define a symbol", nil);
-      w := rread();
+      w := rread1();
       if null skipping!* then put(x, 'newnam, w);
       cursym!* := '!*semicol!*;  % Forces reading of the next token.
       return scan()
@@ -1569,7 +1612,7 @@ symbolic procedure read_if();
 % rather than as a messed up attempt to nest conditionals.
 % Also comments will not get attached to or wothin the predicate for
 % an "#if". 
-      x := rread();
+      x := rread1();
       if (scan_state() = 'NOT_WITHIN_IF) or
          (scan_state() = 'IF_TRUE) then <<
          x := errorset(x, !*backtrace, nil);
@@ -1624,7 +1667,7 @@ symbolic procedure read_elif();
    begin
       scalar x, !*rprint;
       skipping!* := nil;
-      x := rread();
+      x := rread1();
       if scan_state() = 'NOT_WITHIN_IF then
          symerr("unexpected #endif", nil)
       else if (scan_state() = 'IF_TRUE) or
@@ -1667,14 +1710,14 @@ put('!#endif, 'scan_action!*, 'read_endif);
 
 symbolic procedure read_eval();
    begin
-% Note that rread() uses token() not scan() to read things, and so
+% Note that rread1() uses token() not scan() to read things, and so
 % if some clown writes something like
 %     eval #if ...
-% the item read by rread will be just !# and there is no risk of
+% the item read by rread1 will be just !# and there is no risk of
 % the sort of confusion that could arise if the string "#if" was
 % recognised as a directive!
       scalar x, !*rprint;
-      x := rread();
+      x := rread1();
       if null skipping!* then errorset(x, !*backtrace, nil);
       cursym!* := '!*semicol!*;  % Forces reading of the next token.
       return scan()
