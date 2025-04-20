@@ -12,7 +12,7 @@
 
             case OP_LIST2STAR:
                 mov(w1, list2star);
-                loadreg_post(w2, spreg, -1);
+                loadreg_post(w2, spreg, -8);
                 JITcall(JITshim3, A_reg,
                         w1, w2, B_reg, A_reg);
                 JITerrorcheck();

@@ -850,27 +850,29 @@ void* jitcompile(const unsigned char* bytes, size_t len,
                  LispObject env, int nargs,
                  CodeHolder& myCodeHolder)
 {
+    if (qvalue(jit_noisy) != nil)
+    {
 // I am going to start by printing the byte-stream
-    stdout_printf("\n### jitcompile on ");
-    dpr(basic_elt(env, 0));
-    stdout_printf("Bytecodes...\n");
-    for (size_t i=0; i<len; i++)
-    {   int op = bytes[i];
-        int len = oparginfo[op] & 3;
-        stdout_printf("%3u:  %02x", i, op);
-        for (int k=2; k<=3; k++)
-            if (k<=len) stdout_printf(" %02x", bytes[++i]);
-            else stdout_printf("   ");
-        stdout_printf(" %s\n", opnames[op]);
-    }
+        stdout_printf("\n=== jitcompile on ");
+        dpr(basic_elt(env, 0));
+        stdout_printf("Bytecodes...\n");
+        for (size_t i=0; i<len; i++)
+        {   int op = bytes[i];
+            int len = oparginfo[op] & 3;
+            stdout_printf("%3u:  %02x", i, op);
+            for (int k=2; k<=3; k++)
+                if (k<=len) stdout_printf(" %02x", bytes[++i]);
+                else stdout_printf("   ");
+            stdout_printf(" %s\n", opnames[op]);
+        }
 // The literal at offset zero is the name of the function, and the
-// final entry is an integer checksum 
-    stdout_printf("Vector of literals...\n");
-    for (size_t i=0; i<(length_of_header(vechdr(env))-CELL)/CELL; i++)
-    {   stdout_printf("%3d: ", i);
-        dpr(basic_elt(env, i));
+// final entry is an integer checksum
+        stdout_printf("Vector of literals...\n");
+        for (size_t i=0; i<(length_of_header(vechdr(env))-CELL)/CELL; i++)
+        {   stdout_printf("%3d: ", i);
+            dpr(basic_elt(env, i));
+        }
     }
-
 // I am going to support functions with up to 15 arguments - anything
 // beyond that I will declare unsuitable to mapping into hard code.
 // Well the function in the Reduce sources with most arguments is
@@ -1055,7 +1057,6 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // need the "add" that you saw in the x86_64 version.
     for (int i=1; i<=nargs&&i<4; i++)
     {   storereg_pre(argregs[i], spreg, 8);
-        stdout_printf("Just moved arg %d to stack\n", i);
     }
     if (nargs>=4)
     {   mov(w1, w);
@@ -1089,7 +1090,9 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // because the "case" code for some opcode will increment ppc there will
 // be some of the labels that are neither defined nor used.
             bind(perInstruction[ppc]);
-            stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
+            if (qvalue(jit_noisy) != nil)
+                stdout_printf("Byte %.2x : %s\n",
+                              bytes[ppc], opnames[bytes[ppc]]);
 #if 0
 // While I am debugging it will sometimes be nice to be able to navigate the
 // generated assembly code relating what is there to the bytes it came from.
@@ -1166,20 +1169,20 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     void* func = nullptr;
     if (rt.add(&func, &myCodeHolder) != ErrorCode::kErrorOk)
         throw JitFailed("rt.add failed");
-// The size here might be the total size to date rather than just that from
-// the current function???
-    size_t size = myCodeHolder.codeSize();
-    stdout_printf("size=%d code at %p\n", size, func);
-    if (func != nullptr)
-    {   FILE* hex = fopen("hex", "w");
-        for (int i=0; i<(int)size; i++)
-        {   fprintf(hex, "0x%.2x",
-                    reinterpret_cast<unsigned char*>(func)[i]);
-            if ((i%8) == 7) fprintf(hex, "\n");
-            else fprintf(hex, " ");
+    if (qvalue(jit_noisy) != nil)
+    {   size_t size = myCodeHolder.codeSize();
+        stdout_printf("size=%d code at %p\n", size, func);
+        if (func != nullptr)
+        {   FILE* hex = fopen("hex", "w");
+            for (int i=0; i<(int)size; i++)
+            {   fprintf(hex, "0x%.2x",
+                        reinterpret_cast<unsigned char*>(func)[i]);
+                if ((i%8) == 7) fprintf(hex, "\n");
+                else fprintf(hex, " ");
+            }
+            if ((size%8) != 0) fprintf(hex, "\n");
+            fclose(hex);
         }
-        if ((size%8) != 0) fprintf(hex, "\n");
-        fclose(hex);
     }
     return func;
 }
@@ -1270,7 +1273,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // really useful while developing, but it obviously gets switched off for
 // most production use.
     myFileLogger.addFlags(FormatFlags::kMachineCode);
-    myCodeHolder.setLogger(&myFileLogger);
+    if (qvalue(jit_noisy) != nil)
+       myCodeHolder.setLogger(&myFileLogger);
     JITCompile cc(&myCodeHolder);
     return cc.jitcompile(bytes, len, env, nargs, myCodeHolder);
 }
