@@ -34,6 +34,7 @@ module superv; % REDUCE supervisory functions.
 fluid '(!*debug
         !*defn
         !*rprint
+        !*rstyle
         !*demo
         !*echo
         !*errcont
@@ -556,7 +557,7 @@ symbolic procedure dfprint1 u;
    % Looks for special action on a form, otherwise prettyprints it.
     if !*defn and !*rprint then <<
        terpri();
-       rprint u;
+       if !*rstyle then rstyle u else rprint u;
        terpri() >>
     else if dfprint!* then lispapply(dfprint!*,list u)
     else if cmsg!* then nil

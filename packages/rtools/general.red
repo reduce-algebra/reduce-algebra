@@ -316,6 +316,9 @@ symbolic operator leafcount;
 % the structure in "lisp units" which are rather vague in their definition
 % but which are within an modest factor of the size of cons cells.
 
+% The variable here will inform us if a function hash!-table!-p can be used
+% to identify system-supported hash tables.
+fluid '(!*hash!-table!-p);
 !*hash!-table!-p := getd 'hash!-table!-p;
 
 symbolic procedure treesize u;

@@ -115,7 +115,7 @@ symbolic procedure noint2int u;
    if atom u then u
    else if car u = 'noint then
       'int . for each a in cdr u collect noint2int a
-   else if car u = '!*sq then mk!*sq noint2intsq cadr y 
+   else if car u = '!*sq then mk!*sq noint2intsq cadr u 
    else begin
       scalar sa, sd;
       sa := noint2int car u;
