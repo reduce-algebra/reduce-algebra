@@ -376,11 +376,10 @@ extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
 extern LispObject echo_symbol, supervisor, B_reg, qbytecoded_0;
 extern LispObject qbytecoded_1, qbytecoded_2, qbytecoded_3, qbytecoded_4up;
 extern LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
-extern LispObject jit_symbol, compiler_symbol, tracedfn, lisp_terminal_io;
-extern LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
-extern LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
-extern LispObject prompt_thing;
-extern LispObject prinl_symbol, s_prinl2_symbol;
+extern LispObject jit_noisy, jit_symbol, compiler_symbol, tracedfn;
+extern LispObject lisp_terminal_io, lisp_standard_output, lisp_standard_input;
+extern LispObject lisp_error_output, lisp_trace_output, lisp_debug_io;
+extern LispObject lisp_query_io, prompt_thing, prinl_symbol, s_prinl2_symbol;
 extern LispObject starloopprint_symbol, emsg_star, redef_msg;
 extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
 extern LispObject big_divisor, big_dividend, big_quotient;
@@ -1179,7 +1178,7 @@ extern setup_type const om_parse_setup[];
     X(help_index),                 X(infinity_symbol),            \
     X(inherited_symbol),           X(initial_element),            \
     X(input_libraries),            X(internal_symbol),            \
-    X(jit_symbol),                                                \
+    X(jit_noisy),                  X(jit_symbol),                 \
     X(karaWork),                   X(key_key),                    \
     X(keyword_package),            X(lambda),                     \
     X(large_modulus),              X(lex_words),                  \

@@ -118,7 +118,7 @@ LispObject allow_key_key, declare_symbol, special_symbol, large_modulus;
 LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
 LispObject fork_parent, supervisor, B_reg;
 LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
-LispObject jit_symbol, compiler_symbol, tracedfn, lisp_terminal_io;
+LispObject jit_noisy, jit_symbol, compiler_symbol, tracedfn, lisp_terminal_io;
 LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 LispObject prompt_thing, prinl_symbol, s_prinl2_symbol;
@@ -768,6 +768,8 @@ static void cold_setup()
     lower_symbol        = make_undefined_fluid("*lower");
     echo_symbol         = make_undefined_fluid("*echo");
     comp_symbol         = make_undefined_fluid("*comp");
+    jit_noisy           = make_undefined_fluid("*jit-noisy");
+    qvalue(jit_noisy) = nil;
     jit_symbol          = make_undefined_fluid("*jit");
     qbytecoded_0        = make_undefined_symbol("bytecoded_0");
     qbytecoded_1        = make_undefined_symbol("bytecoded_1");

@@ -9,7 +9,7 @@
 
             case OP_LOSES:
                 next = bytes[ppc++];
-                sub2(spreg, next);
+                sub2(spreg, 8*next);
                 break;
 
 #else

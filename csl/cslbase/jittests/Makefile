@@ -24,5 +24,5 @@ clean:
 	rm *.log
 
 %.log:	%.red
-	scr $@ limit -t 20 rr record $(PX)/bootstrapreduce -w $<
+	scr $@ limit -t 120 rr record $(PX)/bootstrapreduce -w $<
 

@@ -17,7 +17,7 @@
                         w1, nilreg, B_reg, A_reg);
                 JITerrorcheck();
                 cmp(w, nilreg);
-                jne(perInstruction[ppc-next]);
+                je(perInstruction[ppc-next]);
                 break;
 
 #else

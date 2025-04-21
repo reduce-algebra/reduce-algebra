@@ -51,7 +51,7 @@ LispObject Ltrace_count(LispObject env, LispObject n)
    if (is_fixnum(n)) trace_count = int_of_fixnum(n);
    else if (n == lisp_true) trace_count = 1;
    else if (n == nil) trace_count = 0;
-   return sixty_four_bits(old);
+   return fixnum_of_int(old);
 }
 
 // CSL is now set up so that so that functions of 0, 1, 2 and 3
