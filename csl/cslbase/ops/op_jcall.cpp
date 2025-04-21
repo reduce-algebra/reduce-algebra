@@ -263,63 +263,20 @@
                     case 0: goto jcall0;
                 }
             jcall0:
-                std::cout << "JCALL0 not done well yet\n";
-                loadlit(w2, next & 0x1f);
-                loadfromsymbol(w1, w2, Ofunction0);
-                JITcall(JITshim0L, A_reg,
-                        w1, w2);
-                JITerrorcheck();
-                jmp(returnA);
-
-// At present (07/04/2025) the "chain" facility does not behave properly
-// and so while this is what I hope to be able to use the cruder version
-// which does not actually use tail recursion has to hold the fort.
-//              loadlit(w, next & 0x1f);
-//              storestatic(w, OJITarg0);
-//              mov(w, (next>>5) & 0x7);
-//              storestatic(w, OJITerrflag);
-//              loadstatic(A_reg, OJITtailcall);
-//              chain(A_reg);
-                break;                
+                lispjcall0(next & 0x1f);
+                break;
 
             jcall1:
-                std::cout << "JCALL1 not done well yet\n";
-                loadlit(w2, next & 0x1f);
-                loadfromsymbol(w1, w2, Ofunction1);
-                JITcall(JITshim1L, A_reg,
-                        w1, w2, A_reg);
-                JITerrorcheck();
-                jmp(returnA);
-
-//              loadlit(w, next & 0x1f);
-//              storestatic(w, OJITarg0);
-//              mov(w, (next>>5) & 0x7);
-//              storestatic(w, OJITerrflag);
-//              storestatic(A_reg, OJITarg1);
-//              loadstatic(A_reg, OJITtailcall);
-//              chain(A_reg);
-                break;                
+                lispjcall1(next & 0x1f);
+                break;
 
             jcall2:
-                std::cout << "JCALL2 not done well yet\n";
-                loadlit(w2, next & 0x1f);
-                loadfromsymbol(w1, w2, Ofunction2);
-                JITcall(JITshim2L, A_reg,
-                        w1, w2, B_reg, A_reg);
-                JITerrorcheck();
-                jmp(returnA);
-
-//              loadlit(w, next & 0x1f);
-//              storestatic(w, OJITarg0);
-//              mov(w, (next>>5) & 0x7);
-//              storestatic(w, OJITerrflag);
-//              storestatic(B_reg, OJITarg1);
-//              storestatic(A_reg, OJITarg2);
-//              loadstatic(A_reg, OJITtailcall);
-//              chain(A_reg);
-                break;                
+                lispjcall2(next & 0x1f);
+                break;
 
             jcall3:
+                lispjcall3(next & 0x1f);
+                break;
                 std::cout << "JCALL3 not done well yet\n";
                 loadlit(w2, next & 0x1f);
                 loadfromsymbol(w1, w2, Ofunction3);
@@ -342,6 +299,8 @@
                 break;
 
             jcall4:
+                lispjcall4(next & 0x1f);
+                break;
                 std::cout << "JCALL4 not done well yet\n";
                 loadlit(w2, next & 0x1f);
                 loadfromsymbol(w1, w2, Ofunction4up);

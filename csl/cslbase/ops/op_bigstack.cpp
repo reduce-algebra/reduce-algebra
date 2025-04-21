@@ -54,40 +54,20 @@
                 next = bytes[ppc++];             // contains sub-opcode
                 switch (next & 0xc0)
                 {   case 0x00:                  // LOADLOC extended
-                        unfinished(__FILE__ " not yet implemented for x86_64");
-//@                     B_reg = A_reg;
-//@                     next = (next & 0x3f) << 8;
-//@                     A_reg = stack[-static_cast<int>(next + bytes[ppc++])];
+                        mov(B_reg, A_reg);
+                        next = ((next & 0x3f)<<8) | bytes[ppc++];
+                        loadloc(A_reg, next);
                         break;
                     case 0x40:                  // STORELOC extended
-                        unfinished(__FILE__ " not yet implemented for x86_64");
-//@                     next = (next & 0x3f) << 8;
-//@                     stack[-static_cast<int>(next + bytes[ppc++])] = A_reg;
+                        next = ((next & 0x3f)<<8) | bytes[ppc++];
+                        storeloc(A_reg, next);
                         break;
                     case 0x80:                  // CLOSURE extended
-                        unfinished(__FILE__ " not yet implemented for x86_64");
-//@                     *++stack = B_reg; *++stack = A_reg;
-//@                     next = ((next & 0x3f) << 8) + bytes[ppc++];
-//@                     A_reg = encapsulate_sp(&stack[-2-static_cast<int>(next)]);
-//@                     errexit();
-//@                     B_reg = *stack--;
-//@                     A_reg = list2star(cfunarg, B_reg, A_reg);
-//@                     errexit();
-//@                     B_reg = *stack--;
-                        break;
+// I think that CLOSURE, LOADLEX and STORELEX would be feasible here,
+// but they are not high on the priority list at present.
+                        unfinished("CLOSURE not yet implemented in JIT");
                     case 0xc0:                  // LOADLEX, STORELEX extended
-                        unfinished(__FILE__ " not yet implemented for x86_64");
-//@                     n = bytes[ppc++];
-//@                     k = bytes[ppc++];
-//@                     n = (n << 4) | (k >> 4);
-//@                     k = ((k & 0xf) << 8) | bytes[ppc++];
-//@                     r1 = elt(stack[1-n], 0);
-//@                     B_reg = A_reg;
-//@                     n = next & 0x1f;
-//@                     while (n != 0) r1 = (reinterpret_cast<LispObject *>(r1))[1], n--;
-//@                     if ((next & 0x20) == 0) A_reg = (reinterpret_cast<LispObject *>(r1))[k];
-//@                     else (reinterpret_cast<LispObject *>(r1))[k] = A_reg;
-                        break;
+                        unfinished("LOADLEX/STORELEX not yet implemented in JIT");
                 }
                 break;
 

@@ -14,7 +14,7 @@
 %
 
 
-on time, echo;
+on echo;
 lisp;
 on comp, pgwd;    % Observe the bytecodes.
 enable!-errorset(3,3);

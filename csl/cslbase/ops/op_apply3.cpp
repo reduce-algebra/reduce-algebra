@@ -9,7 +9,7 @@
 // When I use the bytecode I do not do that.
                 r1 = *stack--;
                 r2 = *stack;
-                if (is_symbol(r2))   // can imise this case, I guess
+                if (is_symbol(r2))   // can optimise this case, I guess
                 {   f3 = qfn3(r2);
                     RECORD_CALL(list4(r2, r1, B_reg, A_reg));
                     if ((qheader(r2) & SYM_TRACED) != 0)
@@ -29,10 +29,16 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_APPLY3:
-                std::cout << "OP_APPLY3 wrong\n";
-                mov(w1, times2);
-                JITcall(JITshim1, A_reg,
-                        w1, B_reg, A_reg);
+                mov(w1, list3);
+                loadreg_post(w, spreg, -8);
+                JITcall(JITshim3, A_reg,
+                        w1, w, B_reg, A_reg);
+                JITerrorcheck();
+                mov(w1, apply);
+                loadlit(w2, 0);
+                loadreg_post(w3, spreg, -8);
+                JITcall(JITshim4, A_reg,
+                        w1, w3, A_reg, nilreg, w2);
                 JITerrorcheck();
                 break;
 

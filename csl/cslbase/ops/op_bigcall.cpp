@@ -75,55 +75,67 @@
                     int fname = bytes[ppc++] + ((next & 0xf) << 8);
                     switch (next >> 4)
                     {
-                default:
-                case 0: // call 0 args
-                    unfinished(__FILE__ " not yet implemented bigcall call0");
-                    break;
-                case 1: // call 1 arg
-                    unfinished(__FILE__ " not yet implemented bigcall call1");
-                    break;
-                case 2: // call 2 args
-                    unfinished(__FILE__ " not yet implemented bigcall call2");
-                    break;
-                case 3: // call 3 args
-                    unfinished(__FILE__ " not yet implemented bigcall call3");
-                    break;
-                case 4: // call 4 args
-                    unfinished(__FILE__ " not yet implemented bigcall call4");
-                    break;
-                case 5: // call 2 args, arg order reversed
-                    unfinished(__FILE__ " not yet implemented bigcall call2r");
-                    break;
-                case 6: // loadfree
-                    unfinished(__FILE__ " not yet implemented bigcall loadfree");
-                    break;
-                case 7: // storefree
-                    unfinished(__FILE__ " not yet implemented bigcall storefree");
-                    break;
-                case 8: // tail call 0 args
-                    unfinished(__FILE__ " not yet implemented bigcall jcall0");
-                    break;
-                case 9: // tail call 1 arg
-                    unfinished(__FILE__ " not yet implemented bigcall jcall1");
-                    break;
-                case 10:// tail call 2 args
-                    unfinished(__FILE__ " not yet implemented bigcall jcall2");
-                    break;
-                case 11:// tail call 3 args
-                    unfinished(__FILE__ " not yet implemented bigcall jcall3");
-                    break;
-                case 12:// tail call 4 args
-                    unfinished(__FILE__ " not yet implemented bigcall jcall4");
-                    break;
-                case 13:// freebind
-                    unfinished(__FILE__ " not yet implemented bigcall freebind");
-                    break;
-                case 14:// litget
-                    unfinished(__FILE__ " not yet implemented bigcall litget");
-                    break;
-                case 15:// loadlit
-                    unfinished(__FILE__ " not yet implemented bigcall loadlit");
-                    break;
+                    default:
+                    case 0: // call 0 args
+                        lispcall0(fname);
+                        break;
+                    case 1: // call 1 arg
+                        lispcall1(fname);
+                        break;
+                    case 2: // call 2 args
+                        lispcall2(fname);
+                        break;
+                    case 3: // call 3 args
+                        lispcall3(fname);
+                        break;
+                    case 4: // call 4 args
+                        lispcall4(fname);
+                        break;
+                    case 5: // call 2 args, arg order reversed
+                        lispcall2r(fname);
+                        break;
+                    case 6: // loadfree
+                        mov(B_reg, A_reg);
+                        loadlit(A_reg, fname);
+                        loadfromsymbol(A_reg, A_reg, Ovalue);
+                        break;
+                    case 7: // storefree
+                        loadlit(w, fname);
+                        storetosymbol(A_reg, w, Ovalue);
+                        break;
+                    case 8: // tail call 0 args
+                        lispjcall0(fname);
+                        break;
+                    case 9: // tail call 1 arg
+                        lispjcall1(fname);
+                        break;
+                    case 10:// tail call 2 args
+                        lispjcall2(fname);
+                        break;
+                    case 11:// tail call 3 args
+                        lispjcall3(fname);
+                        break;
+                    case 12:// tail call 4 args
+                        lispjcall4(fname);
+                        break;
+                    case 13:// freebind
+                        loadlit(w1, fname);
+                        JITcall(do_freebind, w,
+                                w1);
+                        loadstatic(spreg, Ostack);
+                        break;
+                    case 14:// litget
+                        mov(w1, get);
+                        mov(B_reg, A_reg);
+                        loadlit(A_reg, fname);
+                        JITcall(JITshim3, A_reg,
+                                w1, B_reg, A_reg, nilreg);
+                        JITerrorcheck();
+                        break;
+                    case 15:// loadlit
+                        mov(B_reg, A_reg);
+                        loadlit(A_reg, fname);
+                        break;
                     }
                 }
                 break;

@@ -8,13 +8,7 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_CALL0_1:
-                loadlit(w2, 1);
-// w2 is now the symbol that names the function to be called. Now fetch
-// from that the entrypoint to be used when it is a function of 0 args.
-                loadfromsymbol(w1, w2, Ofunction0);
-                JITcall(JITshim1L, A_reg,
-                        w1, w2);
-                JITerrorcheck();
+                lispcall0(1);
                 break;
 
 #else
