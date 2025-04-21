@@ -5,8 +5,8 @@
 //
 // This provides for calls (and a few other rations!) where the literal
 // to be referenced is beyond position 256 in the literal vector. The
-// encoding is that BIGCALL is followed by two bytes. The thalf of the
-// first of these is a sub ode, while the remaining 12 bits provide
+// encoding is that BIGCALL is followed by two bytes. The half of the
+// first of these is a sub code, while the remaining 12 bits provide
 // support for literal vectors with up to 4096 elements. At present I
 // will just not support code bigger than that. Note that if I were feeling
 // keen here I could easily arrange that the 12-bit offset here started at
@@ -35,7 +35,7 @@
 
                     case 5: goto call2r;
 // sub-odes 6 and 7 are use for LOADFREE and STOREFREE - this is a bit
-// odd but fits the required rations tightly into the ode map.
+// odd but fits the required that operations fit tightly into the code map.
                     case 6:
                         B_reg = A_reg;
                         A_reg = qvalue(basic_elt(litvec, fname));
@@ -54,7 +54,7 @@
                     case 11:goto jcall3;
                     case 12:goto jcall4;
 // Codes 13 and 14 do FREEBIND and LITGET, which completes the list of
-// byte rations that access big literals.
+// byte operations that access big literals.
                     case 13:do_freebind(basic_elt(litvec, fname));
                         continue;
                     case 14:B_reg = A_reg;
@@ -68,16 +68,65 @@
                         continue;
                 }
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_BIGCALL:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_BIGCALL:
-                unfinished(__FILE__ " not yet implemented for ARM");
-
+                {   next = bytes[ppc++];
+                    int fname = bytes[ppc++] + ((next & 0xf) << 8);
+                    switch (next >> 4)
+                    {
+                default:
+                case 0: // call 0 args
+                    unfinished(__FILE__ " not yet implemented bigcall call0");
+                    break;
+                case 1: // call 1 arg
+                    unfinished(__FILE__ " not yet implemented bigcall call1");
+                    break;
+                case 2: // call 2 args
+                    unfinished(__FILE__ " not yet implemented bigcall call2");
+                    break;
+                case 3: // call 3 args
+                    unfinished(__FILE__ " not yet implemented bigcall call3");
+                    break;
+                case 4: // call 4 args
+                    unfinished(__FILE__ " not yet implemented bigcall call4");
+                    break;
+                case 5: // call 2 args, arg order reversed
+                    unfinished(__FILE__ " not yet implemented bigcall call2r");
+                    break;
+                case 6: // loadfree
+                    unfinished(__FILE__ " not yet implemented bigcall loadfree");
+                    break;
+                case 7: // storefree
+                    unfinished(__FILE__ " not yet implemented bigcall storefree");
+                    break;
+                case 8: // tail call 0 args
+                    unfinished(__FILE__ " not yet implemented bigcall jcall0");
+                    break;
+                case 9: // tail call 1 arg
+                    unfinished(__FILE__ " not yet implemented bigcall jcall1");
+                    break;
+                case 10:// tail call 2 args
+                    unfinished(__FILE__ " not yet implemented bigcall jcall2");
+                    break;
+                case 11:// tail call 3 args
+                    unfinished(__FILE__ " not yet implemented bigcall jcall3");
+                    break;
+                case 12:// tail call 4 args
+                    unfinished(__FILE__ " not yet implemented bigcall jcall4");
+                    break;
+                case 13:// freebind
+                    unfinished(__FILE__ " not yet implemented bigcall freebind");
+                    break;
+                case 14:// litget
+                    unfinished(__FILE__ " not yet implemented bigcall litget");
+                    break;
+                case 15:// loadlit
+                    unfinished(__FILE__ " not yet implemented bigcall loadlit");
+                    break;
+                    }
+                }
+                break;
 #else
             case OP_BIGCALL:
                 unfinished("Unsupported architecture");

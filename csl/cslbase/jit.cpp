@@ -153,7 +153,7 @@ intptr_t savePPC, saveA, saveB, saveSP, saveSPentry;
 
 void JITdebugprint(void)
 {   std::cout << "\n";
-    std::cout << "ppc     = " << savePPC << std::hex << "\n";
+    std::cout << "ppc     = " << savePPC << std::hex << " : " << savePPC << "\n";
     std::cout << "nil     = " << nil << " = "; dpr(nil);
     std::cout << "A_reg   = " << saveA << " = "; dpr(saveA);
     std::cout << "B_reg   = " << saveB << " = "; dpr(saveB);
