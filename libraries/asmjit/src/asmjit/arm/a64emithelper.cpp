@@ -437,22 +437,18 @@ ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame, bool chai
   if (chain)
   {
 // This messy sequence is only emitted once per function, and with greater
-// care I could share it between several functions. IT loads registers
-// x0, x1, x2 and x3 from static locations and then jumps to an address
+// care I could share it between several functions. It loads registers
+// x0, x1, x2, x3 and x4 from static locations and then jumps to an address
 // stored in another static place. This can achieve the effect of a tail
-// call to a function with 0, 1, 2, 3, or 4 arguments. I stop at 4
-// because for Windows on x86_64 arranges its stack in a way that would
-// make that difficult.
-      ASMJIT_PROPAGATE(emitter->mov(x0, (intptr_t)&asmjit::chainA1));
-      ASMJIT_PROPAGATE(emitter->ldr(x0, ptr(x0)));
-      ASMJIT_PROPAGATE(emitter->mov(x1, (intptr_t)&asmjit::chainA2));
-      ASMJIT_PROPAGATE(emitter->ldr(x1, ptr(x1)));
-      ASMJIT_PROPAGATE(emitter->mov(x2, (intptr_t)&asmjit::chainA3));
-      ASMJIT_PROPAGATE(emitter->ldr(x2, ptr(x2)));
-      ASMJIT_PROPAGATE(emitter->mov(x3, (intptr_t)&asmjit::chainA4));
-      ASMJIT_PROPAGATE(emitter->ldr(x3, ptr(x3)));
-      ASMJIT_PROPAGATE(emitter->mov(x9, (intptr_t)&asmjit::chainTarget));
-      ASMJIT_PROPAGATE(emitter->ldr(x9, ptr(x9)));
+// call to a function with 0, 1, 2, 3, or 4 arguments.
+// chainRegs[0] contains the address I must jump to.
+      ASMJIT_PROPAGATE(emitter->mov(x9, (intptr_t)&asmjit::chainRegs));
+      ASMJIT_PROPAGATE(emitter->ldr(x0, ptr(x9, 8)));
+      ASMJIT_PROPAGATE(emitter->ldr(x1, ptr(x9, 16)));
+      ASMJIT_PROPAGATE(emitter->ldr(x2, ptr(x9, 24)));
+      ASMJIT_PROPAGATE(emitter->ldr(x3, ptr(x9, 32)));
+      ASMJIT_PROPAGATE(emitter->ldr(x4, ptr(x9, 40)));
+      ASMJIT_PROPAGATE(emitter->ldr(x9, ptr(x9, 0)));
       ASMJIT_PROPAGATE(emitter->br(x9));
   }
   else ASMJIT_PROPAGATE(emitter->ret(x30));

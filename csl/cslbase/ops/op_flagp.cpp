@@ -18,7 +18,7 @@
 
             case OP_FLAGP:
                 mov(w1, Lflagp);
-                JITcall(JITshim2, A_reg,
+                JITcall(JITshim2L, A_reg,
                         w1, nilreg, B_reg, A_reg);
                 JITerrorcheck();
                 break;

@@ -20,7 +20,7 @@
 // I just need to copy the above logic.
 
             case OP_CLOSURE:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                unfinished(__FILE__ " not yet implemented for JIT");
 
 #else
             case OP_CLOSURE:

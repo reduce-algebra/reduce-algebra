@@ -31,7 +31,7 @@
 // since the stack layout and content will be the same in each case.
 
             case OP_LOADLEX:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                unfinished(__FILE__ " not yet implemented for JIT");
 
 #else
             case OP_LOADLEX:

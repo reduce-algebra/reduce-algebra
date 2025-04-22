@@ -5,8 +5,8 @@
 //
 // This provides for calls (and a few other rations!) where the literal
 // to be referenced is beyond position 256 in the literal vector. The
-// encoding is that BIGCALL is followed by two bytes. The thalf of the
-// first of these is a sub ode, while the remaining 12 bits provide
+// encoding is that BIGCALL is followed by two bytes. The half of the
+// first of these is a sub code, while the remaining 12 bits provide
 // support for literal vectors with up to 4096 elements. At present I
 // will just not support code bigger than that. Note that if I were feeling
 // keen here I could easily arrange that the 12-bit offset here started at
@@ -35,7 +35,7 @@
 
                     case 5: goto call2r;
 // sub-odes 6 and 7 are use for LOADFREE and STOREFREE - this is a bit
-// odd but fits the required rations tightly into the ode map.
+// odd but fits the required that operations fit tightly into the code map.
                     case 6:
                         B_reg = A_reg;
                         A_reg = qvalue(basic_elt(litvec, fname));
@@ -54,7 +54,7 @@
                     case 11:goto jcall3;
                     case 12:goto jcall4;
 // Codes 13 and 14 do FREEBIND and LITGET, which completes the list of
-// byte rations that access big literals.
+// byte operations that access big literals.
                     case 13:do_freebind(basic_elt(litvec, fname));
                         continue;
                     case 14:B_reg = A_reg;
@@ -68,16 +68,77 @@
                         continue;
                 }
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_BIGCALL:
-                unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_BIGCALL:
-                unfinished(__FILE__ " not yet implemented for ARM");
-
+                {   next = bytes[ppc++];
+                    int fname = bytes[ppc++] + ((next & 0xf) << 8);
+                    switch (next >> 4)
+                    {
+                    default:
+                    case 0: // call 0 args
+                        lispcall0(fname);
+                        break;
+                    case 1: // call 1 arg
+                        lispcall1(fname);
+                        break;
+                    case 2: // call 2 args
+                        lispcall2(fname);
+                        break;
+                    case 3: // call 3 args
+                        lispcall3(fname);
+                        break;
+                    case 4: // call 4 args
+                        lispcall4(fname);
+                        break;
+                    case 5: // call 2 args, arg order reversed
+                        lispcall2r(fname);
+                        break;
+                    case 6: // loadfree
+                        mov(B_reg, A_reg);
+                        loadlit(A_reg, fname);
+                        loadfromsymbol(A_reg, A_reg, Ovalue);
+                        break;
+                    case 7: // storefree
+                        loadlit(w, fname);
+                        storetosymbol(A_reg, w, Ovalue);
+                        break;
+                    case 8: // tail call 0 args
+                        lispjcall0(fname);
+                        break;
+                    case 9: // tail call 1 arg
+                        lispjcall1(fname);
+                        break;
+                    case 10:// tail call 2 args
+                        lispjcall2(fname);
+                        break;
+                    case 11:// tail call 3 args
+                        lispjcall3(fname);
+                        break;
+                    case 12:// tail call 4 args
+                        lispjcall4(fname);
+                        break;
+                    case 13:// freebind
+                        loadlit(w1, fname);
+                        JITcall(do_freebind, w,
+                                w1);
+                        loadstatic(spreg, Ostack);
+                        break;
+                    case 14:// litget
+                        mov(w1, get);
+                        mov(B_reg, A_reg);
+                        loadlit(A_reg, fname);
+                        JITcall(JITshim3, A_reg,
+                                w1, B_reg, A_reg, nilreg);
+                        JITerrorcheck();
+                        break;
+                    case 15:// loadlit
+                        mov(B_reg, A_reg);
+                        loadlit(A_reg, fname);
+                        break;
+                    }
+                }
+                break;
 #else
             case OP_BIGCALL:
                 unfinished("Unsupported architecture");

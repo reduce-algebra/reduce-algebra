@@ -153,7 +153,7 @@ intptr_t savePPC, saveA, saveB, saveSP, saveSPentry;
 
 void JITdebugprint(void)
 {   std::cout << "\n";
-    std::cout << "ppc     = " << savePPC << std::hex << "\n";
+    std::cout << "ppc     = " << savePPC << std::hex << " : " << savePPC << "\n";
     std::cout << "nil     = " << nil << " = "; dpr(nil);
     std::cout << "A_reg   = " << saveA << " = "; dpr(saveA);
     std::cout << "B_reg   = " << saveB << " = "; dpr(saveB);
@@ -815,6 +815,166 @@ static LispObject displayreg(LispObject u)
     return nil;
 }
 
+// Calling Lisp functions is done using the following helper functions
+
+void lispcall0(size_t k)
+{   loadlit(w2, k);
+// w2 is now the symbol that names the function to be called. Now fetch
+// from that the entrypoint to be used when it is a function of 0 args.
+    loadfromsymbol(w1, w2, Ofunction0);
+    JITcall(JITshim0L, A_reg,
+            w1, w2);
+    JITerrorcheck();
+}
+
+void lispcall1(size_t k)
+{   loadlit(w2, k);
+    loadfromsymbol(w1, w2, Ofunction1);
+    JITcall(JITshim1L, A_reg,
+            w1, w2, A_reg);
+    JITerrorcheck();
+}
+
+void lispcall2(size_t k)
+{   loadlit(w2, k);
+    loadfromsymbol(w1, w2, Ofunction2);
+    JITcall(JITshim2L, A_reg,
+            w1, w2, B_reg, A_reg);
+    JITerrorcheck();
+}
+
+void lispcall2r(size_t k)
+{   loadlit(w2, k);
+    loadfromsymbol(w1, w2, Ofunction2);
+    JITcall(JITshim2L, A_reg,
+            w1, w2, A_reg, B_reg);
+    JITerrorcheck();
+}
+
+void lispcall3(size_t k)
+{   loadlit(w2, k);
+    loadfromsymbol(w1, w2, Ofunction3);
+    loadreg_post(w3, spreg, -8);
+    JITcall(JITshim3L, A_reg,
+            w1, w2, w3, B_reg, A_reg);
+    JITerrorcheck();
+}
+
+void lispcall4(size_t k)
+{   loadlit(w2, k);
+    loadfromsymbol(w1, w2, Ofunction4up);
+    loadreg_post(w3, spreg, -8);
+    loadreg_post(w4, spreg, -8);
+    JITcall(JITshim4L, A_reg,
+            w1, w2, w4, w3, B_reg, A_reg);
+    JITerrorcheck();
+}
+
+// Here is a short explanation of the "chain()" facility I have put
+// into asmjit.
+// If you write     "chain(<register>);"
+// the code will restore stack and callee-save registers as if it was
+// about to return. In should end up on Intel in a state very much like
+// where the current procedure was entered, ie with a return address on the
+// top of the stack. On ARM (and I only consider the 64-bit variants of
+// either processor) it should have the return address in x30.
+// It then loads the registers that would have been used to pass parameters
+// from memory locations chainRegs[1]... and then jumps to the address
+// in chainRegs[0].
+// The calling sequences for x86_64 Windows and Linux and for ARM64
+// should mean that chainTarget can be the entrypoint of a function
+// taking from 0-4 arguments and things will proceed just as if that had
+// been called from the location that the JIT code had been. Note that this
+// only copes with integer arguments.
+// It is not possible (at least easily!) to do this for 5 arguments on
+// Windows/x86_64 because the calling convention there insists that the
+// caller has left 32-bytes at the base of its stack but above where the
+// return address would get put. Those are locations where the 4 arguments
+// that are passed in registers could be homed, and if that happened thos
+// initial arguments would be consecutive in memory with arguments from
+// 5 onwards. If the original caller had passed 4 or fewer arguments there
+// is nowhere safe to put arg5. And things need to be left such that
+// stack cleanup works nicely - and I think that means that moving the
+// return address down to give more space is not viable. So I support up
+// to 4 args on Windows and up to 5 elsewhere.
+
+
+void lispjcall0(size_t k)
+{   storestatic(spentry, Ostack);          // reset Lisp stack.
+    loadlit(w2, k);                        // symbol to chain to.
+    mov(w, (intptr_t)&chainRegs[0]);
+    storereg(w2, w, 8);                    // pass it as its "env" argument.
+    loadfromsymbol(A_reg, w2, Ofunction0); //entrypoint to go to.
+    jmp(chainA);                           // go and do it all.
+}
+
+void lispjcall1(size_t k)
+{   storestatic(spentry, Ostack);          // reset Lisp stack.
+    loadlit(w2, k);                        // symbol to chain to.
+    mov(w, (intptr_t)&chainRegs[0]);
+    storereg(w2, w, 8);                    // pass it as its "env" argument.
+    storereg(A_reg, w, 16);                // the real argument 1.
+    loadfromsymbol(A_reg, w2, Ofunction1); // entrypoint to go to.
+    jmp(chainA);                           // go and do it all.
+}
+
+void lispjcall2(size_t k)
+{   storestatic(spentry, Ostack);          // reset Lisp stack.
+    loadlit(w2, k);                        // symbol to chain to.
+    mov(w, (intptr_t)&chainRegs[0]);
+    storereg(w2, w, 8);                    // pass it as its "env" argument.
+    storereg(B_reg, w, 16);                // the real argument 1.
+    storereg(A_reg, w, 24);                // the real argument 2.
+    loadfromsymbol(A_reg, w2, Ofunction2); //entrypoint to go to.
+    jmp(chainA);                           // go and do it all.
+}
+
+void lispjcall3(size_t k)
+{   storestatic(spentry, Ostack);          // reset Lisp stack.
+    loadlit(w2, k);                        // symbol to chain to.
+    mov(w, (intptr_t)&chainRegs[0]);
+    loadreg_post(w1, spreg, -8);
+    storereg(w2, w, 8);                    // pass it as its "env" argument.
+    storereg(w1, w, 16);                   // the real argument 1.
+    storereg(B_reg, w, 24);                // the real argument 2.
+    storereg(A_reg, w, 32);                // the real argument 3.
+    loadfromsymbol(A_reg, w2, Ofunction3); //entrypoint to go to.
+    jmp(chainA);                           // go and do it all.
+}
+
+void lispjcall4(size_t k)
+{
+#ifdef WIN32
+// On Windows I can only pass 4 arguments in registers, and here with
+// the "env" argument I would need 5. That means that making a genuine
+// tail call is hard - so I do an ordinary procedure call and then
+// a simple exit.
+    loadlit(w2, k);
+    loadfromsymbol(w1, w2, Ofunction4up);
+    loadreg_post(w3, spreg, -8);
+    loadreg_post(w4, spreg, -8);
+    JITcall(JITshim4L, A_reg,
+            w1, w2, w4, w3, B_reg, A_reg);
+    JITerrorcheck();
+    jmp(returnA);
+#else // WIN32
+// On Linux (and MacOS) I can pass 5 args in registers and so achieve a
+// genuine tail call.
+    storestatic(spentry, Ostack);          // reset Lisp stack.
+    loadlit(w2, k);                        // symbol to chain to.
+    mov(w, (intptr_t)&chainRegs[0]);
+    storereg(w2, w, 8);                    // pass it as its "env" argument.
+    loadreg_post(w1, spreg, -8);
+    storereg(w1, w, 24);                   // the real argument 2
+    loadreg_post(w1, spreg, -8);
+    storereg(w1, w, 16);                   // the real argument 1.
+    storereg(B_reg, w, 32);                // the real argument 3.
+    storereg(A_reg, w, 40);                // the real argument 4.
+    loadfromsymbol(A_reg, w2, Ofunction4up); //entrypoint to go to.
+    jmp(chainA);                           // go and do it all.
+#endif // WIN32
+}
+
 void switchBlock(const unsigned char* bytes)
 {   intptr_t next;
     switch (bytes[ppc++])
@@ -1113,12 +1273,14 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // At this stage litvec holds the name of the function involved... So that
 // can be left where it can be picked up for inclusion in a disgnostic message.
         loadlit(A_reg, 0);
-        storestatic(A_reg, OJITarg1);
+        mov(w, (intptr_t)&chainRegs[0]);
+        storereg(A_reg, w, 8);
         mov(A_reg, (uintptr_t)toofew);
         jmp(chainA); 
     bind(tooManyArgs);
         loadlit(A_reg, 0);
-        storestatic(A_reg, OJITarg1);
+        mov(w, (intptr_t)&chainRegs[0]);
+        storereg(A_reg, w, 8);
         mov(A_reg, (uintptr_t)toomany);
         jmp(chainA);
 // This is to do with the asmjit-generated code not being able to participate
@@ -1138,21 +1300,25 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // Error exits from some basic low level operations.
     bind(carError);
         storestatic(spentry, Ostack);
-        storestatic(A_reg, OJITarg1);
+        mov(w, (intptr_t)&chainRegs[0]);
+        storereg(A_reg, w, 8);
         mov(A_reg, (uintptr_t)(func0)car_fails);
         jmp(chainA);
     bind(cdrError);
         storestatic(spentry, Ostack);
-        storestatic(A_reg, OJITarg1);
+        mov(w, (intptr_t)&chainRegs[0]);
+        storereg(A_reg, w, 8);
         mov(A_reg, (uintptr_t)(func0)cdr_fails);
     bind(chainA);
 // When I handle a case where a procedure call reported failure it is
 // important that I do not reset the (Lisp) stack pointer here because the
 // code that I chain to will unwrap it word by word and restore such
 // fluid bindings as it needs to.
-        mov(w, (intptr_t)&chainTarget);
+//
+// If this sets where we chain to.
+        mov(w, (intptr_t)&chainRegs[0]);
         storereg(A_reg, w, 0);
-        chain(A_reg);
+        chain(A_reg);    // the operand to chain() is in fact not inspected!
 // The jump here should never be obeyed but is here in case I have not got
 // asmjit to handle its flow analysis for "chain()" in a way that understands
 // that it never returns. This will make the dataflow analysis see that
@@ -1203,12 +1369,13 @@ void Ljit_unfinished()
         perInstruction.push_back(newLabel());
     unsigned char bytes[512];
     for (size_t i=0; i<sizeof(bytes); i++) bytes[i] = 0;
-    ppc = 0;
     freebind_used = false;
     testingForUnfinished = true;
     stdout_printf("\nThe following opcodes are not yet coded for %s\n", ARCH);
     for (unsigned int code=0; code<256; code++)
-    {   TRY
+    {   bytes[0] = code;
+        ppc=0;
+        TRY
         {   switchBlock(bytes);
         }
         CATCH (JitFailed)
@@ -1225,10 +1392,11 @@ void Ljit_unfinished()
     }
     if (online != 0) stdout_printf("\n");
     stdout_printf("\nThere is support for the following...\n");
-    ppc = 0;
     online = 0;
     for (unsigned int code=0; code<256; code++)
     {   bool failed = false;
+        bytes[0] = code;
+        ppc=0;
         TRY
         {   switchBlock(bytes);
         }
@@ -1251,7 +1419,7 @@ void Ljit_unfinished()
 // In reporting the number of cases I still have to do I will discount
 // the 2 opcodes that are currently spare.
     stdout_printf("\n%d bytecodes handled so %d still need review\n",
-                  256-numberUnfinished, numberUnfinished-2);
+                  256-numberUnfinished, numberUnfinished);
 }
 
 }; // end of JITCompile class

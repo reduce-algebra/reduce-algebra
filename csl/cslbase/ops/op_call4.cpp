@@ -28,19 +28,7 @@
 
             case OP_CALL4:
                 next = bytes[ppc++];
-                loadlit(w2, next);
-// w2 is now the symbol that names the function to be called. Now fetch
-// from that the entrypoint to be used when it is a function of 4+ args.
-                loadfromsymbol(w1, w2, Ofunction4up);
-                loadreg_post(w3, spreg, -8);
-                loadreg_post(w4, spreg, -8);
-// Here I call JITshim with arguments
-//           entrypoint of Lisp function to be called (in w1)
-//           name of function being called (as "env" parameter for it) in w2
-//           the four honest arguments it needs (w4, w3, B_reg and A_reg).
-                JITcall(JITshim4L, A_reg,
-                        w1, w2, w4, w3, B_reg, A_reg);
-                JITerrorcheck();
+                lispcall4(next);
                 break;
 
 #else

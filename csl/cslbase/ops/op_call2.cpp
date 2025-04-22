@@ -21,11 +21,7 @@
 
             case OP_CALL2:
                 next = bytes[ppc++];
-                loadlit(w2, next);
-                loadfromsymbol(w1, w2, Ofunction2);
-                JITcall(JITshim2L, A_reg,
-                        w1, w2, B_reg, A_reg);
-                JITerrorcheck();
+                lispcall2(next);
                 break;
 
 #else

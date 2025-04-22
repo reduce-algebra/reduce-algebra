@@ -3,7 +3,7 @@
 #if defined BYTECODE
             case OP_APPLY2:
                 r2 = *stack;
-                if (is_symbol(r2))   // can imise this case, I guess
+                if (is_symbol(r2))   // can optimise this case, I guess
                 {   f2 = qfn2(r2);
                     stack--;
                     RECORD_CALL(list3(r2, B_reg, A_reg));

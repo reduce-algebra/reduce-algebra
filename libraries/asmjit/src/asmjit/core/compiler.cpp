@@ -19,11 +19,7 @@
 
 namespace asmjit
 {
-uintptr_t chainA1 = 0;
-uintptr_t chainA2 = 0;
-uintptr_t chainA3 = 0;
-uintptr_t chainA4 = 0;
-uintptr_t chainTarget = 0;
+uintptr_t chainRegs[6] = {0};
 };
 
 ASMJIT_BEGIN_NAMESPACE

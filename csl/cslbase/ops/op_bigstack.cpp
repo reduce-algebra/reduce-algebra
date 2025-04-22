@@ -3,13 +3,13 @@
 #if defined BYTECODE
             case OP_BIGSTACK:               // LOADLOC, STORELOC, CLOSURE etc
                 //
-                // This ode allows me to support functions that use up to
+                // This code allows me to support functions that use up to
                 // 2047-deep stack frames using LOADLEX and STORELEX, or
-                // up to 4095 deep if just using LOADLOC and STORELOC. I h
+                // up to 4095 deep if just using LOADLOC and STORELOC. I hope
                 // that such cases are very uncommon, but examples have been
                 // shown to me where my previous limit of 256-item frames was
-                // inadequate. The BIGSTACK ode is followed by a byte that
-                // contains a few bits selecting which ration is to be
+                // inadequate. The BIGSTACK opcode is followed by a byte that
+                // contains a few bits selecting which operation is to be
                 // performed, plus an extension to the address byte that follows.
                 //
                 w = next_byte;             // contains sub-opcode
@@ -47,15 +47,29 @@
                         continue;
                 }
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_BIGSTACK:               // LOADLOC, STORELOC, CLOSURE etc
-                unfinished(__FILE__ " not yet implemented for x86_64");
 
-#elif defined __aarch64__
-
-            case OP_BIGSTACK:               // LOADLOC, STORELOC, CLOSURE etc
-                unfinished(__FILE__ " not yet implemented for ARM");
+                next = bytes[ppc++];             // contains sub-opcode
+                switch (next & 0xc0)
+                {   case 0x00:                  // LOADLOC extended
+                        mov(B_reg, A_reg);
+                        next = ((next & 0x3f)<<8) | bytes[ppc++];
+                        loadloc(A_reg, next);
+                        break;
+                    case 0x40:                  // STORELOC extended
+                        next = ((next & 0x3f)<<8) | bytes[ppc++];
+                        storeloc(A_reg, next);
+                        break;
+                    case 0x80:                  // CLOSURE extended
+// I think that CLOSURE, LOADLEX and STORELEX would be feasible here,
+// but they are not high on the priority list at present.
+                        unfinished("CLOSURE not yet implemented in JIT");
+                    case 0xc0:                  // LOADLEX, STORELEX extended
+                        unfinished("LOADLEX/STORELEX not yet implemented in JIT");
+                }
+                break;
 
 #else
             case OP_BIGSTACK:               // LOADLOC, STORELOC, CLOSURE etc

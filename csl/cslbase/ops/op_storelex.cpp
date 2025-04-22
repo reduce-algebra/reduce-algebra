@@ -13,7 +13,7 @@
 // As with LOADLEX this is easier than one might have feared.
 
             case OP_STORELEX:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                unfinished(__FILE__ " not yet implemented for JIT");
 
 #else
             case OP_STORELEX:
