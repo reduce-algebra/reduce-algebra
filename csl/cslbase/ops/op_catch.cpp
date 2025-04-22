@@ -7,15 +7,10 @@
                 ppc++;
                 goto catcher;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CATCH:
                 unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_CATCH:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_CATCH:

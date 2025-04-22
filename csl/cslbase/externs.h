@@ -672,6 +672,7 @@ extern LispObject Lencapsulatedp(LispObject, LispObject a);
 
 extern void* jitcompile(const unsigned char* bytes, size_t nbytes,
                         LispObject env, int nargs);
+extern uintptr_t totalJIT;
 extern LispObject Ljit_unfinished(LispObject env);
 extern LispObject Lop_bytes(LispObject env, LispObject ff);
 

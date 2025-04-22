@@ -115,6 +115,7 @@ no_timeout="no"
 slow="no"
 fast="no"
 rr="no"
+jit="no"
 
 # I allow any number of the keyword arguments in any order. I will pick
 # off and process arguments for so long as any are available. This will
@@ -158,6 +159,10 @@ do
     ;;
   --rr)
     rr="yes"
+    shift
+    ;;
+  --jit)
+    jit="yes"
     shift
     ;;
   *)
@@ -392,9 +397,14 @@ csltest() {
   else
     RR=""
   fi
-
+  if test "$jit" = "yes"
+  then
+    export do_jit="-Djit=t"
+  else
+    export do_jit=""
+  fi
   mkdir -p $logdir
-  ( limittime $RR $fullcommand $extras -v -w $otherflags ) > \
+  ( limittime $RR $fullcommand $do_jit $extras -v -w $otherflags ) > \
     $logdir/$p.rlg.tmp <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
@@ -443,6 +453,12 @@ symbolic eval '
 end\$
 quit\$
 XXX
+  if test "$jit" = "yes"
+  then
+    grep "JIT generated" $logdir/$p.rlg.tmp > $logdir/$p.jitsize
+  else
+    rm -f $logdir/$p.jitsize
+  fi
   if test -f $logdir/$p.showtime
   then
     cat $logdir/$p.showtime >> $logdir/showtimes

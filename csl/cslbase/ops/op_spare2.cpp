@@ -8,6 +8,7 @@
 #elif defined __x86_64__ || defined __aarch64__
 
             case OP_SPARE2:
+// treat as no-operation.
                 break;
 
 #else

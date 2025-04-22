@@ -531,6 +531,14 @@ remflag('(begin),'go);
 symbolic procedure begin;
   begin
      scalar w,!*redefmsg;
+% If the variable "jit" is set, probably via "-Djit=t" on the
+% command line, I will try to make all functions jitted...
+     if boundp 'jit then <<
+        printc "Using JIT";
+        for each w in oblist() do make!-jit w >>;
+     if boundp 'jitnoisy then <<
+        printc "JIT noisy";
+        !*jit!-noisy := t >>;
      !*echo := not !*int;
      !*extraecho := t;
 % Enable heavy debugging option in bootstrap version. The effect of this

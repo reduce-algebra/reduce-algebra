@@ -10,7 +10,7 @@
 
             case OP_EQUAL:
                 mov(w1, Lequal);  // Either standard or common!
-                JITcall(JITshim2, A_reg,
+                JITcall(JITshim2L, A_reg,
                         w1, nilreg, B_reg, A_reg);
                 JITerrorcheck();
                 break;

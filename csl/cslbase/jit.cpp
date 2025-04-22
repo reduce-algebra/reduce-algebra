@@ -151,6 +151,8 @@ FileLogger myFileLogger(stdout);
 
 intptr_t savePPC, saveA, saveB, saveSP, saveSPentry;
 
+uintptr_t totalJIT = 0;
+
 void JITdebugprint(void)
 {   std::cout << "\n";
     std::cout << "ppc     = " << savePPC << std::hex << " : " << savePPC << "\n";
@@ -1337,6 +1339,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         throw JitFailed("rt.add failed");
     if (qvalue(jit_noisy) != nil)
     {   size_t size = myCodeHolder.codeSize();
+        totalJIT += size;
         stdout_printf("size=%d code at %p\n", size, func);
         if (func != nullptr)
         {   FILE* hex = fopen("hex", "w");
@@ -1350,6 +1353,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
             fclose(hex);
         }
     }
+    else totalJIT += myCodeHolder.codeSize();
+
     return func;
 }
 

@@ -21,15 +21,10 @@
 // arguments are needed the first argument will be loaded first, and thus
 // it is the LAST argument that end up in the A register.
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_THROW:
                 unfinished(__FILE__ " not yet implemented for x86_64");
-
-#elif defined __aarch64__
-
-            case OP_THROW:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_THROW:
