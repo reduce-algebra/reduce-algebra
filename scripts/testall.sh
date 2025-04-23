@@ -64,7 +64,7 @@ while test $# != 0
 do
   case $1
   in
-  --install | --keep | --skip-missing-rlg | --no-timeout)
+  --install | --keep | --skip-missing-rlg | --no-timeout | --jit)
     args_for_test1="$args_for_test1 $1"
     shift
     ;;

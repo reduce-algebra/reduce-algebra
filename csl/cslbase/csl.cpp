@@ -3321,6 +3321,9 @@ int cslfinish(character_writer *w)
         term_printf("fullest_package = %" PRIu64 "\n", (uint64_t)fullest_package);
         term_printf("fullest_hash_table = %" PRIu64 "\n", (uint64_t)fullest_hash_table);
 #endif
+#ifdef ENABLE_JIT
+        term_printf("\nJIT generated %" PRIuPTR " bytes\n", totalJIT);
+#endif
         if ((init_flags & INIT_SILENT) == 0)
             term_printf("\n\nEnd of Lisp run after %" PRId64 ".%.2" PRId64
                         "+%" PRId64 ".%.2" PRId64 " seconds\n",

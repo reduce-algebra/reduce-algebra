@@ -1333,6 +1333,9 @@ LispObject set_up_variables(int restart_flag)
 #ifdef EXPERIMENT
         w = cons(make_keyword("EXPERIMENT"), w);
 #endif
+#ifdef ENABLE_JIT
+        w = cons(make_keyword("JIT"), w);
+#endif
         w = cons(make_keyword("CONSERVATIVE"), w);
 #ifdef ARITHLIB
         w = cons(make_keyword("ARITHLIB"), w);
@@ -1422,6 +1425,9 @@ LispObject set_up_variables(int restart_flag)
 #endif
 #ifdef EXPERIMENT
         w = cons(make_keyword("experiment"), w);
+#endif
+#ifdef ENABLE_JIT
+        w = cons(make_keyword("jit"), w);
 #endif
         w = cons(make_keyword("conservative"), w);
 #ifdef ARITHLIB
