@@ -2030,8 +2030,7 @@ LispObject Lrds(LispObject env, LispObject a)
     if (a == nil) a = qvalue(terminal_io);
     if (a == old) return old;
     else if (!is_stream(a)) return aerror1("rds", a);
-    else if ((character_stream_reader *)stream_read_fn(
-                 a) == char_from_illegal)
+    else if (stream_read_fn(a) == char_from_illegal)
         return aerror("rds"); // closed stream or output stream
     qvalue(standard_input) = a;
     return old;
@@ -3153,20 +3152,6 @@ LispObject Lread_sub(LispObject stream, int cursave)
     return read_s(stream);
 }
 
-LispObject Lread(LispObject env)
-// The full version of read_s() has to support extra optional args
-// that deal with error and eof returns... and a recursive-p arg!
-{   SingleValued fn;
-    LispObject stream = qvalue(standard_input);
-#ifdef COMMON
-    save_reader_workspace RAII;
-    reader_workspace = nil;
-    return Lread_sub(stream, curchar),
-#else
-    return Lread_sub(stream, curchar);
-#endif
-}
-
 // This is an odd function that may help with diagnostics sometimes. Whenever
 // READ is called it should make a record of the line number. If there is an
 // issue (eg caused by mis-matched parentheses) then where-was-that can
@@ -3184,42 +3169,53 @@ static LispObject Lwhere_was_that(LispObject env)
     return w;
 }
 
+LispObject Lread(LispObject env)
+// The full version of read_s() has to support extra optional args
+// that deal with error and eof returns... and a recursive-p arg!
+{   SingleValued fn;
+    LispObject stream = qvalue(standard_input);
+#ifdef COMMON
+    save_reader_workspace RAII;
+    reader_workspace = nil;
+    return Lread_sub(stream, curchar),
+#else
+    return Lread_sub(stream, curchar);
+#endif
+}
+
 class save_stream
+#ifndef XXX
+{   LispObject save;
+    int savechar;
+#else /* XXX */
 {   LispObject *save;
     int cursave;
+#endif /* XXX */
 public:
     save_stream(LispObject oldstream, int curchar)
-    {   *++stack = reader_workspace;
-        *++stack = oldstream;
-        save = stack;
-        cursave = curchar;
+    {   save = oldstream;
+        savechar = curchar;
     }
     ~save_stream()
-    {   stack = save;
-        LispObject stream;
-        curchar = cursave;
-        stream = *stack--;
-        reader_workspace = *stack--;
-// For this to be valid it is important that Lrds can never both succeed
-// and lead to garbage collection (and hence potential relocation of the
-// return value from this function. By good fortune I seem to be safe!
-        Lrds(nil, stream);
+    {   Lrds(nil, save);
+        curchar = savechar;
     }
 };
 
 LispObject Lread(LispObject env, LispObject stream)
 {   SingleValued fn;
-    int cursave = curchar;
-    save_stream saver(Lrds(stream, nil), cursave);
+    if (!is_stream(stream)) return aerror1("needed stream argument", stream);
+#ifdef COMMON
+    save_reader_workspace RAII;
     reader_workspace = nil;
+#endif //COMMON
     read_failure = false;
-    stream = qvalue(standard_input);
-    if (!is_stream(stream)) stream = qvalue(terminal_io);
-    if (!is_stream(stream)) stream = lisp_terminal_io;
+    LispObject current = Lrds(nil, stream);
+    save_stream saver(current, curchar);
     curchar = NOT_CHAR;
-    LispObject w = read_s(stream);
-    if (curchar != NOT_CHAR) other_read_action(curchar, stream);
-    return w;
+    LispObject r = Lread_sub(stream, '\n');
+    Lrds(nil, current);
+    return r;
 }
 
 // compress is not a Common Lisp function, but it is another on those
@@ -4204,6 +4200,7 @@ setup_type const read_setup[] =
     DEF_0("where-was-that", Lwhere_was_that),
     DEF_1("compress",       Lcompress),
     DEF_1("compress1",      Lcompress),
+    DEF_1("read-from-stream",Lread),
     {"read",                Lread, Lread, G2Wother, G3Wother, G4Wother},
     {"intern",              G0Wother, Lintern, Lintern_2, G3Wother, G4Wother},
     {"gensym",              Lgensym, Lgensym, G2Wother, G3Wother, G4Wother},

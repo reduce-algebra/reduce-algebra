@@ -59,6 +59,7 @@ extern LispObject Lopen(LispObject env, LispObject name, LispObject dir);
 //
 #define ESCAPED_CHAR    0x20000000
 #define NOT_CHAR        0x40000000
+#define NOT_CHAR1       0x60000000   // used with the fork scheme.
 
 extern int char_to_terminal(int c, LispObject f);
 extern int char_to_file(int c, LispObject f);
@@ -68,6 +69,7 @@ extern int char_to_broadcast(int c, LispObject f);
 extern int char_to_illegal(int c, LispObject f);
 extern int char_to_list(int c, LispObject f);
 extern int code_to_list(int c, LispObject f);
+extern int char_to_nowhere(int c, LispObject f);
 extern int count_character(int c, LispObject f);
 extern int binary_outchar(int c, LispObject f);
 extern int char_to_function(int c, LispObject f);
@@ -318,6 +320,7 @@ inline const char* streamop(uintptr_t x)
     else if (x==(uintptr_t)char_to_illegal)          return "char_to_illegal";
     else if (x==(uintptr_t)char_to_list)             return "char_to_list";
     else if (x==(uintptr_t)code_to_list)             return "code_to_list";
+    ekse if (x==(uintptr_t)char_to_nowhere)          return "char_to_nowhere";
     else if (x==(uintptr_t)char_to_fork)             return "char_to_fork";
     else if (x==(uintptr_t)count_character)          return "count_character";
     else if (x==(uintptr_t)binary_outchar)           return "binary_outchar";
