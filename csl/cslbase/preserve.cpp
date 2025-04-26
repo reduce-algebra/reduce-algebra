@@ -1,8 +1,5 @@
 // preserve.cpp                           Copyright (C) Codemist, 1990-2025
 
-// The file preserve.cpp can be preprocessed to generate zlibdemo.cpp,
-// which is why the header line above is "strange".
-
 
 /**************************************************************************
  * Copyright (C) 2025, Codemist.                         A C Norman       *

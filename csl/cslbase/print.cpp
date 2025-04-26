@@ -4130,6 +4130,24 @@ LispObject Lprint(LispObject env, LispObject a)
     return a;
 }
 
+LispObject Lprint_2(LispObject env, LispObject a, LispObject stream)
+{   SingleValued fn;
+    if (!is_stream(stream))
+        return aerror1("stream needed for printing", stream);
+    escaped_printing = escape_yes;
+#ifdef COMMON
+    active_stream = stream;
+    putc_stream('\n', stream);
+    prin_prinl(a, 0);
+#else
+    active_stream = stream;
+    prin_prinl(a, 0);
+    putc_stream('\n', active_stream);
+#endif
+    checkResources();
+    return a;
+}
+
 LispObject Lprintc(LispObject env, LispObject a)
 {   SingleValued fn;
     LispObject stream = qvalue(standard_output);
@@ -6053,7 +6071,8 @@ setup_type const print_setup[] =
     DEF_1("princ",                Lprinc),
     DEF_1("prin2",                Lprinc),
     DEF_1("prin2a",               Lprin2a),
-    DEF_1("print",                Lprint),
+    DEF_2("print_to_stream",      Lprint_2),
+    {"print", G0Wother, Lprint, Lprint_2, G3Wother, G4Wother},
     DEF_1("printc",               Lprintc),
     DEF_1("tyo",                  Ltyo),
 // The next few are Common Lisp-isms but I will stick them in here anyway.
