@@ -220,15 +220,6 @@ if both the argument and the modulus of the Jacobi function are real (for
 example when the modulus $|k|>1$). The switch \sw{complex}\ is, however,
 returned to its old value as the computation completes.
 
-One consequence of the use of theta functions is that occasionally
-the value of a Jacobi function with real arguments would be returned with an
-insignificantly small imaginary part due to rounding errors. Since all Jacobi
-functions are real-valued for real arguments the imaginary part is known to be
-zero; the spurious imaginary part is removed automatically.
-Similarly in some case where the first argument is purely imaginary and the
-modulus k<1, the result should be purely imaginary, but due to rounding the
-result is returned with an insignificantly small real part which is now ignored.
-
 The traditional AGM and  $\phi$-function based algorithms which were
 used when the argument and modulus are both real and $|k| < 1$ have been
 corrected. There was a problem with the numerical evaluation
@@ -1013,8 +1004,8 @@ a positive imaginary part and hence the nome $q = exp(i\pi\tau)$ satisfies $|q| 
 
 Any linear combination $\Omega_{m,n} = 2m\omega_1 +2n\omega_3$ where $m$ and $n$ are
 integers (not both zero) is also a period. The set of all such periods plus the origin form a lattice. In the literature
-$-(\omega_1+\omega_3)$ is often denoted by $\omega_2$ and $2\omega_2$ is clearly also a period; this
-accounts for the gap in the numbering of primitive periods. The period $\omega_2$ is not used in the \REDUCE rule sets for
+$-(\omega_1+\omega_3)$ is often denoted by $\omega_2$ and $2\omega_2$ is clearly also a half-period; this
+accounts for the gap in the numbering of primitive periods. The period $\omega_2$ is little used in the \REDUCE rule sets for
 the Weierstrassian elliptic and related functions.
 
 The primitive periods are not unique;
@@ -1027,13 +1018,6 @@ In theory these transformations may be used to reduce the size of $|q|$ until $\
 $|q|<0.06$. However, in numerical evaluations in \REDUCE it is sufficient to use these transformations only until
 $\Im \tau > 0.7$, i.e.~until $|q| < 0.11$. In practice only two or three iterations are required
 and usually very much smaller values of $|q|$ are achieved particularly when $\tau$ is purely imaginary i.e.~$q$ is real.
-
-In the numerical evaluations, if a result is real (or purely imaginary) it may
-happen that the result returned has a very small imaginary part
-(resp.\ real part). The ratio of the `deliquent' part to the actual result is
-invariably smaller than current PRECISION and is due to rounding. Similarly if
-the true result is actually zero the result returned may have a very small
-absolute value -- again smaller than the current PRECISION.
 
 The Weierstrassian function is even and has a pole of order 2 at all lattice points.
 The Zeta and Sigma functions are only quasi-periodic on the lattice. Zeta is odd and has simple poles of residue
@@ -1048,12 +1032,18 @@ discussed above. The rule for the derivative of the Weierstrass function has rec
 been corrected; it now involves the operator \f{epsilon\_w} whose value is either $+1$ or $-1$.
 Its value changes at the poles of the Weierstrass function and at points where the value
 of the Weierstrass function is one of the three lattice roots $e_1$, $e_2$ or $e_3$.
-Currently numerical evaluation of $\epsilon_w$ is available only when
-the Weierstrassian function is real on the real axis and its (first)
-argument is real.
-Similar changes apply to the function Weierstrass1 below. For numerical evaluation
-the switches \sw{rounded}\ and \sw{complex}\ must both be ON and all three parameters must be numeric. It is not, however,
-necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third parameters will be swapped if required.
+
+For numerical evaluation the switches \sw{rounded}\ and \sw{complex}\ must both
+be ON and all three parameters of the Weierstrassian functions must be numeric.
+It is not, however, necessary to ensure $\Im(\omega_3/\omega_1) >0$ as
+the second and third parameters will be swapped if required.
+Currently numerical evaluation of $\epsilon_{w}$ is rather restricted:
+\begin{itemize}
+\item  the underlying lattice must be either rectangular or rhombic;
+\item  for a rectanglar lattice the first argument must lie on the 'skeleton'
+  of the lattice;
+\item for a rhombic lattice the first argument must be real.
+\end{itemize}
 
 \subsubsection{Alternative forms of the Weierstrass Functions}
 \hypertarget{WEIERSTRASS1}{}
@@ -1067,7 +1057,7 @@ necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third paramete
 \ttindextype[ELLIPFN]{weierstrass\_sigma0}{operator}
 Three commonly used alternative forms of the Weierstrassian functions in which
 they are regarded as functions of the lattice invariants $g_2$ and $g_3$
-rather than the primitive periods $\omega_1$ and $\omega_3$ are provided:
+rather than the primitive half-periods $\omega_1$ and $\omega_3$ are provided:
 \begin{itemize}
 \item  $\wp(u \mid g_2, g_3)$ \ --- \ \f{weierstrass1(u,g2,g3)}
 \item $\zeta_w(u \mid g_2, g_3)$ \ --- \ \f{weierstrassZeta1(u,g2,g3)}
@@ -1078,18 +1068,53 @@ clash with the notation for the other sigma functions below.
 Note also that for output they are distinguished by separating the first and
 second arguments by a vertical bar rather than a comma.
 
-The rule for differentiation of the Weierstrass function is simpler when
-expressed in this alternative form:
-\[ \wp'(u \mid g_2,g_3)^2 = 4\,\wp(u \mid g_2,g_3)^3
-- g_2\, \wp(u \mid g_2,g_3) -g_3. \]
+The rule for differentiation of the this variant of the Weierstrass function
+involves the operator \f{epsilon\_w1} whose value is either $+1$ or $-1$.
+Its value changes at the poles of the Weierstrass function and at points where the value of the Weierstrass function is one of the three lattice roots $e_1$, $e_2$ or $e_3$.
+
+If the arguments of the Weierstrassian and sigma are all numeric, the functions
+will only be evaluated if both \sw{rounded}\ and \sw{complex}\ are ON.
+The only exceptions are the functions weierstrass1, weierstrassZeta1 and
+weierstrass\_sigma0; these are real-valued for real arguments and if all three
+arguments are real it suffices that the switch \sw{rounded}\ is ON. Similar
+remarks apply to those lattice functions (see below) which are functions of
+the lattice invariants $g_2$ and $g_3$.
+Currently numerical evaluation of $\epsilon_{w1}$ is rather restricted:
+\begin{itemize}
+\item  the invariants $g_2$ \& $g_3$ must both be real and $g_2^3-27g_3^2\neq 0$,
+hence the underlying lattice must be either rectangular or rhombic;
+\item  for a rectanglar lattice the first argument must lie on the 'skeleton'
+  of the lattice;
+\item for a rhombic lattice the first argument must be real.
+\end{itemize}
 
 \subsubsection{Numerical Evaluation}
-If the arguments of the Weierstrassian, sigma and lattice functions (see below)
-are all numeric, the functions will only be evaluated if both \sw{rounded}\ and
-\sw{complex}\ are ON.  The only exceptions are the functions weierstrass1,
-weierstrassZeta1 and weierstrass\_sigma0. These are real-valued for real
-arguments and if all three arguments are real it suffices that the switch
-\sw{rounded}\ is ON.
+If the discriminant $g_2^3-27g_3^2$ vanishes, the functions
+Weierstrass1, WeierstrassZeta and Weierstrass\_sigma0 become elementary:
+\begin{eqnarray*}
+\wp(u | 4b^4/3, 8b^6/27) &=& b^2(\mathrm{cosec}^2(b u)-1/3)\\
+\wp(u | 4b^4/3, -8b^6/27) &=& b^2(\mathrm{cosech}^2(b u)+1/3)\\
+\zeta_w(u |4b^4/3, 8b^6/27) &=& b(\cot(b u)+bu/3)\\
+\zeta_w(u |4b^4/3, -8b^6/27) &=& b(\coth(b u)-bu/3)\\
+\sigma(u |4b^4/3, 8b^6/27) &=& exp(b^2u^2/6)\sin(bu) \\
+\sigma(u |4b^4/3, -8b^6/27) &=& exp(-b^2u^2/6)\sinh(bu)
+\end{eqnarray*}
+where $b$ is an arbitrary complex constant chosen for typographical simplicity.
+In these cases the Weierstrass function becomes singly periodic, the other
+period becoming infinite.
+
+\subsubsection{Laurent Series Expansions}
+Currently the Weierstrass and Weierstrass Zeta functions may be expanded as
+power series using the extendible power series package tps.  The expansions
+about zero and the points $m\omega_1+n\omega_3$ for integer $m$ and $n$ are
+informative whilst those about other points whilst correct are not. Currently
+the Weierstrass Sigma functions (described below) cannot be expanded using tps
+and result cause rather inelegant errors.
+
+Currently using the taylor package the expansions of the Weierstrass,
+Weierstrass Zeta and Weierstrass Sigma about zero and $2m\omega_1+2n\omega_3$
+are incorrect  whilst those about the mid-lattice points $m\omega_1+n\omega_3$
+are formally correct, but not fully simplified.
 
 \subsubsection{Other Sigma Functions}
 \hypertarget{SIGMA1}{}
@@ -1179,8 +1204,22 @@ where the lattice parameters have been omitted for conciseness and $j,k = 1\ldot
 The quasi-period factors satisfy
 \[\eta_1+\eta_2+\eta_3=0,\qquad
    \eta_1\omega_3-\eta_3\omega_1=\eta_2\omega_1-\eta_1\omega_2=\eta_3\omega_2-\eta_2\omega_3=i\pi/2.\]
+
+Six functions are provided which depend on the lattice invariants $g_2$ and $g_3$ rather than the lattice
+half-periods:
+\begin{itemize}
+\item $e_1(g_2, g_3)$ \ --- \ \f{lattice1\_e1(g2, g3)};
+\item $e_2(g_2, g_3)$ \ --- \ \f{lattice1\_e2(g2, g3)};
+\item $e_3(g_2, g_3)$ \ --- \ \f{lattice\_e3(g2, g3)};
+\item $\omega_1(g_2,g_3)$ \ --- \ \f{lattice\_omega1(g2, g3)};
+\item $\omega_2(g_2,g_3)$ \ --- \ \f{lattice\_omega2(g2, g3)};
+\item $\omega_3(g_2,g_3)$ \ --- \ \f{lattice\_omega3(g2, g3)};
+\end{itemize}
+The first three return the lattice roots and the second triple return the
+three lattice half-periods.
+
 As well as the scalar-valued functions discussed above in this section,
-there are four functions which return a list as their value:
+there are five functions which return a list as their value:
 \hypertarget{operator:LATTICE_ROOTS}{}
 \hypertarget{operator:LATTICE_INVARIANTS}{}
 \hypertarget{operator:LATTICE_GENERATORS}{}
@@ -1190,17 +1229,19 @@ there are four functions which return a list as their value:
 \ttindextype[ELLIPFN]{lattice\_generators}{operator}
 \ttindextype[ELLIPFN]{quasi\_period\_factors}{operator}
 \begin{itemize}
-\item \f{lattice\_roots(omega1, omega3)} --- returns $\{e_1,\ e_2,\ e_3\}$;
+\item \f{lattice\_roots(omega1, omega3)} --- returns $\{e_1,\ e_2,\ e_3\}$
 \item \f{lattice\_invariants(omega1, omega3)} --- returns
   $\{g_2,\ g_3,\ \Delta,\ \mathrm{G}\}$;
 \item \f{quasi\_period\_factors(omega1, omega3)}
   --- returns $\{\eta_1,\ \eta_2,\ \eta_3\}$;
 \item \f{lattice\_generators(g2, g3)}  --- returns $\{\omega_1,\ \omega_3\}$.
+\item \f{lattice1\_roots(g2, g3)}  --- returns $\{e_1,\ e_2,\ e_3\}$
 \end{itemize}
-The first three are actually more efficient than calling the requisite
-scalar-valued functions individually and the fourth is used in the numerical
-evaluation of the Weierstrass functions regarded as functions of the
-invariants. These functions are only useful when the switches \sw{rounded}\ and
+The first three depend on the lattice half-periods $\omega_1$ and $\omega_3$ whilst
+the fourth and fifth are functions of the invariants $g_2$ and $g_3$. These
+list-valued functions are actually more efficient than calling the corresponding
+scalar-valued functions individually.
+These functions are only useful when the switches \sw{rounded}\ and
 \sw{complex}\ are ON and their arguments are all numerical.
 Note that the call sequence:
 \begin{verbatim}
@@ -1209,10 +1250,10 @@ Note that the call sequence:
   {first ws, second ws};
 \end{verbatim}
 should reproduce the list \{g2, g3\}, perhaps with small rounding errors. The
-corresponding sequence with the function \f{lattice\_generators}\ being called after
-\f{lattice\_invariants}\ (and g2 \& g3 replaced by w1 \& w3),
+corresponding sequence with the function \f{lattice\_generators}\ being called
+after \f{lattice\_invariants}\ (and g2 \& g3 replaced by w1 \& w3),
 in general, will not produce the same pair of lattice generators since the
-generators are only defined up to a unimodular bilinear transformation.
+generators are only defined up to a unimodular bilinear integer transformation.
 
 For details of the algorithm used to calculate the lattice generators from the
 invariants see the DLMF:NIST chapter on

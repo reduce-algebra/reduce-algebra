@@ -843,7 +843,7 @@ df(weierstrass1(u, v, w), u);
 
 
                  3
-sqrt(4*P_w(u|v,w)  - P_w(u|v,w)*v - w)*epsilon_w(u,v,w)
+sqrt(4*P_w(u|v,w)  - P_w(u|v,w)*v - w)*epsilon_w1(u,v,w)
 
 weierstrass1(2*u, v, w);
 
