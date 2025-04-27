@@ -237,8 +237,8 @@ enum OpcodeByte
 // A serious fraction of the space used in a bootstrapreduce image file
 // is saved function definitions, and they are certainly heavy on lists
 // of length 1, 2, 3 and 4, and so should benefit. Of course the saving will
-// in gebneral not be as good as the above best cases indicate, and the net
-// saving aftger zlib has done some compression may be even less impressive!
+// in general not be as good as the above best cases indicate, and the net
+// saving after zlib has done some compression may be even less impressive!
 
     SER_LIST         = 0xc0,
 
@@ -604,7 +604,7 @@ OpcodeByte read_opcode_byte()
 // In this case each serialization opcode is preceeded by SER_OPNEXT. This
 // should mean that if anything gets out of step because serialzation
 // data is malformed that this is noticed and reported promptly. Such failures
-// either reflext internal inconsistency between the serialization read and
+// either reflect internal inconsistency between the serialization read and
 // write code or some corruption of data after writing but before reading.
     r = Zgetc() & 0xff;
     std::fprintf(stderr, "Read %d = %.2x ", r, r);

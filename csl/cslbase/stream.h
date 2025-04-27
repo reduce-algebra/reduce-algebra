@@ -320,7 +320,7 @@ inline const char* streamop(uintptr_t x)
     else if (x==(uintptr_t)char_to_illegal)          return "char_to_illegal";
     else if (x==(uintptr_t)char_to_list)             return "char_to_list";
     else if (x==(uintptr_t)code_to_list)             return "code_to_list";
-    ekse if (x==(uintptr_t)char_to_nowhere)          return "char_to_nowhere";
+    else if (x==(uintptr_t)char_to_nowhere)          return "char_to_nowhere";
     else if (x==(uintptr_t)char_to_fork)             return "char_to_fork";
     else if (x==(uintptr_t)count_character)          return "count_character";
     else if (x==(uintptr_t)binary_outchar)           return "binary_outchar";
