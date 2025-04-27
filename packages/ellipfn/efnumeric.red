@@ -183,7 +183,8 @@ procedure je_function(phi,m);
 
 %######################################################################
 
-%Increases the precision used to evaluate algebraic arguments.
+%Increases the precision used to evaluate algebraic arguments
+% and temporarily switches COMPLEX ON.
 
 symbolic procedure n_elliptic(u);
    % check that length u >= 2 !
@@ -200,11 +201,11 @@ symbolic procedure n_elliptic(u);
          % re-throwing the error or returning.
          res := errorset!*({'aeval, mkquote u}, nil);
          precision oldprec;
-         if offcomplex then off1 'complex;
+         if offcomplex then off1 'complex else on1 'complex;
          if errorp res then
             error(res, emsg!*)
          else
-	    return tidy_result(reval car res);
+	    return reval car res;
       end;
 
 put('num_elliptic, 'psopfn, 'n_elliptic);
@@ -240,7 +241,7 @@ begin scalar rp,ip,tmp;
    tmp := reimpart res;
    rp := first tmp;
    ip := second tmp;
-   tmp := 10.0^-(symbolic !:prec!:);
+   tmp := 10.0^-(symbolic !:prec!:-4);
    if ip=0 or rp=0 then return res
    else if abs(ip/rp) <tmp then return rp
    else if abs(rp/ip) <tmp then return i*ip
