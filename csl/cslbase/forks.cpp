@@ -193,6 +193,10 @@ int32_t char_to_fork(int c, LispObject stream)
 {   return 0;
 }
 
+int32_t char_to_nowhere(int c, LispObject stream)
+{   return 0;
+}
+
 int char_from_fork(LispObject stream)
 {   return EOF;
 }

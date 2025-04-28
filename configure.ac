@@ -678,6 +678,17 @@ then
   AC_DEFINE([ENABLE_JIT], [1], [this option enabled])
 fi
 
+AC_ARG_ENABLE(forks,
+  AS_HELP_STRING([--enable-forks],
+                 [currently experimental (CSL only)]),
+  [],
+  [enable_forks="yes"])
+
+if test "$enable_forks" = "yes"
+then
+  AC_DEFINE([ENABLE_FORKS], [1], [this option enabled])
+fi
+
 AC_ARG_ENABLE(test,
   AS_HELP_STRING([--enable-test],
                  [testing-mode version (CSL only)]),
