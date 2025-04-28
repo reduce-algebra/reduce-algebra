@@ -378,9 +378,11 @@ public:
     static std::atomic<bool> threadsInUse;
     bool mayUseThreads;
     [[gnu::always_inline]]
-    ManageWorkers()
+    ManageWorkers(bool threaded)
     {   bool expected = false;
-        mayUseThreads = threadsInUse.compare_exchange_weak(expected, true);
+        if (threaded)
+            mayUseThreads = threadsInUse.compare_exchange_weak(expected, true);
+        else mayUseThreads = false;
     }
     [[gnu::always_inline]]
     ~ManageWorkers()
@@ -424,7 +426,7 @@ public:
 // are done by unrolled and inlined special code.
 // From when the larger is at least KARASTART I will use Karatsuba,
 // and from KARABIG on it will not be just Karatsuba but the top
-// level decomosition will be run using three threads. Also up as
+// level decomosition will be run using multiple threads. Also up as
 // far as KARABIG I will use some stack allocated space while from
 // there up I will use my "stkvector" scheme so that there is no
 // serious limit to the amount that can be used.
@@ -472,6 +474,8 @@ static const std::size_t KARASTART = 16;
 #endif
 
 #endif // KARASTART
+
+static bool permitParallel = true;
 
 #ifndef KARABIG
 
@@ -982,7 +986,7 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
 #endif // TRACE_TIMES
     size_t w = topWorkspaceSize(M);
     stkvector<Digit> workspace(w);
-    ManageWorkers manager;
+    ManageWorkers manager(parmitParallel);
     if (4*N <= 5*M)
     {
         if (N < KARABIG || !manager.mayUseThreads)

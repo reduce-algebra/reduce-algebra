@@ -223,6 +223,8 @@ bool is_fork(LispObject handle)
 {   return is_stream(handle) && stream_read_fn(handle) == char_from_fork;
 }
 
+using namespace std;
+
 LispObject Lopen_fork(LispObject env)
 {   SingleValued fn;
     LispObject r = make_stream_handle();
@@ -242,10 +244,17 @@ LispObject Lopen_fork(LispObject env)
     stream_write_other(r) = write_action_fork;
     stream_line_length(r) = 0;
     stream_pushed_char(r) = NOT_CHAR;
+    Lflush(nil);
     pid_t pid = fork();
     if (pid == 0)
     {
-// Here is the child process.
+// Here is the child process. The first thing I will do will be to
+// get the helper threads for Karatsuba multiplication established again.
+#ifdef ARITHLIB
+        permitParallel = false;
+#else // ARITHLIB
+        karatsuba_parallel = 0x7fffffff;
+#endif //ARITHLIB
 // I do not want it to be able to generate any output!
         stream_write_fn(lisp_work_stream) = char_to_nowhere;
         stream_write_fn(lisp_terminal_io) = char_to_nowhere;
@@ -270,7 +279,6 @@ LispObject Lopen_fork(LispObject env)
 //     exciting when open!-fork is called. The simpler thing to do will be
 //     to disable all attempts to use parallel Karstsuba, so that is what
 //     I do here.
-        karatsuba_parallel = 0x7fffffff;
 // (2) For a GUI run there are threads that might be involved in updating
 //     the screen and handing mouse and keyboard events. For a console
 //     mode version the keyboard would be being watched by a thread. I
@@ -359,10 +367,7 @@ LispObject Lclose_fork(LispObject env, LispObject handle)
 // both of those. And I will kill the process too.
     other_write_action(WRITE_CLOSE, handle);
     pid_t pid = stream_line_length(handle);
-
-
-//@@    kill(pid, SIGKILL);
-
+    kill(pid, SIGKILL);
     return nil;
 }
 
@@ -420,6 +425,10 @@ int32_t char_to_fork(int c, LispObject stream)
     int h = stream_extra(stream);
     if (write(h, &c, 1) != 1) return 1;
     return 0;   // indicate success
+}
+
+int32_t char_to_nowhere(int c, LispObject stream)
+{   return 0;   // indicate success
 }
 
 // fork-ready() is fun! When I create a fork I set the pipe thar will be
