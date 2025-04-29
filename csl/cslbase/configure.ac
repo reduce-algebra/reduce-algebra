@@ -713,7 +713,7 @@ AC_ARG_ENABLE(forks,
   AS_HELP_STRING([--enable-forks],
                  [currently experimental (CSL only)]),
   [],
-  [enable_forks="no"])
+  [enable_forks="yes"])
 
 if test "$enable_forks" = "yes"
 then

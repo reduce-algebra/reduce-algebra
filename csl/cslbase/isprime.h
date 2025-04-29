@@ -105,6 +105,9 @@ constexpr inline bool constexpr_isprime(uint64_t n)
     if (n%3 == 0) return false;
 // Here 3 is an adequate witness!!!! Well actually just a simple
 // Fermat test suffices and it is slightly simpler so I use it.
+// This is because the I am only checking a few numbers that are all
+// just a bit below powers of 3 and it turns out that none of the ones
+// I come across are pseudoprimes to base 3. Far less Carmichael numbers.
     return (constexpr_exptmod(3, n-1, n) == 1);
 }
 

@@ -1,0 +1,58 @@
+                               WORKFARM.TXT
+                        Arthur Norman, April 2025
+
+
+This is a scheme supported by CSL but not the other platforms. It is
+intended to provide a framework for exploiting multi-core CPUs. The
+facilities are supported on Linux and macOS but not (native) Windows,
+and under cygwin the overheads may be severe.
+
+The idea here is that a function open-fork() can create a clone of the
+current state of the running Reduce session, with all the function
+definition and all the values of variables that the user has set up.
+
+The send-to-fork() can transmit a Lisp form to that clone for
+evaluation there. In due course read-from-fork() can recover the result
+or possibly other data that the remote task wanted to send back. It is
+possible to test if a reply is waiting or to do a blocking read that
+will wait until it is.
+
+So data can be provided to a worker in two manners. Anything present in
+the system when open-fork() is called is automatically available, and
+the worker can access it pretty well effortlessly. There is obviously some
+latency in setting up the new process there. The memory for that new process
+starts off all just shared with its parents, but any time anything is
+updated the relevent page of memory is copied. The scheme is known as
+"copy on write" and the effect is that read access to even huge amounts of
+data is quite cheap.
+Then as a separate procedure data can be sent using send-to-fork() and that
+has to involve converting whatever data is involved into a stream of bytes
+at the send end and reconstructing it at the other. The cost of this will
+clearly depend on the amount of data to be shipped.
+When several tasks are sent to a worker in succession its state is preserved
+from one request to the next. This can sometimes be used so that one
+initial transfer sends bulky data that several subsequent requests work on.
+
+The values returned by workers to the process that created them has to be
+sent as a stream of bytes (or characters) and this will mean that in general
+one wants the cost to the worker in creating it to exceed its size if
+the transmission cost leaves the whole procedure making sense.
+
+If things get out of step in any way the whole system may well just
+gum up. And the sequence in which workers complete their tasks can not
+be guaranteed. The latencies and bandwidth costs of synchronization and
+communication mean that this will all work if the data that needs to
+be transmitted is kept modest and each task that is launched will take
+a while to complete. In the worst case each spawned task will use as
+much memory as a single copy of Reduce, and at present the system does not
+have any refined tuning to control this: possibly command line options
+"--kmax NNN" or the synonym "--maxmem NNN" which should prevent any one
+process from using more than (about) that amount will be useful.
+
+The file "workfarm.tst" here is not badged as an offical test script
+to be used for regression testing because it is the essence of concurrency
+that the exact output it generates may vary from system to system and even
+from run to run. But it may form a useful template for anybody wanting to
+experiment with this facility.
+
+
