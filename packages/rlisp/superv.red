@@ -197,7 +197,7 @@ symbolic procedure command;
         then if null y and cursym!* = 'end then rprint 'end
               else << rprint y; terpri() >>;
       if !*slin then return list('symbolic,y);
-      if !*defn and !*rprint then x := miniform y
+      if !*defn and (!*rprint or !*rstyle) then x := miniform y
                              else x := form y;
       if !*mode='algebraic and
          not atom x and
@@ -555,7 +555,7 @@ symbolic procedure dfprint u;
 
 symbolic procedure dfprint1 u;
    % Looks for special action on a form, otherwise prettyprints it.
-    if !*defn and !*rprint then <<
+    if !*defn and (!*rprint or !*rstyle) then <<
        terpri();
        if !*rstyle then rstyle u else rprint u;
        terpri() >>

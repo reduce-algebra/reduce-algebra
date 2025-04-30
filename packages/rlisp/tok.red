@@ -54,7 +54,7 @@ module tok; % Identifier and reserved character reading.
 % Substantial changes in March 2014 to put in support for wide characters
 % generally packed in the underlying Lisp string type using utf-8 encoding.
 
-fluid '(!*adjprec !*rprint !*defn !*eoldelimp !*minusliter
+fluid '(!*adjprec !*rprint !*rstyle !*defn !*eoldelimp !*minusliter
         peekchar!* !*quotenewnam !*raise !*lower semic!*
         !*report!_colons ifl!* curline!* comment!* !*comment!*
         within!-backquote!*);
@@ -406,8 +406,14 @@ symbolic procedure length!-without!-followers l;
 % characters into their internal name, and sets up the output of the
 % input line.
 
+symbolic procedure record!-input u;
+   if null(u = " ")
+      then code!_list!* := (if u = " '" then '!'
+                             else u) . code!_list!*;
+
 symbolic procedure prin2x u;
-   outl!* := u . outl!*;
+   <<outl!* := u . outl!*;
+     if !*rstyle then record!-input u>>;
 
 % This character look-ahead is used when parsing names that
 % have colons within them, as in abc:def. In particular it is active when
@@ -1184,6 +1190,10 @@ symbolic procedure token;
                if !*rprint then
                   !*comment!* :=
                      append(!*comment!*, list list!-to!-string reverse txt);
+               if !*rstyle then  
+                  <<record!-input '!%;
+                    record!-input list!-to!-string reverse txt>>;
+
             end;
             x := readch1();
             go to a >>
