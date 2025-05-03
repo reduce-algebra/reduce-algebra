@@ -102,15 +102,22 @@
 //        /dev/null. Save that probably as a debugging tool I may arrange
 //        that such output is sent to a file whose name is keyed to the
 //        process number of the task in use.
-//    fork!-ready(handle)
-//        return T if the process concerned will be able to return a
-//        value, or nil if it is still working (or if it has crashed).
+//    first!-fork(handle-list)
+//    first!-fork(handle-list, millisecond_timeout)
+//        The first form blocks until at least one of the tasks in
+//        handle-list has some output that could be read, and then
+//        rwturns that handle.
+//        The second will try to find a task that has available data but
+//        if there are none within the timeout it will return nil.
+//        The timeout can be zero, and in that case use with a list of
+//        length 1 provides a non-blocking test as to whether the specified
+//        task is ready.
 //    get!-from!-fork(handle)
-//        If fork!-ready returned T then this returns immediatly with
-//        a result returned from the process. Otherwise it waits until
-//        one becomes available, and eg if the process misbehaves or
-//        has crashed or just takes a very long time to produce a
-//        response this can cause aribitrary amounts of delay.
+//        This reads data from the given task, blocking if none is
+//        immediately available. If you need to have a timeout then
+//        you should have used first-fork() to hope for a data within
+//        your time limit so that get!-from!-fork() is only called when
+//        it is known that it will not block.
 //    send!-fork!-reply(value)
 //        This generates the material that get!-from!-fork() retrieves, as
 //        discussed earlier.
@@ -119,7 +126,8 @@
 //        it and releases its resources. This should always be used when
 //        the task that the fork was set up to handle has been completed,
 //        but can be used earlier if local computation shows that there
-//        is no need to get a result from it.
+//        is no need to get a result from it. It destroys the sub process
+//        with extreme prejudice.
 //
 // It is suggested that the number of forks created should be limited to
 // around the number of CPU cores of the processor being used. Also
@@ -165,7 +173,12 @@ LispObject Lsend_to_fork(LispObject env, LispObject handle, LispObject value)
     return nil;
 }
 
-LispObject Lfork_ready(LispObject env, LispObject handle)
+LispObject Lfirst_fork(LispObject env, LispObject handles)
+{   SingleValued fn;
+    return nil;
+}
+
+LispObject Lfirst_fork(LispObject env, LispObject handles, LispObject tt)
 {   SingleValued fn;
     return nil;
 }
@@ -175,7 +188,7 @@ LispObject Lget_from_fork(LispObject env, LispObject handle)
     return nil;
 }
 
-LispObject Lsend_fork_reply(LispObject env, LispObject handle)
+LispObject Lsend_fork_reply(LispObject env, LispObject value)
 {   SingleValued fn;
     return nil;
 }
@@ -224,10 +237,33 @@ static constexpr int read_end = 0;
 static constexpr int write_end = 1;
 
 bool is_fork(LispObject handle)
-{   return is_stream(handle) && stream_read_fn(handle) == char_from_fork;
+{   return is_stream(handle) &&
+           stream_read_fn(handle) == char_from_fork;
 }
 
 using namespace std;
+
+LispObject Lsend_fork_reply(LispObject env, LispObject value)
+{   SingleValued fn;
+    LispObject handle = qvalue(fork_parent);
+    if (!is_fork(handle))
+    {   pid_printf("Not a fork handle in send_fork_reply");
+        return aerror1("send-fork-reply needs to be in child fork", handle);
+    }
+    Lprint_2(nil, value, handle);
+    int h = stream_write_fd(handle);
+    static char c[4] = {0x1b, 0, 0, 0};
+    if (write(h, &c[0], 1) != 1)
+    {   pid_printf("failed to write ESC in send_fork_reply");
+        return aerror("Failed to write terminating ESC");
+    }
+    return nil;
+}
+
+#ifdef __linux__
+#include <sys/prctl.h>
+#include <signal.h>
+#endif // __linux__
 
 LispObject Lopen_fork(LispObject env)
 {   SingleValued fn;
@@ -249,9 +285,17 @@ LispObject Lopen_fork(LispObject env)
     stream_line_length(r) = 0;
     stream_pushed_char(r) = NOT_CHAR;
     Lflush(nil);
+    pid_t before_fork = getpid();
     pid_t pid = fork();
     if (pid == 0)
     {
+#ifdef __linux__
+// If I am on Linux I can ensure that the child task terminates if the
+// parent one does. On my first attempt to put this in it seemed to cause
+// breakage, so I need to understand more! 
+//      int r = prctl(PR_SET_PDEATHSIG, SIGTERM);
+//      if (r == -1 || getppid() != before_fork) exit(1);
+#endif // __linux__
 // Here is the child process. The first thing I will do will be to
 // get the helper threads for Karatsuba multiplication established again.
 #ifdef ARITHLIB
@@ -271,8 +315,9 @@ LispObject Lopen_fork(LispObject env)
 // It can close the pipe-ends that are not relevant to it.
         close(fork_pipes_from[read_end]);
         close(fork_pipes_to[write_end]);
-        stream_file(r) = reinterpret_cast<FILE*>(fork_pipes_to[read_end]);
-        stream_extra(r) = fork_pipes_from[write_end];
+        set_stream_read_fd(r, fork_pipes_to[read_end]);
+        set_stream_write_fd(r, fork_pipes_from[write_end]);
+        stream_pid(r) = 0;
         qvalue(fork_parent) = r;
 // When a process forks all its threads will continue happily on the parent
 // but the versions in the child will not. Here I have the following
@@ -298,8 +343,8 @@ LispObject Lopen_fork(LispObject env)
         qvalue(echo_symbol) = nil;
         for (;;)
         {   LispObject w = Lread(nil);
-            if (w == eof_symbol) break;            // Terminate!
-            Lprint(nil, Leval(nil, w));
+            if (w == eof_symbol) break;            // on EOF give up.
+            Lsend_fork_reply(nil, Leval(nil, w));
         }
         close(fork_pipes_from[write_end]);
         close(fork_pipes_to[read_end]);
@@ -324,13 +369,9 @@ LispObject Lopen_fork(LispObject env)
 // to retrieve data from the saved state.
     close(fork_pipes_from[write_end]);
     close(fork_pipes_to[read_end]);
-// I make the part of the pipe that the parent will read from non-blocking
-// so that I can test if data is present.
-    fcntl(fork_pipes_from[read_end], F_SETFL,
-        fcntl(fork_pipes_from[read_end], F_GETFL) | O_NONBLOCK);
-    stream_file(r) = reinterpret_cast<FILE*>(fork_pipes_from[read_end]);
-    stream_extra(r) = fork_pipes_to[write_end];
-    stream_line_length(r) = pid;
+    set_stream_read_fd(r, fork_pipes_from[read_end]);
+    set_stream_write_fd(r, fork_pipes_to[write_end]);
+    stream_pid(r) = pid;
 // Here I return the stread handle that should let me access the fork. I
 // do this rather than putting it into a fixed location because I may end
 // up forking multiple sub-processes.
@@ -345,33 +386,48 @@ LispObject Lsend_to_fork(LispObject env, LispObject handle, LispObject value)
 
 LispObject Lget_from_fork(LispObject env, LispObject handle)
 {   SingleValued fn;
-    if (!is_fork(handle)) return aerror1("get-from-fork", handle);
-    int fd = reinterpret_cast<intptr_t>(stream_file(handle));
-    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
+    if (!is_fork(handle))
+    {   pid_printf("not a fork handle in get_from_fork");
+        return aerror1("get-from-fork", handle);
+    }
     LispObject r = Lread(nil, handle);
-// Reset to non-blocking mode after I have read something.
-    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
+// read() may or may not have read a character beyond the expression
+// it wanted. Eg after a symbol or number it is liable to have had to
+// read a whitspace or punctuation to know when to stop. It may then
+// have pushed this character back. At the end of a string it needs to
+// verify that theer are not two double-quotes in a row. However when
+// it accepts the ")" that terminates s list it does not need to look
+// further. So here I cancel and pushed character and then keep reading
+// until I find an escape character (U+001b).
+    stream_pushed_char(handle) = NOT_CHAR;
+    int fd = stream_read_fd(handle);
+    char ch[4];
+    for (;;)
+    {   if (read(fd, &ch[0], 1) != 1)
+        {   pid_printf("could not find ESC in get_from_fork");
+            return aerror("Failed to get fork data");
+        }
+        if (ch[0] == 0x1b) break;
+    }
     return r;
 }
 
-LispObject Lsend_fork_reply(LispObject env, LispObject value)
-{   SingleValued fn;
-    LispObject handle = qvalue(fork_parent);
-    if (!is_fork(handle))
-        return aerror1("send-fork-reply needs to be in child fork", handle);
-    Lprint_2(nil, value, handle);
-    return nil;
-}
+#include <poll.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 LispObject Lclose_fork(LispObject env, LispObject handle)
 {   SingleValued fn;
-    if (!is_fork(handle)) return aerror1("close-fork", handle);
-// For the 2-way pipes that communicate with a forked process I will make
-// WRITE_CLOSE or READ_CLOSE shut down everything. I do not need to do
-// both of those. And I will kill the process too.
-    other_write_action(WRITE_CLOSE, handle);
-    pid_t pid = stream_line_length(handle);
+    if (!is_fork(handle))
+    {   pid_printf("not a fork handle in close_fork");
+        return aerror1("close-fork", handle);
+    }
+    pid_t pid = stream_pid(handle);
     kill(pid, SIGKILL);
+    int status;
+// This is a simplistic wait for the process to end and does not take
+// magic action if (eg) signals intervene.
+    waitpid(pid, &status, 0);
     return nil;
 }
 
@@ -380,14 +436,15 @@ int32_t write_action_fork(int32_t op, LispObject f)
     if (op < 0) return -1;
     else switch (op & 0xf0000000)
         {   case WRITE_CLOSE:
-                close(reinterpret_cast<intptr_t>(stream_file(f)));
-                close(reinterpret_cast<intptr_t>(stream_extra(f)));
+                close(stream_read_fd(f));
+                close(stream_write_fd(f));
                 stream_write_fn(f) = char_to_illegal;
                 stream_write_other(f) = write_action_illegal;
                 stream_read_fn(f) = char_from_illegal;
                 stream_read_other(f) = read_action_illegal;
                 stream_file(f) = nullptr;
                 stream_extra(f) = 0;
+                stream_pid(f) = 0;
                 return 0;
             case WRITE_FLUSH:
                 return 0;
@@ -414,19 +471,7 @@ int32_t write_action_fork(int32_t op, LispObject f)
 }
 
 int32_t char_to_fork(int c, LispObject stream)
-{   if (c == '\n' || c == '\f')
-        stream_byte_pos(stream) = stream_char_pos(stream) = 0;
-    else if (c == '\t')
-    {   stream_byte_pos(stream)++;
-        stream_char_pos(stream) = (static_cast<int>(stream_char_pos(
-                                       stream)) + 8) & ~7;
-    }
-    else if ((c & 0xc0) == 0x80) stream_byte_pos(stream)++;
-    else
-    {   stream_byte_pos(stream)++;
-        stream_char_pos(stream)++;
-    }
-    int h = stream_extra(stream);
+{   int h = stream_write_fd(stream);
     if (write(h, &c, 1) != 1) return 1;
     return 0;   // indicate success
 }
@@ -435,84 +480,66 @@ int32_t char_to_nowhere(int c, LispObject stream)
 {   return 0;   // indicate success
 }
 
-// fork-ready() is fun! When I create a fork I set the pipe thar will be
-// use to read from it in non-blocking mode, and the stream object will
-// have its pushed_char set to NOT_CHAR.
-// If I want to see if data is available and I am in that initial state
-// I can do a read() and it will be non-blocking. When I try to get a
-// single byte it may return -1 and set errno to EAGAIN. so in that
-// case I just report that no data is available, ie that the forked
-// task has not yet returned anything.
-// Otherwise a result of -1 indicated an error, and 0 would tell me
-// that the pipe had been closed - which for me is also an error
-// state since I should not be trying to read if the other process has
-// terminated. If I do get any data I put it in pushed_char. Well given
-// that if I subsequently ash again I should take the pushed char not
-// being NOT_CHAR to indicate that there is data available.
+const size_t max_number_of_forks = 100;
 
-LispObject Lfork_ready(LispObject env, LispObject handle)
+LispObject Lfirst_fork(LispObject env, LispObject handles, LispObject timeout)
 {   SingleValued fn;
-    if (!is_fork(handle)) return aerror1("fork-ready", handle);
-    if (stream_pushed_char(handle) != NOT_CHAR) return lisp_true;
-    int fd = reinterpret_cast<intptr_t>(stream_file(handle));
-    char b;
-    int n = read(fd, &b, 1);
-    if (n == -1 && errno == EAGAIN) return nil;  // May arrive later.
-    if (n <= 0) return aerror1("problem with pipe from fork", handle);
-    stream_pushed_char(handle) = b;    
-    return lisp_true;
+    struct pollfd fds[max_number_of_forks];
+    size_t count = 0;
+    LispObject w = handles;
+    intptr_t tt = -1;    // non-integer timeout => block for unlimited time.
+    if (is_fixnum(timeout)) tt = int_of_fixnum(timeout);
+    while (is_cons(w))
+    {   LispObject h = car(w);
+        w = cdr(w);
+        if (!is_fork(h))
+        {   pid_printf("not a fork handle in first_fork");
+            return aerror1("first-fork", handles);
+        }
+        fds[count].fd = stream_read_fd(h);
+        fds[count].events = POLLIN;
+        fds[count].revents = 0;
+        count++;
+    }
+    int r = poll(&fds[0], count, tt);  // Wait for first to respond.
+//  for (size_t j=0; j<count; j++)
+//      printf("%d:(%d):%x ", (int)j, (int)fds[j].fd, (int)fds[j].revents);
+    printf("\n");
+    if (r <= 0) return nil;            // None. Must have timed out.
+    for (size_t j=0; j<count; j++)
+    {   if (fds[j].revents != 0) break;
+        handles = cdr(handles);
+    }
+    return car(handles);
 }
 
-// Now when I come to read from the pipe the simple part is to note
-// that if pushed_char != NOT_CHAR then that is a character to return.
-// However once I am actually reading I do want to block until all of
-// the data in a message has been accepted.
-// The pipe could be in a non-blocking state either with pushed_char
-// being the initial value NOT_CHAR or because there is a real byte of
-// data there. If there is real data I jusr return it and set pushed_char
-// to NOT_CHAR - then the next time I try to read I see NOT_CHAR. In that
-// case I reset blocking mode and label things with NOT_CHAR1 so that
-// I do not do the system call that changes to blocking mode more than
-// once.
-// When I have finished a sequence of char_from_fork() operations I will
-// reset non-blocking mode.
+LispObject Lfirst_fork(LispObject env, LispObject handles)
+{   return Lfirst_fork(env, handles, fixnum_of_int(-1));
+}
 
 int char_from_fork(LispObject stream)
-{   int ch = stream_pushed_char(stream);
-    if (ch == NOT_CHAR1)
-    {   ch = 0;
-        int fd = reinterpret_cast<intptr_t>(stream_file(stream));
-        if (read(fd, &ch, 1) != 1)
-            ch = EOF;
-    }
-    else if (ch == NOT_CHAR)
-    {   ch = 0;
-        int fd = reinterpret_cast<intptr_t>(stream_file(stream));
-        fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
-        stream_pushed_char(stream) = NOT_CHAR1;
-        if (read(fd, &ch, 1) != 1)
-            ch = EOF;
-    }
-    else stream_pushed_char(stream) = NOT_CHAR;
-    return ch;
+{   char ch[4];
+    int fd = stream_read_fd(stream);
+    if (read(fd, &ch[0], 1) != 1) return EOF;
+    else return ch[0];
 }
 
 int32_t read_action_fork(int32_t op, LispObject f)
 {   if (op < -1) return 1;
-    else if (op <= 0xffff) return (stream_pushed_char(f) = op);
+    else if (op <= 0xffff) return 1;
     else switch (op)
         {   case READ_CLOSE:
-                close(reinterpret_cast<intptr_t>(stream_file(f)));
-                close(reinterpret_cast<intptr_t>(stream_extra(f)));
+                close(stream_read_fd(f));
+                close(stream_write_fd(f));
                 stream_read_fn(f) = char_from_illegal;
                 stream_read_other(f) = read_action_illegal;
                 stream_write_fn(f) = char_to_illegal;
                 stream_write_other(f) = write_action_illegal;
                 stream_file(f) = nullptr;
                 stream_extra(f) = 0;
+                stream_pid(f) = 0;
                 return 0;
             case READ_FLUSH:
-                stream_pushed_char(f) = NOT_CHAR;
                 return 0;
             case READ_TELL:
                 return -1;
@@ -534,12 +561,11 @@ setup_type const forks_setup[] =
 {   DEF_0("cpu-count",        Lcpu_count),
     DEF_0("open-fork",        Lopen_fork),
     DEF_2("send-to-fork",     Lsend_to_fork),
-    DEF_1("fork-ready",       Lfork_ready),
+    {"first-fork", G0Wother, Lfirst_fork, Lfirst_fork, G3Wother, G4Wother},
     DEF_1("get-from-fork",    Lget_from_fork),
     DEF_1("send-fork-reply",  Lsend_fork_reply),
     DEF_1("close-fork",       Lclose_fork),
     {nullptr,                 nullptr, nullptr, nullptr, nullptr, nullptr}
 };
-
 
 // end of forks.cpp

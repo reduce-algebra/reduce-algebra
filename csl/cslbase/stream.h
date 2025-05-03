@@ -136,11 +136,11 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 //      LispObject write_data;               1  2*CELL  ) Lisp items
 //      LispObject read_data;                2  3*CELL  )
 //
-//      FILE *file;                          3  4*CELL
-//      intptr_t extra;                      4  5*CELL
+//      FILE *file;                          3  4*CELL    + read-fd
+//      intptr_t extra;                      4  5*CELL    + write-fd
 //      character_stream_writer *write_fn;   5  6*CELL
 //      other_stream_op *write_other_fn;     6  7*CELL
-//      intptr_t line_length;                7  8*CELL
+//      intptr_t line_length;                7  8*CELL    + PID
 //      intptr_t byte_pos;                   8  9*CELL
 //      intptr_t char_pos;                   8  10*CELL
 //      character_stream_reader *read_fn;   10  11*CELL
@@ -195,23 +195,26 @@ inline LispObject &stream_pushed_char(LispObject v)
 {   return basic_elt(v, 12);
 }
 
-inline LispObject set_stream_file(LispObject v, std::FILE *x)
-{   return (basic_elt(v, 3) = reinterpret_cast<LispObject>(x));
+// Now for forks.cpp I re-use some of the fields with different types.
+// Provided setting and reading of the data is done consistently this
+// should be OK. The read and write file desctiptors can live in
+// stream_read_data and stream_write_data but packed as fixnums, and
+// the pid can go in stream_extra.
+
+inline int stream_read_fd(LispObject v)
+{   return int_of_fixnum(stream_read_data(v));
 }
-inline LispObject set_stream_extra(LispObject v, intptr_t x)
-{   return (basic_elt(v, 4) = reinterpret_cast<LispObject>(x));
+inline int stream_write_fd(LispObject v)
+{   return int_of_fixnum(stream_write_data(v));
 }
-inline LispObject set_stream_write_fn(LispObject v, character_stream_writer *x)
-{   return (basic_elt(v, 5) = reinterpret_cast<LispObject>(x));
+inline intptr_t& stream_pid(LispObject v)
+{   return stream_extra(v);
 }
-inline LispObject set_stream_write_other(LispObject v, other_stream_op *x)
-{   return (basic_elt(v, 6) = reinterpret_cast<LispObject>(x));
+inline void set_stream_read_fd(LispObject v, int fd)
+{   stream_read_data(v) = fixnum_of_int(fd);
 }
-inline LispObject set_stream_read_fn(LispObject v, character_stream_reader *x)
-{   return (basic_elt(v, 10) = reinterpret_cast<LispObject>(x));
-}
-inline LispObject set_stream_read_other(LispObject v, other_stream_op *x)
-{   return (basic_elt(v, 11) = reinterpret_cast<LispObject>(x));
+inline void set_stream_write_fd(LispObject v, int fd)
+{   stream_write_data(v) = fixnum_of_int(fd);
 }
 
 #define STREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + (STREAM_SIZE<<(Tw+5)))

@@ -572,9 +572,9 @@ LispObject Lsetpchar(LispObject env, LispObject a)
     LispObject old = prompt_thing;
     prompt_thing = a;
     escaped_printing = escape_nolinebreak;
-    set_stream_write_fn(lisp_work_stream, count_character);
+    stream_write_fn(lisp_work_stream) = count_character;
     memory_print_buffer[0] = 0;
-    set_stream_write_other(lisp_work_stream, write_action_list);
+    stream_write_other(lisp_work_stream) = write_action_list;
     stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;

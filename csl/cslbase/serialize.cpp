@@ -3450,10 +3450,25 @@ void check_no_gensyms(LispObject u)
 #define F_LOAD_SOURCE     1
 #define F_SELECTED_SOURCE 2
 
+class SaveBinaryFiles
+{   FILE* saveIn;
+    FILE* saveOut;
+public:
+    SaveBinaryFiles()
+    {   saveIn = binary_infile;
+        saveOut = binary_outfile;
+    }
+    ~SaveBinaryFiles()
+    {   binary_infile = saveIn;
+        binary_outfile = saveOut;
+    }
+};
+
 static LispObject load_module(LispObject env, LispObject file, int option)
 // load_module() rebinds *package* in COMMON mode, but also note that
 // it also rebinds *echo to nil in case we are reading from a stream.
 {   SingleValued fn;
+    SaveBinaryFiles fileSave;
     save_current_function saver(env);
     char filename[LONGEST_LEGAL_FILENAME];
     Header h;
