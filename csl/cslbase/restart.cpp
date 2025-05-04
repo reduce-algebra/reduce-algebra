@@ -1665,10 +1665,10 @@ LispObject set_up_variables(int restart_flag)
 
     {   LispObject f = lisp_terminal_io;
         stream_type(f) = make_undefined_symbol("terminal-stream");
-        set_stream_read_fn(f, char_from_terminal);
-        set_stream_read_other(f, read_action_terminal);
-        set_stream_write_fn(f, char_to_terminal);
-        set_stream_write_other(f, write_action_terminal);
+        stream_read_fn(f) = char_from_terminal;
+        stream_read_other(f) = read_action_terminal;
+        stream_write_fn(f) = char_to_terminal;
+        stream_write_other(f) = write_action_terminal;
         qvalue(terminal_io) = f;
         f = lisp_standard_input;
         stream_type(f) = make_undefined_symbol("synonym-stream");
@@ -1679,80 +1679,80 @@ LispObject set_up_variables(int restart_flag)
 // be a synonym stream that will dynamically look at the value of the variable
 // *terminal-io* every time it does anything. Ugh, since people who assign to
 // or re-bind *terminal-io* seem to me to be asking for terrible trouble!
-        set_stream_read_fn(f, char_from_synonym);
+        stream_read_fn(f) = char_from_synonym;
 #else
-        set_stream_read_fn(f, char_from_terminal);
+        stream_read_fn(f) = char_from_terminal;
 #endif
-        set_stream_read_other(f, read_action_synonym);
+        stream_read_other(f) = read_action_synonym;
         stream_read_data(f) = terminal_io;
         qvalue(standard_input) = f;
 
         f = lisp_standard_output;
         stream_type(f) = make_undefined_symbol("synonym-stream");
 #ifdef COMMON
-        set_stream_write_fn(f, char_to_synonym);
+        stream_write_fn(f) = char_to_synonym;
 #else
-        set_stream_write_fn(f, char_to_terminal);
+        stream_write_fn(f) = char_to_terminal;
 #endif
-        set_stream_write_other(f, write_action_synonym);
+        stream_write_other(f) = write_action_synonym;
         stream_write_data(f) = terminal_io;
         qvalue(standard_output) = f;
 
         f = lisp_error_output;
         stream_type(f) = make_undefined_symbol("synonym-stream");
 #ifdef COMMON
-        set_stream_write_fn(f, char_to_synonym);
+        stream_write_fn(f) = char_to_synonym;
 #else
-        set_stream_write_fn(f, char_to_terminal);
+        stream_write_fn(f) = char_to_terminal;
 #endif
-        set_stream_write_other(f, write_action_synonym);
+        stream_write_other(f) = write_action_synonym;
         stream_write_data(f) = terminal_io;
         qvalue(error_output) = f;
 
         f = lisp_trace_output;
         stream_type(f) = make_undefined_symbol("synonym-stream");
 #ifdef COMMON
-        set_stream_write_fn(f, char_to_synonym);
+        stream_write_fn(f) = char_to_synonym;
 #else
-        set_stream_write_fn(f, char_to_terminal);
+        stream_write_fn(f) = char_to_terminal;
 #endif
-        set_stream_write_other(f, write_action_synonym);
+        stream_write_other(f) = write_action_synonym;
         stream_write_data(f) = terminal_io;
         qvalue(trace_output) = f;
 
         f = lisp_debug_io;
         stream_type(f) = make_undefined_symbol("synonym-stream");
 #ifdef COMMON
-        set_stream_read_fn(f, char_from_synonym);
+        stream_read_fn(f) = char_from_synonym;
 #else
-        set_stream_read_fn(f, char_from_terminal);
+        stream_read_fn(f) = char_from_terminal;
 #endif
-        set_stream_read_other(f, read_action_synonym);
+        stream_read_other(f) = read_action_synonym;
         stream_read_data(f) = terminal_io;
 #ifdef COMMON
-        set_stream_write_fn(f, char_to_synonym);
+        stream_write_fn(f) = char_to_synonym;
 #else
-        set_stream_write_fn(f, char_to_terminal);
+        stream_write_fn(f) = char_to_terminal;
 #endif
-        set_stream_write_other(f, write_action_synonym);
+        stream_write_other(f) = write_action_synonym;
         stream_write_data(f) = terminal_io;
         qvalue(debug_io) = f;
 
         f = lisp_query_io;
         stream_type(f) = make_undefined_symbol("synonym-stream");
 #ifdef COMMON
-        set_stream_read_fn(f, char_from_synonym);
+        stream_read_fn(f) = char_from_synonym;
 #else
-        set_stream_read_fn(f, char_from_terminal);
+        stream_read_fn(f) = char_from_terminal;
 #endif
-        set_stream_read_other(f, read_action_synonym);
+        stream_read_other(f) = read_action_synonym;
         stream_read_data(f) = terminal_io;
 #ifdef COMMON
-        set_stream_write_fn(f, char_to_synonym);
+        stream_write_fn(f) = char_to_synonym;
 #else
-        set_stream_write_fn(f, char_to_terminal);
+        stream_write_fn(f) = char_to_terminal;
 #endif
-        set_stream_write_other(f, write_action_synonym);
+        stream_write_other(f) = write_action_synonym;
         stream_write_data(f) = terminal_io;
         qvalue(query_io) = f;
     }
@@ -1761,14 +1761,14 @@ LispObject set_up_variables(int restart_flag)
     {   LispObject stream = make_undefined_fluid("*math-output*");
         LispObject f = make_stream_handle();
         stream_type(f) = make_undefined_symbol("math-output");
-        set_stream_write_fn(f, char_to_math);
-        set_stream_write_other(f, write_action_math);
+        stream_write_fn(f) = char_to_math;
+        stream_write_other(f) = write_action_math;
         qvalue(stream) = f;
         stream = make_undefined_fluid("*spool-output*");
         f = make_stream_handle();
         stream_type(f) = make_undefined_symbol("spool-output");
-        set_stream_write_fn(f, char_to_spool);
-        set_stream_write_other(f, write_action_spool);
+        stream_write_fn(f) = char_to_spool;
+        stream_write_other(f) = write_action_spool;
         qvalue(stream) = f;
     }
 #endif

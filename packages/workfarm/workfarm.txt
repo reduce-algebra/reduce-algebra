@@ -38,6 +38,26 @@ sent as a stream of bytes (or characters) and this will mean that in general
 one wants the cost to the worker in creating it to exceed its size if
 the transmission cost leaves the whole procedure making sense.
 
+Further than returning a data value it will be important that the parent
+process reads exactly all the bytes of a response so that it leaves the
+communication channel from the child empty. This requrement is so that
+after reading one response the parent can review channels from all
+children and respond next to one that has available data. Any unread
+data left over from a previous communication could make it seem as if
+there was the start of a follow-on message. So data that it returned
+must be sent using send_fork_reply() and that must interact with
+get_from_fork() to satisfy this requirement. For a first implementation
+I will make the transmission a normal Lisp s-expression as rendered by
+print() and decoded by read(), but with a newline and then an escape
+character (U+001b) appended to signal the end of transmission. On reading
+the newline will at least sometimes be absorbed just as part of reading the
+expression. But then I can scan until I read the escape.
+
+Note that for data sent from the parent to a child process that the child
+will only have one source for work, so it is reasonable for it to try
+reading and block - So I do not put in extra marker characters when I
+send data in that direction.
+
 If things get out of step in any way the whole system may well just
 gum up. And the sequence in which workers complete their tasks can not
 be guaranteed. The latencies and bandwidth costs of synchronization and

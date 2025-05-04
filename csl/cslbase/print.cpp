@@ -138,7 +138,7 @@ void debugprint(LispObject a, int depth)
 #endif
 #endif
 
-std::FILE *spool_file = nullptr;
+FILE *spool_file = nullptr;
 char spool_file_name[128];
 
 int32_t terminal_column = 0;
@@ -164,6 +164,20 @@ int32_t terminal_line_length = (int32_t)0x80000000;
 void ensure_screen()
 {   fwin_ensure_screen();
     if (spool_file != nullptr) std::fflush(spool_file);
+}
+
+void pid_printf(const char *fmt, ...)
+{   pid_t pid = getpid(), ppid = getppid();
+    char name[40];
+    snprintf(name, sizeof(name), "PID%d:%d.log", (int)pid, (int)ppid);
+    FILE* f = fopen(name, "a");
+    std::va_list a;
+    char print_temp[VPRINTF_CHUNK], *p;
+    int n;
+    va_start(a, fmt);
+    n = std::vfprintf(f, fmt, a);
+    va_end(a);
+    fclose(f);
 }
 
 void term_printf(const char *fmt, ...)
@@ -255,14 +269,16 @@ LispObject Ltyo(LispObject env, LispObject a)
 }
 
 int char_to_illegal(int, LispObject f)
-{   return aerror1("Attempt to write to an input stream or one that has been closed",
-            stream_type(f));
+{   return aerror1(
+        "Attempt to write to an input stream or one that has been closed",
+        stream_type(f));
     return 1;
 }
 
 int char_from_illegal(LispObject f)
-{   return aerror1("Attempt to read from an output stream or one that has been closed",
-            stream_type(f));
+{   return aerror1(
+        "Attempt to read from an output stream or one that has been closed",
+        stream_type(f));
     return EOF;
 }
 
@@ -278,7 +294,7 @@ int32_t write_action_file(int32_t op, LispObject f)
 {   int32_t w;
     switch (op & 0xf0000000)
     {   case WRITE_CLOSE:
-            if ((std::FILE *)stream_file(f) == nullptr) op = 0;
+            if ((FILE *)stream_file(f) == nullptr) op = 0;
             else op = std::fclose(stream_file(f));
             stream_write_fn(f) = char_to_illegal;
             stream_write_other(f) = write_action_illegal;
@@ -920,7 +936,7 @@ int32_t read_action_pipe(int32_t op, LispObject f)
     else if (op <= 0xffff) return (stream_pushed_char(f) = op);
     else switch (op)
         {   case READ_CLOSE:
-                if ((std::FILE *)stream_file(f) == nullptr) op = 0;
+                if ((FILE *)stream_file(f) == nullptr) op = 0;
                 else my_pclose(stream_file(f));
                 stream_read_fn(f) = char_from_illegal;
                 stream_read_other(f) = read_action_illegal;
@@ -1030,8 +1046,8 @@ LispObject Ltmpdir(LispObject env)
 }
 
 #ifdef DEBUG
-std::FILE *myopen(const char *f, const char *m)
-{   std::FILE *s = std::fopen(f, m);
+FILE *myopen(const char *f, const char *m)
+{   FILE *s = std::fopen(f, m);
     trace_printf("fopen(%s, %s) = %p\n", f, m, s);
     return s;
 }
@@ -1091,7 +1107,7 @@ std::FILE *myopen(const char *f, const char *m)
 
 LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 {   SingleValued fn;
-    std::FILE *file;
+    FILE *file;
     LispObject r;
     char filename[LONGEST_LEGAL_FILENAME], fn1[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
@@ -2690,6 +2706,9 @@ restart:
                         outprefix(false, 1);
                         prin_prinl(elt(u, 2), 1);
                     }
+#if 0
+// I come to feel that displaying the binary data in stream objects is
+// maybe not hufely useful...
                     for (k=3*CELL; k<len; k+=CELL)
                     {   std::snprintf(my_buff, sizeof(my_buff), "%.8lx",
                                      static_cast<long>(
@@ -2698,6 +2717,7 @@ restart:
                                              (CELL - TAG_VECTOR) + k)));
                         prin_buf(my_buff, true);
                     }
+#endif
                     outprefix(false, 1);
                     putc_stream(']', active_stream);
                     return nil;
@@ -4385,18 +4405,17 @@ LispObject Lexplode2ucn(LispObject env, LispObject a)
 // them pending until other things are more stable... or until they are
 // needed!
 
-static std::FILE *binary_outfile, *binary_infile;
+FILE *binary_outfile, *binary_infile;
 
-static std::FILE *binary_open(LispObject env, LispObject name,
+static FILE *binary_open(LispObject env, LispObject name,
                               const char *dir, const char *e)
-{   std::FILE *file;
+{   FILE *file;
     char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     const char *w = get_string_data(name, e, len);
     std::memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
-    file = open_file(filename, w,
-                     static_cast<size_t>(len), dir, nullptr);
+    file = open_file(filename, w, static_cast<size_t>(len), dir, nullptr);
     if (file == nullptr)
     {   error(1, err_open_failed, name);
         return nullptr;
@@ -4406,8 +4425,7 @@ static std::FILE *binary_open(LispObject env, LispObject name,
 
 static LispObject Lbinary_open_output(LispObject env, LispObject name)
 {   SingleValued fn;
-    binary_outfile = binary_open(env, name, "wb",
-                                 "binary_open_output");
+    binary_outfile = binary_open(env, name, "wb", "binary_open_output");
     return nil;
 }
 
@@ -4517,7 +4535,7 @@ static LispObject Lbinary_close_output(LispObject env)
 static LispObject Lbinary_open_input(LispObject env, LispObject name)
 {   SingleValued fn;
     LispObject r;
-    std::FILE *fh = binary_open(env, name, "rb", "binary_open_input");
+    FILE *fh = binary_open(env, name, "rb", "binary_open_input");
     r = make_stream_handle();
     errexit();
     stream_read_fn(r) = char_from_file;
@@ -4529,10 +4547,9 @@ static LispObject Lbinary_open_input(LispObject env, LispObject name)
 static LispObject Lbinary_select_input(LispObject env, LispObject a)
 {   SingleValued fn;
     if (!is_stream(a) ||
-        (std::FILE *)stream_file(a) == nullptr ||
+        (FILE *)stream_file(a) == nullptr ||
         (character_stream_writer *)stream_write_fn(a) != 0)
-        return aerror1("binary-select-input", a); // closed file or output file
-
+        return aerror1("binary-select-input", a); //closed file or output file
     binary_infile = stream_file(a);
     return nil;
 }
@@ -4795,7 +4812,7 @@ int char_from_socket(LispObject stream)
 // an int.
         if (sb_start != sb_end) ch = ucelt(w, sb_start++);
         else
-        {   ch = recv((SOCKET)(intptr_t)(std::FILE *)stream_file(stream),
+        {   ch = recv((SOCKET)(intptr_t)(FILE *)stream_file(stream),
                       reinterpret_cast<char *>(&celt(w, 4)), SOCKET_BUFFER_SIZE, 0);
             if (ch == 0) return EOF;
             if (ch == SOCKET_ERROR)
@@ -4822,11 +4839,11 @@ int32_t read_action_socket(int32_t op, LispObject f)
     else if (op <= 0xff) return (stream_pushed_char(f) = op);
     else switch (op)
         {   case READ_CLOSE:
-                if ((std::FILE *)stream_file(f) == nullptr) op = 0;
+                if ((FILE *)stream_file(f) == nullptr) op = 0;
                 else
 #ifdef SOCKETS
                     op = closesocket(
-                             (SOCKET)(intptr_t)(std::FILE *)stream_file(f));
+                             (SOCKET)(intptr_t)(FILE *)stream_file(f));
 #else
                     op = 0;
 #endif
@@ -5009,7 +5026,7 @@ start_again:
 // through and open it as an ordinary file (without regard to
 // protocol etc).
     if (nhostaddr == 0)
-    {   std::FILE *file = open_file(filename1, path, static_cast<size_t>(npath), "r",
+    {   FILE *file = open_file(filename1, path, static_cast<size_t>(npath), "r",
                                     nullptr);
         if (file == nullptr) return nil;
         r = make_stream_handle();
@@ -5099,7 +5116,7 @@ start_again:
     errexit();
     ielt32(url, 0) = 0;
     stream_read_data(r) = url;
-    stream_file(r) = (std::FILE *)(intptr_t)s;
+    stream_file(r) = (FILE *)(intptr_t)s;
     stream_read_fn(r) = char_from_socket;
     stream_read_other(r) = read_action_socket;
 

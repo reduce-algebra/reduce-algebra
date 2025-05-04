@@ -1,0 +1,463 @@
+Reduce (CSL, rev 7100), 28-Apr-2025 ...
+
+
+nil
+
+
+nil
+
+
+% Note that the Reduce "on time" facility can only measures time in the
+% main process, so it does not report based on what goes on in the
+% forked work. So here I provide something that reports on elapsed time.
+
+% The CSL function timeofday() returns a pair of (second . microsoconds)
+% since 1 January 1970. Here I turn that into just incremental milliseconds.
+
+fluid '(basetime);
+nil
+
+
+basetime := timeofday()$
+
+basetime := (1000000*car basetime + cdr basetime)/1000$
+
+
+symbolic procedure elapsed();
+  begin
+    scalar tt := timeofday();
+    return (1000000*car tt + cdr tt)/1000 - basetime
+  end;
+elapsed
+
+
+
+% Here is a function where its sole purpose is to be busy for a while.
+% I want tha various tasks to use amounts of time that do not
+% increase directly with k so that they will terminated in
+% an "interesting" order, so the calculation mod 41 is a crude scheme
+% for scrambling how much work is done when an argument k=1,2,... is
+% provided. In any real case this will get replaced by code to something
+% useful!
+
+symbolic procedure work k;
+  begin
+    scalar r := 0, n := remainder(314159*k, 41);
+    for i := 1:30000*n+k do r := r + expt(i, 5);
+    return list(k, " => ", r)
+  end;
+work
+
+
+
+% Now to create a new task and start it off doing some work with
+% input k....
+
+symbolic procedure startwork k;
+  begin
+    scalar task := open!-fork();           % Create a "fork".
+    send!-to!-fork(task, list('work, k));  % Send it a request.
+    princ "==== start work on "; print k;
+    return task                            % Return its handle.
+  end;
+startwork
+
+
+
+% I may like to know how many CPUs I have. I will set myself a target
+% of completing 50 instances of the work-packet.
+
+fluid '(count started wanted);
+nil
+
+
+count := cpu!-count();
+10
+
+
+if count < 4 then count := 4;
+nil
+
+   % Try this even if not much point
+                                % since this is a DEMO.
+started := 0;
+0
+
+
+wanted := 50;
+50
+
+
+
+
+% Create a number of tasks related to the number of available CPUs
+% As I crewate them I set them tasks to start working on. I could
+% of course merely create them and seed them with work in a separate
+% step if that suited me better.
+
+fluid '(tasks);
+nil
+
+
+tasks := for i := 1:count collect startwork(started := started+1)$
+==== start work on 1
+==== start work on 2
+==== start work on 3
+==== start work on 4
+==== start work on 5
+==== start work on 6
+==== start work on 7
+==== start work on 8
+==== start work on 9
+==== start work on 10
+
+
+
+% Report how long the initial task creation process took.
+list("tasks started at ", elapsed());
+("tasks started at " 21)
+
+
+
+<< princ "task list: "; print tasks >>$task list: (#F["fork handle" 7 8] #F[
+"fork handle" 9 10] #F["fork handle" 11 12] #F["fork handle" 13 14] #F[
+"fork handle" 15 16] #F["fork handle" 17 18] #F["fork handle" 19 20] #F[
+"fork handle" 21 22] #F["fork handle" 23 24] #F["fork handle" 25 26])
+
+
+
+% Most likely here none of the tasks will be ready. But display that
+% info to show that I can. The list here will have t for any task that
+% has completed and nil for one that has not. Since I am doing this very
+% soon after creating the tasks I expect all to say that they are not
+% yet complete - so this is mostly to illustrate how to ask the question.
+
+for each v in tasks collect first!-fork(list v, 0);
+
+
+
+
+
+
+
+
+
+
+(nil nil nil nil nil nil nil nil nil nil)
+
+
+
+fluid '(longstop!-time);
+nil
+
+
+longstop!-time := 30000;
+30000
+
+ % 30 seconds
+
+fluid '(result_count);
+nil
+
+
+result_count := 0;
+0
+
+       % To make the log file easier to track through.
+
+while tasks do
+  begin
+    scalar selected, r, tt;
+% Find the first task that completes, waiting until there is one. 
+    selected := first!-fork(tasks, longstop!-time);
+% If first-fork() returned nil that would mean it had timed out without
+% observing a ready task - in that situation I will give up.
+    if null selected then <<
+      for each v in tasks do close!-fork v;
+      error(0, "task timed out") >>;
+% Retrieve the result from the selected task. Display when it finished and
+% its result. And also how long it too between first!-fork() identifying
+% and the result being available for use.
+    princ "About to try to get from fork "; print selected;
+    tt := elapsed();
+    r := get!-from!-fork selected;
+    tt := elapsed() - tt;
+% Because first!-fork() should have identified a task that has results
+% ready it should not take long to read the result that it offers.
+    optterpri();
+    princ "task done at "; prin elapsed();
+    princ " after "; print tt;
+    princ "      Result is "; printc r;
+% When a task completes I check if there is more to do. If so I send the
+% next work-packet to the fork that just finished.
+% If I do not have any more to do I will just close down the fork that
+% just finished.
+    if started < wanted then <<
+      send!-to!-fork(selected, list('work, started := started+1));
+      princ "==== continue with work on "; prin started;
+      princ " leaving "; prin length tasks; printc " running" >>
+    else <<
+      close!-fork selected;
+      tasks := delete(selected, tasks);
+      princ "==== reducing to "; prin length tasks; printc " running" >>
+  end;
+About to try to get from fork #F["fork handle" 15 16]
+task done at 842 after 1
+      Result is (5  =>  88605981898488468224765554425)
+==== continue with work on 11 leaving 10 running
+
+About to try to get from fork #F["fork handle" 25 26]
+task done at 1719 after 1
+      Result is (10  =>  5670688335543854180120099920825)
+==== continue with work on 12 leaving 10 running
+
+About to try to get from fork #F["fork handle" 11 12]
+task done at 2765 after 0
+      Result is (3  =>  121508505246378780032392647000276)
+==== continue with work on 13 leaving 10 running
+
+About to try to get from fork #F["fork handle" 21 22]
+task done at 3705 after 1
+      Result is (8  =>  586533988243104150231220430461776)
+==== continue with work on 14 leaving 10 running
+
+About to try to get from fork #F["fork handle" 7 8]
+task done at 4493 after 0
+      Result is (1  =>  2932766387654099714012579327550001)
+==== continue with work on 15 leaving 10 running
+
+About to try to get from fork #F["fork handle" 17 18]
+task done at 5336 after 0
+      Result is (6  =>  7776505453662196561587576825012201)
+==== continue with work on 16 leaving 10 running
+
+About to try to get from fork #F["fork handle" 7 8]
+task done at 7187 after 1
+      Result is (15  =>  64592325496954417197834648499200)
+==== continue with work on 17 leaving 10 running
+
+About to try to get from fork #F["fork handle" 11 12]
+task done at 7261 after 1
+      Result is (13  =>  2038775753533116967559619051402001)
+==== continue with work on 18 leaving 10 running
+
+About to try to get from fork #F["fork handle" 15 16]
+task done at 7275 after 0
+      Result is (11  =>  17988159224448957913779014235681876)
+==== continue with work on 19 leaving 10 running
+
+About to try to get from fork #F["fork handle" 13 14]
+task done at 7408 after 1
+      Result is (4  =>  47073158488183331270456046758701300)
+==== continue with work on 20 leaving 10 running
+
+About to try to get from fork #F["fork handle" 7 8]
+task done at 7805 after 0
+      Result is (17  =>  7789617923656442821915467633)
+==== continue with work on 21 leaving 10 running
+
+About to try to get from fork #F["fork handle" 23 24]
+task done at 8395 after 0
+      Result is (9  =>  88579109802897952666402501498620825)
+==== continue with work on 22 leaving 10 running
+
+About to try to get from fork #F["fork handle" 9 10]
+task done at 9456 after 1
+      Result is (2  =>  187696496762695548860493549386700033)
+==== continue with work on 23 leaving 10 running
+
+About to try to get from fork #F["fork handle" 23 24]
+task done at 9760 after 1
+      Result is (22  =>  1900146734495283152886698821033)
+==== continue with work on 24 leaving 10 running
+
+About to try to get from fork #F["fork handle" 19 20]
+task done at 10525 after 1
+      Result is (7  =>  311748396842827551430559587276829008)
+==== continue with work on 25 leaving 10 running
+
+About to try to get from fork #F["fork handle" 13 14]
+task done at 10743 after 0
+      Result is (20  =>  362921029305105484354890011133300)
+==== continue with work on 26 leaving 10 running
+
+About to try to get from fork #F["fork handle" 17 18]
+task done at 12467 after 1
+      Result is (16  =>  37538030873570909610450564310547776)
+==== continue with work on 27 leaving 10 running
+
+About to try to get from fork #F["fork handle" 11 12]
+task done at 12756 after 1
+      Result is (18  =>  5717187762107147702875214114907201)
+==== continue with work on 28 leaving 10 running
+
+About to try to get from fork #F["fork handle" 25 26]
+task done at 12929 after 1
+      Result is (12  =>  497695104809579232087609844260630708)
+==== continue with work on 29 leaving 10 running
+
+About to try to get from fork #F["fork handle" 21 22]
+task done at 13152 after 0
+      Result is (14  =>  156927148093946552230406575377189825)
+==== continue with work on 30 leaving 10 running
+
+About to try to get from fork #F["fork handle" 25 26]
+task done at 13207 after 1
+      Result is (29  =>  122218614399053694634537425)
+==== continue with work on 31 leaving 10 running
+
+About to try to get from fork #F["fork handle" 19 20]
+task done at 14765 after 0
+      Result is (25  =>  1384431550876027057645453871985625)
+==== continue with work on 32 leaving 10 running
+
+About to try to get from fork #F["fork handle" 17 18]
+task done at 14798 after 1
+      Result is (27  =>  31872399488906885504949746365908)
+==== continue with work on 33 leaving 10 running
+
+About to try to get from fork #F["fork handle" 9 10]
+task done at 15853 after 1
+      Result is (23  =>  13778601579496449858867342833207376)
+==== continue with work on 34 leaving 10 running
+
+About to try to get from fork #F["fork handle" 7 8]
+task done at 16102 after 0
+      Result is (21  =>  72281750213252300325723335530867401)
+==== continue with work on 35 leaving 10 running
+
+About to try to get from fork #F["fork handle" 9 10]
+task done at 16999 after 1
+      Result is (34  =>  498523087618927785460092541825)
+==== continue with work on 36 leaving 10 running
+
+About to try to get from fork #F["fork handle" 15 16]
+task done at 17429 after 0
+      Result is (19  =>  264507707014560097707473341205533300)
+==== continue with work on 37 leaving 10 running
+
+About to try to get from fork #F["fork handle" 19 20]
+task done at 17955 after 0
+      Result is (32  =>  215371882844617233907723179571008)
+==== continue with work on 38 leaving 10 running
+
+About to try to get from fork #F["fork handle" 21 22]
+task done at 18240 after 1
+      Result is (30  =>  4133885867069570251726315631287425)
+==== continue with work on 39 leaving 10 running
+
+About to try to get from fork #F["fork handle" 13 14]
+task done at 19327 after 1
+      Result is (26  =>  130481240483498370814792870238417001)
+==== continue with work on 40 leaving 10 running
+
+About to try to get from fork #F["fork handle" 11 12]
+task done at 19752 after 1
+      Result is (28  =>  29669849763562817802216540906676276)
+==== continue with work on 41 leaving 10 running
+
+About to try to get from fork #F["fork handle" 11 12]
+task done at 19753 after 1
+      Result is (41  =>  850789401)
+==== continue with work on 42 leaving 10 running
+
+About to try to get from fork #F["fork handle" 21 22]
+task done at 20137 after 0
+      Result is (39  =>  14310493286421815224579356133200)
+==== continue with work on 43 leaving 10 running
+
+About to try to get from fork #F["fork handle" 23 24]
+task done at 20512 after 0
+      Result is (24  =>  427581084750064731606520199627970000)
+==== continue with work on 44 leaving 10 running
+
+About to try to get from fork #F["fork handle" 15 16]
+task done at 21256 after 0
+      Result is (37  =>  915328825522101637815789548573833)
+==== continue with work on 45 leaving 10 running
+
+About to try to get from fork #F["fork handle" 7 8]
+task done at 21762 after 1
+      Result is (35  =>  10424107347548842420531564538963700)
+==== continue with work on 46 leaving 10 running
+
+About to try to get from fork #F["fork handle" 17 18]
+task done at 22538 after 0
+      Result is (33  =>  58563683432881273304866731906706401)
+==== continue with work on 47 leaving 10 running
+
+About to try to get from fork #F["fork handle" 7 8]
+task done at 22563 after 0
+      Result is (46  =>  88848432743777363000704046401)
+==== continue with work on 48 leaving 10 running
+
+About to try to get from fork #F["fork handle" 25 26]
+task done at 22901 after 0
+      Result is (31  =>  223389479321801291869858845267616576)
+==== continue with work on 49 leaving 10 running
+
+About to try to get from fork #F["fork handle" 23 24]
+task done at 23111 after 0
+      Result is (44  =>  121608175106305782142322322405300)
+==== continue with work on 50 leaving 10 running
+
+About to try to get from fork #F["fork handle" 11 12]
+task done at 21801 after 1
+      Result is (42  =>  2934181296327704366799471218430633)
+==== reducing to 9 running
+
+About to try to get from fork #F["fork handle" 13 14]
+task done at 23301 after 0
+      Result is (40  =>  23226849102432310992999970330133200)
+==== reducing to 8 running
+
+About to try to get from fork #F["fork handle" 25 26]
+task done at 23722 after 0
+      Result is (49  =>  586904045016932575816477272270625)
+==== reducing to 7 running
+
+About to try to get from fork #F["fork handle" 19 20]
+task done at 23936 after 0
+      Result is (38  =>  107858484015715420794410119160459001)
+==== reducing to 6 running
+
+About to try to get from fork #F["fork handle" 9 10]
+task done at 24550 after 0
+      Result is (36  =>  365899053913438770985167475079529876)
+==== reducing to 5 running
+
+About to try to get from fork #F["fork handle" 17 18]
+task done at 24882 after 1
+      Result is (47  =>  7779694331075159780727402257241408)
+==== reducing to 4 running
+
+About to try to get from fork #F["fork handle" 15 16]
+task done at 25227 after 0
+      Result is (45  =>  47087456510538576017915066362483425)
+==== reducing to 3 running
+
+About to try to get from fork #F["fork handle" 21 22]
+task done at 25772 after 0
+      Result is (43  =>  187741769179585471313584780137489076)
+==== reducing to 2 running
+
+About to try to get from fork #F["fork handle" 23 24]
+task done at 26675 after 0
+      Result is (50  =>  88603323928223811417857935255520625)
+==== reducing to 1 running
+
+About to try to get from fork #F["fork handle" 7 8]
+task done at 27373 after 0
+      Result is (48  =>  311817492941428935188884963338245376)
+==== reducing to 0 running
+
+nil
+
+
+
+list("all done at", elapsed());
+("all done at" 27421)
+
+
+
+quit;

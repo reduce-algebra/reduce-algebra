@@ -1030,20 +1030,22 @@ where the lattice parameters have been omitted for conciseness.
 Rule sets are provided which implement all the properties such as double periodicity
 discussed above. The rule for the derivative of the Weierstrass function has recently
 been corrected; it now involves the operator \f{epsilon\_w} whose value is either $+1$ or $-1$.
-Its value changes at the poles of the Weierstrass function and at points where the value
-of the Weierstrass function is one of the three lattice roots $e_1$, $e_2$ or $e_3$.
 
 For numerical evaluation the switches \sw{rounded}\ and \sw{complex}\ must both
 be ON and all three parameters of the Weierstrassian functions must be numeric.
 It is not, however, necessary to ensure $\Im(\omega_3/\omega_1) >0$ as
 the second and third parameters will be swapped if required.
-Currently numerical evaluation of $\epsilon_{w}$ is rather restricted:
-\begin{itemize}
-\item  the underlying lattice must be either rectangular or rhombic;
-\item  for a rectanglar lattice the first argument must lie on the 'skeleton'
-  of the lattice;
-\item for a rhombic lattice the first argument must be real.
-\end{itemize}
+Numerical evaluation of $\epsilon_{w}$ has now been implemented for all complex
+values of its three parameters, but currently it should be regarded as somewhat
+experimental; it uses fairly crude numerical approximations to the derivative
+in order to choose the sign of the derivative. These may need fine tuning for
+values near to the zeroes of the derivative. By and large the literature does
+not discuss how the sign may be determined for general complex values of the
+arguments. One exception is the Dover Handbook of Mathematical
+Functions\cite{AbramowitzStegun:72} which gives a prescription (without proof)
+only for the special cases where the lattice associated with the Weierstrass
+function is either rectangular or rhombic, i.e. when the invariants $g_2$ and
+$g_3$ are real.
 
 \subsubsection{Alternative forms of the Weierstrass Functions}
 \hypertarget{WEIERSTRASS1}{}
@@ -1079,14 +1081,9 @@ weierstrass\_sigma0; these are real-valued for real arguments and if all three
 arguments are real it suffices that the switch \sw{rounded}\ is ON. Similar
 remarks apply to those lattice functions (see below) which are functions of
 the lattice invariants $g_2$ and $g_3$.
-Currently numerical evaluation of $\epsilon_{w1}$ is rather restricted:
-\begin{itemize}
-\item  the invariants $g_2$ \& $g_3$ must both be real and $g_2^3-27g_3^2\neq 0$,
-hence the underlying lattice must be either rectangular or rhombic;
-\item  for a rectanglar lattice the first argument must lie on the 'skeleton'
-  of the lattice;
-\item for a rhombic lattice the first argument must be real.
-\end{itemize}
+Numerical evaluation of $\epsilon_{w1}$ has now been implemented for all complex
+values of its three parameters as for $\epsilon_{w}$ although for real values of
+its three parameters it suffices that the switch ROUNDED is on.
 
 \subsubsection{Numerical Evaluation}
 If the discriminant $g_2^3-27g_3^2$ vanishes, the functions

@@ -2976,9 +2976,9 @@ int32_t read_action_file(int32_t op, LispObject f)
         {   case READ_CLOSE:
                 if ((std::FILE *)stream_file(f) == nullptr) op = 0;
                 else op = std::fclose(stream_file(f));
-                set_stream_read_fn(f, char_from_illegal);
-                set_stream_read_other(f, read_action_illegal);
-                set_stream_file(f, nullptr);
+                stream_read_fn(f) = char_from_illegal;
+                stream_read_other(f)= read_action_illegal;
+                stream_file(f) = nullptr;
                 return op;
             case READ_FLUSH:
                 stream_pushed_char(f) = NOT_CHAR;
@@ -3050,9 +3050,9 @@ int32_t read_action_synonym(int32_t c, LispObject f)
     }
     r = other_read_action(c, f1);
     if (c == READ_CLOSE)
-    {   set_stream_read_fn(f, char_from_illegal);
-        set_stream_read_other(f, read_action_illegal);
-        set_stream_file(f, nullptr);
+    {   stream_read_fn(f) = char_from_illegal;
+        stream_read_other(f) = read_action_illegal;
+        stream_file(f) = nullptr;
     }
     return r;
 }
@@ -3072,9 +3072,9 @@ int32_t read_action_concatenated(int32_t c, LispObject f)
         if (r == 0) r = r1;
     }
     if (c == READ_CLOSE)
-    {   set_stream_read_fn(f, char_from_illegal);
-        set_stream_read_other(f, read_action_illegal);
-        set_stream_file(f, nullptr);
+    {   stream_read_fn(f) = char_from_illegal;
+        stream_read_other(f) = read_action_illegal;
+        stream_file(f) = nullptr;
     }
     return r;
 }
@@ -3084,9 +3084,9 @@ int32_t read_action_list(int32_t op, LispObject f)
     else if (op <= 0x10ffff) return (stream_pushed_char(f) = op);
     else switch (op)
         {   case READ_CLOSE:
-                set_stream_read_fn(f, char_from_illegal);
-                set_stream_read_other(f, read_action_illegal);
-                set_stream_file(f, nullptr);
+                stream_read_fn(f) = char_from_illegal;
+                stream_read_other(f) = read_action_illegal;
+                stream_file(f) = nullptr;
                 stream_read_data(f) = nil;
                 return 0;
             case READ_FLUSH:
@@ -3106,9 +3106,9 @@ int32_t read_action_vector(int32_t op, LispObject f)
     else if (op <= 0x10ffff) return (stream_pushed_char(f) = op);
     else switch (op)
         {   case READ_CLOSE:
-                set_stream_read_fn(f, char_from_illegal);
-                set_stream_read_other(f, read_action_illegal);
-                set_stream_file(f, nullptr);
+                stream_read_fn(f) = char_from_illegal;
+                stream_read_other(f) = read_action_illegal;
+                stream_file(f) = nullptr;
                 stream_read_data(f) = nil;
                 return 0;
             case READ_FLUSH:
@@ -3279,7 +3279,7 @@ int char_from_vector(LispObject f)
             }
             else if (ch >= 0x80) ch = '?'; // Invalid case
             if (ch == 0) ch = EOF;
-            else set_stream_file(f, (std::FILE *)v);
+            else stream_file(f) = (std::FILE *)v;
         }
     }
     else stream_pushed_char(f) = NOT_CHAR;
@@ -3290,10 +3290,10 @@ LispObject read_from_vector(char *v)
 {   int savecur = curchar;
     LispObject r;
     stream_read_data(lisp_work_stream) = nil;
-    set_stream_read_fn(lisp_work_stream, char_from_vector);
-    set_stream_read_other(lisp_work_stream, read_action_vector);
+    stream_read_fn(lisp_work_stream) = char_from_vector;
+    stream_read_other(lisp_work_stream) = read_action_vector;
     stream_pushed_char(lisp_work_stream) = NOT_CHAR;
-    set_stream_file(lisp_work_stream, (std::FILE *)v);
+    stream_file(lisp_work_stream) = (std::FILE *)v;
     read_failure = false;
     curchar = NOT_CHAR;
     r = read_s(lisp_work_stream);
@@ -3306,8 +3306,8 @@ LispObject Lcompress(LispObject env, LispObject stream)
 {   SingleValued fn;
     int savecur = curchar;
     stream_read_data(lisp_work_stream) = stream;
-    set_stream_read_fn(lisp_work_stream, char_from_list);
-    set_stream_read_other(lisp_work_stream, read_action_list);
+    stream_read_fn(lisp_work_stream) = char_from_list;
+    stream_read_other(lisp_work_stream) = read_action_list;
     stream_pushed_char(lisp_work_stream) = NOT_CHAR;
     read_failure = false;
     curchar = NOT_CHAR;

@@ -385,7 +385,7 @@ const unsigned char *binary_read_filep;
 std::FILE *binary_read_file;
 #endif
 std::FILE *binary_write_file;
-static long int read_bytes_remaining, write_bytes_written;
+intptr_t read_bytes_remaining, write_bytes_written;
 
 static directory *make_empty_directory(const char *name)
 // The sole purpose of this empty directory is to carry with it the
@@ -1525,6 +1525,10 @@ bool Iopen_from_stdin()
 #else
     binary_read_file = nullptr;
 #endif
+// Having read_bytes_remaining causes Iget() to read from standard_input,
+// and end-of-file will be returned on genuine end of file there.
+// Otherwise reading is from binary_input_file and and EOF will be
+// returned once read_bytes_remaining drops to zero.
     read_bytes_remaining = -1;
     Istatus = I_READING;
     return false;

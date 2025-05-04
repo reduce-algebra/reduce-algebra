@@ -239,6 +239,10 @@ extern std::mutex debug_lock;
 extern const char* debug_file;
 extern int debug_line;
 
+extern FILE* binary_outfile;
+extern FILE* binary_infile;
+extern intptr_t read_bytes_remaining, write_bytes_written;
+
 extern void DebugTrace();
 extern void DebugTrace(int i);
 extern void DebugTrace(const char* msg);
@@ -865,6 +869,7 @@ extern LispObject make_undefined_symbol(const char* s);
 extern LispObject make_symbol(char const* s, int restartp,
                               no_args* f0, one_arg* f1, two_args* f2,
                               three_args* f3, fourup_args* f4up);
+extern void pid_printf(const char* fmt, ...);
 extern void stdout_printf(const char* fmt, ...);
 extern void term_printf(const char* fmt, ...);
 extern void err_printf(const char* fmt, ...);
