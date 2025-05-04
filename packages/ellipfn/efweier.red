@@ -746,9 +746,19 @@ begin scalar l;
 end;
 
 procedure lattice1_roots(g2,g3);
-begin scalar l;
+begin scalar l,e1,e2,e3;
    l := solve(4*(!*x!*)^3 - g2*(!*x!*) -g3 = 0, !*x!*);
-   return foreach elem in l collect tidy_result(rhs elem);
+   l:=foreach elem in l collect tidy_result(rhs elem);
+   if impart first l=0 and impart second l=0 and impart third l=0
+   then <<
+         e1:= max l; e3 := min l;  e2 := -e1-e3;
+         return {e1,e2,e3};
+   >>
+   else <<
+      if impart second l =0 then return {second l, first l, third l}
+      else if impart third l=0 then return {third l, first l, second l}
+      else return l;
+   >>;
 end;
 
 algebraic procedure canonical_gens(w1,w3);
@@ -864,68 +874,97 @@ let epsilon_w(~u,~w1,~w3) => num_elliptic(num_epsilon_w,u,w1,w3)
 
 let epsilon_w1(~u,~g2,~g3) => num_elliptic(num_epsilon_w1,u,g2,g3)
    when lisp !*rounded and numberp u and numberp g2 and
-   impart g2 = 0 and numberp g3 and impart g3 = 0 and g2^3-27g3^2 neq 0;
+   numberp g3 and g2^3-27g3^2 neq 0;
 
-% Wp(u,w_1,w_3) is even and doubly periodic with periods 2w_j, j = 1,3.
-% Assume w_1 real, w_3 not real.
-% Reduce the argument u to the range 0 <= u < 2w_1.
-% Wp has a double pole (hence positive infinity) at u = 0.
-% Hence, for small positive u, Wp' must be negative, and Wp' changes sign at u = w_1.
+% returns list {a,b} where z = a*z1 + b*z2
+algebraic procedure lattice_coords(u,w1,w3);
+begin scalar d;
+   d := repart(w1)*impart(w3)-impart(w1)*repart(w3);      
+   return {(impart(w3)*repart(u) - repart(w3)*impart(u))/d,
+           (repart(w1)*impart(u) - impart(w1)*repart(u))/d};
+end;       
+
+algebraic procedure base_value(u,w1,w3);
+   % w1 and w3 are the so called 'half' periods of the Weierstrass function
+   % returns the congruent point in the base parallelogram centred on O.
+begin scalar a, b;
+      u := lattice_coords(u,w1,w3);
+      a := first u;
+      b := second u;
+      tmp := floor a;
+      if evenp tmp then a:=a-tmp else a := a-tmp-1;
+      if a =-1 then a:=1;
+      tmp := floor b;
+      if evenp tmp then b:=b-tmp else b := b-tmp-1;
+      if b =-1 then b:=1;
+      return a*w1+b*w3;
+end;
 
 algebraic procedure num_epsilon_w(u,w1,w3);
-   % Return sign of df(weierstrass1(u,w1,w3),u), assuming u is real
-   % and the underlying lattice is rectangular or rhombic
-   begin scalar l;
-   l:= canonical_gens(w1,w3);
-   if l then <<w1:= first l; w3:= second l>>
-   else lisp error(99,"Underlying lattice is neither rectangular nor rhombic");
-   return n_epsilon(u,w1,w3);
+   % Return sign of df(weierstrass(u,w1,w3),u)
+   % Rough and ready; probably needs fine tuning near zeros of d
+ begin scalar g2,g3,p,d,tmp,delta,tol;
+   delta := 2^(-10); tol := 2^(-7);
+   u := base_value(u,w1,w3);
+   if u=0 then rederr("Derivative has a pole at this value");
+   p := weierstrass(u,w1,w3);
+   tmp:= lattice_invariants(w1,w3);
+   g2 := first tmp;
+   g3 := second tmp;
+   d := sqrt(4p^3-g2*p-g3);
+   if abs u <tol then
+      return if repart(2/(u^3*d))<0 then 1 else -1;
+
+%%    r := lattice_roots(w1,w3);
+%%    e1 := first r; e2 := second r; e3 := third r;
+%% 
+%%    tmp := u-w1; 
+%%    if abs tmp < tol then
+%%       return if repart((12e1^2-g2)*tmp/2d)>0 then 1 else 0;
+%%    tmp := u+w1; 
+%%    if abs tmp < tol then
+%%       return if repart((12e1^2-g2)*tmp/2d)>0 then 1 else 0;
+%% 
+%%    tmp := u-w3;
+%%    if abs tmp < tol then
+%%       return if repart((12e3^2-g2)*tmp/2d)>0 then 1 else 0;
+%%    tmp := u+w3; 
+%%    if abs tmp < tol then
+%%       return if repart((12e3^2-g2)*tmp/2d)>0 then 1 else 0;
+%% 
+%%    tmp := u-w1-w3;
+%%    if abs tmp < tol then
+%%       return if repart((12e2^2-g2)*tmp/2d)>0 then 1 else 0;
+%%    tmp := u+w1+w3; 
+%%    if abs tmp < tol then
+%%       return if repart((12e2^2-g2)*tmp/2d)>0 then 1 else 0;
+%%    tmp := u-w1+w3;
+%%    if abs tmp < tol then
+%%       return if repart((12e2^2-g2)*tmp/2d)>0 then 1 else 0;
+%%    tmp := u+w1-w3; 
+%%    if abs tmp < tol then
+%%       return if repart((12e2^2-g2)*tmp/2d)>0 then 1 else 0;
+%%    
+   tmp := weierstrass(u+delta,w1,w3);
+   return if repart((tmp-p)/(d*delta)) > 0 then 1 else -1;
 end;
-
-algebraic procedure n_epsilon(u,w1,w3);
-begin scalar l, ru, iu, sgn, sgn1;
-   sgn:= 1;
-   if repart w3 neq 0 then
-      if impart u = 0 then <<
-	 if u <0 then <<u := -u; sgn := -sgn>>;
-	 u := u - floor(u/(2w1))*2w1;      % Wp has period 2w1
-	 return if u < w1 then -sgn else +sgn;
-      >>
-      else
-	 lisp error(99,"For rhombic lattices first arg must be real");
-  
-  ru := repart u;
-  iu := impart u;
-  w3 := impart w3;
-  sgn1:=1;
-  if ru <0 then <<sgn :=-sgn; ru :=-ru>>;
-  if iu <0 then <<sgn1:=-sgn1; iu:=-iu>>;
-  ru := ru - 2*w1*floor(ru/(2w1));
-  iu := iu-2*w3*floor(iu/(2w3));
-
-  % this is a bit flaky if ru or iu is 'large'
-  if zeropp(ru) then return if iu<w3 then -sgn1 else sgn1;
-  if zeropp(ru-w1) then return if iu<w3 then sgn1 else -sgn1;
-  if zeropp(iu) then return if ru<w1 then -sgn else sgn;
-  if zeropp(iu-w3) then return if ru<w1 then sgn else -sgn;
-  lisp error(99,"For rectangular lattices, first arg must lie on the lattice");
-end;
-
-algebraic procedure zeropp(x);
-   if (abs(x) < 10.0^-(symbolic !:prec!: -4)) then 1 else 0;
 
 algebraic procedure num_epsilon_w1(u,g2,g3);
-   % Return sign of df(weierstrass1(u,g2,g3),u) assuming all arguments
-   % numeric and real.  lattice_generators(g2,g3) returns {w1,w3} and
-   % w1 should be real.
-begin scalar l,w1,w3;
-   l := num_omegas(g2,g3);
-   if impart first l neq 0 then
-      rederr("Unexpected error");
-   w1 := abs first l;
-   w3 := second l;
-   w3 := abs(repart w3)+i*abs(impart w3);
-   return n_epsilon(u,w1,w3);
+   % Return sign of df(weierstrass1(u,g2,g3),u)
+   % Rough and ready; probably needs fine tuning near zeros of d
+begin scalar w1,w3,p,d,tmp,delta,tol;
+   delta := 2^(-10); tol := 2^(-7);
+   tmp:=  lattice_generators(g2,g3);
+   w1 := first tmp;
+   w3 := second tmp;
+   u := base_value(u,w1,w3); 
+   if u=0 then rederr("Derivative has a pole at this value");
+   p := weierstrass(u,w1,w3);
+   d := sqrt(4p^3-g2*p-g3);
+   if abs u <tol then
+      return if repart(2/(u^3*d))<0 then 1 else -1;
+   tmp := weierstrass1(u+delta,g2,g3);
+   return if repart((tmp-p)/(d*delta)) > 0 then 1 else -1;
 end;
 
 
