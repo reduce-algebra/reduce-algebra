@@ -155,7 +155,6 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
             w = d0low + ((w % 10000) << 16);
             d0low = w / 10000;
             p1 = w % 10000;        // 4 more digits of value
-
 // By now d1 is certainly less then 10000
             w = d0high + (d1 << 16);
             d0high = w / 10000;
@@ -198,12 +197,10 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
             break;  // general big case
     }
     {   len1 = CELL+4+(11*len)/10;
-//
 // To print a general big number I will convert it from radix 2^31 to
 // radix 10^9.  This can involve increasing the number of digits by a factor
 // of about 1.037, so the 10% expansion I allow for in len1 above should
 // keep me safe.
-//
         len1 = (size_t)doubleword_align_up((uintptr_t)len1);
         w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len1);
     }

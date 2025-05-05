@@ -105,7 +105,7 @@ LispObject lambda, funarg, unset_var, opt_key, rest_key;
 LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
 LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
 LispObject list_symbol, callStack, liststar_symbol, eq_symbol, eql_symbol;
-LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
+LispObject cl_equal_symbol, equal_symbol, equalp_symbol, startime_symbol;
 LispObject go_symbol, cond_symbol, char_0_symbol;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
@@ -767,6 +767,7 @@ static void cold_setup()
     raise_symbol        = make_undefined_fluid("*raise");
     lower_symbol        = make_undefined_fluid("*lower");
     echo_symbol         = make_undefined_fluid("*echo");
+    startime_symbol     = make_undefined_fluid("*time");
     comp_symbol         = make_undefined_fluid("*comp");
     jit_noisy           = make_undefined_fluid("*jit-noisy");
     qvalue(jit_noisy) = nil;
@@ -829,6 +830,7 @@ static void cold_setup()
 #endif
     }
     qvalue(echo_symbol)  = nil;
+    qvalue(startime_symbol)  = nil;
     qvalue(comp_symbol)  = nil;
     qvalue(emsg_star)    = nil;
     qvalue(redef_msg)    = lisp_true;

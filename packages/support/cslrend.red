@@ -825,7 +825,8 @@ flag('(load!-source load!-selected!-source gcd gcdn lcmn complex
        make!-concatenated!-stream make!-string!-input!-stream
        mkhash gethash puthash remhash clrhash library!-members
        resource!-limit errorset gc!-forcer call!-foreign!-function
-       representation stop float round floor ceiling truncate), 'variadic);
+       representation stop float round floor ceiling truncate
+       first!-fork open!-fork print charpos finish!-output), 'variadic);
 
 % Arrange (for PSL compatibility) that "on gc;" and "off gc;" switch
 % garbage collector messages on or off.
