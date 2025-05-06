@@ -228,12 +228,25 @@ inline bool is_stream(LispObject v)
 
 inline int putc_stream(int c, LispObject f)
 {   character_stream_writer *fn = stream_write_fn(f);
+#ifdef DEBUG
+    //if (c == '\n') pid_printf("\n{\\n:%" PRIxPTR "}", f); // @@@
+    //else if (c == '\r') pid_printf("\n{\\r:%" PRIxPTR "}", f); // @@@
+    //else if (c == 0x1b) pid_printf("\n{\\e:%" PRIxPTR "}", f); // @@@
+    //else pid_printf("\n{%c:%" PRIxPTR "}", c, f); // @@@
+#endif
     return (*fn)(c & 0xff, f);
 }
 
 inline int getc_stream(LispObject f)
 {   character_stream_reader *fn = stream_read_fn(f);
-    return (*fn)(f);
+    int c = (*fn)(f);
+#ifdef DEBUG
+    //if (c == '\n') pid_printf("\n[\\n:%" PRIxPTR "]", f); // @@@
+    //else if (c == '\r') pid_printf("\n[\\r:%" PRIxPTR "]", f); // @@@
+    //else if (c == 0x1b) pid_printf("\n[\\e:%" PRIxPTR "]", f); // @@@
+    //else pid_printf("\n[%c:%" PRIxPTR "]", c, f); // @@@
+#endif
+    return c;
 }
 
 inline int32_t other_write_action(int32_t c, LispObject f)

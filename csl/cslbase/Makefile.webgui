@@ -1,0 +1,182 @@
+# Original Makefile for embwebgui.   E. Schruefer  2022-2025
+
+# This neds to have its actions migrated into Makefile.am and when
+# that has happened it will probably be redundant...
+
+CXX=g++
+
+LDFLAGS=-lz  -Llib
+LIBS=-lcrlibm
+
+S=../../cslbase
+R=../../..
+
+CPPFLAGS=-std=gnu++17 -I. -I../include -Iinclude -I$(S) `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0`\
+ -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 \
+ -DEMBEDDED=1
+ 
+.PHONY: all
+all: reduce reduce.img image.cpp # reduce.web
+ 
+include/crlibm.h lib/libcrlibm.a:
+	rm -rf crlibm include lib; \
+	mkdir -p crlibm; \
+	cd crlibm; \
+	../../../../libraries/crlibm/configure\
+	 CC=gcc CFLAGS="$( -O3)" AR=ar RANLIB=ranlib\
+	 --prefix=`pwd`/..; \
+	make clean; \
+	make; \
+	make install; \
+	cd ..
+
+main_o_files =\
+ newallocate.o arith01.o arith02.o arith03.o arith04.o\
+ arith05.o arith06.o arith07.o arith08.o arith09.o\
+ arith10.o arith11.o arith12.o arith13.o arith14.o\
+ bytes1.o showhdr.o char.o cslmpi.o cslread.o eval1.o\
+ eval2.o eval3.o eval4.o fasl.o fns1.o fns2.o fns3.o\
+ fwin.o cslgc.o lisphash.o isprime.o print.o\
+ restart.o sysfwin.o termed.o inthash.o serialize.o embwebgui.o
+
+special_o_files = csl.o preserve.o
+
+bootstrapObjects = $(main_o_files) $(special_o_files) stubs.o
+
+bootstrapreduce: $(bootstrapObjects) lib/libcrlibm.a
+	$(CXX) $(bootstrapObjects) $(CPPFLAGS)\
+	 $(LDFLAGS) $(LIBS) -o bootstrapreduce
+	 
+#.PHONY:	bootstrapreduce
+#bootstrapreduce: bootstrapreduce
+#	@echo '=== Built "bootstrapreduce".'	 
+	 
+# Create the bootstrapreduce.img file
+	 
+bootstrapreduce.img: bootstrapreduce
+	-rm -f bootstrapreduce.img
+	./bootstrapreduce -z -Dno_init_file $(S)/buildreduce.lsp\
+	 -Dbootstrap -D@srcdir=$(S) -D@reduce=$(R)\
+	 -o bootstrapreduce.img -L bootstrap_image.log
+
+c-code:	bootstrapreduce.img
+	./bootstrapreduce -w $(CSLFLAGS)\
+	 -Dno_init_file\
+	 $(S)/make-c-code.red\
+	 -D@destdir=$(R)/cslbuild/generated-c\
+	 -Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file)\
+	 -L c-code.log
+	 
+# Now the full version.
+
+unn_oo_files =\
+ u01.oo u02.oo u03.oo u04.oo u05.oo u06.oo u07.oo u08.oo u09.oo u10.oo\
+ u11.oo u12.oo u13.oo u14.oo u15.oo u16.oo u17.oo u18.oo u19.oo u20.oo\
+ u21.oo u22.oo u23.oo u24.oo u25.oo u26.oo u27.oo u28.oo u29.oo u30.oo\
+ u31.oo u32.oo u33.oo u34.oo u35.oo u36.oo u37.oo u38.oo u39.oo u40.oo\
+ u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo\
+ u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo
+
+# Re-use $(main_o_files) and $(special_o_files), since the .oo files
+# are identical, as would be shown by running
+# for f in *.o; do echo $f; cmp $f ${f%.o}.oo; done
+
+reduceObjects = $(main_o_files) $(special_o_files) $(unn_oo_files)
+	 
+reduce: $(reduceObjects)
+	$(CXX) $(reduceObjects) $(CPPFLAGS)\
+	 $(LDFLAGS) $(LIBS) -o reduce
+	 
+# Now the full version but with a built-in image.
+# (Object file list for this rule not optimized!)
+
+		
+reduceWebObjects = $(main_o_files) $(special_o_files:.o=.yo) $(unn_oo_files) 
+
+reduce.web: $(reduceWebObjects)
+	$(CXX) $(reduceWebObjects) \
+	 $(LDFLAGS) $(LINK_OPT) $(LIBS) $(CPPFLAGS)\
+	 -o reduce.web
+	 
+#bootstrapreduce.web: $(bootstrapObjects)
+#	$(CXX) $(bootstrapObjects) embwebgui.o\
+#	 $(LDFLAGS) $(LINK_OPT) $(LIBS) $(CPPFLAGS)\
+#	 -o bootstrapreduce.web
+		
+
+#.PHONY:	reduce
+#reduce:	reduce
+#	@echo '=== Built "reduce".'
+	
+reduce.img: reduce
+	-rm -f reduce.img
+	export reduce=$(R) &&\
+	 ./reduce -z -Dforce_c_code\
+	 -Dno_init_file $(S)/buildreduce.lsp\
+	 -D@srcdir=$(S) -D@reduce=$(R) -o reduce.img\
+	 -L reduce_image.log
+	 
+HEADERS = ../include/config.h include/crlibm.h ./webview.h  embwebgui.h \
+	$(S)/md5.h		 $(S)/termed.h	  $(S)/arith.h	$(S)/openmath.h \
+	$(S)/bigvector.h $(S)/entries.h	  $(S)/proc.h				 \
+	$(S)/uninames.h	 $(S)/bytes.h	  $(S)/externs.h	 $(S)/int128_t.h \
+	$(S)/sockhdr.h	 $(S)/version.h	  $(S)/charmetrics.h $(S)/fwin.h	 \
+	$(S)/inthash.h	 $(S)/stream.h	  $(S)/cslerror.h	 $(S)/headers.h	 \
+	$(S)/lispthrow.h $(S)/syscsl.h	  $(S)/cslread.h	 $(S)/machine.h	 \
+	$(S)/tags.h
+	
+make-image: $(S)/make-image.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) $(S)/make-image.cpp\
+	 $(LDFLAGS) $(LIBS) -o make-image
+
+image.cpp: make-image reduce.img
+	./make-image
+	cp image.cpp ../reduce-image.cpp
+	cp reduce.img ..	
+	
+# These implicit pattern rules cover most of the object files:
+
+
+%.o : $(S)/%.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS)  -c -o $@ $<
+	
+%.oo : $(S)/%.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) -DNO_BYTECOUNTS=1 -c -o $@ $<
+
+%.yo : $(S)/%.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0` \
+	-DBUILTIN_IMAGE=1 \
+	-DNO_BYTECOUNTS=1 \
+	-DWEBFRONT=\"embwebgui\.h\" \
+	-c -o $@ $<
+	
+	 
+# These rules cover the few special case object files. The
+# prerequisites are specified explicitly but the recipes use the
+# implicit rules above:
+
+bytes1.o	: $(S)/bytes1.cpp $(S)/opnames.cpp  
+cslmpi.o	: $(S)/cslmpi.cpp $(S)/mpipack.cpp $(HEADERS)
+embedcsl.o	: $(S)/embedcsl.cpp $(S)/csl.cpp $(HEADERS)
+
+makeheaders.o : $(S)/makeheaders.cpp
+objtype.o : $(S)/objtype.cpp
+
+preserve.yo : $(S)/preserve.cpp image.cpp $(HEADERS)
+
+
+.PHONY: mostlyclean
+# Delete files generated by make except crlibm.
+# But DO NOT DELETE package.map if you want to build mini-REDUCE!
+mostlyclean:
+	-rm -f *.o *.oo *.yo reduce* *.log make-image* image.cpp
+	-rm -f bootstrapreduce* *.bak http.pid
+	-rm -rf bin csl-times
+
+.PHONY: clean
+# Delete all files generated by make.
+clean:
+	make mostlyclean
+	-rm -rf crlibm include lib
+
+# end of Makefile

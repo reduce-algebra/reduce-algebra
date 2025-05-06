@@ -689,6 +689,17 @@ then
   AC_DEFINE([ENABLE_FORKS], [1], [this option enabled])
 fi
 
+AC_ARG_ENABLE(webview,
+  AS_HELP_STRING([--enable-webview],
+                 [currently experimental (CSL only)]),
+  [],
+  [enable_webview="no"])
+
+if test "$enable_webview" = "yes"
+then
+  AC_DEFINE([ENABLE_WEBVIEW], [1], [this option enabled])
+fi
+
 AC_ARG_ENABLE(test,
   AS_HELP_STRING([--enable-test],
                  [testing-mode version (CSL only)]),

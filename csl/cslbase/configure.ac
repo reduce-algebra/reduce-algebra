@@ -721,6 +721,19 @@ then
 fi
 
 
+AC_ARG_ENABLE(webview,
+  AS_HELP_STRING([--enable-webview],
+                 [currently experimental (CSL only)]),
+  [],
+  [enable_webview="no"])
+
+if test "$enable_webview" = "yes"
+then
+  AC_DEFINE([ENABLE_WEBVIEW], [1], [this option enabled])
+  CXXFLAGS="$CXXFLAGS -I$srcdir/../../libraries/webview"
+fi
+
+
 AC_ARG_ENABLE(test,
   AS_HELP_STRING([--enable-test],
                  [testing-mode version (CSL only)]),
@@ -1998,6 +2011,7 @@ AM_CONDITIONAL(debug, test "$enable_debug" != "no")
 AM_CONDITIONAL(xcross, test "$can_run_compiled_code" != "yes")
 AM_CONDITIONAL(inlines, test "$with_inlines" = "yes")
 AM_CONDITIONAL(enable_jit, test "$enable_jit" = "yes")
+AM_CONDITIONAL(enable_webview, test "$enable_webview" = "yes")
 
 # The Makefile that is built from Makefile.am will include these three
 # so it will be unhappy if they are not present... And there is a conflict

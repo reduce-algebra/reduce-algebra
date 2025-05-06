@@ -166,18 +166,28 @@ void ensure_screen()
     if (spool_file != nullptr) std::fflush(spool_file);
 }
 
+// This is intended for debugging and in particular debugging the
+// "fork()" code. It generated log files where the name is based on the
+// pid of the running task, and so parent and slave processes with
+// fork will show up as different.
+
+// Each process with its separate pid should have a different instance
+// of this static variable that holds the FILE* to be used.
+
+FILE* pid_file = nullptr;
+
 void pid_printf(const char *fmt, ...)
-{   pid_t pid = getpid(), ppid = getppid();
-    char name[40];
-    snprintf(name, sizeof(name), "PID%d:%d.log", (int)pid, (int)ppid);
-    FILE* f = fopen(name, "a");
+{   if (pid_file == nullptr)
+    {   pid_t pid = getpid();
+        char name[40];
+        snprintf(name, sizeof(name), "PID_%d.log", (int)pid);
+        pid_file = fopen(name, "a");
+    }
     std::va_list a;
-    char print_temp[VPRINTF_CHUNK], *p;
-    int n;
     va_start(a, fmt);
-    n = std::vfprintf(f, fmt, a);
+    std::vfprintf(pid_file, fmt, a);
     va_end(a);
-    fclose(f);
+    std::fflush(pid_file);
 }
 
 void term_printf(const char *fmt, ...)
@@ -1785,7 +1795,6 @@ static void char_ins(char *s, int c)
     }
     *(s+1) = *s;
     *s = c;
-//  printf("After char_ins \"%s\"\n", s);
 }
 
 static void fp_sprint(char *buff, double x, int prec, int xmark)
@@ -4155,6 +4164,7 @@ LispObject Lprint_2(LispObject env, LispObject a, LispObject stream)
     if (!is_stream(stream))
         return aerror1("stream needed for printing", stream);
     escaped_printing = escape_yes;
+    LispObject save = active_stream;
 #ifdef COMMON
     active_stream = stream;
     putc_stream('\n', stream);
@@ -4164,6 +4174,7 @@ LispObject Lprint_2(LispObject env, LispObject a, LispObject stream)
     prin_prinl(a, 0);
     putc_stream('\n', active_stream);
 #endif
+    active_stream = save;
     checkResources();
     return a;
 }
@@ -5310,7 +5321,7 @@ void simple_lineend(FILE* f, int n)
     else simple_column += n;
 }
 
-bool simple_print_extras = true;
+bool simple_print_extras = false;
 
 void simple_prin1(FILE* f, LispObject x)
 {   char buffer[40];
@@ -5369,14 +5380,21 @@ void simple_prin1(FILE* f, LispObject x)
         return;
     }
     else if (is_symbol(x))
-    {   size_t len;
-        x = qpname(x);
-        len = length_of_byteheader(vechdr(x)) - CELL;
-        if (len > 80) len = 80;
-        simple_lineend(f, len);
-        if (simple_print_extras) std::fprintf(f, "%s:", getPageType(x));
-        std::fprintf(f, "%.*s", static_cast<int>(len),
-                     reinterpret_cast<const char *>(&celt(x, 0)));
+    {   if (x == eof_symbol)
+        {   simple_lineend(f, 5);
+            std::fprintf(f, "$EOF$");
+        }
+        else
+        {   size_t len;
+            x = qpname(x);
+            len = length_of_byteheader(vechdr(x)) - CELL;
+            if (len > 80) len = 80;
+            simple_lineend(f, len);
+            if (simple_print_extras) std::fprintf(f, "%s:", getPageType(x));
+            std::fprintf(f, "%.*s", static_cast<int>(len),
+                         reinterpret_cast<const char *>(&celt(x, 0)));
+        }
+        return;
     }
     else if (is_vector(x))
     {   size_t i, len;
@@ -5428,17 +5446,13 @@ void simple_prin1(FILE* f, LispObject x)
         return;
     }
     else if (is_numbers(x) && is_bignum(x))
-    {   size_t len = (length_of_header(numhdr(x))-CELL)/4;
-        size_t i;
-        int clen;
-        for (i=len; i>0; i--)
-        {   int32_t d = bignum_digit(x, i-1);
-// I will print bignums in a manner that shows the 31-bit digits that they
-// are made up from.
-            if (i == len) clen = std::snprintf(buffer, sizeof(buffer), "@#%d", d);
-            else clen = std::snprintf(buffer, sizeof(buffer), ":%u", d);
-            simple_lineend(f, clen);
-            std::fprintf(f, "%s", buffer);
+    {   LispObject a = Lexploden(nil, x);
+        size_t n = 0;
+        for (LispObject b = a; is_cons(b); b=cdr(b)) n++;
+        simple_lineend(f, n);
+        while (is_cons(a))
+        {   std::fprintf(f, "%c", (int)int_of_fixnum(car(a)));
+            a = cdr(a);
         }
         return;
     }
@@ -5470,6 +5484,16 @@ void simple_prin1(FILE* f, atomic<LispObject> &x)
 }
 
 void simple_print(FILE* f, LispObject x)
+{   simple_print_extras = false;
+    simple_prin1(f, x);
+    std::fprintf(f, "\r\n");
+    simple_column = 0;
+}
+
+// This version adds extra output that was intended to help me while
+// I was debugging the garbage collector.
+
+void noisy_simple_print(FILE* f, LispObject x)
 {   simple_print_extras = true;
     simple_prin1(f, x);
     std::fprintf(f, "\r\n");
@@ -5480,9 +5504,15 @@ void simple_print(LispObject x)
 {   simple_print(stdout, x);
 }
 
+void noisy_simple_print(LispObject x)
+{   noisy_simple_print(stdout, x);
+}
+
 // "dpr" is intended for use just from gdb where one can go "call dpr(x)"
 // to print the value of a Lisp item x in a rather simplistic manner and
-// without any exciting options.
+// without any exciting options. And it has a short name to make use of
+// if via gdb less cumbersome.
+
 void dpr(LispObject x)
 {   simple_print_extras = false;
     simple_prin1(stdout, x);

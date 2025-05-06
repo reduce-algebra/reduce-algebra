@@ -85,6 +85,8 @@
 //    handle := open!-fork()
 //        Create a new process and return a handle that can be used to
 //        communicate with it. Returns nil on failure.
+//    handle := open!-fork(value)
+//        Creates a process and sends it the given data.
 //    send!-to!-fork(handle, value)
 //        Send the indicated value (a list structure that should not
 //        have loops in it) to the process identified by the handle.
@@ -111,7 +113,9 @@
 //        if there are none within the timeout it will return nil.
 //        The timeout can be zero, and in that case use with a list of
 //        length 1 provides a non-blocking test as to whether the specified
-//        task is ready.
+//        task is ready. A negative timeout would indicate a willingness to
+//        block for an unlimited amount of time, but probably just omitting
+//        the second argument achieves that more neatly.
 //    get!-from!-fork(handle)
 //        This reads data from the given task, blocking if none is
 //        immediately available. If you need to have a timeout then
@@ -164,6 +168,11 @@
 #if defined WIN32 || !defined ENABLE_FORKS
 
 LispObject Lopen_fork(LispObject env)
+{   SingleValued fn;
+    return nil;             // Always reports that it failed to open the fork.
+}
+
+LispObject Lopen_fork(LispObject env, LispObject first_task)
 {   SingleValued fn;
     return nil;             // Always reports that it failed to open the fork.
 }
@@ -247,23 +256,46 @@ LispObject Lsend_fork_reply(LispObject env, LispObject value)
 {   SingleValued fn;
     LispObject handle = qvalue(fork_parent);
     if (!is_fork(handle))
-    {   pid_printf("Not a fork handle in send_fork_reply");
+    {   //pid_printf("Not a fork handle in send_fork_reply");
         return aerror1("send-fork-reply needs to be in child fork", handle);
     }
+#ifdef DEBUG
+    //pid_printf("About to send reply at %d\n", (int)time(nullptr));
+    //simple_print(pid_file, value);
+#endif
     Lprint_2(nil, value, handle);
-    int h = stream_write_fd(handle);
-    static char c[4] = {0x1b, 0, 0, 0};
-    if (write(h, &c[0], 1) != 1)
-    {   pid_printf("failed to write ESC in send_fork_reply");
-        return aerror("Failed to write terminating ESC");
-    }
+// When the parent task reads a result it may peek a character beyond
+// the actual data. For instance if a number is returned some non-digit
+// that terminates it will have to be seen. I insert a newline here
+// as harmless data that may or may not be inspected. Then at the end
+// I put an escape mark U+001b to indicate the real end of the message.
+    stream_write_fn(handle)('\n', handle);
+    stream_write_fn(handle)(0x1b, handle);
+#ifdef DEBUG
+    //pid_printf("Reply sent at %d\n", (int)time(nullptr));
+#endif
     return nil;
 }
 
-#ifdef __linux__
-#include <sys/prctl.h>
-#include <signal.h>
-#endif // __linux__
+void print_info(LispObject w)
+{   if (is_cons(w))
+    {   pid_printf("(");
+        print_info(car(w));
+        pid_printf(" . ");
+        print_info(cdr(w));
+        pid_printf(")");
+        return;
+    }
+    else if (is_number(w)) pid_printf("#");
+    else if (is_string(w)) pid_printf("<\">");
+    else if (w == nil) pid_printf("nil");
+    else pid_printf("@");
+}
+
+//#ifdef __linux__
+//#include <sys/prctl.h>
+//#include <signal.h>
+//#endif // __linux__
 
 LispObject Lopen_fork(LispObject env)
 {   SingleValued fn;
@@ -282,20 +314,25 @@ LispObject Lopen_fork(LispObject env)
     stream_read_other(r) = read_action_fork;
     stream_write_fn(r) = char_to_fork;
     stream_write_other(r) = write_action_fork;
-    stream_line_length(r) = 0;
+    stream_line_length(r) = 0x7fffffff;
     stream_pushed_char(r) = NOT_CHAR;
     Lflush(nil);
     pid_t before_fork = getpid();
     pid_t pid = fork();
     if (pid == 0)
     {
-#ifdef __linux__
-// If I am on Linux I can ensure that the child task terminates if the
-// parent one does. On my first attempt to put this in it seemed to cause
-// breakage, so I need to understand more! 
-//      int r = prctl(PR_SET_PDEATHSIG, SIGTERM);
-//      if (r == -1 || getppid() != before_fork) exit(1);
-#endif // __linux__
+#ifdef DEBUG
+        pid_file = nullptr; // Because a value from the parent would be wrong!
+        //pid_printf("In child fork\n");
+#endif
+// The next fragment seems to lead to SIGSEGV for me, so I am not
+// including it for now.
+//#ifdef __linux__
+//// If I am on Linux I can ensure that the child task terminates if the
+//// parent one does.
+//        int r = prctl(PR_SET_PDEATHSIG, SIGTERM);
+//        if (r == -1 || getppid() != before_fork) exit(1);
+//#endif // __linux__
 // Here is the child process. The first thing I will do will be to
 // get the helper threads for Karatsuba multiplication established again.
 #ifdef ARITHLIB
@@ -317,6 +354,9 @@ LispObject Lopen_fork(LispObject env)
         close(fork_pipes_to[write_end]);
         set_stream_read_fd(r, fork_pipes_to[read_end]);
         set_stream_write_fd(r, fork_pipes_from[write_end]);
+        qvalue(startime_symbol) = nil;
+        qvalue(echo_symbol) = nil;
+        Lverbos(nil, nil);
         stream_pid(r) = 0;
         qvalue(fork_parent) = r;
 // When a process forks all its threads will continue happily on the parent
@@ -343,6 +383,12 @@ LispObject Lopen_fork(LispObject env)
         qvalue(echo_symbol) = nil;
         for (;;)
         {   LispObject w = Lread(nil);
+#ifdef DEBUG
+            //pid_printf("Received input at %d\n", (int)time(nullptr));
+            //pid_printf("Input = %" PRIxPTR "\n", w);
+            //simple_print(pid_file, w);
+            //pid_printf("printing of received input done\n");
+#endif
             if (w == eof_symbol) break;            // on EOF give up.
             Lsend_fork_reply(nil, Leval(nil, w));
         }
@@ -364,6 +410,9 @@ LispObject Lopen_fork(LispObject env)
         close(fork_pipes_to[write_end]);
         return nil;
     }
+#ifdef DEBUG
+    //pid_printf("In parent fork\n");
+#endif
 // Here is where the parent process has successfully forked, so it closes
 // the pipe-ends that it will not be using. And then it can use oldMem()
 // to retrieve data from the saved state.
@@ -380,18 +429,41 @@ LispObject Lopen_fork(LispObject env)
 
 LispObject Lsend_to_fork(LispObject env, LispObject handle, LispObject value)
 {   SingleValued fn;
+#ifdef DEBUG
+    //pid_printf("Start send_to_fork at %d\n", (int)time(nullptr));
+    //simple_print(pid_file, value);
+#endif
     Lprint_2(nil, value, handle);
+#ifdef DEBUG
+    //pid_printf("Complete send_to_fork at %d\n", (int)time(nullptr));
+#endif
     return nil;
+}
+
+// If I give open-form an argument that is sent to the task right at the
+// start.
+
+LispObject Lopen_fork(LispObject env, LispObject first_task)
+{   SingleValued fn;
+    LispObject r = Lopen_fork(env);
+    if (r != nil) Lsend_to_fork(env, r, first_task);
+    return r;
 }
 
 LispObject Lget_from_fork(LispObject env, LispObject handle)
 {   SingleValued fn;
     if (!is_fork(handle))
-    {   pid_printf("not a fork handle in get_from_fork");
+    {   //pid_printf("not a fork handle in get_from_fork");
         return aerror1("get-from-fork", handle);
     }
+#ifdef DEBUG
+    //pid_printf("About to try get_from_fork at %d\n", (int)time(nullptr));
+#endif
     LispObject r = Lread(nil, handle);
-// read() may or may not have read a character beyond the expression
+#ifdef DEBUG
+    //pid_printf("Main reading done get_from_fork at %d\n", (int)time(nullptr));
+    //simple_print(pid_file, r);
+#endif// read() may or may not have read a character beyond the expression
 // it wanted. Eg after a symbol or number it is liable to have had to
 // read a whitspace or punctuation to know when to stop. It may then
 // have pushed this character back. At the end of a string it needs to
@@ -400,15 +472,12 @@ LispObject Lget_from_fork(LispObject env, LispObject handle)
 // further. So here I cancel and pushed character and then keep reading
 // until I find an escape character (U+001b).
     stream_pushed_char(handle) = NOT_CHAR;
-    int fd = stream_read_fd(handle);
-    char ch[4];
-    for (;;)
-    {   if (read(fd, &ch[0], 1) != 1)
-        {   pid_printf("could not find ESC in get_from_fork");
-            return aerror("Failed to get fork data");
-        }
-        if (ch[0] == 0x1b) break;
-    }
+    int c;
+    while ((c = char_from_fork(handle)) != 0x1b)
+        if (c == EOF) return aerror("get-from-fork failed");
+#ifdef DEBUG
+    //pid_printf("ESCAPE found in get_from_fork at %d\n", (int)time(nullptr));
+#endif
     return r;
 }
 
@@ -419,7 +488,7 @@ LispObject Lget_from_fork(LispObject env, LispObject handle)
 LispObject Lclose_fork(LispObject env, LispObject handle)
 {   SingleValued fn;
     if (!is_fork(handle))
-    {   pid_printf("not a fork handle in close_fork");
+    {   //pid_printf("not a fork handle in close_fork");
         return aerror1("close-fork", handle);
     }
     pid_t pid = stream_pid(handle);
@@ -472,6 +541,12 @@ int32_t write_action_fork(int32_t op, LispObject f)
 
 int32_t char_to_fork(int c, LispObject stream)
 {   int h = stream_write_fd(stream);
+#ifdef DEBUG
+    //if (c == '\n') pid_printf("\n<\\n>");
+    //else if (c == '\r') pid_printf("\n<\\r>");
+    //else if (c == 0x1b) pid_printf("\n<\\e>");
+    //else pid_printf("\n<%c>", c);
+#endif
     if (write(h, &c, 1) != 1) return 1;
     return 0;   // indicate success
 }
@@ -493,7 +568,7 @@ LispObject Lfirst_fork(LispObject env, LispObject handles, LispObject timeout)
     {   LispObject h = car(w);
         w = cdr(w);
         if (!is_fork(h))
-        {   pid_printf("not a fork handle in first_fork");
+        {   //pid_printf("not a fork handle in first_fork");
             return aerror1("first-fork", handles);
         }
         fds[count].fd = stream_read_fd(h);
@@ -501,15 +576,14 @@ LispObject Lfirst_fork(LispObject env, LispObject handles, LispObject timeout)
         fds[count].revents = 0;
         count++;
     }
+    if (w!=nil || count==0) return aerror1("Bad arg to first-fork", handles);
     int r = poll(&fds[0], count, tt);  // Wait for first to respond.
-//  for (size_t j=0; j<count; j++)
-//      printf("%d:(%d):%x ", (int)j, (int)fds[j].fd, (int)fds[j].revents);
-    printf("\n");
     if (r <= 0) return nil;            // None. Must have timed out.
     for (size_t j=0; j<count; j++)
     {   if (fds[j].revents != 0) break;
         handles = cdr(handles);
     }
+    //pid_printf("found a fork with data\n");
     return car(handles);
 }
 
@@ -518,10 +592,19 @@ LispObject Lfirst_fork(LispObject env, LispObject handles)
 }
 
 int char_from_fork(LispObject stream)
-{   char ch[4];
+{   char ch[1];
     int fd = stream_read_fd(stream);
-    if (read(fd, &ch[0], 1) != 1) return EOF;
-    else return ch[0];
+    int c;
+    if (read(fd, &ch[0], 1) != 1) c = EOF;
+    else c = ch[0];
+#ifdef DEBUG
+    //if (c == '\n') pid_printf("\n[\\n]");
+    //else if (c == EOF) pid_printf("\n[$EOF$]");
+    //else if (c == '\r') pid_printf("\n[\\r]");
+    //else if (c == 0x1b) pid_printf("\n[\\e]");
+    //else pid_printf("\n[%c]", c);
+#endif
+    return c;
 }
 
 int32_t read_action_fork(int32_t op, LispObject f)
@@ -559,9 +642,9 @@ LispObject Lcpu_count(LispObject env)
 
 setup_type const forks_setup[] =
 {   DEF_0("cpu-count",        Lcpu_count),
-    DEF_0("open-fork",        Lopen_fork),
+    {"open-fork", Lopen_fork, Lopen_fork, G2Wother, G3Wother, G4Wother},
     DEF_2("send-to-fork",     Lsend_to_fork),
-    {"first-fork", G0Wother, Lfirst_fork, Lfirst_fork, G3Wother, G4Wother},
+    {"first-fork", G0Wother,  Lfirst_fork, Lfirst_fork, G3Wother, G4Wother},
     DEF_1("get-from-fork",    Lget_from_fork),
     DEF_1("send-fork-reply",  Lsend_fork_reply),
     DEF_1("close-fork",       Lclose_fork),

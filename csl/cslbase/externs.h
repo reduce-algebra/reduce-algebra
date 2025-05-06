@@ -385,7 +385,7 @@ extern LispObject lisp_terminal_io, lisp_standard_output, lisp_standard_input;
 extern LispObject lisp_error_output, lisp_trace_output, lisp_debug_io;
 extern LispObject lisp_query_io, prompt_thing, prinl_symbol, s_prinl2_symbol;
 extern LispObject starloopprint_symbol, emsg_star, redef_msg;
-extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
+extern LispObject expr_symbol, fexpr_symbol, macro_symbol, startime_symbol;
 extern LispObject big_divisor, big_dividend, big_quotient;
 extern LispObject big_fake1, big_fake2, active_stream, current_module;
 extern LispObject mv_call_symbol, features_symbol, lisp_package;
@@ -502,8 +502,10 @@ extern bool simple_print_extras;
 extern void dpr(LispObject x);
 extern void dpr0(LispObject x);
 extern void simple_print(LispObject x);
+extern void noisy_simple_print(LispObject x);
 extern void simple_msg(const char* s, LispObject x);
 extern void simple_print(FILE* f, LispObject x);
+extern void noisy_simple_print(FILE* f, LispObject x);
 extern void simple_msg(FILE* f, const char* s, LispObject x);
 extern void simple_print(std::ostream& f, LispObject x);
 extern void simple_msg(std::ostream& f, const char* s, LispObject x);
@@ -620,6 +622,7 @@ inline const unsigned int INIT_SILENT     = 8;
 extern int tty_count;
 extern std::FILE* spool_file;
 extern char spool_file_name[128];
+extern std::FILE* pid_file;
 
 //
 // If there is no more than 100 bytes of data then I will deem
@@ -1217,9 +1220,9 @@ extern setup_type const om_parse_setup[];
     X(single_float),               X(special_symbol),             \
     X(standard_input),             X(standard_output),            \
     X(starloopprint_symbol),       X(startfn),                    \
-    X(startup_symbol),             X(string_char_sym),            \
-    X(supervisor),                 X(sys_hash_table),             \
-    X(terminal_io),                                               \
+    X(startime_symbol),            X(startup_symbol),             \
+    X(string_char_sym),            X(supervisor),                 \
+    X(sys_hash_table),             X(terminal_io),                \
     X(trace_output),               X(tracedfn),                   \
     X(traceprint_symbol),          X(trap_time),                  \
     X(unset_var),                  X(use_symbol),                 \
