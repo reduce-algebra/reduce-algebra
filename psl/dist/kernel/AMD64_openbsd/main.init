@@ -1,0 +1,10 @@
+(global (quote (nextsymbol show-new-ids)))
+(fluid (quote (code-base-hack symfnc symval kernel-maxsymbols tokenbuffer 
+argumentblock)))
+(fluid (quote (bpsbaserw bpsbaserx lastbps nextbps laststaticlisp nextstaticlisp
+heaplast heaptrapbound heapupperbound heaptrapped nextsymbol 
+using-other-bps-spaces*)))
+(def_ext pthread_attr_getdetachstate (attr detachstate))
+(*define-constant (quote rtld_lazy) 1)
+(*define-constant (quote rtld_now) 2)
+(fluid (quote (bpslowerbound nextbps)))
