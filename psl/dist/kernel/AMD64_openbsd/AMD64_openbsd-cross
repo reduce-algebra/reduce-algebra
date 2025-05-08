@@ -1,0 +1,31 @@
+# /bin/csh
+echo "cross"
+setenv bl `dirname $pl`/AMD64_openbsd-cross 
+$psys/pslcomp <<EOF
+(off redefmsg verboseload)
+(load debug)
+(load addr2id)
+
+(setq loaddirectories!* (cons "$bl/" loaddirectories!*))
+(reload sys-consts)
+(setq addressingunitsperitem 8)
+(setq maxrealregs 8)
+(off usermode)
+%%(load psl_case)
+(load debug)
+(load if-system)
+(load "AMD64-lap")
+(load "lap-to-asm")
+%(on plap pgwd)
+%(on pcmac)
+(load "unixAMD64-asm")
+(load "AMD64-cmac")
+(load "AMD64-comp")
+(load "AMD64-spec")
+(load "openbsd-cross")
+
+(remd 'foreignlink)
+(dskin "tmp.sl")
+t
+EOF
+
