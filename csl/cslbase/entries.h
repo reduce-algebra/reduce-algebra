@@ -289,6 +289,7 @@ extern LispObject Lserialize(LispObject env, LispObject a);
 extern LispObject Lserialize1(LispObject env, LispObject a);
 extern LispObject Lsetpchar(LispObject env, LispObject a);
 extern LispObject Lset_small_modulus(LispObject env, LispObject a);
+extern LispObject Lsieve_factor(LispObject env, LispObject a);
 extern LispObject Lsmkvect(LispObject env, LispObject a);
 extern LispObject Lspecial_char(LispObject env, LispObject a);
 extern LispObject Lspecial_form_p(LispObject env, LispObject a);
