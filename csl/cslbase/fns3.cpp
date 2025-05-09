@@ -2108,6 +2108,7 @@ setup_type const funcs3_setup[] =
     DEF_3("putv-bit",          Lbputv),
     DEF_3("sbitset",           Lbputv),
     DEF_1("primep32",          Lprimep32),
+    DEF_1("sieve-factor",      Lsieve_factor),
     DEF_1("primep64",          Lprimep32),
 #ifdef COMMON
     DEF_1("hashtable-flavour",  Lhash_flavour),

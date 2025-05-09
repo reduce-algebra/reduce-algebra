@@ -36,15 +36,20 @@ module efweier;  % Procedures and Rules for Weierstrass Elliptic functions.
 algebraic;
 
 % WEIERSTRASS and SIGMA FUNCTIONS
+% functions of w1 & w3
 operator weierstrass, weierstrassZeta, epsilon_w;
 operator weierstrass_sigma, weierstrass_sigma1;
 operator weierstrass_sigma2, weierstrass_sigma3;
-operator eta1, eta2, eta3;
+operator eta1, eta2, eta3;  
 operator lattice_e1, lattice_e2, lattice_e3;
 operator lattice_g2, lattice_g3, lattice_delta, lattice_g;
-operator lattice_omega1, lattice_omega2, lattice_omega3;
+
+% functions of g2 & g3
 operator weierstrass1, weierstrassZeta1, weierstrass_sigma0;
-operator lattice1_e1, lattice1_e2, lattice1_e3, epsilon_w1;
+operator lattice_omega1, lattice_omega2, lattice_omega3; 
+operator eta_1,eta_2,eta_3;  
+operator lattice1_e1, lattice1_e2, lattice1_e3; 
+operator epsilon_w1;
 
 flag ('(weierstrass1 weierstrassZeta1 weierstrass_sigma0), 'realvalued);
 flag ('(epsilon_w epsilon_w1), 'alwaysrealvalued);
@@ -217,15 +222,15 @@ weierstrass_rules :=
       end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
-   sqrt(4*lattice_e1(~w1,~w3)^3 - lattice_g2(w1,w3)*lattice_e1(w1,w3)
-   	    - lattice_g3(w1,w3)) => 0,
+   lattice_e1(~w1,~w3)^3 =>
+      (lattice_g2(w1,w3)*lattice_e1(w1,w3)+lattice_g3(w1,w3))/4,
 
-   sqrt(4*lattice_e2(~w1,~w3)^3 - lattice_g2(w1,w3)*lattice_e2(w1,w3)
-   	    - lattice_g3(w1,w3)) => 0,
+   lattice_e2(~w1,~w3)^3 =>
+      (lattice_g2(w1,w3)*lattice_e2(w1,w3)+lattice_g3(w1,w3))/4,
 
-   sqrt(4*lattice_e3(~w1,~w3)^3 - lattice_g2(w1,w3)*lattice_e3(w1,w3)
-   	    - lattice_g3(w1,w3)) => 0,
-
+   lattice_e3(~w1,~w3)^3 =>
+      (lattice_g2(w1,w3)*lattice_e3(w1,w3)+lattice_g3(w1,w3))/4,
+   
 % Numerical evaluation
    weierstrass(~u,~w1,~w3) => n_sigma(num_weier,u,w1,w3)
       when lisp !*rounded and lisp !*complex and numberp u
@@ -270,7 +275,7 @@ weierZeta_rules :=
    weierstrassZeta(~u,-~w1,~w3) => weierstrassZeta(u,w3,w1),
    weierstrassZeta(~w1,~w1,~w3) => eta1(w1,w3),
    weierstrassZeta(~w3,~w1,~w3) => eta3(w1,w3),
-   weierstrassZeta(~w1+~w3,~w1,~w3) => eta1(w1,w3)+eta3(w1,w3),
+   weierstrassZeta(~w1+~w3,~w1,~w3) => -eta2(w1,w3),
 
    df(weierstrassZeta(~u,~w1,~w3),~u)  => -weierstrass(u,w1,w3),
 
@@ -345,9 +350,13 @@ weierstrass1_rules :=
    weierstrass1(lattice_omega3(~g2,~g3),g2,g3) => lattice1_e3(g2,g3),
    weierstrass1(lattice_omega2(~g2,~g3),g2,g3) => lattice1_e2(g2,g3),
 
-   sqrt(4*lattice1_e1(~g2,~g3)^3 - g2*lattice1_e1(g2,g3) - g3) => 0,
-   sqrt(4*lattice1_e2(~g2,~g3)^3 - g2*lattice1_e2(g2,g3) - g3) => 0,
-   sqrt(4*lattice1_e3(~g2,~g3)^3 - g2*lattice1_e3(g2,g3) - g3) => 0,
+   lattice1_e1(~g2,~g3)^3 => (g2*lattice1_e1(g2,g3) + g3)/4,
+   lattice1_e2(~g2,~g3)^3 => (g2*lattice1_e2(g2,g3) + g3)/4,
+   lattice1_e3(~g2,~g3)^3 => (g2*lattice1_e3(g2,g3) + g3)/4,
+
+   weierstrassZeta1(lattice_omega1(~g2,~g3),~g2,~g3) => eta_1(g2,g3),
+   weierstrassZeta1(lattice_omega2(~g2,~g3),~g2,~g3) => eta_2(g2,g3),
+   weierstrassZeta1(lattice_omega3(~g2,~g3),~g2,~g3) => eta_3(g2,g3),
 
 % Numerical evaluation
    weierstrass1(~u,~g2,~g3) => num_elliptic(num_weier1, u, g2, g3)
@@ -365,7 +374,7 @@ weierstrass1_rules :=
 
    lattice_omega2(~g2,~g3) => (begin scalar l;
       l:=lattice_generators(g2,g3);
-      return first l + second l;
+      return -(first l + second l);
    end)
       when lisp !*rounded and numberp g2 and numberp g3,
 
@@ -377,6 +386,15 @@ weierstrass1_rules :=
    lattice1_e2(~g2,~g3) => second lattice1_roots(g2,g3)
       when lisp !*rounded and numberp g2 and numberp g3,
    lattice1_e3(~g2,~g3) => third lattice1_roots(g2,g3)
+      when lisp !*rounded and numberp g2 and numberp g3,
+
+   eta_1(~g2,~g3) => first quasi_periods(g2,g3)
+      when lisp !*rounded and numberp g2 and numberp g3,
+
+   eta_2(~g2,~g3) => second quasi_periods(g2,g3)
+      when lisp !*rounded and numberp g2 and numberp g3,
+
+   eta_3(~g2,~g3) => third quasi_periods(g2,g3)
       when lisp !*rounded and numberp g2 and numberp g3
     
  }$
@@ -761,6 +779,19 @@ begin scalar l,e1,e2,e3;
    >>;
 end;
 
+procedure quasi_periods(g2,g3);
+if g2^3-27g3^2 = 0 then rederr
+   ("Discriminant of zeta function must be non-zero.")
+else
+   num_elliptic(n_qpf, g2,g3);
+
+procedure n_qpf(g2,g3);
+begin scalar l;
+   l := lattice_generators(g2,g3);
+   return num_qpf(first l, second l);
+end;
+
+
 algebraic procedure canonical_gens(w1,w3);
 % If {w1,w3} generate a rectangular or rhombic lattice
 % return a canonical set of generators {v1,v3}
@@ -900,73 +931,71 @@ begin scalar a, b;
       return a*w1+b*w3;
 end;
 
-algebraic procedure num_epsilon_w(u,w1,w3);
-   % Return sign of df(weierstrass(u,w1,w3),u)
-   % Rough and ready; probably needs fine tuning near zeros of d
- begin scalar g2,g3,p,d,tmp,delta,tol;
-   delta := 2^(-10); tol := 2^(-7);
-   u := base_value(u,w1,w3);
-   if u=0 then rederr("Derivative has a pole at this value");
-   p := weierstrass(u,w1,w3);
-   tmp:= lattice_invariants(w1,w3);
-   g2 := first tmp;
-   g3 := second tmp;
-   d := sqrt(4p^3-g2*p-g3);
-   if abs u <tol then
-      return if repart(2/(u^3*d))<0 then 1 else -1;
-
-%%    r := lattice_roots(w1,w3);
-%%    e1 := first r; e2 := second r; e3 := third r;
-%% 
-%%    tmp := u-w1; 
-%%    if abs tmp < tol then
-%%       return if repart((12e1^2-g2)*tmp/2d)>0 then 1 else 0;
-%%    tmp := u+w1; 
-%%    if abs tmp < tol then
-%%       return if repart((12e1^2-g2)*tmp/2d)>0 then 1 else 0;
-%% 
-%%    tmp := u-w3;
-%%    if abs tmp < tol then
-%%       return if repart((12e3^2-g2)*tmp/2d)>0 then 1 else 0;
-%%    tmp := u+w3; 
-%%    if abs tmp < tol then
-%%       return if repart((12e3^2-g2)*tmp/2d)>0 then 1 else 0;
-%% 
-%%    tmp := u-w1-w3;
-%%    if abs tmp < tol then
-%%       return if repart((12e2^2-g2)*tmp/2d)>0 then 1 else 0;
-%%    tmp := u+w1+w3; 
-%%    if abs tmp < tol then
-%%       return if repart((12e2^2-g2)*tmp/2d)>0 then 1 else 0;
-%%    tmp := u-w1+w3;
-%%    if abs tmp < tol then
-%%       return if repart((12e2^2-g2)*tmp/2d)>0 then 1 else 0;
-%%    tmp := u+w1-w3; 
-%%    if abs tmp < tol then
-%%       return if repart((12e2^2-g2)*tmp/2d)>0 then 1 else 0;
-%%    
-   tmp := weierstrass(u+delta,w1,w3);
-   return if repart((tmp-p)/(d*delta)) > 0 then 1 else -1;
-end;
-
 algebraic procedure num_epsilon_w1(u,g2,g3);
-   % Return sign of df(weierstrass1(u,g2,g3),u)
-   % Rough and ready; probably needs fine tuning near zeros of d
-begin scalar w1,w3,p,d,tmp,delta,tol;
-   delta := 2^(-10); tol := 2^(-7);
-   tmp:=  lattice_generators(g2,g3);
-   w1 := first tmp;
-   w3 := second tmp;
-   u := base_value(u,w1,w3); 
-   if u=0 then rederr("Derivative has a pole at this value");
-   p := weierstrass(u,w1,w3);
-   d := sqrt(4p^3-g2*p-g3);
-   if abs u <tol then
-      return if repart(2/(u^3*d))<0 then 1 else -1;
-   tmp := weierstrass1(u+delta,g2,g3);
-   return if repart((tmp-p)/(d*delta)) > 0 then 1 else -1;
+begin scalar tmp,w1,w3;
+   tmp := lattice_generators(g2,g3);
+   w1 := first tmp; w3 := second tmp;
+   return num_epsilon(u,w1,w3,g2,g3);
 end;
 
+algebraic procedure num_epsilon_w(u,w1,w3);
+begin scalar tmp,g2,g3;
+   tmp:= lattice_invariants(w1,w3);
+   g2 := first tmp; g3 := second tmp;
+   return num_epsilon(u,w1,w3,g2,g3);
+end;
+
+algebraic procedure num_epsilon(u,w1,w3,g2,g3);
+   % Return sign of sqrt in the derivative of weierstrass
+   % Returns +1 at poles and zeroes of the derivative for definiteness.
+   % Uses the first term of power series near the poles and zeroes resp.
+   % to determine which sign of sqrt to choose.
+   % Otherwise uses a crude finite difference approx. to decide. 
+ begin scalar p,d,q,e1,e2,e3,tmp,tol;
+   u := base_value(u,w1,w3);
+   if u=0 then return 1;
+   p := weierstrass(u,w1,w3);
+
+   d := sqrt(4p^3-g2*p-g3);
+   if d = 0 then return 1;
+   if abs u <1/16 then
+      return if repart(2/(u^3*d))<0 then 1 else -1;
+
+   tmp := lattice_roots(w1,w3);
+   e1 := first tmp; e2 := second tmp; e3 := third tmp;
+
+   tol := 1/64;
+   tmp := u-w1;
+   if abs tmp < tol then
+       return if repart((12e1^2-g2)*tmp/2d)>=0 then 1 else -1;
+   tmp := u+w1; 
+   if abs tmp < tol then
+      return if repart((12e1^2-g2)*tmp/2d)>=0 then 1 else -1;
+
+   tmp := u-w3;
+   if abs tmp < tol then
+      return if repart((12e3^2-g2)*tmp/2d)>=0 then 1 else -1;
+   tmp := u+w3; 
+   if abs tmp < tol then
+      return if repart((12e3^2-g2)*tmp/2d)>=0 then 1 else -1;
+
+   tmp := u-w1-w3;
+   if abs tmp < tol then
+      return if repart((12e2^2-g2)*tmp/2d)>=0 then 1 else -1;
+   tmp := u+w1+w3; 
+   if abs tmp < tol then
+      return if repart((12e2^2-g2)*tmp/2d)>=0 then 1 else -1;
+   tmp := u-w1+w3;
+   if abs tmp < tol then
+      return if repart((12e2^2-g2)*tmp/2d)>=0 then 1 else -1;
+   tmp := u+w1-w3; 
+   if abs tmp < tol then
+      return if repart((12e2^2-g2)*tmp/2d)>=0 then 1 else -1;
+
+   tmp := 2^(-10);
+   q := weierstrass(u+tmp,w1,w3);
+   return if repart((q-p)/(d*tmp)) > 0 then 1 else -1;
+end;
 
 %######################################################################
 
@@ -1069,6 +1098,16 @@ put('lattice_omega1, 'fancy!-prifn, 'fancy!-weier);
 put('lattice_omega2, 'fancy!-prifn, 'fancy!-weier);
 put('lattice_omega3, 'fancy!-prifn, 'fancy!-weier);
 
+put('eta_1, 'fancy!-functionsymbol, "\eta_1");
+put('eta_2, 'fancy!-functionsymbol, "\eta_2");
+put('eta_3, 'fancy!-functionsymbol, "\eta_3");
+put('eta_1, 'fancy!-prifn, 'fancy!-weier);
+put('eta_2, 'fancy!-prifn, 'fancy!-weier);
+put('eta_3, 'fancy!-prifn, 'fancy!-weier);
+put('eta_1, 'fancy!-symbol!-length, 4);
+put('eta_2, 'fancy!-symbol!-length, 4);
+put('eta_3, 'fancy!-symbol!-length, 4);
+
 put('lattice_g2, 'prifn, 'plain!-symbol);
 put('lattice_g2, 'plain!-functionsymbol, "g2");
 put('lattice_g3, 'prifn, 'plain!-symbol);
@@ -1085,6 +1124,13 @@ put('lattice_omega2, 'plain!-functionsymbol, "w2");
 put('lattice_omega3, 'prifn, 'plain!-weier);
 put('lattice_omega3, 'plain!-functionsymbol, "w3");
 
+put('eta_1, 'prifn, 'plain!-weier);
+put('eta_1, 'plain!-functionsymbol, "eta1");
+put('eta_2, 'prifn, 'plain!-weier);
+put('eta_2, 'plain!-functionsymbol, "eta2");
+put('eta_3, 'prifn, 'plain!-weier);
+put('eta_3, 'plain!-functionsymbol, "eta3");
+
 % The next 2 declarations enable better checking of the number
 % of arguments by simpiden
 
@@ -1094,7 +1140,7 @@ flag('(weierstrass_sigma weierstrass_sigma1 weierstrass_sigma2
        lattice_g2 lattice_g3  lattice_delta lattice_g
        lattice_omega1 lattice_omega3 lattice_omega2 weierstrass1
        weierstrasszeta1 weierstrass_sigma0 epsilon_0 epsilon_1
-       lattice1_e1 lattice1_e2 lattice1_e3
+       lattice1_e1 lattice1_e2 lattice1_e3 eta_1 eta_2 eta_3
 ), 'specfn);
 
 
@@ -1107,6 +1153,7 @@ deflist('((weierstrass_sigma 3) (weierstrass_sigma1 3)
 	  (weierstrassZeta1 3) (weierstrass_sigma0 3)
 	  (lattice_omega1 2) (lattice_omega3 2) (lattice_omega3 2)
 	  (lattice1_e1 2)  (lattice1_e2 2)  (lattice1_e3 2)
+	  (eta_1 2) (eta_2 2) (eta_3 2)	
         ), 'number!-of!-args);
 
 symbolic procedure plain!-weier(u);
@@ -1141,26 +1188,6 @@ symbolic procedure fancy!-weier u;
                {'fancy!-inprint, mkquote 'times, 1,  mkquote args},
 	         '!(, '!));
   end;
-
-%% symbolic procedure fancy!-weier u;
-%%  fancy!-level
-%%   begin scalar args;
-%%    fancy!-prefix!-operator car u;
-%%    args := {cadr u, '!|, caddr u, '!,, cadddr u};
-%%    return fancy!-in!-brackets(
-%%                {'fancy!-inprint, mkquote 'times, 1,  mkquote args},
-%% 	         '!(, '!));
-%%   end;
-
-%% symbolic procedure fancy!-weier1 u;
-%%  fancy!-level
-%%   begin scalar args;
-%%    fancy!-prefix!-operator car u;
-%%    args :=  {'!|, cadr u, '!,, caddr u};
-%%    return fancy!-in!-brackets(
-%%                {'fancy!-inprint, mkquote 'times, 1,  mkquote args},
-%% 	         '!(, '!));
-%%   end;
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % The following are needed to support power series expansions of

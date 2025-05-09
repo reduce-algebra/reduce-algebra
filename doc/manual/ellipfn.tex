@@ -1021,15 +1021,21 @@ and usually very much smaller values of $|q|$ are achieved particularly when $\t
 
 The Weierstrassian function is even and has a pole of order 2 at all lattice points.
 The Zeta and Sigma functions are only quasi-periodic on the lattice. Zeta is odd and has simple poles of residue
-1 at all lattice points. The basic Sigma function $\sigma(u,\omega_1,\omega_3)$ is odd and regular everywhere as is
-the function $\vartheta_1(u,\tau)$ to which it is closely related. It has zeros at all lattice points. All three functions
-$\wp$, $\zeta_w$ and $\sigma$ are homogenous of degrees $-2$, $-1$ and $+1$ respectively. The functions are related by
+1 at all lattice points. The basic Sigma function $\sigma(u,\omega_1,\omega_3)$ is odd
+and regular everywhere as is the function $\vartheta_1(u,\tau)$ to which it is closely related.
+It has zeros at all lattice points. All three functions $\wp$, $\zeta_w$ and $\sigma$ are
+homogenous of degrees $-2$, $-1$ and $+1$ respectively. The functions are related by
 \[ \wp(u) = -\zeta_w'(u),\qquad\qquad \zeta_w(u) = \sigma'(u)/\sigma(u),\]
 where the lattice parameters have been omitted for conciseness.
 
 Rule sets are provided which implement all the properties such as double periodicity
 discussed above. The rule for the derivative of the Weierstrass function has recently
-been corrected; it now involves the operator \f{epsilon\_w} whose value is either $+1$ or $-1$.
+been corrected; it involves the square root of  $4\wp(u)^3-g_2\wp(u)-g_3$ and to allow
+for the ambiguity of the sign of the square root it includes an operator \f{epsilon\_w}
+whose value is either $+1$ or $-1$. Its value changes at the poles of the Weierstrass
+function, at points where the value of the Weierstrass function is one of the three lattice
+roots $e_1$, $e_2$ or $e_3$ and also where $4\wp(u)^3-g_2\wp(u)-g_3$ becomes negative
+as its square root has a branch cut there.
 
 For numerical evaluation the switches \sw{rounded}\ and \sw{complex}\ must both
 be ON and all three parameters of the Weierstrassian functions must be numeric.
@@ -1038,10 +1044,9 @@ the second and third parameters will be swapped if required.
 Numerical evaluation of $\epsilon_{w}$ has now been implemented for all complex
 values of its three parameters, but currently it should be regarded as somewhat
 experimental; it uses fairly crude numerical approximations to the derivative
-in order to choose the sign of the derivative. These may need fine tuning for
-values near to the zeroes of the derivative. By and large the literature does
-not discuss how the sign may be determined for general complex values of the
-arguments. One exception is the Dover Handbook of Mathematical
+in order to choose the sign of thecorrect branch of the square root.  By and large
+the literature does not discuss how the sign may be determined for general complex values
+of the arguments. One exception is the Dover Handbook of Mathematical
 Functions\cite{AbramowitzStegun:72} which gives a prescription (without proof)
 only for the special cases where the lattice associated with the Weierstrass
 function is either rectangular or rhombic, i.e. when the invariants $g_2$ and
@@ -1070,9 +1075,9 @@ clash with the notation for the other sigma functions below.
 Note also that for output they are distinguished by separating the first and
 second arguments by a vertical bar rather than a comma.
 
-The rule for differentiation of the this variant of the Weierstrass function
-involves the operator \f{epsilon\_w1} whose value is either $+1$ or $-1$.
-Its value changes at the poles of the Weierstrass function and at points where the value of the Weierstrass function is one of the three lattice roots $e_1$, $e_2$ or $e_3$.
+The rule for differentiation of this variant of the Weierstrass function
+involves the operator \f{epsilon\_w1} whose value is either $+1$ or $-1$
+and is analogous to the operator \f{epsilon\_w}.
 
 If the arguments of the Weierstrassian and sigma are all numeric, the functions
 will only be evaluated if both \sw{rounded}\ and \sw{complex}\ are ON.
@@ -1104,9 +1109,11 @@ period becoming infinite.
 Currently the Weierstrass and Weierstrass Zeta functions may be expanded as
 power series using the extendible power series package tps.  The expansions
 about zero and the points $m\omega_1+n\omega_3$ for integer $m$ and $n$ are
-informative whilst those about other points whilst correct are not. Currently
+informative whilst those about other points whilst correct are not. Power series
+expansion of the Weierstrass function about points where it vanishes (there are
+two such points in each fundamental parallelogram) is also of interest. Currently
 the Weierstrass Sigma functions (described below) cannot be expanded using tps
-and result cause rather inelegant errors.
+and result in rather inelegant errors.
 
 Currently using the taylor package the expansions of the Weierstrass,
 Weierstrass Zeta and Weierstrass Sigma about zero and $2m\omega_1+2n\omega_3$
@@ -1202,21 +1209,27 @@ The quasi-period factors satisfy
 \[\eta_1+\eta_2+\eta_3=0,\qquad
    \eta_1\omega_3-\eta_3\omega_1=\eta_2\omega_1-\eta_1\omega_2=\eta_3\omega_2-\eta_2\omega_3=i\pi/2.\]
 
-Six functions are provided which depend on the lattice invariants $g_2$ and $g_3$ rather than the lattice
-half-periods:
+Nine functions are provided which depend on the lattice invariants $g_2$ and
+$g_3$ rather than the lattice half-periods:
 \begin{itemize}
-\item $e_1(g_2, g_3)$ \ --- \ \f{lattice1\_e1(g2, g3)};
-\item $e_2(g_2, g_3)$ \ --- \ \f{lattice1\_e2(g2, g3)};
-\item $e_3(g_2, g_3)$ \ --- \ \f{lattice\_e3(g2, g3)};
-\item $\omega_1(g_2,g_3)$ \ --- \ \f{lattice\_omega1(g2, g3)};
-\item $\omega_2(g_2,g_3)$ \ --- \ \f{lattice\_omega2(g2, g3)};
-\item $\omega_3(g_2,g_3)$ \ --- \ \f{lattice\_omega3(g2, g3)};
+\item $e_1(|g_2, g_3)$ \ --- \ \f{lattice1\_e1(g2, g3)};
+\item $e_2(|g_2, g_3)$ \ --- \ \f{lattice1\_e2(g2, g3)};
+\item $e_3(|g_2, g_3)$ \ --- \ \f{lattice\_e3(g2, g3)};
+\item $\omega_1(|g_2,g_3)$ \ --- \ \f{lattice\_omega1(g2, g3)};
+\item $\omega_2(|g_2,g_3)$ \ --- \ \f{lattice\_omega2(g2, g3)};
+\item $\omega_3(|g_2,g_3)$ \ --- \ \f{lattice\_omega3(g2, g3)};
+\item $\eta_1(|g_2,g_3)$ \ --- \ \f{eta\_1(g2,g3)};
+\item $\eta_2(|g_2,g_3)$ \ --- \ \f{eta\_2(g2,g3)};
+\item $\eta_3(|g_2,g_3)$ \ --- \ \f{eta\_3(g2,g3)};
 \end{itemize}
-The first three return the lattice roots and the second triple return the
-three lattice half-periods.
+The first three return the lattice roots, the second triple return the
+three lattice half-periods and the final three return the quasi-period factors.
+As with the alternative Weierstrass functions which depend on the invariants,
+these nine functions are distinguished from the similar functions depending
+on the periods by preceding their arguments with a vertical bar.
 
 As well as the scalar-valued functions discussed above in this section,
-there are five functions which return a list as their value:
+there are six functions which return a list as their value:
 \hypertarget{operator:LATTICE_ROOTS}{}
 \hypertarget{operator:LATTICE_INVARIANTS}{}
 \hypertarget{operator:LATTICE_GENERATORS}{}
@@ -1233,9 +1246,10 @@ there are five functions which return a list as their value:
   --- returns $\{\eta_1,\ \eta_2,\ \eta_3\}$;
 \item \f{lattice\_generators(g2, g3)}  --- returns $\{\omega_1,\ \omega_3\}$.
 \item \f{lattice1\_roots(g2, g3)}  --- returns $\{e_1,\ e_2,\ e_3\}$
+\item \f{quasi\_periods(g2,g3)}  --- returns $\{\eta_1,\ \eta_2,\ \eta_3\}$.
 \end{itemize}
 The first three depend on the lattice half-periods $\omega_1$ and $\omega_3$ whilst
-the fourth and fifth are functions of the invariants $g_2$ and $g_3$. These
+the fourth, fifth and sixth are functions of the invariants $g_2$ and $g_3$. These
 list-valued functions are actually more efficient than calling the corresponding
 scalar-valued functions individually.
 These functions are only useful when the switches \sw{rounded}\ and

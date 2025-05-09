@@ -445,7 +445,7 @@ weierstrassZeta(5v+4w,v,w);
 weierstrassZeta(3v+5w,v,w);
 
 
-3*eta1(v,w) + 5*eta3(v,w)
+2*eta1(v,w) - eta2(v,w) + 4*eta3(v,w)
 
 
 weierstrassZeta(-u+2w+4v,v,w);
@@ -2020,7 +2020,7 @@ weierstrass1(0.5, 4, -1);
 weierstrasszeta1(0.5, 1, 2);
 
 
-1.99746907884 + 1.90834772111e-19*i
+1.99746907884 - 1.40141986201e-20*i
   % one real & 2 complex-conjugate roots
 weierstrasszeta1(0.5, 1, -2);
 

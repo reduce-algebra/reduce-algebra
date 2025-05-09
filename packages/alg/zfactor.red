@@ -143,6 +143,14 @@ symbolic procedure zfactor1(n,bool);
 
 symbolic procedure mcfactor!*(n,factors!-so!-far);
    if internal!-primep n then add!-factor(n,factors!-so!-far)
+#if (memq 'csl lispsystem!*)
+   else if n > 0x1000000000000000 then <<
+% Here I use a scheme that is built into CSL that should be able to
+% cope with integers with up to say 200 bits and maybe a bit more.
+     for each x in sieve!-factor n do
+       factors!-so!-far := add!-factor(x, factors!-so!-far);
+     factors!-so!-far >>
+#endif
     else <<n:=(lambda (p,tries); <<
          while (atom p) and (tries<!*maxtrys!*) do <<
             tries:=tries+1;
