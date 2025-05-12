@@ -2,7 +2,6 @@
 % List of documentation/packages missing:
 %
 % atensor/*.tex - only atensor.ps -- linked to PDF on web site
-% crack/crack.tex -- linked to PDF on web site -- to be added
 % gentran/gentran.tex -- too long! -- linked to PDF on web site
 % occal/ocpaper.tex
 % rtrace/rdebug.tex -- PSL only
@@ -53,10 +52,12 @@ The packages available in the current release of {\REDUCE} are as follows:
 
 This package provides programs APPLYSYM, QUASILINPDE and DETRAFO for
 applying infinitesimal symmetries of differential equations, the
-generalization of special solutions and the calculation of symmetry and
-similarity variables.
+generalization of special solutions and the calculation of symmetry
+and similarity variables.  They use the package
+\hyperref[package:CRACK]{\package{CRACK}}.
 
 Author: Thomas Wolf
+\index{Wolf, Thomas}\index{People!Wolf, Thomas}
 
 \input{applysym}
 
@@ -286,6 +287,7 @@ Author: Anthony C. Hearn
 
 \section{CONLAW: Find Conservation Laws for Differential Equations}
 \indexpackage{CONLAW}
+\label{package:CONLAW}
 
 This package computes first integrals of ordinary differential
 equations (ODEs) or conservation laws (CLs) of partial differential
@@ -302,26 +304,23 @@ Author: Thomas Wolf
 
 \newpage
 
-\section{CRACK: Solving Overdetermined Systems of PDEs or ODEs}
+\section{CRACK: Solving Overdetermined Systems of ODEs or PDEs}
 \indexpackage{CRACK}
 \label{package:CRACK}
 
 \package{CRACK} is a package for solving overdetermined systems of
-partial or ordinary differential equations (PDEs, ODEs).  Examples of
-programs which make use of \package{CRACK} (finding symmetries of
-ODEs/PDEs, first integrals, an equivalent Lagrangian or a
-``differential factorization'' of ODEs) are included.  The application
-of symmetries is also possible by using the
-\hyperref[package:APPLYSYM]{\package{APPLYSYM}} package.
+differential equations.  Examples of programs which make use of
+\package{CRACK} (finding symmetries of ODEs/PDEs, first integrals, an
+equivalent Lagrangian or a ``differential factorization'' of ODEs) are
+included.  The packages
+\hyperref[package:APPLYSYM]{\package{APPLYSYM}} and
+\hyperref[package:CONLAW]{\package{CONLAW}} use \package{CRACK}.
 
 Authors: Andreas Brand, Thomas Wolf
 \index{Brand, Andreas}\index{People!Brand, Andreas}
 \index{Wolf, Thomas}\index{People!Wolf, Thomas}
 
-\begin{sloppypar}
-  Further documentation is available at
-  \url{https://reduce-algebra.sourceforge.io/extra-docs/crack.pdf}.
-\end{sloppypar}
+\input{crack}
 
 \iffalse
 \newpage
