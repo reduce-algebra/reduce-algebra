@@ -270,7 +270,7 @@ A number of simple examples are used to introduce the reader to the capabilities
 
 @Inbook{Bocharov:89,
   Title                    = {Efficiently Implementing Two Methods of the Geometrical Theory of Differential Equations: An Experience in Algorithm and Software Design},
-  Author                   = {A.~V.~Bocharov and M~.L.~Bronstein},
+  Author                   = {A.~V.~Bocharov and M.~L.~Bronstein},
   Pages                    = {143--166},
   Publisher                = {Kluwer},
   Year                     = {1989},
@@ -1134,9 +1134,9 @@ The algorithms are implemented in CALI [5], the author's REDUCE package for comm
 
 @Book{Janet:1929,
   Title                    = {Le\c{c}ons sur les syst\`{e}mes d'\'{e}quations aux d\'{e}riv\'{e}es},
-  Author                   = {M.~Janet},
-  Publisher                = {Gauthier--Villars},
-
+  Author                   = {M. Janet},
+  Publisher                = {Gauthier-Villars},
+  Year                     = {1929},
   Address                  = {Paris}
 }
 
@@ -1191,6 +1191,17 @@ The algorithms are implemented in CALI [5], the author's REDUCE package for comm
 
 @Book{Kamke:Vol1,
   Title                    = {Differentialgleichungen, L\"{o}sungsmethoden und L\"{o}sungen,
+Band 1, Gew\"{o}hnliche Differentialgleichungen},
+  Author                   = {E.~Kamke},
+  Publisher                = {Chelsea Publishing Company},
+  Year                     = {1959},
+
+  Address                  = {New York},
+  Volume                   = {1}
+}
+
+@Book{Kamke:Vol2,
+  Title                    = {Differentialgleichungen, L\"{o}sungsmethoden und L\"{o}sungen,
 Band 2, Partielle Differentialgleichungen},
   Author                   = {E.~Kamke},
   Publisher                = {Teubner},
@@ -1199,17 +1210,6 @@ Band 2, Partielle Differentialgleichungen},
   Address                  = {Stuttgart},
   Edition                  = {6. Aufl.},
   Volume                   = {2}
-}
-
-@Book{Kamke:Vol2,
-  Title                    = {Differentialgleichungen, L\"{o}sungsmethoden und L\"{o}sungen,
-Band 1, Gew\"{o}hnliche Differentialgleichungen},
-  Author                   = {E.~Kamke},
-  Publisher                = {Chelsea Publishing Company},
-  Year                     = {1959},
-
-  Address                  = {New York},
-  Volume                   = {1}
 }
 
 @Article{Karpman:89,
@@ -1921,7 +1921,7 @@ Moreover, the same algorithm can sometimes be reversed to calculate a function t
   Pages                    = {L853--L859},
   Volume                   = {23},
   Number                   = {17},
-
+  Year                     = {1990}
   Doi                      = {10.1088/0305-4470/23/17/001},
   Url                      = {https://doi.org/10.1088/0305-4470/23/17/001}
 }
@@ -2101,22 +2101,18 @@ Moreover, the same algorithm can sometimes be reversed to calculate a function t
   Note                     = {Second edn., rev. 1951}
 }
 
-@Proceedings{Thomas:1937,
-  Title                    = {Differential Systems},
-  Year                     = {1937},
-
-  Address                  = {New York},
-  Publisher                = {AMS},
-  Series                   = {Colloquium publications,},
-  Volume                   = {21},
-
-  Author                   = {J.~Thomas}
+@book{Thomas:1937,
+  title={Differential systems},
+  author={Thomas, Joseph Miller},
+  volume={21},
+  year={1937},
+  publisher={American Mathematical Soc.}
 }
 
 @Inbook{Topunov:89,
   Title                    = {Reducing Systems of Linear Differential Equations to a Passive Form},
-  Author                   = {V.~L.~Topunov},
-  Editor                   = {A.~M.~Vinogradov},
+  Author                   = {V. L. Topunov},
+  Editor                   = {A. M. Vinogradov},
   Pages                    = {405-420},
   Publisher                = {Springer Netherlands},
   Year                     = {1989},
@@ -2689,13 +2685,7 @@ We also prove that the relation Sp (n) sime SO (-n) holds in general.},
   abstract = { In this paper, a review is presented of various approaches to the generalization of the version of Noether’s theorem, which is presented in most textbooks on classical mechanics. Its motivation is the controversy still persisting around the possible scope of a Noether-type theorem allowing for velocity-dependent transformations. Our analysis is centered around the one factor common to all known treatments, namely the structure of the related first integral. We first discuss the most general framework, in which a function of the above-mentioned structure constitutes a first integral of a given Lagrangian system, and show that one cannot really talk about an “interrelationship” between symmetries and first integrals there. We then compare different proposed generalizations of Noether’s theorem, by describing the nature of the restrictions which characterize them, when they are situated within the broadest framework. We prove a seemingly new equivalence-result between the two main approaches: that of invariance of the action functional, and that of invariance of \$d\theta \$ (\$\theta \$ being the Cartan-form). A number of arguments are discussed in favor of this last version of a generalized Noether theorem.Throughout the analysis we pay attention to practical considerations, such as the complexity of the Killing-type partial differential equations in each approach, which must be solved in order to identify “Noether-transformations”. },
   doi      = {10.1137/1023098},
   eprint   = {https://doi.org/10.1137/1023098},
-  url      = {
-
-        https://doi.org/10.1137/1023098
-
-
-
-},
+  url      = {https://doi.org/10.1137/1023098},
 }
 
 @Article{EGUCHI1980213,
@@ -2764,6 +2754,79 @@ A thorough analysis is then made of the classical method for rational function i
 
 @Comment{jabref-meta: databaseType:bibtex;}
 
+@InProceedings{MacCallum:1989,
+author="MacCallum, M. A. H.",
+editor="Gianni, P.",
+title="An ordinary differential equation solver for REDUCE",
+booktitle="Symbolic and Algebraic Computation",
+year="1989",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="196--205",
+abstract="Progress and plans for the implementation of an ordinary differential equation solver in REDUCE 3.3 are reported; the aim is to incorporate the best available methods for obtaining closed-form solutions, and to aim at the `best possible' alternative when this fails. It is hoped that this will become a part of the standard REDUCE program library. Elementary capabilities have already been implemented (to the level of a first course for students), i.e methods for first order differential equations of simple types (separable, `homogeneous', `reducible to homogeneous', linear, exact and Bernoulli) and linear equations of any order with constant coefficients. The further methods to be used include: for first-order equations, an adaptation of Shtokhamer's [1] MACSYMA program based on the results of Prelle and Singer [2]; for higher-order linear equations, factorisation of the operator where possible, and use of methods following results of Singer [3,4] and others; and for non-linear equations, the exploitation of Lie symmetries.",
+isbn="978-3-540-46153-1"
+}
+
+@article{Mansfield:1996,
+title = {The differential algebra package diffgrob2},
+year = {1996},
+pages = {33--37},
+journal = {Mapletech},
+author = {Elizabeth L. Mansfield},
+volume = {3},
+number = {2},
+url = {https://kar.kent.ac.uk/18662/}
+}
+
+@TechReport{MelNeun:2002,
+author = {Melenk, H. and Neun, W.},
+title = {RR: Parallel Symbolic Algorithm Support for PSL Based REDUCE},
+institution = {ZIB},
+year = {2002}
+}
+
+@article{Reid_Wittkopf_Boulton:1996,
+title={Reduction of systems of nonlinear partial differential
+equations to simplified involutive forms},
+volume={7},
+DOI={10.1017/S0956792500002618},
+number={6},
+journal={European Journal of Applied Mathematics},
+author={Reid, Gregory J. and Wittkopf, Allan D. and Boulton, Alan},
+year={1996},
+pages={635–666}
+}
+
+@article{Reid_Lin_Wittkopf:2001,
+author = {Reid, Gregory J. and Lin, Ping and Wittkopf, Allan D.},
+title = {Differential Elimination–Completion Algorithms for DAE and PDAE},
+journal = {Studies in Applied Mathematics},
+volume = {106},
+number = {1},
+pages = {1-45},
+doi = {https://doi.org/10.1111/1467-9590.00159},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1111/1467-9590.00159},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1111/1467-9590.00159},
+abstract = {Differential–algebraic equations (DAE) and partial differential–algebraic equations (PDAE) are systems of ordinary equations and PDAEs with constraints. They occur frequently in such applications as constrained multibody mechanics, spacecraft control, and incompressible fluid dynamics. A DAE has differential index r if a minimum of r+1 differentiations of it are required before no new constraints are obtained. Although DAE of low differential index (0 or 1) are generally easier to solve numerically, higher index DAE present severe difficulties. Reich et al. have presented a geometric theory and an algorithm for reducing DAE of high differential index to DAE of low differential index. Rabier and Rheinboldt also provided an existence and uniqueness theorem for DAE of low differential index. We show that for analytic autonomous first-order DAE, this algorithm is equivalent to the Cartan–Kuranishi algorithm for completing a system of differential equations to involutive form. The Cartan–Kuranishi algorithm has the advantage that it also applies to PDAE and delivers an existence and uniqueness theorem for systems in involutive form. We present an effective algorithm for computing the differential index of polynomially nonlinear DAE. A framework for the algorithmic analysis of perturbed systems of PDAE is introduced and related to the perturbation index of DAE. Examples including singular solutions, the Pendulum, and the Navier–Stokes equations are given. Discussion of computer algebra implementations is also provided.},
+year = {2001}
+}
+
+﻿@Article{Schwarz:1985,
+author={Schwarz, F.},
+title={Automatically determining symmetries of partial differential equations},
+journal={Computing},
+year={1985},
+month={Jun},
+day={01},
+volume={34},
+number={2},
+pages={91-106},
+abstract={A REDUCE package for determining the group of Lie symmetries of an arbitrary system of partial differential equations is described. It may be used both interactively and in a batch mode. In many cases the system finds the full group completely automatically. In some other cases there are a few linear differential equations of the determining system left the solution of which cannot be found automatically at present. If it is provided by the user, the infinitesimal generators of the symmetry group are returned.},
+issn={1436-5057},
+doi={10.1007/BF02259838},
+url={https://doi.org/10.1007/BF02259838}
+}
+
 @article{Sokolov_2006,
 doi = {10.1088/0305-4470/39/8/009},
 url = {https://dx.doi.org/10.1088/0305-4470/39/8/009},
@@ -2777,4 +2840,32 @@ author = {Sokolov, Vladimir V and Wolf, Thomas},
 title = {Integrable quadratic classical Hamiltonians on so(4) and so(3, 1)},
 journal = {Journal of Physics A: Mathematical and General},
 abstract = {We investigate a special class of quadratic Hamiltonians on so(4) and so(3, 1) and describe Hamiltonians that have additional polynomial integrals. One of the main results is a new integrable case with an integral of sixth degree.}
+}
+
+@article{Wolf:2000,
+title = {The Symbolic Integration of Exact PDEs},
+journal = {Journal of Symbolic Computation},
+volume = {30},
+number = {5},
+pages = {619-629},
+year = {2000},
+issn = {0747-7171},
+doi = {https://doi.org/10.1006/jsco.2000.1069},
+url = {https://www.sciencedirect.com/science/article/pii/S0747717100910691},
+author = {Thomas Wolf},
+abstract = {An algorithm is described which decides if a given polynomial differential expression Δ of multivariate functions is exact, i.e. whether there exists a first integral P such thatDxP=Δ for any one x of a set of n variables and to provide the integral P. A generalization is given to allow integration in the case that the exactness is prevented by terms which contain only functions of less than n independent variables.}
+}
+
+@article{Wolf:2002,
+title = {Size Reduction and Partial Decoupling of Systems of Equations},
+journal = {Journal of Symbolic Computation},
+volume = {33},
+number = {3},
+pages = {367-383},
+year = {2002},
+issn = {0747-7171},
+doi = {https://doi.org/10.1006/jsco.2001.0509},
+url = {https://www.sciencedirect.com/science/article/pii/S0747717101905097},
+author = {Thomas Wolf},
+abstract = {A method is presented that reduces the number of terms of systems of linear equations (algebraic, ordinary and partial differential equations). As a byproduct these systems have a tendency to become partially decoupled and are more likely to be factorizable or integrable. A variation of this method is applicable to nonlinear systems. Modifications to improve efficiency are given and examples are shown. This procedure can be used in connection with the computation of the radical of a differential ideal (differential Gröbner basis).}
 }
