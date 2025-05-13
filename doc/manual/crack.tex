@@ -139,8 +139,8 @@ functions can be original functions from the equations to be solved
 functions or constants which arose from integrations.  The dependence
 of new functions on variables is declared with \texttt{depend} and to
 visualize this dependence the algebraic mode function
-\texttt{fargs(\textit{fun}$_i$)} can be used.  If there are no
-$\textit{con}_i$ then all equations are solved and the functions in
+\texttt{fargs(}\textit{fun}$_i$\texttt{)} can be used.  If there are
+no $\textit{con}_i$ then all equations are solved and the functions in
 the third list are unconstrained.  The second list contains equations
 $\textit{fun}_i=\textit{ex}_i$ where each $\textit{fun}_i$ is an
 original function and $\textit{ex}_i$ is the computed expression for
@@ -1175,28 +1175,28 @@ variables (to be precise, symbolic fluid variables) within
 \package{Crack}.  Some are flags and parameters, others are global
 variables; some of them can be accessed after the \package{Crack} run.
 \begin{flushleft}\tt
-  !*allowdfint\_bak\ \ !*dfprint\_bak\ \ !*exp\_bak\ \ !*ezgcd\_bak\ \ !*fullroots\_bak\ \
-  !*gcd\_bak\ \ !*mcd\_bak\ \ !*nopowers\_bak\ \ !*ratarg\_bak\ \ !*rational\_bak\ \
-  !*batch\_mode\ \ abs\_\ \ adjust\_fnc\ \ allflags\_\ \ batchcount\_\ \ backup\_\ \ collect\_sol
-  confirm\_subst\ \ cont\_\ \ contradiction\_\ \ cost\_limit5\ \ current\_dir\ \
-  default\_proc\_list\_\ \ do\_recycle\_eqn\ \ do\_recycle\_fnc\ \ done\_trafo\ \
-  eqname\_\ \ expert\_mode\ \ explog\_\ \ facint\_\ \ flin\_\ \ force\_sep\ \ fname\_\ \ fnew\_\ \
-  freeabs\_\ \ freeint\_\ \ ftem\_\ \ full\_proc\_list\_\ \ gcfree!*\ \ genint\_\ \ glob\_var\ \
-  global\_list\_integer\ \ global\_list\_ninteger\ \ global\_list\_number\ \ high\_gensep\ \
-  homogen\_\ \ history\_\ \ idname\_\ \ idnties\_\ \ independence\_\ \ ineq\_\ \ inter\_divint\ \
-  keep\_parti\ \ last\_steps\ \ length\_inc\ \ level\_\ \ lex\_df\ \ lex\_fc\ \ limit\_time\ \
-  lin\_problem\ \ lin\_test\_const\ \ logoprint\_\ \ low\_gensep\ \ max\_gc\_counter\ \
-  max\_gc\_elimin\ \ max\_gc\_fac\ \ max\_gc\_red\_len\ \ max\_gc\_short\ \ max\_gc\_ss\ \
-  max\_red\_len\ \ maxalgsys\_\ \ mem\_eff\ \ my\_gc\_counter\ \ nequ\_\ \ new\_gensep\ \ nfct\_\ \
-  nid\_\ \ odesolve\_\ \ old\_history\ \ orderings\_\ \ target\_limit\_0\ \ target\_limit\_1\ \
-  target\_limit\_2\ \ target\_limit\_3\ \ target\_limit\_4\ \ poly\_only\ \ potint\_\ \ print\_\ \
-  print\_all\ \ print\_more\ \ proc\_list\_\ \ prop\_list\ \ pvm\_able\ \ quick\_decoup\ \
-  record\_hist\ \ recycle\_eqns\ \ recycle\_fcts\ \ recycle\_ids\ \ reducefunctions\_\ \
-  repeat\_mode\ \ safeint\_\ \ session\_\ \ simple\_orderings\ \ size\_hist\ \ size\_watch\ \
-  sol\_list\ \ solvealg\_\ \ stepcounter\_\ \ stop\_\ \ struc\_dim\ \ struc\_eqn\ \ subst\_0\ \
-  subst\_1\ \ subst\_2\ \ subst\_3\ \ subst\_4\ \ time\_\ \ time\_limit\ \ to\_do\_list\ \ tr\_decouple\ \
-  tr\_genint\ \ tr\_gensep\ \ tr\_main\ \ tr\_orderings\ \ tr\_redlength\ \ tr\_short\ \ trig1\_\ \
-  trig2\_\ \ trig3\_\ \ trig4\_\ \ trig5\_\ \ trig6\_\ \ trig7\_\ \ trig8\_\ \ userrules\_\ \ vl\_
+  !*allowdfint\_bak\quad !*dfprint\_bak\quad !*exp\_bak\quad !*ezgcd\_bak\quad !*fullroots\_bak\quad
+  !*gcd\_bak\quad !*mcd\_bak\quad !*nopowers\_bak\quad !*ratarg\_bak\quad !*rational\_bak\quad
+  !*batch\_mode\quad abs\_\quad adjust\_fnc\quad allflags\_\quad batchcount\_\quad !*backup\_\quad collect\_sol\quad
+  confirm\_subst\quad cont\_\quad contradiction\_\quad cost\_limit5\quad current\_dir\quad
+  default\_proc\_list\_\quad do\_recycle\_eqn\quad do\_recycle\_fnc\quad done\_trafo\quad
+  eqname\_\quad expert\_mode\quad explog\_\quad facint\_\quad flin\_\quad force\_sep\quad fname\_\quad fnew\_\quad
+  freeabs\_\quad freeint\_\quad ftem\_\quad full\_proc\_list\_\quad gcfree!*\quad genint\_\quad glob\_var\quad
+  global\_list\_integer\quad global\_list\_ninteger\quad global\_list\_number\quad high\_gensep\quad
+  homogen\_\quad history\_\quad idname\_\quad idnties\_\quad independence\_\quad ineq\_\quad inter\_divint\quad
+  keep\_parti\quad last\_steps\quad length\_inc\quad level\_\quad lex\_df\quad lex\_fc\quad limit\_time\quad
+  lin\_problem\quad lin\_test\_const\quad logoprint\_\quad low\_gensep\quad max\_gc\_counter\quad
+  max\_gc\_elimin\quad max\_gc\_fac\quad max\_gc\_red\_len\quad max\_gc\_short\quad max\_gc\_ss\quad
+  max\_red\_len\quad maxalgsys\_\quad mem\_eff\quad my\_gc\_counter\quad nequ\_\quad new\_gensep\quad nfct\_\quad
+  nid\_\quad odesolve\_\quad old\_history\quad orderings\_\quad target\_limit\_0\quad target\_limit\_1\quad
+  target\_limit\_2\quad target\_limit\_3\quad target\_limit\_4\quad poly\_only\quad potint\_\quad print\_\quad
+  print\_all\quad print\_more\quad proc\_list\_\quad prop\_list\quad pvm\_able\quad quick\_decoup\quad
+  record\_hist\quad recycle\_eqns\quad recycle\_fcts\quad recycle\_ids\quad reducefunctions\_\quad
+  repeat\_mode\quad safeint\_\quad session\_\quad simple\_orderings\quad size\_hist\quad size\_watch\quad
+  sol\_list\quad solvealg\_\quad stepcounter\_\quad stop\_\quad struc\_dim\quad struc\_eqn\quad subst\_0\quad
+  subst\_1\quad subst\_2\quad subst\_3\quad subst\_4\quad time\_\quad time\_limit\quad to\_do\_list\quad tr\_decouple\quad
+  tr\_genint\quad tr\_gensep\quad tr\_main\quad tr\_orderings\quad tr\_redlength\quad tr\_short\quad trig1\_\quad
+  trig2\_\quad trig3\_\quad trig4\_\quad trig5\_\quad trig6\_\quad trig7\_\quad trig8\_\quad userrules\_\quad vl\_
 \end{flushleft}
 
 \subsubsection{Global Flags and Parameters}
