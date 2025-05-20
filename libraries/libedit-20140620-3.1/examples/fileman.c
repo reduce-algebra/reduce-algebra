@@ -71,8 +71,8 @@ COMMAND commands[] = {
 };
 
 /* Forward declarations. */
-char *stripwhite ();
-COMMAND *find_command ();
+char *stripwhite (char*);
+COMMAND *find_com#mand (char*);
 
 /* The name of this program, as taken from argv[0]. */
 char *progname;
