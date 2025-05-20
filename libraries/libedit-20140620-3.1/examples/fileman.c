@@ -72,7 +72,7 @@ COMMAND commands[] = {
 
 /* Forward declarations. */
 char *stripwhite (char*);
-COMMAND *find_com#mand (char*);
+COMMAND *find_command (char*);
 
 /* The name of this program, as taken from argv[0]. */
 char *progname;
