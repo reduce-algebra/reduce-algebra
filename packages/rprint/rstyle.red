@@ -32,7 +32,7 @@ module rstyle;  % The Standard LISP to REDUCE pretty-printer.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: rs!:rstyle.red 6937 2025-01-20 20:08:35Z arthurcnorman $
+% $Id$
 
 create!-package('(rstyle),'(util));
 

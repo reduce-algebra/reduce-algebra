@@ -260,10 +260,7 @@ fileman_completion (const char* text, int start, int end __attribute__((__unused
 /* Generator function for command completion.  STATE lets us
    know whether to start from scratch; without any state
    (i.e. STATE == 0), then we start at the top of the list. */
-char *
-command_generator (text, state)
-   const char *text;
-   int state;
+char *command_generator (const char* text, int state)
 {
    static int list_index, len;
    char *name;
