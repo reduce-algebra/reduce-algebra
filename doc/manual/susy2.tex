@@ -1,0 +1,1199 @@
+{ % to limit the scope of the following definitions:
+
+\newcommand{\bos}{\mathbf{bos}}
+\newcommand{\fer}{\mathbf{fer}}
+\newcommand{\fun}{\mathbf{fun}}
+\newcommand{\gras}{\mathbf{gras}}
+\newcommand{\axp}{\mathbf{axp}}
+\newcommand{\der}{\mathbf{der}}
+\newcommand{\del}{\mathbf{del}}
+\newcommand{\pr}{\mathbf{pr}}
+\newcommand{\pg}{\mathbf{pg}}
+\renewcommand{\d}{\mathbf{d}}
+
+\subsection{Introduction}
+
+The main idea of supersymmetry (SuSy) is to treat boson and fermion
+operators equally \hyperref[susy2-bib]{[1,2]}.  This has been realised
+by introducing so-called supermultiplets constructed from the boson
+and fermion operators and additionally from the Mayorana spinors.
+Such supermultiplets possess the proper transformation property under
+the transformation of the Lorentz group.  At the moment we have no
+experimental confirmation that supersymmetry appears in nature.
+
+The idea of using supersymmetry for the generalization of the soliton
+equations~\hyperref[susy2-bib]{[3--7]} appeared almost in parallel to
+the usage of SuSy in the quantum field theory.  The first results,
+concerning the construction of classical field theories with fermionic
+and bosonic fields depending on time and one space variable can be
+found in~\hyperref[susy2-bib]{[8--12]}.  In many cases, the addition
+of fermion fields does not guarantee that the final theory becomes
+SuSy invariant and therefore this method was named the fermionic
+extension in order to distinguish it from the fully SuSy method.
+
+In order to get a SuSy theory we have to add to a system of $k$
+bosonic equations $kN$ fermion and $k(N-1)$ boson fields
+$(k=1,2,\ldots,\;N=1,2,\ldots)$ in such a way that the final theory
+becomes SuSy invariant.  From the soliton point of view we can
+distinguish two important classes of the supersymmetric equations: the
+non-extended $(N = 1)$ and extended $(N > 1)$ cases.  Consideration of
+the extended case may imply new bosonic equations whose properties
+need further investigation.  This may be viewed as a bonus, but this
+extended case is no more fundamental than the non-extended one.  The
+problem of the supersymmetrization of the nonlinear partial
+differential equations has its own history, and at the moment we have
+no unique solution~\hyperref[susy2-bib]{[13--40]}.  We can distinguish
+three different methods of supersymmetrization: algebraic, geometric
+and direct.
+
+In the first two cases we are looking for the symmetry group of the
+given equation and then we replace this group by the corresponding
+SuSy group.  As a final product we are able to obtain a SuSy
+generalization of the given equation.  The classification into the
+algebraic or geometric approach is connected with the kind of symmetry
+which appears in the classical case.  For example, if our classical
+equation could be described in terms of the geometrical object then
+the simple exchange of the classical symmetry group of this object
+with its SuSy partner justifies the name geometric.  In the algebraic
+case we are looking for the symmetry group of the equation without any
+reference to its geometrical origin.  This strategy could be applied
+to the so-called hidden symmetry as for example in the case of the
+Toda lattice.  These methods each have advantages and disadvantages.
+For example, sometimes we obtain the fermionic extensions.  In the
+case of the extended supersymmetric Korteweg-de Vries equation we have
+three different fully SuSy extensions; however only one of them fits
+these two classifications.
+
+In the direct approach we simply replace all objects which appear in
+the evolution equation by all possible combinations of the
+supermultiplets and their superderivatives so as to conserve the
+conformal dimensions.  This is non-unique and yields many different
+possibilities.  However, the arbitrariness is reduced if we
+additionally investigate super-bi-hamiltonian structure or try to find
+its supersymmetric Lax pair.  In many cases this approach is
+successful.
+
+The utilization of the above methods can be helped by symbolic
+computer algebraic and for this reason we developed the package SuSy2
+in the symbolic language REDUCE~\hyperref[susy2-bib]{[41]}.
+
+We have implemented and ordered the superfunctions in our program,
+extensively using the concept of ``noncom operator'' in order to
+implement the supersymmetric integro-differential operators.  The
+program is meant to perform the symbolic calculations using either
+fully supersymmetric supermultiplets or the component version of our
+supersymmetry.  We have constructed 25 different commands to allow us
+to compute almost all objects encountered in the supersymmetrization
+procedure of the soliton equation.
+
+\subsection{Supersymmetry}
+
+The basic object in the supersymmetric analysis is the superfield and
+the supersymmetric derivative.  The superfields are the superfermions
+or the superbosons~\hyperref[susy2-bib]{[1]}.  These fields, in the
+case of extended $N=2$ supersymmetry, depend, in addition to $x$ and
+$t$, upon two anticommuting variables, $\theta_{1}$ and $\theta_{2}$
+(such that $\theta_{2}\theta_{1} = -
+\theta_{1}\theta_{2},\;\theta_{1}^{2} = \theta_{2}^{2} = 0$).  Their
+Taylor expansion with respect to $\theta_{1},\theta_{2}$ is
+\begin{equation*}
+  b(x,t,\theta_{1},\theta_{2}):=w+\theta_{1}\zeta_{1}+
+  \theta_{2}\zeta_{2}+\theta_{2}\theta_{1}u
+\end{equation*}
+for superbosons and
+\begin{equation*}
+  f(x,t,\theta_{1},\theta_{2}):=\zeta_{1}+\theta_{1}w+
+  \theta_{2}u+\theta_{2}\theta_{1}\zeta_{2}
+\end{equation*}
+for superfermions, where $w$ and $u$ are classical (commuting)
+functions depending on $x$ and $t$, and $\zeta_{1}$ and $\zeta_{2}$
+are odd Grassmann-valued functions depending on $x$ and $t$.
+
+On the set of these superfunctions we can define the usual derivative
+and the superderivative.  Usually, we encounter two different
+realizations of the superderivative: the first we call ``traditional''
+and the second ``chiral''.
+
+The traditional realization can be defined by introducing two
+superderivatives $D_{1}$ and $D_{2}$:
+\begin{align*}
+  D_{1} &= \partial_{\theta_{1}}+\theta_{1}\partial,\\
+  D_{2} &= \partial_{\theta_{2}}+\theta_{2}\partial,
+\end{align*}
+with the properties:
+\begin{gather*}
+  D_{1} D_{1} = D_{2} D_{2} = \partial,\\
+  D_{1} D_{2} + D_{2} D_{1} = 0.
+\end{gather*}
+The chiral realization is defined by
+\begin{align*}
+  D_{1} &= \partial_{\theta_{1}} - \frac{1}{2}\theta_{2}\partial,\\
+  D_{2} &= \partial_{\theta_{2}} - \frac{1}{2}\theta_{1}\partial,
+\end{align*}
+with the properties:
+\begin{gather*}
+  D_{1} D_{1} = D_{2} D_{2} = 0,\\
+  D_{1} D_{2} + D_{2} D_{1} = -\partial.
+\end{gather*}
+
+Below we shall use the names ``traditional'', ``chiral'' or
+``chiral1'' algebras to denote the kind of commutation relations
+assumed for the superderivatives.  The chiral1 algebras possess,
+additionally to the chiral algebra, the commutator of $D_{1}$ and
+$D_{2}$ defined by
+\begin{equation*}
+  D_{3} = D_{1} D_{2} -D_{2} D_{1}.
+\end{equation*}
+In the \package{SuSy2} package we have implemented the superfunctions
+and the algebra of superderivatives.  Moreover, we have defined many
+additional procedures which are useful in the supersymmetrization of
+the classical nonlinear system of partial differential equation.
+Different applications of this package to physical problems can be
+found in the papers~\hyperref[susy2-bib]{[34--38]}.
+
+\subsection{Superfunctions}
+
+In this manual entry, REDUCE procedure (function) and let-rule names
+are usually displayed in a bold font, while all other input and output
+is usually displayed as normal typeset mathematics.  The value
+returned by a procedure (function) is indicated by the notation
+\begin{equation*}
+  \mathbf{function}(\mathit{arguments}) \Rightarrow
+  \mathit{function~value}.
+\end{equation*}
+However, REDUCE input without corresponding output and REDUCE command
+names are usually displayed in a typewriter font.
+
+Superfunctions are represented in this package by
+\begin{equation}\label{susy2-eqn1}
+  \bos(f,0,0)
+\end{equation}
+for superbosons and
+\begin{equation*}
+  \fer(g,0,0)
+\end{equation*}
+for superfermions.
+
+The first argument denotes the name of the given superobject, the
+second denotes the value of the SuSy derivative, and the last denotes
+the value of the usual derivative.  The $\bos$ and
+$\fer$ objects are declared as \texttt{noncom} operators in
+REDUCE\@.  The first argument can take an arbitrary value but with the
+following restrictions:
+\begin{gather*}
+  \bos(0,m,n) = 0, \\
+  \fer(0,m,n) = 0,
+\end{gather*}
+for all values of $m,n$.
+
+The program has the capability to compute the coordinates of arbitrary
+SuSy expressions, using expansions in powers of $\theta$.  We have
+here four commands:
+
+\begin{enumerate}
+\item In order to have the given expression in components use
+  \begin{equation*}
+    \mathbf{fpart}(\mathit{expression}).
+  \end{equation*}
+  The output is in the form of a list, in which the first element is
+  the zero-order term in $\theta$, the second is the first-order term
+  in $\theta_{1}$, the third is the first-order term in $\theta_{2}$
+  and the fourth is the term in $\theta_{2}\theta_{1}$.  For example,
+  the superfunction (\ref{susy2-eqn1}) has the representation
+  \begin{equation*}
+    \mathbf{fpart}(\bos(f,0,0)) \Rightarrow
+    \{ \fun(f_{0},0), \gras(\mathit{ff}_{1},0),
+    \gras(\mathit{ff}_{2},0),\fun(f_{1},0) \},
+  \end{equation*}
+  where $\fun$ denotes the classical function and
+  $\gras$ denotes the Grassmann function.  The first argument
+  in $\fun$ or $\gras$ denotes the name of the given
+  object, while the second denotes the usual derivative.
+
+\item In order to have the bosonic sector only, in which all odd
+  Grassmann functions disappear, use
+  \begin{equation*}
+    \mathbf{bpart}(\mathit{expression}).
+  \end{equation*}
+
+  Example:
+  \begin{equation*}
+    \mathbf{bpart}(\fer(g,0,0)) \Rightarrow
+    \{0, \fun(g_{0},0), \fun(g_{1},0), 0\}
+  \end{equation*}
+
+\item In order to have the given coordinates use
+  \begin{equation*}
+    \mathbf{bf\_part}(\mathit{expression},n),
+  \end{equation*}
+  where $n=0,1,2,3$.
+
+  Example:
+  \begin{equation*}
+    \mathbf{bf\_part}(\bos(f,0,0),3) \Rightarrow \fun(f_{1},0)
+  \end{equation*}
+
+\item In order to have the given coordinates in the bosonic
+  sector use
+  \begin{equation*}
+    \mathbf{b\_part}(\mathit{expression},n),
+  \end{equation*}
+  where $n=0,1,2,3$.
+
+  Example:
+  \begin{equation*}
+    \mathbf{b\_part}(\fer(g,0,0),1) \Rightarrow \fun(g_{0},0)
+  \end{equation*}
+\end{enumerate}
+
+Notice that the program switches on factoring of
+$\fer,\bos,\gras,\fun$.  If you remove this factoring then many
+commands give wrong results (for example the commands $\mathbf{lyst}$,
+$\mathbf{lyst1}$ and $\mathbf{lyst2}$).
+
+\subsection{The Inverse and Exponentials of Superfunctions}
+
+In addition to our definitions of the superfunctions we can also
+define the inverse and exponential of the superboson.
+
+The inverse of the given $\bos$ function (not to be confused with the
+``inverse function'' encountered in the usual analysis) is defined as
+\begin{equation*}
+  \bos(f,n,m,-1),
+\end{equation*}
+for arbitrary $f,n,m$ with the property
+$\bos(f,n,m,-1)\,\bos(f,n,m,1)=1$.  The object $\bos(f,n,m,k)$, in
+general, denotes the $k$-th power of the $\bos(f,n,m)$ superfunction.
+If we use the command \texttt{let inverse} then three-index $\bos$
+objects are transformed into four-index $\bos$ objects.
+
+The exponential of the superboson function is
+\begin{equation*}
+  \axp(\bos(f,0,0)).
+\end{equation*}
+It is also possible to use $\axp(f)$, but then we should specify what
+is $f$.
+
+We have the following representation in components for the inverse and
+$\axp$ superfunctions:
+\begin{align*}
+  \mathbf{fpart}(\bos(f,0,0,-1)) & = \{ \fun(f_{0},0,-1), -\fun(f_{0},0,-1)\,\gras(\mathit{ff}_{1},0), \\
+  & -\fun(f_{0},0,-1)\,\gras(\mathit{ff}_{2},0), - \fun(f_{0},0,-2)\,\fun(f_{1},0,1) \\
+  & + 2\,\fun(f_{0},0,-3)\,\gras(\mathit{ff}_{1},0)\,\gras(\mathit{ff}_{2},0) \}, \\
+  \mathbf{fpart}(\axp(f)) & = \{ \mathbf{axx}(\mathbf{bf\_part}(f,0)),
+  \mathbf{axx}(\mathbf{bf\_part}(f,0))\,\mathbf{bf\_part}(f,1), \\
+  & \mathbf{axx}(\mathbf{bf\_part}(f,0))\,\mathbf{bf\_part}(f,2), \mathbf{axx}(\mathbf{bf\_part}(f,0)) \\
+  & (\mathbf{bf\_part}(f,3)+2\,\mathbf{bf\_part}(f,1)\,\mathbf{bf\_part}(f,2)) \},
+\end{align*}
+where $\mathbf{axx}(f)$ denotes the exponentiation of the given
+classical function while $\fun(f,m,n)$ denotes the $n$-th power of the
+function $\fun(f,m)$.
+
+\subsection{Ordering}
+
+The three different superfunctions $\fer,\bos,\axp$ are ordered among
+themselves as
+\begin{gather*}
+  \fer(f,n,m)\,\bos(h,j,k)\,\axp(g), \\
+  \fer(f,n,m)\,\bos(h,j,k,l)\,\axp(g),
+\end{gather*}
+independently of the arguments.  The superfunctions $\bos$ and $\axp$
+commute with themselves, while the superfunctions $\fer$ anticommute
+with themselves.  For these superfunctions we introduce the following
+ordering.
+
+\begin{itemize}
+\item The $\bos$ objects with three and four arguments are ordered as
+  follows: the first argument anti-lexicographically, the second and
+  third by decreasing order of natural numbers; the last (fourth) is
+  not ordered because
+  \begin{equation*}
+    \bos(f,n,m,k)*\bos(f,n,m,l) \Rightarrow \bos(f,n,m,k+l)
+  \end{equation*}
+
+\item The anticommuting $\fer$ objects are ordered as follows: the
+  first argument anti-lexicographically, the second and third by
+  decreasing order of natural numbers.
+
+  Example:
+  \begin{equation*}
+    \fer(f,n,m)*\fer(g,k,l) \Rightarrow -\fer(g,k,l)\,\fer(f,n,m)
+  \end{equation*}
+  for arbitrary $n,m,k,l$.
+  \begin{equation*}
+    \fer(f,n,m)*\fer(f,n,m) \Rightarrow 0
+  \end{equation*}
+  for arbitrary $f,n,m$.
+  \begin{eqnarray*}
+    \bos(f,2,3,7)*\bos(a,0,3)*\bos(f,2,3,-7)   & \Rightarrow & \bos(a,0,3), \\
+    \bos(f,2,3,2)*\bos(z,0,3,2)*\bos(f,2,3,-2) & \Rightarrow & \bos(z,0,3,2).
+  \end{eqnarray*}
+
+\item For all exponential functions we have
+  \begin{equation*}
+    \axp(f)*\axp(g) \Rightarrow \axp(f+g).
+  \end{equation*}
+\end{itemize}
+
+\subsection{(Super)Differential Operators}
+
+We have implemented three different realizations of the supersymmetric
+derivatives.  In order to select the traditional realization declare
+\texttt{let trad}.  In order to select the chiral or chiral1 algebra
+declare \texttt{let chiral} or \texttt{let chiral1}.  By default we
+have the traditional algebra.
+
+We have introduced three different types of SuSy operators which act
+on the superfunctions and are considered as noncommuting operators in
+REDUCE.
+
+For the usual differentiation we introduced two types of operators:
+\begin{itemize}
+\item right differentations
+  \begin{equation*}
+    \d(1)*\bos(f,0,0) \Rightarrow  \bos(f,0,1) + \bos(f,0,0)\,\d(1);
+  \end{equation*}
+\item left differentations
+  \begin{equation*}
+    \fer(f,0,0)*\d(2) \Rightarrow -\fer(f,0,1) + \d(2)\,\fer(f,0,0).
+  \end{equation*}
+\end{itemize}
+This example illustrates that the third argument in the $\bos$ and
+$\fer$ objects can take an arbitrary integer value.
+
+We denote SuSy derivatives as $\der$ and $\del$, which represent the
+right and left operations respectively, and are one-argument
+operators.  The action of these objects on the superfunctions depends
+on the choice of the supersymmetric algebra.
+
+Explicitly, we have for the traditional algebra:
+\begin{description}
+\item{right SuSy derivative}
+  \begin{eqnarray*}
+    \der(1)*\bos(f,0,0) &\Rightarrow&  \fer(f,1,0)+\bos(f,0,0)\,\der(1), \\
+    \der(2)*\fer(g,0,0) &\Rightarrow&  \bos(g,2,0)-\fer(g,0,0)\,\der(2), \\
+    \der(1)*\fer(f,2,0) &\Rightarrow&  \bos(f,3,0)-\fer(f,2,0)\,\der(1), \\
+    \der(2)*\bos(f,3,0) &\Rightarrow& -\fer(f,1,1)+\bos(f,3,0)\,\der(2), \\
+    \der(1)*\bos(f,0,0,-1) &\Rightarrow& -\fer(f,1,0)\,\bos(f,0,0,-2) + \\
+    && \bos(f,0,0,-1)\,\der(1), \\
+    \der(2)*\axp(\bos(f,0,0)) &\Rightarrow&
+    \fer(f,2,0)\,\axp(\bos(f,0,0)) + \\
+    && \axp(\bos(f,0,0))\,\der(2).
+  \end{eqnarray*}
+
+\item{left SuSy derivative}
+  \begin{eqnarray*}
+    \bos(f,0,0)*\mathbf{\del(1)} &\Rightarrow& -\fer(f,1,0)+\del(1)\,\bos(f,0,0), \\
+    \fer(g,0,0)*\mathbf{\del(2)} &\Rightarrow&  \bos(g,2,0)-\del(2)\,\fer(g,0,0), \\
+    \fer(f,2,0)*\del(2) &\Rightarrow& \bos(f,3,0)-\del(1)\,\fer(f,2,0), \\
+    \bos(f,3,0)*\del(2) &\Rightarrow& \fer(f,1,1)+\del(2)\,\bos(f,3,0), \\
+    \bos(f,0,0,-1)*\del(1) &\Rightarrow& \fer(f,1,0)\,\bos(f,0,0,-2) + \\
+    && \del(1)\,\bos(f,0,0,-1), \\
+    \axp(\bos(f,0,0))*\del(2) &\Rightarrow&
+    -\fer(f,2,0)\,\axp(\bos(f,0,0)) + \\
+    && \del(2)\,\axp(\bos(f,0,0)).
+  \end{eqnarray*}
+\end{description}
+
+These examples illustrate that the second argument in the $\fer$ and
+$\bos$ objects can take values 0, 1, 2, 3 only with the following
+meaning: 0 -- no SuSy derivatives, 1 -- first SuSy derivative, 2 --
+second SuSy derivative, 3 -- first and second SuSy derivative.
+
+Using the results above we obtain
+\begin{multline*}
+  \der(1)*\der(2)*\bos(f,0,0) \Rightarrow \\
+  \bos(f,3,0) + \bos(f,0,0)\,\der(1)\,\der(2) +
+  \fer(f,1,0)\,\der(2) - \fer(f,2,0)\,\der(1).
+\end{multline*}
+
+For the chiral representation, the meaning of the second argument in
+the $\bos$ or $\fer$ object is the same as for the traditional
+representation while the actions of SuSy operators on the
+superfunctions are different.  For example, we have
+\begin{eqnarray*}
+  \der(1)*\fer(f,1,0) &\Rightarrow& -\fer(f,1,0)\,\der(1), \\
+  \der(1)*\fer(f,2,0) &\Rightarrow& \bos(g,3,0) - \fer(f,2,0)\,\der(1), \\
+  \der(2)*\bos(g,3,0) &\Rightarrow& -\fer(g,2,1) + \bos(g,3,0)\,\der(2), \\
+  \bos(g,2,0)*\del(2) &\Rightarrow& \del(2)\,\bos(g,2,).
+\end{eqnarray*}
+For the chiral1 representation we have a different meaning of the
+second argument in the $\bos$ and $\fer$ objects: the values $0,1,2$
+for this second argument denote the values of the SuSy derivatives
+while 3 denotes the value of the commutator.  Explicitly, we have
+\begin{eqnarray*}
+  \der(3)*\bos(f,0,0) &\Rightarrow& \bos(f,3,0) + 2\,\fer(f,1,0,0)\,\der(2) \\
+  && \mbox{} - 2\,\fer(f,2,0)\,\der(1) + \bos(f,0,0)\,\der(3), \\
+  \der(1)*\fer(f,2,0) &\Rightarrow& (\bos(f,3,0)-\bos(f,0,1))/2 - \fer(f,2,0)\,\der(1).
+\end{eqnarray*}
+
+The supersymmetric operators are always ordered in the case of
+traditional algebra as
+\begin{eqnarray*}
+  \der(2)*\der(1) &\Rightarrow& -\der(1)\,\der(2),\\
+  \del(2)*\del(1) &\Rightarrow& -\del(1)\,\del(2), \\
+  \der(1)*\del(1) &\Rightarrow& \d(1), \\
+  \der(1)*\del(2) &\Rightarrow& -\del(2)\,\der(1);
+\end{eqnarray*}
+for the chiral algebra we have
+\begin{eqnarray*}
+  \der(2)*\der(1) &\Rightarrow& -\d(1) - \der(1)\,\der(2),\\
+  \del(2)*\del(1) &\Rightarrow& -\d(1) - \del(1)\,\del(2), \\
+  \der(1)*\del(1) &\Rightarrow& 0, \\
+  \der(1)*\del(2) &\Rightarrow& -\d(1) - \del(2)\,\der(1);
+\end{eqnarray*}
+while for chiral1 additionally we have
+\begin{eqnarray*}
+  \der(3)*\der(1) &\Rightarrow& -\der(1)\,\d(1), \\
+  \der(1)*\der(3) &\Rightarrow& \der(1)\,\d(1), \\
+  \der(3)*\der(2) &\Rightarrow& \der(2)\,\d(1), \\
+  \der(2)*\der(3) &\Rightarrow& -\der(2)\,\d(1).
+\end{eqnarray*}
+
+Please notice that if we would like to have the components of some
+$\bos(f,3,0,-1)$ superfunction in the chiral representation then new
+objects appear:
+\begin{equation*}
+  \mathbf{b\_part}(\bos(f,3,0,-1), 1)  \Rightarrow \fun(f1,0,f0,1,-1),
+\end{equation*}
+We should consider the five-argument object $\fun$ as
+\begin{equation*}
+  \fun(f,n,g,m,-k) \Rightarrow (\fun(f,n)-\fun(g,m)/2)^{-k}.
+\end{equation*}
+Similar interpretation is valid for other commands containing objects
+like $\bos(f,3,n,-k)$.
+
+\subsection{Action of the Operators}
+
+In order to have the value of the action of the given operator on some
+superfunction we introduce two operators $\pr$ and $\pg$.  The
+operator
+\begin{equation*}
+  \pr(n,\mathit{expression})
+\end{equation*}
+where $n=0,1,2,3$ denotes the value itself of the action of the SuSy
+derivatives on the given expression.  For $n=0$ there is no SuSy
+derivative, $n=1$ corresponds to $\der(1)$, $n=2$ to $\der(2)$, and
+$n=3$ to $\der(1)*\der(2)$.
+
+Example:
+\begin{gather*}
+  \pr(1,\bos(f,0,0)) \Rightarrow \fer(f,1,0), \\
+  \pr(3,\fer(g,0,0)) \Rightarrow \fer(f,3,0).
+\end{gather*}
+
+For the usual derivative we reserve the command
+\begin{equation*}
+  \pg(n,\mathit{expression})
+\end{equation*}
+where $n=0,1,2,\ldots$ denotes the value of the usual derivative on
+the expression.
+
+Example:
+\begin{equation*}
+  \pg(2,\bos(f,0,0)) \Rightarrow \bos(f,0,2)
+\end{equation*}
+
+\subsection{Supersymmetric Integration}
+
+There is one command
+$\mathbf{s\_int}(\mathit{number},\mathit{expression},\mathit{list})$
+only.  This allows us to compute the supersymmetric integral of
+arbitrary polynomial expressions constructed from $\fer$ and $\bos$
+objects.  It is valid in the traditional representation of
+supersymmetry.  The argument $number$ takes the following values: $0$
+corresponds to the usual $x$ integration, $1$ or $2$ to integration
+over the first or second supersymmetric argument, while $3$
+corresponds to integration over both the first and second arguments.
+The argument $list$ is a list of the names of the superfunctions over
+which we would like to integrate.  The output of this command is in
+the form of the integrated part and non-integrated part.  The
+non-integrated part is denoted by $\del(-\mathit{number})$ for
+$\mathit{number} = 1,2,3$ and by $\d(-3)$ for $\mathit{number} = 0$.
+
+Example:
+\begin{equation*}
+  \mathbf{s\_int}(0,2*\bos(f,0,1)*\bos(f,0,1),\{f\}) \Rightarrow \bos(f,0,0)^{2},
+\end{equation*}
+\begin{equation*}
+  \mathbf{s\_int}(1,2*\fer(f,1,0)*\bos(f,0,0),\{f\}) \Rightarrow \bos(f,0,0)^{2},
+\end{equation*}
+\begin{multline*}
+\mathbf{s\_int}(3,\bos(f,3,0)*\bos(g,0,0)+\bos(f,0,0)*\bos(g,3,0),\{f,g\}) \Rightarrow \\
+\bos(f,0,0)\,\bos(g,0,0) - \del(-3)\,\big( \fer(f,1,0)\,\fer(g,2,0) - \fer(f,2,0)\,\bos(g,1,0) \big).
+\end{multline*}
+
+\subsection{Integration Operators}
+
+We introduced four different types of integration operators: right and
+left denoted by $\d(-1)$ and $\d(-2)$ respectively and moreover two
+different types of neutral integration operators $\d(-3)$ and
+$\d(-4)$.  In the first two cases they act according to the formula
+\begin{equation*}
+  \d(-1)\,\bos(f,0,0) =
+  \sum_{i=1}^{\infty} (-1)^{i}\,\bos(f,0,i-1)\,\d(-1)^{i}
+\end{equation*}
+for the right integration and
+\begin{equation*}
+  \bos(f,0,0)\,\d(-2) =
+  \sum_{i=1}^{\infty} \d(-2)^{i}\,\bos(f,0,i-1)
+\end{equation*}
+for the left integration.
+
+Before using these operators the precision of the integration must be
+specified by an assignment of the form \texttt{ww := number}, which
+sets the actual upper limit to be used on the sums above instead of
+infinity.  If required this precision can be changed by reassignment.
+Both operators are defined by their action and by the properties
+\begin{gather*}
+  \d(1)\,\d(-1)=\d(-1)\,\d(1)=\d(2)\,\d(-1)=\d(2)\,\d(-1)=1, \\
+  \der(1)\,\d(-1)=\d(-1)\,\der(1), \\
+  \d(-1)\,\del(1)=\del(1)\,\d(-1),
+\end{gather*}
+and analogously for $\d(-2)$ and $\der(2), \del(2)$.
+
+The neutral operator does not show any action on an expression but has
+several properties.  More precisely
+\begin{gather*}
+  \d(1)\,\d(-3)=\d(-3)\,\d(1)=\d(2)\,\d(-3)=\d(-3)\,\d(2)=1, \\
+  \der(k)\,\d(-3)=\d(-3)\,\der(k), \\
+  \d(-3)\,\del(k)=\del(k)\,\d(-3),
+\end{gather*}
+while for $\d(-4)$
+\begin{gather*}
+  \d(1)\,\d(-4)=\d(-4)\,\d(1)=\d(2)\,\d(-4)=\d(-4)\,\d(2)=1, \\
+  \der(k)\,\d(-4)=\d(-4)\,\der(k),
+\end{gather*}
+where $k=1,2$.
+
+From the last two formulas we see that the $\d(-3)$ operator is
+transparent under $\del$ operators while the $\d(-4)$ operator stops
+the $\del$ action.
+
+Similarly to $\d(-3)$ or $\d(-4)$ it is also possible to use the
+neutral differentiation operator denoted by $\d(3)$.  It has the
+properties
+\begin{gather*}
+  \d(3)\,\d(-4)=\d(-4)\,\d(3)=\d(3)\,\d(-3)=\d(-3)\,\d(3)=1, \\
+  \der(k)\,\d(3)=\d(3)\,\der(k), \\
+  \d(3)\,\del(k)=\del(k)\,\d(3),
+\end{gather*}
+where $k=1,2$.
+
+We can have also ``accelerated'' integration operators denoted by
+$\mathbf{dr}(-n)$ where $n$ is a natural number.  The action of these
+operators is exactly the same as $\d(-1)^n$ but instead of using the
+integration formulas $n$ times in the case of $\d(-1)^n$,
+$\mathbf{dr}(-n)$ uses the following formula only once:
+\begin{equation*}
+  \mathbf{dr}(-n)\,\bos(f,0,0) = \sum^\mathit{ww}_{s=0}(-1)^{s}
+  \begin{pmatrix} n+s-1 \\ n-1 \end{pmatrix}
+  \bos(f,0,s)\,\mathbf{dr}(-n-s).
+\end{equation*}
+Similarly to the $\d(-1)$ case, we have to declare also the
+``precision'' of integration if we would like to use the accelerated
+integration operators.  The command \texttt{let cutoff} and assignment
+of the form \texttt{cut := number} allow us to annihilate the
+higher-order terms in the $\mathbf{dr}$ integration procedure.
+Moreover, the command \texttt{let drr} automatically changes the usual
+integration $\d(-1)$ into accelerated integration $\mathbf{dr}$.  The
+command \texttt{let nodrr} changes $\mathbf{dr}$ integration into
+$\d(-1)$.
+
+\subsection{Useful Commands}
+
+\subsubsection*{Combinations}
+
+We encounter, in many practical applications, the problem of
+constructing different possible combinations of superfunction and
+super-pseudo-differential elements with given conformal dimensions.
+We provide three different procedures in order to realize this
+requirement:
+\begin{gather*}
+  \mathbf{w\_comb}(\mathit{list},n,m,x), \\
+  \mathbf{fcomb}(\mathit{list},n,m,x), \\
+  \mathbf{pse\_ele}(n,\mathit{list},m).
+\end{gather*}
+All these commands are based on the gradations trick, to associate
+with superfunctions and superderivatives the scaling parameter
+conformal dimension.  We consider here $k/2$ and $k$ ($k$ a positive
+integer) gradation only.
+
+The command $\mathbf{w\_comb}$ gives the most general form of
+superfunction combinations of given gradation.  It is a four-argument
+procedure in which:
+\begin{enumerate}
+\item the first argument is a list in which each element is a
+  three-element list in which the first element is the name of the
+  superfunction from which we would like to construct our combinations,
+  the second denotes its gradation, and the last can take two values:
+  f or b to indicate that the superfunction is respectively
+  superfermionic or superbosonic;
+\item the second argument is a number, the desired gradation;
+\item the third argument is an arbitrary non-numerical value which
+  enumerates the free parameters in our combinations;
+\item the fourth argument takes one of two values: f or b to indicate
+  that whole combinations should be respectively fermionic or bosonic.
+\end{enumerate}
+
+Examples:
+\begin{eqnarray*}
+  \mathbf{w\_comb}(\{\{ f,1,b \},\{g,1,b\}\},2,z,b) &\Rightarrow&
+  z1\,\bos(f,3,0) + z2\,\bos(f,0,1) + \\
+  &&z3\,\bos(f,0,0)^2 \\
+  \mathbf{w\_comb}(\{\{ f,1,b\}\},3/2,g,f) &\Rightarrow&
+  g1\,\fer(f,1,0) + g2\,\fer(f,2,0)
+\end{eqnarray*}
+
+The command $\mathbf{fcomb}$, similarly to $\mathbf{w\_comb}$, gives
+the general form of an arbitrary combination of superfunctions modulo
+divergence terms.  It is a four-argument command with the same meaning
+of arguments as for $\mathbf{w\_comb}$.  This command first calls
+$\mathbf{w\_comb}$, then eliminates in the canonical way SuSy
+derivatives by integration by parts of $\mathbf{w\_comb}$.  By
+canonical we understand that (SuSy) derivatives are removed first from
+the superfunction which is first in the list of superfunctions in the
+$\mathbf{fcomb}$ command, next from the second, etc.
+
+In order to illustrate the canonical manner of elimination of (SuSy)
+derivatives let us consider some expression which is constructed from
+$f, g$ and $h$ superfunctions and their (SuSy) derivatives.  This
+expression is first split into three sub-expressions called the
+\textit{f-expression}, \textit{g-expression} and
+\textit{h-expression}.  The \textit{f-expression} contains only
+combinations of $f$ with $f$ or $g$ or (and) $h$, while the
+\textit{g-expression} contains only combinations of $g$ with $g$ or
+$h$ and the \textit{h-expression} contains only combinations of $h$
+with $h$.  The command $\mathbf{fcomb}$ removes first (SuSy)
+derivatives from $f$ in \textit{f-expression}, then from $g$ in
+\textit{g-expression}, and finally from $h$ in \textit{h-expression}.
+Consider this example:
+\begin{equation*}
+  \fer(f,1,0)\,\fer(g,2,0) + \bos(g,0,0)\,\bos(g,3,0).
+\end{equation*}
+Let us now assume that we have $f,g$ order; then the
+\textit{f-expression} is $\fer(f,1,0)\,\fer(g,2,0)$, while the
+\textit{g-expression} is $\bos(g,0,1)\,\bos(g,3,0)$.  Now canonical
+elimination gives
+\begin{equation*}
+  - \bos(f,0,0)\,\bos(g,3,0) + 2\,\bos(g,0,0)\,\bos(g,3,1),
+\end{equation*}
+while assuming $g,f$ order gives
+\begin{equation*}
+  - \bos(f,3,0)\,\bos(g,0,0) + 2\,\bos(g,0,0)\,\bos(g,3,1).
+\end{equation*}
+Example:
+\begin{multline*}
+  \mathbf{fcomb}(\{\{u,1\}\},4,h) \Rightarrow \\
+  h(1)\,\fer(u,2,0)\,\fer(u,1,0)\,\bos(u,0,0) + h(2)\,\bos(u,3,0)\,\bos(u,0,0)^2 + \mbox{}\\
+  h(3)\,\bos(u,0,2)\,\bos(u,0,0) + h(4)\,\bos(u,0,0)^4
+\end{multline*}
+
+Finally, the command $\mathbf{pse\_ele}$ gives the general form of an
+element of the pseudo-SuSy derivative
+algebra~\hyperref[susy2-bib]{[3]}.  Such an element can be written
+down symbolically as
+\begin{equation*}
+  (\bos + \fer\,\der(1)+\fer\,\der(2)+\bos\,\der(1)\,\der(2))\,\d(1)^n
+\end{equation*}
+for the traditional and chiral representations, or
+\begin{equation*}
+  (\bos + \fer\,\der(1)+\fer\,\der(2)+\bos\,\der(3))\,\d(1)^n
+\end{equation*}
+for the chiral1 representation, where $\bos$ and $\fer$ denote
+arbitrary superfunctions.  The mentioned command allows us to obtain
+such an element of the given gradation which is constructed from some set
+of superfunctions of given gradation.  This command takes three
+arguments:
+\begin{equation*}
+  \mathbf{pse\_ele}(\mathit{wx},\mathit{wy},\mathit{wz}).
+\end{equation*}
+The first argument denotes the gradation of the SuSy-pseudo-element,
+and the second denotes the names and gradations of the superfunctions
+from which we would like to construct our element.  This second
+argument $wy$ is in the form of a list exactly the same as in the
+$\mathbf{w\_comb}$ command.  The last argument denotes the names which
+enumerate the free parameters in our combination.
+
+\subsubsection*{Parts of the pseudo-SuSy-differential elements}
+
+In order to obtain the components of the (pseudo)-SuSy element we have
+three different commands:
+\begin{gather*}
+  \mathbf{s\_part}(\mathit{expression},m), \\
+  \mathbf{d\_part}(\mathit{expression},n), \\
+  \mathbf{sd\_part}(\mathit{expression},m,n),
+\end{gather*}
+where $m,n=0,1,2,3,\ldots$.
+
+The $\mathbf{s\_part}$ command gives the coefficient standing in the
+$m$-th SuSy derivative.  However, notice that for $m=3$ we should
+consider the coefficients standing in the $\der(1)\,\der(2)$ operator
+for the traditional or chiral representations while for the chiral1
+representation the terms standing in the $\der(3)$ operator.  The
+$\mathbf{d\_part}$ command give the coefficients standing in the same
+power of $\d(1)$, while $\mathbf{sd\_part}$ gives the term standing in
+the $m$-th SuSy derivative and $n$-th power of the usual derivative.
+
+Example: Given the REDUCE input
+\begin{verbatim}
+ala := bos(g,0,0) + fer(f,3,0)*der(1) +
+       (fer(h,2,0)*der(2) + bos(r,0,0)*der(1)*der(2))*d(1);
+\end{verbatim}
+we have
+\begin{eqnarray*}
+  \mathbf{s\_part}(\mathit{ala},3) &\Rightarrow& \fer(f,3,0) \\
+  \mathbf{d\_part}(\mathit{ala},1) &\Rightarrow& \fer(h,2,0)\,\der(2) +
+  \bos(r,0,0)\,\der(1)\,\der(2) \\
+  \mathbf{sd\_part}(\mathit{ala},0,0) &\Rightarrow& \bos(g,0,0)
+\end{eqnarray*}
+
+\subsubsection*{Adjoint}
+
+The \emph{adjoint} $\mathit{PP}^*$ of some SuSy operator $\mathit{PP}$
+is defined in standard form by
+\begin{equation*}
+  \langle \alpha, \mathit{PP}\,\beta \rangle =
+  \langle \beta, \mathit{PP}^*\,\alpha \rangle
+\end{equation*}
+where $\alpha$ and $\beta$ are test superboson functions and the
+scalar product is defined by
+\begin{equation*}
+  \langle \alpha, \beta \rangle =
+  \int \alpha \beta\,d\theta_{1}\,d\theta_{2},
+\end{equation*}
+where we use the Berezin integral definition~\hyperref[susy2-bib]{[1]}
+\begin{align*}
+  \int \theta_{i}\,d\theta_{j} &= \delta_{i,j}, \\
+  \int d\theta_{i} &= 0.
+\end{align*}
+For this operation we have the command
+\begin{equation*}
+  \mathbf{cp}(\mathit{expression}).
+\end{equation*}
+Examples:
+\begin{eqnarray*}
+  \mathbf{cp}(\der(1)) &\Rightarrow& -\der(1), \\
+  \mathbf{cp}(\del(1)*\fer(r,1,0)*\der(1)) &\Rightarrow&
+  \fer(r,1,1) + \fer(r,1,0)\,\d(1) - \\
+  && \del(1)\,\bos(r,0,1),
+\end{eqnarray*}
+
+The last example illustrates that it is possible to define
+$\mathbf{cp}(\del(1)\,\fer(r,1,0)\,\der(1))$ in the different but
+equivalent manner as $\fer(r,1,0)\,\d(1) - \bos(r,0,1)\,\der(1)$.
+
+From a practical point of view, we do not define conjugation for the
+$\d(-1)$ and $\d(-2)$ operators, because then we should define the
+precision of the action of the operators $\d(-1)$ and $\d(-2)$, and
+even then we would obtain very complicated formulas.  However, if
+somebody decides to apply this conjugation to $\d(-1)$ or $\d(-2)$, it
+is recommended first to change by hand these operators into $\d(-3)$,
+next to compute $\mathbf{cp}$ and change $\d(-3)$ back into $\d(-1)$
+or $\d(-2)$ together with the declaration of the precision.
+
+\subsubsection*{Projection}
+
+In many cases, especially in the SuSy approach to soliton theory, we
+have to obtain the projection onto the invariant subspace (with
+respect to the commutator) of the pseudo-SuSy-differential algebra.
+There are three different subspaces~\hyperref[susy2-bib]{[4]} and
+hence we have the two-argument command
+\begin{equation*}
+  \mathbf{rzut}(\mathit{expression},n)
+\end{equation*}
+in which $n=0,1,2$.
+
+Example: Given the REDUCE input
+\begin{verbatim}
+ewa := bos(f,0,0) + bos(f3,0,0)*der(1)*der(2) +
+       bos(g,0,0)*d(1) + bos(g3,0,0)*d(1)*der(1)*der(2) +
+       fer(f1,1,0)*der(1) + fer(f2,2,0)*der(2) +
+       fer(g1,1,0)*d(1)*der(1) + fer(g2,2,0)*d(1)*der(2);
+\end{verbatim}
+we have
+\begin{equation*}
+  \mathbf{rzut}(\mathit{ewa},0) \Rightarrow \mathit{ewa},
+\end{equation*}
+\begin{equation*}
+  \mathbf{rzut}(\mathit{ewa},1) \Rightarrow \mathit{ewa}-\bos(f,0,0),
+\end{equation*}
+\begin{multline*}
+  \mathbf{rzut}(\mathit{ewa},2) \Rightarrow
+  \bos(f3,0,0)\,\der(1)\,\der(2) + \mbox{} \\
+  \big( \fer(g1,1,0)\,\der(1) + \fer(g2,2,0)\,\der(2) +
+  \bos(g3,0,0)\,\der(1)\,\der(2) \big)\,\d(1).
+\end{multline*}
+
+\subsubsection*{Analogue of \texttt{coeff}}
+
+Motivated by practical applications, we constructed for our
+supersymmetric functions three commands, which allow us to obtain a
+list of the same combinations of some superfunctions and (SuSy)
+derivatives from some given operator-valued expression.  Each command
+takes one argument and returns a list.  We use the following REDUCE
+input to illustrate each command:
+\begin{verbatim}
+magda := fer(f,1,0)*fer(f,2,0)*a1 + der(1);
+\end{verbatim}
+
+The first command is
+\begin{equation*}
+  \mathbf{lyst}(\mathit{expression}).
+\end{equation*}
+For example
+\begin{equation*}
+  \mathbf{lyst}(\mathit{magda}) \Rightarrow
+  \{\fer(f,1,0)\,\fer(f,2,0)\,a1, \der(1)\}.
+\end{equation*}
+
+The second command is
+\begin{equation*}
+  \mathbf{lyst1}(\mathit{expression})
+\end{equation*}
+with the output in the form of a list in which each element is
+constructed from the coefficients and (SuSy) operators of the
+corresponding element in the \textbf{lyst} list.  For example
+\begin{equation*}
+  \mathbf{lyst1}(\mathit{magda}) \Rightarrow \{a1,\der(1)\}.
+\end{equation*}
+
+The third command is
+\begin{equation*}
+  \mathbf{lyst2}(\mathit{expression})
+\end{equation*}
+with the output in the form of a list in which each element is
+constructed from coefficients in the given expression.  For example
+\begin{equation*}
+  \mathbf{lyst2}(\mathit{magda}) \Rightarrow \{a1,1\}.
+\end{equation*}
+
+\subsubsection*{Simplification}
+
+If we encounter during the process of computation an expression such
+as
+\begin{equation*}
+  \fer(f,1,0)\,\d(-3)\,\fer(f,2,0)\,\d(1),
+\end{equation*}
+it is not reduced further.  To facilitate simplification, we can
+replace $\d(1)$ with $\d(2)$, or vice versa.  In order to do this
+replacement we have the command
+\begin{equation*}
+  \mathbf{chan}(\mathit{expression})
+\end{equation*}
+Example:
+\begin{multline*}
+  \mathbf{chan}(\fer(f,1,0)*\d(-3)*\fer(f,2,0)*\d(1)) \Rightarrow \\
+  -\fer(f,2,0)\,\fer(f,1,0) - \fer(f,1,0)\,\d(-3)\,\fer(f,2,1).
+\end{multline*}
+Notice that as a result we remove the $\d(1)$ operator.
+
+\subsubsection*{O(2) Invariance}
+
+In many cases in supersymmetric theories we deal with the O(2)
+invariance of SuSy indices.  This invariance follows from the physical
+assumption of nonprivileging the ``fermionic'' coordinates in the
+superspace.  In order to check whether our formula possesses such
+invariance we can use
+\begin{equation*}
+  \mathbf{odwa}(\mathit{expression})
+\end{equation*}
+This procedure replaces in the given expression $\der(1)$ with
+$-\der(2)$ and $\der(2)$ with $\der(1)$.  Next, it changes, in the
+same manner, the values of the action of these operators on the
+superfunctions.
+
+\subsubsection*{Macierz}
+
+We can define the supercomponent form for the $\mathbf{pse\_ele}$
+objects similarly to the representation of the superfunctions.
+Usually we can consider such an object as the matrix which acts on the
+components of the superfunction.  It is realized in our program using
+the command
+\begin{equation*}
+  \mathbf{macierz}(\mathit{expression},x,y),
+\end{equation*}
+where $\mathit{expression}$ is the formula under consideration.  The
+argument $x$ can take two values, b or f, depending on whether we
+would like to consider the bosonic (b) part or fermionic (f) part of
+the expression.  The last argument denotes the option in which we act
+on the bosonic or fermionic superfunction.  It takes two values: f for
+fermionic test superfunction or b for bosonic.  More explicitly, we
+obtain
+\begin{equation*}
+  \mathbf{macierz}(\der(1)*\der(2),b,f) \Rightarrow
+  \begin{pmatrix}
+    0 & 0 & 0 & 0 \\
+    0 & 0 & \d(1) & 0 \\
+    0 & -\d(1) & 0 & 0 \\
+    -\d(1)^2 & 0 & 0 & 0
+  \end{pmatrix},
+\end{equation*}
+\begin{equation*}
+  \mathbf{macierz}(\der(1)*\der(2),f,b) \Rightarrow
+  \begin{pmatrix}
+    0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & \d(1) \\
+    -\d(1) & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0
+  \end{pmatrix}.
+\end{equation*}
+
+\subsection{Functional Gradients}
+
+In the SuSy soliton approach we very frequently encounter the problem
+of computing the gradient of the given functional.  The usual
+definition of the gradient~\hyperref[susy2-bib]{[2]} is adopted in the
+supersymmetry also:
+\begin{equation*}
+  H'[v] = \langle \operatorname{grad} H, v \rangle =
+  \frac{\partial}{\partial\epsilon} H(u+\epsilon v) \mid_{\epsilon=0},
+\end{equation*}
+where $H$ denotes some functional which depends on $u$, $v$ denotes a
+vector along which we compute the gradient, and
+$\langle\cdot,\cdot\rangle$ denotes the relevant scalar product.
+
+We implemented all that in our package for the traditional algebra
+only.  In order to compute the gradient with respect to some
+superfunction use
+\begin{equation*}
+  \mathbf{gra}(\mathit{expression},f),
+\end{equation*}
+where $\mathit{expression}$ is the given density of the functional and
+$f$ denotes the first argument in the superfunction operator (name of
+the superfunction).
+
+Example:
+\begin{equation*}
+  \mathbf{gra}(\bos(f,3,0)*\fer(f,1,0),f) \Rightarrow -2\,\fer(f,2,1)
+\end{equation*}
+For practical use we provide two additional commands:
+\begin{gather*}
+  \mathbf{dyw}(\mathit{expression},f), \\
+  \mathbf{war}(\mathit{expression},f).
+\end{gather*}
+The first computes the variation of $\mathit{expression}$ with respect
+to superfunction $f$; the second removes (via integration by parts)
+SuSy derivatives from various functions and finally produces a list of
+factorized $\fer$ and $\bos$ superfunctions.  When the given
+expression is a full (SuSy) derivative, the result of the
+$\mathbf{dyw}$ command is 0 and hence this command is very useful in
+verifications of (SuSy) divergences of expressions.
+
+When the result of applications of the $\mathbf{dyw}$ command is not
+zero then we would like to have the system of equations on the
+coefficients standing in the same factorized $\fer$ and $\bos$
+superfunction.  We can quickly obtain such a list using the command
+$\mathbf{war}(\mathit{expression},f)$ with the same meaning for the
+arguments as in the $\mathbf{dyw}$ command.
+
+Examples: Given the REDUCE input
+\begin{verbatim}
+xxx := fer(f,1,0)*fer(f,2,0) + x*bos(f,3,0)^2;
+\end{verbatim}
+we obtain
+\begin{gather*}
+  \mathbf{dyw}(\mathit{xxx},f) \Rightarrow
+  \{ -2\,\bos(f,3,0)\,\bos(f,0,0), -2x\,\bos(f,0,2)\,\bos(f,0,0) \}, \\
+  \mathbf{war}(\mathit{xxx},f) \Rightarrow \{ -2, -2x \}.
+\end{gather*}
+
+\subsection{Conservation Laws}
+
+In many cases we would like to know whether a given expression is a
+conservation law for some Hamiltonian equation.  We can quickly check
+it using
+\begin{equation*}
+  \mathbf{dot\_ham}(\mathit{equation},\mathit{expression})
+\end{equation*}
+where $\mathit{equation}$ is a list of two-element lists in which the
+first element denotes the function while the second denotes its flow.
+The second argument should be understood as the density of some
+conserved current.  For example, for the SuSy version of the Nonlinear
+Schr\"odinger Equation~\hyperref[susy2-bib]{[7]} we could use the
+following REDUCE input:
+\newpage
+\begin{verbatim}
+ew := { {q, -bos(q,0,2) + bos(q,0,0)^3*bos(r,0,0)^2
+            2*bos(q,0,0)*pr(3,bos(q,0,0)*bos(r,0,0))},
+        {r, bos(r,0,2) - bos(q,0,0)^2*bos(r,0,0)^3 +
+            2*bos(r,0,0)*pr(3,bos(q,0,0)*bos(r,0,0))} };
+ham := bos(q,0,1)*bos(r,0,0) + x*bos(q,0,0)^2*bos(r,0,0)^2;
+yyy := dot_ham(ew,ham);
+\end{verbatim}
+The result of the previous computation is a complicated expression
+that is not zero.  We would like to interpret it as a full (SuSy)
+divergence and we can quickly verify it by using the command
+$\mathbf{war}$.  We can solve the resulting list of equations using
+known techniques.  For example, in our previous case we obtain
+\begin{gather*}
+  \mathbf{war}(yyy,q) \Rightarrow \{-4x,-8x,-4x\}, \\
+  \mathbf{war}(yyy,r) \Rightarrow \{4x,8x,4x\},
+\end{gather*}
+and we conclude that $\mathit{ham}$ is a constant of motion if $x=0$.
+
+It is also possible to apply the command $\mathbf{dot\_ham}$ to the
+pseudo-SuSy-differential element.  This is very useful in the SuSy
+approach to the Lax operator in which we would like to check the
+validity of the formula
+\begin{equation*}
+  \partial_{t}L := [ L,A ],
+\end{equation*}
+where $A$ is some (SuSy) operator.
+
+\subsection{Jacobi Identity}
+
+The Jacobi identity for some SuSy Hamiltonian operators is verified
+using the relation
+\begin{equation*}
+  \langle \alpha, P'_{P(\beta)} \gamma \rangle +
+  \text{all cyclic permutations of } \alpha,\beta,\gamma = 0,
+\end{equation*}
+where $P'$ denotes the directional derivative along the $P(\beta)$
+vector and $\langle\cdot,\cdot\rangle$ denotes the scalar product.
+The directional derivative is defined in the standard manner
+as~\hyperref[susy2-bib]{[44]}:
+\begin{equation*}
+  F^{'}(u)[v] = \frac{\partial}{\partial\epsilon}
+  F(u+\epsilon v)\mid_{\epsilon =0},
+\end{equation*}
+where $F$ is some functional depending on $u$, and $v$ is a
+directional vector.
+
+In this package we have several commands that allow us to verify the
+Jacobi identity.  We have the possibility to compute, independently of
+verifying the Jacobi identity, the directional derivative for the
+given Hamiltonian operator along the given vector using
+\begin{equation*}
+  \mathbf{n\_gat}(\mathit{pp}, \mathit{wim}),
+\end{equation*}
+where $\mathit{pp}$ is a scalar or matrix Hamiltonian operator and
+$\mathit{wim}$ denotes the components of a vector along which we
+compute the derivative.  It has the form of a list in which each
+element has the representation
+\begin{equation*}
+  \bos(f) \Rightarrow \mathit{expression}.
+\end{equation*}
+The expression $\bos(f)$ above denotes the shift of the $\bos(f,0,0)$
+superfunction according to the definition of the directional
+derivative.
+
+In order to compute the Jacobi identity we use the command
+\begin{equation*}
+  \mathbf{fjacob}(\mathit{pp}, \mathit{wim})
+\end{equation*}
+with the same meaning for $\mathit{pp}$ and $\mathit{wim}$ as in the
+$\mathbf{n\_gat}$ command.
+
+Notice that the ordering of the components in the $\mathit{wim}$ list
+is important and is connected with the interpretation of the
+components of the Hamiltonian operator $\mathit{pp}$ as a set of
+Poisson brackets constructed just from elements of the $\mathit{wim}$
+list.  For example, in our scheme, the first component of
+$\mathit{wim}$ is always connected with the element from which we
+create the Poisson bracket and which corresponds to the first element
+on the diagonal of $\mathit{pp}$, the second element of $\mathit{wim}$
+with the second element on the diagonal of $\mathit{pp}$, etc.
+
+As the result of the application of the $\mathbf{fjacob}$ command to
+some Hamiltonian operator we obtain a complicated formula, not
+necessarily equal to zero but which should be expressed as a (SuSy)
+divergence.  However, we can quickly verify it using the same method
+as for the $\mathbf{dot\_ham}$ command, which was described in the
+previous subsection.
+
+Usually, after the application of the $\mathbf{fjacob}$ command to
+some matrix Hamiltonian operator we obtain a huge expression, which is
+too complicated to analyze even when we would like to check its (SuSy)
+divergence.  In this case we could extract from the $\mathbf{fjacob}$
+expression terms containing given components of vector test functions
+fixed by us.  We can use the command
+\begin{equation*}
+  \mathbf{jacob}(\mathit{pp}, \mathit{wim}, \mathit{mm})
+\end{equation*}
+where $\mathit{pp}$ and $\mathit{wim}$ have the same meaning as for
+the $\mathbf{fjacob}$ command while $\mathit{mm}$ is a three-element
+list denoting the components: $\{\alpha,\beta,\gamma\}$.
+
+This command is not prepared to compute in full the Jacobi identity,
+which contains the integration operators.  We do not implement here
+the symbolic integration of superfunctions in order to simplify the
+final results.
+
+\subsection{Objects, Commands and Let Rules}
+
+\subsubsection*{Objects}
+
+\begin{equation*}
+  \begin{array}{lllll}
+    \bos(f,n,m) & \bos(f,n,m,k) & \fer(f,n,m) & \axp(f) & \fun(f,n) \\
+    \fun(f,n,m) & \gras(f,n) & \mathbf{axx}(f) & \d(1) & \d(2) \\
+    \d(3) & \d(-1) & \d(-2) & \d(-3) & \d(-4) \\
+    \mathbf{dr}(-n) & \der(1) & \der(2) & \del(1) & \del(2)
+  \end{array}
+\end{equation*}
+
+\subsubsection*{Commands}
+
+\begin{center}\footnotesize
+  \begin{tabular}{lll}
+    \textbf{fpart}(\textit{expression}) &
+    \textbf{bpart}(\textit{expression}) &
+    \textbf{bf\_part}(\textit{expression},$n$) \\
+
+    \textbf{b\_part}(\textit{expression},$n$) &
+    \textbf{pr}($n$,\textit{expression}) &
+    \textbf{pg}($n$,\textit{expression}) \\
+
+    \textbf{w\_comb}(\{\{$f$,$n$,$x$\},\ldots\},$m$,$z$,$y$) &
+    \textbf{fcomb}(\{\{$f$,$n$,$x$\},\ldots\},$m$,$z$,$y$) &
+    \textbf{pse\_ele}($n$,\{\{$f$,$n$\},\ldots\},$z$) \\
+
+    \textbf{s\_part}(\textit{expression},$n$) &
+    \textbf{d\_part}(\textit{expression},$n$) &
+    \textbf{sd\_}(\textit{expression},$n$,$m$) \\
+
+    \textbf{cp}(\textit{expression}) &
+    \textbf{rzut}(\textit{expression},$n$) &
+    \textbf{lyst}(\textit{expression}) \\
+
+    \textbf{lyst1}(\textit{expression}) &
+    \textbf{lyst2}(\textit{expression}) &
+    \textbf{chan}(\textit{expression}) \\
+
+    \textbf{odwa}(\textit{expression}) &
+    \textbf{gra}(\textit{expression},$f$) &
+    \textbf{dyw}(\textit{expression},$f$) \\
+
+    \textbf{war}(\textit{expression},$f$) &
+    \textbf{dot\_ham}(\textit{equations},\textit{expression})&
+    \textbf{n\_gat}(\textit{operator},\textit{list}) \\
+
+    \textbf{fjacob}(\textit{operator},\textit{list}) &
+    \textbf{jacob}(\textit{operator},\textit{list},\{$\alpha,\beta,\gamma$\}) &
+    \textbf{macierz}(\textit{expression},$x$,$y$) \\
+
+    \textbf{s\_int}(\textit{numbers},\textit{expression},\textit{list})
+  \end{tabular}
+\end{center}
+
+\subsubsection*{Let Rules}
+
+\begin{center}\ttfamily
+  trad\qquad chiral\qquad chiral1\qquad inverse\qquad drr\qquad nodrr
+\end{center}
+
+} % end scope of local definitions
+
+\subsection*{Acknowledgement}
+
+The author would like to thank to Dr~W.~Neun for valuable remarks.
+
+\subsection*{Bibliography}
+\label{susy2-bib}
+
+Please see the original version of this document, which is available
+formatted as
+\url{https://reduce-algebra.sourceforge.io/extra-docs/susy2.pdf} and
+as the \LaTeX{} source file \texttt{susy2.tex} (in the REDUCE
+\texttt{packages/susy2} directory).

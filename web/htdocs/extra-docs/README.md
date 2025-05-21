@@ -1,8 +1,8 @@
 # Package Documentation Not Included in the REDUCE Manual
 
-**Francis Wright, January 2025**
+**Francis Wright, May 2025**
 
-At the top of `doc/manual/user.tex` is the following:
+At the top of `doc/manual/user.tex` in January 2025 was the following:
 
 ```
 % List of documentation/packages missing:
@@ -23,6 +23,8 @@ At the top of `doc/manual/user.tex` is the following:
 This directory is an attempt to remedy the omission by providing the missing documentation on the web as PDF files, but only for pre-compiled packages.  If these packages have documentation stubs in the REDUCE manual then they can link to the files here.
 
 Source files were copied from the `packages` directories.  Some documents need `reduce.sty`, which was copied from `doc/misc`.  Formatting was done with the current versions of Ghostscript and TeX Live.  Details are provided below.  All the results look at least superficially OK.
+
+As of May 2025 I have incorporated the documentation for CONLAW, CRACK, V3TOOLS, MATHML and SUSY2 into the manual.  I have therefore removed references to these packages from `index.php`, but left what are essentially the original files described below in place, for reference and to avoid breaking old links to them.
 
 ## Atensor
 

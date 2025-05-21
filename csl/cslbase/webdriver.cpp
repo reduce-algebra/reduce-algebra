@@ -44,6 +44,9 @@
 #include <iostream>
 #include <filesystem>
 
+extern void setup_embweb_reduce(void);
+
+
 static char obuff[10000];
 static int obufp = 0;
 
@@ -125,6 +128,15 @@ int main(int argc, const char *argv[])
     return res;
 }
 
+std::string sendToReduce(std::string arguments)
+      {std::string c;
+       c = webview::json_parse(arguments, "", 0);
+       std::cout << c << '\n'; 
+/*     insert_buffer(c.data(), 10); */
+       buffer = c.data();
+       buff_ready = 1;
+       return {}; }
+
 void setup_embweb_reduce(void) {
   webview::webview w(true, nullptr);
   w.set_title("Reduce");
@@ -136,14 +148,5 @@ void setup_embweb_reduce(void) {
   w.run();
   }
   
-std::string sendToReduce(std::string arguments)
-      {std::string c;
-       c = webview::json_parse(arguments, "", 0);
-       std::cout << c << '\n'; 
-/*     insert_buffer(c.data(), 10); */
-       buffer = c.data();
-       buff_ready = 1;
-       return {}; }
-
 // end of webdriver.cpp
 

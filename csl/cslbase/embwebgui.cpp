@@ -119,7 +119,7 @@ int PROC_process_one_reduce_statement0()
     volatile uintptr_t sp;
     character_reader *save_read = procedural_input;
     character_writer *save_write = procedural_output;
-    THREADID;
+//    THREADID;
     procedural_input = char_from_cin;
     procedural_output = redOut_to_cout;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);

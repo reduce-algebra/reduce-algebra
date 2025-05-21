@@ -488,10 +488,13 @@ static void cint_init(cint *num, size_t bits, long long int val)
 
 static inline void cint_erase(cint *num)
 {   num->nat = 1,
-    num->end =
-        (h_cint_t*)memset(num->mem,
-                          0,
-                         (size_t)(num->end - num->mem) * sizeof(h_cint_t));
+    num->end = (h_cint_t*)memset(
+        num->mem,
+        0,
+// With at least some C++ compilers if I make this argument of type size_t
+// I seem to get a complaint that the value might be out of range. I will
+// use unsigned int and hope that make things quiet!
+        (unsigned int)((num->end - num->mem) * sizeof(h_cint_t)));
 }
 
 static void cint_reinit(cint *num, long long int val)

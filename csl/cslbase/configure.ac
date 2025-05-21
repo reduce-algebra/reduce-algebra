@@ -731,6 +731,10 @@ if test "$enable_webview" = "yes"
 then
   AC_DEFINE([ENABLE_WEBVIEW], [1], [this option enabled])
   CXXFLAGS="$CXXFLAGS -I$srcdir/../../libraries/webview"
+  CXXFLAGS="$CXXFLAGS `pkg-config --cflags webkit2gtk-4.1`"
+  CXXFLAGS="$CXXFLAGS `pkg-config --cflags gtk+-3.0`"
+  LIBS="$LIBS `pkg-config --libs webkit2gtk-4.1`"
+  LIBS="$LIBS `pkg-config --libs gtk+-3.0`"
 fi
 
 
