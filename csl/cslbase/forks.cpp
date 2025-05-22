@@ -317,7 +317,7 @@ LispObject Lopen_fork(LispObject env)
     stream_line_length(r) = 0x7fffffff;
     stream_pushed_char(r) = NOT_CHAR;
     Lflush(nil);
-    pid_t before_fork = getpid();
+//  pid_t before_fork = getpid();
     pid_t pid = fork();
     if (pid == 0)
     {

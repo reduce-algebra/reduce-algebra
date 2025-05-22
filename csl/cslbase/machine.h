@@ -354,7 +354,7 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 
 #include "int128_t.h"
 
-#ifndef EMBEDDED
+#if !defined EMBEDDED || defined USE_SOFTFLOAT
 extern "C"
 {
 // At present softfloat.h needs inclusion in C mode not C++ mode.
