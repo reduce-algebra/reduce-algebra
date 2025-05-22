@@ -1207,9 +1207,7 @@ character_writer *procedural_output;
 
 unsigned int init_flags = 0;
 
-#ifdef WITH_GUI
 std::FILE *alternative_stdout = nullptr;
-#endif // WITH_GUI
 
 // standard_directory holds the name of the default image file that CSL
 // would load.
