@@ -689,15 +689,15 @@ then
   AC_DEFINE([ENABLE_FORKS], [1], [this option enabled])
 fi
 
-AC_ARG_ENABLE(webview,
-  AS_HELP_STRING([--enable-webview],
+AC_ARG_ENABLE(webgui,
+  AS_HELP_STRING([--enable-webgui],
                  [currently experimental (CSL only)]),
   [],
-  [enable_webview="no"])
+  [enable_webgui="no"])
 
-if test "$enable_webview" = "yes"
+if test "$enable_webgui" = "yes"
 then
-  AC_DEFINE([ENABLE_WEBVIEW], [1], [this option enabled])
+  AC_DEFINE([ENABLE_WEBGUI], [1], [this option enabled])
 fi
 
 AC_ARG_ENABLE(test,
@@ -1291,7 +1291,7 @@ then
             --without-expat \
             --without-libiconv \
             --without-regex \
-            --disable-webview \
+            --disable-webgui \
             --disable-richtext \
             --disable-gif \
             --disable-pcx \
