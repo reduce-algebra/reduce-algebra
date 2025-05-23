@@ -233,6 +233,18 @@ fluid '(!*prinl!-visited!-nodes!* !*prinl!-index!*
         !*prinl!-fn!* !*print!-array!*
         !*print!-length!* !*print!-level!*);
 
+% In traces and backtraces I always want to be safe regarding cyclic
+% lists. If I did not handle them carefully I would end up with
+% unbounded recursion or unbounded printing. Sometimes I also want
+% to reveal where structues have sharing (ie when they are an acyclic
+% DAG rather than just a tree) and setting !*show!-shared will enable
+% that. But much of the time that would just make output ugly, so it is
+% not the default.
+
+
+fluid '(!*show!-shared);
+!*show!-shared := nil;           % Default setting
+
 !*print!-length!* := !*print!-level!* := nil;
 
 !*prinl!-visited!-nodes!* := mkhash(10, 0, 1.5)$
@@ -243,13 +255,16 @@ symbolic procedure s!:prinl0(x,!*prinl!-fn!*);
     scalar !*prinl!-index!*;
     !*prinl!-index!*:=0;
     clrhash !*prinl!-visited!-nodes!*;
-    s!:prinl1(x, 0);
-    s!:prinl2(x, 0);
+    if !*show!-shared then
+      s!:prinl1a(x, 0)        % Detect all loop entrypoints and sharing.
+    else
+      s!:prinl1b(x, 0, nil);  % Detect just loop entrypoints.
+    s!:prinl2(x, 0);          % Print with notes regarding same.
     clrhash !*prinl!-visited!-nodes!*;
     return x
   end;
 
-symbolic procedure s!:prinl1(x, depth);
+symbolic procedure s!:prinl1a(x, depth);
 % Find all the nodes in x and record them in the hash table.
 % The first time a node is met it is inserted with associated value 0.
 % If a node is met a second time then it is assigned an unique positive
@@ -275,12 +290,52 @@ symbolic procedure s!:prinl1(x, depth);
           length := upbv x;
           if fixp !*print!-length!* and !*print!-length!* < length then
               length := !*print!-length!*;
-          for i:=0:length do s!:prinl1(getv(x,i), depth+1) >> >>
-      else if hash!-table!-p x then s!:prinl1(hashcontents x, depth+1)
+          for i:=0:length do s!:prinl1a(getv(x,i), depth+1) >> >>
+      else if hash!-table!-p x then s!:prinl1a(hashcontents x, depth+1)
       else if not atom x then <<
-          s!:prinl1(car x, depth+1);
+          s!:prinl1a(car x, depth+1);
           if fixp !*print!-length!* and
              (length := length+1) > !*print!-length!* then return nil;
+          x := cdr x;
+          go to top >> >>
+  end;
+
+symbolic procedure s!:prinl1b(x, depth, trail);
+% Find all the nodes in x and record them in the hash table.
+% The first time a node is met it is inserted with associated value 0.
+% If a node is met a second time then it is assigned an unique positive
+% integer code that will later be used in its label. Well only if it
+% a second time and on the trail...
+  begin
+    scalar w, length;
+    if fixp !*print!-level!* and depth > !*print!-level!* then return nil;
+    length := 0;
+ top:
+    if atom x and
+       not simple!-vector!-p x and
+       not gensymp x and
+       not hash!-table!-p x then return nil
+    else if w := gethash(x,!*prinl!-visited!-nodes!*) then <<
+       if w = 0 and memq(x, trail) then <<
+         !*prinl!-index!* := !*prinl!-index!* + 1;
+         puthash(x,!*prinl!-visited!-nodes!*, !*prinl!-index!*) >>;
+       return nil >>
+    else <<
+      puthash(x, !*prinl!-visited!-nodes!*, 0);
+      if simple!-vector!-p x then <<
+        if !*print!-array!* then <<
+          length := upbv x;
+          if fixp !*print!-length!* and !*print!-length!* < length then
+              length := !*print!-length!*;
+          for i:=0:length do
+            s!:prinl1b(getv(x,i), depth+1,x . trail) >> >>
+      else if hash!-table!-p x then
+        s!:prinl1b(hashcontents x, depth+1,x . trail)
+      else if not atom x then <<
+          s!:prinl1b(car x, depth+1, x . trail);
+          if fixp !*print!-length!* and
+             (length := length+1) > !*print!-length!* then return nil;
+          trail := x . trail;
           x := cdr x;
           go to top >> >>
   end;

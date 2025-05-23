@@ -721,16 +721,16 @@ then
 fi
 
 
-AC_ARG_ENABLE(webview,
-  AS_HELP_STRING([--enable-webview],
+AC_ARG_ENABLE(webgui,
+  AS_HELP_STRING([--enable-webgui],
                  [currently experimental (CSL only)]),
   [],
-  [enable_webview="no"])
+  [enable_webgui="no"])
 
-if test "$enable_webview" = "yes"
+if test "$enable_webgui" = "yes"
 then
-  AC_DEFINE([ENABLE_WEBVIEW], [1], [this option enabled])
-  CXXFLAGS="$CXXFLAGS -I$srcdir/../../libraries/webview"
+  AC_DEFINE([ENABLE_WEBGUI], [1], [this option enabled])
+  CXXFLAGS="$CXXFLAGS -I$srcdir/../../libraries/webgui"
   CXXFLAGS="$CXXFLAGS `pkg-config --cflags webkit2gtk-4.1`"
   CXXFLAGS="$CXXFLAGS `pkg-config --cflags gtk+-3.0`"
   LIBS="$LIBS `pkg-config --libs webkit2gtk-4.1`"
@@ -2015,7 +2015,7 @@ AM_CONDITIONAL(debug, test "$enable_debug" != "no")
 AM_CONDITIONAL(xcross, test "$can_run_compiled_code" != "yes")
 AM_CONDITIONAL(inlines, test "$with_inlines" = "yes")
 AM_CONDITIONAL(enable_jit, test "$enable_jit" = "yes")
-AM_CONDITIONAL(enable_webview, test "$enable_webview" = "yes")
+AM_CONDITIONAL(enable_webgui, test "$enable_webgui" = "yes")
 
 # The Makefile that is built from Makefile.am will include these three
 # so it will be unhappy if they are not present... And there is a conflict

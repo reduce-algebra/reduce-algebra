@@ -163,7 +163,7 @@ flag ('(off on),'ignore);
 
 switch backtrace,comp,defn,rprint,rstyle,demo,echo,errcont,fastfor,
        int,lessspace,msg,output,pret,quotenewnam,raise,lower,time,
-       strict_argcount, report_colons=on;   % eoldelimp
+       strict_argcount,report_colons=on,show!-shared;   % eoldelimp
 
 %!*report_colons := t;
 

@@ -85,6 +85,7 @@ reduce_CPPFLAGS = $(TRACE) -DREDUCE_PROMPTS=1
 else !debug
 reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1 -DREDUCE_PROMPTS=1
 endif !debug
+reduce_web_CPPFLAGS=$(reduce_CPPFLAGS)
 
 # At least on a temporary basis I will make CSL keep profiling
 # information. This is because that will help me debug the profile
@@ -117,6 +118,7 @@ if exeext
 plain_csl = csl
 plain_flatcsl = flatcsl
 plain_reduce = reduce
+plain_reduce_web = reduce_web
 plain_bootstrapreduce = bootstrapreduce
 plain_fwindemo = fwindemo
 plain_wxpsl = wxpsl
@@ -318,6 +320,9 @@ noinst_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
 else !wx
 noinst_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 endif !wx
+if enable_webgui
+noinst_PROGRAMS += reduce_web$(EXEEXT)
+endif enable_webgui
 if mac_framework
 noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
@@ -362,11 +367,12 @@ endif !arithlib
 
 gc_sources = newcslgc.cpp newallocate.cpp gc-check.cpp
 
-if enable_webview
-webview_sources = embwebgui.cpp webdriver.cpp
-else !enable_webview
-webview_sources =
-endif !enable_webview
+if enable_webgui
+webgui_sources = embwebgui.cpp
+# ??? webdriver.cpp
+else !enable_webgui
+webgui_sources =
+endif !enable_webgui
 
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
@@ -377,7 +383,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
 		winsupport.cpp csl.cpp fasl.cpp preserve.cpp bytes1.cpp \
 		showhdr.cpp float128_t.cpp \
-		$(gc_sources) $(arith_sources) $(webview_sources)
+		$(gc_sources) $(arith_sources)
 
 # This little rule is because from time to time I really want to see the
 # expanded version of a C++ file (ie after C++ macroexpansion has taken place).
@@ -563,6 +569,7 @@ flatcsl_SOURCES = flatcsl.cpp
 bootstrapreduce_SOURCES = $(core_sources) $(fwin_sources) stubs.cpp
 
 reduce_SOURCES = $(core_sources) $(fwin_sources) $(generated_sources)
+reduce_web_SOURCES = $(reduce_SOURCES) $(webgui_sources)
 
 fwindemo_SOURCES=fwindemo.cpp $(fwin_sources) termed.cpp
 if wx
@@ -607,6 +614,9 @@ endif !mac_framework
 
 AM_CPPFLAGS     += -Dfontsdir=reduce.$(fontsdir)
 reduce_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
+reduce_web_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir) \
+  -DEMBEDDED=1 -DUSE_SOFTFLOAT=1 -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 \
+  -DWEBFRONT=\"embwebgui\.h\" -I$(reduce)/libraries/webview
 bootstrapreduce_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
 csl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)
 flatcsl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)
@@ -690,6 +700,7 @@ csl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 flatcsl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 reduce_LDADD = $(reduceres) $(FOX_LIBS)
+reduce_web_LDADD = $(reduce_LDADD)
 
 # These used to have things like local-cslexe.def as dependencies...
 csl_DEPENDENCIES = fwin-csl.$(OBJEXT) $(FONTDEP) $(WXC)
@@ -699,6 +710,7 @@ bootstrapreduce_DEPENDENCIES = fwin-csl.$(OBJEXT) $(FONTDEP) \
 reduce_DEPENDENCIES = $(reduceres) \
 		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC) \
 		$(AWKFILES)
+reduce_web_DEPENDENCIES = $(reduce_DEPENDENCIES)
 
 if wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
@@ -737,6 +749,7 @@ csl_LDADD = $(FOX_LIBS)
 flatcsl_LDADD = $(FOX_LIBS)
 bootstrapreduce_LDADD = $(FOX_LIBS)
 reduce_LDADD = $(FOX_LIBS)
+reduce_web_LDADD = $(reduce_LDADD)
 
 csl_DEPENDENCIES = $(FONTDEP) $(WXC)
 flatcsl_DEPENDENCIES = $(FONTDEP) $(WXC)
@@ -744,6 +757,7 @@ bootstrapreduce_DEPENDENCIES = $(FONTDEP) \
 		reduce.doc/index.html $(AWKFILES) $(GP) $(WXC)
 reduce_DEPENDENCIES = $(FONTDEP) reduce.doc/index.html \
 		$(AWKFILES) $(GP) $(WXC)
+reduce_web_DEPENDENCIES = $(reduce_DEPENDENCIES)
 if wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
@@ -798,6 +812,7 @@ CRDEP = ../include/crlibm.h
 CRINC = -I../include
 AM_CPPFLAGS     += $(CRINC)
 reduce_CPPFLAGS += $(CRINC)
+reduce_web_CPPFLAGS += $(CRINC)
 bootstrapreduce_CPPFLAGS += $(CRINC)
 csl_CPPFLAGS    += $(CRINC)
 flatcsl_CPPFLAGS    += $(CRINC)
@@ -811,11 +826,13 @@ csl_LDADD += ../lib/libcrlibm.a
 flatcsl_LDADD += ../lib/libcrlibm.a
 bootstrapreduce_LDADD += ../lib/libcrlibm.a
 reduce_LDADD += ../lib/libcrlibm.a
+reduce_web_LDADD += ../lib/libcrlibm.a
 
 csl_DEPENDENCIES += $(CRLIBMDEPS)
 flatcsl_DEPENDENCIES += $(CRLIBMDEPS)
 bootstrapreduce_DEPENDENCIES += $(CRLIBMDEPS)
 reduce_DEPENDENCIES += $(CRLIBMDEPS)
+reduce_web_DEPENDENCIES += $(CRLIBMDEPS)
 
 $(CRLIBMDEPS):
 	@printf "About to build crlibm for %s ($@)\n" `pwd`
@@ -836,6 +853,7 @@ JITDEP = ../include/asmjit/asmjit.h
 JITINC = -I../include
 AM_CPPFLAGS     += $(JITINC)
 reduce_CPPFLAGS += $(JITINC)
+reduce_web_CPPFLAGS += $(JITINC)
 bootstrapreduce_CPPFLAGS += $(JITINC)
 csl_CPPFLAGS    += $(JITINC)
 flatcsl_CPPFLAGS    += $(JITINC)
@@ -844,11 +862,13 @@ csl_LDADD += ../lib/libasmjit.a
 flatcsl_LDADD += ../lib/libasmjit.a
 bootstrapreduce_LDADD += ../lib/libasmjit.a
 reduce_LDADD += ../lib/libasmjit.a
+reduce_web_LDADD += ../lib/libasmjit.a
 
 csl_DEPENDENCIES += $(JITDEPS)
 flatcsl_DEPENDENCIES += $(JITDEPS)
 bootstrapreduce_DEPENDENCIES += $(JITDEPS)
 reduce_DEPENDENCIES += $(JITDEPS)
+reduce_web_DEPENDENCIES += $(JITDEPS)
 
 $(JITDEPS):
 	@printf "About to build asmjit for %s ($@)\n" `pwd`
@@ -869,6 +889,7 @@ csl_LDADD += -lffi
 flatcsl_LDADD += -lffi
 bootstrapreduce_LDADD += -lffi
 reduce_LDADD += -lffi
+reduce_web_LDADD += -lffi
 
 else !mac_framework
 
@@ -878,6 +899,7 @@ FFIDEP = ../include/ffi.h
 FFIINC = -I../include
 AM_CPPFLAGS     += $(FFINC)
 reduce_CPPFLAGS += $(FFINC)
+reduce_web_CPPFLAGS += $(FFINC)
 bootstrapreduce_CPPFLAGS += $(FFINC)
 csl_CPPFLAGS    += $(FFINC)
 flatcsl_CPPFLAGS    += $(FFINC)
@@ -890,11 +912,13 @@ csl_LDADD += ../lib/libffi.a
 flatcsl_LDADD += ../lib/libffi.a
 bootstrapreduce_LDADD += ../lib/libffi.a
 reduce_LDADD += ../lib/libffi.a
+reduce_web_LDADD += ../lib/libffi.a
 
 csl_DEPENDENCIES += $(LIBFFIDEPS)
 flatcsl_DEPENDENCIES += $(LIBFFIDEPS)
 bootstrapreduce_DEPENDENCIES += $(LIBFFIDEPS)
 reduce_DEPENDENCIES += $(LIBFFIDEPS)
+reduce_web_DEPENDENCIES += $(LIBFFIDEPS)
 
 $(LIBFFIDEPS):
 	@printf "About to build libffi for %s ($@)\n" `pwd`
@@ -908,6 +932,7 @@ SOFTFLOATDEP = ../include/softfloat.h
 SOFTFLOATINC = -I../include
 AM_CPPFLAGS     += $(SOFTFLOATINC)
 reduce_CPPFLAGS += $(SOFTFLOATINC)
+reduce_web_CPPFLAGS += $(SOFTFLOATINC)
 bootstrapreduce_CPPFLAGS += $(SOFTFLOATINC)
 csl_CPPFLAGS    += $(SOFTFLOATINC)
 flatcsl_CPPFLAGS    += $(SOFTFLOATINC)
@@ -921,10 +946,12 @@ csl_LDADD += ../lib/libsoftfloat.a
 flatcsl_LDADD += ../lib/libsoftfloat.a
 bootstrapreduce_LDADD += ../lib/libsoftfloat.a
 reduce_LDADD += ../lib/libsoftfloat.a
+reduce_web_LDADD += ../lib/libsoftfloat.a
 
 csl_DEPENDENCIES += $(SOFTFLOATDEPS)
 bootstrapreduce_DEPENDENCIES += $(SOFTFLOATDEPS)
 reduce_DEPENDENCIES += $(SOFTFLOATDEPS)
+reduce_web_DEPENDENCIES += $(SOFTFLOATDEPS)
 
 $(SOFTFLOATDEPS):
 	@printf "About to build softfloat for %s ($@)\n" `pwd`
@@ -970,6 +997,18 @@ reduce-arith-logops.$(OBJEXT):	$(HDRS) $(ARITHDEP)
 reduce-arith-modular.$(OBJEXT):	$(HDRS) $(ARITHDEP)
 reduce-arith-elem.$(OBJEXT):	$(HDRS) $(ARITHDEP)
 reduce-arith-misc.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+
+reduce_web-arith-setup.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce_web-arith-plus.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce_web-arith-times.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce_web-arith-float.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce_web-arith-gcdn.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce_web-arith-print.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce_web-arith-compare.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce_web-arith-logops.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce_web-arith-modular.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce_web-arith-elem.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce_web-arith-misc.$(OBJEXT):	$(HDRS) $(ARITHDEP)
 
 endif arithlib
 
@@ -1180,6 +1219,116 @@ reduce-u57.$(OBJEXT):	$(HDRS)
 reduce-u58.$(OBJEXT):	$(HDRS)
 reduce-u59.$(OBJEXT):	$(HDRS)
 reduce-u60.$(OBJEXT):	$(HDRS)
+
+reduce_web-newallocate.$(OBJEXT):	$(HDRS)
+reduce_web-arith01.$(OBJEXT):	$(HDRS)
+reduce_web-arith02.$(OBJEXT):	$(HDRS)
+reduce_web-arith03.$(OBJEXT):	$(HDRS)
+reduce_web-arith04.$(OBJEXT):	$(HDRS)
+reduce_web-arith05.$(OBJEXT):	$(HDRS)
+reduce_web-arith06.$(OBJEXT):	$(HDRS)
+reduce_web-arith07.$(OBJEXT):	$(HDRS)
+reduce_web-arith08.$(OBJEXT):	$(HDRS)
+reduce_web-arith09.$(OBJEXT):	$(HDRS)
+reduce_web-arith10.$(OBJEXT):	$(HDRS)
+reduce_web-arith11.$(OBJEXT):	$(HDRS)
+reduce_web-arith12.$(OBJEXT):	$(HDRS)
+reduce_web-arith13.$(OBJEXT):	$(HDRS)
+reduce_web-arith14.$(OBJEXT):	$(HDRS)
+reduce_web-arith-quad.$(OBJEXT):	$(HDRS)
+reduce_web-isprime.$(OBJEXT):	$(HDRS)
+reduce_web-qsieve.$(OBJEXT):	$(HDRS)
+reduce_web-bytes1.$(OBJEXT):	$(HDRS)
+reduce_web-showhdr.$(OBJEXT):	$(HDRS)
+reduce_web-float128_t.$(OBJEXT):	$(HDRS)
+reduce_web-char.$(OBJEXT):		$(HDRS)
+reduce_web-csl.$(OBJEXT):		$(HDRS)
+reduce_web-cslmpi.$(OBJEXT):	$(HDRS)
+reduce_web-cslread.$(OBJEXT):	$(HDRS)
+reduce_web-eval1.$(OBJEXT):		$(HDRS)
+reduce_web-eval2.$(OBJEXT):		$(HDRS)
+reduce_web-eval3.$(OBJEXT):		$(HDRS)
+reduce_web-eval4.$(OBJEXT):		$(HDRS)
+reduce_web-jit.$(OBJEXT):		$(HDRS)
+reduce_web-fasl.$(OBJEXT):		$(HDRS)
+reduce_web-fns1.$(OBJEXT):		$(HDRS)
+reduce_web-fns2.$(OBJEXT):		$(HDRS)
+reduce_web-fns3.$(OBJEXT):		$(HDRS)
+reduce_web-lisphash.$(OBJEXT):	$(HDRS)
+reduce_web-newcslgc.$(OBJEXT):	$(HDRS)
+reduce_web-gc-check.$(OBJEXT):	$(HDRS)
+reduce_web-ompsetup.$(OBJEXT):	$(HDRS)
+reduce_web-openmath.$(OBJEXT):	$(HDRS)
+reduce_web-preserve.$(OBJEXT):	$(HDRS)
+reduce_web-print.$(OBJEXT):		$(HDRS)
+reduce_web-pro.$(OBJEXT):		$(HDRS)
+reduce_web-restart.$(OBJEXT):	$(HDRS)
+reduce_web-stubs.$(OBJEXT):		$(HDRS)
+reduce_web-sysfwin.$(OBJEXT):	$(HDRS)
+reduce_web-serialize.$(OBJEXT):	$(HDRS)
+reduce_web-winsupport.$(OBJEXT):	$(HDRS)
+reduce_web-inthash.$(OBJEXT):	$(HDRS)
+
+reduce_web-u01.$(OBJEXT):	$(HDRS)
+reduce_web-u02.$(OBJEXT):	$(HDRS)
+reduce_web-u03.$(OBJEXT):	$(HDRS)
+reduce_web-u04.$(OBJEXT):	$(HDRS)
+reduce_web-u05.$(OBJEXT):	$(HDRS)
+reduce_web-u06.$(OBJEXT):	$(HDRS)
+reduce_web-u07.$(OBJEXT):	$(HDRS)
+reduce_web-u08.$(OBJEXT):	$(HDRS)
+reduce_web-u09.$(OBJEXT):	$(HDRS)
+reduce_web-u10.$(OBJEXT):	$(HDRS)
+reduce_web-u11.$(OBJEXT):	$(HDRS)
+reduce_web-u12.$(OBJEXT):	$(HDRS)
+reduce_web-u13.$(OBJEXT):	$(HDRS)
+reduce_web-u14.$(OBJEXT):	$(HDRS)
+reduce_web-u15.$(OBJEXT):	$(HDRS)
+reduce_web-u16.$(OBJEXT):	$(HDRS)
+reduce_web-u17.$(OBJEXT):	$(HDRS)
+reduce_web-u18.$(OBJEXT):	$(HDRS)
+reduce_web-u19.$(OBJEXT):	$(HDRS)
+reduce_web-u20.$(OBJEXT):	$(HDRS)
+reduce_web-u21.$(OBJEXT):	$(HDRS)
+reduce_web-u22.$(OBJEXT):	$(HDRS)
+reduce_web-u23.$(OBJEXT):	$(HDRS)
+reduce_web-u24.$(OBJEXT):	$(HDRS)
+reduce_web-u25.$(OBJEXT):	$(HDRS)
+reduce_web-u26.$(OBJEXT):	$(HDRS)
+reduce_web-u27.$(OBJEXT):	$(HDRS)
+reduce_web-u28.$(OBJEXT):	$(HDRS)
+reduce_web-u29.$(OBJEXT):	$(HDRS)
+reduce_web-u30.$(OBJEXT):	$(HDRS)
+reduce_web-u31.$(OBJEXT):	$(HDRS)
+reduce_web-u32.$(OBJEXT):	$(HDRS)
+reduce_web-u33.$(OBJEXT):	$(HDRS)
+reduce_web-u34.$(OBJEXT):	$(HDRS)
+reduce_web-u35.$(OBJEXT):	$(HDRS)
+reduce_web-u36.$(OBJEXT):	$(HDRS)
+reduce_web-u37.$(OBJEXT):	$(HDRS)
+reduce_web-u38.$(OBJEXT):	$(HDRS)
+reduce_web-u39.$(OBJEXT):	$(HDRS)
+reduce_web-u40.$(OBJEXT):	$(HDRS)
+reduce_web-u41.$(OBJEXT):	$(HDRS)
+reduce_web-u42.$(OBJEXT):	$(HDRS)
+reduce_web-u43.$(OBJEXT):	$(HDRS)
+reduce_web-u44.$(OBJEXT):	$(HDRS)
+reduce_web-u45.$(OBJEXT):	$(HDRS)
+reduce_web-u46.$(OBJEXT):	$(HDRS)
+reduce_web-u47.$(OBJEXT):	$(HDRS)
+reduce_web-u48.$(OBJEXT):	$(HDRS)
+reduce_web-u49.$(OBJEXT):	$(HDRS)
+reduce_web-u50.$(OBJEXT):	$(HDRS)
+reduce_web-u51.$(OBJEXT):	$(HDRS)
+reduce_web-u52.$(OBJEXT):	$(HDRS)
+reduce_web-u53.$(OBJEXT):	$(HDRS)
+reduce_web-u54.$(OBJEXT):	$(HDRS)
+reduce_web-u55.$(OBJEXT):	$(HDRS)
+reduce_web-u56.$(OBJEXT):	$(HDRS)
+reduce_web-u57.$(OBJEXT):	$(HDRS)
+reduce_web-u58.$(OBJEXT):	$(HDRS)
+reduce_web-u59.$(OBJEXT):	$(HDRS)
+reduce_web-u60.$(OBJEXT):	$(HDRS)
 
 # If one of the major foundations of this Makefile has a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -1461,6 +1610,59 @@ if mac_framework
 endif mac_framework
 endif !wx
 
+reduce_web$(EXEEXT):	$(reduce_web_OBJECTS) $(reduce_web_DEPENDENCIES) $(FOXDEPS) \
+			$(WXDEPS) $(generated_lisp) $(HDRS) $(REDUCECOM) $(CYG_REDUCE)
+	@printf "Relinking $@ because of $?\n"
+if windows
+# See "gui-or-not.txt" for an explanation of what this is about...
+if gui
+	$(CP) $(cslbase)/reduce_web reduce_web-temp
+	mv reduce_web-temp reduce_web
+else !gui
+	$(CP) $(cslbase)/reduce_web-nogui reduce_web-nogui-temp
+	mv -f reduce_web-nogui-temp reduce_web
+endif !gui
+if !cygwin
+	if test -x "$(CYG_REDUCE)"; then $(CP) "$(CYG_REDUCE)" cygwin64-reduce_web.exe; fi
+endif !cygwin
+endif windows
+	$(CXXLINKTO) $(DEST)reduce_web$(EXEEXT) $(reduce_web_OBJECTS) $(reduce_web_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
+if !debug
+if !darwin
+	$(STRIP) reduce_web$(EXEEXT)
+endif !darwin
+endif !debug
+if wx
+if mac_framework
+	$(cslbase)/create_bundle.sh reduce_web $(cslbase) reduce_web
+endif mac_framework
+else !wx
+if mac_framework
+# on Darwin I want to go
+# $(REZ) -t APPL -o reduce_web $(cslbase)/mac.r
+# (and similarly for csl) after linking, so that the items concerned
+# become clickable. Note that "mac.r" is copied directly from the
+# FLTK distribution (www.fltk.org) and it is released there under
+# LGPL with an array of extra permissions that mean that static
+# linking is permitted and it is not necessary to be as careful
+# to distribute copies of licenses as it is with the regular LGPL.
+#
+# Well to be a little more precise, I want to do that if the MacOS framework
+# is available. on raw Darwin it will not be.
+#
+# Rez is now an rather old fashioned way of doing things. With wxWidgets I
+# will replace this with stuff that creates application bundles.
+	$(REZ) -t APPL -o reduce_web $(cslbase)/mac.r
+	$(cslbase)/create_old_bundle.sh reduce_web $(cslbase) reduce_web
+endif mac_framework
+endif !wx
+
+# Maybe automake does not like file names with embedded dots, so I make the
+# binarby as reduce_web then copy it to where it should be.
+
+reduce.web$(EXEEXT):	reduce_web$(EXEEXT)
+	cp reduce_web$(EXEEXT) reduce.web$(EXEEXT)
+
 if windows
 if gui
 reduce$(COM):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
@@ -1468,6 +1670,16 @@ reduce$(COM):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 	@printf "Relinking $@ because of $?\n"
 	$(CXXLINKTO) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 	$(STRIP) reduce$(COM)
+endif gui
+endif windows
+
+if windows
+if gui
+reduce_web$(COM):	$(reduce_web_OBJECTS) $(reduce_web_DEPENDENCIES) $(FOXDEPS) \
+			$(WXDEPS) $(generated_lisp) $(HDRS)
+	@printf "Relinking $@ because of $?\n"
+	$(CXXLINKTO) $(DEST)reduce_web$(COM) $(reduce_web_OBJECTS) $(reduce_web_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(STRIP) reduce_web$(COM)
 endif gui
 endif windows
 
@@ -1668,6 +1880,9 @@ $(plain_flatcsl):	flatcsl.exe
 $(plain_reduce):	reduce.exe
 	printf "$(MAKE) reduce.exe is preferred\n"
 
+$(plain_reduce_web):	reduce_web.exe
+	printf "$(MAKE) reduce_web.exe is preferred\n"
+
 $(plain_bootstrapreduce):	bootstrapreduce.exe
 	printf "$(MAKE) bootstrapreduce.exe is preferred\n"
 
@@ -1690,6 +1905,9 @@ $(plain_flatcsl):	flatcsl.exe
 $(plain_reduce):	reduce.exe
 	printf "$(MAKE) reduce.exe is preferred\n"
 
+$(plain_reduce_web):	reduce_web.exe
+	printf "$(MAKE) reduce_web.exe is preferred\n"
+
 $(plain_bootstrapreduce):	bootstrapreduce.exe
 	printf "$(MAKE) bootstrapreduce.exe is preferred\n"
 
@@ -1711,6 +1929,9 @@ $(plain_flatcsl):	flatcsl.exe
 
 $(plain_reduce):	reduce.exe
 	printf "$(MAKE) reduce.exe is preferred\n"
+
+$(plain_reduce_web):	reduce_web.exe
+	printf "$(MAKE) reduce_web.exe is preferred\n"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
 	printf "$(MAKE) bootstrapreduce.exe is preferred\n"
