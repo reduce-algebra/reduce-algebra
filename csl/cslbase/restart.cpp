@@ -1345,6 +1345,9 @@ LispObject set_up_variables(int restart_flag)
 #ifdef EMBEDDED
         w = cons(make_keyword("EMBEDDED"), w);
 #endif
+#ifdef ENABLE_WEBGUI
+        w = cons(make_keyword("WEBGUI"), w);
+#endif
 #ifdef NO_THROW
         w = cons(make_keyword("NO-THROW"), w);
 #endif
@@ -1437,6 +1440,9 @@ LispObject set_up_variables(int restart_flag)
 #endif
 #ifdef EMBEDDED
         w = cons(make_keyword("embedded"), w);
+#endif
+#ifdef ENABLE_WEBGUI
+        w = cons(make_keyword("webgui"), w);
 #endif
 #ifdef NO_THROW
         w = cons(make_keyword("no-throw"), w);

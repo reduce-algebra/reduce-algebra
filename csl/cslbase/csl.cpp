@@ -1485,7 +1485,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     }
 #endif // EMBEDDED
 
-#ifdef EMBEDDED
+#if defined EMBEDDED || defined ENABLE_WEBGUI
     fwin_set_lookup(look_in_lisp_variable);
 #endif
     errorset_min = 0;
@@ -3527,7 +3527,7 @@ static int submain(int argc, const char *argv[])
 #endif // PROCEDURAL_INTERFACE variants
 }
 
-#ifdef EMBEDDED
+#if defined EMBEDDED || defined ENABLE_WEBGUI
 #define ENTRYPOINT main
 #else // EMBEDDED
 
@@ -3555,7 +3555,7 @@ EMSCRIPTEN_KEEPALIVE
 #endif
 int ENTRYPOINT(int argc, const char *argv[])
 {   int res;
-#ifdef EMBEDDED
+#if defined EMBEDDED || defined ENABLE_WEBGUI
     if ((res = find_program_directory(argv[0])) != 0)
     {   std::fprintf(stderr,
                      "Unable to identify program name and directory (%d)\n", res);

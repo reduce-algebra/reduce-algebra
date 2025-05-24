@@ -615,7 +615,7 @@ endif !mac_framework
 AM_CPPFLAGS     += -Dfontsdir=reduce.$(fontsdir)
 reduce_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
 reduce_web_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir) \
-  -DEMBEDDED=1 -DUSE_SOFTFLOAT=1 -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 \
+  -DUSE_SOFTFLOAT=1 -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 \
   -DWEBFRONT=\"embwebgui\.h\" -I$(reduce)/libraries/webview
 bootstrapreduce_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
 csl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)

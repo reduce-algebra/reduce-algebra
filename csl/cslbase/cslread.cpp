@@ -1893,7 +1893,7 @@ static LispObject wait_for_char()
 {   ensure_screen();
 // I rather believe that EMBEDDED and WINDOW_SYSTEM should by mutually
 // exclusive
-#ifndef EMBEDDED
+#if !defined EMBEDDED
     {   on_backtrace(tty_count = wimpget(tty_buffer),
                      if (miscflags & HEADLINE_FLAG)
                      err_printf("+++ Interrupted\n");
