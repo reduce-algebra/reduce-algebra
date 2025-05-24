@@ -1038,78 +1038,43 @@ x   + ----*x  + ----*x  + ------*x  + O(x )
 ps(weierstrass(x,omega1, omega3), x,omega3);
 
 
-e3(omega1,omega3) - sqrt(
+                                         2
+                     12*e3(omega1,omega3)  - g2(omega1,omega3)              2
+e3(omega1,omega3) + -------------------------------------------*(x - omega3)
+                                         4
 
-                      3
-   4*e3(omega1,omega3)  - e3(omega1,omega3)*nil(omega1,omega3) - g3(omega1,w2))
+    2*e3(omega1,omega3)*g2(omega1,omega3) + 3*g3(omega1,omega3)              4
+ + -------------------------------------------------------------*(x - omega3)  +
+                                 4
 
-                                     2
-                 12*e3(omega1,omega3)  - nil(omega1,omega3)              2
-*(x - omega3) + --------------------------------------------*(x - omega3)  - 2*
-                                     4
+                      2
+ (28*e3(omega1,omega3) *g2(omega1,omega3)
 
-                        3
-sqrt(4*e3(omega1,omega3)  - e3(omega1,omega3)*nil(omega1,omega3) - g3(omega1,w2)
+                                                               2
+   + 60*e3(omega1,omega3)*g3(omega1,omega3) + g2(omega1,omega3) )/80
 
-                                3                        3
-)*e3(omega1,omega3)*(x - omega3)  + (20*e3(omega1,omega3)
-
-                                                                              4
-    - 3*e3(omega1,omega3)*nil(omega1,omega3) - 2*g3(omega1,w2))/4*(x - omega3)  
-
-                             3
-+ (3*sqrt(4*e3(omega1,omega3)  - e3(omega1,omega3)*nil(omega1,omega3)
-
-                                                    2
-           - g3(omega1,w2))*( - 20*e3(omega1,omega3)  + nil(omega1,omega3)))/20
-
-             5                         4
-*(x - omega3)  + (560*e3(omega1,omega3)
-
-                           2
-    - 112*e3(omega1,omega3) *nil(omega1,omega3)
-
-                                                             2                 6
-    - 80*e3(omega1,omega3)*g3(omega1,w2) + nil(omega1,omega3) )/80*(x - omega3)
-
-                 7
- + O((x - omega3) )
+             6                 7
+*(x - omega3)  + O((x - omega3) )
 
 tmp := ps(weierstrass(x,omega1, omega3), x,omega1);
 
 
-                                                   3
-tmp := e1(omega1,omega3) - sqrt(4*e1(omega1,omega3)
-
-           - e1(omega1,omega3)*nil(omega1,omega3) - g3(omega1,w2))*(x - omega1)
+tmp := e1(omega1,omega3)
 
                                2
-           12*e1(omega1,omega3)  - nil(omega1,omega3)              2
-        + --------------------------------------------*(x - omega1)  - 2*sqrt(
+           12*e1(omega1,omega3)  - g2(omega1,omega3)              2
+        + -------------------------------------------*(x - omega1)  + 
                                4
 
-                             3
-          4*e1(omega1,omega3)  - e1(omega1,omega3)*nil(omega1,omega3)
+        2*e1(omega1,omega3)*g2(omega1,omega3) + 3*g3(omega1,omega3)
+       -------------------------------------------------------------
+                                     4
 
-                                                          3
-           - g3(omega1,w2))*e1(omega1,omega3)*(x - omega1)  + (
+                    4                        2
+       *(x - omega1)  + (28*e1(omega1,omega3) *g2(omega1,omega3)
 
-                              3
-          20*e1(omega1,omega3)  - 3*e1(omega1,omega3)*nil(omega1,omega3)
-
-                                            4                              3
-           - 2*g3(omega1,w2))/4*(x - omega1)  + (3*sqrt(4*e1(omega1,omega3)
-
-              - e1(omega1,omega3)*nil(omega1,omega3) - g3(omega1,w2))
-
-                                   2                                       5
-          *( - 20*e1(omega1,omega3)  + nil(omega1,omega3)))/20*(x - omega1)  + (
-
-                               4                        2
-          560*e1(omega1,omega3)  - 112*e1(omega1,omega3) *nil(omega1,omega3)
-
-                                                                    2
-           - 80*e1(omega1,omega3)*g3(omega1,w2) + nil(omega1,omega3) )/80
+                                                                       2
+           + 60*e1(omega1,omega3)*g3(omega1,omega3) + g2(omega1,omega3) )/80
 
                     6                 7
        *(x - omega1)  + O((x - omega1) )
@@ -1117,38 +1082,19 @@ tmp := e1(omega1,omega3) - sqrt(4*e1(omega1,omega3)
 tmp1 := ps(weierstrassZeta(x,omega1, omega3), x,omega1);
 
 
-tmp1 := eta1(omega1,omega3) - e1(omega1,omega3)*(x - omega1) + sqrt(
-
-                              3
-           4*e1(omega1,omega3)  - e1(omega1,omega3)*nil(omega1,omega3)
-
-                                           2
-            - g3(omega1,w2))/2*(x - omega1)
+tmp1 := eta1(omega1,omega3) - e1(omega1,omega3)*(x - omega1)
 
                                    2
-             - 12*e1(omega1,omega3)  + nil(omega1,omega3)              3
-         + -----------------------------------------------*(x - omega1)  + (sqrt
+             - 12*e1(omega1,omega3)  + g2(omega1,omega3)              3
+         + ----------------------------------------------*(x - omega1)  + 
                                  12
 
-                               3
-           (4*e1(omega1,omega3)  - e1(omega1,omega3)*nil(omega1,omega3)
+          - 2*e1(omega1,omega3)*g2(omega1,omega3) - 3*g3(omega1,omega3)
+        ----------------------------------------------------------------
+                                       20
 
-                                                               4
-             - g3(omega1,w2))*e1(omega1,omega3))/2*(x - omega1)  + (
-
-                                  3
-            - 20*e1(omega1,omega3)  + 3*e1(omega1,omega3)*nil(omega1,omega3)
-
-                                              5                            3
-            + 2*g3(omega1,w2))/20*(x - omega1)  + (sqrt(4*e1(omega1,omega3)
-
-               - e1(omega1,omega3)*nil(omega1,omega3) - g3(omega1,w2))
-
-                                 2                                       6
-           *(20*e1(omega1,omega3)  - nil(omega1,omega3)))/40*(x - omega1)
-
-                         7
-         + O((x - omega1) )
+                     5                 7
+        *(x - omega1)  + O((x - omega1) )
 
 
 
@@ -1160,10 +1106,3 @@ df(tmp1,x)/tmp;
 
 end;
 
-Tested on x86_64-pc-windows CSL
-1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
-Time: tps  126  30
-1: Leaving REDUCE ... 
-
-
-End of Lisp run after 0.17+0.04 seconds
