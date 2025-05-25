@@ -296,9 +296,11 @@ int batchp()
 
 const char *find_image_directory(int argc, const char *argv[])
 {   int n;
+    int len = strlen(programName);
     char *w;
     char xname[LONGEST_LEGAL_FILENAME];
     std::memset(xname, 0, sizeof(xname));
+    if (len > 4 && strcmp(programName+len-4, ".web")==0) len -= 4;
 #ifdef MACINTOSH
 // There is a special oddity on the Macintosh (with the wxWidgets version
 // where windowed versions are set up as "applications" in a directory that
@@ -312,14 +314,16 @@ const char *find_image_directory(int argc, const char *argv[])
 // really an application after all. I will do a load of rather curious
 // tests here that are intended to detect the above cases and do special
 // things! My tests will be based on file names and paths.
-    std::snprintf(xname, sizeof(xname), "/%s.app/Contents/MacOS", programName);
+    std::snprintf(xname, sizeof(xname),
+                  "/%.*s.app/Contents/MacOS", len, programName);
     n = std::strlen(programDir) - std::strlen(xname);
     if (n>=0 && std::strcmp(programDir+n, xname) == 0)
     {   // Seem to be being executed from within application bundle.
 // This dates from when I thought I would put the image in merely Contents not
 // in Contents/MacOS.
-        std::snprintf(xname, sizeof(xname), "%.*s/%s.img",
-                      static_cast<int>(std::strlen(programDir)), programDir, programName);
+        std::snprintf(xname, sizeof(xname), "%.*s/%.*s.img",
+                      static_cast<int>(std::strlen(programDir)),
+                      programDir, len, programName);
     }
     else
     {   struct stat buf;
@@ -328,16 +332,16 @@ const char *find_image_directory(int argc, const char *argv[])
 // such bundle I will put the image file in the location I would have used
 // with Windows of X11.
         std::snprintf(xname, sizeof(xname),
-                      "%s/%s.app/Contents/MacOS", programDir,
-                      programName);
+                      "%s/%.*s.app/Contents/MacOS", programDir,
+                      len, programName);
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
         {   std::snprintf(xname, sizeof(xname),
-                          "%s/%s.app/Contents/MacOS/%s.img",
-                          programDir, programName, programName);
+                          "%s/%.*s.app/Contents/MacOS/%.*s.img",
+                          programDir, len, programName, len, programName);
         }
         else std::snprintf(xname, sizeof(xname),
-                           "%s/%s.img", programDir, programName);
+                           "%s/%.*s.img", programDir, len, programName);
 
     }
 #else
@@ -356,8 +360,8 @@ const char *find_image_directory(int argc, const char *argv[])
 // On Windows I can have reduce.exe, cygwin-reduce.exe and cygwin64-reduce.exe
 // all present, and for immediate purposes I want them all to be treated as
 // if merely called "reduce".
-        if (std::strncmp(pn, "cygwin-", 7) == 0) pn += 7;
-        else if (std::strncmp(pn, "cygwin64-", 9) == 0) pn += 9;
+        if (std::strncmp(pn, "cygwin-", 7) == 0) pn += 7, len -= 7;
+        else if (std::strncmp(pn, "cygwin64-", 9) == 0) pn += 9, len -= 9;
 #endif // WIN32
         for (;;)
         {   i = j = 0;
@@ -373,7 +377,7 @@ const char *find_image_directory(int argc, const char *argv[])
         j = std::strlen(programDir);
         if (j>=i && std::strcmp(programDir+j-i, bin)==0)
         {   std::snprintf(xname, sizeof(xname),
-                          "%.*s%s/%s.img", j-i, programDir, data, pn);
+                          "%.*s%s/%.*s.img", j-i, programDir, data, len, pn);
         }
 
 // If the name I just created does not correspond to a file I will fall
@@ -383,7 +387,8 @@ const char *find_image_directory(int argc, const char *argv[])
 // installed version - do that with a copy that sits in your own private
 // writable are of disc.
         if (stat(xname, &buf) != 0)
-            std::snprintf(xname, sizeof(xname), "%s/%s.img", programDir, pn);
+            std::snprintf(xname, sizeof(xname),
+                          "%s/%.*s.img", programDir, len, pn);
     }
 #endif
     n = std::strlen(xname)+1;

@@ -39,7 +39,7 @@
 #include "headers.h"
 
 #ifndef WIN32
-#ifndef EMBEDDED
+#ifndef EMBEDDED 
 #include <dlfcn.h>
 #endif
 #endif

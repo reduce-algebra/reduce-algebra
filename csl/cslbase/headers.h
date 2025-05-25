@@ -55,7 +55,7 @@
 // be used so that EMBEDDED itself just has to disable to management
 // of input editing and output colouring.
 
-#if defined EMBEDDED && !defined WITHOUT_GUI
+#if (defined EMBEDDED || defined ENABLE_WEBGUI)  && !defined WITHOUT_GUI
 #define WITHOUT_GUI 1
 #endif
 
