@@ -730,6 +730,7 @@ AC_ARG_ENABLE(webgui,
 if test "$enable_webgui" = "yes"
 then
   AC_DEFINE([ENABLE_WEBGUI], [1], [this option enabled])
+  AC_DEFINE([WEBVIEW_API], [inline], [webview.h can then be included twice])
   CXXFLAGS="$CXXFLAGS -I$srcdir/../../libraries/webgui"
   CXXFLAGS="$CXXFLAGS `pkg-config --cflags webkit2gtk-4.1`"
   CXXFLAGS="$CXXFLAGS `pkg-config --cflags gtk+-3.0`"

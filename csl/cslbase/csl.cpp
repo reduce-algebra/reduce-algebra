@@ -3553,6 +3553,7 @@ int main(int argc, const char *argv[])
 #ifdef PROCEDURAL_WASM_XX
 EMSCRIPTEN_KEEPALIVE
 #endif
+
 int ENTRYPOINT(int argc, const char *argv[])
 {   int res;
 #if defined EMBEDDED || defined ENABLE_WEBGUI
