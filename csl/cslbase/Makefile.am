@@ -85,7 +85,7 @@ reduce_CPPFLAGS = $(TRACE) -DREDUCE_PROMPTS=1
 else !debug
 reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1 -DREDUCE_PROMPTS=1
 endif !debug
-reduce_web_CPPFLAGS=$(reduce_CPPFLAGS)
+reduce_web_CPPFLAGS=$(reduce_CPPFLAGS) -DNO_STARTUP_CODE=1
 
 # At least on a temporary basis I will make CSL keep profiling
 # information. This is because that will help me debug the profile
@@ -368,8 +368,7 @@ endif !arithlib
 gc_sources = newcslgc.cpp newallocate.cpp gc-check.cpp
 
 if enable_webgui
-webgui_sources = embwebgui.cpp
-# ??? webdriver.cpp
+webgui_sources = embwebgui.cpp webdriver.cpp
 else !enable_webgui
 webgui_sources =
 endif !enable_webgui
@@ -1662,6 +1661,7 @@ endif !wx
 
 reduce.web$(EXEEXT):	reduce_web$(EXEEXT)
 	cp reduce_web$(EXEEXT) reduce.web$(EXEEXT)
+	cp $(cslbase)embwebgui.html .
 
 if windows
 if gui
