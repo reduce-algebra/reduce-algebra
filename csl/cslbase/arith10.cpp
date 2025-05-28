@@ -131,7 +131,7 @@ double my_cos(double x)
 
 #define CSL_log_2 0.6931471805599453094
 
-static Complex Cdiv_z(Complex, Complex);
+static CSL_Complex Cdiv_z(CSL_Complex, CSL_Complex);
 
 // Here I should review the C library complex elementary functions
 // that are available with newer installations - but I may end up
@@ -139,24 +139,24 @@ static Complex Cdiv_z(Complex, Complex);
 // across platforms. However if I have my own code I need to review its
 // behaviour on branch cuts and with regards to +0.0 and -0.0.
 
-UNUSED_NAME static Complex CSLcpowi(Complex z, int n)
+UNUSED_NAME static CSL_Complex CSLcpowi(CSL_Complex z, int n)
 {
 // Raises w complex number to an integer power by repeated squaring.
     if (n == 0)
-    {   Complex one;
+    {   CSL_Complex one;
         one.real = 1.0;
         one.imag = 0.0;
         return one;
     }
     else if (n < 0)
-    {   Complex one;
+    {   CSL_Complex one;
         one.real = 1.0;
         one.imag = 0.0;
         return Cdiv_z(one, CSLcpowi(z, -n));
     }
     else if (n == 1) return z;
     else
-    {   Complex r = CSLcpowi(z, n/2);
+    {   CSL_Complex r = CSLcpowi(z, n/2);
         double x1 = r.real, y1 = r.imag;
         double x2, y2;
         if (n & 1)
@@ -187,7 +187,7 @@ UNUSED_NAME static Complex CSLcpowi(Complex z, int n)
     }
 }
 
-static Complex CSLcsin(Complex z)
+static CSL_Complex CSLcsin(CSL_Complex z)
 {   double x = z.real, y = z.imag;
 // sin(x + iy) = sin(x)*cosh(y) + i cos(x)*sinh(y)
 // For smallish y this can be used directly.  For |y| > 50 I will
@@ -214,7 +214,7 @@ static Complex CSLcsin(Complex z)
 #define CSL_sqrt_starter 0.7071
 #define CSL_sqrt_iters   6
 
-static Complex CSLcsqrt(Complex z)
+static CSL_Complex CSLcsqrt(CSL_Complex z)
 {   double x = z.real, y = z.imag;
 // I believe that IEEE expect sqrt(-0.0 + 0.0*i) to be -0.0 + 0.0*i
     int j, n;
@@ -282,7 +282,7 @@ static Complex CSLcsqrt(Complex z)
 #undef CSL_sqrt_iters
 
 
-static Complex CSLctan(Complex z)
+static CSL_Complex CSLctan(CSL_Complex z)
 {   double x = z.real, y = z.imag;
 // tan(x + iy) = (tan(x) + i tanh(y))/(1 - i tan(x)*tanh(y))
     double t = CSLtan(x), th = std::tanh(y);
@@ -295,7 +295,7 @@ static Complex CSLctan(Complex z)
     return z;
 }
 
-static Complex Cdiv_z(Complex p, Complex q)
+static CSL_Complex Cdiv_z(CSL_Complex p, CSL_Complex q)
 {
 // (p/q) as a complex number.  Note abominable issues about scaling so
 // the large values of p and q can be handled properly.
@@ -303,7 +303,7 @@ static Complex Cdiv_z(Complex p, Complex q)
 //         (ac+bd)/w + i(bc - ad)/w            with w = cc + dd
     double a = p.real, b = p.imag;
     double c = q.real, d = q.imag;
-    Complex r;
+    CSL_Complex r;
     if (d == 0.0)      // dividing by a real number
     {   r.real = a/c;
         r.imag = b/c;
@@ -351,7 +351,7 @@ static Complex Cdiv_z(Complex p, Complex q)
 }
 
 
-static LispObject make_complex_float(Complex v, LispObject a)
+static LispObject make_complex_float(CSL_Complex v, LispObject a)
 // Here a complex result has been been computed (with double precision values
 // for both real and imag parts).  Squash to the required floating point
 // types and package up as a complex value, where (a) was the original input
@@ -849,10 +849,10 @@ static double rsech(double a)
 // The calculations in the next few procedures are numerically
 // crummy, but they should get branch cuts correct.  Re-work later.
 
-static Complex CSLcasinh(Complex z)
+static CSL_Complex CSLcasinh(CSL_Complex z)
 // log(z + sqrt(1 + z^2))
 {   int quadrant = 0;
-    Complex w;
+    CSL_Complex w;
     if (z.real < 0.0)
     {   z.real = -z.real;
         z.imag = -z.imag;
@@ -874,9 +874,9 @@ static Complex CSLcasinh(Complex z)
     return w;
 }
 
-static Complex CSLcacosh(Complex z)
+static CSL_Complex CSLcacosh(CSL_Complex z)
 // 2*log(sqrt((z+1)/2) + sqrt((z-1)/2))
-{   Complex w1, w2;
+{   CSL_Complex w1, w2;
     w1.real = (z.real + 1.0)/2.0;
     w2.real = (z.real - 1.0)/2.0;
     w1.imag = w2.imag = z.imag/2.0;
@@ -890,9 +890,9 @@ static Complex CSLcacosh(Complex z)
     return z;
 }
 
-static Complex CSLcatanh(Complex z)
+static CSL_Complex CSLcatanh(CSL_Complex z)
 // (log(1+z) - log(1-z))/2
-{   Complex w1, w2;
+{   CSL_Complex w1, w2;
     w1.real = 1.0 + z.real;
     w2.real = 1.0 - z.real;
     w1.imag = z.imag;
@@ -906,14 +906,14 @@ static Complex CSLcatanh(Complex z)
     return w1;
 }
 
-static Complex CSLcasin(Complex z)
+static CSL_Complex CSLcasin(CSL_Complex z)
 {   i_times(z);
     z = CSLcasinh(z);
     m_i_times(z);
     return z;
 }
 
-static Complex CSLcacos(Complex z)
+static CSL_Complex CSLcacos(CSL_Complex z)
 {
 // The following is asserted to behave better. I believe that the
 // calculation (pi/2 - z.real) is guaranteed to introduce severe error
@@ -926,26 +926,26 @@ static Complex CSLcacos(Complex z)
 
 }
 
-static Complex CSLcatan(Complex z)
+static CSL_Complex CSLcatan(CSL_Complex z)
 {   i_times(z);
     z = CSLcatanh(z);
     m_i_times(z);
     return z;
 }
 
-static Complex CSLcsinh(Complex z)
+static CSL_Complex CSLcsinh(CSL_Complex z)
 {   i_times(z);
     z = CSLcsin(z);
     m_i_times(z);
     return z;
 }
 
-static Complex CSLccosh(Complex z)
+static CSL_Complex CSLccosh(CSL_Complex z)
 {   i_times(z);
     return Ccos(z);
 }
 
-static Complex CSLctanh(Complex z)
+static CSL_Complex CSLctanh(CSL_Complex z)
 {   i_times(z);
     z = CSLctan(z);
     m_i_times(z);
@@ -955,144 +955,144 @@ static Complex CSLctanh(Complex z)
 // The next collection of things have not been implemented yet,
 // but might be wanted in a full extended system.... maybe.
 
-static Complex CSLcacosd(Complex a)
+static CSL_Complex CSLcacosd(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcacot(Complex a)
+static CSL_Complex CSLcacot(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcacotd(Complex a)
+static CSL_Complex CSLcacotd(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcacoth(Complex a)
+static CSL_Complex CSLcacoth(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcacsc(Complex a)
+static CSL_Complex CSLcacsc(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcacscd(Complex a)
+static CSL_Complex CSLcacscd(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcacsch(Complex a)
+static CSL_Complex CSLcacsch(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcasec(Complex a)
+static CSL_Complex CSLcasec(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcasecd(Complex a)
+static CSL_Complex CSLcasecd(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcasech(Complex a)
+static CSL_Complex CSLcasech(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcasind(Complex a)
+static CSL_Complex CSLcasind(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcatand(Complex a)
+static CSL_Complex CSLcatand(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex ccbrt(Complex a)
+static CSL_Complex ccbrt(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLccosd(Complex a)
+static CSL_Complex CSLccosd(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLccot(Complex a)
+static CSL_Complex CSLccot(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLccotd(Complex a)
+static CSL_Complex CSLccotd(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLccoth(Complex a)
+static CSL_Complex CSLccoth(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLccsc(Complex a)
+static CSL_Complex CSLccsc(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLccscd(Complex a)
+static CSL_Complex CSLccscd(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLccsch(Complex a)
+static CSL_Complex CSLccsch(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLclog10(Complex a)
+static CSL_Complex CSLclog10(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLclog2(Complex a)
+static CSL_Complex CSLclog2(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcsec(Complex a)
+static CSL_Complex CSLcsec(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcsecd(Complex a)
+static CSL_Complex CSLcsecd(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcsech(Complex a)
+static CSL_Complex CSLcsech(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLcsind(Complex a)
+static CSL_Complex CSLcsind(CSL_Complex a)
 {   return a;
 }
 
 
-static Complex CSLctand(Complex a)
+static CSL_Complex CSLctand(CSL_Complex a)
 {   return a;
 }
 
 // Now the Lisp callable entrypoints for the above
 
 typedef double real_arg_fn(double);
-typedef Complex complex_arg_fn(Complex);
+typedef CSL_Complex complex_arg_fn(CSL_Complex);
 
 // Each trig function has three associated helpers.
 // the first two are used for real arguments, and return the real and
@@ -1103,7 +1103,7 @@ typedef Complex complex_arg_fn(Complex);
 typedef struct trigfn
 {   double (*real)(double);
     double (*imag)(double);
-    Complex (*complex)(Complex);
+    CSL_Complex (*complex)(CSL_Complex);
     const char *name;
 } trigfn_record;
 
@@ -1186,7 +1186,7 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
                     d = float_of_number(a);
                     break;
                 case TYPE_COMPLEX_NUM:
-                {   Complex c1, c2;
+                {   CSL_Complex c1, c2;
                     c1.real = float_of_number(real_part(a));
                     c1.imag = float_of_number(imag_part(a));
                     c2 = (*trig_functions[which_one].complex)(c1);
@@ -1312,8 +1312,8 @@ static LispObject CSLpowi(LispObject a, uint64_t n)
     }
 }
 
-static Complex complex_of_number(LispObject a)
-{   Complex z;
+static CSL_Complex complex_of_number(LispObject a)
+{   CSL_Complex z;
     if (is_numbers(a) && is_complex(a))
     {   z.real = float_of_number(real_part(a));
         z.imag = float_of_number(imag_part(a));
@@ -1356,7 +1356,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
     FloatType restype, n;
     int64_t nn;
     LispObject w;
-    Complex c1, c2, c3;
+    CSL_Complex c1, c2, c3;
 // I take special action on 1, 0 and -1 raised to a power that is an integer
 // or a bignum. In part this is because raising 1 to a power may be a fairly
 // common case worthy of special care, but the main pressure came because
@@ -1536,7 +1536,7 @@ LispObject Labsval(LispObject env, LispObject a)
                 case TYPE_RATNUM:
                     break;
                 case TYPE_COMPLEX_NUM:
-                {   Complex c1;
+                {   CSL_Complex c1;
                     double d;
                     c1.real = float_of_number(real_part(a));
                     c1.imag = float_of_number(imag_part(a));

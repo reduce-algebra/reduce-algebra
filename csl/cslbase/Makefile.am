@@ -1661,7 +1661,7 @@ endif !wx
 
 reduce.web$(EXEEXT):	reduce_web$(EXEEXT)
 	cp reduce_web$(EXEEXT) reduce.web$(EXEEXT)
-	cp $(cslbase)embwebgui.html .
+	cp $(cslbase)/embwebgui.html .
 
 if windows
 if gui
