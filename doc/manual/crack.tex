@@ -224,13 +224,13 @@ The following remarks are only guidelines.
 The following modules are represented by numbers in the priority list.
 Each module can appear with modifications under different numbers.
 For example, integration is available under
-\hyperref[crack-m_7]{\emph{7}}, \hyperref[crack-m_24]{\emph{24}} and
-\hyperref[crack-m_25]{\emph{25}}.  Here \hyperref[crack-m_7]{\emph{7}}
+\hyperlink{crack-m_7}{\emph{7}}, \hyperlink{crack-m_24}{\emph{24}} and
+\hyperlink{crack-m_25}{\emph{25}}.  Here \hyperlink{crack-m_7}{\emph{7}}
 encodes an integration of short equations $0=\partial^n f/\partial
-x^n$.  \hyperref[crack-m_7]{\emph{7}} has highest priority of the
-three integrations.  \hyperref[crack-m_24]{\emph{24}} encodes the
+x^n$.  \hyperlink{crack-m_7}{\emph{7}} has highest priority of the
+three integrations.  \hyperlink{crack-m_24}{\emph{24}} encodes the
 integration of an equation that leads to the substitution of a
-function and \hyperref[crack-m_25]{\emph{25}} refers to any
+function and \hyperlink{crack-m_25}{\emph{25}} refers to any
 integration and has lowest priority.
 
 \subsubsection{Integration and Separation}
@@ -238,18 +238,18 @@ integration and has lowest priority.
 An early feature in the development of the package \package{Crack} was
 the ability to integrate exact differential equations and some
 generalizations of them (see \cite{Wolf:2000}).  As a consequence of
-integrations \hyperref[crack-m_7]{\emph{7}},
-\hyperref[crack-m_24]{\emph{24}}, \hyperref[crack-m_25]{\emph{25}} an
+integrations \hyperlink{crack-m_7}{\emph{7}},
+\hyperlink{crack-m_24}{\emph{24}}, \hyperlink{crack-m_25}{\emph{25}} an
 increasing number of functions of fewer variables is introduced which
 sooner or later produces equations with some independent variables
 occuring only explicitly and not as variables in functions.  Such
 equations are split by the separation module
-\hyperref[crack-m_2]{\emph{2}}.  Another possibility is equations in
+\hyperlink{crack-m_2}{\emph{2}}.  Another possibility is equations in
 which each independent variable occurs in at least one function in the
 equation but no function depends on all variables.  In this case
 so-called indirect separations are appropriate: for linear problems
-\hyperref[crack-m_10]{\emph{10}}, \hyperref[crack-m_26]{\emph{26}} and
-for non-linear problems \hyperref[crack-m_48]{\emph{48}}.
+\hyperlink{crack-m_10}{\emph{10}}, \hyperlink{crack-m_26}{\emph{26}} and
+for non-linear problems \hyperlink{crack-m_48}{\emph{48}}.
 
 \subsubsection{Substitutions}
 
@@ -281,7 +281,7 @@ by
   \emph{\{min\_growth\}}
 \end{itemize}
 Substitution types are represented by different numbers
-\hyperref[crack-m_3]{(3--6,15--21)} depending on the subset of the
+\hyperlink{crack-m_3}{(3--6,15--21)} depending on the subset of the
 above filters to be used.  If a substitution type is to be done
 automatically then from all possible substitutions passing all filters
 of this type that substitution is selected that leads to no sub-cases
@@ -346,20 +346,20 @@ for case-distinctions and in which order to set factors to zero?' can
 already be difficult to answer in general.
 
 \package{Crack} currently offers two factorization steps:
-\hyperref[crack-m_8]{(8)} and \hyperref[crack-m_47]{(47)}.
+\hyperlink{crack-m_8}{(8)} and \hyperlink{crack-m_47}{(47)}.
 
 \subsubsection{Elimination (Gr\"{o}bner Basis) Steps}
 
 To increase safety and avoid excessive expression swell one can apart
-from the normal call \hyperref[crack-m_30]{(30)} request to do
+from the normal call \hyperlink{crack-m_30}{(30)} request to do
 Gr\"{o}bner basis computation steps only if they are simplification
 steps replacing an equation by a shorter equation.
-\hyperref[crack-m_27]{(27)}
+\hyperlink{crack-m_27}{(27)}
 
 In a different version only steps are performed in which equations are
 included which do not contain more than 3 unknowns.  This helps to
 focus on steps which are more likely to solve small sub-systems with
-readily available simple results.  \hyperref[crack-m_57]{(57)}
+readily available simple results.  \hyperlink{crack-m_57}{(57)}
 
 Often the computationally cheapest way to obtain a consistent
 (involutive) system of equations is to change the ordering during the
@@ -387,8 +387,8 @@ function remains to be solved.  Examples are the computation of
 symmetries and conservation laws of non-linear differential equations
 which are linearizable.  In \package{Crack} two procedures are
 available, one for under-determined linear ODEs
-\hyperref[crack-m_22]{(22)} and one for linear PDEs,
-\hyperref[crack-m_23]{(23)} both with non-constant coefficients.
+\hyperlink{crack-m_22}{(22)} and one for linear PDEs,
+\hyperlink{crack-m_23}{(23)} both with non-constant coefficients.
 
 \subsubsection{Indirect Separation}
 
@@ -403,9 +403,9 @@ complicated with 10 or 20 independent variables and many functions
 that depend on different combinations of these variables.  Because no
 variable occurs only explicitly, direct separations mentioned above
 are not possible.  Two different algorithms, one for linear indirectly
-separable equations \hyperref[crack-m_10]{(10)},
-\hyperref[crack-m_26]{(26)} and one for non-linear directly separable
-equations \hyperref[crack-m_48]{(48)} provide systematic ways of
+separable equations \hyperlink{crack-m_10}{(10)},
+\hyperlink{crack-m_26}{(26)} and one for non-linear directly separable
+equations \hyperlink{crack-m_48}{(48)} provide systematic ways of
 dealing with such equations.
 
 Indirectly separable equations always result when an equation is
@@ -425,7 +425,7 @@ function then in an automatic step characteristic ODE-systems are
 generated, integrated if possible, a variable transformation for the
 whole system of equations is performed to have in the first-order PDE
 only one single derivative and to make this PDE integrable for the
-integration modules.  \hyperref[crack-m_39]{(39)}
+integration modules.  \hyperlink{crack-m_39}{(39)}
 
 \subsubsection{Length Reduction of Equations}
 
@@ -434,7 +434,7 @@ equations proved to be essential in length-reducing systems of
 bi-linear algebraic equations or homogeneous equations which resulted
 from bi-linear equations during the solution process.
 
-The aim of the method \hyperref[crack-m_11]{(11)} is to find out
+The aim of the method \hyperlink{crack-m_11}{(11)} is to find out
 whether one equation $0=E_1$ can length-reduce another one $0=E_2$ by
 replacing $E_2$ through an appropriate linear combination $\alpha E_1
 - \beta E_2,\ \ \beta \neq 0$.  To find $\alpha, \beta$ one can divide
@@ -805,125 +805,105 @@ The numbering of procedures grew historically.  Each number has only
 little or no connection with the priority of the procedure it is
 labelling.
 \begin{description}
-  \label{crack-m_1}
-\item[\texttt{to\_do (1):}] hot list of steps to be taken next.  Should
-  always come first.
-  \label{crack-m_3}
-\item[\texttt{subst\_level\_? (3-6,15-21):}] substitutions of
-  functions by expressions.  Substitutions differ by their maximal
-  allowed size and other properties.  To find out which function has
-  which properties one currently has to inspect the procedure
-  definitions of \texttt{subst\_level\_?} in the file
+\item[\texttt{to\_do \hypertarget{crack-m_1}{(1)}:}] hot list of steps
+  to be taken next.  Should always come first.
+\item[\texttt{subst\_level\_? \hypertarget{crack-m_3}{(3-6,15-21)}:}]
+  substitutions of functions by expressions.  Substitutions differ by
+  their maximal allowed size and other properties.  To find out which
+  function has which properties one currently has to inspect the
+  procedure definitions of \texttt{subst\_level\_?} in the file
   \texttt{crmain.red}.
-  \label{crack-m_2}
-\item[\texttt{separation (2):}] what is described as direct separation
-  in the next subsection.
-  \label{crack-m_26}
-\item[\texttt{gen\_separation (26):}] what is described as indirect
-  separation in the next subsection.  Only to be used for linear problems.
-  \label{crack-m_10}
-\item[\texttt{quick\_gen\_separation (10):}] generalized separation of
-  equations with an upper size limit.
-  \label{crack-m_7}
-\item[\texttt{quick\_integration (7):}] integration of very specific
-  short equations.
-  \label{crack-m_24}
-\item[\texttt{full\_integration (24):}] integration of equations which
-  lead to a substitution.
-  \label{crack-m_25}
-\item[\texttt{integration (25):}] any integration.
-  \label{crack-m_8}
-\item[\texttt{factorize\_to\_substitute (8):}] splitting the
-  computation into the investigation of different sub-cases resulting
-  from the algebraic factorization of an equation.  Only useful for
-  non-linear problems, and applied only if each one of the factors,
-  when individually set to zero, would enable the substitution of a
-  function.
-  \label{crack-m_47}
-\item[\texttt{factorize\_any (47):}] splitting into sub-cases based on
-  a factorization even if not all factors set to zero lead to
-  substitutions.
-  \label{crack-m_37}
-\item[\texttt{change\_proc\_list (37):}] reserved name of a procedure
-  to be written by the user that does nothing else but changing
-  \texttt{proc\_list\_} in a fixed manner.  This is to be used if the
-  computation splits naturally into different parts and if it is clear
-  from the beginning what the computational methods
-  (\texttt{proc\_list\_}) have to be.
-  \label{crack-m_38}
-\item[\texttt{stop\_batch (38):}] If the first steps to simplify or
-  partially solve a system of equations are known and should be done
-  automatically and afterwards \package{Crack} should switch into
-  interactive mode then \texttt{stop\_batch} is added to
-  \texttt{proc\_list} with a priority just below the steps to be done
-  automatically.
-  \label{crack-m_12}
-\item[\texttt{drop\_lin\_dep (12):}] module to support solving big
-  linear systems (still experimental).
-  \label{crack-m_13}
-\item[\texttt{find\_1\_term\_eqn (13):}] module to support solving big
-  linear systems (still experimental).
-  \label{crack-m_14}
-\item[\texttt{trian\_lin\_alg (14):}] module to support solving big
-  linear systems (still experimental).
-  \label{crack-m_22}
-\item[\texttt{undetlinode (22):}] parametric solution of single
-  under-determined linear ODE (with non-constant coefficients).  Only
-  applicable for linear problems.  (Too many redundant functions
-  resulting from integrations may prevent further integrations.  If
-  they are involved in single ODEs then the parametric solution of
-  such ODEs treated as single under-determined equations is useful.
-  Danger: new generated equations become very big if the minimal order
-  of any function in the ODE is high.)
-  \label{crack-m_23}
-\item[\texttt{undetlinpde (23):}] parametric solution of single
-  under-determined linear PDE (with non-constant coefficients).  Only
-  applicable for linear problems (still experimental).
-  \label{crack-m_11}
-\item[\texttt{alg\_length\_reduction (11):}] length reduction by
-  algebraic combination.  Only for linear problems.  One has to be
-  careful when combining it with decoupling as infinite loops may
-  occur when shortening and lowering order reverse each other.
-  \label{crack-m_27}
-\item[\texttt{diff\_length\_reduction (27):}] length reduction by
-  differential reduction.
-  \label{crack-m_30}
-\item[\texttt{decoupling (30):}] steps towards the computation of a
-  differential Gr\"{o}bner Basis.
-  \label{crack-m_31}
-\item[\texttt{add\_differentiated\_pdes (31):}] only useful for
-  non-linear differential equations with leading derivative occurring
+\item[\texttt{separation \hypertarget{crack-m_2}{(2)}:}] what is
+  described as direct separation in the next subsection.
+\item[\texttt{gen\_separation \hypertarget{crack-m_26}{(26)}:}] what
+  is described as indirect separation in the next subsection.  Only to
+  be used for linear problems.
+\item[\texttt{quick\_gen\_separation \hypertarget{crack-m_10}{(10)}:}]
+  generalized separation of equations with an upper size limit.
+\item[\texttt{quick\_integration \hypertarget{crack-m_7}{(7)}:}]
+  integration of very specific short equations.
+\item[\texttt{full\_integration \hypertarget{crack-m_24}{(24)}:}]
+  integration of equations which lead to a substitution.
+\item[\texttt{integration \hypertarget{crack-m_25}{(25)}:}] any
+  integration.
+\item[\texttt{factorize\_to\_substitute
+    \hypertarget{crack-m_8}{(8)}:}] splitting the computation into the
+  investigation of different sub-cases resulting from the algebraic
+  factorization of an equation.  Only useful for non-linear problems,
+  and applied only if each one of the factors, when individually set
+  to zero, would enable the substitution of a function.
+\item[\texttt{factorize\_any \hypertarget{crack-m_47}{(47)}:}]
+  splitting into sub-cases based on a factorization even if not all
+  factors set to zero lead to substitutions.
+\item[\texttt{change\_proc\_list \hypertarget{crack-m_37}{(37)}:}]
+  reserved name of a procedure to be written by the user that does
+  nothing else but changing \texttt{proc\_list\_} in a fixed manner.
+  This is to be used if the computation splits naturally into
+  different parts and if it is clear from the beginning what the
+  computational methods (\texttt{proc\_list\_}) have to be.
+\item[\texttt{stop\_batch \hypertarget{crack-m_38}{(38)}:}] If the
+  first steps to simplify or partially solve a system of equations are
+  known and should be done automatically and afterwards
+  \package{Crack} should switch into interactive mode then
+  \texttt{stop\_batch} is added to \texttt{proc\_list} with a priority
+  just below the steps to be done automatically.
+\item[\texttt{drop\_lin\_dep \hypertarget{crack-m_12}{(12)}:}] module
+  to support solving big linear systems (still experimental).
+\item[\texttt{find\_1\_term\_eqn \hypertarget{crack-m_13}{(13)}:}]
+  module to support solving big linear systems (still experimental).
+\item[\texttt{trian\_lin\_alg \hypertarget{crack-m_14}{(14)}:}] module
+  to support solving big linear systems (still experimental).
+\item[\texttt{undetlinode \hypertarget{crack-m_22}{(22)}:}] parametric
+  solution of single under-determined linear ODE (with non-constant
+  coefficients).  Only applicable for linear problems.  (Too many
+  redundant functions resulting from integrations may prevent further
+  integrations.  If they are involved in single ODEs then the
+  parametric solution of such ODEs treated as single under-determined
+  equations is useful.  Danger: new generated equations become very
+  big if the minimal order of any function in the ODE is high.)
+\item[\texttt{undetlinpde \hypertarget{crack-m_23}{(23)}:}] parametric
+  solution of single under-determined linear PDE (with non-constant
+  coefficients).  Only applicable for linear problems (still
+  experimental).
+\item[\texttt{alg\_length\_reduction \hypertarget{crack-m_11}{(11)}:}]
+  length reduction by algebraic combination.  Only for linear
+  problems.  One has to be careful when combining it with decoupling
+  as infinite loops may occur when shortening and lowering order
+  reverse each other.
+\item[\texttt{diff\_length\_reduction
+    \hypertarget{crack-m_27}{(27)}:}] length reduction by differential
+  reduction.
+\item[\texttt{decoupling \hypertarget{crack-m_30}{(30)}:}] steps
+  towards the computation of a differential Gr\"{o}bner Basis.
+\item[\texttt{add\_differentiated\_pdes
+    \hypertarget{crack-m_31}{(31)}:}] only useful for non-linear
+  differential equations with leading derivative occurring
   non-linearly.
-  \label{crack-m_32}
-\item[\texttt{add\_diff\_ise (32):}] for the treatment of non-linear
-  indirectly separable equations.
-  \label{crack-m_33}
-\item[\texttt{multintfac (33):}] to find integrating factors for a
-  system of equations.  Should have very low priority if used at all.
-  \label{crack-m_34}
-\item[\texttt{alg\_solve\_single (34):}] to be used for equations
-  quadratic in the leading derivative.
-  \label{crack-m_35}
-\item[\texttt{alg\_solve\_system (35):}] to be used if a (sub-)system
-  of equations shall be solved for a set of functions or their
-  derivatives algebraically.
-  \label{crack-m_9}
-\item[\texttt{subst\_derivative (9):}] substitution of a derivative of
-  a function everywhere by a new function if such a derivative exists.
-  \label{crack-m_36}
-\item[\texttt{undo\_subst\_derivative (36):}] undo the above
-  substitution.
-  \label{crack-m_40}
-\item[\texttt{del\_redundant\_fc (40):}] drop redundant functions and
-  constants.  For that an over-determined PDE system is formulated and
-  solved to set redundant constants and functions of integration to
-  zero.  This may take longer if many functions occur.
-  \label{crack-m_39}
-\item[\texttt{find\_trafo (39):}] finding a first-order linear PDE.
-  By solving it the program finds a variable transformation that
-  transforms the PDE to a single derivative and makes the PDE
-  integrable for the integration modules.  Because a variable
-  transformation was performed the solution contains only new
+\item[\texttt{add\_diff\_ise \hypertarget{crack-m_32}{(32)}:}] for the
+  treatment of non-linear indirectly separable equations.
+\item[\texttt{multintfac \hypertarget{crack-m_33}{(33)}:}] to find
+  integrating factors for a system of equations.  Should have very low
+  priority if used at all.
+\item[\texttt{alg\_solve\_single \hypertarget{crack-m_34}{(34)}:}] to
+  be used for equations quadratic in the leading derivative.
+\item[\texttt{alg\_solve\_system \hypertarget{crack-m_35}{(35)}:}] to
+  be used if a (sub-)system of equations shall be solved for a set of
+  functions or their derivatives algebraically.
+\item[\texttt{subst\_derivative \hypertarget{crack-m_9}{(9)}:}]
+  substitution of a derivative of a function everywhere by a new
+  function if such a derivative exists.
+\item[\texttt{undo\_subst\_derivative
+    \hypertarget{crack-m_36}{(36)}:}] undo the above substitution.
+\item[\texttt{del\_redundant\_fc \hypertarget{crack-m_40}{(40)}:}]
+  drop redundant functions and constants.  For that an over-determined
+  PDE system is formulated and solved to set redundant constants and
+  functions of integration to zero.  This may take longer if many
+  functions occur.
+\item[\texttt{find\_trafo \hypertarget{crack-m_39}{(39)}:}] finding a
+  first-order linear PDE.  By solving it the program finds a variable
+  transformation that transforms the PDE to a single derivative and
+  makes the PDE integrable for the integration modules.  Because a
+  variable transformation was performed the solution contains only new
   functions of integration which depend on single (new) variables and
   not on expressions of them, like sums of them.  Therefore the result
   of the integration can be used for substitutions in other equations.
@@ -932,56 +912,51 @@ labelling.
   used for the other equations using the current modules of
   \package{Crack}.  A general transformation can be done interactively
   with the command \texttt{cp}.
-  \label{crack-m_41}
-\item[\texttt{sub\_problem (41):}] solve a subset of equations first
-  (still experimental).
-  \label{crack-m_28}
-\item[\texttt{del\_redundant\_de (28):}] delete redundant equations.
-  \label{crack-m_29}
-\item[\texttt{idty\_integration (29):}] integrate an identity.
-  \label{crack-m_48}
-\item[\texttt{gen\_separation2 (48):}] indirect separation of a PDE.
-  This is a second version for non-linear PDEs.
-  \label{crack-m_49}
-\item[\texttt{find\_and\_use\_sub\_systems12 (49):}] find sub-systems
-  of equations with at least as many equations as functions.  In this
-  case find systems with at most 2 functions, none of them a function
-  of the set \texttt{flin\_}.  (These are functions which occur
-  initially only linearly in a non-linear problem; \texttt{flin\_} is
-  assigned initially by the user.)
-  \label{crack-m_50}
-\item[\texttt{find\_and\_use\_sub\_systems13 (50):}] like above only
-  with at most 3 functions, none from \texttt{flin\_}.
-  \label{crack-m_51}
-\item[\texttt{find\_and\_use\_sub\_systems14 (51):}] like above only
-  with at most 4 functions, none from \texttt{flin\_}.
-  \label{crack-m_52}
-\item[\texttt{find\_and\_use\_sub\_systems15 (52):}] like above only
-  with at most 5 functions, none from \texttt{flin\_}.
-  \label{crack-m_53}
-\item[\texttt{find\_and\_use\_sub\_systems22 (53):}] like above only
-  with at most 2 functions.  Only \texttt{flin\_} are considered, all
-  others ignored.
-  \label{crack-m_54}
-\item[\texttt{find\_and\_use\_sub\_systems23 (54):}] like above only
-  with at most 3 functions.  Only \texttt{flin\_} are considered, all
-  others ignored.
-  \label{crack-m_55}
-\item[\texttt{find\_and\_use\_sub\_systems24 (55):}] like above only
-  with at most 4 functions.  Only \texttt{flin\_} are considered, all
-  others ignored.
-  \label{crack-m_56}
-\item[\texttt{find\_and\_use\_sub\_systems25 (56):}] like above only
-  with at most 5 functions.  Only \texttt{flin\_} are considered, all
-  others ignored.
-  \label{crack-m_57}
-\item[\texttt{high\_prio\_decoupling (57):}] do a decoupling step with
-  two equations that in total involve at most 3 different functions of
-  all independent variables in these equations.
-  \label{crack-m_58}
-\item[\texttt{user\_defined (58):}] This is an empty procedure which can
-  be filled by the user with a very specific computational step that
-  is needed in a special user application.  Template:
+\item[\texttt{sub\_problem \hypertarget{crack-m_41}{(41)}:}] solve a
+  subset of equations first (still experimental).
+\item[\texttt{del\_redundant\_de \hypertarget{crack-m_28}{(28)}:}]
+  delete redundant equations.
+\item[\texttt{idty\_integration \hypertarget{crack-m_29}{(29)}:}]
+  integrate an identity.
+\item[\texttt{gen\_separation2 \hypertarget{crack-m_48}{(48)}:}]
+  indirect separation of a PDE.  This is a second version for
+  non-linear PDEs.
+\item[\texttt{find\_and\_use\_sub\_systems12
+    \hypertarget{crack-m_49}{(49)}:}] find sub-systems of equations
+  with at least as many equations as functions.  In this case find
+  systems with at most 2 functions, none of them a function of the set
+  \texttt{flin\_}.  (These are functions which occur initially only
+  linearly in a non-linear problem; \texttt{flin\_} is assigned
+  initially by the user.)
+\item[\texttt{find\_and\_use\_sub\_systems13
+    \hypertarget{crack-m_50}{(50)}:}] like above only with at most 3
+  functions, none from \texttt{flin\_}.
+\item[\texttt{find\_and\_use\_sub\_systems14
+    \hypertarget{crack-m_51}{(51)}:}] like above only with at most 4
+  functions, none from \texttt{flin\_}.
+\item[\texttt{find\_and\_use\_sub\_systems15
+    \hypertarget{crack-m_52}{(52)}:}] like above only with at most 5
+  functions, none from \texttt{flin\_}.
+\item[\texttt{find\_and\_use\_sub\_systems22
+    \hypertarget{crack-m_53}{(53)}:}] like above only with at most 2
+  functions.  Only \texttt{flin\_} are considered, all others ignored.
+\item[\texttt{find\_and\_use\_sub\_systems23
+    \hypertarget{crack-m_54}{(54)}:}] like above only with at most 3
+  functions.  Only \texttt{flin\_} are considered, all others ignored.
+\item[\texttt{find\_and\_use\_sub\_systems24
+    \hypertarget{crack-m_55}{(55)}:}] like above only with at most 4
+  functions.  Only \texttt{flin\_} are considered, all others ignored.
+\item[\texttt{find\_and\_use\_sub\_systems25
+    \hypertarget{crack-m_56}{(56)}:}] like above only with at most 5
+  functions.  Only \texttt{flin\_} are considered, all others ignored.
+\item[\texttt{high\_prio\_decoupling \hypertarget{crack-m_57}{(57)}:}]
+  do a decoupling step with two equations that in total involve at
+  most 3 different functions of all independent variables in these
+  equations.
+\item[\texttt{user\_defined \hypertarget{crack-m_58}{(58)}:}] This is
+  an empty procedure which can be filled by the user with a very
+  specific computational step that is needed in a special user
+  application.  Template:
 \begin{verbatim}
 symbolic procedure user_defined(arglist)$
    % arglist is a Lisp list {pdes,forg,vl_} where
@@ -996,19 +971,18 @@ begin
       else nil
 end$
 \end{verbatim}
-\label{crack-m_59}
-\item[\texttt{alg\_groebner (59):}] call of the REDUCE procedure
-  \texttt{groebnerf} trying to solve the whole system under the
-  assumption that it is a completely algebraic polynomial system.  All
-  resulting solutions are considered individually further.
-  \label{crack-m_60}
-\item[\texttt{solution\_check (60):}] this procedure tests whether a
-  solution that is defined in an external procedure
-  \texttt{sol\_define()} is still contained in the general solution of
-  the system currently under investigation.  This procedure is useful
-  to find the place in a long computation where a special solution is
-  either lost or added to the general solution of the system to be
-  solved.  Template:
+\item[\texttt{alg\_groebner \hypertarget{crack-m_59}{(59)}:}] call of
+  the REDUCE procedure \texttt{groebnerf} trying to solve the whole
+  system under the assumption that it is a completely algebraic
+  polynomial system.  All resulting solutions are considered
+  individually further.
+\item[\texttt{solution\_check \hypertarget{crack-m_60}{(60)}:}] this
+  procedure tests whether a solution that is defined in an external
+  procedure \texttt{sol\_define()} is still contained in the general
+  solution of the system currently under investigation.  This
+  procedure is useful to find the place in a long computation where a
+  special solution is either lost or added to the general solution of
+  the system to be solved.  Template:
 \begin{verbatim}
 algebraic procedure sol_define$
 << % This procedure contains the statements
@@ -1543,10 +1517,9 @@ subtract terms from small sums than from large sums.
 \paragraph*{Example:}
 
 We apply the above algorithm to
-\begin{equation}
-D := 2f,_yg' + 2f,_{xy}g + gg'^3 + xg'^4 + 3xgg'^2g'' = 0
-\label{crack-D}
-\end{equation}
+\begin{equation*}
+  D := 2f,_yg' + 2f,_{xy}g + gg'^3 + xg'^4 + 3xgg'^2g'' = 0
+\end{equation*}
 with $f = f(x,y), \; g = g(x), \; '\equiv d/dx$.  Starting with terms
 containing $g$ and at first with the highest derivative $g,_{xx},$ the
 steps are
@@ -1596,7 +1569,7 @@ possible gives for the integral $\tilde{I}$
 \end{eqnarray*}
 with $c_3 = c_3(x), \; '\equiv d/dx$ and the single additional
 condition $g^2 = c_3'''$.  The integration of the new terms of
-(\ref{crack-Dnew}) is achieved by partial integration again, for
+\eqref{crack-Dnew} is achieved by partial integration again, for
 example
 \begin{eqnarray*}
 \int g^2x^2 dx & = & x^2\int g^2 dx - \int (2x\!\int g^2 dx) dx \\
@@ -1666,7 +1639,7 @@ g,_x+yg^2$ \\
 $y$-separation? $\rightarrow$ yes: $0 = g,_x = g^2$
 (from the third equation from the $z$-separation)
 
-If $z^2$ had been replaced in (\ref{crack-sep}) by a third function
+If $z^2$ had been replaced in \eqref{crack-sep} by a third function
 $h(z)$ then direct separation would not have been possible.  The
 situation changes if $h$ is a parametric function which is assumed to
 be independently given and which should not be calculated, i.e.\ $f$
@@ -1766,13 +1739,13 @@ those in the algorithm given above)
   \item Identify $f_1:=f, \; \; \; \; \; y_1:=x, \; \; \; \; \; z_{11}:=y$
   \item and $P_1=\{f',f\}, \; \; \; \; \; C_1=\{1,g\}$
     \begin{itemize}
-    \item Divide $C_{12}$ and
-      (\ref{crack-isep}) by $C_{11}=1$ and differentiate w.r.t.\ $z_{11}=y:$
+    \item Divide $C_{12}$ and \eqref{crack-isep} by $C_{11}=1$ and
+      differentiate w.r.t.\ $z_{11}=y:$
       \begin{eqnarray}
         0 & = & fg' - g'' - (1+x^2) \label{crack-isep2} \\
         C_{12} & = & g' \nonumber
       \end{eqnarray}
-    \item Divide (\ref{crack-isep2}) by $C_{12}=g'$ and differentiate
+    \item Divide \eqref{crack-isep2} by $C_{12}=g'$ and differentiate
       w.r.t.\ $z_{11}=y$:
       \[ 0 = - (g''/g')' - (1+x^2)(1/g')' \]
     \end{itemize}

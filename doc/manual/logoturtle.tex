@@ -50,16 +50,16 @@ calls.
 Getters (query procedures) return values that are accepted as input by
 their matching setters (command procedures).  If more than one data
 value is involved then a list is used.  For example, the
-\hyperref[logoturtle:labelfont]{\texttt{LABELFONT}} query returns a
+\hyperlink{logoturtle:labelfont}{\texttt{LABELFONT}} query returns a
 list of the current label font face and size if both are set, which
 the corresponding
-\hyperref[logoturtle:setlabelfont]{\texttt{SETLABELFONT}} command
+\hyperlink{logoturtle:setlabelfont}{\texttt{SETLABELFONT}} command
 accepts as its argument.
 
 LogoTurtle commands other than queries return nothing (\texttt{nil})
 and plotting is achieved via side effects, not via returned values as
 for Turtle.  A plot is displayed by calling the (non-traditional)
-\hyperref[logoturtle:draw]{\texttt{DRAW}} command as for Turtle.  The
+\hyperlink{logoturtle:draw}{\texttt{DRAW}} command as for Turtle.  The
 plot displayed need not be complete; \texttt{DRAW} displays the plot
 constructed so far, which allows an element of interactivity.
 
@@ -224,7 +224,7 @@ are the only formats used internally.
     \end{tabular}
   \end{center}
   but other colours can be assigned to numbers 8--15 by the
-  \hyperref[logoturtle:setpalette]{\texttt{SETPALETTE}} command.
+  \hyperlink{logoturtle:setpalette}{\texttt{SETPALETTE}} command.
   Colour numbers are useful for cycling programmatically through a
   range of colours.
 
@@ -246,11 +246,10 @@ are the only formats used internally.
 
 \subsection{Displaying Logo Turtle Graphics}
 
-\subsubsection*{Draw command}
+\hypertarget{logoturtle:draw}{\subsubsection*{Draw command}}
 \begin{verbatim}
      DRAW
 \end{verbatim}
-\label{logoturtle:draw}
 can be used at any time to display the current plot, i.e.\ the plot
 and/or labels constructed so far (provided there is something to
 display).  It initially opens a Gnuplot window and subsequently
@@ -261,7 +260,7 @@ When the switch \texttt{LOGOTURTLE\_AUTODRAW} is on, making any
 visible change to a plot causes it to be redrawn (or drawn)
 automatically.  In this situation it can be useful to turn on display
 of the turtle (using
-\hyperref[logoturtle:showturtle]{\texttt{SHOWTURTLE}}), since this
+\hyperlink{logoturtle:showturtle}{\texttt{SHOWTURTLE}}), since this
 makes the turtle's heading and position visible even when the pen is
 up.
 
@@ -308,11 +307,10 @@ degrees.  (A degree is 1/360 of a full circle.)
 turns the turtle clockwise by the specified angle, measured in
 degrees.
 
-\subsubsection*{Setpos command}
+\hypertarget{logoturtle:setpos}{\subsubsection*{Setpos command}}
 \begin{verbatim}
      SETPOS position
 \end{verbatim}
-\label{logoturtle:setpos}
 moves the turtle to an absolute position in the graphics window.  The
 input is a list of two numbers, the $x$ and $y$ coordinates,
 e.g.\ ``\texttt{SETPOS \{50, 50\}}''.
@@ -338,23 +336,22 @@ horizontal coordinate.  The input is the new $x$ coordinate.
 moves the turtle vertically from its old position to a new absolute
 vertical coordinate.  The input is the new $y$ coordinate.
 
-\subsubsection*{Setheading command}
+\hypertarget{logoturtle:setheading}{\subsubsection*{Setheading command}}
 \begin{verbatim}
      SETHEADING degrees
 \end{verbatim}
-\label{logoturtle:setheading}
 %% SETH degrees
 turns the turtle to a new absolute heading.  The input is a number,
 the heading in degrees clockwise from the positive $y$ axis.
 
-\subsubsection*{Home command}
+\hypertarget{logoturtle:home}{\subsubsection*{Home command}}
 \begin{verbatim}
      HOME
 \end{verbatim}
-\label{logoturtle:home}
-moves the turtle to its starting position (the origin) and orientation.
-Equivalent to ``\texttt{\hyperref[logoturtle:setpos]{SETPOS}~\{0,~0\};
-  \hyperref[logoturtle:setheading]{SETHEADING}~0}''.
+moves the turtle to its starting position (the origin) and
+orientation.  Equivalent to
+``\texttt{\hyperlink{logoturtle:setpos}{SETPOS}~\{0,~0\};
+  \hyperlink{logoturtle:setheading}{SETHEADING}~0}''.
 
 \subsubsection*{Arc command}
 \begin{verbatim}
@@ -484,19 +481,17 @@ it to, the position with coordinates $(1,2)$:
 \subsection{Turtle and Window Control}
 \label{logoturtle:TWC}
 
-\subsubsection*{Showturtle command}
+\hypertarget{logoturtle:showturtle}{\subsubsection*{Showturtle command}}
 \begin{verbatim}
      SHOWTURTLE
 \end{verbatim}
-\label{logoturtle:showturtle}
 %% ST
 makes the turtle visible (next time the picture is drawn).
 
-\subsubsection*{Hideturtle command}
+\hypertarget{logoturtle:hideturtle}{\subsubsection*{Hideturtle command}}
 \begin{verbatim}
      HIDETURTLE
 \end{verbatim}
-\label{logoturtle:hideturtle}
 %% HT
 makes the turtle invisible (next time the picture is drawn).
 
@@ -514,7 +509,8 @@ pen mode, etc.) is not changed.
 %% CS
 erases \emph{and closes} the graphics window, and sends the turtle to
 its initial position and heading.  Like
-\texttt{\hyperref[logoturtle:home]{HOME}} and \texttt{CLEAN} together.
+\texttt{\hyperlink{logoturtle:home}{HOME}} and \texttt{CLEAN}
+together.
 
 \subsubsection*{Setwindowsize command}
 \begin{verbatim}
@@ -642,7 +638,7 @@ including newline characters encoded as \texttt{\textbackslash n}
 within the text, e.g.\ \texttt{"This is a\textbackslash nmulti-line
   label"}.  (The newline is recognised by Gnuplot, not by REDUCE.)
 
-\subsubsection*{Setlabelfont command}
+\hypertarget{logoturtle:setlabelfont}{\subsubsection*{Setlabelfont command}}
 \begin{verbatim}
      SETLABELFONT face
      SETLABELFONT size
@@ -650,7 +646,6 @@ within the text, e.g.\ \texttt{"This is a\textbackslash nmulti-line
      SETLABELFONT {face, size}
      SETLABELFONT false
 \end{verbatim}
-\label{logoturtle:setlabelfont}
 sets the face and/or size of the label font.  If the face is specified
 then it should be the only or first input and must be an identifier or
 string, e.g.\ \texttt{"Arial"}.  If the size is specified then it
@@ -681,8 +676,8 @@ sets the label foreground colour; see
 %% SHOWN?
 returns \texttt{TRUE} if the turtle is shown (visible), \texttt{FALSE}
 if the turtle is hidden.  See
-\hyperref[logoturtle:showturtle]{\texttt{SHOWTURTLE}} and
-\hyperref[logoturtle:hideturtle]{\texttt{HIDETURTLE}}.
+\hyperlink{logoturtle:showturtle}{\texttt{SHOWTURTLE}} and
+\hyperlink{logoturtle:hideturtle}{\texttt{HIDETURTLE}}.
 
 Note that generally in LogoTurtle \texttt{TRUE}/\texttt{FALSE} values
 returned by query commands can be used to facilitate programming
@@ -705,11 +700,10 @@ $\{x_{max},y_{max}\}$.
 returns the word \texttt{WRAP}, \texttt{FENCE}, \texttt{WINDOW} or
 \texttt{FALSE} depending on the current turtle mode.
 
-\subsubsection*{Labelfont query}
+\hypertarget{logoturtle:labelfont}{\subsubsection*{Labelfont query}}
 \begin{verbatim}
      LABELFONT
 \end{verbatim}
-\label{logoturtle:labelfont}
 returns a list of the current label font face and size if both are
 set, or whichever of the face or size is set, or \texttt{false}
 indicating that no label font information is set.  Unset font
@@ -755,11 +749,10 @@ turtle moves without drawing.
 %% SETPC colour
 sets the pen colour; see \hyperref[logoturtle:Colours]{Colours}.
 
-\subsubsection*{Setpalette command}
+\hypertarget{logoturtle:setpalette}{\subsubsection*{Setpalette command}}
 \begin{verbatim}
      SETPALETTE(colournumber, colour)
 \end{verbatim}
-\label{logoturtle:setpalette}
 sets the actual colour corresponding to a given colour number.  The
 first argument must be an integer $n$ such that $8 \le n \le
 15$. (LogoTurtle keeps the first 8 colours constant.)  The second

@@ -1,5 +1,21 @@
+\subsection{Introduction}
+
 { % to limit the scope of the following definitions:
 
+\ifdefined\VerbMath\(
+%% For MathJax, must be part of a paragraph to avoid extra vertical space:
+\newcommand{\bos}{\mathbf{bos}}
+\newcommand{\fer}{\mathbf{fer}}
+\newcommand{\fun}{\mathbf{fun}}
+\newcommand{\gras}{\mathbf{gras}}
+\newcommand{\axp}{\mathbf{axp}}
+\newcommand{\der}{\mathbf{der}}
+\newcommand{\del}{\mathbf{del}}
+\newcommand{\pr}{\mathbf{pr}}
+\newcommand{\pg}{\mathbf{pg}}
+\newcommand{\d}{\mathbf{d}}
+\)%
+\else
 \newcommand{\bos}{\mathbf{bos}}
 \newcommand{\fer}{\mathbf{fer}}
 \newcommand{\fun}{\mathbf{fun}}
@@ -10,11 +26,9 @@
 \newcommand{\pr}{\mathbf{pr}}
 \newcommand{\pg}{\mathbf{pg}}
 \renewcommand{\d}{\mathbf{d}}
-
-\subsection{Introduction}
-
+\fi
 The main idea of supersymmetry (SuSy) is to treat boson and fermion
-operators equally \hyperref[susy2-bib]{[1,2]}.  This has been realised
+operators equally \hyperlink{susy2-bib}{[1,2]}.  This has been realised
 by introducing so-called supermultiplets constructed from the boson
 and fermion operators and additionally from the Mayorana spinors.
 Such supermultiplets possess the proper transformation property under
@@ -22,11 +36,11 @@ the transformation of the Lorentz group.  At the moment we have no
 experimental confirmation that supersymmetry appears in nature.
 
 The idea of using supersymmetry for the generalization of the soliton
-equations~\hyperref[susy2-bib]{[3--7]} appeared almost in parallel to
+equations~\hyperlink{susy2-bib}{[3--7]} appeared almost in parallel to
 the usage of SuSy in the quantum field theory.  The first results,
 concerning the construction of classical field theories with fermionic
 and bosonic fields depending on time and one space variable can be
-found in~\hyperref[susy2-bib]{[8--12]}.  In many cases, the addition
+found in~\hyperlink{susy2-bib}{[8--12]}.  In many cases, the addition
 of fermion fields does not guarantee that the final theory becomes
 SuSy invariant and therefore this method was named the fermionic
 extension in order to distinguish it from the fully SuSy method.
@@ -42,7 +56,7 @@ need further investigation.  This may be viewed as a bonus, but this
 extended case is no more fundamental than the non-extended one.  The
 problem of the supersymmetrization of the nonlinear partial
 differential equations has its own history, and at the moment we have
-no unique solution~\hyperref[susy2-bib]{[13--40]}.  We can distinguish
+no unique solution~\hyperlink{susy2-bib}{[13--40]}.  We can distinguish
 three different methods of supersymmetrization: algebraic, geometric
 and direct.
 
@@ -75,7 +89,7 @@ successful.
 
 The utilization of the above methods can be helped by symbolic
 computer algebraic and for this reason we developed the package SuSy2
-in the symbolic language REDUCE~\hyperref[susy2-bib]{[41]}.
+in the symbolic language REDUCE~\hyperlink{susy2-bib}{[41]}.
 
 We have implemented and ordered the superfunctions in our program,
 extensively using the concept of ``noncom operator'' in order to
@@ -90,7 +104,7 @@ procedure of the soliton equation.
 
 The basic object in the supersymmetric analysis is the superfield and
 the supersymmetric derivative.  The superfields are the superfermions
-or the superbosons~\hyperref[susy2-bib]{[1]}.  These fields, in the
+or the superbosons~\hyperlink{susy2-bib}{[1]}.  These fields, in the
 case of extended $N=2$ supersymmetry, depend, in addition to $x$ and
 $t$, upon two anticommuting variables, $\theta_{1}$ and $\theta_{2}$
 (such that $\theta_{2}\theta_{1} = -
@@ -149,7 +163,7 @@ and the algebra of superderivatives.  Moreover, we have defined many
 additional procedures which are useful in the supersymmetrization of
 the classical nonlinear system of partial differential equation.
 Different applications of this package to physical problems can be
-found in the papers~\hyperref[susy2-bib]{[34--38]}.
+found in the papers~\hyperlink{susy2-bib}{[34--38]}.
 
 \subsection{Superfunctions}
 
@@ -199,7 +213,7 @@ here four commands:
   the zero-order term in $\theta$, the second is the first-order term
   in $\theta_{1}$, the third is the first-order term in $\theta_{2}$
   and the fourth is the term in $\theta_{2}\theta_{1}$.  For example,
-  the superfunction (\ref{susy2-eqn1}) has the representation
+  the superfunction \eqref{susy2-eqn1} has the representation
   \begin{equation*}
     \mathbf{fpart}(\bos(f,0,0)) \Rightarrow
     \{ \fun(f_{0},0), \gras(\mathit{ff}_{1},0),
@@ -374,10 +388,10 @@ Explicitly, we have for the traditional algebra:
     \der(2)*\fer(g,0,0) &\Rightarrow&  \bos(g,2,0)-\fer(g,0,0)\,\der(2), \\
     \der(1)*\fer(f,2,0) &\Rightarrow&  \bos(f,3,0)-\fer(f,2,0)\,\der(1), \\
     \der(2)*\bos(f,3,0) &\Rightarrow& -\fer(f,1,1)+\bos(f,3,0)\,\der(2), \\
-    \der(1)*\bos(f,0,0,-1) &\Rightarrow& -\fer(f,1,0)\,\bos(f,0,0,-2) + \\
+    \der(1)*\bos(f,0,0,-1) &\Rightarrow& -\fer(f,1,0)\,\bos(f,0,0,-2) + \mbox{}\\
     && \bos(f,0,0,-1)\,\der(1), \\
     \der(2)*\axp(\bos(f,0,0)) &\Rightarrow&
-    \fer(f,2,0)\,\axp(\bos(f,0,0)) + \\
+    \fer(f,2,0)\,\axp(\bos(f,0,0)) + \mbox{}\\
     && \axp(\bos(f,0,0))\,\der(2).
   \end{eqnarray*}
 
@@ -387,10 +401,10 @@ Explicitly, we have for the traditional algebra:
     \fer(g,0,0)*\mathbf{\del(2)} &\Rightarrow&  \bos(g,2,0)-\del(2)\,\fer(g,0,0), \\
     \fer(f,2,0)*\del(2) &\Rightarrow& \bos(f,3,0)-\del(1)\,\fer(f,2,0), \\
     \bos(f,3,0)*\del(2) &\Rightarrow& \fer(f,1,1)+\del(2)\,\bos(f,3,0), \\
-    \bos(f,0,0,-1)*\del(1) &\Rightarrow& \fer(f,1,0)\,\bos(f,0,0,-2) + \\
+    \bos(f,0,0,-1)*\del(1) &\Rightarrow& \fer(f,1,0)\,\bos(f,0,0,-2) + \mbox{}\\
     && \del(1)\,\bos(f,0,0,-1), \\
     \axp(\bos(f,0,0))*\del(2) &\Rightarrow&
-    -\fer(f,2,0)\,\axp(\bos(f,0,0)) + \\
+    -\fer(f,2,0)\,\axp(\bos(f,0,0)) + \mbox{}\\
     && \del(2)\,\axp(\bos(f,0,0)).
   \end{eqnarray*}
 \end{description}
@@ -639,8 +653,8 @@ procedure in which:
 Examples:
 \begin{eqnarray*}
   \mathbf{w\_comb}(\{\{ f,1,b \},\{g,1,b\}\},2,z,b) &\Rightarrow&
-  z1\,\bos(f,3,0) + z2\,\bos(f,0,1) + \\
-  &&z3\,\bos(f,0,0)^2 \\
+  z1\,\bos(f,3,0) + z2\,\bos(f,0,1) + \mbox{}\\
+  && z3\,\bos(f,0,0)^2 \\
   \mathbf{w\_comb}(\{\{ f,1,b\}\},3/2,g,f) &\Rightarrow&
   g1\,\fer(f,1,0) + g2\,\fer(f,2,0)
 \end{eqnarray*}
@@ -691,7 +705,7 @@ Example:
 
 Finally, the command $\mathbf{pse\_ele}$ gives the general form of an
 element of the pseudo-SuSy derivative
-algebra~\hyperref[susy2-bib]{[3]}.  Such an element can be written
+algebra~\hyperlink{susy2-bib}{[3]}.  Such an element can be written
 down symbolically as
 \begin{equation*}
   (\bos + \fer\,\der(1)+\fer\,\der(2)+\bos\,\der(1)\,\der(2))\,\d(1)^n
@@ -762,7 +776,7 @@ scalar product is defined by
   \langle \alpha, \beta \rangle =
   \int \alpha \beta\,d\theta_{1}\,d\theta_{2},
 \end{equation*}
-where we use the Berezin integral definition~\hyperref[susy2-bib]{[1]}
+where we use the Berezin integral definition~\hyperlink{susy2-bib}{[1]}
 \begin{align*}
   \int \theta_{i}\,d\theta_{j} &= \delta_{i,j}, \\
   \int d\theta_{i} &= 0.
@@ -775,7 +789,7 @@ Examples:
 \begin{eqnarray*}
   \mathbf{cp}(\der(1)) &\Rightarrow& -\der(1), \\
   \mathbf{cp}(\del(1)*\fer(r,1,0)*\der(1)) &\Rightarrow&
-  \fer(r,1,1) + \fer(r,1,0)\,\d(1) - \\
+  \fer(r,1,1) + \fer(r,1,0)\,\d(1) - \mbox{}\\
   && \del(1)\,\bos(r,0,1),
 \end{eqnarray*}
 
@@ -797,7 +811,7 @@ or $\d(-2)$ together with the declaration of the precision.
 In many cases, especially in the SuSy approach to soliton theory, we
 have to obtain the projection onto the invariant subspace (with
 respect to the commutator) of the pseudo-SuSy-differential algebra.
-There are three different subspaces~\hyperref[susy2-bib]{[4]} and
+There are three different subspaces~\hyperlink{susy2-bib}{[4]} and
 hence we have the two-argument command
 \begin{equation*}
   \mathbf{rzut}(\mathit{expression},n)
@@ -943,7 +957,7 @@ obtain
 
 In the SuSy soliton approach we very frequently encounter the problem
 of computing the gradient of the given functional.  The usual
-definition of the gradient~\hyperref[susy2-bib]{[2]} is adopted in the
+definition of the gradient~\hyperlink{susy2-bib}{[2]} is adopted in the
 supersymmetry also:
 \begin{equation*}
   H'[v] = \langle \operatorname{grad} H, v \rangle =
@@ -1010,7 +1024,7 @@ where $\mathit{equation}$ is a list of two-element lists in which the
 first element denotes the function while the second denotes its flow.
 The second argument should be understood as the density of some
 conserved current.  For example, for the SuSy version of the Nonlinear
-Schr\"odinger Equation~\hyperref[susy2-bib]{[7]} we could use the
+Schr\"odinger Equation~\hyperlink{susy2-bib}{[7]} we could use the
 following REDUCE input:
 \newpage
 \begin{verbatim}
@@ -1052,7 +1066,7 @@ using the relation
 where $P'$ denotes the directional derivative along the $P(\beta)$
 vector and $\langle\cdot,\cdot\rangle$ denotes the scalar product.
 The directional derivative is defined in the standard manner
-as~\hyperref[susy2-bib]{[44]}:
+as~\hyperlink{susy2-bib}{[44]}:
 \begin{equation*}
   F^{'}(u)[v] = \frac{\partial}{\partial\epsilon}
   F(u+\epsilon v)\mid_{\epsilon =0},
@@ -1189,8 +1203,7 @@ final results.
 
 The author would like to thank to Dr~W.~Neun for valuable remarks.
 
-\subsection*{Bibliography}
-\label{susy2-bib}
+\hypertarget{susy2-bib}{\subsection*{Bibliography}}
 
 Please see the original version of this document, which is available
 formatted as
