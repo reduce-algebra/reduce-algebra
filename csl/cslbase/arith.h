@@ -629,16 +629,16 @@ extern bool lesspib(LispObject a, LispObject b);
 // here will survive even without that.
 //
 
-typedef struct Complex
+typedef struct CSL_Complex
 {   double real;
     double imag;
-} Complex;
+} CSL_Complex;
 
-extern Complex Cln(Complex a);
-extern Complex Ccos(Complex a);
-extern Complex Cexp(Complex a);
-extern Complex Cpow(Complex a, Complex b);
-extern double Cabs(Complex a);
+extern CSL_Complex Cln(CSL_Complex a);
+extern CSL_Complex Ccos(CSL_Complex a);
+extern CSL_Complex Cexp(CSL_Complex a);
+extern CSL_Complex Cpow(CSL_Complex a, CSL_Complex b);
+extern double Cabs(CSL_Complex a);
 
 // For the parallel variant on Karatsuba I need thread support...
 

@@ -283,7 +283,7 @@ typedef union _char_double
 // as to their treatment of -0.0 on branch-cuts!
 //
 
-double Cabs(Complex z)
+double Cabs(CSL_Complex z)
 {
 //
 // Obtain the absolute value of a complex number - note that the main
@@ -312,7 +312,7 @@ double Cabs(Complex z)
     return scale * std::sqrt(x*x + y*y);
 }
 
-Complex Ccos(Complex z)
+CSL_Complex Ccos(CSL_Complex z)
 {   double x = z.real, y = z.imag;
 //
 // cos(x + iy) = cos(x)*cosh(y) - i sin(x)*sinh(y)
@@ -401,7 +401,7 @@ int _reduced_exp(double x, double *r)
     return 11*n;
 }
 
-Complex Cexp(Complex z)
+CSL_Complex Cexp(CSL_Complex z)
 {   double x = z.real, y = z.imag;
 //
 // value is exp(x)*(cos(y) + i sin(y)) but have care with overflow
@@ -433,7 +433,7 @@ Complex Cexp(Complex z)
     }
 }
 
-Complex Cln(Complex z)
+CSL_Complex Cln(CSL_Complex z)
 {   double x = z.real, y = z.imag;
 //
 // if x and y are both very large then cabs(z) may be out of range
@@ -470,7 +470,7 @@ Complex Cln(Complex z)
 
 
 //
-// Complex raising to a power.  This seems to be pretty nasty
+// CSL_Complex raising to a power.  This seems to be pretty nasty
 // to get right, and the code includes extra high precision variants
 // on atan() and log().  Further refinements wrt efficiency may be
 // possible later on.
@@ -808,7 +808,7 @@ static void extended_log(int k, double a, double b,
 }
 
 
-Complex Cpow(Complex z1, Complex z2)
+CSL_Complex Cpow(CSL_Complex z1, CSL_Complex z2)
 {   double a = z1.real, b = z1.imag,
                c = z2.real, d = z2.imag;
     int k, m, n;
