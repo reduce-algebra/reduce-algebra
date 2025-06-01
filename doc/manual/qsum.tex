@@ -584,7 +584,7 @@ polynomials.
 
 
                       n    beta + n
-           *(q + 1 - q  - q        )) - 
+           *(q + 1 - q  - q        )) -
 
          (alpha + beta)/2   alpha   n
         q                *(q     *(q *(q + 1) - q
@@ -605,7 +605,7 @@ polynomials.
      *(q                   - 1))
 
        alpha + beta + 2*n
-    *(q                   - q)*summ(n - 1) - 
+    *(q                   - q)*summ(n - 1) -
 
      i*theta    (alpha + beta + 2*n)/2
     e       *((q
@@ -631,7 +631,7 @@ polynomials.
               *summ(n) + (q     *(sqrt(q)*q
 
                         alpha + beta + 2*n
-                     + q                  ) + 
+                     + q                  ) +
 
                   (3*alpha + beta + 2*n)/2
                  q
@@ -794,10 +794,10 @@ The following messages may occur:
 %
 	\item If you call \texttt{qgosper} with a summand term that
 		is free of the summation variable you get
-		\begin{verbatim}
-			WARNING: Summand is independent of summation variable.
-			***** No q-hypergeometric antidifference exists.
-		\end{verbatim}
+\begin{verbatim}
+WARNING: Summand is independent of summation variable.
+***** No q-hypergeometric antidifference exists.
+\end{verbatim}
 %
 %	\item It is not allowed to specify bounds in \\texttt{qgosper} which
 %		contain the summation variable. Otherwise you get the message:
@@ -806,9 +806,9 @@ The following messages may occur:
 %		\end{verbatim}
 %
 	\item If \texttt{qgosper} finds no antidifference it returns:
-		\begin{verbatim}
-		***** No q-hypergeometric antidifference exists.
-		\end{verbatim}
+\begin{verbatim}
+***** No q-hypergeometric antidifference exists.
+\end{verbatim}
 %
 	\item If \texttt{qsumrecursion} finds no recursion in the specified
 		range it returns:
@@ -820,9 +820,9 @@ The following messages may occur:
 		(\texttt{qsumrecursion}) is not $q$-hyper\-geometric wrt.\ the
 		summation variable --- say $k$ --- (and the recursion variable)
 		then you get
-		\begin{verbatim}
-		***** Input term is probably not q-hypergeometric.
-		\end{verbatim}
+\begin{verbatim}
+***** Input term is probably not q-hypergeometric.
+\end{verbatim}
 		With all the examples we tested, our procedures decided properly
 		whether the input term was $q$-hypergeometric or not. However, we
 		cannot guarantee in general that \texttt{qsimpcomb} \emph{always} returns
@@ -830,10 +830,10 @@ The following messages may occur:
 %
 	\item If the global variable \var{qsumrecursion\_recrange!*} was
 		assigned an invalid value:
-		\begin{verbatim}
-		Global variable qsumrecursion_recrange!* must be a list
-		of two positive integers: {lo,hi} with lo<=hi.
-		***** Invalid value of qsumrecursion_recrange!*
-		\end{verbatim}
+\begin{verbatim}
+Global variable qsumrecursion_recrange!* must be a
+list of two positive integers: {lo,hi} with lo<=hi.
+***** Invalid value of qsumrecursion_recrange!*
+\end{verbatim}
 %
 \end{itemize}

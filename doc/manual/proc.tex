@@ -243,7 +243,7 @@ declaration), and \texttt{let} is used instead of \texttt{:=} to make an
 assignment to \texttt{x}, e.g.
 
 \begin{verbatim}
-        let x => 123;
+     let x => 123;
 \end{verbatim}
 then it is the variable that is the value of \texttt{x} that is changed.
 This effect also occurs with local variables defined in a block.  If the
@@ -259,18 +259,18 @@ semantics for procedure definition.
 
 In place of
 \begin{verbatim}
-        procedure abc(x,y,z); <procedure body>;
+     procedure abc(x,y,z); <procedure body>;
 \end{verbatim}
 one can write
 \begin{verbatim}
-        for all x,y,z let abc(x,y,z) => <procedure body>;
+     for all x,y,z let abc(x,y,z) => <procedure body>;
 \end{verbatim}
 There are several differences to note.
 
 If the procedure body contains an assignment to one of the formal
 parameters, e.g.
 \begin{verbatim}
-        x := 123;
+     x := 123;
 \end{verbatim}
 in the \texttt{procedure} case it is a variable holding a copy of the first
 actual argument that is changed.  The actual argument is not changed.
@@ -284,14 +284,14 @@ by value conventions of standard \texttt{procedure} definitions.
 \textit{Example:}  We take our earlier \texttt{factorial}\ttindex{factorial}
 procedure and write it as a \texttt{let} statement.
 \begin{verbatim}
-        for all n let factorial n =>
-                    begin scalar m,s;
-                    m:=1; s:=n;
-                l1: if s=0 then return m;
-                    m:=m*s;
-                    s:=s-1;
-                    go to l1
-                end;
+     for all n let factorial n =>
+                 begin scalar m,s;
+                 m:=1; s:=n;
+             l1: if s=0 then return m;
+                 m:=m*s;
+                 s:=s-1;
+                 go to l1
+             end;
 \end{verbatim}
 The reader will notice that we introduced a new local variable, \texttt{s},
 and set it equal to \texttt{n}.  The original form of the procedure contained
@@ -302,12 +302,12 @@ of, 5, and {\REDUCE} would object to trying to execute the statement
 
 If \texttt{pqr} is a procedure with no parameters,
 \begin{verbatim}
-        procedure pqr;
-           <procedure body>;
+     procedure pqr;
+        <procedure body>;
 \end{verbatim}
 it can be written as a \texttt{let} statement quite simply:
 \begin{verbatim}
-        let pqr => <procedure body>;
+     let pqr => <procedure body>;
 \end{verbatim}
 To call \emph{procedure} \texttt{pqr}, if defined in the latter form, the empty
 parentheses would not be used: use \texttt{pqr} not \texttt{pqr()} where a call
@@ -317,7 +317,7 @@ The two notations for a procedure with no arguments can be combined. \texttt{pqr
 can be defined in the standard \texttt{procedure} form. Then a \texttt{let}
 statement
 \begin{verbatim}
-        let pqr => pqr();
+     let pqr => pqr();
 \end{verbatim}
 would allow a user to use \texttt{pqr} instead of \texttt{pqr()} in calling the
 procedure.

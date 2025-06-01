@@ -290,15 +290,17 @@ is $f$.
 
 We have the following representation in components for the inverse and
 $\axp$ superfunctions:
-\begin{align*}
-  \mathbf{fpart}(\bos(f,0,0,-1)) & = \{ \fun(f_{0},0,-1), -\fun(f_{0},0,-1)\,\gras(\mathit{ff}_{1},0), \\
-  & -\fun(f_{0},0,-1)\,\gras(\mathit{ff}_{2},0), - \fun(f_{0},0,-2)\,\fun(f_{1},0,1) \\
-  & + 2\,\fun(f_{0},0,-3)\,\gras(\mathit{ff}_{1},0)\,\gras(\mathit{ff}_{2},0) \}, \\
-  \mathbf{fpart}(\axp(f)) & = \{ \mathbf{axx}(\mathbf{bf\_part}(f,0)),
+\begin{multline*}
+  \mathbf{fpart}(\bos(f,0,0,-1)) = \{ \fun(f_{0},0,-1), -\fun(f_{0},0,-1)\,\gras(\mathit{ff}_{1},0), \\
+  -\fun(f_{0},0,-1)\,\gras(\mathit{ff}_{2},0), - \fun(f_{0},0,-2)\,\fun(f_{1},0,1) \\
+  + 2\,\fun(f_{0},0,-3)\,\gras(\mathit{ff}_{1},0)\,\gras(\mathit{ff}_{2},0) \},
+\end{multline*}
+\begin{multline*}
+  \mathbf{fpart}(\axp(f)) = \{ \mathbf{axx}(\mathbf{bf\_part}(f,0)),
   \mathbf{axx}(\mathbf{bf\_part}(f,0))\,\mathbf{bf\_part}(f,1), \\
-  & \mathbf{axx}(\mathbf{bf\_part}(f,0))\,\mathbf{bf\_part}(f,2), \mathbf{axx}(\mathbf{bf\_part}(f,0)) \\
-  & (\mathbf{bf\_part}(f,3)+2\,\mathbf{bf\_part}(f,1)\,\mathbf{bf\_part}(f,2)) \},
-\end{align*}
+  \mathbf{axx}(\mathbf{bf\_part}(f,0))\,\mathbf{bf\_part}(f,2), \mathbf{axx}(\mathbf{bf\_part}(f,0)) \\
+  (\mathbf{bf\_part}(f,3)+2\,\mathbf{bf\_part}(f,1)\,\mathbf{bf\_part}(f,2)) \},
+\end{multline*}
 where $\mathbf{axx}(f)$ denotes the exponentiation of the given
 classical function while $\fun(f,m,n)$ denotes the $n$-th power of the
 function $\fun(f,m)$.
@@ -417,7 +419,7 @@ second SuSy derivative, 3 -- first and second SuSy derivative.
 Using the results above we obtain
 \begin{multline*}
   \der(1)*\der(2)*\bos(f,0,0) \Rightarrow \\
-  \bos(f,3,0) + \bos(f,0,0)\,\der(1)\,\der(2) +
+  \bos(f,3,0) + \bos(f,0,0)\,\der(1)\,\der(2) + \mbox{} \\
   \fer(f,1,0)\,\der(2) - \fer(f,2,0)\,\der(1).
 \end{multline*}
 
@@ -474,8 +476,10 @@ We should consider the five-argument object $\fun$ as
 \begin{equation*}
   \fun(f,n,g,m,-k) \Rightarrow (\fun(f,n)-\fun(g,m)/2)^{-k}.
 \end{equation*}
-Similar interpretation is valid for other commands containing objects
-like $\bos(f,3,n,-k)$.
+\begin{sloppypar}
+  Similar interpretation is valid for other commands containing
+  objects like $\bos(f,3,n,-k)$.
+\end{sloppypar}
 
 \subsection{Action of the Operators}
 
@@ -533,8 +537,9 @@ Example:
   \mathbf{s\_int}(1,2*\fer(f,1,0)*\bos(f,0,0),\{f\}) \Rightarrow \bos(f,0,0)^{2},
 \end{equation*}
 \begin{multline*}
-\mathbf{s\_int}(3,\bos(f,3,0)*\bos(g,0,0)+\bos(f,0,0)*\bos(g,3,0),\{f,g\}) \Rightarrow \\
-\bos(f,0,0)\,\bos(g,0,0) - \del(-3)\,\big( \fer(f,1,0)\,\fer(g,2,0) - \fer(f,2,0)\,\bos(g,1,0) \big).
+  \mathbf{s\_int}(3,\bos(f,3,0)*\bos(g,0,0)+\bos(f,0,0)*\bos(g,3,0),\{f,g\}) \Rightarrow \\
+  \bos(f,0,0)\,\bos(g,0,0) - \mbox{} \\
+  \del(-3)\,\big( \fer(f,1,0)\,\fer(g,2,0) - \fer(f,2,0)\,\bos(g,1,0) \big).
 \end{multline*}
 
 \subsection{Integration Operators}
@@ -685,10 +690,12 @@ Consider this example:
 \begin{equation*}
   \fer(f,1,0)\,\fer(g,2,0) + \bos(g,0,0)\,\bos(g,3,0).
 \end{equation*}
-Let us now assume that we have $f,g$ order; then the
-\textit{f-expression} is $\fer(f,1,0)\,\fer(g,2,0)$, while the
-\textit{g-expression} is $\bos(g,0,1)\,\bos(g,3,0)$.  Now canonical
-elimination gives
+\begin{sloppypar}
+  Let us now assume that we have $f,g$ order; then the
+  \textit{f-expression} is $\fer(f,1,0)\,\fer(g,2,0)$, while the
+  \textit{g-expression} is $\bos(g,0,1)\,\bos(g,3,0)$.  Now canonical
+  elimination gives
+\end{sloppypar}
 \begin{equation*}
   - \bos(f,0,0)\,\bos(g,3,0) + 2\,\bos(g,0,0)\,\bos(g,3,1),
 \end{equation*}
@@ -752,7 +759,7 @@ the $m$-th SuSy derivative and $n$-th power of the usual derivative.
 Example: Given the REDUCE input
 \begin{verbatim}
 ala := bos(g,0,0) + fer(f,3,0)*der(1) +
-       (fer(h,2,0)*der(2) + bos(r,0,0)*der(1)*der(2))*d(1);
+  (fer(h,2,0)*der(2) + bos(r,0,0)*der(1)*der(2))*d(1);
 \end{verbatim}
 we have
 \begin{eqnarray*}
@@ -821,9 +828,9 @@ in which $n=0,1,2$.
 Example: Given the REDUCE input
 \begin{verbatim}
 ewa := bos(f,0,0) + bos(f3,0,0)*der(1)*der(2) +
-       bos(g,0,0)*d(1) + bos(g3,0,0)*d(1)*der(1)*der(2) +
-       fer(f1,1,0)*der(1) + fer(f2,2,0)*der(2) +
-       fer(g1,1,0)*d(1)*der(1) + fer(g2,2,0)*d(1)*der(2);
+   bos(g,0,0)*d(1) + bos(g3,0,0)*d(1)*der(1)*der(2) +
+   fer(f1,1,0)*der(1) + fer(f2,2,0)*der(2) +
+   fer(g1,1,0)*d(1)*der(1) + fer(g2,2,0)*d(1)*der(2);
 \end{verbatim}
 we have
 \begin{equation*}
@@ -1026,13 +1033,13 @@ The second argument should be understood as the density of some
 conserved current.  For example, for the SuSy version of the Nonlinear
 Schr\"odinger Equation~\hyperlink{susy2-bib}{[7]} we could use the
 following REDUCE input:
-\newpage
 \begin{verbatim}
-ew := { {q, -bos(q,0,2) + bos(q,0,0)^3*bos(r,0,0)^2
-            2*bos(q,0,0)*pr(3,bos(q,0,0)*bos(r,0,0))},
-        {r, bos(r,0,2) - bos(q,0,0)^2*bos(r,0,0)^3 +
-            2*bos(r,0,0)*pr(3,bos(q,0,0)*bos(r,0,0))} };
-ham := bos(q,0,1)*bos(r,0,0) + x*bos(q,0,0)^2*bos(r,0,0)^2;
+ew := {{q, -bos(q,0,2) + bos(q,0,0)^3*bos(r,0,0)^2
+         2*bos(q,0,0)*pr(3,bos(q,0,0)*bos(r,0,0))},
+       {r, bos(r,0,2) - bos(q,0,0)^2*bos(r,0,0)^3 +
+         2*bos(r,0,0)*pr(3,bos(q,0,0)*bos(r,0,0))}};
+ham := bos(q,0,1)*bos(r,0,0) +
+         x*bos(q,0,0)^2*bos(r,0,0)^2;
 yyy := dot_ham(ew,ham);
 \end{verbatim}
 The result of the previous computation is a complicated expression

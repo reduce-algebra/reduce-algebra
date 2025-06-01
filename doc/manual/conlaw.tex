@@ -273,7 +273,8 @@ concerning these examples are given when running the file
 \item A single PDE:
 \begin{verbatim}
    depend u,x,t$
-   conlaw1({{df(u,t)=-u*df(u,x)-df(u,x,3)}, {u}, {t,x}},
+   conlaw1({{df(u,t)=-u*df(u,x)-df(u,x,3)},
+            {u}, {t,x}},
            {0, 1, t, {}, {}})$
    nodepnd {u}$
 \end{verbatim}
@@ -282,8 +283,9 @@ concerning these examples are given when running the file
 \begin{verbatim}
    depend u,x,t$
    depend v,x,t$
-   conlaw1({{df(u,t)=df(u,x,3)+6*u*df(u,x)+2*v*df(v,x),
-             df(v,t)=2*df(u,x)*v+2*u*df(v,x)           },
+   conlaw1({{df(u,t)=df(u,x,3)+6*u*df(u,x)+
+                2*v*df(v,x),
+             df(v,t)=2*df(u,x)*v+2*u*df(v,x)},
             {u,v}, {t,x}},
            {0, 1, t, {}, {}})$
    nodepnd {u,v}$
@@ -305,8 +307,8 @@ concerning these examples are given when running the file
   exist:
 \begin{verbatim}
    depend u,x,t;
-   conlaw1({{df(u,t)=-df(u,x,5)-a*u**2*df(u,x)
-                     -b*df(u,x)*df(u,x,2)-c*u*df(u,x,3)},
+   conlaw1({{df(u,t)=-df(u,x,5)-a*u**2*df(u,x)-
+                b*df(u,x)*df(u,x,2)-c*u*df(u,x,3)},
             {u}, {t,x}},
            {0, 1, t, {a,b,c}, {}});
    nodepnd {u};

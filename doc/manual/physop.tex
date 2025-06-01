@@ -528,7 +528,8 @@ Example:
 
 \begin{verbatim}
 STATE U;
-FOR ALL N,M LET OPAPPLY(U(N),U(M)) = IF N=M THEN 1 ELSE 0;
+FOR ALL N,M LET OPAPPLY(U(N),U(M)) =
+   IF N=M THEN 1 ELSE 0;
 \end{verbatim}
 
 \textbf{(iii)} \textit{state} \f{:= opapply(}\textit{operator expression, state});
@@ -624,7 +625,7 @@ Prof.\ John Fitch are also gratefully acknowledged.
 \subsection{Appendix: List of error and warning messages}
 In the following the error (E) and warning (W) messages specific to the
 PHYSOP package are listed.
-\begin{description}
+\begin{description}\sloppy
 \item[\f{cannot declare} \textit{x}\f{ as }\textit{data type}] (W):
  An attempt has been made to declare an
 object \textit{x} which cannot be used as a \package{PHYSOP} operator of the
@@ -682,8 +683,7 @@ operator has occurred in a call of the \f{COMMUTE}/\f{ANTICOMMUTE} function.
 An invalid operator has occurred in the call of the
 \f{COMMUTE}/\f{ANTICOMMUTE} function.
 
-\item[\f{evaluation incomplete due to missing elementary relations}] (W):
-\\
+\item[{\small\f{evaluation incomplete due to missing elementary relations}}] (W):
 The system has not found all
 the elementary commutators or application relations necessary to
 calculate or reorder the input expression. The result may however be
