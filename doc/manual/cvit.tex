@@ -32,42 +32,39 @@ The program consists of 5 modules described below.
 
 \newpage
 \begin{verbatim}
-
-                    MODULES CROSS REFERENCES
-   +--------+
-   | REDUCE |
-   |________|                  |ISIMP1
-    ISIMP2|         +-----------------------+
-          +--->-----| RED_TO_CVIT_INTERFACE |
-                    |_______________________|
-                 CALC_SPUR|          |REPLACE_BY_VECTOR
-                          |          |REPLACE_BY_VECTORP
-                          |          |GAMMA5P
-                          ^          V
-                         +--------------+
-                         | CVITMAPPING  |
-                         |______________|
-                                ^
-                                |PRE-CALC-MAP
-                                |CALC_MAP_TAR
-                                |CALC_DENTAR
-                                |
-                         +-------------+
-                         | INTERFIERZ  |
-                         |_____________|
-                            |         |MK-NUMR
-                            |         |STRAND-ALG-TOP
-                            |         ^
-               MAP-TO-STRAND|    +------------+
-                   INCIDENT1|    | EVAL-MAPS  |
-                            |    |____________|
-                            ^               |DELETEZ1
-                            |               |CONTRACT-STRAND
-                  +----------------+        |COLOR-STRAND
-                  | MAP-TO-STRAND  |---->---+
-                  |________________|
-
-
+                 MODULES CROSS REFERENCES
++--------+
+| REDUCE |
+|________|                  |ISIMP1
+ ISIMP2|         +-----------------------+
+       +--->-----| RED_TO_CVIT_INTERFACE |
+                 |_______________________|
+              CALC_SPUR|          |REPLACE_BY_VECTOR
+                       |          |REPLACE_BY_VECTORP
+                       |          |GAMMA5P
+                       ^          V
+                      +--------------+
+                      | CVITMAPPING  |
+                      |______________|
+                             ^
+                             |PRE-CALC-MAP
+                             |CALC_MAP_TAR
+                             |CALC_DENTAR
+                             |
+                      +-------------+
+                      | INTERFIERZ  |
+                      |_____________|
+                         |         |MK-NUMR
+                         |         |STRAND-ALG-TOP
+                         |         ^
+            MAP-TO-STRAND|    +------------+
+                INCIDENT1|    | EVAL-MAPS  |
+                         |    |____________|
+                         ^             |DELETEZ1
+                         |             |CONTRACT-STRAND
+               +----------------+      |COLOR-STRAND
+               | MAP-TO-STRAND  |--->--+
+               |________________|
 \end{verbatim}
 
 
@@ -332,18 +329,18 @@ The <expr> has non-unit denominator.
 \end{itemize}
 
 \begin{verbatim}
-                  List of switches
-------------------------------------------------------------
- switch           default    comment
-------------------------------------------------------------
- CVIT             ON         If it is on then use Kennedy-
-                             Cvitanovic algorithm else use
-                             standard facilities.
- CVITOP           OFF        Fierz optimization switch
- CVITBTR          ON         Bubbles and triangles
-                             factorisation switch
- CVITRACE         OFF        Backtracking tracing switch
-------------------------------------------------------------
+             List of switches
+------------------------------------------------------
+ switch      default    comment
+------------------------------------------------------
+ CVIT        ON         If it is on then use Kennedy-
+                        Cvitanovic algorithm else use
+                        standard facilities.
+ CVITOP      OFF        Fierz optimization switch
+ CVITBTR     ON         Bubbles and triangles
+                        factorisation switch
+ CVITRACE    OFF        Backtracking tracing switch
+------------------------------------------------------
 \end{verbatim}
 
 

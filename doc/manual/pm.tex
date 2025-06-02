@@ -112,9 +112,11 @@ Note that the effect of using a multi-generic symbol is different:
 \subsection{temp \_= logical\_exp}
 \hypertarget{reserved:suchthatop}{}
 
+\begin{sloppypar}
 A template may be qualified by the use of the conditional operator \texttt{\_=},
 \f{such!-that}.  When a \f{such-that} condition is encountered in a template, it
 is held until all generic variables appearing in \texttt{logical\_exp} are bound.
+\end{sloppypar}
 
 On the binding of the last generic variable, \texttt{logical\_exp} is simplified
 and if the result is not \texttt{T} the condition fails and the pattern matcher
@@ -159,7 +161,7 @@ expression no longer changes.
 
 The command
 \begin{verbatim}
-        Si(exp, {temp1 -> sub1, temp2 -> sub2, ...}, depth)
+Si(exp, {temp1 -> sub1, temp2 -> sub2, ...}, depth)
 \end{verbatim}
 means ``substitute infinitely many times until expression stops changing''.  It
 is short-hand for \texttt{S(exp,\{temp1 -> sub1, temp2 -> sub2,...\},Inf, depth)}.
@@ -168,37 +170,40 @@ is short-hand for \texttt{S(exp,\{temp1 -> sub1, temp2 -> sub2,...\},Inf, depth)
 \subsubsection*{Examples:}
 
 \begin{verbatim}
-        s(f(a,b), f(a,?b) -> ?b\^{}2);
-        2
-        b
-        s(a+b, a+b -> a{*}b);
-        b*a
+s(f(a,b), f(a,?b) -> ?b\^{}2);
+2
+b
+s(a+b, a+b -> a{*}b);
+b*a
 \end{verbatim}
 ``Associativity'' is used to group $a+b+c$ to $(a+b)+c$:
 \begin{verbatim}
-        s(a+b+c, a+b -> a*b);
-        b*a + c
+s(a+b+c, a+b -> a*b);
+b*a + c
 \end{verbatim}
 The next three examples use a rule set that defines the factorial function.
 Substitute once:
 \begin{verbatim}
-        s(nfac(3), {nfac(0) -> 1, nfac(?x) -> ?x*nfac(?x-1)});
-        3*nfac(2)
+s(nfac(3),
+   {nfac(0) -> 1, nfac(?x) -> ?x*nfac(?x-1)});
+3*nfac(2)
 \end{verbatim}
 Substitute twice:
 \begin{verbatim}
-        s(nfac(3), {nfac(0) -> 1, nfac(?x) -> ?x*nfac(?x-1)}, 2);
-        6*nfac(1)
+s(nfac(3),
+   {nfac(0) -> 1, nfac(?x) -> ?x*nfac(?x-1)}, 2);
+6*nfac(1)
 \end{verbatim}
 Substitute until expression stops changing:
 \begin{verbatim}
-        si(nfac(3), {nfac(0) -> 1, nfac(?x) -> ?x{*}nfac(?x-1)});
-        6
+si(nfac(3),
+   {nfac(0) -> 1, nfac(?x) -> ?x{*}nfac(?x-1)});
+6
 \end{verbatim}
 Only substitute at the top level:
 \begin{verbatim}
-        s(a+b+f(a+b), a+b -> a*b, inf, 0);
-        f(b+a) + b*a
+s(a+b+f(a+b), a+b -> a*b, inf, 0);
+f(b+a) + b*a
 \end{verbatim}
 
 

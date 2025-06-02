@@ -1239,13 +1239,13 @@ there are six functions which return a list as their value:
 \ttindextype[ELLIPFN]{lattice\_generators}{operator}
 \ttindextype[ELLIPFN]{quasi\_period\_factors}{operator}
 \begin{itemize}
-\item \f{lattice\_roots(omega1, omega3)} --- returns $\{e_1,\ e_2,\ e_3\}$
-\item \f{lattice\_invariants(omega1, omega3)} --- returns
+\item \f{lattice\_roots(omega1,omega3)} --- returns $\{e_1,\ e_2,\ e_3\}$
+\item \f{lattice\_invariants(omega1,omega3)} --- returns
   $\{g_2,\ g_3,\ \Delta,\ \mathrm{G}\}$;
-\item \f{quasi\_period\_factors(omega1, omega3)}
+\item \f{quasi\_period\_factors(omega1,omega3)}
   --- returns $\{\eta_1,\ \eta_2,\ \eta_3\}$;
-\item \f{lattice\_generators(g2, g3)}  --- returns $\{\omega_1,\ \omega_3\}$.
-\item \f{lattice1\_roots(g2, g3)}  --- returns $\{e_1,\ e_2,\ e_3\}$
+\item \f{lattice\_generators(g2,g3)}  --- returns $\{\omega_1,\ \omega_3\}$.
+\item \f{lattice1\_roots(g2,g3)}  --- returns $\{e_1,\ e_2,\ e_3\}$
 \item \f{quasi\_periods(g2,g3)}  --- returns $\{\eta_1,\ \eta_2,\ \eta_3\}$.
 \end{itemize}
 The first three depend on the lattice half-periods $\omega_1$ and $\omega_3$ whilst
@@ -1346,36 +1346,37 @@ lies in the parallelogram in the complex plane whose vertices are given in the
 table below. Other values of the inverse functions are indicated in the
 fifth column of the table below where $m$ and $n$ are arbitrary integers.
 
-\begin{tabular}{lllll}
-  & Quarter&Periods&Principal&Other\\
-Function&$p$&$q$&Parallelogram&Values\\
+\begin{tabular}{@{}ll@{~}lll}
+Function&Quarter&Periods&Principal&Other\\
+ &$p$&$q$&Parallelogram&Values\\
+\hline
 $\mathop{\mathrm{arcsn}}$&$\mathrm{K}$&$i\mathrm{K}'$&
 $-(p+q)$, $-p+q$,&$2m p+2n q +(-1)^mv$\\
-&&&$p+q$, $p-q$.&\\
+&&&$p+q$, $p-q$&\\
 $\mathop{\mathrm{arccn}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&
-  $-q$, $q$, $2p+q$, $2p-q$.&$4m p +2n q \pm v$\\
+  $-q$, $q$, $2p+q$, $2p-q$&$4m p +2n q \pm v$\\
 $\mathop{\mathrm{arcdn}}$&$i\mathrm{K}'$&$\mathrm{K}$&
-  $0$, $2p$, $2(p+q)$, $2q$.&$2m q+4n p \pm v$\\
+  $0$, $2p$, $2(p+q)$, $2q$&$2m q+4n p \pm v$\\
 $\mathop{\mathrm{arcns}}$&$\mathrm{K}$&$i\mathrm{K}'$&
 $-(p+q)$, $-p+q$,&$2m p+2n q +(-1)^mv$\\
-&&&$p+q$, $p-q$.&\\
+&&&$p+q$, $p-q$&\\
 $\mathop{\mathrm{arcnc}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&
-  $-q$, $q$, $2p+q$, $2p-q$.&$4m p +2n q \pm v$\\
+  $-q$, $q$, $2p+q$, $2p-q$&$4m p +2n q \pm v$\\
 $\mathop{\mathrm{arcnd}}$&$i\mathrm{K}'$&$\mathrm{K}$&
-  $0$, $2p$, $2(p+q)$, $2q$.&$2m q+4n p \pm v$\\
+  $0$, $2p$, $2(p+q)$, $2q$&$2m q+4n p \pm v$\\
 $\mathop{\mathrm{arccd}}$&$\mathrm{K}$&$i\mathrm{K}'$&
-  $-q$, $q$, $2p+q$, $2p-q$.&$4m p +2n q \pm v$\\
+  $-q$, $q$, $2p+q$, $2p-q$&$4m p +2n q \pm v$\\
 $\mathop{\mathrm{arcdc}}$&$\mathrm{K}$&$i\mathrm{K}'$&
-  $-q$, $q$, $2p+q$, $2p-q$.&$4m p +2n q \pm v$\\
+  $-q$, $q$, $2p+q$, $2p-q$&$4m p +2n q \pm v$\\
 $\mathop{\mathrm{arcsd}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&
 $-(p+q)$, $-p+q$,&$2m p +2n q +(-1)^mv$\\
-&&&$p+q$, $p-q$.&\\
+&&&$p+q$, $p-q$&\\
 $\mathop{\mathrm{arcds}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&
 $-(p+q)$, $-p+q$,&$2m p +2n q +(-1)^mv$\\
-&&&$p+q$, $p-q$.&\\
+&&&$p+q$, $p-q$&\\
 $\mathop{\mathrm{arcsc}}$&$i\mathrm{K}'$&$\mathrm{K}$&
 $-(p+q)$, $-p+q$,&$2m q +2n q +(-1)^nv$\\
-&&&$p+q$, $p-q$.&\\
+&&&$p+q$, $p-q$&\\
 $\mathop{\mathrm{arccs}}$&$i\mathrm{K}'$&$\mathrm{K}$&
   $-p$, $p$, $p+2q$, $-p+2q$&$2m q +2n q +(-1)^nv$\\
 \end{tabular}
@@ -1392,35 +1393,35 @@ of the table below where $n$ is an arbitrary integer.
 
 \begin{tabular}{llll}
   Fn & Domain & Principal Value $v$ & Other real values\\
-$\mathop{\mathrm{arcsn}}$: & $ |x| <=1 $ &
-  $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ &
+$\mathop{\mathrm{arcsn}}$: & $ |x| \le 1 $ &
+  $-\mathrm{K}(k) \le v \le \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k)+(-1)^nv$ \\
-$\mathop{\mathrm{arccn}}$: &  $ |x| <=1 $ &
-  $0 <= v <= 2\mathrm{K}(k)$ &
+$\mathop{\mathrm{arccn}}$: &  $ |x| \le 1 $ &
+  $0 \le v \le 2\mathrm{K}(k)$ &
   $4 n\mathrm{K}(k) \pm v$ \\
-$\mathop{\mathrm{arccd}}$: & $ |x| <=1 $ &
-  $0 <= v <= 2\mathrm{K}(k)$ &
+$\mathop{\mathrm{arccd}}$: & $ |x| \le 1 $ &
+  $0 \le v \le 2\mathrm{K}(k)$ &
   $4 n\mathrm{K}(k) \pm v$ \\
-$\mathop{\mathrm{arcns}}$: & $ |x| >=1 $ &
-  $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ \& $v \neq 0$ &
+$\mathop{\mathrm{arcns}}$: & $ |x| \ge 1 $ &
+  $-\mathrm{K}(k) \le v \le \mathrm{K}(k)$ \& $v \neq 0$ &
   $2 n\mathrm{K}(k)+(-1)^nv$ \\
-$\mathop{\mathrm{arcnc}}$: & $ |x| >=1 $ &
-  $0 <= v <= 2\mathrm{K}(k)$ \& $v \neq \mathrm{K}(k)$  &
+$\mathop{\mathrm{arcnc}}$: & $ |x| \ge 1 $ &
+  $0 \le v \le 2\mathrm{K}(k)$ \& $v \neq \mathrm{K}(k)$  &
   $4 n\mathrm{K}(k) \pm v$ \\
-$\mathop{\mathrm{arcdc}}$: & $ |x| >=1 $ &
-  $0 <= v <= 2\mathrm{K}(k)$ \& $v \neq \mathrm{K}(k)$ &
+$\mathop{\mathrm{arcdc}}$: & $ |x| \ge 1 $ &
+  $0 \le v \le 2\mathrm{K}(k)$ \& $v \neq \mathrm{K}(k)$ &
   $4 n\mathrm{K}(k) \pm v$ \\
-$\mathop{\mathrm{arcdn}}$: & $ k' <= x <= 1$ &
-  $0 <= v <= \mathrm{K}(k)$ &
+$\mathop{\mathrm{arcdn}}$: & $ k' \le x \le 1$ &
+  $0 \le v \le \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k) \pm v$ \\
-$\mathop{\mathrm{arcnd}}$: & $ 1 <= x <= 1/k'$ &
-  $0 <= v <= \mathrm{K}(k)$ &
+$\mathop{\mathrm{arcnd}}$: & $ 1 \le x \le 1/k'$ &
+  $0 \le v \le \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k) \pm v$ \\
-$\mathop{\mathrm{arcds}}$: & $ |x| >= k'$ &
-  $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ \& $v \neq 0$ &
+$\mathop{\mathrm{arcds}}$: & $ |x| \ge k'$ &
+  $-\mathrm{K}(k) \le v \le \mathrm{K}(k)$ \& $v \neq 0$ &
   $2 n\mathrm{K}(k)+(-1)^nv $ \\
-$\mathop{\mathrm{arcsd}}$: & $  |x| <= 1/k'$ &
-  $-\mathrm{K}(k) <= v <= \mathrm{K}(k)$ &
+$\mathop{\mathrm{arcsd}}$: & $  |x| \le 1/k'$ &
+  $-\mathrm{K}(k) \le v \le \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k)+(-1)^nv $ \\
 $\mathop{\mathrm{arcsc}}$: & $ x \in \mathbb{R}$ &
   $-\mathrm{K}(k) < v < \mathrm{K}(k)$ &
@@ -1440,7 +1441,7 @@ Elliptic Functions}.
 \subsection{Table of Elliptic Functions and Integrals}
 \hypertarget{ELLIPFNTAB}{}
 
-\fbox{
+{\small\fbox{
 \begin{tabular}{r l}
 \rule{0pt}{16pt}Function & Operator\\[5pt]
 $\mathrm{am}(u,k)$ & \f{jacobiam(u,k)}\\
@@ -1459,17 +1460,23 @@ $\mathrm{cs}(u,k)$ & \f{jacobics(u,k)}\\
 Inverse Functions of the above:\\
 $\mathrm{arcsn}(u,k)$ & \f{arcsn(u,k)}\\
 $\mathrm{arccn}(u,k)$ & \f{arccn(u,k)}\\
-   ... \\
-$\mathrm{arccs}(u,k)$ & \f{arccs(u,k)}\\
+\vdots\\
+$\mathrm{arccs}(u,k)$ & \f{arccs(u,k)}\\[5pt]
 
-Complete Integral (1st kind) $\mathrm{K}(k)$ & \f{ellipticK(k)}\\
+\multicolumn{1}{l}{Complete Integral}\\
+(1st kind) $\mathrm{K}(k)$ & \f{ellipticK(k)}\\
 $\mathrm{K}'(k)$ & \f{ellipticK!'(k)}\\
-Incomplete Integral (1st kind) $\mathrm{F}(\phi,k)$ & \f{ellipticF(phi,k)}\\
-Complete Integral (2nd kind) $\mathrm{E}(k)$ & \f{ellipticE(k)}\\
+\multicolumn{1}{l}{Incomplete Integral}\\
+(1st kind) $\mathrm{F}(\phi,k)$ & \f{ellipticF(phi,k)}\\
+Complete Integral\\
+(2nd kind) $\mathrm{E}(k)$ & \f{ellipticE(k)}\\
 $\mathrm{E}'(k)$ & \f{ellipticE!'(k)}\\
-Legendre Incomplete Int (2nd kind) $\mathrm{E}(u,k)$ & \f{ellipticE(u,k)}\\
-Alternative Incomplete Int (2nd kind) $\mathrm{D}(u,k)$ & \f{ellipticD(u,k)}\\
-Jacobi Incomplete Int (2nd kind) $\mathcal{E}(u,k)$ & \f{jacobiE(u,k)}\\
+\multicolumn{1}{l}{Legendre Incomplete}\\
+Integral (2nd kind) $\mathrm{E}(u,k)$ & \f{ellipticE(u,k)}\\
+\multicolumn{1}{l}{Alternative Incomplete}\\
+Integral (2nd kind) $\mathrm{D}(u,k)$ & \f{ellipticD(u,k)}\\
+\multicolumn{1}{l}{Jacobi Incomplete}\\
+Integral (2nd kind) $\mathcal{E}(u,k)$ & \f{jacobiE(u,k)}\\
 Jacobi's Zeta $\mathrm{Z}(u,k)$ & \f{jacobiZeta(u,k)}\\
 $\vartheta_1(u,\tau)$ & \f{elliptictheta1(u,tau)}\\
 $\vartheta_2(u,\tau)$ & \f{elliptictheta2(u,tau)}\\
@@ -1484,4 +1491,4 @@ $\sigma_3(u,\omega_1, \omega_3)$ & \f{weierstrass\_sigma3(u,omega1,omega3)}\\
 $\wp(u \mid g_2, g_3)$ & \f{weierstrass1(u,g2,g3)}\\
 $\zeta_w(u \mid g_2, g_3)$ & \f{weierstrassZeta1(u,g2,g3)}\\
 $\sigma(u \mid g_2, g_3)$ & \f{weierstrass\_sigma0(u,g2,g3)}\\[5pt]
-\end{tabular}}
+\end{tabular}}}

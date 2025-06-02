@@ -63,12 +63,12 @@ according to the similar MACSYMA module from [1].
 
 The coordinate system is specified using the following statement:
 \begin{verbatim}
-  SCALEFACTORS <d>,<tr 1>,...,<tr d>,<cor 1>,...,<cor d>;
-  <d> ::= 2 | 3                       coordinate system dimension
-  <tr i> ::= "algebraic expression"   the expression of the i-th
-                                      Cartesian coordinate in new
-                                      coordinates
-  <cor i> ::= "identifier"            the i-th new coordinate
+SCALEFACTORS <d>,<tr 1>,...,<tr d>,<cor 1>,...,<cor d>;
+<d> ::= 2 | 3               coordinate system dimension
+<tr i> ::= "algebraic expression" the expression of the
+                            i-th Cartesian coordinate
+                            in new coordinates
+<cor i> ::= "identifier"    the i-th new coordinate
 \end{verbatim}
 All evaluated  quantities are transformed into the coordinate system set
 by the last SCALEFACTORS statement. By default, if this statement is not
@@ -109,12 +109,12 @@ infix operators have been  introduced  (in  the  explaining  examples, a
 two-dimensional  coordinate  system,  vectors  U,  V, and dyads T, W are
 considered):
 \begin{verbatim}
-  .  - scalar product                U.V = U(1)*V(1)+U(2)*V(2)
-  ?  - vector product                U?V = U(1)*V(2)-U(2)*V(1)
-  &  - outer product                 U&V = ((U(1)*V(1),U(1)*V(2)),
-                                            (U(2)*V(1),U(2)*V(2)))
-  #  - double scalar product         T#W = T(1,1)*W(1,1)+T(1,2)*W(1,2)+
-                                           T(2,1)*W(2,1)+T(2,2)*W(2,2)
+. - scalar product        U.V = U(1)*V(1)+U(2)*V(2)
+? - vector product        U?V = U(1)*V(2)-U(2)*V(1)
+& - outer product         U&V = ((U(1)*V(1),U(1)*V(2)),
+                                 (U(2)*V(1),U(2)*V(2)))
+# - double scalar product T#W = T(1,1)*W(1,1)+
+              T(1,2)*W(1,2)+T(2,1)*W(2,1)+T(2,2)*W(2,2)
 \end{verbatim}
 The other usual arithmetic infix operators +, -,  *, **  can be  used in
 all situations  that have  sense (e.g. vector addition, a multiplication
@@ -165,34 +165,36 @@ tensor expression  in the  specified coordinate system. The most general
 form of a  tensor  expression  <tensor>  is  described  as  follows (the
 conditions  (d=i)  represent  the  limitation  on  the  dimension of the
 coordinate system equalling i):
-\begin{verbatim}
-  <tensor> ::= <scalar> | <vector> | <dyad>
-  <scalar> ::= "algebraic expression, can contain <scalars>" |
-               "tensor variable with scalar value" |
-               <vector 1>.<vector 2> | <dyad 1>#<dyad 2> |
-               (d=2)<vector 1>?<vector 2> | DIV <vector> |
-               LAPL <scalar> | (d=2) ROT <vector> |
-               DIRDF(<vector>,<scalar>)
-  <vector> ::= "identifier declared by VECTORS statement" |
-               "tensor variable with vector value" |
-               VECT(<scalar 1>,...,<scalar d>) | -<vector> |
-               <vector 1>+<vector 2> | <vector 1>-<vector 2> |
-               <scalar>*<vector> | <vector>/<scalar> |
-               <dyad>.<vector> | <vector>.<dyad> | (d=3)
-               <vector 1>?<vector 2> | (d=2) <vector>?<dyad> |
-               (d=2) <dyad>?<vector> | GRAD <scalar> |
-               DIV <dyad> | LAPL <vector> | (d=3) ROT <vector> |
-               DIRDF(<vector 1>,<vector 2>) | DF(<vector>,"usual
-               further arguments")
-  <dyad>    ::= "identifier declared by DYADS statement" |
-               "tensor variable with dyadic value" |
-               DYAD((<scalar 11>,...,<scalar 1d>),...,(<scalar d1>,
-               ...,<scalar dd>)) | -<dyad> | <dyad 1>+<dyad 2> |
-               <dyad 1>-<dyad 2> | <scalar>*<dyad> | <dyad>/<scalar>
-               | <dyad 1>.<dyad 2> | <vector 1>&<vector 2> |
-               (d=3) <vector>?<dyad> | (d=3) <dyad>?<vector> |
-               GRAD <vector> | DF(<dyad>,"usual further arguments")
-\end{verbatim}
+{\small\begin{verbatim}
+<tensor> ::= <scalar> | <vector> | <dyad>
+<scalar> ::= "algebraic expression, can contain <scalars>" |
+             "tensor variable with scalar value" |
+             <vector 1>.<vector 2> | <dyad 1>#<dyad 2> |
+             (d=2)<vector 1>?<vector 2> | DIV <vector> |
+             LAPL <scalar> | (d=2) ROT <vector> |
+             DIRDF(<vector>,<scalar>)
+<vector> ::= "identifier declared by VECTORS statement" |
+             "tensor variable with vector value" |
+             VECT(<scalar 1>,...,<scalar d>) | -<vector> |
+             <vector 1>+<vector 2> | <vector 1>-<vector 2> |
+             <scalar>*<vector> | <vector>/<scalar> |
+             <dyad>.<vector> | <vector>.<dyad> | (d=3)
+             <vector 1>?<vector 2> | (d=2) <vector>?<dyad> |
+             (d=2) <dyad>?<vector> | GRAD <scalar> |
+             DIV <dyad> | LAPL <vector> | (d=3) ROT
+             <vector> | DIRDF(<vector 1>,<vector 2>) |
+             DF(<vector>,"usual further arguments")
+<dyad>   ::= "identifier declared by DYADS statement" |
+             "tensor variable with dyadic value" |
+             DYAD((<scalar 11>,...,<scalar 1d>),...,
+             (<scalar d1>,...,<scalar dd>)) | -<dyad> |
+             <dyad 1>+<dyad 2> | <dyad 1>-<dyad 2> |
+             <scalar>*<dyad> | <dyad>/<scalar> |
+             <dyad 1>.<dyad 2> | <vector 1>&<vector 2> |
+             (d=3) <vector>?<dyad> | (d=3) <dyad>?<vector> |
+             GRAD <vector> |
+             DF(<dyad>,"usual further arguments")
+\end{verbatim}}
 
 \subsubsection{Assigning statement}
 
@@ -238,10 +240,10 @@ coordinates.  The  names  of  the  coordinates and the indices that will
 correspond to the particular  coordinates in  the difference  scheme are
 defined using the COORDINATES statement:
 \begin{verbatim}
-  COORDINATES  <coordinate 1>{,<coordinate i>} [ INTO
-             <index 1>{,<index i>}];
-  <coordinate i> ::= "identifier"  - the name of the coordinate
-  <index i> ::= "identifier"       - the name of the index
+COORDINATES  <coordinate 1>{,<coordinate i>} [ INTO
+           <index 1>{,<index i>}];
+<coordinate i> ::= "identifier" - name of coordinate
+<index i> ::= "identifier"      - name of index
 \end{verbatim}
 This statement  specifies that the <coordinate i> will correspond to the
 <index i>. A new COORDINATES statement cancels the  definitions given by
@@ -304,8 +306,8 @@ argument  of  this  operator.  For  each  coordinate s designated by the
 identifier i, this step of the  integer non-uniform  grid is  defined as
 follows:
 \begin{verbatim}
-  Hs(i+j) = s(i+j+1/2) - s(i+j-1/2)      at ON CENTERGRID
-  Hs(i+j) = s(i+j+1) - s(i+j)            at OFF CENTERGRID
+Hs(i+j) = s(i+j+1/2) - s(i+j-1/2)  at ON CENTERGRID
+Hs(i+j) = s(i+j+1) - s(i+j)        at OFF CENTERGRID
 \end{verbatim}
 for all integers j (s(k) designates the value of the coordinate s in the
 cellular boundary point subscripted with the index k). The steps  of the
@@ -325,13 +327,13 @@ applied at  the same  time. The  names of  the functions employed in the
 given system and their dependence on the coordinates are specified using
 the DEPENDENCE statement.
 \begin{verbatim}
-  DEPENDENCE <dependence>{,<dependence>};
-  <dependence> ::= <function>([<order>],<coordinate>{,
-                   <coordinate>})
-  <function> ::= "identifier"  - the name of the function
-  <order> ::= 1|2 tensor order of the function (the value of
-              the function is 1 - vector, 2 - dyad (two-
-              dimensional tensor))
+DEPENDENCE <dependence>{,<dependence>};
+<dependence> ::= <function>([<order>],<coordinate>{,
+                 <coordinate>})
+<function> ::= "identifier"  - the name of the function
+<order> ::= 1|2 tensor order of the function (the value
+            of the function is 1 - vector, 2 - dyad
+            (two-dimensional tensor))
 \end{verbatim}
 Every <dependence>  in the  statement determines  on which <coordinates>
 the <function> depends. If the tensor <order> of the function  occurs in
@@ -401,22 +403,23 @@ execute the interpolation during the evaluation of the given function.
      In  some  cases,  it  is  convenient  too to specify directly which
 variable on which grid is to be discretized,  for which  case the ISGRID
 statement is applied:
-\begin{verbatim}
-  ISGRID <s-function>{,<s-function>};
-  <s-function> ::= <function>([<component>,]<s-grid>{,<s-grid>})
-  <s-grid> ::= <coordinate> .. <grid>,
-  <grid> ::= ONE | HALF            designation of the integer
-                                   (ONE) and half-integer (HALF)
-                                   grids
-  <component> ::= <i-dim> |        for the vector <function>
-                  <i-dim>,<i-dim>  for the dyadic <function>
-                                   it is not presented for the
-                                   scalar <function>
-  <i-dim> ::= *| "natural number from 1 to the space dimension
-                the space dimension is specified in the EXPRES
-                module by the SCALEFACTORS statement, * means all
-                components
-\end{verbatim}
+{\small\begin{verbatim}
+ISGRID <s-function>{,<s-function>};
+<s-function> ::= <function>([<component>,]<s-grid>
+                            {,<s-grid>})
+<s-grid> ::= <coordinate> .. <grid>,
+<grid> ::= ONE | HALF            designation of the integer
+                                 (ONE) and half-integer
+                                 (HALF) grids
+<component> ::= <i-dim> |        for the vector <function>
+                <i-dim>,<i-dim>  for the dyadic <function>
+                                 it is not presented for the
+                                 scalar <function>
+<i-dim> ::= *| "natural number from 1 to the space dimension
+              the space dimension is specified in the EXPRES
+              module by the SCALEFACTORS statement, * means
+              all components
+\end{verbatim}}
 The statement  defines that the given functions or their components will
 be discretized in the specified coordinates  on the  specified grids, so
 that, for example, the statement ISGRID U (X..ONE,Y..HALF), V(1,Z..ONE),
@@ -466,10 +469,10 @@ basic terms first that will be discretized independently then.   If D is
 the  designation  for  the  discretization operator in the coordinate x,
 this linearization obeys the following rules:
 \begin{verbatim}
-  1. D(a+b) = D(a)+D(b)
-  2. D(-a)  = -D(a)
-  3. D(p.a) = p.D(a)        (p does not depend on the coordinate x)
-  4. D(a/p) = D(a)/p
+1. D(a+b) = D(a)+D(b)
+2. D(-a)  = -D(a)
+3. D(p.a) = p.D(a)  (p does not depend on coordinate x)
+4. D(a/p) = D(a)/p
 \end{verbatim}
      The linearization lasts as long  as  some  of  these  rules  can be
 applied.   The   basic   terms   that  must  be  discretized  after  the
@@ -487,49 +490,50 @@ linearization have then the forms of the following quantities:
 The way of discretizing these basic  terms, while  the functions  are on
 integer  and  half-integer  grids,  is  determined  using  the  DIFMATCH
 statement:
-\begin{verbatim}
-  DIFMATCH <coordinate>,<pattern term>,{{<grid specification>,}
-           <number of interpolations>, <discretized term>};
-  <coordinate> ::= ALL | "identifier" - the coordinate name from
-                                        the COORDINATES statement
-  <pattern term> ::= <pattern coordinate>|
-       <pattern sought function>|
-       <pattern given function>|<pattern term> *
-       <pattern term>|<pattern term> / <pattern term>|
-       <pattern term> ** <exponent>|
-       DIFF(<pattern term>,<pattern coordinate>[,<order
-       of derivative>])|
-       <declared operator>(<pattern term>{,<pattern term>})
-  <pattern coordinate> ::= X
-  <pattern sought function> ::= U | V | W
-  <pattern given function> ::= F | G
-  <exponent> ::= N | "integer greater than 1"
-  <order of derivative> ::= "integer greater than 2"
-  <grid specification> ::= <pattern function>=<grid>
-  <pattern function> ::= <pattern sought function>|
-                         <pattern given function>
-  <number of interpolations> ::= "non-negative integer"
-  <discretized term> ::= <pattern operator>(<index expression>)|
-                "natural number"|DI|DIM1|DIP1|DIM2|DIP2|
-                <declared term> | - <discretized term> |
-                <discretized term> + <discretized term> |
-                <discretized term> * <discretized term> |
-                <discretized term> / <discretized term> |
-                (<discretized term>) |
-                <discretized term> **<exponent>
-  <pattern operator> ::= X | U | V | W | F | G
-  <index expression> ::= <pattern index> |
-                         <pattern index> + <increment> |
-                         <pattern index> - <increment>
-  <pattern index> ::= I
-  <increment> = "rational number"
-  DIFCONST <declared term>{,<declared term>};
-  <declared term> ::= "identifier" - the constant parameter of
-                                     the difference scheme.
-  DIFFUNC <declared operator>{,<declared operator>};
-  <declared operator> ::= "identifier" - prefix operator, that can
-                appear in discretized equations (e.g. SIN).
-\end{verbatim}
+{\small\begin{verbatim}
+DIFMATCH <coordinate>,<pattern term>,{{<grid specification>,}
+         <number of interpolations>, <discretized term>};
+<coordinate> ::= ALL | "identifier" - coordinate name from
+                                      COORDINATES statement
+<pattern term> ::= <pattern coordinate>|
+     <pattern sought function>|
+     <pattern given function>|<pattern term> *
+     <pattern term>|<pattern term> / <pattern term>|
+     <pattern term> ** <exponent>|
+     DIFF(<pattern term>,<pattern coordinate>[,<order
+     of derivative>])|
+     <declared operator>(<pattern term>{,<pattern term>})
+<pattern coordinate> ::= X
+<pattern sought function> ::= U | V | W
+<pattern given function> ::= F | G
+<exponent> ::= N | "integer greater than 1"
+<order of derivative> ::= "integer greater than 2"
+<grid specification> ::= <pattern function>=<grid>
+<pattern function> ::= <pattern sought function>|
+                       <pattern given function>
+<number of interpolations> ::= "non-negative integer"
+<discretized term> ::=
+              <pattern operator>(<index expression>)|
+              "natural number"|DI|DIM1|DIP1|DIM2|DIP2|
+              <declared term> | - <discretized term> |
+              <discretized term> + <discretized term> |
+              <discretized term> * <discretized term> |
+              <discretized term> / <discretized term> |
+              (<discretized term>) |
+              <discretized term> **<exponent>
+<pattern operator> ::= X | U | V | W | F | G
+<index expression> ::= <pattern index> |
+                       <pattern index> + <increment> |
+                       <pattern index> - <increment>
+<pattern index> ::= I
+<increment> = "rational number"
+DIFCONST <declared term>{,<declared term>};
+<declared term> ::= "identifier" - the constant parameter of
+                                   the difference scheme.
+DIFFUNC <declared operator>{,<declared operator>};
+<declared operator> ::= "identifier" - prefix operator, that
+             can appear in discretized equations (e.g. SIN).
+\end{verbatim}}
 The first parameter of the DIFMATCH statement determines  the coordinate
 for which the discretization defined in it is valid. If ALL is used, the
 discretization  will   be   valid   for   all   coordinates,   and  this
@@ -550,17 +554,17 @@ term in  the pattern  coordinate X in the point X(I) on the pattern grid
 specification are  in the  discretized term on the respective grids from
 this  specification  (to  the  discretized  term  corresponds  the  grid
 specification preceding it).
-\begin{verbatim}
+{\small\begin{verbatim}
                                             integer grid
         X(I-1)                X(I)               X(I+1)
           |        DIM1        |       DIP1        |
 ---|------|------|-------------|-------------|-----|-----|---
    |    DIM2     |            DI             |    DIP2   |
- X(I-3/2)      X(I-1/2)                    X(I+1/2)     X(I+3/2)
+ X(I-3/2)      X(I-1/2)                    X(I+1/2)  X(I+3/2)
                                             half-integer grid
 
                  Figure 2.2 Pattern grid
-\end{verbatim}
+\end{verbatim}}
 The pattern grid steps defined as
 \begin{verbatim}
   DIM2 = X(I - 1/2) - X(I - 3/2)
@@ -573,8 +577,9 @@ can occur in the discretized term.
      In  the  integro-interpolation  method,  the  discretized  term  is
 specified by the integral
 \begin{verbatim}
-  <discretized term>=1/(X(I+1/2)-X(I-1/2))*DINT(X(I-1/2),X(I+1/2),
-                                                <pattern term>,X),
+  <discretized term>=1/(X(I+1/2)-X(I-1/2))*
+                   DINT(X(I-1/2),X(I+1/2),
+                        <pattern term>,X),
 \end{verbatim}
 where DINT is operator of definite integration DINT(from,  to, function,
 variable).   The   number   of   interpolations   determines   how  many
@@ -597,16 +602,16 @@ discretized term occur the functions from the grid  specification on the
 grids  given  by  this  specification.  An  example can be the following
 definition of the discretization of the first and  second derivatives of
 the sought function in the coordinate R on a uniform grid:
-\begin{verbatim}
-  DIFMATCH R,DIFF(U,X),U=ONE,2,(U(I+1)-U(I-1))/(2*DI);
-                         U=HALF,0,(U(I+1/2)-U(I-1/2))/DI;
-  DIFMATCH R,DIFF(U,X,2),U=ONE,0,(U(I+1)-2*U(I)+U(I-1))/DI**2,
-    U=HALF,2,(U(I+3/2)-U(I+1/2)-U(I-1/2)+U(I-3/2))/(2*DI**2);
+{\small\begin{verbatim}
+DIFMATCH R,DIFF(U,X),U=ONE,2,(U(I+1)-U(I-1))/(2*DI);
+                       U=HALF,0,(U(I+1/2)-U(I-1/2))/DI;
+DIFMATCH R,DIFF(U,X,2),U=ONE,0,(U(I+1)-2*U(I)+U(I-1))/DI**2,
+  U=HALF,2,(U(I+3/2)-U(I+1/2)-U(I-1/2)+U(I-3/2))/(2*DI**2);
 
-     All DIFMATCH statements can be cleared by the statement
+   All DIFMATCH statements can be cleared by the statement
 
-  CLEARDIFMATCH;
-\end{verbatim}
+CLEARDIFMATCH;
+\end{verbatim}}
 After this statement user has to supply its own DIFMATCH statements.
      But now back to the discretizing of the basic terms obtained by the
 linearization of the partial differential equation, as mentioned  at the
@@ -683,7 +688,7 @@ grid). The program replaces in the thus obtained discretized term:
   corresponding exponent from the basic term.
 \end{enumerate}
 
-\begin{verbatim}
+{\footnotesize\begin{verbatim}
 --------------------------------------------------------------------
 |                   the equation discretized on                    |
 |          the integer grid         |    the half-integer grid     |
@@ -701,7 +706,7 @@ grid). The program replaces in the thus obtained discretized term:
 
         Table 2.1  Values of the pattern index and
                    the pattern grid steps.
-\end{verbatim}
+\end{verbatim}}
      More details  will be  given now to the discretization of the given
 functions and  its specification.  The given  function may  occur in the
 SAME statement, which makes it bound with some sought function, in other
@@ -753,16 +758,16 @@ some of  the CENTREGRID,  TWOGRID, EQFU, and FULLEQ switches can be set.
 Only  then  the  discretization  of  a  system  of  partial differential
 equations can be started using the IIM statement:
 \begin{verbatim}
-  IIM <array>{,<sought function>,<equation>};
-  <array> ::= "identifier" - the name of the array for storing
-                             the result
-  <sought function> ::= "identifier" - the name of the function
-                        whose behavior is described by the
-                        equation
-  <equation> ::= <left side> = <right side>
-  <left side> ::= "algebraic expression" , the derivatives are
-                  designated by the DIFF operator
-  <right side> ::= "algebraic expression"
+IIM <array>{,<sought function>,<equation>};
+<array> ::= "identifier" - the name of the array for
+                           storing the result
+<sought function> ::= "identifier" - the name of the
+                      function whose behavior is
+                      described by the equation
+<equation> ::= <left side> = <right side>
+<left side> ::= "algebraic expression", the derivatives
+                are designated by the DIFF operator
+<right side> ::= "algebraic expression"
 \end{verbatim}
 Hence, in the IIM statement the name of the array in which the resulting
 difference schemes will  be  stored,  and  the  pair  sought  function -
@@ -830,24 +835,24 @@ errors. Similarly as in the REDUCE system, the error reporting is marked
 with five  stars :  "*****" on  the line  start. Some error messages are
 identical with those of  the REDUCE  system. Here  are given  some other
 error messages that require a more detailed explanation:
-\begin{verbatim}
+{\small\begin{verbatim}
 ***** Matching of X term not found
-        - the discretization of the pattern term that is the pattern of
-          the basic term printed on the place X has not been
-          defined (using the DIFMATCH statement)
+ - the discretization of the pattern term that is the
+   pattern of the basic term printed on the place X
+   has not been defined (using the DIFMATCH statement)
 ***** Variable of type F not defined on grids in DIFMATCH
-        - in the definition of the discretizing of the pattern term
-          the given functions were not used in the grid
-          specification and are needed now
+ - in the definition of the discretizing of the pattern
+   term the given functions were not used in the grid
+   specification and are needed now
 ***** X Free vars not yet implemented
-        - in the grid specification in the DIFMATCH statement
-          more than 3 pattern functions were used
+ - in the grid specification in the DIFMATCH statement
+   more than 3 pattern functions were used
 ***** All grids not given for term X
-        - in the definition of the discretization of the pattern of
-          the basic term printed on the place X not all
-          necessary combinations of the grid specification
-          of the pattern functions were presented
-\end{verbatim}
+ - in the definition of the discretization of the
+   pattern of the basic term printed on the place X not
+   all necessary combinations of the grid specification
+   of the pattern functions were presented
+\end{verbatim}}
 
 
 \subsection{APPROX}
@@ -1034,8 +1039,8 @@ coordinate, e.g. the step of the time coordinate T is HT.
      The  UNFUNC  statement  declares  the names of the sought functions
 used in the difference scheme:
 \begin{verbatim}
-  UNFUNC <function>{,<function>}
-  <function> ::= "identifier" - the name of the sought function
+UNFUNC <function>{,<function>}
+<function> ::= "identifier" - name of sought function
 \end{verbatim}
 The functions are used in the difference schemes  as operators  with one
 or  more  arguments  for  designating the discrete function values. Each
@@ -1257,27 +1262,27 @@ for solving linear difference schemes often having the band matrix.
 GENLINBANDSOL statement (the  braces  in  this  syntax  definition occur
 directly  in  the  program  and  do  not  have  the usual meaning of the
 possibility of repetition, they designate REDUCE lists):
-\begin{verbatim}
-  GENLINBANDSOL (<n-lower>,<n-upper>,{<system>});
-  <n-lower> ::= "natural number"
-  <n-upper> ::= "natural number"
-  <system> ::= <part of system> | <part of system>,<system>
-  <part of system>::= {<variable>,<equation>} | <loop>
-  <variable> ::= "kernel"
-  <equation> ::= <left side> = <right side>
-  <left side> ::= "algebraic expression"
-  <right side> ::= "algebraic expression"
-  <loop> ::= {DO,{<parameter>,<from>,<to>,<step>},<c-system>}
-  <parameter> ::= "identifier"
-  <from> ::= <i-expression>
-  <to> ::= <i-expression>
-  <step> ::= <i-expression>
-  <i-expression> ::= "algebraic expression" with natural value
-                                        (evaluated in FORTRAN)
-  <c-system> ::= <part of c-system> | <part of c-system>,<c-
-       system>
-  <part of c-system> ::= {<variable>,<equation>}
-\end{verbatim}
+{\small\begin{verbatim}
+GENLINBANDSOL (<n-lower>,<n-upper>,{<system>});
+<n-lower> ::= "natural number"
+<n-upper> ::= "natural number"
+<system> ::= <part of system> | <part of system>,<system>
+<part of system>::= {<variable>,<equation>} | <loop>
+<variable> ::= "kernel"
+<equation> ::= <left side> = <right side>
+<left side> ::= "algebraic expression"
+<right side> ::= "algebraic expression"
+<loop> ::= {DO,{<parameter>,<from>,<to>,<step>},<c-system>}
+<parameter> ::= "identifier"
+<from> ::= <i-expression>
+<to> ::= <i-expression>
+<step> ::= <i-expression>
+<i-expression> ::= "algebraic expression" with natural value
+                                      (evaluated in FORTRAN)
+<c-system> ::= <part of c-system> | <part of c-system>,<c-
+     system>
+<part of c-system> ::= {<variable>,<equation>}
+\end{verbatim}}
 The first and second  argument of the GENLINBANDSOL  statement specifies
 the  number  of  the  lower  (below  the  main  diagonal)  and the upper
 diagonals  of  the  band  matrix  of  the  system.  The system of linear
@@ -1391,6 +1396,3 @@ has to be loaded prior to loading of the LINBAND module.
 routines from chosen numerical library.
 
 For reference, see \cite{Liska:91b}.
-
-
-
