@@ -21,13 +21,11 @@ module odenon1$  % Special form nonlinear ODEs of order 1
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
-%
 
 % $Id$
 
-% F.J.Wright@maths.qmw.ac.uk, Time-stamp: <11 August 2001>
-
 % Original author: Malcolm MacCallum
+% Further developed by Francis Wright, August 2001
 
 % Basic layout is to test first for well-known special forms, namely:
 
@@ -471,13 +469,13 @@ symbolic procedure get!!y!^n!*c1(u, y);
    end$
 
 algebraic procedure odesolve!-bernoulli1(p, q, y, x, n);
-   begin scalar !*odesolve_noint;  % Force integration?
+   begin scalar y!^n, !*odesolve_noint;  % Force integration?
       traceode "It is of Bernoulli type.";
       n := 1 - n;
+      y!^n := odenon!-linear1pq(n*p, n*q, x);
       return if symbolic !*odesolve_explicit then
-         { y = odenon!-linear1pq(n*p, n*q, x)^(1/n)*
-               newroot_of_unity(n) }    % explicit form
-      else { y^n = odenon!-linear1pq(n*p, n*q, x) } % implicit form
+         { y = (y!^n)^(1/n)*newroot_of_unity(n) } % explicit form
+      else { y^n = y!^n }                         % implicit form
    end$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
