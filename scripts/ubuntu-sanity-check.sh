@@ -27,36 +27,43 @@ here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
-sudo apt -y install alien astyle autoconf autoconf-archive ccache devscripts \
+if test `whoami` = "root"
+then
+  SUDO=""
+else
+  SUDO="sudo"
+fi
+
+$SUDO apt -y install alien astyle autoconf autoconf-archive ccache devscripts \
  git gnuplot imagemagick libedit-dev libffi-dev libgtk2.0-dev libncurses5-dev
 # I believe I have seen some systems where I need "libtool" and some
 # where it has to be "libtool-bin". By making the install requests each
 # individual when one of the following two fails it should not wreck
 # the whole attempt to get stuff installed! Ditto libltdl-dev.
-sudo apt -y install libtool
-sudo apt -y install libtool-bin
-sudo apt -y install libltdl-dev
+$SUDO apt -y install libtool
+$SUDO apt -y install libtool-bin
+$SUDO apt -y install libltdl-dev
 # Sort of similarly ssh may be either ssh or openssh... so some of these
 # requests are liable to moan.
-sudo apt -y install openssh
-sudo apt -y install ssh
-sudo apt -y install clang
-sudo apt -y install time
-sudo apt -y install dvipng
-sudo apt -y install linux-generic
-sudo apt -y install polyml
-sudo apt -y install bc
-sudo apt -y install dc
-sudo apt -y install subversion
-sudo apt -y install texinfo
-sudo apt -y install texlive-latex-base texlive-fonts-extra \
+$SUDO apt -y install openssh
+$SUDO apt -y install ssh
+$SUDO apt -y install clang
+$SUDO apt -y install time
+$SUDO apt -y install dvipng
+$SUDO apt -y install linux-generic
+$SUDO apt -y install polyml
+$SUDO apt -y install bc
+$SUDO apt -y install dc
+$SUDO apt -y install subversion
+$SUDO apt -y install texinfo
+$SUDO apt -y install texlive-latex-base texlive-fonts-extra \
     texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra \
     texlive-plain-generic
-sudo apt -y install tex4ht
-sudo apt -y install xorg-dev
-sudo apt -y install rpm
-sudo apt -y install devscripts fakeroot alien
-sudo apt -y install rsync
+$SUDO apt -y install tex4ht
+$SUDO apt -y install xorg-dev
+$SUDO apt -y install rpm
+$SUDO apt -y install devscripts fakeroot alien
+$SUDO apt -y install rsync
 
 exit 0
 # end of script
