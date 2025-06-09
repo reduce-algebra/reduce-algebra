@@ -1,0 +1,71 @@
+VSL version 1.01
+(begin)
+REDUCE 2 (AUG-10-73) ...
+FOR HELP, TYPE HELP<ALTMODE>
+
+
+
+
+% generate the power series for tan(x) array tan(14)$$$;
+***** ; invalid in for statement 
+
++++ Error: error function called: (nil nil nil)
+Calling: error
+Calling: symerr
+Calling: forloop
+Calling: forstat
+Calling: apply
+Calling: !*apply
+Calling: xread1
+Calling: command
+
+
+tan(0):=0;
+(tan declared operator)
+*** PLEASE DO NOT DECLARE OPERATORS BY DEFAULT  
+*** IF YOU DO, YOUR PROGRAM MAY NOT RUN CORRECTLY  
+*** IN FUTURE RELEASES OF REDUCE  
+
+tan(0) := 0
+
+
+tan(1):=1;
+
+tan(1) := 1
+
+
+for i:=2:15 do write tan(i):=(for j:=0:i-1 sum(tan(j)*tan(i-j-1)))/i;
+
+tan(2) := 0
+
+tan(3) := 1/3
+
+tan(4) := 0
+
+tan(5) := 2/15
+
+tan(6) := 0
+
+tan(7) := 17/315
+
+tan(8) := 0
+
+tan(9) := 62/2835
+
+tan(10) := 0
+
+tan(11) := 1382/155925
+
+tan(12) := 0
+
+tan(13) := 21844/6081075
+
+tan(14) := 0
+
+tan(15) := 929569/638512875
+
+
+end;
+ENTERING LISP...
+Value: nil
+Value: !$eof!$

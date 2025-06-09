@@ -1,0 +1,39 @@
+VSL version 1.01
+(begin)
+REDUCE 2 (AUG-10-73) ...
+FOR HELP, TYPE HELP<ALTMODE>
+
+
+comment show conversion from reduce syntax to raw lisp. i would tend to
+view reduce as the successful version of "lisp 2" and its language as
+the version of mccarthy's m-notation that has lasted in practical
+application! observe how compact and readable the reduce code is;
+
+lisp(*defn:=t);
+
+
+(DEFPROP factorial 
+
+(lambda
+   (n)
+   (prog
+      (i g001)
+      (setq g001 (quote (1 . 1)))
+      (setq i 1)
+      g002
+      (cond ((greaterp i n) (go g003)))
+      (setq
+         g001
+         (multsq (simp (expt i 2)) g001))
+      (setq i (plus i 1))
+      (go g002)
+      g003
+      (return (mk!*sq g001))))
+ 
+
+expr
+)
+
+ENTERING LISP...
+Value: nil
+Value: !$eof!$

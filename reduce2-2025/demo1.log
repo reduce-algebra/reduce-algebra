@@ -1,0 +1,48 @@
+VSL version 1.01
+(begin)
+REDUCE 2 (AUG-10-73) ...
+FOR HELP, TYPE HELP<ALTMODE>
+
+
+procedure factorial n;
+for i:=1:n product i;
+
+
+for k:=0:10 do write df((x^2-1)^k,x,k)/2^k/factorial k;
+
+1
+
+x
+
+    2
+(3*x  - 1)/2
+
+       2
+(x*(5*x  - 3))/2
+
+     4       2
+(35*x  - 30*x  + 3)/8
+
+        4       2
+(x*(63*x  - 70*x  + 15))/8
+
+      6        4        2
+(231*x  - 315*x  + 105*x  - 5)/16
+
+         6        4        2
+(x*(429*x  - 693*x  + 315*x  - 35))/16
+
+       8          6         4         2
+(6435*x  - 12012*x  + 6930*x  - 1260*x  + 35)/128
+
+           8          6          4         2
+(x*(12155*x  - 25740*x  + 18018*x  - 4620*x  + 315))/128
+
+        10           8          6          4         2
+(46189*x   - 109395*x  + 90090*x  - 30030*x  + 3465*x  - 63)/256
+
+
+end;
+ENTERING LISP...
+Value: nil
+Value: !$eof!$
