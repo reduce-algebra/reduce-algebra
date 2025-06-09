@@ -22,11 +22,10 @@ module odetop$  % Top level ODESolve routines, exact ODEs, general
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
-%
 
 % $Id$
 
-% F.J.Wright@maths.qmw.ac.uk, Time-stamp: <11 August 2001>
+% Author: Francis Wright, August 2001
 
 % TO DO:
 %    allow for non-trivial denominator in exact ODEs
@@ -585,7 +584,15 @@ algebraic procedure newplus_or_minus;
 
 algebraic procedure newroot_of_unity_tag;
    %% symbolic mkid('tag_, !!root_of_unity := add1 !!root_of_unity)$
-   symbolic mkrootsoftag()$             % defined in module solve/solve1
+   % The following code is essentially the same as symbolic procedure
+   % mkrootsoftag() defined in module solve/solve1.
+   symbolic begin scalar name; integer n;
+      repeat <<
+         n := n #+ 1;
+         name := intern compress append('(t a g _), explode n);
+      >> until not flagp(name, 'used!*);
+      return reval name
+   end;
 
 define expand_plus_or_minus = expand_roots_of_unity$
 define expand_root_of_unity = expand_roots_of_unity$
