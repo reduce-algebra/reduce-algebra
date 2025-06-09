@@ -1,9 +1,12 @@
 % Tests and demonstrations for the ODESolve 1+ package --
 % an updated version of the original odesolve test file.
 
-% Original Author: M. A. H. MacCallum
-% Maintainer: F.J.Wright@Maths.QMW.ac.uk
+% $Id$
 
+% Original Author: M. A. H. MacCallum
+% Maintainer: Francis Wright
+
+load_package odesolve;                  % for odesolve_version
 odesolve_version;
 on trode, combinelogs;
 

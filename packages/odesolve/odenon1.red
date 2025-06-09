@@ -473,9 +473,10 @@ algebraic procedure odesolve!-bernoulli1(p, q, y, x, n);
       traceode "It is of Bernoulli type.";
       n := 1 - n;
       y!^n := odenon!-linear1pq(n*p, n*q, x);
-      return if symbolic !*odesolve_explicit then
-         { y = (y!^n)^(1/n)*newroot_of_unity(n) } % explicit form
-      else { y^n = y!^n }                         % implicit form
+      return {if symbolic !*odesolve_explicit then <<
+         symbolic(!*odesolve_explicit := nil);
+         y = (y!^n)^(1/n)*newroot_of_unity(n) % explicit form
+      >> else y^n = y!^n}                     % implicit form
    end$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
