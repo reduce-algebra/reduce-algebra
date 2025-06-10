@@ -414,7 +414,7 @@ on errcont;
 $loader
 lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
-lisp if memq('bytecounts, lispsystem!*) then mapstore $profilemode;
+lisp if memq('bytecounts, lispsystem!*) then mapstore 4;
 resettime1;
 write "START OF REDUCE TEST RUN ON $mc"\$ \
 lisp begin with!-timeout($TIME1, << semic!* := '!;; in "$f">>) end\$ \
@@ -426,7 +426,7 @@ symbolic eval '
     (setq cpu_time  (difference (time) otime1!*))
     (setq gc_time   (difference (gctime) ogctime1!*))
     (cond ((memq 'bytecounts lispsystem!*)
-           (setq w (mapstore $profilemode1))))
+           (setq w (mapstor 2))))
     (cond
       ((memq 'psl lispsystem!*)
        (setq cpu_time (difference cpu_time gc_time))))
@@ -434,7 +434,7 @@ symbolic eval '
     (print (list "$p" cpu_time gc_time))
     (wrs nil)
     (cond ((memq 'bytecounts lispsystem!*)
-           (wrs (setq o (open "$logdir/$p.$profilename" 'output)))
+           (wrs (setq o (open "$logdir/$p.profile" 'output)))
            (setq tot 0)
            (dolist (a w) (setq tot (plus tot (caddr a))))
            (set!-print!-precision 3)

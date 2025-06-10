@@ -1,0 +1,59 @@
+VSL version 1.01
+(begin)
+REDUCE 2 (AUG-10-73) ...
+FOR HELP, TYPE HELP<ALTMODE>
+
+
+a:=(3*x^2+2*x-1);
+
+        2
+a := 3*x  + 2*x - 1
+
+
+b:=(x^3-7*x+2);
+
+      3
+b := x  - 7*x + 2
+
+
+g:=(x^2+3*x-11);
+
+      2
+g := x  + 3*x - 11
+
+
+p:=a*g;
+
+        4       3       2
+p := 3*x  + 11*x  - 28*x  - 25*x + 11
+
+
+q:=b*g;
+
+      5      4       3       2
+q := x  + 3*x  - 18*x  - 19*x  + 83*x - 22
+
+
+p/q;
+
+    4       3       2                5      4       3       2
+(3*x  + 11*x  - 28*x  - 25*x + 11)/(x  + 3*x  - 18*x  - 19*x  + 83*
+
+x - 22)
+
+
+lisp(*gcd:=t);
+t
+
+
+
+p/q;
+
+    2              3
+(3*x  + 2*x - 1)/(x  - 7*x + 2)
+
+
+end;
+ENTERING LISP...
+Value: nil
+Value: !$eof!$

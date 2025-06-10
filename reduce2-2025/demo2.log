@@ -1,0 +1,16 @@
+VSL version 1.01
+(begin)
+REDUCE 2 (AUG-10-73) ...
+FOR HELP, TYPE HELP<ALTMODE>
+
+
+on fort;
+
+      ans=(x^20+20*x^19+190*x^18+1140*x^17+4845*x^16+15504*x^15+
+     x38760*x^14+77520*x^13+125970*x^12+167960*x^11+184756*x^10+
+     x167960*x^9+125970*x^8+77520*x^7+38760*x^6+15504*x^5+4845*x^4
+     x+1140*x^3+190*x^2+20*x+1)/13
+
+ENTERING LISP...
+Value: nil
+Value: !$eof!$

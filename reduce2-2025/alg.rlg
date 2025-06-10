@@ -1,0 +1,1942 @@
+VSL version 1.01
+(begin)
+REDUCE 2 (AUG-10-73) ...
+FOR HELP, TYPE HELP<ALTMODE>
+
+
+comment this is a standard test file for reduce that has been used for
+many years.  it only tests a limited number of facilities in the
+current system.  in particular, it does not test floating point
+arithmetic, or any of the more advanced packages that have been made
+available since reduce 3.0 was released.  it does however test more
+than just the alg package in which it is now stored.  it has been used
+for a long time to benchmark the performance of reduce.  a description
+of this benchmarking with statistics for reduce 3.2 was reported in jed
+b. marti and anthony c. hearn, "reduce as a lisp benchmark", sigsam
+bull. 19 (1985) 8-16.  that paper also gives information on the the
+parts of the system exercised by the test file.  updated statistics may
+be found in the "timings" file in the reduce network library;
+
+comment to be compatible with the 1973 version of reduce i have needed
+to remove use of "<< ... >>" block and replace them with "begin ... end",
+unwind use of "where" into "let" and replace "ws" with "!*ans". i believe all
+these are rather simple changes not representing deep adjustment to the
+system capabilities;
+
+showtime;
+
+showtime
+
+
+comment some examples of the for statement;
+
+comment summing the squares of the even positive integers
+        through 50;
+
+for i:=2 step 2 until 50 sum i**2;
+
+22100
+
+
+comment to set  w  to the factorial of 10;
+
+w:=for i:=1:10 product i;
+
+w := 3628800
+
+
+comment alternatively, we could set the elements a(i) of the
+        array  a  to the factorial of i by the statements;
+
+array a(10);
+
+
+a(0):=1$
+
+
+for i:=1:10 do a(i):=i*a(i-1);
+
+
+comment the above version of the for statement does not return
+        an algebraic value, but we can now use these array
+        elements as factorials in expressions, e. g.;
+
+1+a(5);
+
+121
+
+
+comment we could have printed the values of each a(i)
+        as they were computed by writing the for statement as;
+
+for i:=1:10 do write a(i):=i*a(i-1);
+
+a(1) := 1
+
+a(2) := 2
+
+a(3) := 6
+
+a(4) := 24
+
+a(5) := 120
+
+a(6) := 720
+
+a(7) := 5040
+
+a(8) := 40320
+
+a(9) := 362880
+
+a(10) := 3628800
+
+
+comment another way to use factorials would be to introduce an
+operator fac by an integer procedure as follows;
+
+integer procedure fac(n);
+begin integer m;
+m:=1;
+l1:if n=0 then return m;
+m:=m*n;
+n:=n-1;
+go to l1 end;
+
+
+comment we can now use  fac  as an operator in expressions, e. g.;
+
+z**2+fac(4)-2*fac 2*y;
+
+          2
+ - 4*y + z  + 24
+
+
+comment note in the above example that the parentheses around
+the arguments of fac may be omitted since it is a unary operator;
+
+comment the following examples illustrate the solution of some
+        complete problems;
+
+comment the f and g series (ref  sconzo, p., leschack, a. r. and
+         tobey, r. g., astronomical journal, vol 70 (may 1965);
+
+deps:=-sigma*(mu+2*epsilon)$
+
+
+dmu:=-3*mu*sigma$
+
+
+dsig:=epsilon-2*sigma**2$
+
+
+f1:=1$
+
+
+g1:=0$
+
+
+for i:=1:8 do begin f2:=-mu*g1+deps*df(f1,epsilon)+dmu*df(f1,mu)+dsig*df(f1,
+sigma);
+write f(,i, ) := ,f2;
+g2:=f1+deps*df(g1,epsilon)+dmu*df(g1,mu)+dsig*df(g1,sigma);
+write g(,i, ) := ,g2;
+f1:=f2;
+g1:=g2 end;
+
+f(1) := 0
+
+g(1) := 1
+
+f(2) :=  - mu
+
+g(2) := 0
+
+f(3) := 3*mu*sigma
+
+g(3) :=  - mu
+
+                                     2
+f(4) := mu*(3*epsilon + mu - 15*sigma )
+
+g(4) := 6*mu*sigma
+
+                                                2
+f(5) := 15*mu*sigma*( - 3*epsilon - mu + 7*sigma )
+
+                                     2
+g(5) := mu*(9*epsilon + mu - 45*sigma )
+
+                         2                                    2
+f(6) := mu*( - 45*epsilon  - 24*epsilon*mu + 630*epsilon*sigma  - 
+
+              2               2            4
+            mu  + 210*mu*sigma  - 945*sigma )
+
+                                                 2
+g(6) := 30*mu*sigma*( - 6*epsilon - mu + 14*sigma )
+
+                               2
+f(7) := 63*mu*sigma*(25*epsilon  + 14*epsilon*mu - 150*epsilon*
+
+             2     2              2            4
+        sigma  + mu  - 50*mu*sigma  + 165*sigma )
+
+                          2                                     2
+g(7) := mu*( - 225*epsilon  - 54*epsilon*mu + 3150*epsilon*sigma
+
+                 2               2             4
+             - mu  + 630*mu*sigma  - 4725*sigma )
+
+                        3               2                   2
+f(8) := mu*(1575*epsilon  + 1107*epsilon *mu - 42525*epsilon *sigma
+
+            2                 2                         2
+              + 117*epsilon*mu  - 24570*epsilon*mu*sigma  + 155925*
+
+                         4     3          2      2
+            epsilon*sigma  + mu  - 2205*mu *sigma  + 51975*mu*sigma
+
+            4               6
+              - 135135*sigma )
+
+                                2
+g(8) := 126*mu*sigma*(75*epsilon  + 24*epsilon*mu - 450*epsilon*
+
+             2     2               2            4
+        sigma  + mu  - 100*mu*sigma  + 495*sigma )
+
+
+comment a problem in fourier analysis;
+
+for all x,y let cos(x)*cos(y)=(cos(x+y)+cos(x-y))/2,cos(x)*sin(y)=(sin(x+y)-sin
+(x-y))/2,sin(x)*sin(y)=(cos(x-y)-cos(x+y))/2,cos(x)**2=(1+cos(2*x))/2,sin(x)**2
+=(1-cos(2*x))/2}
+
+
+;
+
+
+factor cos,sin;
+
+
+on list;
+
+
+(a1*cos(omega*t)+a3*cos(3*omega*t)+b1*sin(omega*t)+b3*sin(3*omega*t))**3;
+
+                   3
+(3*cos(omega*t)*(a1
+
+      2
+  + a1 *a3
+
+           2
+  + 2*a1*a3
+
+         2
+  + a1*b1
+
+  + 2*a1*b1*b3
+
+           2
+  + 2*a1*b3
+
+         2
+  - a3*b1 )
+
+                         2
+  + cos(9*omega*t)*a3*(a3
+
+        2
+  - 3*b3 )
+
+                           2
+  + 3*cos(7*omega*t)*(a1*a3
+
+         2
+  - a1*b3
+
+  - 2*a3*b1*b3)
+
+                        2
+  + 3*cos(5*omega*t)*(a1 *a3
+
+         2
+  + a1*a3
+
+  - 2*a1*b1*b3
+
+         2
+  - a1*b3
+
+         2
+  - a3*b1
+
+  + 2*a3*b1*b3)
+
+                      3
+  + cos(3*omega*t)*(a1
+
+        2
+  + 6*a1 *a3
+
+           2
+  - 3*a1*b1
+
+        3
+  + 3*a3
+
+           2
+  + 6*a3*b1
+
+           2
+  + 3*a3*b3 )
+
+                      2
+  + 3*sin(omega*t)*(a1 *b1
+
+      2
+  + a1 *b3
+
+  - 2*a1*a3*b1
+
+        2
+  + 2*a3 *b1
+
+      3
+  + b1
+
+      2
+  - b1 *b3
+
+           2
+  + 2*b1*b3 )
+
+                           2
+  + sin(9*omega*t)*b3*(3*a3
+
+      2
+  - b3 )
+
+  + 3*sin(7*omega*t)*(2*a1*a3*b3
+
+      2
+  + a3 *b1
+
+         2
+  - b1*b3 )
+
+                        2
+  + 3*sin(5*omega*t)*(a1 *b3
+
+  + 2*a1*a3*b1
+
+  + 2*a1*a3*b3
+
+      2
+  - a3 *b1
+
+      2
+  - b1 *b3
+
+         2
+  + b1*b3 )
+
+                        2
+  + sin(3*omega*t)*(3*a1 *b1
+
+        2
+  + 6*a1 *b3
+
+        2
+  + 3*a3 *b3
+
+      3
+  - b1
+
+        2
+  + 6*b1 *b3
+
+        3
+  + 3*b3 ))/4
+
+
+remfac cos,sin;
+
+
+off list;
+
+
+for all x,y clear cos(x)*cos(y),cos(x)*sin(y),sin(x)*sin(y),cos(x)^2,sin(x)^2;
+
+
+comment leaving such replacements active would slow down
+        subsequent computation;
+
+comment end of fourier analysis example;
+
+comment the following program, written in  collaboration  with  david
+barton  and  john  fitch,  solves a problem in general relativity. it
+will compute the einstein tensor from any given metric;
+
+on nero;
+
+
+comment here we introduce the covariant and contravariant metrics;
+
+operator p1,q1,x;
+
+
+array gg(3,3),h(3,3);
+
+
+(q1 declared operator)
+*** PLEASE DO NOT DECLARE OPERATORS BY DEFAULT  
+*** IF YOU DO, YOUR PROGRAM MAY NOT RUN CORRECTLY  
+*** IN FUTURE RELEASES OF REDUCE  
+(x declared operator)
+*** PLEASE DO NOT DECLARE OPERATORS BY DEFAULT  
+*** IF YOU DO, YOUR PROGRAM MAY NOT RUN CORRECTLY  
+*** IN FUTURE RELEASES OF REDUCE  
+gg(0,0):=e**(q1(x(1)))$
+
+
+(p1 declared operator)
+*** PLEASE DO NOT DECLARE OPERATORS BY DEFAULT  
+*** IF YOU DO, YOUR PROGRAM MAY NOT RUN CORRECTLY  
+*** IN FUTURE RELEASES OF REDUCE  
+gg(1,1):=-e**(p1(x(1)))$
+
+
+gg(2,2):=-x(1)**2$
+
+
+gg(3,3):=-x(1)**2*sin(x(2))**2$
+
+
+for i:=0:3 do h(i,i):=1/gg(i,i);
+
+
+comment generate christoffel symbols and store in arrays cs1 and cs2;
+
+array cs1(3,3,3),cs2(3,3,3);
+
+
+for i:=0:3 do for j:=i:3 do begin for k:=0:3 do cs1(j,i,k):=cs1(i,j,k):=(df(gg(
+i,k),x(j))+df(gg(j,k),x(i))-df(gg(i,j),x(k)))/2;
+for k:=0:3 do cs2(j,i,k):=cs2(i,j,k):=for p:=0:3 sum h(k,p)*cs1(i,j,p) end;
+
+
+comment now compute the riemann tensor and store in r(i,j,k,l);
+
+array r(3,3,3,3);
+
+
+for i:=0:3 do for j:=i+1:3 do for k:=i:3 do for l:=k+1:if k=i then j 
+else 3 do begin r(j,i,l,k):=r(i,j,k,l):=for q:=0:3 sum gg(i,q)*(df(cs2(k,j,q),x
+(l))-df(cs2(j,l,q),x(k))+for p:=0:3 sum(cs2(p,l,q)*cs2(k,j,p)-cs2(p,k,q)*cs2(l,
+j,p)));
+r(i,j,l,k):=-r(i,j,k,l);
+r(j,i,k,l):=-r(i,j,k,l);
+if i neq k or j>l then begin r(k,l,i,j):=r(l,k,j,i):=r(i,j,k,l);
+r(l,k,i,j):=-r(i,j,k,l);
+r(k,l,j,i):=-r(i,j,k,l) end end;
+
+
+comment now compute and print the ricci tensor;
+
+array ricci(3,3);
+
+
+for i:=0:3 do for j:=0:3 do write ricci(j,i):=ricci(i,j):=for p:=0:3 sum for q:
+=0:3 sum h(p,q)*r(q,i,p,j);
+
+ricci(0,0) := ricci(0,0) := ( - 2*cos(x(2))*df(q1(x(1)),x(0))*df(x(
+
+          p1(x(1))          2     2
+2),x(0))*e        *sin(x(2)) *x(1)  - 2*cos(x(2))*df(q1(x(1)),x(1))
+
+                q1(x(1))          2     2
+*df(x(2),x(1))*e        *sin(x(2)) *x(1)  - 2*cos(x(2))*df(q1(x(1))
+
+        p1(x(1))  q1(x(1))          2
+,x(2))*e        *e        *sin(x(2))  + 2*cos(x(2))*df(q1(x(1)),x(3
+
+                  p1(x(1))  q1(x(1))
+))*df(x(2),x(3))*e        *e         + 8*cos(x(2))*df(x(1),x(0))*df
+
+             p1(x(1))          2
+(x(2),x(0))*e        *sin(x(2)) *x(1) + 4*cos(x(2))*df(x(2),x(0),2)
+
+  p1(x(1))          2     2                          p1(x(1))
+*e        *sin(x(2)) *x(1)  + 2*df(p1(x(1)),x(0),2)*e        *sin(x
+
+    3     2                    2  p1(x(1))          3     2
+(2)) *x(1)  + df(p1(x(1)),x(0)) *e        *sin(x(2)) *x(1)  - df(p1
+
+                                p1(x(1))          3     2
+(x(1)),x(0))*df(q1(x(1)),x(0))*e        *sin(x(2)) *x(1)  + df(p1(x
+
+                              q1(x(1))          3     2
+(1)),x(1))*df(q1(x(1)),x(1))*e        *sin(x(2)) *x(1)  - df(p1(x(1
+
+                            p1(x(1))  q1(x(1))          3
+)),x(2))*df(q1(x(1)),x(2))*e        *e        *sin(x(2))  - df(p1(x
+
+                              p1(x(1))  q1(x(1))
+(1)),x(3))*df(q1(x(1)),x(3))*e        *e        *sin(x(2)) - 4*df(
+
+                              p1(x(1))          3
+q1(x(1)),x(0))*df(x(1),x(0))*e        *sin(x(2)) *x(1) - 2*df(q1(x(
+
+             q1(x(1))          3     2                    2  q1(x(1
+1)),x(1),2)*e        *sin(x(2)) *x(1)  - df(q1(x(1)),x(1)) *e
+
+))          3     2                        q1(x(1))          3
+  *sin(x(2)) *x(1)  - 4*df(q1(x(1)),x(1))*e        *sin(x(2)) *x(1)
+
+                          p1(x(1))  q1(x(1))          3
+ - 2*df(q1(x(1)),x(2),2)*e        *e        *sin(x(2))  - df(q1(x(1
+
+        2  p1(x(1))  q1(x(1))          3
+)),x(2)) *e        *e        *sin(x(2))  - 2*df(q1(x(1)),x(3),2)*e
+
+p1(x(1))  q1(x(1))                              2  p1(x(1))  q1(x(1
+        *e        *sin(x(2)) - df(q1(x(1)),x(3)) *e        *e
+
+))                                p1(x(1))          3
+  *sin(x(2)) + 8*df(x(1),x(0),2)*e        *sin(x(2)) *x(1) - 4*df(x
+
+         2  p1(x(1))          3     2      p1(x(1))          3
+(2),x(0)) *e        *sin(x(2)) *x(1) )/(4*e        *sin(x(2)) *x(1)
+
+2
+ )
+
+ricci(1,0) := ricci(0,1) := ( - cos(x(2))*df(p1(x(1)),x(0))*df(x(2)
+
+,x(1))*x(1) - cos(x(2))*df(q1(x(1)),x(1))*df(x(2),x(0))*x(1) + 2*
+
+cos(x(2))*df(x(1),x(0))*df(x(2),x(1)) + 2*cos(x(2))*df(x(2),x(0))
+
+ + 2*cos(x(2))*df(x(2),x(1),x(0))*x(1) - 2*df(p1(x(1)),x(0))*sin(x(
+
+2)) - 2*df(q1(x(1)),x(1))*df(x(1),x(0))*sin(x(2)) + 4*df(x(1),x(1),
+
+x(0))*sin(x(2)) - 2*df(x(2),x(0))*df(x(2),x(1))*sin(x(2))*x(1))/(2*
+
+sin(x(2))*x(1))
+
++++ GC number 1 - collection complete (15385 Kbytes free)
+ricci(2,0) := ricci(0,2) := ( - 2*cos(x(2))*df(q1(x(1)),x(2))*df(x(
+
+             2
+2),x(0))*x(1)  + 4*cos(x(2))*df(x(1),x(2))*df(x(2),x(0))*x(1) + 4*
+
+                                 2
+cos(x(2))*df(x(2),x(2),x(0))*x(1)  + df(p1(x(1)),x(0))*df(p1(x(1)),
+
+                    2
+x(2))*sin(x(2))*x(1)  - df(p1(x(1)),x(0))*df(q1(x(1)),x(2))*sin(x(2
+
+       2                                          2
+))*x(1)  + 2*df(p1(x(1)),x(2),x(0))*sin(x(2))*x(1)  - 2*df(p1(x(1))
+
+,x(2))*df(x(1),x(0))*sin(x(2))*x(1) - 2*df(q1(x(1)),x(2))*df(x(1),x
+
+(0))*sin(x(2))*x(1) - 4*df(x(1),x(0))*df(x(1),x(2))*sin(x(2)) + 4*
+
+                                                                  2
+df(x(1),x(2),x(0))*sin(x(2))*x(1) - 4*df(x(2),x(0))*sin(x(2))*x(1)
+
+                   2
+)/(4*sin(x(2))*x(1) )
+
+ricci(3,0) := ricci(0,3) := ( - 2*cos(x(2))*df(p1(x(1)),x(3))*df(x(
+
+             2
+2),x(0))*x(1)  - 4*cos(x(2))*df(x(1),x(3))*df(x(2),x(0))*x(1) + df(
+
+                                               2
+p1(x(1)),x(0))*df(p1(x(1)),x(3))*sin(x(2))*x(1)  - df(p1(x(1)),x(0)
+
+                                  2
+)*df(q1(x(1)),x(3))*sin(x(2))*x(1)  + 2*df(p1(x(1)),x(3),x(0))*sin(
+
+          2
+x(2))*x(1)  - 2*df(p1(x(1)),x(3))*df(x(1),x(0))*sin(x(2))*x(1) - 2*
+
+df(q1(x(1)),x(3))*df(x(1),x(0))*sin(x(2))*x(1) - 4*df(x(1),x(0))*df
+
+(x(1),x(3))*sin(x(2)) + 4*df(x(1),x(3),x(0))*sin(x(2))*x(1))/(4*sin
+
+           2
+(x(2))*x(1) )
+
+ricci(0,1) := ricci(1,0) := ( - cos(x(2))*df(p1(x(1)),x(0))*df(x(2)
+
+,x(1))*x(1) - cos(x(2))*df(q1(x(1)),x(1))*df(x(2),x(0))*x(1) + 2*
+
+cos(x(2))*df(x(1),x(0))*df(x(2),x(1)) + 2*cos(x(2))*df(x(2),x(0))
+
+ + 2*cos(x(2))*df(x(2),x(1),x(0))*x(1) - 2*df(p1(x(1)),x(0))*sin(x(
+
+2)) - 2*df(q1(x(1)),x(1))*df(x(1),x(0))*sin(x(2)) + 4*df(x(1),x(1),
+
+x(0))*sin(x(2)) - 2*df(x(2),x(0))*df(x(2),x(1))*sin(x(2))*x(1))/(2*
+
+sin(x(2))*x(1))
+
+ricci(1,1) := ricci(1,1) := ( - 2*cos(x(2))*df(p1(x(1)),x(0))*df(x(
+
+          p1(x(1))          2     2
+2),x(0))*e        *sin(x(2)) *x(1)  - 2*cos(x(2))*df(p1(x(1)),x(1))
+
+                q1(x(1))          2     2
+*df(x(2),x(1))*e        *sin(x(2)) *x(1)  + 2*cos(x(2))*df(p1(x(1))
+
+        p1(x(1))  q1(x(1))          2
+,x(2))*e        *e        *sin(x(2))  - 2*cos(x(2))*df(p1(x(1)),x(3
+
+                  p1(x(1))  q1(x(1))
+))*df(x(2),x(3))*e        *e         + 4*cos(x(2))*df(x(2),x(1),2)*
+
+ q1(x(1))          2     2                              q1(x(1))
+e        *sin(x(2)) *x(1)  + 8*cos(x(2))*df(x(2),x(1))*e        *
+
+         2                               p1(x(1))          3     2
+sin(x(2)) *x(1) - 2*df(p1(x(1)),x(0),2)*e        *sin(x(2)) *x(1)
+
+                    2  p1(x(1))          3     2
+ - df(p1(x(1)),x(0)) *e        *sin(x(2)) *x(1)  + df(p1(x(1)),x(0)
+
+                     p1(x(1))          3     2
+)*df(q1(x(1)),x(0))*e        *sin(x(2)) *x(1)  - 4*df(p1(x(1)),x(0)
+
+                 p1(x(1))          3
+)*df(x(1),x(0))*e        *sin(x(2)) *x(1) - df(p1(x(1)),x(1))*df(q1
+
+              q1(x(1))          3     2                        q1(x
+(x(1)),x(1))*e        *sin(x(2)) *x(1)  - 4*df(p1(x(1)),x(1))*e
+
+(1))          3                               p1(x(1))  q1(x(1))
+    *sin(x(2)) *x(1) + 2*df(p1(x(1)),x(2),2)*e        *e        *
+
+         3                    2  p1(x(1))  q1(x(1))          3
+sin(x(2))  + df(p1(x(1)),x(2)) *e        *e        *sin(x(2))  + df
+
+                                   p1(x(1))  q1(x(1))          3
+(p1(x(1)),x(2))*df(q1(x(1)),x(2))*e        *e        *sin(x(2))  + 
+
+                       p1(x(1))  q1(x(1))
+2*df(p1(x(1)),x(3),2)*e        *e        *sin(x(2)) + df(p1(x(1)),x
+
+    2  p1(x(1))  q1(x(1))
+(3)) *e        *e        *sin(x(2)) + df(p1(x(1)),x(3))*df(q1(x(1))
+
+        p1(x(1))  q1(x(1))                                    q1(x(
+,x(3))*e        *e        *sin(x(2)) + 2*df(q1(x(1)),x(1),2)*e
+
+1))          3     2                    2  q1(x(1))          3
+   *sin(x(2)) *x(1)  + df(q1(x(1)),x(1)) *e        *sin(x(2)) *x(1)
+
+2                  2  q1(x(1))          3     2      q1(x(1))
+  - 4*df(x(2),x(1)) *e        *sin(x(2)) *x(1) )/(4*e        *sin(x
+
+    3     2
+(2)) *x(1) )
+
+ricci(2,1) := ricci(1,2) := ( - 2*cos(x(2))*df(p1(x(1)),x(2))*df(x(
+
+             2
+2),x(1))*x(1)  + 4*cos(x(2))*df(x(1),x(2))*df(x(2),x(1))*x(1) + 4*
+
+                                 2
+cos(x(2))*df(x(2),x(2),x(1))*x(1)  - df(p1(x(1)),x(2))*df(q1(x(1)),
+
+                    2
+x(1))*sin(x(2))*x(1)  - 2*df(p1(x(1)),x(2))*sin(x(2))*x(1) + df(q1(
+
+                                            2
+x(1)),x(1))*df(q1(x(1)),x(2))*sin(x(2))*x(1)  + 2*df(q1(x(1)),x(2),
+
+                    2
+x(1))*sin(x(2))*x(1)  - 2*df(q1(x(1)),x(2))*sin(x(2))*x(1) - 4*df(x
+
+                                                    2
+(1),x(2))*sin(x(2)) - 4*df(x(2),x(1))*sin(x(2))*x(1) )/(4*sin(x(2))
+
+     2
+*x(1) )
+
+ricci(3,1) := ricci(1,3) := ( - 2*cos(x(2))*df(q1(x(1)),x(3))*df(x(
+
+             2
+2),x(1))*x(1)  - 4*cos(x(2))*df(x(1),x(3))*df(x(2),x(1))*x(1) - df(
+
+                                               2
+p1(x(1)),x(3))*df(q1(x(1)),x(1))*sin(x(2))*x(1)  - 2*df(p1(x(1)),x(
+
+3))*sin(x(2))*x(1) + df(q1(x(1)),x(1))*df(q1(x(1)),x(3))*sin(x(2))*
+
+    2                                          2
+x(1)  + 2*df(q1(x(1)),x(3),x(1))*sin(x(2))*x(1)  - 2*df(q1(x(1)),x(
+
+                                                                 2
+3))*sin(x(2))*x(1) - 4*df(x(1),x(3))*sin(x(2)))/(4*sin(x(2))*x(1) )
+
+ricci(0,2) := ricci(2,0) := ( - 2*cos(x(2))*df(q1(x(1)),x(2))*df(x(
+
+             2
+2),x(0))*x(1)  + 4*cos(x(2))*df(x(1),x(2))*df(x(2),x(0))*x(1) + 4*
+
+                                 2
+cos(x(2))*df(x(2),x(2),x(0))*x(1)  + df(p1(x(1)),x(0))*df(p1(x(1)),
+
+                    2
+x(2))*sin(x(2))*x(1)  - df(p1(x(1)),x(0))*df(q1(x(1)),x(2))*sin(x(2
+
+       2                                          2
+))*x(1)  + 2*df(p1(x(1)),x(2),x(0))*sin(x(2))*x(1)  - 2*df(p1(x(1))
+
+,x(2))*df(x(1),x(0))*sin(x(2))*x(1) - 2*df(q1(x(1)),x(2))*df(x(1),x
+
+(0))*sin(x(2))*x(1) - 4*df(x(1),x(0))*df(x(1),x(2))*sin(x(2)) + 4*
+
+                                                                  2
+df(x(1),x(2),x(0))*sin(x(2))*x(1) - 4*df(x(2),x(0))*sin(x(2))*x(1)
+
+                   2
+)/(4*sin(x(2))*x(1) )
+
+ricci(1,2) := ricci(2,1) := ( - 2*cos(x(2))*df(p1(x(1)),x(2))*df(x(
+
+             2
+2),x(1))*x(1)  + 4*cos(x(2))*df(x(1),x(2))*df(x(2),x(1))*x(1) + 4*
+
+                                 2
+cos(x(2))*df(x(2),x(2),x(1))*x(1)  - df(p1(x(1)),x(2))*df(q1(x(1)),
+
+                    2
+x(1))*sin(x(2))*x(1)  - 2*df(p1(x(1)),x(2))*sin(x(2))*x(1) + df(q1(
+
+                                            2
+x(1)),x(1))*df(q1(x(1)),x(2))*sin(x(2))*x(1)  + 2*df(q1(x(1)),x(2),
+
+                    2
+x(1))*sin(x(2))*x(1)  - 2*df(q1(x(1)),x(2))*sin(x(2))*x(1) - 4*df(x
+
+                                                    2
+(1),x(2))*sin(x(2)) - 4*df(x(2),x(1))*sin(x(2))*x(1) )/(4*sin(x(2))
+
+     2
+*x(1) )
+
+ricci(2,2) := ricci(2,2) := ( - 4*cos(x(2))*df(x(1),x(0))*df(x(2),x
+
+      p1(x(1))          2     3                              p1(x(1
+(0))*e        *sin(x(2)) *x(1)  + 4*cos(x(2))*df(x(1),x(2))*e
+
+))  q1(x(1))          2
+  *e        *sin(x(2)) *x(1) - 4*cos(x(2))*df(x(1),x(3))*df(x(2),x(
+
+     p1(x(1))  q1(x(1))                                   q1(x(1))
+3))*e        *e        *x(1) + 4*cos(x(2))*df(x(2),x(1))*e        *
+
+         2     3                                      p1(x(1))
+sin(x(2)) *x(1)  - 2*df(p1(x(1)),x(0))*df(x(1),x(0))*e        *sin(
+
+     3     3                        q1(x(1))          3     3
+x(2)) *x(1)  - 2*df(p1(x(1)),x(1))*e        *sin(x(2)) *x(1)  + 2*
+
+                     p1(x(1))  q1(x(1))          3     2
+df(p1(x(1)),x(2),2)*e        *e        *sin(x(2)) *x(1)  + df(p1(x(
+
+         2  p1(x(1))  q1(x(1))          3     2
+1)),x(2)) *e        *e        *sin(x(2)) *x(1)  - 2*df(p1(x(1)),x(2
+
+                  p1(x(1))  q1(x(1))          3
+))*df(x(1),x(2))*e        *e        *sin(x(2)) *x(1) + 2*df(p1(x(1)
+
+                       p1(x(1))  q1(x(1))
+),x(3))*df(x(1),x(3))*e        *e        *sin(x(2))*x(1) + 2*df(q1(
+
+                           p1(x(1))          3     3
+x(1)),x(0))*df(x(1),x(0))*e        *sin(x(2)) *x(1)  + 2*df(q1(x(1)
+
+         q1(x(1))          3     3                          p1(x(1)
+),x(1))*e        *sin(x(2)) *x(1)  + 2*df(q1(x(1)),x(2),2)*e
+
+)  q1(x(1))          3     2                    2  p1(x(1))  q1(x(1
+ *e        *sin(x(2)) *x(1)  + df(q1(x(1)),x(2)) *e        *e
+
+))          3     2                                      p1(x(1))
+  *sin(x(2)) *x(1)  - 2*df(q1(x(1)),x(2))*df(x(1),x(2))*e        *e
+
+q1(x(1))          3                                           p1(x(
+        *sin(x(2)) *x(1) + 2*df(q1(x(1)),x(3))*df(x(1),x(3))*e
+
+1))  q1(x(1))                                     p1(x(1))
+   *e        *sin(x(2))*x(1) - 4*df(x(1),x(0),2)*e        *sin(x(2)
+
+ 3     3                  2  p1(x(1))          3     2
+) *x(1)  - 4*df(x(1),x(0)) *e        *sin(x(2)) *x(1)  + 4*df(x(1),
+
+         p1(x(1))  q1(x(1))          3                       2  p1(
+x(2),2)*e        *e        *sin(x(2)) *x(1) - 4*df(x(1),x(2)) *e
+
+x(1))  q1(x(1))          3                      p1(x(1))  q1(x(1))
+     *e        *sin(x(2))  + 4*df(x(1),x(3),2)*e        *e        *
+
+                                2  p1(x(1))  q1(x(1))
+sin(x(2))*x(1) - 4*df(x(1),x(3)) *e        *e        *sin(x(2)) - 4
+
+  p1(x(1))  q1(x(1))          3     2      q1(x(1))          3
+*e        *e        *sin(x(2)) *x(1)  + 4*e        *sin(x(2)) *x(1)
+
+2      p1(x(1))  q1(x(1))          3     2
+ )/(4*e        *e        *sin(x(2)) *x(1) )
+
+ricci(3,2) := ricci(2,3) := ( - 2*cos(x(2))*df(p1(x(1)),x(3))*x(1)
+
+ - 2*cos(x(2))*df(q1(x(1)),x(3))*x(1) + df(p1(x(1)),x(2))*df(p1(x(1
+
+)),x(3))*sin(x(2))*x(1) - 2*df(p1(x(1)),x(2))*df(x(1),x(3))*sin(x(2
+
+)) + 2*df(p1(x(1)),x(3),x(2))*sin(x(2))*x(1) - 2*df(p1(x(1)),x(3))*
+
+df(x(1),x(2))*sin(x(2)) + df(q1(x(1)),x(2))*df(q1(x(1)),x(3))*sin(x
+
+(2))*x(1) - 2*df(q1(x(1)),x(2))*df(x(1),x(3))*sin(x(2)) + 2*df(q1(x
+
+(1)),x(3),x(2))*sin(x(2))*x(1) - 2*df(q1(x(1)),x(3))*df(x(1),x(2))*
+
+sin(x(2)))/(4*sin(x(2))*x(1))
+
+ricci(0,3) := ricci(3,0) := ( - 2*cos(x(2))*df(p1(x(1)),x(3))*df(x(
+
+             2
+2),x(0))*x(1)  - 4*cos(x(2))*df(x(1),x(3))*df(x(2),x(0))*x(1) + df(
+
+                                               2
+p1(x(1)),x(0))*df(p1(x(1)),x(3))*sin(x(2))*x(1)  - df(p1(x(1)),x(0)
+
+                                  2
+)*df(q1(x(1)),x(3))*sin(x(2))*x(1)  + 2*df(p1(x(1)),x(3),x(0))*sin(
+
+          2
+x(2))*x(1)  - 2*df(p1(x(1)),x(3))*df(x(1),x(0))*sin(x(2))*x(1) - 2*
+
+df(q1(x(1)),x(3))*df(x(1),x(0))*sin(x(2))*x(1) - 4*df(x(1),x(0))*df
+
+(x(1),x(3))*sin(x(2)) + 4*df(x(1),x(3),x(0))*sin(x(2))*x(1))/(4*sin
+
+           2
+(x(2))*x(1) )
+
+ricci(1,3) := ricci(3,1) := ( - 2*cos(x(2))*df(q1(x(1)),x(3))*df(x(
+
+             2
+2),x(1))*x(1)  - 4*cos(x(2))*df(x(1),x(3))*df(x(2),x(1))*x(1) - df(
+
+                                               2
+p1(x(1)),x(3))*df(q1(x(1)),x(1))*sin(x(2))*x(1)  - 2*df(p1(x(1)),x(
+
+3))*sin(x(2))*x(1) + df(q1(x(1)),x(1))*df(q1(x(1)),x(3))*sin(x(2))*
+
+    2                                          2
+x(1)  + 2*df(q1(x(1)),x(3),x(1))*sin(x(2))*x(1)  - 2*df(q1(x(1)),x(
+
+                                                                 2
+3))*sin(x(2))*x(1) - 4*df(x(1),x(3))*sin(x(2)))/(4*sin(x(2))*x(1) )
+
+ricci(2,3) := ricci(3,2) := ( - 2*cos(x(2))*df(p1(x(1)),x(3))*x(1)
+
+ - 2*cos(x(2))*df(q1(x(1)),x(3))*x(1) + df(p1(x(1)),x(2))*df(p1(x(1
+
+)),x(3))*sin(x(2))*x(1) - 2*df(p1(x(1)),x(2))*df(x(1),x(3))*sin(x(2
+
+)) + 2*df(p1(x(1)),x(3),x(2))*sin(x(2))*x(1) - 2*df(p1(x(1)),x(3))*
+
+df(x(1),x(2))*sin(x(2)) + df(q1(x(1)),x(2))*df(q1(x(1)),x(3))*sin(x
+
+(2))*x(1) - 2*df(q1(x(1)),x(2))*df(x(1),x(3))*sin(x(2)) + 2*df(q1(x
+
+(1)),x(3),x(2))*sin(x(2))*x(1) - 2*df(q1(x(1)),x(3))*df(x(1),x(2))*
+
+sin(x(2)))/(4*sin(x(2))*x(1))
+
+ricci(3,3) := ricci(3,3) := ( - 2*cos(x(2))*df(p1(x(1)),x(0))*df(x(
+
+          p1(x(1))          2     4
+2),x(0))*e        *sin(x(2)) *x(1)  - 2*cos(x(2))*df(p1(x(1)),x(1))
+
+                q1(x(1))          2     4
+*df(x(2),x(1))*e        *sin(x(2)) *x(1)  + 2*cos(x(2))*df(p1(x(1))
+
+        p1(x(1))  q1(x(1))          2     2
+,x(2))*e        *e        *sin(x(2)) *x(1)  - 2*cos(x(2))*df(p1(x(1
+
+                        p1(x(1))  q1(x(1))     2
+)),x(3))*df(x(2),x(3))*e        *e        *x(1)  + 2*cos(x(2))*df(
+
+                              p1(x(1))          2     4
+q1(x(1)),x(0))*df(x(2),x(0))*e        *sin(x(2)) *x(1)  + 2*cos(x(2
+
+                                    q1(x(1))          2     4
+))*df(q1(x(1)),x(1))*df(x(2),x(1))*e        *sin(x(2)) *x(1)  + 2*
+
+                             p1(x(1))  q1(x(1))          2     2
+cos(x(2))*df(q1(x(1)),x(2))*e        *e        *sin(x(2)) *x(1)  - 
+
+                                             p1(x(1))  q1(x(1))
+2*cos(x(2))*df(q1(x(1)),x(3))*df(x(2),x(3))*e        *e        *x(1
+
+ 2                                             p1(x(1))          2
+)  - 12*cos(x(2))*df(x(1),x(0))*df(x(2),x(0))*e        *sin(x(2)) *
+
+    3                              p1(x(1))  q1(x(1))          2
+x(1)  + 4*cos(x(2))*df(x(1),x(2))*e        *e        *sin(x(2)) *x(
+
+                                              p1(x(1))  q1(x(1))
+1) - 4*cos(x(2))*df(x(1),x(3))*df(x(2),x(3))*e        *e        *x(
+
+                                  p1(x(1))          2     4
+1) - 4*cos(x(2))*df(x(2),x(0),2)*e        *sin(x(2)) *x(1)  + 4*cos
+
+                        q1(x(1))          2     4
+(x(2))*df(x(2),x(1),2)*e        *sin(x(2)) *x(1)  + 12*cos(x(2))*df
+
+             q1(x(1))          2     3
+(x(2),x(1))*e        *sin(x(2)) *x(1)  - 2*df(p1(x(1)),x(0))*df(x(1
+
+         p1(x(1))          3     3                        q1(x(1))
+),x(0))*e        *sin(x(2)) *x(1)  - 2*df(p1(x(1)),x(1))*e        *
+
+         3     3                                      p1(x(1))  q1(
+sin(x(2)) *x(1)  + 2*df(p1(x(1)),x(2))*df(x(1),x(2))*e        *e
+
+x(1))          3                               p1(x(1))  q1(x(1))
+     *sin(x(2)) *x(1) + 2*df(p1(x(1)),x(3),2)*e        *e        *
+
+              2                    2  p1(x(1))  q1(x(1))
+sin(x(2))*x(1)  + df(p1(x(1)),x(3)) *e        *e        *sin(x(2))*
+
+    2                                      p1(x(1))  q1(x(1))
+x(1)  - 2*df(p1(x(1)),x(3))*df(x(1),x(3))*e        *e        *sin(x
+
+                                               p1(x(1))          3
+(2))*x(1) + 2*df(q1(x(1)),x(0))*df(x(1),x(0))*e        *sin(x(2)) *
+
+    3                        q1(x(1))          3     3
+x(1)  + 2*df(q1(x(1)),x(1))*e        *sin(x(2)) *x(1)  + 2*df(q1(x(
+
+                         p1(x(1))  q1(x(1))          3
+1)),x(2))*df(x(1),x(2))*e        *e        *sin(x(2)) *x(1) + 2*df(
+
+                  p1(x(1))  q1(x(1))               2
+q1(x(1)),x(3),2)*e        *e        *sin(x(2))*x(1)  + df(q1(x(1)),
+
+     2  p1(x(1))  q1(x(1))               2
+x(3)) *e        *e        *sin(x(2))*x(1)  - 2*df(q1(x(1)),x(3))*df
+
+             p1(x(1))  q1(x(1))
+(x(1),x(3))*e        *e        *sin(x(2))*x(1) - 4*df(x(1),x(0),2)*
+
+ p1(x(1))          3     3                  2  p1(x(1))          3
+e        *sin(x(2)) *x(1)  - 4*df(x(1),x(0)) *e        *sin(x(2)) *
+
+    2                      p1(x(1))  q1(x(1))          3
+x(1)  + 4*df(x(1),x(2),2)*e        *e        *sin(x(2)) *x(1) - 4*
+
+             2  p1(x(1))  q1(x(1))          3
+df(x(1),x(2)) *e        *e        *sin(x(2))  + 4*df(x(1),x(3),2)*e
+
+p1(x(1))  q1(x(1))                                 2  p1(x(1))  q1(
+        *e        *sin(x(2))*x(1) - 4*df(x(1),x(3)) *e        *e
+
+x(1))                            2  p1(x(1))          3     4
+     *sin(x(2)) + 4*df(x(2),x(0)) *e        *sin(x(2)) *x(1)  - 4*
+
+             2  q1(x(1))          3     4      p1(x(1))  q1(x(1))
+df(x(2),x(1)) *e        *sin(x(2)) *x(1)  - 4*e        *e        *
+
+         3     2      q1(x(1))          3     2      p1(x(1))  q1(x
+sin(x(2)) *x(1)  + 4*e        *sin(x(2)) *x(1) )/(4*e        *e
+
+(1))               2
+    *sin(x(2))*x(1) )
+
+
+comment now compute and print the ricci scalar;
+
+rs:=for i:=0:3 sum for j:=0:3 sum h(i,j)*ricci(i,j);
+
+                                                    p1(x(1))
+rs := (2*cos(x(2))*df(p1(x(1)),x(0))*df(x(2),x(0))*e        *sin(x(
+
+          2     4                                                q1
+       2)) *x(1)  + 2*cos(x(2))*df(p1(x(1)),x(1))*df(x(2),x(1))*e
+
+       (x(1))          2     4                                  p1(
+             *sin(x(2)) *x(1)  - 2*cos(x(2))*df(p1(x(1)),x(2))*e
+
+       x(1))  q1(x(1))          2     2
+            *e        *sin(x(2)) *x(1)  + 2*cos(x(2))*df(p1(x(1)),x
+
+                           p1(x(1))  q1(x(1))     2
+       (3))*df(x(2),x(3))*e        *e        *x(1)  - 2*cos(x(2))*
+
+                                        p1(x(1))          2     4
+       df(q1(x(1)),x(0))*df(x(2),x(0))*e        *sin(x(2)) *x(1)
+
+                                                       q1(x(1))
+        - 2*cos(x(2))*df(q1(x(1)),x(1))*df(x(2),x(1))*e        *sin
+
+             2     4                                  p1(x(1))  q1(
+       (x(2)) *x(1)  - 2*cos(x(2))*df(q1(x(1)),x(2))*e        *e
+
+       x(1))          2     2
+            *sin(x(2)) *x(1)  + 2*cos(x(2))*df(q1(x(1)),x(3))*df(x(
+
+                 p1(x(1))  q1(x(1))     2
+       2),x(3))*e        *e        *x(1)  + 12*cos(x(2))*df(x(1),x(
+
+                          p1(x(1))          2     3
+       0))*df(x(2),x(0))*e        *sin(x(2)) *x(1)  - 4*cos(x(2))*
+
+                      p1(x(1))  q1(x(1))          2
+       df(x(1),x(2))*e        *e        *sin(x(2)) *x(1) + 4*cos(x(
+
+                                        p1(x(1))  q1(x(1))
+       2))*df(x(1),x(3))*df(x(2),x(3))*e        *e        *x(1) + 4
+
+                                   p1(x(1))          2     4
+       *cos(x(2))*df(x(2),x(0),2)*e        *sin(x(2)) *x(1)  - 4*
+
+                                  q1(x(1))          2     4
+       cos(x(2))*df(x(2),x(1),2)*e        *sin(x(2)) *x(1)  - 12*
+
+                                q1(x(1))          2     3
+       cos(x(2))*df(x(2),x(1))*e        *sin(x(2)) *x(1)  + 2*df(p1
+
+                       p1(x(1))          3     4
+       (x(1)),x(0),2)*e        *sin(x(2)) *x(1)  + df(p1(x(1)),x(0)
+
+        2  p1(x(1))          3     4
+       ) *e        *sin(x(2)) *x(1)  - df(p1(x(1)),x(0))*df(q1(x(1)
+
+                p1(x(1))          3     4
+       ),x(0))*e        *sin(x(2)) *x(1)  + 4*df(p1(x(1)),x(0))*df(
+
+                   p1(x(1))          3     3
+       x(1),x(0))*e        *sin(x(2)) *x(1)  + df(p1(x(1)),x(1))*df
+
+                        q1(x(1))          3     4
+       (q1(x(1)),x(1))*e        *sin(x(2)) *x(1)  + 4*df(p1(x(1)),x
+
+             q1(x(1))          3     3                          p1(
+       (1))*e        *sin(x(2)) *x(1)  - 2*df(p1(x(1)),x(2),2)*e
+
+       x(1))  q1(x(1))          3     2                    2  p1(x(
+            *e        *sin(x(2)) *x(1)  - df(p1(x(1)),x(2)) *e
+
+       1))  q1(x(1))          3     2
+          *e        *sin(x(2)) *x(1)  - df(p1(x(1)),x(2))*df(q1(x(1
+
+                 p1(x(1))  q1(x(1))          3     2
+       )),x(2))*e        *e        *sin(x(2)) *x(1)  - 2*df(p1(x(1)
+
+                  p1(x(1))  q1(x(1))               2
+       ),x(3),2)*e        *e        *sin(x(2))*x(1)  - df(p1(x(1)),
+
+            2  p1(x(1))  q1(x(1))               2
+       x(3)) *e        *e        *sin(x(2))*x(1)  - df(p1(x(1)),x(3
+
+                             p1(x(1))  q1(x(1))               2
+       ))*df(q1(x(1)),x(3))*e        *e        *sin(x(2))*x(1)  - 4
+
+                                         p1(x(1))          3     3
+       *df(q1(x(1)),x(0))*df(x(1),x(0))*e        *sin(x(2)) *x(1)
+
+                                 q1(x(1))          3     4
+        - 2*df(q1(x(1)),x(1),2)*e        *sin(x(2)) *x(1)  - df(q1(
+
+                  2  q1(x(1))          3     4
+       x(1)),x(1)) *e        *sin(x(2)) *x(1)  - 4*df(q1(x(1)),x(1)
+
+          q1(x(1))          3     3                          p1(x(1
+       )*e        *sin(x(2)) *x(1)  - 2*df(q1(x(1)),x(2),2)*e
+
+       ))  q1(x(1))          3     2                    2  p1(x(1))
+         *e        *sin(x(2)) *x(1)  - df(q1(x(1)),x(2)) *e
+
+         q1(x(1))          3     2                          p1(x(1)
+       *e        *sin(x(2)) *x(1)  - 2*df(q1(x(1)),x(3),2)*e
+
+       )  q1(x(1))               2                    2  p1(x(1))
+        *e        *sin(x(2))*x(1)  - df(q1(x(1)),x(3)) *e        *e
+
+       q1(x(1))               2                      p1(x(1))
+               *sin(x(2))*x(1)  + 8*df(x(1),x(0),2)*e        *sin(x
+
+           3     3                  2  p1(x(1))          3     2
+       (2)) *x(1)  + 4*df(x(1),x(0)) *e        *sin(x(2)) *x(1)  - 
+
+                          p1(x(1))  q1(x(1))          3
+       4*df(x(1),x(2),2)*e        *e        *sin(x(2)) *x(1) + 4*df
+
+                  2  p1(x(1))  q1(x(1))          3
+       (x(1),x(2)) *e        *e        *sin(x(2))  - 4*df(x(1),x(3)
+
+            p1(x(1))  q1(x(1))                                 2
+       ,2)*e        *e        *sin(x(2))*x(1) + 4*df(x(1),x(3)) *e
+
+       p1(x(1))  q1(x(1))                            2  p1(x(1))
+               *e        *sin(x(2)) - 4*df(x(2),x(0)) *e        *
+
+                3     4                  2  q1(x(1))          3
+       sin(x(2)) *x(1)  + 4*df(x(2),x(1)) *e        *sin(x(2)) *x(1
+
+        4      p1(x(1))  q1(x(1))          3     2      q1(x(1))
+       )  + 4*e        *e        *sin(x(2)) *x(1)  - 4*e        *
+
+                3     2      p1(x(1))  q1(x(1))          3     4
+       sin(x(2)) *x(1) )/(2*e        *e        *sin(x(2)) *x(1) )
+
+
+comment finally compute and print the einstein tensor;
+
+array einstein(3,3);
+
+
+for i:=0:3 do for j:=0:3 do write einstein(i,j):=ricci(i,j)-rs*gg(i,j)/2;
+
+
+einstein(0,0) := ( - 2*cos(x(2))*df(p1(x(1)),x(0))*df(x(2),x(0))*e
+
+                 p1(x(1))          2     4
+                         *sin(x(2)) *x(1)  - 2*cos(x(2))*df(p1(x(1)
+
+                                        q1(x(1))          2     4
+                 ),x(1))*df(x(2),x(1))*e        *sin(x(2)) *x(1)
+
+                                                   p1(x(1))  q1(x(1
+                  + 2*cos(x(2))*df(p1(x(1)),x(2))*e        *e
+
+                 ))          2     2
+                   *sin(x(2)) *x(1)  - 2*cos(x(2))*df(p1(x(1)),x(3)
+
+                                  p1(x(1))  q1(x(1))     2
+                 )*df(x(2),x(3))*e        *e        *x(1)  - 4*cos(
+
+                                                    p1(x(1))
+                 x(2))*df(x(1),x(0))*df(x(2),x(0))*e        *sin(x(
+
+                    2     3                              p1(x(1))
+                 2)) *x(1)  + 4*cos(x(2))*df(x(1),x(2))*e        *e
+
+                 q1(x(1))          2
+                         *sin(x(2)) *x(1) - 4*cos(x(2))*df(x(1),x(3
+
+                                   p1(x(1))  q1(x(1))
+                 ))*df(x(2),x(3))*e        *e        *x(1) + 4*cos(
+
+                                        q1(x(1))          2     4
+                 x(2))*df(x(2),x(1),2)*e        *sin(x(2)) *x(1)
+
+                                                q1(x(1))          2
+                  + 12*cos(x(2))*df(x(2),x(1))*e        *sin(x(2))
+
+                      3                                      p1(x(1
+                 *x(1)  - 4*df(p1(x(1)),x(0))*df(x(1),x(0))*e
+
+                 ))          3     3                        q1(x(1)
+                   *sin(x(2)) *x(1)  - 4*df(p1(x(1)),x(1))*e
+
+                 )          3     3                          p1(x(1
+                  *sin(x(2)) *x(1)  + 2*df(p1(x(1)),x(2),2)*e
+
+                 ))  q1(x(1))          3     2                    2
+                   *e        *sin(x(2)) *x(1)  + df(p1(x(1)),x(2))
+
+                   p1(x(1))  q1(x(1))          3     2
+                 *e        *e        *sin(x(2)) *x(1)  + 2*df(p1(x(
+
+                              p1(x(1))  q1(x(1))               2
+                 1)),x(3),2)*e        *e        *sin(x(2))*x(1)  + 
+
+                                  2  p1(x(1))  q1(x(1))
+                 df(p1(x(1)),x(3)) *e        *e        *sin(x(2))*x
+
+                    2                  2  p1(x(1))          3     2
+                 (1)  - 4*df(x(1),x(0)) *e        *sin(x(2)) *x(1)
+
+                                       p1(x(1))  q1(x(1))
+                  + 4*df(x(1),x(2),2)*e        *e        *sin(x(2))
+
+                 3                       2  p1(x(1))  q1(x(1))
+                  *x(1) - 4*df(x(1),x(2)) *e        *e        *sin(
+
+                      3                      p1(x(1))  q1(x(1))
+                 x(2))  + 4*df(x(1),x(3),2)*e        *e        *sin
+
+                                              2  p1(x(1))  q1(x(1))
+                 (x(2))*x(1) - 4*df(x(1),x(3)) *e        *e
+
+                                             2  q1(x(1))          3
+                 *sin(x(2)) - 4*df(x(2),x(1)) *e        *sin(x(2))
+
+                      4      p1(x(1))  q1(x(1))          3     2
+                 *x(1)  - 4*e        *e        *sin(x(2)) *x(1)  + 
+
+                    q1(x(1))          3     2      p1(x(1))
+                 4*e        *sin(x(2)) *x(1) )/(4*e        *sin(x(2
+
+                   3     4
+                 )) *x(1) )
+
+einstein(0,1) := ( - cos(x(2))*df(p1(x(1)),x(0))*df(x(2),x(1))*x(1)
+
+                  - cos(x(2))*df(q1(x(1)),x(1))*df(x(2),x(0))*x(1)
+
+                  + 2*cos(x(2))*df(x(1),x(0))*df(x(2),x(1)) + 2*cos
+
+                 (x(2))*df(x(2),x(0)) + 2*cos(x(2))*df(x(2),x(1),x(
+
+                 0))*x(1) - 2*df(p1(x(1)),x(0))*sin(x(2)) - 2*df(q1
+
+                 (x(1)),x(1))*df(x(1),x(0))*sin(x(2)) + 4*df(x(1),x
+
+                 (1),x(0))*sin(x(2)) - 2*df(x(2),x(0))*df(x(2),x(1)
+
+                 )*sin(x(2))*x(1))/(2*sin(x(2))*x(1))
+
+einstein(0,2) := ( - 2*cos(x(2))*df(q1(x(1)),x(2))*df(x(2),x(0))*x(
+
+                   2
+                 1)  + 4*cos(x(2))*df(x(1),x(2))*df(x(2),x(0))*x(1)
+
+                                                       2
+                  + 4*cos(x(2))*df(x(2),x(2),x(0))*x(1)  + df(p1(x(
+
+                                                           2
+                 1)),x(0))*df(p1(x(1)),x(2))*sin(x(2))*x(1)  - df(
+
+                                                                2
+                 p1(x(1)),x(0))*df(q1(x(1)),x(2))*sin(x(2))*x(1)
+
+                                                           2
+                  + 2*df(p1(x(1)),x(2),x(0))*sin(x(2))*x(1)  - 2*df
+
+                 (p1(x(1)),x(2))*df(x(1),x(0))*sin(x(2))*x(1) - 2*
+
+                 df(q1(x(1)),x(2))*df(x(1),x(0))*sin(x(2))*x(1) - 4
+
+                 *df(x(1),x(0))*df(x(1),x(2))*sin(x(2)) + 4*df(x(1)
+
+                 ,x(2),x(0))*sin(x(2))*x(1) - 4*df(x(2),x(0))*sin(x
+
+                          2                   2
+                 (2))*x(1) )/(4*sin(x(2))*x(1) )
+
+einstein(0,3) := ( - 2*cos(x(2))*df(p1(x(1)),x(3))*df(x(2),x(0))*x(
+
+                   2
+                 1)  - 4*cos(x(2))*df(x(1),x(3))*df(x(2),x(0))*x(1)
+
+                  + df(p1(x(1)),x(0))*df(p1(x(1)),x(3))*sin(x(2))*x
+
+                    2
+                 (1)  - df(p1(x(1)),x(0))*df(q1(x(1)),x(3))*sin(x(2
+
+                        2
+                 ))*x(1)  + 2*df(p1(x(1)),x(3),x(0))*sin(x(2))*x(1)
+
+                 2
+                   - 2*df(p1(x(1)),x(3))*df(x(1),x(0))*sin(x(2))*x(
+
+                 1) - 2*df(q1(x(1)),x(3))*df(x(1),x(0))*sin(x(2))*x
+
+                 (1) - 4*df(x(1),x(0))*df(x(1),x(3))*sin(x(2)) + 4*
+
+                 df(x(1),x(3),x(0))*sin(x(2))*x(1))/(4*sin(x(2))*x(
+
+                   2
+                 1) )
+
+einstein(1,0) := ( - cos(x(2))*df(p1(x(1)),x(0))*df(x(2),x(1))*x(1)
+
+                  - cos(x(2))*df(q1(x(1)),x(1))*df(x(2),x(0))*x(1)
+
+                  + 2*cos(x(2))*df(x(1),x(0))*df(x(2),x(1)) + 2*cos
+
+                 (x(2))*df(x(2),x(0)) + 2*cos(x(2))*df(x(2),x(1),x(
+
+                 0))*x(1) - 2*df(p1(x(1)),x(0))*sin(x(2)) - 2*df(q1
+
+                 (x(1)),x(1))*df(x(1),x(0))*sin(x(2)) + 4*df(x(1),x
+
+                 (1),x(0))*sin(x(2)) - 2*df(x(2),x(0))*df(x(2),x(1)
+
+                 )*sin(x(2))*x(1))/(2*sin(x(2))*x(1))
+
+
+einstein(1,1) := ( - 2*cos(x(2))*df(q1(x(1)),x(0))*df(x(2),x(0))*e
+
+                 p1(x(1))          2     4
+                         *sin(x(2)) *x(1)  - 2*cos(x(2))*df(q1(x(1)
+
+                                        q1(x(1))          2     4
+                 ),x(1))*df(x(2),x(1))*e        *sin(x(2)) *x(1)
+
+                                                   p1(x(1))  q1(x(1
+                  - 2*cos(x(2))*df(q1(x(1)),x(2))*e        *e
+
+                 ))          2     2
+                   *sin(x(2)) *x(1)  + 2*cos(x(2))*df(q1(x(1)),x(3)
+
+                                  p1(x(1))  q1(x(1))     2
+                 )*df(x(2),x(3))*e        *e        *x(1)  + 12*cos
+
+                                                     p1(x(1))
+                 (x(2))*df(x(1),x(0))*df(x(2),x(0))*e        *sin(x
+
+                     2     3                              p1(x(1))
+                 (2)) *x(1)  - 4*cos(x(2))*df(x(1),x(2))*e        *
+
+                  q1(x(1))          2
+                 e        *sin(x(2)) *x(1) + 4*cos(x(2))*df(x(1),x(
+
+                                    p1(x(1))  q1(x(1))
+                 3))*df(x(2),x(3))*e        *e        *x(1) + 4*cos
+
+                                         p1(x(1))          2     4
+                 (x(2))*df(x(2),x(0),2)*e        *sin(x(2)) *x(1)
+
+                                               q1(x(1))          2
+                  - 4*cos(x(2))*df(x(2),x(1))*e        *sin(x(2)) *
+
+                     3                                      p1(x(1)
+                 x(1)  - 4*df(q1(x(1)),x(0))*df(x(1),x(0))*e
+
+                 )          3     3                        q1(x(1))
+                  *sin(x(2)) *x(1)  - 4*df(q1(x(1)),x(1))*e
+
+                           3     3                          p1(x(1)
+                 *sin(x(2)) *x(1)  - 2*df(q1(x(1)),x(2),2)*e
+
+                 )  q1(x(1))          3     2                    2
+                  *e        *sin(x(2)) *x(1)  - df(q1(x(1)),x(2)) *
+
+                  p1(x(1))  q1(x(1))          3     2
+                 e        *e        *sin(x(2)) *x(1)  - 2*df(q1(x(1
+
+                             p1(x(1))  q1(x(1))               2
+                 )),x(3),2)*e        *e        *sin(x(2))*x(1)  - 
+
+                                  2  p1(x(1))  q1(x(1))
+                 df(q1(x(1)),x(3)) *e        *e        *sin(x(2))*x
+
+                    2                      p1(x(1))          3
+                 (1)  + 8*df(x(1),x(0),2)*e        *sin(x(2)) *x(1)
+
+                 3                  2  p1(x(1))          3     2
+                   + 4*df(x(1),x(0)) *e        *sin(x(2)) *x(1)  - 
+
+                                    p1(x(1))  q1(x(1))          3
+                 4*df(x(1),x(2),2)*e        *e        *sin(x(2)) *x
+
+                                      2  p1(x(1))  q1(x(1))
+                 (1) + 4*df(x(1),x(2)) *e        *e        *sin(x(2
+
+                   3                      p1(x(1))  q1(x(1))
+                 ))  - 4*df(x(1),x(3),2)*e        *e        *sin(x(
+
+                                           2  p1(x(1))  q1(x(1))
+                 2))*x(1) + 4*df(x(1),x(3)) *e        *e        *
+
+                                            2  p1(x(1))          3
+                 sin(x(2)) - 4*df(x(2),x(0)) *e        *sin(x(2)) *
+
+                     4      p1(x(1))  q1(x(1))          3     2
+                 x(1)  + 4*e        *e        *sin(x(2)) *x(1)  - 4
+
+                   q1(x(1))          3     2      q1(x(1))
+                 *e        *sin(x(2)) *x(1) )/(4*e        *sin(x(2)
+
+                  3     4
+                 ) *x(1) )
+
+einstein(1,2) := ( - 2*cos(x(2))*df(p1(x(1)),x(2))*df(x(2),x(1))*x(
+
+                   2
+                 1)  + 4*cos(x(2))*df(x(1),x(2))*df(x(2),x(1))*x(1)
+
+                                                       2
+                  + 4*cos(x(2))*df(x(2),x(2),x(1))*x(1)  - df(p1(x(
+
+                                                           2
+                 1)),x(2))*df(q1(x(1)),x(1))*sin(x(2))*x(1)  - 2*df
+
+                 (p1(x(1)),x(2))*sin(x(2))*x(1) + df(q1(x(1)),x(1))
+
+                                                  2
+                 *df(q1(x(1)),x(2))*sin(x(2))*x(1)  + 2*df(q1(x(1))
+
+                                           2
+                 ,x(2),x(1))*sin(x(2))*x(1)  - 2*df(q1(x(1)),x(2))*
+
+                 sin(x(2))*x(1) - 4*df(x(1),x(2))*sin(x(2)) - 4*df(
+
+                                          2                   2
+                 x(2),x(1))*sin(x(2))*x(1) )/(4*sin(x(2))*x(1) )
+
+einstein(1,3) := ( - 2*cos(x(2))*df(q1(x(1)),x(3))*df(x(2),x(1))*x(
+
+                   2
+                 1)  - 4*cos(x(2))*df(x(1),x(3))*df(x(2),x(1))*x(1)
+
+                  - df(p1(x(1)),x(3))*df(q1(x(1)),x(1))*sin(x(2))*x
+
+                    2
+                 (1)  - 2*df(p1(x(1)),x(3))*sin(x(2))*x(1) + df(q1(
+
+                                                             2
+                 x(1)),x(1))*df(q1(x(1)),x(3))*sin(x(2))*x(1)  + 2*
+
+                                                      2
+                 df(q1(x(1)),x(3),x(1))*sin(x(2))*x(1)  - 2*df(q1(x
+
+                 (1)),x(3))*sin(x(2))*x(1) - 4*df(x(1),x(3))*sin(x(
+
+                                       2
+                 2)))/(4*sin(x(2))*x(1) )
+
+einstein(2,0) := ( - 2*cos(x(2))*df(q1(x(1)),x(2))*df(x(2),x(0))*x(
+
+                   2
+                 1)  + 4*cos(x(2))*df(x(1),x(2))*df(x(2),x(0))*x(1)
+
+                                                       2
+                  + 4*cos(x(2))*df(x(2),x(2),x(0))*x(1)  + df(p1(x(
+
+                                                           2
+                 1)),x(0))*df(p1(x(1)),x(2))*sin(x(2))*x(1)  - df(
+
+                                                                2
+                 p1(x(1)),x(0))*df(q1(x(1)),x(2))*sin(x(2))*x(1)
+
+                                                           2
+                  + 2*df(p1(x(1)),x(2),x(0))*sin(x(2))*x(1)  - 2*df
+
++++ GC number 2 - collection complete (15355 Kbytes free)
+                 (p1(x(1)),x(2))*df(x(1),x(0))*sin(x(2))*x(1) - 2*
+
+                 df(q1(x(1)),x(2))*df(x(1),x(0))*sin(x(2))*x(1) - 4
+
+                 *df(x(1),x(0))*df(x(1),x(2))*sin(x(2)) + 4*df(x(1)
+
+                 ,x(2),x(0))*sin(x(2))*x(1) - 4*df(x(2),x(0))*sin(x
+
+                          2                   2
+                 (2))*x(1) )/(4*sin(x(2))*x(1) )
+
+einstein(2,1) := ( - 2*cos(x(2))*df(p1(x(1)),x(2))*df(x(2),x(1))*x(
+
+                   2
+                 1)  + 4*cos(x(2))*df(x(1),x(2))*df(x(2),x(1))*x(1)
+
+                                                       2
+                  + 4*cos(x(2))*df(x(2),x(2),x(1))*x(1)  - df(p1(x(
+
+                                                           2
+                 1)),x(2))*df(q1(x(1)),x(1))*sin(x(2))*x(1)  - 2*df
+
+                 (p1(x(1)),x(2))*sin(x(2))*x(1) + df(q1(x(1)),x(1))
+
+                                                  2
+                 *df(q1(x(1)),x(2))*sin(x(2))*x(1)  + 2*df(q1(x(1))
+
+                                           2
+                 ,x(2),x(1))*sin(x(2))*x(1)  - 2*df(q1(x(1)),x(2))*
+
+                 sin(x(2))*x(1) - 4*df(x(1),x(2))*sin(x(2)) - 4*df(
+
+                                          2                   2
+                 x(2),x(1))*sin(x(2))*x(1) )/(4*sin(x(2))*x(1) )
+
+                                                               p1(x
+einstein(2,2) := (2*cos(x(2))*df(p1(x(1)),x(0))*df(x(2),x(0))*e
+
+                 (1))          2     3
+                     *sin(x(2)) *x(1)  + 2*cos(x(2))*df(p1(x(1)),x(
+
+                                    q1(x(1))          2     3
+                 1))*df(x(2),x(1))*e        *sin(x(2)) *x(1)  - 2*
+
+                                              p1(x(1))  q1(x(1))
+                 cos(x(2))*df(p1(x(1)),x(2))*e        *e        *
+
+                          2
+                 sin(x(2)) *x(1) + 2*cos(x(2))*df(p1(x(1)),x(3))*df
+
+                              p1(x(1))  q1(x(1))
+                 (x(2),x(3))*e        *e        *x(1) - 2*cos(x(2))
+
+                                                   p1(x(1))
+                 *df(q1(x(1)),x(0))*df(x(2),x(0))*e        *sin(x(2
+
+                   2     3
+                 )) *x(1)  - 2*cos(x(2))*df(q1(x(1)),x(1))*df(x(2),
+
+                        q1(x(1))          2     3
+                 x(1))*e        *sin(x(2)) *x(1)  - 2*cos(x(2))*df(
+
+                                 p1(x(1))  q1(x(1))          2
+                 q1(x(1)),x(2))*e        *e        *sin(x(2)) *x(1)
+
+                                                                 p1
+                  + 2*cos(x(2))*df(q1(x(1)),x(3))*df(x(2),x(3))*e
+
+                 (x(1))  q1(x(1))
+                       *e        *x(1) + 8*cos(x(2))*df(x(1),x(0))*
+
+                                p1(x(1))          2     2
+                 df(x(2),x(0))*e        *sin(x(2)) *x(1)  + 4*cos(x
+
+                                       p1(x(1))          2     3
+                 (2))*df(x(2),x(0),2)*e        *sin(x(2)) *x(1)  - 
+
+                                              q1(x(1))          2
+                 4*cos(x(2))*df(x(2),x(1),2)*e        *sin(x(2)) *x
+
+                    3                              q1(x(1))
+                 (1)  - 8*cos(x(2))*df(x(2),x(1))*e        *sin(x(2
+
+                   2     2                          p1(x(1))
+                 )) *x(1)  + 2*df(p1(x(1)),x(0),2)*e        *sin(x(
+
+                    3     3                    2  p1(x(1))
+                 2)) *x(1)  + df(p1(x(1)),x(0)) *e        *sin(x(2)
+
+                  3     3                                        p1
+                 ) *x(1)  - df(p1(x(1)),x(0))*df(q1(x(1)),x(0))*e
+
+                 (x(1))          3     3
+                       *sin(x(2)) *x(1)  + 2*df(p1(x(1)),x(0))*df(x
+
+                            p1(x(1))          3     2
+                 (1),x(0))*e        *sin(x(2)) *x(1)  + df(p1(x(1))
+
+                                           q1(x(1))          3
+                 ,x(1))*df(q1(x(1)),x(1))*e        *sin(x(2)) *x(1)
+
+                 3                        q1(x(1))          3     2
+                   + 2*df(p1(x(1)),x(1))*e        *sin(x(2)) *x(1)
+
+                                                         p1(x(1))
+                  - df(p1(x(1)),x(2))*df(q1(x(1)),x(2))*e        *e
+
+                 q1(x(1))          3
+                         *sin(x(2)) *x(1) - 2*df(p1(x(1)),x(2))*df(
+
+                             p1(x(1))  q1(x(1))          3
+                 x(1),x(2))*e        *e        *sin(x(2))  - 2*df(
+
+                                   p1(x(1))  q1(x(1))
+                 p1(x(1)),x(3),2)*e        *e        *sin(x(2))*x(1
+
+                                      2  p1(x(1))  q1(x(1))
+                 ) - df(p1(x(1)),x(3)) *e        *e        *sin(x(2
+
+                                                                p1(
+                 ))*x(1) - df(p1(x(1)),x(3))*df(q1(x(1)),x(3))*e
+
+                 x(1))  q1(x(1))
+                      *e        *sin(x(2))*x(1) + 2*df(p1(x(1)),x(3
+
+                                   p1(x(1))  q1(x(1))
+                 ))*df(x(1),x(3))*e        *e        *sin(x(2)) - 2
+
+                                                   p1(x(1))
+                 *df(q1(x(1)),x(0))*df(x(1),x(0))*e        *sin(x(2
+
+                   3     2                          q1(x(1))
+                 )) *x(1)  - 2*df(q1(x(1)),x(1),2)*e        *sin(x(
+
+                    3     3                    2  q1(x(1))
+                 2)) *x(1)  - df(q1(x(1)),x(1)) *e        *sin(x(2)
+
+                  3     3                        q1(x(1))
+                 ) *x(1)  - 2*df(q1(x(1)),x(1))*e        *sin(x(2))
+
+                 3     2                                      p1(x(
+                  *x(1)  - 2*df(q1(x(1)),x(2))*df(x(1),x(2))*e
+
+                 1))  q1(x(1))          3
+                    *e        *sin(x(2))  - 2*df(q1(x(1)),x(3),2)*e
+
+                 p1(x(1))  q1(x(1))
+                         *e        *sin(x(2))*x(1) - df(q1(x(1)),x(
+
+                    2  p1(x(1))  q1(x(1))
+                 3)) *e        *e        *sin(x(2))*x(1) + 2*df(q1(
+
+                                            p1(x(1))  q1(x(1))
+                 x(1)),x(3))*df(x(1),x(3))*e        *e        *sin(
+
+                                            p1(x(1))          3
+                 x(2)) + 4*df(x(1),x(0),2)*e        *sin(x(2)) *x(1
+
+                  2                  2  p1(x(1))          3     3
+                 )  - 4*df(x(2),x(0)) *e        *sin(x(2)) *x(1)
+
+                                   2  q1(x(1))          3     3
+                  + 4*df(x(2),x(1)) *e        *sin(x(2)) *x(1) )/(4
+
+                   p1(x(1))  q1(x(1))          3
+                 *e        *e        *sin(x(2)) *x(1))
+
+einstein(2,3) := ( - 2*cos(x(2))*df(p1(x(1)),x(3))*x(1) - 2*cos(x(2
+
+                 ))*df(q1(x(1)),x(3))*x(1) + df(p1(x(1)),x(2))*df(
+
+                 p1(x(1)),x(3))*sin(x(2))*x(1) - 2*df(p1(x(1)),x(2)
+
+                 )*df(x(1),x(3))*sin(x(2)) + 2*df(p1(x(1)),x(3),x(2
+
+                 ))*sin(x(2))*x(1) - 2*df(p1(x(1)),x(3))*df(x(1),x(
+
+                 2))*sin(x(2)) + df(q1(x(1)),x(2))*df(q1(x(1)),x(3)
+
+                 )*sin(x(2))*x(1) - 2*df(q1(x(1)),x(2))*df(x(1),x(3
+
+                 ))*sin(x(2)) + 2*df(q1(x(1)),x(3),x(2))*sin(x(2))*
+
+                 x(1) - 2*df(q1(x(1)),x(3))*df(x(1),x(2))*sin(x(2))
+
+                 )/(4*sin(x(2))*x(1))
+
+einstein(3,0) := ( - 2*cos(x(2))*df(p1(x(1)),x(3))*df(x(2),x(0))*x(
+
+                   2
+                 1)  - 4*cos(x(2))*df(x(1),x(3))*df(x(2),x(0))*x(1)
+
+                  + df(p1(x(1)),x(0))*df(p1(x(1)),x(3))*sin(x(2))*x
+
+                    2
+                 (1)  - df(p1(x(1)),x(0))*df(q1(x(1)),x(3))*sin(x(2
+
+                        2
+                 ))*x(1)  + 2*df(p1(x(1)),x(3),x(0))*sin(x(2))*x(1)
+
+                 2
+                   - 2*df(p1(x(1)),x(3))*df(x(1),x(0))*sin(x(2))*x(
+
+                 1) - 2*df(q1(x(1)),x(3))*df(x(1),x(0))*sin(x(2))*x
+
+                 (1) - 4*df(x(1),x(0))*df(x(1),x(3))*sin(x(2)) + 4*
+
+                 df(x(1),x(3),x(0))*sin(x(2))*x(1))/(4*sin(x(2))*x(
+
+                   2
+                 1) )
+
+einstein(3,1) := ( - 2*cos(x(2))*df(q1(x(1)),x(3))*df(x(2),x(1))*x(
+
+                   2
+                 1)  - 4*cos(x(2))*df(x(1),x(3))*df(x(2),x(1))*x(1)
+
+                  - df(p1(x(1)),x(3))*df(q1(x(1)),x(1))*sin(x(2))*x
+
+                    2
+                 (1)  - 2*df(p1(x(1)),x(3))*sin(x(2))*x(1) + df(q1(
+
+                                                             2
+                 x(1)),x(1))*df(q1(x(1)),x(3))*sin(x(2))*x(1)  + 2*
+
+                                                      2
+                 df(q1(x(1)),x(3),x(1))*sin(x(2))*x(1)  - 2*df(q1(x
+
+                 (1)),x(3))*sin(x(2))*x(1) - 4*df(x(1),x(3))*sin(x(
+
+                                       2
+                 2)))/(4*sin(x(2))*x(1) )
+
+einstein(3,2) := ( - 2*cos(x(2))*df(p1(x(1)),x(3))*x(1) - 2*cos(x(2
+
+                 ))*df(q1(x(1)),x(3))*x(1) + df(p1(x(1)),x(2))*df(
+
+                 p1(x(1)),x(3))*sin(x(2))*x(1) - 2*df(p1(x(1)),x(2)
+
+                 )*df(x(1),x(3))*sin(x(2)) + 2*df(p1(x(1)),x(3),x(2
+
+                 ))*sin(x(2))*x(1) - 2*df(p1(x(1)),x(3))*df(x(1),x(
+
+                 2))*sin(x(2)) + df(q1(x(1)),x(2))*df(q1(x(1)),x(3)
+
+                 )*sin(x(2))*x(1) - 2*df(q1(x(1)),x(2))*df(x(1),x(3
+
+                 ))*sin(x(2)) + 2*df(q1(x(1)),x(3),x(2))*sin(x(2))*
+
+                 x(1) - 2*df(q1(x(1)),x(3))*df(x(1),x(2))*sin(x(2))
+
+                 )/(4*sin(x(2))*x(1))
+
+                                         p1(x(1))          2     3
+einstein(3,3) := (2*df(p1(x(1)),x(0),2)*e        *sin(x(2)) *x(1)
+
+                                     2  p1(x(1))          2     3
+                  + df(p1(x(1)),x(0)) *e        *sin(x(2)) *x(1)
+
+                                                         p1(x(1))
+                  - df(p1(x(1)),x(0))*df(q1(x(1)),x(0))*e        *
+
+                          2     3
+                 sin(x(2)) *x(1)  + 2*df(p1(x(1)),x(0))*df(x(1),x(0
+
+                     p1(x(1))          2     2
+                 ))*e        *sin(x(2)) *x(1)  + df(p1(x(1)),x(1))*
+
+                                    q1(x(1))          2     3
+                 df(q1(x(1)),x(1))*e        *sin(x(2)) *x(1)  + 2*
+
+                                    q1(x(1))          2     2
+                 df(p1(x(1)),x(1))*e        *sin(x(2)) *x(1)  - 2*
+
+                                      p1(x(1))  q1(x(1))          2
+                 df(p1(x(1)),x(2),2)*e        *e        *sin(x(2))
+
+                                          2  p1(x(1))  q1(x(1))
+                 *x(1) - df(p1(x(1)),x(2)) *e        *e        *sin
+
+                       2
+                 (x(2)) *x(1) - df(p1(x(1)),x(2))*df(q1(x(1)),x(2))
+
+                   p1(x(1))  q1(x(1))          2
+                 *e        *e        *sin(x(2)) *x(1) + 2*df(p1(x(1
+
+                                         p1(x(1))  q1(x(1))
+                 )),x(2))*df(x(1),x(2))*e        *e        *sin(x(2
+
+                   2                                        p1(x(1)
+                 ))  - df(p1(x(1)),x(3))*df(q1(x(1)),x(3))*e
+
+                 )  q1(x(1))
+                  *e        *x(1) - 2*df(p1(x(1)),x(3))*df(x(1),x(3
+
+                     p1(x(1))  q1(x(1))
+                 ))*e        *e         - 2*df(q1(x(1)),x(0))*df(x(
+
+                           p1(x(1))          2     2
+                 1),x(0))*e        *sin(x(2)) *x(1)  - 2*df(q1(x(1)
+
+                            q1(x(1))          2     3
+                 ),x(1),2)*e        *sin(x(2)) *x(1)  - df(q1(x(1))
+
+                       2  q1(x(1))          2     3
+                 ,x(1)) *e        *sin(x(2)) *x(1)  - 2*df(q1(x(1))
+
+                         q1(x(1))          2     2
+                 ,x(1))*e        *sin(x(2)) *x(1)  - 2*df(q1(x(1)),
+
+                          p1(x(1))  q1(x(1))          2
+                 x(2),2)*e        *e        *sin(x(2)) *x(1) - df(
+
+                               2  p1(x(1))  q1(x(1))          2
+                 q1(x(1)),x(2)) *e        *e        *sin(x(2)) *x(1
+
+                                                        p1(x(1))
+                 ) + 2*df(q1(x(1)),x(2))*df(x(1),x(2))*e        *e
+
+                 q1(x(1))          2
+                         *sin(x(2))  - 2*df(q1(x(1)),x(3))*df(x(1),
+
+                        p1(x(1))  q1(x(1))                      p1(
+                 x(3))*e        *e         + 4*df(x(1),x(0),2)*e
+
+                 x(1))          2     2      p1(x(1))  q1(x(1))
+                      *sin(x(2)) *x(1) )/(4*e        *e        *x(1
+
+                 ))
+
+
+comment end of einstein tensor program;
+
+clear gg,h,cs1,cs2,r,ricci,einstein;
+
+
+comment an example using the matrix facility;
+
+matrix xx,yy,zz;
+
+
+let xx=mat((a11,a12),(a21,a22)),yy=mat((y1),(y2));
+
+
+2*det xx-3*w;
+
+2*(a11*a22 - a12*a21 - 5443200)
+
+
+zz:=xx**(-1)*yy;
+
+zz(1,1) := ( - a12*y2 + a22*y1)/(a11*a22 - a12*a21)
+
+zz(2,1) := (a11*y2 - a21*y1)/(a11*a22 - a12*a21)
+
+
+
+1/xx**2;
+
+                          2      2    2                          2
+mat(1,1) := (a12*a21 + a22 )/(a11 *a22  - 2*a11*a12*a21*a22 + a12 *
+
+               2
+            a21 )
+
+                                     2    2
+mat(1,2) := ( - a12*(a11 + a22))/(a11 *a22  - 2*a11*a12*a21*a22 + 
+
+               2    2
+            a12 *a21 )
+
+                                     2    2
+mat(2,1) := ( - a21*(a11 + a22))/(a11 *a22  - 2*a11*a12*a21*a22 + 
+
+               2    2
+            a12 *a21 )
+
+                2                2    2                          2
+mat(2,2) := (a11  + a12*a21)/(a11 *a22  - 2*a11*a12*a21*a22 + a12 *
+
+               2
+            a21 )
+
+
+
+comment end of matrix examples;
+
+comment a physics example;
+
+on div;
+
+
+comment this gives us output in same form as bjorken and drell;
+
+mass ki=0,kf=0,p1=m,pf=m;
+
+
+vector eei,ef;
+
+
+mshell ki,kf,p1,pf;
+
+
+let p1.eei=0,p1.ef=0,p1.pf=m**2+ki.kf,p1.ki=m*k,p1.kf=m*kp,pf.eei=-kf.eei,pf.ef
+=ki.ef,pf.ki=m*kp,pf.kf=m*k,ki.eei=0,ki.kf=m*(k-kp),kf.ef=0,eei.eei=-1,ef.ef=-1
+;
+
+
+operator gp;
+
+
+for all p let gp(p)=g(l,p)+m;
+
+
+comment this is just to save us a lot of writing;
+
+gp(pf)*(g(l,ef,eei,ki)/(2*ki.p1)+g(l,eei,ef,kf)/(2*kf.p1))*gp(p1)*(g(l,ki,eei,
+ef)/(2*ki.p1)+g(l,kf,ef,eei)/(2*kf.p1))$
+
+
+write the compton cross-section is ,*ans;
+
+                                     2           (-1)        (-1)
+the compton cross-section is 2*eei.ef  + 1/2*k*kp     + 1/2*k    *
+
+kp - 1
+
+
+comment end of first physics example;
+
+off div;
+
+
+comment another physics example;
+
+index ix,iy,iz;
+
+
+mass p1=mm,p2=mm,p3=mm,p4=mm,k1=0;
+
+
+mshell p1,p2,p3,p4,k1;
+
+
+vector qi,q2;
+
+
+factor mm,p1.p3;
+
+
+order mm;
+
+
+operator gga,ggb;
+
+
+for all p let gga(p)=g(la,p)+mm,ggb(p)=g(lb,p)+mm;
+(gga declared operator)
+*** PLEASE DO NOT DECLARE OPERATORS BY DEFAULT  
+*** IF YOU DO, YOUR PROGRAM MAY NOT RUN CORRECTLY  
+*** IN FUTURE RELEASES OF REDUCE  
+(ggb declared operator)
+*** PLEASE DO NOT DECLARE OPERATORS BY DEFAULT  
+*** IF YOU DO, YOUR PROGRAM MAY NOT RUN CORRECTLY  
+*** IN FUTURE RELEASES OF REDUCE  
+
+
+gga(-p2)*g(la,ix)*gga(-p4)*g(la,iy)*(ggb(p3)*g(lb,ix)*ggb(qi)*g(lb,iz)*ggb(p1)*
+g(lb,iy)*ggb(q2)*g(lb,iz)+ggb(p3)*g(lb,iz)*ggb(q2)*g(lb,ix)*ggb(p1)*g(lb,iz)*
+ggb(qi)*g(lb,iy))$
+
+
+let qi=p1-k1,q2=p3+k1;
+
+
+comment it is usually faster to make such substitutions after all the
+        trace algebra is done;
+
+write cxn =,*ans;
+
+          4             4                        2      2        2
+cxn =32*mm *p1.p3 + 8*mm *(k1.p1 - k1.p3) - 16*mm *p1.p3  + 16*mm *
+
+                                            2
+     p1.p3*( - k1.p1 + k1.p3 - p2.p4) + 8*mm *( - k1.p1*p2.p4 - 2*
+
+     k1.p2*k1.p4 + k1.p3*p2.p4) + 8*p1.p3*(k1.p2*p1.p4 - k1.p2*p3.
+
+     p4 + k1.p4*p1.p2 - k1.p4*p2.p3 + 2*p1.p2*p3.p4 + 2*p1.p4*p2.p3
+
+     ) + 8*(k1.p1*p1.p2*p3.p4 + k1.p1*p1.p4*p2.p3 + 2*k1.p1*p2.p3*
+
+            p3.p4 - 2*k1.p3*p1.p2*p1.p4 - k1.p3*p1.p2*p3.p4 - k1.p3
+
+            *p1.p4*p2.p3)
+
+
+comment end of second physics example;
+
+showtime;
+
+showtime
+
+
+end;
+ENTERING LISP...
+Value: nil
+Value: !$eof!$
