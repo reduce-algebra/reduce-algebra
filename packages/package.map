@@ -264,6 +264,7 @@
 %  (heugcd      "heugcd"                           test      csl psl)
  (grinder       "hephys"                                     csl psl)
  (f5            "f5"                               test      csl psl)
+ (embwebgui     "embwebgui"                                  csl)
 )
 
 % End of package.map
