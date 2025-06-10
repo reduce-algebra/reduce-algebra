@@ -44,9 +44,6 @@
 #include <iostream>
 #include <filesystem>
 
-extern void setup_embweb_reduce(void);
-
-
 static char obuff[10000];
 static int obufp = 0;
 
@@ -57,20 +54,6 @@ static int iput(int c)
     }
     return 0;
 }
-
-extern const char *programDir;
-
-int buff_ready = 0;
-const char *buffer = nullptr;
-int buff_size = 0;
-
-
-void insert_buffer(const char *buf, int size)
-{   buffer = buf;
-    buff_size = size;
-    buff_ready = 1;
-}
-
 
 static int submain(int argc, const char *argv[])
 {   char imageName[256];
@@ -92,7 +75,7 @@ static int submain(int argc, const char *argv[])
 // Set up Reduce
     PROC_prepare_for_web_top_level();
 
-    setup_embweb_reduce();
+    setup_web_reduce();
 
     return 0;
 
@@ -128,25 +111,5 @@ int main(int argc, const char *argv[])
     return res;
 }
 
-std::string sendToReduce(std::string arguments)
-      {std::string c;
-       c = webview::json_parse(arguments, "", 0);
-       std::cout << c << '\n'; 
-/*     insert_buffer(c.data(), 10); */
-       buffer = c.data();
-       buff_ready = 1;
-       return {}; }
-
-void setup_embweb_reduce(void) {
-  webview::webview w(true, nullptr);
-  w.set_title("Reduce");
-  w.set_size(480, 320, WEBVIEW_HINT_NONE);
-  w.bind("sendToReduce", sendToReduce);
-  w.navigate(R"(file://)" +
-             std::filesystem::current_path().string() +
-             "/embwebgui.html");
-  w.run();
-  }
-  
 // end of webdriver.cpp
 
