@@ -1,7 +1,7 @@
-// webdriver.cpp                          Copyright 2022-2025  E. Schruefer
+module form!\;
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         E. Schruefer     *
+ * Copyright (C) 2022,                                   E. Schruefer     *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -29,87 +29,21 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id$
 
-#include <cstdio>
-#include <cstring>
-#include <cstdint>
-#include <cstdlib>
-#include <stdexcept>
+infix !\cdot;
 
-#include "proc.h"
-#include "webview.h"
-#include "embwebgui.h"
+symbolic procedure form!\cdot(u, vars, mode);
+   {'list, ''times, form1(cadr u, vars, mode), form1(caddr u, vars, mode)};
+   
+put('!\cdot, 'formfn, 'form!\cdot);
+   
+symbolic procedure form!\frac(u, vars, mode);
+   {'list, ''quotient, form1(cadr u, vars, mode), form1(caddr u, vars, mode)};
+   
+put('!\frac, 'formfn, 'form!\frac);
+   
+endmodule;
 
-#include <iostream>
-#include <filesystem>
+end;
 
-static char obuff[10000];
-static int obufp = 0;
-
-static int iput(int c)
-{   if (obufp < sizeof(obuff)-1)
-    {   obuff[obufp++] = c;
-        obuff[obufp] = 0;
-    }
-    return 0;
-}
-
-static int submain(int argc, const char *argv[])
-{   char imageName[256];
-    const char *nargv[5];
-    volatile uintptr_t sp;
-//    THREADID;
-//    genuineThreadId = 0; // the thread_local master variable.
-    std::sprintf(imageName, "%s/reduce.img", programDir);
-    nargv[0] = argv[0];
-    nargv[1] = "-i";
-    nargv[2] = imageName;
-    nargv[3] = "-v";
-    nargv[4] = nullptr;
-    obufp = 0;
-    cslstart(4, nargv, iput);
-
-    cslstart(argc, argv, nullptr);
-
-// Set up Reduce
-    PROC_prepare_for_web_top_level();
-
-    setup_web_reduce();
-
-    return 0;
-
-}
-
-
-int main(int argc, const char *argv[])
-{   int res;
-//    initThreadLocals();
-    if ((res = find_program_directory(argv[0])) != 0)
-    {   std::fprintf(stderr,
-                     "Unable to identify program name and directory (%d)\n", res);
-        return 1;
-    }
-
-
-//    std::strcpy(about_box_title, "About CSL");
-//    std::strcpy(about_box_description, "Codemist Standard Lisp");
-    try
-    {   res = submain(argc, argv);
-    }
-    catch (std::runtime_error &e)
-    {
-// Here is where the EXIT exception is caught when somebody in the main
-// thread obeys my_exit(). It is intended to be a fatal situation, and so if
-// the "catch" here is ineffective and the application terminated not much is
-// lost!
-        res = EXIT_FAILURE;
-    }
-//    report_dependencies();
-
- //   ensure_screen();
-    return res;
-}
-
-// end of webdriver.cpp
-
+   
