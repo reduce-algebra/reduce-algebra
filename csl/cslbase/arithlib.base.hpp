@@ -10633,8 +10633,13 @@ using arithlib_implementation::modf;
 //using arithlib_implementation::multiply64;
 
 using arithlib_implementation::castTo_float;
-
 }
+
+// This can not have its initial value specfied within the class. Maybe
+// if I flipped the sense so it was "preventParallel" the default value
+// would be safely false?
+
+inline bool arithlib_implementation::BigMultiplication::permitParallel = true;
 
 #ifdef MEASURE_WORKSPACE
 

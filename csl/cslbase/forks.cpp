@@ -336,7 +336,7 @@ LispObject Lopen_fork(LispObject env)
 // Here is the child process. The first thing I will do will be to
 // get the helper threads for Karatsuba multiplication established again.
 #ifdef ARITHLIB
-        permitParallel = false;
+        arithlib_implementation::BigMultiplication::permitParallel = false;
 #else // ARITHLIB
         karatsuba_parallel = 0x7fffffff;
 #endif //ARITHLIB

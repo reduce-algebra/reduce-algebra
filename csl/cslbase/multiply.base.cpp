@@ -475,7 +475,7 @@ static const std::size_t KARASTART = 16;
 
 #endif // KARASTART
 
-static bool permitParallel = true;
+static bool permitParallel;
 
 #ifndef KARABIG
 
@@ -986,7 +986,7 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
 #endif // TRACE_TIMES
     size_t w = topWorkspaceSize(M);
     stkvector<Digit> workspace(w);
-    ManageWorkers manager(parmitParallel);
+    ManageWorkers manager(permitParallel);
     if (4*N <= 5*M)
     {
         if (N < KARABIG || !manager.mayUseThreads)

@@ -236,14 +236,20 @@ inline double CSLpow(double x, double y)
 // active or not. But I want to be able to initialize the table of
 // entyrypoints ina  tiday way, so this fragment sets up names that
 // refer to either old or new functions so I can initialise from them.
-inline const auto& JITlessp2Val = Lessp::op;
-inline const auto& JITleq2Val = Leq::op;
-inline const auto& JITplus2Val = Plus::op;
-inline const auto& JITdifference2Val = Difference::op;
-inline const auto& JITtimes2Val = Times::op;
-inline const auto& JITquotient2Val = Quotient::op;
-inline const auto& JITremainderVal = Remainder::op;
-inline const auto& JITint_from_ptrVal = arithlib_implementation::intToBignum;
+
+typedef bool boolFn2(LispObject, LispObject);
+typedef LispObject lispFn2(LispObject, LispObject);
+typedef std::intptr_t makebigFn(arithlib_implementation::SignedDigit);
+
+inline const boolFn2& JITlessp2Val = Lessp::op;
+inline const boolFn2& JITleq2Val = Leq::op;
+inline const lispFn2& JITplus2Val = Plus::op;
+inline const lispFn2& JITdifference2Val = Difference::op;
+inline const lispFn2& JITtimes2Val = Times::op;
+inline const lispFn2& JITquotient2Val = Quotient::op;
+inline const lispFn2& JITremainderVal = Remainder::op;
+inline const makebigFn& JITint_from_ptrVal =
+                      arithlib_implementation::intToBignum;
 #else // ARITHLIB
 inline const auto& JITlessp2Val = lessp2;
 inline const auto& JITleq2Val = lesseq2;

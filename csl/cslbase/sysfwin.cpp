@@ -700,7 +700,7 @@ uint64_t read_clock_microsecond()
 
 // The following were offered by Jeffrey Johnson as a sane and portable way
 // of reading the "best available" clock for a variety of purposes. He
-// reportts compatibility across a seriously wide range of systems and
+// reports compatibility across a seriously wide range of systems and
 // compilers.
 
 /** The clock used to obtain timestamps. */

@@ -257,20 +257,20 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
 #if defined __OPTIMIZE__ || !defined __GNUC__
 
 // These provide very concise ways of putting tracking markers in the
-// code. You can prefix a line with just "D;" and then each execution
-// reports the name of the source file and a line number. DS("string");
-// displays the string, DX(val) the integer value while DF("format", args)
+// code. You can prefix a line with just "_D;" and then each execution
+// reports the name of the source file and a line number. _DS("string");
+// displays the string, _DX(val) the integer value while _DF("format", args)
 // goes the whole printf route. These send the record to stderr, which may
 // of course disrupt the output you were expecting to see ob your screen.
 
-#define D  do {} while (false)
-#define DS do {} while (false)
-#define DX do {} while (false)
-#define DF do {} while (false)
+#define _D  do {} while (false)
+#define _DS do {} while (false)
+#define _DX do {} while (false)
+#define _DF do {} while (false)
 
 #else // !__OPTIMIZE__
 
-#define D do {                                                      \
+#define _D do {                                                      \
           const char* _f_ = std::strrchr(__FILE__, '/');            \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');   \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;           \
@@ -278,7 +278,7 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
           std::fflush(stderr);                                      \
           } while (false)
 
-#define DS(s) do {                                                  \
+#define _DS(s) do {                                                  \
           const char* _f_ = std::strrchr(__FILE__, '/');            \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');   \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;           \
@@ -287,7 +287,7 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
           std::fflush(stderr);                                      \
           } while (false)
 
-#define DX(s) do {                                                       \
+#define _DX(s) do {                                                       \
           const char* _f_ = std::strrchr(__FILE__, '/');                 \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');        \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;                \
@@ -296,7 +296,7 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
           std::fflush(stderr);                                           \
           } while (false)
 
-#define DF(f,...) do {                                               \
+#define _DF(f,...) do {                                               \
           const char* _f_ = std::strrchr(__FILE__, '/');             \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');    \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;            \
@@ -315,7 +315,8 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
 // material in sufficiently deeply nested directories or where
 // enough directory and file-names were especially long. Such users
 // may find that what I do silently truncates paths and gives them
-// problems. I an not terribly sympathetic!
+// problems. I an not terribly sympathetic! Mostly I hope that I
+// truncate names rather than suffer buffer overflow.
 
 INLINE_VAR const size_t LONGEST_LEGAL_FILENAME_1 = 1024;
 
