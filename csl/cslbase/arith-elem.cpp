@@ -2387,4 +2387,3 @@ LispObject Nisqrt(LispObject env, LispObject a1)
 #endif // HAVE_COMPLEX
 
 // end of arith-elem.cpp
-6

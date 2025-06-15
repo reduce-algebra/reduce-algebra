@@ -105,11 +105,13 @@ fi
 "$base/$MINGW/bin/$GCC.exe" $ARGS
 
 # The compiler seems not to leave the resulting binary tagged as
-# executable, so fix that up here.
+# executable, so fix that up here. Also I make a symbolic link from
+# the file xxx.exe to just xxx.
 
 if test "$DEST" != "" && test "$EXENEEDED" = "yes"
 then
   /usr/bin/chmod +x $DEST
+  ln -s $DEST ${DEST%.exe}
 fi
 
 # end of woa-compile
