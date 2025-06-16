@@ -10,9 +10,9 @@ tries to solves single inequalities and sets of coupled inequalities\footnote{Th
 The following types of systems are supported:
 \begin{itemize}
 \item only numeric coefficients (no parametric system),
-\item a linear system of mixed equations and $<=$ -- $>=$
+\item a linear system of mixed equations and $\leq,\geq$
      inequalities, applying the method of Fourier and Motzkin, as described by G.~B.~Dantzig in \cite{Dantzig1963},
-\item a univariate inequality with $<=$, $>=$, $>$ or $<$ operator
+\item a univariate inequality with $\leq$, $\geq$, $<$ or $>$ operator
      and polynomial or rational left--hand and right--hand sides,
      or a system of such inequalities with only one variable.
 \end{itemize}
@@ -23,12 +23,12 @@ Syntax:
 \begin{syntax}
   \texttt{ineq\_solve(\meta{expr} [,\,\meta{vl}])}
 \end{syntax}
-where $<$expr$>$ is an inequality or a list of coupled inequalities
-and equations, and the optional argument $<$vl$>$ is a single
-variable (kernel) or a list of variables (kernels). If not
-specified, they are extracted automatically from $<$expr$>$.
-For multivariate input an explicit variable list specifies the
-elimination sequence: the last member is the most specific one.
+where \meta{expr} is an inequality or a list of coupled inequalities
+and equations, and the optional argument \meta{vl} is a single
+variable (kernel) or a list of variables (kernels).  If not specified,
+they are extracted automatically from \meta{expr}.  For multivariate
+input an explicit variable list specifies the elimination sequence:
+the last member is the most specific one.
 
 An error message occurs if the input cannot be processed by the
 currently implemented algorithms.
