@@ -32,7 +32,7 @@ module gnuintfc; % REDUCE-gnuplot interface.
 
 fluid '(plotstyle!*);
 
-global '(
+fluid '(
    !*plotinterrupts			% list of error codes caused by interrupts (ctl-C)
    !*plotpause 				% NIL if gnuplot should not wait 
    !*plotusepipe	                % T if using pipes, NIL if writing to command file
@@ -74,7 +74,7 @@ global '(
 
 % switch force_gnuplot_term=on;
 
-global '(plotcommand!* gnuplot_select_terminal!*);
+fluid '(plotcommand!* gnuplot_select_terminal!*);
 
 % The initialize_gnuplot() function will set plotcommand!*.
 
@@ -202,7 +202,7 @@ symbolic procedure initialize_gnuplot();
 % a suitable location.
 
 
-global '(plotdir!* dirchar!* opsys!* tempdir!*);
+fluid '(plotdir!* dirchar!* opsys!* tempdir!*);
 
 symbolic procedure channelflush x;
   << x := wrs x; flush(); wrs x >>;

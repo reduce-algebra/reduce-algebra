@@ -35,7 +35,7 @@ create!-package('(plot plotsynt plotexp2 pltpara plotexp3 plotimp2
                   plotimp3 plotnum parray xvect),
                 nil);
 
-global '(
+fluid '(
 
       plotdriver!*         % modulename of the actual driver.
 

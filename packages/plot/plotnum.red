@@ -27,7 +27,7 @@ module plotnum; % Numeric evaluation of algebraic expressions.
 
 fluid '(plotsynerr!* ploteval!-alist2!* !*plotoverflow);
 
-global '(!*plotinterrupts);
+fluid '(!*plotinterrupts);
 
 flag('(plus plus2 difference times times2 quotient exp expt expt!-int
 %      minus sin cos tan cot asin acos acot atan log),'plotevallisp);

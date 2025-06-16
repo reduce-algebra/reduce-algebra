@@ -38,7 +38,7 @@
 #include <stdexcept>
 
 #include "proc.h"
-#include "webview.h"
+//#include "webview.h"
 #include "embwebgui.h"
 
 #include <iostream>

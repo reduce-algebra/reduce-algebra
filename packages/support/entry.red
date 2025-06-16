@@ -1369,6 +1369,8 @@ symbolic operator setcrackflags;
 defautoload(setcrackflags, crack, expr, 0);
 defautoload(liepde, liepde, expr, 4);
 defautoload(einfachst, applysym, expr, 2);
+defautoload(quasilinpde, crack, expr, 3);
+flag('(quasilinpde), 'opfn);
 
 % Assert
 
@@ -1475,6 +1477,132 @@ fixedpreclis!* := append(fixedpreclis!*, 'with . nil);
 mkprec();
 put('with, 'formfn, 'formwith);
 defautoload(formwith, '(with), expr, 3);
+
+% The declarations and settings here are relevant to the CRACK packages.
+% Users may wish to adjust its behaviour by setting one or more of these
+% to a non-default value. If such a setting is made before any action
+% is taken that causes crack to be loaded and if the defaults were set
+% up as part of loading the package then the user settings might be
+% overridden. So putting the settings here and allowing crack to rely on
+% that rather than doing any re-initialization seems best.
+
+fluid '(
+  !*batch_mode        expert_mode         repeat_mode         nfct_
+  nequ_               nid_                fname_              eqname_
+  idname_             level_              cont_               independence_
+  genint_             facint_             potint_             safeint_
+  freeint_            freeabs_            odesolve_           low_gensep
+  high_gensep         new_gensep          my_gc_counter       max_gc_counter
+  max_gc_reval        max_gc_short        max_gc_spec_alg_sol max_gc_ss
+  max_gc_red_len      max_gc_fac          max_gc_elimin       max_gc_gb
+  max_gc_minsub       max_gc_ode          max_red_len         max_eqn_to_conti
+  max_gc_int          modular_comp        subst_0             subst_1
+  subst_2             subst_3             subst_4             cost_limit5
+  target_limit_0      target_limit_1      target_limit_2      target_limit_3
+  length_inc_dec      length_inc_alg      tr_main             tr_gensep
+  tr_genint           tr_decouple         tr_redlength        tr_orderings
+  tr_short            solvealg_           print_more          print_all
+  logoprint_          poly_only           time_               print_
+  dec_hist            maxalgsys_          adjust_fnc          orderings_
+  simple_orderings    lex_df              lex_fc              collect_sol
+  struc_eqn           quick_decoup        idnties_            record_hist
+  keep_parti          size_watch          inter_divint        do_recycle_eqn
+  do_recycle_fnc      old_history         confirm_subst       mem_eff
+  force_sep           flin_               last_steps          lin_test_const
+  lin_problem         time_limit          limit_time          groebresmax);
+
+!*batch_mode:=t;
+expert_mode:=nil;
+repeat_mode:=nil;
+nfct_:=1;
+nequ_:=1;
+nid_:=1;
+fname_:='c_;
+eqname_:='e_;
+idname_:='id_;
+level_:=nil;
+cont_:=nil;
+independence_:=nil;
+genint_:=15;
+facint_:=1000;
+potint_:=t;
+safeint_:=t;
+freeint_:=t;
+freeabs_:=t;
+odesolve_:=100;
+low_gensep:=6;
+high_gensep:=300;
+new_gensep:=nil;
+my_gc_counter:=0;
+max_gc_counter:=100000000;
+max_gc_reval:=1;
+max_gc_short:=40;
+max_gc_spec_alg_sol:=30;
+max_gc_ss:=10;
+max_gc_red_len:=30;
+max_gc_fac:=15;
+max_gc_elimin:=20;
+max_gc_gb:=100;
+max_gc_minsub:=10;
+max_gc_ode:=1;
+max_red_len:=1000000;
+max_eqn_to_conti:=0;
+max_gc_int:=1;
+modular_comp:=nil;
+subst_0:=2;
+subst_1:=8;
+subst_2:=20;
+subst_3:=103;
+subst_4:=nil;
+cost_limit5:=100;
+target_limit_0:=102;
+target_limit_1:=103;
+target_limit_2:=105;
+target_limit_3:=nil;
+length_inc_dec:=1.0;
+length_inc_alg:=1.0;
+tr_main:=nil;
+tr_gensep:=nil;
+tr_genint:=nil;
+tr_decouple:=nil;
+tr_redlength:=nil;
+tr_orderings:=nil;
+tr_short:=nil;
+solvealg_:=nil;
+print_more:=nil;
+print_all:=nil;
+logoprint_:=t;
+poly_only:=nil;
+time_:=nil;
+print_:=12;
+dec_hist:=0;
+maxalgsys_:=20;
+adjust_fnc:=nil;
+orderings_:=nil;
+simple_orderings:=t;
+lex_df:=nil;	
+lex_fc:=t;	
+collect_sol:=t;
+struc_eqn:=nil;
+quick_decoup:=nil;
+idnties_:=nil;
+record_hist:=nil;
+keep_parti:=nil;
+size_watch:=nil;
+inter_divint:=nil;
+do_recycle_eqn:=t;
+do_recycle_fnc:=nil;
+old_history:=nil;
+confirm_subst:=nil;
+mem_eff:=t;
+force_sep:=nil;
+flin_:=nil;
+last_steps:=nil;
+lin_test_const:=gensym();
+lin_problem:=nil;
+time_limit:=nil;
+limit_time:=0;
+groebresmax:=2000;
 
 endmodule;
 
