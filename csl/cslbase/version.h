@@ -44,7 +44,7 @@
 
 #include <cstdio>
 
-#define VERSION_ID "$Id: version.h 7138 2025-06-16 08:31:30Z reduce $"
+#define VERSION_ID "$Id: version.h 7140 2025-06-17 08:48:17Z reduce $"
 
 // Extract the revision number.
 
