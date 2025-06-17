@@ -57,7 +57,9 @@ fluid '(asymplis!* basecount!* bcount!* bczerodivl!* b4count!* current!-modulus
 );
 
 global '(assumptions gltb glterms groebmonfac groebprotfile groebrestriction
- groebresmax gvarslast largest!-small!-modulus requirements !*match !*trgroesolv);
+         gvarslast largest!-small!-modulus requirements !*match !*trgroesolv);
+
+fluid '(groebresmax);
 
 currentvdpmodule!*:='vdp2dip;
 

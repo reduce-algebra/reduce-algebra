@@ -30,7 +30,7 @@ module gnupldrv; % main GNUPLOT driver.
 
 fluid '(plotstyle!* !*trplot !*plotkeep);
 
-global '(!*plotusepipe !*plotrefine plotheader!* plotcleanup!* plotoptions!*);
+fluid '(!*plotusepipe !*plotrefine plotheader!* plotcleanup!* plotoptions!*);
 
 switch  plotusepipe;       % use pipes
 
@@ -40,8 +40,8 @@ switch  trplot;            % list Gnuplot commands to REDUCE
 switch  plotkeep;          % if ON, the command and data files are
                            % not erased after calling Gnuplot.
 
-global '(
-        !*plotpause        % Gnuplot pause command at the end:
+fluid '(
+      !*plotpause          % Gnuplot pause command at the end:
                            % nil: no pause
                            % -1: Gnuplot will ask the user for
                            %     a return key.

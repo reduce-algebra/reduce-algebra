@@ -41,21 +41,6 @@
 
 #include "headers.h"
 
-#ifdef HAVE_CXX17
-
-// In code that at present (February 2021) is disabled with "#if 0"
-// I use the Mersenne Twister generator as set up in arithlib.hpp
-// to set up some randomized testing for this code.
-
-#ifndef LISP
-#define LISP 1
-#endif // !LISP
-#ifndef CSL
-#define CSL 1
-#endif // !CSL
-#include "arithlib.hpp"  // For random number support
-#endif
-
 Page* consCurrent;
 Page* vecCurrent;
 Page* borrowCurrent;

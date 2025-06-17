@@ -1973,6 +1973,7 @@ using DigitPtr = Digit*;
 using ConstDigitPtr = const Digit*;
 #endif // DEBUG
 
+inline bool permitParallel = true;
 
 inline const char* version_string =
     "$Id$";
