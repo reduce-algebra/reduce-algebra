@@ -200,13 +200,12 @@ each element of the list.  With \texttt{on}, iteration is on the whole list
 remaining at each point in the iteration.  As a result, we have the
 following equivalence between each form of \texttt{for each} and the various
 mapping functions in Lisp:
-\begin{center}
-\texttt{
+\begin{center}\ttfamily
 \begin{tabular}{|l|lr r|} \hline
 & do & collect & join \\ \hline
         in &   mapc & mapcar & mapcan \\
         on &   map &  maplist & mapcon \\ \hline
-\end{tabular}}
+\end{tabular}
 \end{center}
 \textit{Example:} To list each element of the list \texttt{(a b c)}:
 \begin{verbatim}
@@ -523,7 +522,7 @@ leading term of an algebraic expression, one could do this as follows:
 \begin{verbatim}
 % Declare leadterm as a symbolic mode procedure to
 % be used in algebraic mode.
-symbolic operator leadterm; 
+symbolic operator leadterm;
 
 % Define leadterm.
 symbolic procedure leadterm u;
