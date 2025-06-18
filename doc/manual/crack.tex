@@ -67,7 +67,7 @@ to look for a directly separable equation and split it.
 \subsubsection{The call}
 \package{Crack} is called by
 \begin{center}
-  \begin{tabular}{r@{}l}\tt
+  \begin{tabular}{r@{}l}\ttfamily
     crack( & \{\textit{equ}$_1$, \textit{equ}$_2$, \ldots , \textit{equ}$_m$\}, \\
     & \{\textit{ineq}$_1$, \textit{ineq}$_2$, \ldots , \textit{ineq}$_n$\}, \\
     & \{\textit{fun}$_1$, \textit{fun}$_2$, \ldots , \textit{fun}$_p$\}, \\
@@ -198,7 +198,7 @@ hot-list.  Tasks listed in the global variable \texttt{to\_do\_list}
 are dealt with in the \texttt{to\_do} step which should always come
 first in \texttt{proc\_list\_}.  A way to have the convenience of
 running \package{Crack} automatically and still being able to break
-the fixed rhythm prescribed by {\tt proc\_list\_} is to have the entry
+the fixed rhythm prescribed by \texttt{proc\_list\_} is to have the entry
 \texttt{stop\_batch} in \texttt{proc\_list\_} and have \package{Crack}
 started in automatic batch mode.  Then execution continues until none
 of the procedures which come before \texttt{stop\_batch} are
@@ -1149,10 +1149,11 @@ The following is a complete list of identifiers used as global Lisp
 variables (to be precise, symbolic fluid variables) within
 \package{Crack}.  Some are flags and parameters, others are global
 variables; some of them can be accessed after the \package{Crack} run.
-\begin{flushleft}\tt
+%% Use of \verb below is a hack to stop bad line breaks in the HTML version
+\begin{flushleft}\ttfamily
   !*allowdfint\_bak\quad !*dfprint\_bak\quad !*exp\_bak\quad !*ezgcd\_bak\quad !*fullroots\_bak\quad
-  !*gcd\_bak\quad !*mcd\_bak\quad !*nopowers\_bak\quad !*ratarg\_bak\quad !*rational\_bak\quad
-  !*batch\_mode\quad abs\_\quad adjust\_fnc\quad allflags\_\quad batchcount\_\quad !*backup\_\quad collect\_sol\quad
+  \verb|!*gcd_bak|\quad !*mcd\_bak\quad !*nopowers\_bak\quad !*ratarg\_bak\quad !*rational\_bak\quad
+  \verb|!*batch_mode|\quad abs\_\quad adjust\_fnc\quad allflags\_\quad batchcount\_\quad !*backup\_\quad collect\_sol\quad
   confirm\_subst\quad cont\_\quad contradiction\_\quad cost\_limit5\quad current\_dir\quad
   default\_proc\_list\_\quad do\_recycle\_eqn\quad do\_recycle\_fnc\quad done\_trafo\quad
   eqname\_\quad expert\_mode\quad explog\_\quad facint\_\quad flin\_\quad force\_sep\quad fname\_\quad fnew\_\quad
@@ -1790,7 +1791,7 @@ MacCallum and Francis Wright \cite{MacCallum:1989} is applied.  This
 package is distributed with REDUCE and can be used independently of
 \package{Crack}.  The syntax of \package{ODESolve} is quite similar to
 that of \package{Crack}:
-\begin{flushleft}\tt
+\begin{flushleft}\ttfamily
 ~~~~~depend \textit{function}, \textit{variable}; \\
 ~~~~~odesolve(\textit{ODE}, \textit{function}, \textit{variable});
 \end{flushleft}
