@@ -1,14 +1,13 @@
 -- This is a make4ht build script written in Lua -*-Lua-ts-*-
 
--- FJW -- Time-stamp: <2025-06-12 12:23:25 franc>
+-- FJW -- Time-stamp: <2025-06-19 15:11:01 franc>
 
 Make:add("index", "./makehtml-index.sh")
 
 if mode == "draft" then
     Make:htlatex{}
 else
-    -- Need 3 calls of htlatex here for the index links to work:
-    Make:htlatex{}
+    -- Need 2 calls of htlatex here for the index links to work:
     Make:htlatex{}
     Make:htlatex{}
     Make:index()
