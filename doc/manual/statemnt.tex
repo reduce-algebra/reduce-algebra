@@ -578,12 +578,14 @@ will suffice:
 \subsection{Labels and GO TO Statements}
 \hypertarget{command:GOTO}{}
 
-\index{Label}\ttindex{go to}Within a \texttt{begin \ldots end} compound
-statement it is possible to label statements, and transfer to them out of
-sequence using \texttt{go} \texttt{to} statements.  Only statements on the top
-level inside compound statements can be labeled, not ones inside
-subsidiary constructions like \texttt{$<<$} \ldots \texttt{$>>$}, \texttt{if} \ldots
-\texttt{then} \ldots , \texttt{while} \ldots \texttt{do} \ldots , etc.
+\index{Label}\ttindex{go to}Within a \texttt{begin} \ldots{}
+\texttt{end} compound statement it is possible to label statements,
+and transfer to them out of sequence using \texttt{go to} statements.
+Only statements on the top level inside compound statements can be
+labeled, not ones inside subsidiary constructions like
+\texttt{<}\texttt{<} \ldots{} \texttt{>}\texttt{>}, \texttt{if}
+\ldots{} \texttt{then} \ldots, \texttt{while} \ldots{} \texttt{do}
+\ldots, etc.
 
 Labels and \texttt{go to} statements have the syntax:
 \begin{syntaxtable}
