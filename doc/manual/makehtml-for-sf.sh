@@ -3,7 +3,7 @@
 # Use TeX4ht to build an HTML5 version of the REDUCE manual using
 # MathJax by running make4ht, ONLY for use on the web site.
 
-# FJW -- Time-stamp: <2025-06-18 17:03:46 franc>
+# FJW -- Time-stamp: <2025-06-19 16:08:38 franc>
 
 # This script is equivalent to 'mkhtml.sh for-sf' but it runs make4ht
 # once instead of mk4ht twice.  It requires the (Lua) build script
@@ -41,8 +41,11 @@ shift $(( $OPTIND - 1 ))
 
 cd `dirname $0`
 
-TEX4HT_STY_OPTIONS='3,fn-in'    # sectioning depth, inline footnotes
-# Comma-separated options that must begin with name of configuration file if included.
+TEX4HT_STY_OPTIONS='3,fn-in,fancylogo'
+# Comma-separated options that must begin with name of configuration file if included:
+# sectioning depth, inline footnotes, TeX & LaTeX logos
+# index=2 is not useful
+
 # Configuration file "reduce-sf.cfg" specifies "xhtml,mathjax".
 
 TEX4HT_OPTIONS='" -cunihtf"'
