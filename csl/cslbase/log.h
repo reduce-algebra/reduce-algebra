@@ -263,14 +263,14 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
 // goes the whole printf route. These send the record to stderr, which may
 // of course disrupt the output you were expecting to see ob your screen.
 
-#define _D  do {} while (false)
-#define _DS do {} while (false)
-#define _DX do {} while (false)
-#define _DF do {} while (false)
+#define _D_  do {} while (false)
+#define _DS_ do {} while (false)
+#define _DX_ do {} while (false)
+#define _DF_ do {} while (false)
 
 #else // !__OPTIMIZE__
 
-#define _D do {                                                      \
+#define _D_ do {                                                    \
           const char* _f_ = std::strrchr(__FILE__, '/');            \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');   \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;           \
@@ -278,7 +278,7 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
           std::fflush(stderr);                                      \
           } while (false)
 
-#define _DS(s) do {                                                  \
+#define _DS_(s) do {                                                \
           const char* _f_ = std::strrchr(__FILE__, '/');            \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');   \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;           \
@@ -287,7 +287,7 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
           std::fflush(stderr);                                      \
           } while (false)
 
-#define _DX(s) do {                                                       \
+#define _DX_(s) do {                                                     \
           const char* _f_ = std::strrchr(__FILE__, '/');                 \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');        \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;                \
@@ -296,7 +296,7 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
           std::fflush(stderr);                                           \
           } while (false)
 
-#define _DF(f,...) do {                                               \
+#define _DF_(f,...) do {                                             \
           const char* _f_ = std::strrchr(__FILE__, '/');             \
           if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');    \
           if (_f_ == nullptr) _f_ = __FILE__; else _f_++;            \

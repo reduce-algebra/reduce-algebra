@@ -109,7 +109,7 @@ install ()
 # to build some or even all of those, and if any are in an untidy state
 # that could disrupt the entire build.
   port -N clean --all $P rdepof:$P
-  if test "$UNIVERSAL" = "no" || ! port -N $S install $P +universal
+  if test "$UNIVERSAL" = "no" || ! port -f -N $S install $P +universal
   then
     if test "$UNIVERSAL" = "no"
     then
@@ -118,7 +118,7 @@ install ()
       printf "### Fallback to simple install of $P\n"
       port -N clean --all $P rdepof:$P
     fi
-    port -N $S install $P
+    port -f -N $S install $P
   fi
 }
 
@@ -260,7 +260,7 @@ then
       continue
     fi
     port -N clean --all $P rdepof:$P
-    if ! port -N install $P +universal
+    if ! port -f -N install $P +universal
     then
 # Collect a list of cases where the universal build fails.
       failures="$failures $P"
