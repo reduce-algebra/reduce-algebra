@@ -204,7 +204,7 @@ fi
 
 # The next option is intended just for debugging. By configuring with
 # "--without-karatsuba-threads" the big-multiplication code is left single
-# threaded. Slso some code to do with local editing of keyboard input
+# threaded. Also some code to do with local editing of keyboard input
 # (which normally uses a worker thread) is disabled.
 
 AC_ARG_WITH(karatsuba-threads,
@@ -257,6 +257,14 @@ AC_ARG_WITH(wx,
   [],
   [with_wx="no"])
 AC_MSG_NOTICE([--with-wx=$with_wx])
+
+AC_ARG_WITH(package,
+  AS_HELP_STRING([--with-package=PKG],
+                 [Use PKG.map rather than package.map to list modules]),
+  [PACKAGEMAP="$withval"],
+  [PACKAGEMAP="package"])
+
+AC_SUBST(PACKAGEMAP)
 
 AC_ARG_WITH(cygwin,
   AS_HELP_STRING([--with-cygwin],[Force use of raw cywgin]),

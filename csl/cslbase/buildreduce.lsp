@@ -751,7 +751,9 @@ symbolic procedure get_configuration_data();
 % "package.map".
     if boundp 'minireduce and symbol!-value 'minireduce then
          i := "package.map"
-    else i := "$reduce/packages/package.map";
+    else i := compress ('!" . append(
+                 explodec "$reduce/packages/",
+                 append(explodec !@package, '(!. m a p !"))));
     i := open(i, 'input);
     if null i then <<
        terpri();
@@ -1732,7 +1734,9 @@ symbolic restart!-csl nil;
     (cond
        ((and (boundp 'minireduce) (symbol!-value 'minireduce))
         (setq i "package.map"))
-       (t (setq i "$reduce/packages/package.map")))
+      (t (setq i (compress (cons '!" (append
+                 (explodec "$reduce/packages/")
+                 (append (explodec !@package) '(!. m a p !"))))))))
     (setq i (open i 'input))
     (setq i (rds i))
     (setq e !*echo)

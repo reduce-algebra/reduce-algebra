@@ -2153,6 +2153,7 @@ $(REDUCE_IMG):	$(XREDUCE) reduce$(EXEEXT) reduce$(COM) $(reducedep) $(generated_
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
+		-D@package=$(PACKAGEMAP) \
 		-o$(REDUCE_IMG) -- buildlogs/reduce.log \
 		-j reduce.dep
 	chmod 664 $(gensrc)/*
@@ -2245,6 +2246,7 @@ bootimage:	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
+		-D@package=$(PACKAGEMAP) \
 		-o$(BOOTSTRAPREDUCE_IMG) -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	chmod 664 $(gensrc)/*
@@ -2265,6 +2267,7 @@ $(BOOTSTRAPREDUCE_IMG):	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrap
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
+		-D@package=$(PACKAGEMAP) \
 		-o$(BOOTSTRAPREDUCE_IMG) -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	$(XBOOTSTRAPREDUCE) \
@@ -2272,6 +2275,7 @@ $(BOOTSTRAPREDUCE_IMG):	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrap
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
+		-D@package=$(PACKAGEMAP) \
 		-o$(BOOTSTRAPREDUCE_IMG) -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	chmod 664 $(gensrc)/*
@@ -2289,6 +2293,7 @@ noinlines.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
+		-D@package=$(PACKAGEMAP) \
 		-Dnoinlines \
 		-o noinlines.img -- buildlogs/noinlines.log \
 		-j bootstrapreduce.dep
@@ -2308,6 +2313,7 @@ boot.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
 		$(CYGSRC)/buildboot.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
+		-D@package=$(PACKAGEMAP) \
 		-o boot.img -- buildlogs/boot.log
 
 profile:	$(HDRS) $(BOOTSTRAPREDUCE_IMG)

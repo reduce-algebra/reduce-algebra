@@ -485,7 +485,9 @@ symbolic procedure get_configuration_data();
 % "package.map".
     if boundp 'minireduce and symbol!-value 'minireduce then
          i := "package.map"
-    else i := "$reduce/packages/package.map";
+    else i := compress ('!" . append(
+                 explodec "$reduce/packages/",
+                 append(explodec !@package, '(!. m a p !"))));
     i := open(i, 'input);
     i := rds i;
     e := !*echo;
