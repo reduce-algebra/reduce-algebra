@@ -112,7 +112,7 @@ global_list_float := '(length_inc_alg length_inc_dec)$
 
 switch batch_mode$
 
-compiletime global '(groebresmax plotheader!*)$
+compiletime fluid '(groebresmax plotheader!*)$
 
 symbolic procedure name_session$
 begin

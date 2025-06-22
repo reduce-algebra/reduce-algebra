@@ -57,6 +57,14 @@ fi
 
 AC_SUBST(BUILD)
 
+AC_ARG_WITH(package,
+  AS_HELP_STRING([--with-package=PKG],
+                 [Use PKG.map rather than package.map to list modules]),
+  [PACKAGEMAP="$withval"],
+  [PACKAGEMAP="package"])
+
+AC_SUBST(PACKAGEMAP)
+
 pslver=`"$srcdir/../scripts/pslver.sh"`
 
 # Stop if the system type is not recognized
