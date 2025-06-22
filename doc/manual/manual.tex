@@ -165,9 +165,10 @@
 \newcommand{\REDUCE}{REDUCE\xspace}
 \newcommand{\RLISP}{RLISP\xspace}
 \newcommand{\underscore}{\char`\_}
+%% FJW: Using \texttt in \ttindex below leads to invalid HTML!
 \newcommand{\ttindex}[1]{{\renewcommand{\_}{\protect\underscore}%
                           \renewcommand{\|}{\protect\textbar}%
-                          \index{#1@\texttt{#1}}}}
+                          \index{#1@{\ttfamily #1}}}}
 \def\ttindextypehelper#1!#2\relax{\def\blubbera{#1}\def\blubberb{#2}}
 \def\capitalizehelper#1#2\relax{\uppercase{\def\blubba{#1}}\lowercase{\def\blubbb{#2}}\edef\blubba{\blubba\blubbb}}
 \def\capitalize#1{\capitalizehelper#1\relax}

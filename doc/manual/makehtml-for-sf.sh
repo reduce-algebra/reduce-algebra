@@ -3,7 +3,7 @@
 # Use TeX4ht to build an HTML5 version of the REDUCE manual using
 # MathJax by running make4ht, ONLY for use on the web site.
 
-# FJW -- Time-stamp: <2025-06-19 16:08:38 franc>
+# FJW -- Time-stamp: <2025-06-22 16:38:46 franc>
 
 # This script is equivalent to 'mkhtml.sh for-sf' but it runs make4ht
 # once instead of mk4ht twice.  It requires the (Lua) build script
@@ -55,12 +55,12 @@ TEX4HT_OPTIONS='" -cunihtf"'
 # T4HT_OPTIONS="-cvalidate"
 # Space-separated options.
 
-# +common_domfilters produces warnings on a few files.
-# COMMAND="make4ht -a $LOGLEVEL -m $MODE -uc reduce-sf -f html5-common_domfilters manual $TEX4HT_STY_OPTIONS $TEX4HT_OPTIONS $T4HT_OPTIONS"
 # UTF-8 is the default coding system (so the -u option is now redundant).
+# +common_domfilters produces warnings on a few files, which end up mangled!
 
 
-COMMAND="make4ht -a $LOGLEVEL -m $MODE -c reduce-sf manual $TEX4HT_STY_OPTIONS $TEX4HT_OPTIONS $T4HT_OPTIONS"
+# COMMAND="make4ht -a $LOGLEVEL -m $MODE -c reduce-sf manual $TEX4HT_STY_OPTIONS $TEX4HT_OPTIONS $T4HT_OPTIONS"
+COMMAND="make4ht -a $LOGLEVEL -m $MODE -c reduce-sf -f html5-common_domfilters manual $TEX4HT_STY_OPTIONS $TEX4HT_OPTIONS $T4HT_OPTIONS"
 
 
 if [ $MODE = 'default' ]
