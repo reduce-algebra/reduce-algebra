@@ -1,0 +1,157 @@
+                       Option Processing for Reduce
+                       ============================
+
+This is a bit of a planning document at the stage I write it - the current
+(June 2025) state is that the three issues discussed here are all treated
+indiviually and not quite consistently. The way they work has grown up
+incrementally over time. The thought here is to want to consolidate things
+so that they all work nicely together!
+
+There are three places where the Reduce scripts map from option settings
+and contextual information to directory names:
+
+(1) The "configure" script in the root directory picks a location
+    within cslbuild or psbuild to set everything up. This location is
+    named using a host-triple for the platform involved (this should be
+    either the current computer or a setting from "--host=" as used when
+    cross-compiling. There are a number of issues where a single host
+    system might need to end up with several builds, notably
+      x86_64-pc-windows  vs  x86_64-pc-cygwin
+      aarch64-pc-windows  vs  aarch64-pc-cygwin      (future expectation!)
+      x86_64-mac* vs aarch64-mac* vs universal-mac*
+    and these mean that the mapping is not quite as tidy and 1:1 as one
+    might at first have expected!
+
+    After the host identifier the location may continue with a sequence of
+    tags (separated with "-") that identify options. Some of the more
+    common ones are
+      -debug, -nogui, -arithlib, -nothrow, -fox, -wx, -test
+    but also the option "--with-pkgdir=PKG" will put -PKG there and
+    "--with-buildver=DIR" which is explained later but overrides everything
+    else that is done here.
+    The set of possible tags can change over time when (for the purposes
+    of experimental changes) extra options are put in the configure
+    script. To keep things nice the set of tags used will be placed
+    in alphaberic order when used as a suffix, but the user may have
+    presented them in any order.
+
+    There is also an "escape mechanism" of the form "--with-buildver=DIR"
+    that puts built material in DIR and does not do any further messing
+    around. Use of that can resolve pretty well any conflict or confusion
+    that the main scheme has.
+
+    In various cases there can be interation between host and tag
+    settings, as in "--enable-universal" for the Mac and "--with-cygwin".
+    In other cases the presence of an explicit configure option will not
+    lead to a tag either because the setting is to be seen as the default
+    or because it is passing information use in the build but not needing
+    to be recorded in the location. When building on Windows the
+    configure script will build two subdirectories: XXX-pc-windows-TAGS and
+    XXX-pc-cygwin-TAGS rather than just one. On the Mac the options can
+    lead to the notional identity of the host system flipping between
+    x86_64, aarch and universal.
+
+    So what is all this intended to do. Well the first thing to say
+    is that ot only applies if the configure script is run within its
+    own directory. If it is run somewhere else the built files are
+    just set up in that location. So what is being supported here is the
+    ability to run the top level script in place as "./configure ...".
+    Some other systems prohibit this and report that one must not
+    configure in-place. Others put built artefacts in a single place
+    perhaps called "build". Reduce take the view that the first scheme
+    is not especially convenient, and that the second might mean that
+    if you want several versions of the system built (eg regular,
+    experimental, debug) you might need a full version of the source
+    tree for each. The host identity is baked into the name of the directory
+    used for the build to provide amoother support for cross compilation
+    and for the case where a single file-space is shared between multiple
+    systems (that run different operating system or have different CPUs).
+    Mixing those two cases could still lead to conflict and is where the
+    "--with-buildver" scheme can let advanced users control things at a fine
+    level. So really this leads to an in-place configure devolving into
+    a more proper fresh-directory one but with tha name of that directory
+    synthesized based on all available contextual information.
+
+(2) When a system has been configured and built it becomes possible to run
+    it using commands such as "bin/redcsl" and "bin/redpsl". There may or
+    may not be a usable version built and identifing the "best" if there
+    are several is an uncertain business.
+    A stragegy (explained for CSL here) can be
+      (a) Identify all files named cslbuild/*/csl/reduce.img
+      (b) Keep only the cases where the text matching "*" starts with
+          the current host (care with windows/cygwin and
+          x86_64/aarch64/universal on the mac). Note that if you have
+          been cross-compiling but can run foreign executables via binfmt
+          this will not view that as providing a candidate.
+      (c) If there are still options prefer ones with no tags. On Windows
+          prefer "windows" to "cygwin"(?) and on the Mac prefer universal
+          and then the native mode to any other.
+      (d) If there only versions with tags try to keep ones without "-debug"
+          and then use the alphabetically first.
+      (e) When a reduce.img has been identified that way use the reduce
+          executable in that directory.
+
+    This is also rather messy! It is an attempt to "do what people might
+    reasonably hope for". But it will tend to discard cases where
+    "--with-buildver" had been used. Ah well. This only actually gets
+    complicated when multiple builds have been set up within one tree.
+    For that it seems probable that options to select which is used
+    should be build into redcsl (etc). Possibilities could include
+        bin/redcsl --with-buildver=DIR    this could cover everything!
+                   --enable-debug         maybe the most important option?
+                   --with-arithlib
+                   --with-pkgdir=PKG
+                   --without-gui        (etc etc, and maybe multiple options)
+    using the same logic as in (1) to identify the subdirectory to be used.
+    The potential downside is that checking for that could tend to slow
+    down the launch of the system.
+
+    Well ordinary and proper command line options to CSL/Reduce can also
+    start with "--". So the cases that need to be detected and handled here
+    will just be the ones of the form
+        --with-*, --without-*, --enable-*, --disable-*, --host=*
+    and none of these clash with internal options.
+
+    However there remain an ugliness. When your operating system bumps up
+    a version in a manner that changes its host-triple the search I have
+    shown above will fail. This is to some extent reasonable because there
+    can be no absolute guarantee of compatibility across such updates! 
+
+(3) Testing: The code scripts/test1.sh is what is relevant here.
+    At present this supports
+       scripts/test1.sh --csl                 or --bootstrapreduce or --psl
+OR     scripts/test1.sh --csl-debug           [and potentially some others!]
+OR     scripts/test1.sh --csl=DIRECTORY
+    but following "--csl" it should accept the set of options as
+    in (1) and (2) so that eg to use a debugging version of code using
+    arithlib and compare against baseline csl and baseline psl the
+    command would be
+       scripts/test1.sh --csl   --csl --with-arithlib --enable-debug   --psl
+    where U have written a little extra whitespace to stress where the
+    three cases fall.
+    This case should generate its output in diretories
+      csl-times
+      csl-arithlib-debug-times
+      psl-times
+    and let me compare those against the directories used in (1) which were
+      cslbuild/HOST_TRIPLE
+      cslbuild/HOST_TRIPLE-arithlib-debug
+      pslbuild/HOST_TRIPLE
+    The names used for testing have omitted the host name and so situations
+    with shared file-space or cross compilation are less gracefully supported.
+    However such cases can be handled with (eg)
+       scripts/test1.sh --csl   --csl --with-buildver=aarch64-linux-gnu
+    which must put logs in csl-aarch64-linux-gnu-times and may be useful
+    if via binfmt (say) or by running on a different host that architecture
+    is supported.
+    To provide manual control to cover less common cases - or just for those
+    who like to choose their own names, "--with-logs=DIR" will be honoured
+    for testing (and ignored for the purposes of sorting out where executables
+    are to be found. So eg
+      test1.sh --csl --with-logs=A --csl --enable-debug --with-logs=B alg
+    will put one set of logs in A and the other in B which might be
+    really convenient for making comparisons.
+
+
+===========================================================================
+
