@@ -155,3 +155,80 @@ OR     scripts/test1.sh --csl=DIRECTORY
 
 ===========================================================================
 
+                                USE CASES
+                                =========
+
+
+This section tries to show how the above might be useful. It is written
+supposing that configure, run and test have all moved to use the scheme.
+
+(1) You would like a stable version of Reduce that you can fall back on
+even though you regularly update the working copy.
+
+Use --with-buildver=july2025 and build a version in cslbuild/july2025
+(or whatever other name you like). When you have built it you can compare
+against that current version using
+  scripts/test.sh  --csl --buildver=july2025  --csl  all
+and the like. In this case you will probably want the fixed version you
+have built to remain unaltered when you go "make" at the top level. To
+achieve that remove the file cslbuild/july2025/canary.
+If at some later stage you want to recompile this version with the latest
+updated you go "cd cslbuild/july2025; make".
+
+[When I have it implemented] you can run the fixed version using
+  bin/redcsl --buildver=july2025 ...
+
+
+
+(2) Your are a developer working on a new package.
+
+Copy packages/package.map to packages/mine.map and edit that new
+file to add a line characterising your new package. Then building,
+running and testing with "--pkgmap=mine" should include your new
+code (and if the regular built files went into say cslbuild/x86_64-pc-linux
+the new ones will be in cslbuild/x86_64-pc-linux-mine. This way you can
+build and test with your new code without altering any of the main
+files in the source tree.
+
+(3) You wish to have a set of local patches to a package, or a completely
+new version of it.
+
+Again make a copy of package.map, say called patched.map. The line
+in it relating to the part of the system you want to change 
+might be something like
+    (poly "poly" core test      csl psl)
+and if that was what you were altering you would copy the directory
+packages/poly to packages/my_poly and make the line in patched.map
+    (poly "my_poly" core test      csl psl)
+
+The word "core" gets a package built relatively early. "test" indicates
+that there is a file *.tst to test it. The inclusion of both "csl" and "psl"
+marks the package as one relevent whichever of those Lisp was in used for
+the build - only a few packages do not show both being supported.
+
+Rather as before with this you can test using "--pkgmap=my_poly"
+
+(4) You feel that the names for test logs are over-clumsy and want
+something shorter.
+
+Try the pattern
+  scripts/test.sh --csl --with-logs=base-times \
+                  --psl --with-logs=psl-times \
+                  --csl --pkgmap=my_poly --with-logs=testing-times all
+which runs all the tests on baseline CSL and PSL and on a CSL build that
+has your private version of the poly package. And puts logs in
+base-times, psl-times and testing-times.
+
+(5) All those options starts to make you worry about how much
+typing you will have to do.
+
+How about
+  export BASE="--csl --with-logs=base-times"
+  export PSL="--psl --with-logs=psl-times"
+  export POLY="--csl --pkgmap=my_poly --with-logs=testing-times"
+perhaps in your .bashrc (or wherever) then
+  scripts/test.sh $BASE $PSL $POLY
+is distinctly more concise.
+
+Or as an alterenative you can just wrap up all the recipes that you
+use in a Makefile.

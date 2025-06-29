@@ -1448,14 +1448,18 @@ void tripleSeries(double xhi, double xmid, double xlo,
 //    a^b
 // If a == +0.0 or -0.0 or 1.0 of it b == 0.0 or if
 //   there are any infinities or NaNs then take a special case.
+//
 // If the value of b is an exact integer then take a special case. 
 // If a < 0.0 then fail (note b is not an integer here)
+//
 // If |a| >= 2 or |a| < 0.5 then if |b| >= 16384 there will be
 //   overflow or underflow, so after that case has been filtered
 // one can assume |b| is smallish.
+//
 // The result will be 2^(b log2(a)).
 // [When I write the number 16384 here a pedant would use a number
 // of about that magnitude!]
+//
 // Then log2 a = exponent(a) + log2(mantissa(a)) and I will express
 // b as int(b) + frac(b). So I now have 2 to the power exponent(a)*int(b)
 // to simply go into the exponent of my result, and then
@@ -1465,12 +1469,14 @@ void tripleSeries(double xhi, double xmid, double xlo,
 // any transcendental calculation. The first may be more fun because
 // log2(mantissa(a)) is anywhere in the range [0.0,1.0) but b can be
 // up to 2^16384.
+//
 // To get a fully accurate answer at the end I need the power that 2 must
 // be raised to to be accurate to around 128 bits. That is because about
 // 16 of those bits move into the result's exponent field and I need
 // enough left after that to get the mantissa right. So I will need a
 // function two_to_the(QuintPrecision x) that copes with any argument
 // with |x| < 16384.
+//
 // So I will then need QuintPrecision quint_log2(QuadPrecision mant_a)
 // which only needs to handle arguments in the range [1.0,2.0) and that
 // might sensibly be calculated via log2(x+1)/x;

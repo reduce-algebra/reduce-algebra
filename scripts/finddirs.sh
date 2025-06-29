@@ -313,6 +313,11 @@ gettarget() {
       ;;
     --pkgmap=*)
       packagefile="${opt#--pkgmap=}.map"
+      if ! test -f "$here/packages/$packagefile"
+      then
+        printf "package file '$packagefile' not found\n"
+        exit 1
+      fi
       opt="${opt#--pkgmap=}"
 # If the file that lists packages has suffix "map" I will not include that
 # suffix in the tag.
@@ -364,6 +369,7 @@ gettarget() {
     logdir=${root/build\//}${tags}-times
   fi
   target="$root$dirbase$tags"
+  optprintf "packagefile=$packagefile\n"
 }
 
 # end of finddirs.sh

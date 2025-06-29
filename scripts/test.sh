@@ -15,6 +15,7 @@ P "   scripts/test1.sh [options] [versions to test] [package_names]"
 P ""
 P " OPTIONS:"
 P "    --help              Display this message and stop."
+P "    --just-time         Do not run tests, just report times from logs.\n"
 P "    --keep              Preserve temporary files. Good while debugging."
 P "    --install           Copy new logs into the main source tree."
 P "    --skip-missing-rlg  Still run a test even if there is no reference log."
@@ -129,6 +130,7 @@ findos
 optprintf "guessed=$guessed\n"
 optprintf "osname=$osname\n"
 
+just_times="no"
 TIME=600
 keep="no"
 install="no"
@@ -166,6 +168,10 @@ do
       ;;
     --rr)
       rr="yes"
+      shift
+      ;;
+    --just-times)
+      just_times="yes"
       shift
       ;;
     *)
@@ -212,7 +218,10 @@ do
         thistarget=""
         break
        ;;
-      --with-* | --without-* | --enable-* | --disable-* | --pkgmap=* | --host=*)
+      --with-* | --without-* | \
+      --enable-* | --disable-* | \
+      --pkgmap=* | --host=*)
+optprintf "keyword=$\n"
         thistarget="$thistarget $1"
         shift
         ;;
@@ -359,7 +368,7 @@ testallregressions() {
 
 if test "$#" = 0
 then
-  testcase = "alg"
+  testable="alg"
 else
   while test "$#" != 0
   do
@@ -386,26 +395,6 @@ removeduplicates "$testable";
 testable="$tidied"
 removeduplicates "$regressioncases";
 regressioncases="$tidied"
-
-printf "testable=$testable\n";
-printf "regressions=$regressioncases\n";
-
-exit 777
-
-pkg=${1:-alg}
-reg="${2:-aug-29-2011}"
-
-if test "$pkg" = "regressions"
-then
-  printf "Regression test %s\n                 $reg:"
-  pkg="regressions"
-else
-  printf "Test %-11s " "$pkg:"
-fi
-
-# Debugging output here...
-optprintf "platforms=$platforms\nlogdirs=$logdirs\npackagefiles=$packagefiles\n"
-optprintf "pkg=$pkg subpkg=$subpkg loader=$loader\n"
 
 diffBw() {
 # If gdiff is present I will expect it to be the GNU diff program from
@@ -826,112 +815,122 @@ packagefilesarray=($packagefiles)
 count=${#platformsarray[@]}
 let count=$count-1
 
-# Now for each platform I will test the package I am dealing with.
+firstlogdir=""
 
-for i in `seq 0 $count`
-do
-  lispsystem=${lispsystemsarray[$i]}
-  platform=${platformsarray[$i]}
-  logdir=${logdirsarray[$i]}
-  packagefile=${packagefilesarray[$i]}
-  if test "$pkg" = "regressions"
+runthetest() {
+# If I am just reporting timings from previous runs I do not want to do
+# the actual testing.
+  if test "$just_times" = "yes"
   then
-    loader=""
-    dir="regressions"
-    pkg=$reg
-  else
-    w=`grep " test " $here/packages/$packagefile | grep "($pkg "`
-    case $w in
-    *$pkg*)
-      ;;
-    *)
+    return
+  fi
+# Now for each platform I will test the package I am dealing with.
+  pkg1="$pkg"
+  for i in `seq 0 $count`
+  do
+    lispsystem=${lispsystemsarray[$i]}
+    platform=${platformsarray[$i]}
+    logdir=${logdirsarray[$i]}
+    packagefile=${packagefilesarray[$i]}
+    if test "$pkg1" = "regressions"
+    then
+      loader=""
+      dir="regressions"
+      pkg=$reg
+    else
+      w=`grep " test " $here/packages/$packagefile | grep "($pkg "`
+      case $w in
+      *$pkg* | *$pkg1*)
+        ;;
+      *)
 # Note that if the user has specified a custom package.map file this
 # can happen in one case even if not in others.
-      printf "Package $pkg does not exist for testing purposes\n"
-      exit 1
-      ;;
-    esac
+        printf "Package $pkg does not exist for testing purposes\n"
+        exit 1
+        ;;
+      esac
 # "core" packages do not need to be pre-loaded. Ideally all others
 # would autoload, but I am not going to count on that.
-    case $w in
-    " core ")
-      loader=""
-      ;;
-    *)
-      loader="load $pkg;"
-      ;;
-    esac
+      case $w in
+      " core ")
+        loader=""
+        ;;
+      *)
+        loader="load $pkg;"
+        ;;
+      esac
 # Now the line in package.map will have a string that is the directory
 # within .../reduce-algebra/packages that this package will be stored
 # in. Again note that --pkgmap means this could not have been
 # sorted out earlier.
-    dir=${w%\"*}
-    dir=${dir#*\"}
-  fi
+      dir=${w%\"*}
+      dir=${dir#*\"}
+    fi
 
 # If I am running on Windows I need to have the file name in
 # (close to) native windows form. I can usefully retain "/" rather than
 # "\", but eg it will be in the form "d:/directory/file.ext"
 
-  dd="$winhere/packages/$dir"
-  testfile="$dd/$pkg.tst"
-  optprintf "dir=$dir testfile=$testfile\n"
+    dd="$winhere/packages/$dir"
+    testfile="$dd/$pkg.tst"
+    optprintf "dir=$dir testfile=$testfile\n"
 # To be able to replace full pathnames I generate a version of the path with 
 # directory separators / and \ escaped:
-  ESCAPED_DIR=`echo $dd | sed -e 's/[\/\\\\]/\\\\&/g'`
+    ESCAPED_DIR=`echo $dd | sed -e 's/[\/\\\\]/\\\\&/g'`
 
 # Use /dev/null if the .rlg file doesn't exist
-  if test -f "$here/packages/$dir/$pkg.rlg"
-  then
-    rlgfile="$here/packages/$dir/$pkg.rlg"
-  elif test "$skipmissingrlg" != ""
-  then
-    printf "Missing log file $here/packages/$dir/$pkg.rlg - skipping test!\n"
-    exit 1
-  else
-    rlgfile=/dev/null
-  fi
+    if test -f "$here/packages/$dir/$pkg.rlg"
+    then
+      rlgfile="$here/packages/$dir/$pkg.rlg"
+    elif test "$skipmissingrlg" != ""
+    then
+      printf "Missing log file $here/packages/$dir/$pkg.rlg - skipping test!\n"
+      exit 1
+    else
+      rlgfile=/dev/null
+    fi
 
-  optprintf "now use $lispsystem in $platform\n"
-  optprintf "to test package $pkg from directory $dir sending output to $logdir\n"
+    optprintf "now use $lispsystem in $platform\n"
+    optprintf "to test package $pkg from directory $dir sending output to $logdir\n"
 
-  case $lispsystem in
-  csl)
-    csltest "$here/$platform/csl/reduce" "$logdir"
+    if test "$firstlogdir" = ""
+    then
+      firstlogdir="$logdir"
+    else
+      rm -rf  ${firstlogdir%-times}-${logdir%-times}-comparison/*.rlg.diff
+    fi
+    case $lispsystem in
+    csl)
+      csltest "$here/$platform/csl/reduce" "$logdir"
 # If the command specified "--install" and "--csl" then the log files
 # will be installed in the main tree.
-    if test "$install" = "yes"
-    then
-      cat $here/packages/$dir/$pkg.tst > $here/xmpl/$pkg.tst
-      cat $logdir/$pkg.rlg $logdir/$pkg.time > $here/xmpl/$pkg.rlg
-      cat $logdir/$pkg.rlg $logdir/$pkg.time > $here/packages/$dir/$pkg.rlg
-    fi
-    ;;
-  bootstrapreduce)
-    csltest "$here/$platform/csl/bootstrapreduce" "$logdir"
-    ;;
-  psl)
+      if test "$install" = "yes"
+      then
+        cat $here/packages/$dir/$pkg.tst > $here/xmpl/$pkg.tst
+        cat $logdir/$pkg.rlg $logdir/$pkg.time > $here/xmpl/$pkg.rlg
+        cat $logdir/$pkg.rlg $logdir/$pkg.time > $here/packages/$dir/$pkg.rlg
+      fi
+      ;;
+    bootstrapreduce)
+      csltest "$here/$platform/csl/bootstrapreduce" "$logdir"
+      ;;
+    psl)
 # At present I do not make use of any options following "--psl" but
 # if cross-building etc became "a thing" I could.
-    psltest "$here/bin/redpsl" "$logdir"
-    ;;
+      psltest "$here/bin/redpsl" "$logdir"
+      ;;
 
-  jlisp)
-    jlisptest "reduce.jar" "$logdir"
-    ;;
-  jlispboot)
-    jlisptest "jlispboot" "bootstrapreduce.jar" "$logdir"
-    ;;
-  *)
-    printf "\n+++ Platform $lispsystem not recognized\n"
-    exit 1
-  esac
-done
-
-#######################################################################
-# End of code that runs the tests. Now report on results.
-#######################################################################
-
+    jlisp)
+      jlisptest "reduce.jar" "$logdir"
+      ;;
+    jlispboot)
+      jlisptest "jlispboot" "bootstrapreduce.jar" "$logdir"
+      ;;
+    *)
+      printf "\n+++ Platform $lispsystem not recognized\n"
+      exit 1
+    esac
+  done
 
 # I will show speed ratios. The first specified platform will be used
 # as defining the base-line. Thus for instance
@@ -939,99 +938,186 @@ done
 #   test1.sh --psl --csl --jlisp    uses PSL as the base
 # There is no merit in trying to do comparisons if only one system
 # had been tested, so I will detect and filter that case...
-# If the base absolute time was under 500ms I will tag the ratio with
-# a "?" as potentially unreliable.
+# If the base absolute time was under 300ms I will not print the time ratio
+# as I view it as being potentially unreliable.
 
 # For each test I have run I just need the identity of the log directory,
 # but that info is %in logdirectories.
 
-first=""
-more="no"
-for x in $logdirs
-do
-  if test "$first" = ""
-  then
-    first="$x"
-  else
-    more="yes"
-  fi
-done
+  first=""
+  more="no"
+  for x in $logdirs
+  do
+    if test "$first" = ""
+    then
+      first="$x"
+    else
+      more="yes"
+    fi
+  done
 
 # If there is only one test then comparisons are not interesting.
 
-if test "$more" = "yes"
-then
+  if test "$more" = "yes"
+  then
 
 # Append on the end of the output line a list of speed ratios.
-  base=""
-  none="yes"
-  for logdir in $logdirs
-  do
+    base=""
+    none="yes"
+    for logdir in $logdirs
+    do
 # Each file packageName.showtime will contain just one line of the form
 #       ("packageName" cputime gctime)
 # where the times are recorded in milliseconds.
-    tt=`cat $logdir/$pkg.showtime | \
-        sed -e 's/[^ ]* //; s/ .*//'`
+      tt=`cat $logdir/$pkg.showtime | \
+          sed -e 's/[^ ]* //; s/ .*//'`
 # base gets set to the time recorded for the first platform in the list.
-    
-    if test "$none" = "yes"
-    then
+
+      if test "$none" = "yes"
+      then
 # If the recorded time is zero (which at least sometimes comes out
 # as the string "0 " here) I will set a base-time of 1 so that I
 # avoid division by zero later on.
-      if test "$tt" = "" || test "$tt" = "0" || test "$tt" = "0 "
-      then
-        base="1"
-      else
-        base="$tt"
+        if test "$tt" = "" || test "$tt" = "0" || test "$tt" = "0 "
+        then
+          base="1"
+        else
+          base="$tt"
+        fi
       fi
-    fi
 # If "dc" is not available then the following line leaves ratio empty.
-    ratio=`printf "1k $tt 100 * $base / pq" | dc 2> /dev/null`
-    if test "$ratio" = ""
-    then
-      ratio="?"
-    fi
-    reliable=""
-    if test "$base" -lt 500
-    then
-      reliable="?"
-    fi
-    if test "$none" = "no"
-    then
-      printf "${logdir%-times}:%8s " "$reliable$ratio%"
-    fi
-    none="no"
-  done
-  printf "\n"
+      ratio=`printf "1k $tt 100 * $base / pq" | dc 2> /dev/null`
+      if test "$ratio" != "" && test "$base" -ge 300 && test "$none" = "no"
+      then
+        printf "${logdir%-times}:%8s " "$ratio%"
+      fi
+      none="no"
+    done
+    printf "\n"
 
 # Now if any test logs disagree (using the first platform to define
 # a reference) print messages that explain that fact.
-  basedir=""
-  for logdir in $logdirss
-  do
-    if test "$basedir" = ""
-    then
-      basedir="$logdir"
-    else
-      mkdir -p ${basedir%-times}-${logdir%-times}-comparison
-      diffBw $basedir/$pkg.rlg $logdir/$pkg.rlg > ${basedir%-times}-${logdir%-times}-comparison/$pkg.rlg.diff
-      if test -s ${basedir%-times}-${logdir%-times}-comparison/$pkg.rlg.diff
+    basedir=""
+    for logdir in $logdirs
+    do
+      if test "$basedir" = ""
       then
-        printf "***** ${basedir%--times} and ${logdir%-times} test logs differ!\n"
+        basedir="$logdir"
       else
-        rm -f ${basedir%-times}-${logdir%-times}-comparison/$pkg.rlg.diff
+        mkdir -p ${basedir%-times}-${logdir%-times}-comparison
+        diffBw $basedir/$pkg.rlg $logdir/$pkg.rlg > ${basedir%-times}-${logdir%-times}-comparison/$pkg.rlg.diff
+        if test -s ${basedir%-times}-${logdir%-times}-comparison/$pkg.rlg.diff
+        then
+          printf "***** ${basedir%--times} and ${logdir%-times} test logs differ!\n"
+        else
+          rm -f ${basedir%-times}-${logdir%-times}-comparison/$pkg.rlg.diff
+        fi
+      fi
+    done
+  else
+# Only one system being tested.
+    printf "\n"
+  fi
+}
+
+if test "$just_times" = "no"
+then
+  mkdir -p $logdir
+  rm -rf $logdir/*.rlg $logdir/showtimes
+  echo "showtimes := '(" > $logdir/showtimes
+fi
+
+for pkg in $testable
+do
+  printf "Test %-11s " "$pkg:"
+  runthetest
+done
+
+for reg in $regressioncases
+do
+  pkg="regressions"
+  printf "Regression test $reg:\n                 "
+  runthetest
+done
+
+if test "$just_times" = "no"
+then
+  printf ")\$\nend;\n\n" >> $logdir/showtimes
+fi
+
+#######################################################################
+# End of code that runs the tests. Now report on results.
+#######################################################################
+
+if test "just_times" = "no"
+then
+  for logdir in $logdirs
+  do
+    d=`cd $logdir; echo *.rlg.diff`
+    if test "$d" != '*.rlg.diff'
+    then
+      printf "\nDifferences for ${logdir%-times}: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+    fi
+  done
+
+  first=""
+  for logdir in $logdirs
+  do
+    if test "$first" = ""
+    then
+      first="$logdir"
+    else
+      d=`cd ${first%-times}-${logdir%-times}-comparison; echo *.rlg.diff`
+      if test "$d" != '*.rlg.diff'
+      then
+        printf "\nDifferences between ${first%-times} and ${logdir%-times}: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
       fi
     fi
   done
 
-else
-# Only one system being tested.
   printf "\n"
 fi
 
-rm -f $pkg.howlong.tmp
+reporttime() {
+  name=$1
+  dir=$2
+  total="0"
+  opt=""
+  if test "`which redcsl 2> /dev/null`" != ""
+  then
+    red="redcsl"
+    opt="-w"
+  elif test "`which redpsl 2> /dev/null`" != ""
+  then
+    red="redpsl"
+  else
+    red="$here/bin/redcsl"
+    opt="-w"
+  fi
+  "$red" "$opt" <<XXX | grep "^$name"
+    symbolic <<
+    in "$dir/showtimes"$
+    total := for each r in showtimes sum cadr r;
+    gctotal := for each r in showtimes sum caddr r;
+    terpri();
+    prin2 "$name";
+    prin2 " ";
+    while posn() < 20 do prin2 " ";
+    prin2 total; prin2 " ms CPU ";
+    while posn() < 40 do prin2 " ";
+    prin2 gctotal; prin2 " ms GC";
+    terpri();
+    quit; >>$
+XXX
+}
+
+printf "\nSummary of test runs\n"
+
+for logdir in $logdirs
+do
+  reporttime ${logdir%-times} $logdir
+done
+
 exit 0
 
-# end of test
-
+# end of script
