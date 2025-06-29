@@ -113,7 +113,8 @@ symbolic procedure formechopr(u,vars,mode);
 % names that will not clash with anthing else present in the code being
 % looked at...
 
-fluid '(all!-new!-symbols current!-new!-symbols new!-symbol!-counter);
+fluid '(all!-new!-symbols current!-new!-symbols new!-symbol!-counter
+   comma!-mark!*);
 
 all!-new!-symbols := nil;
 new!-symbol!-counter := 0;
@@ -154,7 +155,7 @@ symbolic procedure pushpop!-locals(l, r, w, g1, u);
     scalar g;
     g := local!-symbol u;
     return pushpop!-locals(cdr l, list('setq, g, car l) . r, g . w, g . g1, u)
-  end; 
+  end;
 
 symbolic procedure formpush(u, vars, mode);
   begin
@@ -174,7 +175,7 @@ symbolic procedure formpush(u, vars, mode);
                        vars, mode)
         else return formc(list('progn, list('setq, b, list('cons, a, b)), a),
                           vars, mode) >>;
-      g := local!-symbol(u); 
+      g := local!-symbol(u);
       return formc(list('prog, list g,
           list('setq, g, a),
           list('setq, b, list('cons, g, b)),
@@ -183,7 +184,7 @@ symbolic procedure formpush(u, vars, mode);
     r := pushpop!-locals(cdr b, nil, nil, nil, u);
     g1 := cddr r;
     w := car b . reverse cadr r;
-    r := reverse car r;    
+    r := reverse car r;
     return formc('prog . g1 .
       append(r, list(
         list('return, list('car,
@@ -206,7 +207,7 @@ symbolic procedure formpop(u, vars, mode);
     r := pushpop!-locals(cdr a, nil, nil, nil, u);
     g1 := (g := local!-symbol u) . cddr r;
     w := car a . reverse cadr r;
-    r := reverse car r;    
+    r := reverse car r;
     return formc('prog . g1 .
       append(r, list(
        list('setq, g, list('car, w)),
@@ -240,7 +241,7 @@ symbolic procedure remove!-comments u;
   end
   else if eqcar(car u, comment!-mark!*) then remove!-comments cdr u
   else remove!-comments car u . remove!-comments cdr u;
-    
+
 symbolic macro procedure !~backquote u;
   begin
 % This can be either (!~backquote A) or (!~backquote %C A) but should
@@ -265,7 +266,7 @@ symbolic procedure make!-cons(a, b);
   else list('cons, a, b);
 
 % There is potential "fun" here with nested use of backquote, but
-% for a first pass I will view that is unsupported and I will complain
+% for a first pass I will view that as unsupported and I will complain
 % if one is noticed.
 
 symbolic procedure expand!-backquote u;

@@ -106,12 +106,12 @@ symbolic procedure s!:traced!-version(fn, nargs, newfn);
             list('return, r));
     return list('lambda, v, p)
   end;
-   
+
 symbolic procedure s!:trace fn;
   begin
     scalar d := !~!~saved_getd fn, nargs, !*redefmsg,
            g := intern list2string append(explode2 "~saved_", explode2 fn),
-           !*comp := t, !*pwrds := nil;
+           !*comp := t;                 %, !*pwrds := nil;
     if not eqcar(d, 'expr) or
        null (nargs := s!:argcount fn) then <<
        if not zerop posn() then terpri();
