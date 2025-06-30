@@ -68,7 +68,7 @@ within!-backquote!* := nil;
 global '(!$eof!$
          !$eol!$
          !*micro!-version
-         cedit!-loaded!*;
+         cedit!-loaded!*
          crbuf!*
          crbuf1!*
          crchar!*
