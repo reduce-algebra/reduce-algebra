@@ -32,7 +32,7 @@ module form;  % Performs a mode analysis of parsed forms.
 % $Id$
 fluid '(!*!*a2sfn !*comp !*cref !*defn !*mode !*reduce4 !*rlisp88
         current!-modulus fname!* ftype!* !*strict_argcount
-        !*argnochk !*ldb !*ldbdepth !*ldbname);
+        !*argnochk !*ldb !*ldbdepth !*ldbname !*ldbseq);
 
 global '(!*composites !*force !*micro!-version !*vars!* cursym!*);
 
@@ -53,7 +53,7 @@ put('cond,'formfn,'formcond);
 
 % See formprog for commentary.
 % NOTE that this can create a LAMBDA with a PROGN, as
-% in (lambda (q) (progn 
+% in (lambda (q) (progn
 %                  (declare (special q))
 %                  original_body)
 % which hides the DECLARE within a PROGN. This is so that there
@@ -316,7 +316,7 @@ symbolic procedure argnochk u;
               lprim list(car u, "called with", length cdr u,
                                 "instead of", x, "arguments");
               return u >>>>
- 
+
         else return u >>
       else <<
         put(car u, 'number!-of!-args, length cdr u);
@@ -865,7 +865,7 @@ symbolic procedure mkarg(u,vars);
     else if atom u then if atsoc(u,vars) then u else mkquote u
     else if car u memq '(quote !:dn!: !:int!:) then mkquote u
     else if car u memq '(!:dn!-s!: !:dn!-f!: !:dn!-l!:) then
-       mkquote '!:dn!: . cdr u 
+       mkquote '!:dn!: . cdr u
     else begin scalar x;
             while u do <<
                x := mkarg(car u,vars) . x;

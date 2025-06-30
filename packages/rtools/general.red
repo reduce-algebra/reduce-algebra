@@ -107,7 +107,7 @@ for i := 0:15 do putv(ints!-as!-symbols!*, i,
 
 % Make a symbols whose name is the sequence of digits from the
 % number u. This (!*num2id 37) will give !37.
- 
+
 symbolic inline procedure !*num2id u;
    if u <= 15 and u >= 0 then getv(ints!-as!-symbols!*, u)
    else intern list2string explode u;
@@ -238,7 +238,7 @@ symbolic procedure hex n;
 flag('(hex), 'opfn);
 
 % As an alternative way to go, prinhex is a function that prints its
-% argument with integers shown in hex. 
+% argument with integers shown in hex.
 
 #if (memq 'psl lispsystem!*)
 
@@ -282,7 +282,7 @@ symbolic procedure hex64 n;
       for i := 1:16 do
         prinhex land(lshift(d, 4*i-64), 15) >>;
     prin2 "$";
-  end; 
+  end;
 
 symbolic procedure hex64t n;
  << if posn() neq 0 then terpri();
@@ -348,7 +348,7 @@ symbolic procedure treesize u;
 % Maintain a sorted association list of lenth at most count where the
 % sorting keeps the higest value keys at the front.
 
-symbolic procedure keeptopfew(key, val, ll, count); 
+symbolic procedure keeptopfew(key, val, ll, count);
   if count=0 then nil
   else if ll = nil then list (key.val)
   else if key < caar ll then car ll . keeptopfew(key, val, cdr ll, count-1)
@@ -414,10 +414,12 @@ global '(kernhash);
 % they may be informative!
 
 % Note that for alglist!* items are saved and a count is maintained of
-% how many are used - when a limit is exceeded the table is empties. That
+% how many are used - when a limit is exceeded the table is emptied. That
 % is the inwardness if alglist_count!* and alglist_limit!*. The periodic
 % discarding of that data is intended to avoid stale and unwanted material
-% building up in memort and clogging things up.
+% building up in memory and clogging things up.
+
+global '(alglist_count!* alglist_limit!*);
 
 symbolic procedure hashsizes();
   begin

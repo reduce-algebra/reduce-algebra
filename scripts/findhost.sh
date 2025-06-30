@@ -125,6 +125,7 @@ original=$host
 nogui=default
 fox=default
 wx=default
+tag=
 
 # The decoding here is NOT PERFECT and will not be fully compatible with
 # all that the configure script does, but it should be sufficient for
@@ -133,6 +134,9 @@ wx=default
 for a in $*
 do
   case $a in
+  --with-tag=*)
+    tag=-${a#--with-tag=}
+    ;;
   --enable-debug=no | --disable-debug)
     debug=
     ;;
@@ -228,6 +232,6 @@ fi
 fox=
 
 # Nota that if "nogui" is used it comes first. I rely on that in run.sh
-echo $host$nogui$fox$wx$test$arithlib$nothrow$debug$profile
+echo $host$nogui$fox$wx$test$arithlib$nothrow$debug$profile$tag
 
 exit 0

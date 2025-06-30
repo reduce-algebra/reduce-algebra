@@ -37,7 +37,7 @@
 #      --X=debug: For CSL based versions use the debug build.
 #      {--X-debug: temporary synonym for --X=debug for backwards compatibility} 
 #      --X=windows, =cygwin, =windows, =native, =universal, =cygwin-debug,
-#           =windows-debug, =native-debug, =universal-debuf: On Windows
+#           =windows-debug, =native-debug, =universal-debug: On Windows
 #           for CSL based versions this allows selection as between a native
 #           windows version and a cygwin one. On the Macintosh between
 #           a native (only) build and an universal one. 
@@ -45,7 +45,7 @@
 #     --psl=VARIANT
 #                 Use a PSL Reduce from .../pslbuild/VARIANT.
 #
-# Jlisp is not very much supported, but these will parhaps be of use to
+# Jlisp is not very much supported, but these will perhaps be of use to
 # anyone trying to use it again. 
 #     --jlisp     Run tests using Jlisp.
 #     --jlispboot Run tests using Jlisp "bootstrapreduce.jar".
@@ -56,6 +56,8 @@
 # name - which defaults to "alg", or the word "regressions" followed by
 # the name of one of the tests in the packages/regressions directory.
 
+# Make sure that all messages are in English
+LANG=C ; export LANG
 
 # I want this script to be one I can launch from anywhere, so
 # to access files etc I need to know where it lives.
@@ -196,9 +198,6 @@ then
 fi
 
 loader=""
-
-# Make sure that all messages are in English
-LANG=C ; export LANG
 
 # If no argument is provided then this runs alg.tst
 p=${1:-alg}

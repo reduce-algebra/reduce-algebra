@@ -107,12 +107,12 @@ curline!* := 1;
 
 % Some of these are looking forward to potential enhancements.
 % I want a bunch of symbols such as <%> that are not on the object
-% list and so can never conflict with symbols read in my the user.
+% list and so can never conflict with symbols read in by the user.
 % Of course I can worry about whether that state will survive fast-
 % loading and the preservation of heap images.
 
-fluid '(comment!-mark!* comma!-mark comma!-at!-mark!*
-        comment!-quote!* comment!-backquote!*);
+fluid '(comment!-mark!* comma!-mark!* comma!-at!-mark!*
+        comment!-quote!* comment!-backquote!* code!_list!*);
 
 if null comment!-mark!* then <<
   if memq('csl, lispsystem!*) then <<
@@ -752,7 +752,7 @@ symbolic procedure token!-number x;
 % where obviously the "%" comment markers are not used!
 % Negative numbers in hex are a bit of an oddity. I arrange that the
 % notation "0x~" will stand for an infinite string of leading 1 bits so
-% that 0x~f will be -1 and 0x~1 will be as 0x...ffff1 = -15. 
+% that 0x~f will be -1 and 0x~1 will be as 0x...ffff1 = -15.
       x := readch1();
       if (z := get(x, 'hexdigit)) then <<
          y := 16*y + z;
@@ -770,7 +770,7 @@ symbolic procedure token!-number x;
       if x eq '!. then <<
         dotp := t;
         go to hexnum1 >>;
-      if (x neq '!p and x neq '!P) then go to ret1; 
+      if (x neq '!p and x neq '!P) then go to ret1;
       dotp := t;
       if (x := readch1()) eq '!- then sign := t
       else if x eq '!+ then nil
@@ -942,7 +942,7 @@ fluid '(comment!-seen!* precomment!* within!-quote!* within!-backquote!*);
 
 % When this is called the input may have one or more comments ahead
 % of the actual item that is read. These are left in precomment!* when
-% when this returns a result. 
+% when this returns a result.
 
 symbolic procedure rread1();
   begin
@@ -1190,7 +1190,7 @@ symbolic procedure token;
                if !*rprint then
                   !*comment!* :=
                      append(!*comment!*, list list!-to!-string reverse txt);
-               if !*rstyle then  
+               if !*rstyle then
                   <<record!-input '!%;
                     record!-input list!-to!-string reverse txt>>;
 
@@ -1778,7 +1778,7 @@ symbolic procedure read_if();
 % Again note that eg "#if #if" will be treated as "#if !#     if"
 % rather than as a messed up attempt to nest conditionals.
 % Also comments will not get attached to or wothin the predicate for
-% an "#if". 
+% an "#if".
       x := rread1();
       if (scan_state() = 'NOT_WITHIN_IF) or
          (scan_state() = 'IF_TRUE) then <<
@@ -1807,7 +1807,7 @@ put('!#if, 'scan_action!*, 'read_if);
 
 symbolic procedure read_else();
    begin
-      skipping!* := nil; 
+      skipping!* := nil;
       if scan_state() = 'IF_TRUE then <<
          change_state 'IF_DONE;
          return scan_skip() >>
@@ -1863,7 +1863,7 @@ put('!#elif, 'scan_action!*, 'read_elif);
 
 symbolic procedure read_endif();
    begin
-      skipping!* := nil; 
+      skipping!* := nil;
       if scan_state() = 'NOT_WITHIN_IF then
          symerr("unexpected #endif", nil);
       pop_state();

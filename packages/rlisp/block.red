@@ -29,7 +29,7 @@ module block;   % Block statement and related operators.
 
 % $Id$
 
-fluid '(!*blockp !*novarmsg !*rlisp88 !*ldb !*ldbdepth !*ldbname);
+fluid '(!*blockp !*novarmsg !*rlisp88 !*ldb !*ldbdepth !*ldbname !*ldbseq);
 
 global '(!*vars!* cursym!* nxtsym!*);
 
