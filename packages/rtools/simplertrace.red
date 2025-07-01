@@ -79,7 +79,7 @@ symbolic procedure s!:argcount fn;
 symbolic procedure s!:argcount fn;
   begin
     scalar n;
-    if (n := get(fn, number!-of!-args)) then return n
+    if (n := get(fn, 'number!-of!-args)) then return n
     else if (n := symbol!-argcount fn) then return n
     else return nil
   end;
