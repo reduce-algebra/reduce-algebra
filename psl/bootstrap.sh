@@ -84,6 +84,11 @@ else
   here="$chere"
 fi
 
+if test "x$PACKAGEMAP" = "x"
+then
+PACKAGEMAP=package
+fi
+
 fasl=../red
 
 export fasl here psldir reduce
@@ -261,7 +266,7 @@ package!-remake2('remake,'support);
 
 begin
   scalar w, i1, i2, i3, i4, f1, f2, s, core;
-  i1 := open("$reduce/packages/package.map", 'input);
+  i1 := open("$reduce/packages/$PACKAGEMAP.map", 'input);
   s := rds i1;
   w := read();
   rds s;

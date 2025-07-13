@@ -650,6 +650,7 @@ windows_FALSE
 windows_TRUE
 sixty_four_FALSE
 sixty_four_TRUE
+PACKAGEMAP
 BUILD
 cygpath_FALSE
 cygpath_TRUE
@@ -12046,6 +12047,15 @@ $as_echo "$as_me: Build platform specified as $BUILD" >&6;}
 
 fi
 
+
+
+# Check whether --with-package was given.
+if test ${with_package+y}
+then :
+  withval=$with_package; PACKAGEMAP="$withval"
+else $as_nop
+  PACKAGEMAP="package"
+fi
 
 
 pslver=`"$srcdir/../scripts/pslver.sh"`

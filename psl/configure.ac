@@ -58,7 +58,7 @@ fi
 AC_SUBST(BUILD)
 
 AC_ARG_WITH(package,
-  AS_HELP_STRING([--with-package=PKG],
+  AS_HELP_STRING(AS_HELP_STRING([--with-package=PKG]),
                  [Use PKG.map rather than package.map to list modules]),
   [PACKAGEMAP="$withval"],
   [PACKAGEMAP="package"])

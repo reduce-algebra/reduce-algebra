@@ -78,6 +78,11 @@ else
 STORE=64000000
 fi
 
+if test "x$PACKAGEMAP" = "x"
+then
+PACKAGEMAP=package
+fi
+
 reduce=${reduce%/}  # get rid of any trailing slash.
 
 export fasl psldir reduce
@@ -97,7 +102,7 @@ load remake;
 
 begin
   scalar w, i, s;
-  i := open("$reduce/packages/package.map", 'input);
+  i := open("$reduce/packages/$PACKAGEMAP.map", 'input);
   s := rds i;
   w := read();
   rds s;

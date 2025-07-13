@@ -198,6 +198,7 @@ OBJEXT = @OBJEXT@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
+PACKAGEMAP = @PACKAGEMAP@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
@@ -608,6 +609,7 @@ uninstall-am: uninstall-local
 
 .PRECIOUS: Makefile
 
+export PACKAGEMAP = @PACKAGEMAP@
 
 all:
 # The arrangement here is somewhat odd to try to cope with the way that this
@@ -630,7 +632,7 @@ force:
 red/bootstrap.img:	psl/* \
 		$(srcdir)/symget.dat $(srcdir)/bootstrap.sh \
 		$(srcdir)/pslcompat.sl \
-		$(srcdir)/boot.sl $(reducec)/packages/package.map \
+		$(srcdir)/boot.sl $(reducec)/packages/@PACKAGEMAP@.map \
 		$(reducec)/packages/support/*.red \
 		$(reducec)/packages/rlisp/*.red \
 		$(reducec)/packages/alg/*.red  \

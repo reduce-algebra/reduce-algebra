@@ -149,6 +149,11 @@ else
 STORE=64000000
 fi
 
+if test "x$PACKAGEMAP" = "x"
+then
+PACKAGEMAP=package
+fi
+
 export here fasl psldir reduce
 
 if test -d "$logdir"
@@ -217,8 +222,8 @@ cd psl
 (prog (i w e r r1 mods)
     (cond
        ((and (boundp 'minireduce) (symbol!-value 'minireduce))
-        (setq i "package.map"))
-       (t (setq i "$reduce/packages/package.map")))
+        (setq i "$PACKAGEMAP.map"))
+       (t (setq i "$reduce/packages/$PACKAGEMAP.map")))
     (setq i (open i 'input))
     (setq i (rds i))
     (setq e !*echo)
