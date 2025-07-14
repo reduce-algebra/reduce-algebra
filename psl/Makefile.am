@@ -24,6 +24,8 @@ reduce=$(reducec)
 here=$(herec)
 endif
 
+export PACKAGEMAP = @PACKAGEMAP@
+
 all:
 # The arrangement here is somewhat odd to try to cope with the way that this
 # Makefile gets extended via created include files when it runs.
@@ -46,7 +48,7 @@ force:
 red/bootstrap.img:	psl/* \
 		$(srcdir)/symget.dat $(srcdir)/bootstrap.sh \
 		$(srcdir)/pslcompat.sl \
-		$(srcdir)/boot.sl $(reducec)/packages/package.map \
+		$(srcdir)/boot.sl $(reducec)/packages/@PACKAGEMAP@.map \
 		$(reducec)/packages/support/*.red \
 		$(reducec)/packages/rlisp/*.red \
 		$(reducec)/packages/alg/*.red  \

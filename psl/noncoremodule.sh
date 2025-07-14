@@ -78,6 +78,11 @@ else
 STORE=64000000
 fi
 
+if test "x$PACKAGEMAP" = "x"
+then
+PACKAGEMAP=package
+fi
+
 export fasl psldir reduce
 
 psl/bpsl -td $STORE -f red/reduce.img --no-rcfile <<XXX > buildlogs/$1.blg
@@ -100,7 +105,7 @@ load remake;
 
 begin
   scalar w, i, s;
-  i := open("$reduce/packages/package.map", 'input);
+  i := open("$reduce/packages/$PACKAGEMAP.map", 'input);
   s := rds i;
   w := read();
   rds s;
