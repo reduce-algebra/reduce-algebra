@@ -33,14 +33,14 @@
 # % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # % POSSIBILITY OF SUCH DAMAGE.
 #
-###############################################################################
+##############################################################################
 # Revisions
 #
 # 27-Apr-87 (Leigh Stoller)
 #  Turn on fastcar operations when compiling PSL files.
 ##############################################################################
 
-pushd $1
+pushd $1    # cd into the directory where the .sl file is
 
 $psys/pslcomp << EOF
 % Put the current directory at the end for automated scripts to protect
@@ -53,9 +53,9 @@ $psys/pslcomp << EOF
 %% the assumption that car/car of NIL was illegal, it is not necessary
 %% to generate code to test for this, slowing down all car/cdr operations
 %% in the process. For user code though, it defaults to off for safety.
-% (setq loaddirectories!* (cons "$pl/cross/" loaddirectories!*))
-%(load macintel64-lap) (load macintel64-cmac)
 (on fastcar)
+
+% (setq loaddirectories!* (cons "$pl/cross/" loaddirectories!*))
 (setq *syslisp t)
 %(on pcmac)
 (faslout "\$pnkl/$2")
