@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
-<!-- 
 
-    <script src="https://unpkg.com/mathlive"></script>
+<!--
+
+<script src="https://unpkg.com/mathlive"></script>
     <script type="module">
        import { MathfieldElement } from
           'https://unpkg.com/mathlive/dist/mathlive.min.mjs';
     </script>
--->   
 
-
+-->
     <script src='http://localhost:8088/dist/mathlive.min.js'> </script>
 
 
@@ -18,10 +18,9 @@
        import { MathfieldElement } from
           'http://localhost:8088/dist/mathlive.min.mjs';
     </script>
-   
 
 
-<!-- This works despite cors moans. Additionally KaTeX woff2 fonts need to be installed on the OS. 
+<!-- This worked despite cors moans. Additionally KaTeX woff2 fonts need to be installed on the OS. 
     <script src='./dist/mathlive.min.js'> </script>
 
 
@@ -33,7 +32,8 @@
     
 <body theme="dark">
     <style>          
-    math-field {margin: 0em;
+    math-field {display: block;
+                margin: 0em;
                 padding: 2px;
                 border-radius: 5px;
                 border: 1px solid rgba(0, 0, 0, .3); 
@@ -210,16 +210,15 @@ var hist = [];
 var hist_index = 1;
 
 function mkInputMf(){
-    var redInMf = new MathfieldElement({virtualKeyboardMode: 'manual',
-                                     // smartMode: 'false',
-                                        smartFence: 'false',
-                                        inlineShortcutTimeout: 1000,
-                                        defaultMode: 'math',
-                                        mathModeSpace: '\\:',
-                                        smartSuperscript: 'false',
-                                       });
-
-    redInMf.addEventListener('pointerup',
+    var redInMf = new MathfieldElement();
+    redInMf.addEventListener('mount', (ev) => { 
+            redInMf.mathVirtualKeyboardPolicy = 'manual';
+            redInMf.smartFence = 'false';
+            redInMf.inlineShortcutTimeout = 1000;
+            redInMf.defaultMode = 'math';
+            redInMf.mathModeSpace = '\\:';
+            redInMf.smartSuperscript = 'false';
+            redInMf.addEventListener('pointerup',
                              (ev) => {console.log(JSON.stringify(redInMf.selection));});
                                  //  {console.log(redInMf.selection.ranges);});
 
@@ -247,32 +246,23 @@ function mkInputMf(){
     
 //    });
     
-    
-    redInMf.setOptions({placeholderSymbol: "▢",
-                    //  fontsDirectory: '',
- 
-                    //  keybindings: [ 
-                    //                ...redInMf.getOptions('keybindings'),
-                    //                { key: '[numpadEnter]', command: 'addRowAfter },
-                    //                ],
-                        onInlineShortcut: (_redInMf, s) => {console.log('Multichar ',s);
+              redInMf.placeholderSymbol = "▢";
+              redInMf.onInlineShortcut = (_redInMf, s) => {console.log('Multichar ',s);
 
       if (/^([a-zA-Z]|(![\x00-\x7F]))([a-zA-Z0-9_]|(![\x00-\x7F]))*([a-zA-Z0-9_]|(![\x00-\x7F]))$/.test(s))
                                           {console.log('Multichar true',s); return `\\mathrm{${s}}`};
                                           return '';
-                                                            },
-                        macros: {
-//        ...redInMf.getOptions('macros'),
+                                                            };
+             redInMf.macros = {...redInMf.macros,
 // Associate the latex printing in the editor.
 
-                                 quote: '^{\\prime}',
-                                 Hodge: '^{\\star}',    
-//                               smallfrac: '{}^{#1}\\!\\!/\\!{}_{#2}',
-                                },
+                               quote: '^{\\prime}',
+                               Hodge: '^{\\star}',    
+//                             smallfrac: '{}^{#1}\\!\\!/\\!{}_{#2}',
+                      };
             
             
-                        inlineShortcuts: {
-                                          ...redInMf.getOptions('inlineShortcuts'), // Preserve default
+              redInMf.inlineShortcuts = { ...redInMf.inlineShortcuts, // Preserve default
 
 // Shortcuts for dealing with sub and superscripts.
 // The first one is used to 'bind' indices to the previously typed character or group.
@@ -281,34 +271,37 @@ function mkInputMf(){
 // brackets is done to ease parsing on the REDUCE side.
 // The last index shortcut is for stacked scripts (i.e. sup- over subscript). Positioning
 // is poor in that case. Beware that this is not LaTeX semantics.
-                                          "@":  { mode: 'math', value: '\\enskip{#@}' },
-                                          "^":  { mode: 'math', value: '{^{{#?}}}' },
-                                          "_":  { mode: 'math', value: '{_{{#?}}}' },
-                                          "_^": { mode: 'math', value: '{{_{{#?}}^{{#?}}}}' },
+                                "@":  { mode: 'math', value: '\\enskip{#@}' },
+                                "^":  { mode: 'math', value: '{^{{#?}}}' },
+                                "_":  { mode: 'math', value: '{\\phantom{}_ {{#?}}}' },
+//                                "_^": { mode: 'math', value: '{{_{{#?}}^{{#?}}}}' },
 
 // For easy input of wedge.
-                                          "^^": { mode: 'math', value: '\\wedge' },
+                                "^^": { mode: 'math', value: '\\wedge' },
 // Now a construct to input a star in a superscript position. The actual typesetting in the
 // editor is done via a macro.
-                                          "^*": { mode: 'math', value: '\\Hodge{#?}' },
+                                "^*": { mode: 'math', value: '\\Hodge{#?}' },
 // Input of Lisp quote. This is not quite working correctly at the moment and needs more work.
-                                          "'":  { mode: 'math', value: "\\quote" },
+                                "'":  { mode: 'math', value: "\\quote" },
 // Easy input for Pounds. Used in Excalc for the Lie derivative.
-                                          "pounds": '\\pounds',
-                                          "int": '\\int{#?}{\\,\\operatorname{d}\\,}{#?}',
+                                "pounds": '\\pounds',
+                                "int": '\\int{#?}{\\,\\operatorname{d}\\,}{#?}',
 // Shortcut for exponentiation.                                          
-                                          "**": '^{#?}',
-                                          "mat": '\\begin{pmatrix}#0\\end{pmatrix}\\:',
-                                          "smat":'\\left(\\begin{smallmatrix}#0\\end{smallmatrix}\\right)\\:',
-                                         },
-});
+                                "**": '^{#?}',
+                                "mat": '\\begin{pmatrix}#0\\end{pmatrix}\\:',
+                                "smat":'\\left(\\begin{smallmatrix}#0\\end{smallmatrix}\\right)\\:',
+};
+
+  });
 
 
   
     document.body.appendChild(redInMf);
     redInMf.focus();
 // The next enables multiline input.
-    redInMf.setValue('\\begin{multline}#0\\end{multline}',{focus: true, selectionMode: "placeholder"});
+    redInMf.setValue('#0',
+// '\\begin{multline}#0\\end{multline}',
+{focus: true, selectionMode: "placeholder"});
     
     let button = document.createElement('button');    
     button.id = 'curSubmit';
@@ -320,16 +313,16 @@ function mkInputMf(){
 function doSubmit(redInMf){
     var redOutMf = new MathfieldElement( );
                                         
-    redInMf.setOptions({readOnly: 'true'});
-    redOutMf.setOptions({readOnly: 'true'});
+    redInMf.readOnly = 'true';
+    redOutMf.readOnly = 'true';
     hist.push(redInMf.value);
-
+//console.log(redInMf.getValue('math-ml'));
     passToReduce(redInMf.value)
        .then(function(result) {if ( result == " " )
                                   {document.getElementById('curSubmit').remove();
                                    mkInputMf();
-                                  } else {redOutMf.value = //result;
-                                            '\\begin{align}' + result + '\\end{align}';
+                                  } else {redOutMf.value = result;
+//                                            '\\begin{align}' + result + '\\end{align}';
                                           console.log(result);
                                           document.getElementById('curSubmit').remove();
                                           document.body.appendChild(redOutMf);
