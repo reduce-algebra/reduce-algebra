@@ -424,3 +424,10 @@
 /web/htdocs/reduce-ide/packages
 /web/htdocs/reduce-ide/reduce-ide.pdf
 /web/htdocs/reduce-ide/reduce-ide_html
+
+# /winbuild64/
+/winbuild64/Output
+/winbuild64/reduce.iss
+/winbuild64/reduce.img
+/winbuild64/*.log
+/winbuild64/*.stamp
