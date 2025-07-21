@@ -265,6 +265,7 @@
  (grinder       "hephys"                                     csl psl)
  (f5            "f5"                               test      csl psl)
  (embwebgui     "embwebgui"                                  csl)
+ (gf2           "gf2"                              test      csl psl)
 )
 
 % End of package.map
