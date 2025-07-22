@@ -1,5 +1,7 @@
 module gf2;  % Polynomial arithmetic where coefficients are in GF(2).
 
+lisp if !*csl then enable!-errorset(3, 3); % Debugging option while I develop.
+
 % Author: Arthur Norman
 % Copyright (c) 2025 Arthur Norman
 
@@ -59,16 +61,18 @@ module gf2;  % Polynomial arithmetic where coefficients are in GF(2).
 %   gf2_lt                    get leading term of a distributed form
 %   gf2_red                   get reductum (ie remove leading term)
 %   gf2_plus, gf2_times       + and *
-%   gf2_term_times(term,poly) Multiply term and polynomial
-%   gf2_term_gcd              a term that is the gcd of two terms
-%   gf2_term_lcm              similarly for lcm
+%   gf2_times_term(term,poly) multiply term and polynomial
+%   gf2_quotient_two_terms(t1,t2) divide one term by another. Return nil
+%                                 if not possible.
+%   gf2_gcd_two_terms              a term that is the gcd of two terms
+%   gf2_lcm_two_terms              similarly for lcm
 
 % Remember that over GF(2) subtraction is the same as addition.
 
 create!-package('(gf2 gf2groeb), nil);
 
 
-% A flag sparse_gf2 selects as between a sense and a sparse internal
+% A flag gf2_sparse selects as between a sense and a sparse internal
 % representation. The default is sparse. This must be set before declaring
 % variables. In the "dense" case you may set the (symbolic mode) variable
 % gf2_degree_bits to control space use in a bitmap. The command
@@ -88,7 +92,7 @@ create!-package('(gf2 gf2groeb), nil);
 % Any use of gf2_vars cancels the status of any previous declarations or
 % computations.
 
-switch sparse_gf2=on;
+switch gf2_sparse=on;
 
 fluid '(gf2_var_names gf2_count gf2_degree_bits gf2_overflow_bits);
 gf2_var_names := mkhash(10, 0);
@@ -152,7 +156,7 @@ symbolic procedure gf2_vars l;
     clrhash gf2_var_names;
     if not eqcar(l, 'list) then rederr "gf2_vars needs a list as its argument";
     for each v in cdr l do <<
-      if not !*sparse_gf2 then
+      if not !*gf2_sparse then
         gf2_overflow_bits :=
           lshift(gf2_overflow_bits, gf2_degree_bits+1) + guard;
       gf2_count := gf2_count+1;
@@ -210,20 +214,20 @@ symbolic procedure gf2_index v;
 symbolic procedure gf2_plus(u, v);
   if eqcar(u, '!*gf2) then gf2_plus(cdr u, v)
   else if eqcar(v, '!*gf2) then gf2_plus(u, cdr v)
-  else if !*sparse_gf2 then sparse_gf2_plus(u, v)
+  else if !*gf2_sparse then gf2_sparse_plus(u, v)
   else dense_gf2_plus(u, v);
 
-symbolic procedure sparse_gf2_plus(u, v);
+symbolic procedure gf2_sparse_plus(u, v);
   if null u then v
   else if null v then u
-  else if gf2_lt u = gf2_lt v then sparse_gf2_plus(gf2_red u, gf2_red v)
-  else if sparse_gf2_before(gf2_lt u, gf2_lt v) then
-    gf2_lt u . sparse_gf2_plus(gf2_red u, v)
-  else gf2_lt v . sparse_gf2_plus(u, gf2_red v);
+  else if gf2_lt u = gf2_lt v then gf2_sparse_plus(gf2_red u, gf2_red v)
+  else if gf2_sparse_before(gf2_lt u, gf2_lt v) then
+    gf2_lt u . gf2_sparse_plus(gf2_red u, v)
+  else gf2_lt v . gf2_sparse_plus(u, gf2_red v);
 
-symbolic procedure sparse_gf2_before(a, b);
+symbolic procedure gf2_sparse_before(a, b);
   if null a then
-    if null b then rederr "a and b identical in sparse_gf2_before"
+    if null b then rederr "a and b identical in gf2_sparse_before"
     else nil
   else if null b then t
 % Each of a and b will be lists like ((varindex . degree) ...) and so
@@ -233,7 +237,7 @@ symbolic procedure sparse_gf2_before(a, b);
   else if caar a < caar b then nil
   else if cdar a > cdar b then t     % Order on leading degree if vars match
   else if cdar a < cdar b then nil
-  else sparse_gf2_before(cdr a, cdr b);% Else consider next variable
+  else gf2_sparse_before(cdr a, cdr b);% Else consider next variable
 
 symbolic procedure dense_gf2_plus(u, v);
   if null u then v
@@ -247,47 +251,79 @@ symbolic procedure dense_gf2_plus(u, v);
 symbolic procedure gf2_times(u, v);
   if eqcar(u, '!*gf2) then gf2_times(cdr u, v)
   else if eqcar(v, '!*gf2) then gf2_times(u, cdr v)
-  else if !*sparse_gf2 then sparse_gf2_times(u, v)
+  else if !*gf2_sparse then gf2_sparse_times(u, v)
   else dense_gf2_times(u, v);
 
-symbolic procedure sparse_gf2_times(u, v);
+symbolic procedure gf2_sparse_times(u, v);
   begin
     scalar r;
 % I think it is important to use the smallest (ie the last) term of
-% u first because that makes eacg sparse_gf2_plus merge in its data towards
+% u first because that makes eacg gf2_sparse_plus merge in its data towards
 % the front of the growing list r. Without the call to reverse it would
 % tend to concatenate and that would involve scanning all the way down r.
     for each a in reverse u do
-      r := sparse_gf2_plus(r, sparse_gf2_timesterm(a, v));
+      r := gf2_sparse_plus(r, gf2_sparse_times_term(a, v));
     return r
   end;
 
-symbolic procedure sparse_gf2_timesterm(a, v);
-  for each b in v collect sparse_gf2_timesterms(a, b);
+symbolic procedure gf2_times_term(a, v);
+  if !*gf2_sparse then gf2_sparse_times_term(a, v)
+  else dense_gf2_times_term(a, v);
 
-symbolic procedure sparse_gf2_timesterms(a, b);
+symbolic procedure gf2_sparse_times_term(a, v);
+  for each b in v collect gf2_sparse_times_two_terms(a, b);
+
+symbolic procedure gf2_sparse_times_two_terms(a, b);
   if null a then b
   else if null b then a
-  else if caar a < caar b then car a . sparse_gf2_timesterms(cdr a, b)
-  else if caar a > caar b then car b . sparse_gf2_timesterms(a, cdr b)
-  else (caar a . (cdar a + cdar b)) . sparse_gf2_timesterms(cdr a, cdr b);
+  else if caar a < caar b then car a . gf2_sparse_times_two_terms(cdr a, b)
+  else if caar a > caar b then car b . gf2_sparse_times_two_terms(a, cdr b)
+  else (caar a . (cdar a + cdar b)) . gf2_sparse_times_two_terms(cdr a, cdr b);
 
 symbolic procedure dense_gf2_times(u, v);
   begin
     scalar r;
     for each a in reverse u do
-      r := dense_gf2_plus(r, dense_gf2_timesterm(a, v));
+      r := dense_gf2_plus(r, dense_gf2_times_term(a, v));
     return r
   end;
 
-symbolic procedure dense_gf2_timesterm(a, v);
-  for each b in v collect dense_gf2_timesterms(a, b);
+symbolic procedure dense_gf2_times_term(a, v);
+  for each b in v collect dense_gf2_times_two_terms(a, b);
 
-symbolic procedure dense_gf2_timesterms(a, b);
+symbolic procedure dense_gf2_times_two_terms(a, b);
   begin
     scalar r := a + b;
     if land(r, gf2_overflow_bits) neq 0 then
       rederr "exponent overflow in gf2_times"
+    else return r
+  end;
+
+symbolic procedure gf2_quotient_two_terms(a, b);
+  if !*gf2_sparse then gf2_sparse_quotient_two_terms(a, b)
+  else gf2_dense_quotient_two_terms(a, b);
+
+symbolic procedure gf2_sparse_quotient_two_terms(a, b);
+  begin
+    scalar w, r, more:=t;
+    while a and b and more do <<
+      if caar a < caar b then push(pop b, r)
+      else if caar a > caar b then push(pop a, r)
+      else <<
+        w := cdar a - cdar b;
+        if w < 0 then more := nil   % breaks out of loop with b non-nil
+        else if w neq 0 or caar a = 0 then <<
+          pop b; push(car pop a . w, r) >>
+        else << pop a; pop b >> >> >>;
+    if b then return nil;           % "does not go".
+    while r do push(pop r, a);
+    return a
+  end;
+    
+symbolic procedure dense_gf2_quotient_two_terms(a, b);
+  begin
+    scalar r := a - b;
+    if land(r, gf2_overflow_bits) neq 0 then return nil
     else return r
   end;
 
@@ -298,14 +334,14 @@ symbolic procedure dense_gf2_timesterms(a, b);
 symbolic procedure sf_to_gf2 u;
   if null u then nil
   else if u = 1 then <<
-    if !*sparse_gf2 then '((0 . 0))
+    if !*gf2_sparse then '((0 . 0))
     else '(0) >>
   else if domainp u then rederr "only the constant 1 is allowed here"
   else begin;
     scalar var:=mvar u, x:=ldeg u, c:=lc u, r:= red u, w;
     w := gf2_index var;
     if null w then rederr "undeclared variable in gf2 expression";
-    if !*sparse_gf2 then w := list list(0 . x, w . x)
+    if !*gf2_sparse then w := list list(0 . x, w . x)
     else <<
       if x>=lshift(1, gf2_degree_bits) then
         rederr "degree too high in convert_to_gf2";
@@ -320,7 +356,7 @@ symbolic procedure sf_to_gf2 u;
 
 symbolic procedure gf2_to_sf u;
   if eqcar(u, '!*gf2) then gf2_to_sf cdr u
-  else if !*sparse_gf2 then sparse_gf2_to_sf u
+  else if !*gf2_sparse then gf2_sparse_to_sf u
   else dense_gf2_to_sf u;
 
 symbolic procedure gf2_to_sq u;
@@ -331,15 +367,15 @@ symbolic procedure gf2_to_prefix u;
 
 flag('(gf2_to_prefix), 'opfn);
 
-symbolic procedure sparse_gf2_to_sf u;
+symbolic procedure gf2_sparse_to_sf u;
   begin
     scalar r;
     for each a in reverse u do
-      r := addf(r, sparse_gf2_term_to_sf a);
+      r := addf(r, gf2_sparse_term_to_sf a);
     return r
   end;
 
-symbolic procedure sparse_gf2_term_to_sf a;
+symbolic procedure gf2_sparse_term_to_sf a;
   begin
     scalar r := 1, v;
 % I will ignore the first term of u because that just holds the total
@@ -429,16 +465,16 @@ symbolic operator prefix_to_gf2;
 
 % I need to be able to take gcd and lcm of single terms.
 
-symbolic procedure gf2_term_gcd(a, b);
-  if !*sparse_gf2 then sparse_gf2_term_gcd(a, b)
-  else dense_gf2_term_gcd(a, b);
+symbolic procedure gf2_gcd_two_terms(a, b);
+  if !*gf2_sparse then gf2_sparse_gcd_two_terms(a, b)
+  else dense_gf2_gcd_two_terms(a, b);
 
 % If a and b have entries (v . x1) and (v . x2) the gcd will have
 % one (v . min(x1,x2)). Any variables that are present in only one of
 % a and b do not show up in the gcd. The total degree term has to be
 % calculated afresh.
 
-symbolic procedure sparse_gf2_term_gcd(a, b);
+symbolic procedure gf2_sparse_gcd_two_terms(a, b);
   begin
     scalar n:=0, m, r;
     a := cdr a;   % move past the overall weight.
@@ -454,18 +490,18 @@ symbolic procedure sparse_gf2_term_gcd(a, b);
     return (0 . n) . reverse r
   end;
 
-symbolic procedure dense_gf2_term_gcd(a, b);
+symbolic procedure dense_gf2_gcd_two_terms(a, b);
   nil;
 
-symbolic procedure gf2_term_lcm(a, b);
-  if !*sparse_gf2 then sparse_gf2_term_lcm(a, b)
-  else dense_gf2_term_lcm(a, b);
+symbolic procedure gf2_lcm_two_terms(a, b);
+  if !*gf2_sparse then gf2_sparse_lcm_two_terms(a, b)
+  else dense_gf2_lcm_two_terms(a, b);
 
 % (v . x1) and (v . x2) lead to (v . max(x1, x2)) and if a variable
 % is mentioned in one but not both of a, b then it appears unchanged
 % in the lcm.
 
-symbolic procedure sparse_gf2_term_lcm(a, b);
+symbolic procedure gf2_sparse_lcm_two_terms(a, b);
   begin
     scalar n:=0, m, r;
     a := cdr a;
@@ -495,7 +531,7 @@ symbolic procedure sparse_gf2_term_lcm(a, b);
     return (0 . n) . reverse r
   end;
 
-symbolic procedure dense_gf2_term_lcm(a, b);
+symbolic procedure dense_gf2_lcm_two_terms(a, b);
   nil;
 
 endmodule;
