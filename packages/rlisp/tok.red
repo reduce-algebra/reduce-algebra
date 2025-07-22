@@ -1476,7 +1476,9 @@ symbolic procedure filenderr;
       curescaped!* := nil;
       cursym!* := '!*semicol!*;
       eof!* := eof!*+1;
-      if terminalp() then error1()
+      if terminalp() then <<
+        if !*csl then enable!-errorset(0, 0);
+        error1() >>
        else <<
          terpri();
          if ifl!* then << prin2 "*** End-of-file read in file ";
@@ -1659,7 +1661,7 @@ symbolic procedure read_slash_star_comment();
                   !*comment!* := append(!*comment!*,
                                         list list2string reversip txt);
                return >>
-            else if y eq !$eof!$ then fileenderr()
+            else if y eq !$eof!$ then filenderr()
             else txt := y . x . txt
          else if x = !$eof!$ then rederr "EOF encountered in comment"
          else txt := x . txt;
