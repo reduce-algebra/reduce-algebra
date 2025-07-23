@@ -62,16 +62,61 @@ symbolic procedure gf2_groeb F;
   begin
     scalar G;
     if not eqcar(F, 'list) then rederr "gf2_groeb needs a list as input";
-    G := for each u in cdr F collect prefix_to_gf2 u;
+% Note that I untag the distributed forms (ie remove the "!*g2f" from the
+% front of the list.
+    G := for each u in cdr F collect cdr prefix_to_gf2 u;
     G := gf2_expand_base G;
     return 'list . for each u in g collect gf2_to_prefix u
   end;
 
+% I am going to code this with emphasis on clarity and minimal code
+% and no real concern about performance!
+
 symbolic procedure gf2_expand_base G;
-  G;  % Leave unaltered just for now.
+  begin
+    scalar ul, S,
+           pending:=for each p on G collect p;
+% Here pending is a list of points in G where the first element has not
+% been looked at. So I can take an item from pending and make an S
+% polynomial from its first and each of the remaining items in it. If this S
+% is non-zero I add it to G and add an item to pending so it will in due
+% course be processed. This scheme should avoid computing both S(u,v) and
+% S(v,u).
+% It would be acceptable to make pending a priority queue rather than
+% a simple stack if one could invent a cheap heuristic that would lead to
+% productive cases being handled first.
+    while pending do <<
+      ul := pop pending;
+princ "ul="; print ul;
+      for each v in cdr ul do <<
+        S := gf2_S(car ul, v, G);
+        if S then <<
+% Am I supposed to reduce everything in G by S here? 
+          G := S . G;
+          push(G, pending) >> >> >>;
+% To get a reduced base here I would need to scan G and spot cases
+% where one leading coefficient divided nicely into the other...
+    return G
+  end;
+
+symbolic procedure gf2_S(u, v, G);
+  begin
+    scalar gg := gf2_gcd_two_terms(gf2_lt u, gf2_lt v),
+           u0 := gf2_quotient_two_terms(gf2_lt u, gg),
+           v0 := gf2_quotient_two_terms(gf2_lt v, gg),
+           S := gf2_plus(gf2_times_term(v0, u),
+                         gf2_times_term(u0, v));
+    printc "Generate S poly from";
+    princ "u="; print u;
+    princ "v="; print v;
+    princ "S="; print S;
+% Now I need to reduce S using all the polynomials on G
+    return nil
+  end;
+
+tr gf2_S, gf2_term_gcd, gf2_quotient_two_terms;
 
 symbolic operator gf2_groeb;
-
 
 endmodule;
 
