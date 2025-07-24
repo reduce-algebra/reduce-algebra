@@ -58,6 +58,15 @@ module gf2groeb;
 % polynominals. It make a list G that is the same set but in a distributed
 % representation. This is processed and then converted back to Reduce form.
 
+
+% The calculations here can become heavy so I provide (crude) ways to
+% cap resource usage...
+global '(gf2_time_limit gf2_steps_count);
+gf2_time_limit := 5;
+gf2_steps_count := 0;
+
+fluid '(G); % To interact via resource!-limit
+
 symbolic procedure gf2_groeb F;
   begin
     scalar G;
@@ -65,7 +74,8 @@ symbolic procedure gf2_groeb F;
 % Note that I untag the distributed forms (ie remove the "!*g2f" from the
 % front of the list.
     G := for each u in cdr F collect cdr prefix_to_gf2 u;
-    G := gf2_expand_base G;
+    resource!-limit(
+      '(setq G (gf2_expand_base G)), gf2_time_limit);
     return 'list . for each u in g collect gf2_to_prefix u
   end;
 
@@ -87,11 +97,14 @@ symbolic procedure gf2_expand_base G;
 % productive cases being handled first.
     while pending do <<
       ul := pop pending;
-princ "ul="; print ul;
       for each v in cdr ul do <<
+        if (gf2_steps_count := gf2_steps_count+1) > 1000 then
+          rederr "too many steps - giving up";
         S := gf2_S(car ul, v, G);
         if S then <<
-% Am I supposed to reduce everything in G by S here? 
+% Am I supposed to reduce everything in G by S here?
+          optterpri();
+          princ "Add in a new base polynomial "; print gf2_to_prefix S;
           G := S . G;
           push(G, pending) >> >> >>;
 % To get a reduced base here I would need to scan G and spot cases
@@ -106,15 +119,38 @@ symbolic procedure gf2_S(u, v, G);
            v0 := gf2_quotient_two_terms(gf2_lt v, gg),
            S := gf2_plus(gf2_times_term(v0, u),
                          gf2_times_term(u0, v));
-    printc "Generate S poly from";
-    princ "u="; print u;
-    princ "v="; print v;
-    princ "S="; print S;
 % Now I need to reduce S using all the polynomials on G
-    return nil
+    return gf2_reduce(S, G)
   end;
 
-tr gf2_S, gf2_term_gcd, gf2_quotient_two_terms;
+% If the leading coefficient of u (u0) is divisible by the leading
+% coefficient of v (v0) set u = u + (u0/v0)*v. Repeat this step as
+% many times as possible. 
+
+fluid '(changed);
+
+symbolic procedure gf2_reduce_by_one_poly(u, v);
+  begin
+    scalar q;
+    while u and (q := gf2_quotient_two_terms(gf2_lt u, gf2_lt v)) do <<
+      if (gf2_steps_count := gf2_steps_count+1) > 1000 then
+        rederr "too many steps - giving up";
+      u := gf2_plus(u, gf2_times_term(q, v));
+      changed := t >>;
+    return u
+  end;
+
+symbolic procedure gf2_reduce(u, G);
+  begin
+    scalar changed, G1;
+    repeat <<
+      G1 := G;
+      changed := nil;
+      while u and G1 do
+        u := gf2_reduce_by_one_poly(u, pop G1)
+           >> until not changed;
+    return u
+  end;
 
 symbolic operator gf2_groeb;
 

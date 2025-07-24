@@ -307,7 +307,7 @@ symbolic procedure gf2_sparse_quotient_two_terms(a, b);
   begin
     scalar w, r, more:=t;
     while a and b and more do <<
-      if caar a < caar b then push(pop b, r)
+      if caar a < caar b then more := nil
       else if caar a > caar b then push(pop a, r)
       else <<
         w := cdar a - cdar b;
@@ -319,7 +319,7 @@ symbolic procedure gf2_sparse_quotient_two_terms(a, b);
     while r do push(pop r, a);
     return a
   end;
-    
+
 symbolic procedure dense_gf2_quotient_two_terms(a, b);
   begin
     scalar r := a - b;

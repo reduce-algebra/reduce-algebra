@@ -5,7 +5,6 @@ load_package gf2;
 on echo;
 if !*csl then lisp force!-output!-radix 16$
 
-
 operator vv;
 gf2_vars {x, y, z};
 d := prefix_to_gf2 (x^2*y + y^2 + z);
