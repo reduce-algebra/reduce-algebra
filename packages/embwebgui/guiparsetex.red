@@ -59,11 +59,13 @@ newtok '((!\ !:) !\!:);
 newtok '((!\ l e f t) !\left);
 newtok '((!\ r i g h t) !\right);
 newtok '((!\ q u a d) !\quad);
+newtok '((!\ !\) !\!\);
 
 deflist('((!\!! skipOverLatexCmd) (!\!; skipOverLatexCmd)
           (!\!, skipOverLatexCmd) (!\!: skipOverLatexCmd)
           (!\left skipOverLatexCmd) (!\right skipOverLatexCmd)
-          (!\quad skipOverLatexCmd)), 'scan_action!*);
+          (!\quad skipOverLatexCmd) (!\!\ skipOverLatexCmd)),
+         'scan_action!*);
 
 % Conversion of brackets.
 
@@ -203,10 +205,10 @@ symbolic procedure latexMultlineStat(u);
    
 put('multline, 'latexEnvStat, 'latexMultlineStat);
 
-newtok '((!\ !\) !\!\);
 
 symbolic procedure latexMatrixStat(u);
    begin scalar x, m, !*ignoreLatexEOL;
+     remprop('!\!\, 'scan_action!*);
      flag('(& !\end), 'delim);
      flag('(!\!\), 'delim);
      a: x := xread nil . x;
@@ -222,6 +224,7 @@ symbolic procedure latexMatrixStat(u);
         then u := 'mat;
      scan();
      scan();
+     put('!\!\, 'scan_action!*, 'skipOverLatexCmd);
      return u . reverse m
      end;
  
@@ -233,6 +236,17 @@ put('Vmatrix, 'latexEnvStat, 'latexMatrixStat);
 put('smallmatrix, 'latexEnvStat, 'latexMatrixStat);
 
 put('cases, 'latexEnvStat, 'latexMatrixStat);
+
+symbolic procedure latexDisplayLines;
+   begin scalar x, p;
+    scan();
+    x := xread 'group;
+    cursym!* := '!*semicol!*;
+    return x
+   end;
+
+newtok '((!\ d i s p l a y l i n e s) !\displaylines);
+put('!\displaylines, 'stat, 'latexDisplayLines);
   
 newtok '((!\ c o l o n e q) setq);
 newtok '((!\ c d o t) times);

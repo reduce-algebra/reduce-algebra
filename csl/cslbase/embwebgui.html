@@ -222,7 +222,7 @@ function mkInputMf(){
                              (ev) => {console.log(JSON.stringify(redInMf.selection));});
                                  //  {console.log(redInMf.selection.ranges);});
 
-//  redInMf.addEventListener('keydown', (ev) => {console.log(ev.code); console.log(ev.which); console.log(ev.ctrlKey); console.log(ev.key);
+  redInMf.addEventListener('keydown', (ev) => {console.log(ev.code); console.log(ev.which); console.log(ev.ctrlKey); console.log(ev.key);
 //      if (ev.code === 'numpadEnter') { //this is not working!!
 //                                var e = new KeyboardEvent('keydown');
 //                                e.ctrlKey = 'true';
@@ -235,6 +235,12 @@ function mkInputMf(){
 //    if (ev.code === 'KeyS') {ev.preventDefault();
 //                             console.log(ev.which);
 //                             console.log(ev.code); //return false;
+      if (ev.code === 'Enter') {ev.preventDefault();
+//                             console.log(ev.which);
+//                             console.log(ev.code);
+                               redInMf.executeCommand("addRowAfter");
+                               return '';};
+});
 //    } else if (ev.code === 'Space') {//ev.preventDefault();
 //                                 console.log(ev.which);
 //                                     console.log(ev.code);
