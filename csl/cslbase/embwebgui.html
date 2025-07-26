@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
-<!--
+  <!--
 
 <script src="https://unpkg.com/mathlive"></script>
     <script type="module">
@@ -11,16 +11,13 @@
     </script>
 
 -->
-    <script src='http://localhost:8088/dist/mathlive.min.js'> </script>
+  <script src="http://localhost:8088/dist/mathlive.min.js"></script>
 
+  <script type="module">
+    import { MathfieldElement } from "http://localhost:8088/dist/mathlive.min.mjs";
+  </script>
 
-    <script type="module">
-       import { MathfieldElement } from
-          'http://localhost:8088/dist/mathlive.min.mjs';
-    </script>
-
-
-<!-- This worked despite cors moans. Additionally KaTeX woff2 fonts need to be installed on the OS. 
+  <!-- This worked despite cors moans. Additionally KaTeX woff2 fonts need to be installed on the OS. 
     <script src='./dist/mathlive.min.js'> </script>
 
 
@@ -29,320 +26,336 @@
           './dist/mathlive.min.mjs';
     </script>
 -->
-    
-<body theme="dark">
-    <style>          
-    math-field {display: block;
-                margin: 0em;
-                padding: 2px;
-                border-radius: 5px;
-                border: 1px solid rgba(0, 0, 0, .3); 
-                box-shadow: 0 0 8px rgba(0, 0, 0, .2);
-                hue: 10;
-                overflow: auto;
-               } 
-    </style>  
-    
 
-    
-<style>
+  <body theme="dark">
+    <style>
+      math-field {
+        display: block;
+        margin: 0em;
+        padding: 2px;
+        border-radius: 5px;
+        border: 1px solid rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+        hue: 10;
+        overflow: auto;
+      }
+    </style>
 
-//.dropbtn {
-//  background-color: #04AA6D;
-//  position: sticky;
-//  color: white;
-//  padding: 16px;
-//  font-size: 16px;
-//  border: none;
-//}
+    <style>
 
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
+      //.dropbtn {
+      //  background-color: #04AA6D;
+      //  position: sticky;
+      //  color: white;
+      //  padding: 16px;
+      //  font-size: 16px;
+      //  border: none;
+      //}
 
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 100px;
-  font-size: 80%;
-//  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
 
-.dropdown-content p {
-  color: black;
-//  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 100px;
+        font-size: 80%;
+      //  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+      }
 
-.dropdown-content p:hover {background-color: #ddd;}
+      .dropdown-content p {
+        color: black;
+      //  padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+      }
 
-.dropdown:hover .dropdown-content {display: block;}
+      .dropdown-content p:hover {background-color: #ddd;}
 
-.dropdown:hover .dropbtn {//background-color: #3e8e41;
-}
+      .dropdown:hover .dropdown-content {display: block;}
+
+      .dropdown:hover .dropbtn {//background-color: #3e8e41;
+      }
 
 
-.top-bar {
-  display: flex;
-  background-color: #909497;
-//  #2e86c1;
-//  #909497;
-//  #27ae60;
-//  #2F4F4F;
-//  #708090;
-//  #778899;
-//  #A9A9A9;
-//  #C0C0C0;
-  position: sticky;
-//  position: -webkit-sticky;
-  top: 8px;
-  z-index: 10;
-}
+      .top-bar {
+        display: flex;
+        background-color: #909497;
+      //  #2e86c1;
+      //  #909497;
+      //  #27ae60;
+      //  #2F4F4F;
+      //  #708090;
+      //  #778899;
+      //  #A9A9A9;
+      //  #C0C0C0;
+        position: sticky;
+      //  position: -webkit-sticky;
+        top: 8px;
+        z-index: 10;
+      }
 
-.load-dropdown {
-  align-self: flex-start;
-}
+      .load-dropdown {
+        align-self: flex-start;
+      }
 
-.switch-dropdown {
-  align-self: flex-start;
-}
+      .switch-dropdown {
+        align-self: flex-start;
+      }
 
-.help-dropdown {
-  margin-left: auto;
-}
+      .help-dropdown {
+        margin-left: auto;
+      }
+    </style>
 
-</style>
-
-<div class="top-bar">
-
-   <div class="load-dropdown">
-     <div class="dropdown is-active">
-      <div class="dropdown-trigger">
-          <button class="dropbtn">Load Package</button>
-      </div>
-
-      <div class="dropdown-menu" id="dropdown-menu">
-        <div class="dropdown-content">
- 
-          <div class="dropdown-item" onclick="loadReducePackage('embwebgui')">
-             <p>embwebgui</p>
+    <div class="top-bar">
+      <div class="load-dropdown">
+        <div class="dropdown is-active">
+          <div class="dropdown-trigger">
+            <button class="dropbtn">Load Package</button>
           </div>
-   
-          <hr class="dropdown-divider">
-  
-          <div class="dropdown-item" onclick="loadReducePackage('tmprint')">
-             <p>tmprint</p>
+
+          <div class="dropdown-menu" id="dropdown-menu">
+            <div class="dropdown-content">
+              <div
+                class="dropdown-item"
+                onclick="loadReducePackage('embwebgui')"
+              >
+                <p>embwebgui</p>
+              </div>
+
+              <hr class="dropdown-divider" />
+
+              <div class="dropdown-item" onclick="loadReducePackage('tmprint')">
+                <p>tmprint</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-     </div>
+      <div class="switch-dropdown">
+        <div class="dropdown is-active">
+          <div class="dropdown-trigger">
+            <button class="dropbtn">Switch</button>
+          </div>
+
+          <div class="dropdown-menu" id="dropdown-menu">
+            <div class="dropdown-content">
+              <div class="dropdown-item">
+                <label class="checkbox">
+                  <input
+                    type="checkbox"
+                    onclick="setReduceSwitch('readlatextoken', this.checked)"
+                  />
+                  readLatexToken
+                </label>
+              </div>
+
+              <hr class="dropdown-divider" />
+
+              <div class="dropdown-item">
+                <label class="checkbox">
+                  <input
+                    type="checkbox"
+                    onclick="setReduceSwitch('latexout', this.checked)"
+                  />
+                  latexout
+                </label>
+              </div>
+
+              <hr class="dropdown-divider" />
+
+              <div class="dropdown-item">
+                <label class="checkbox">
+                  <input
+                    type="checkbox"
+                    onclick="setReduceSwitch('fancy', this.checked)"
+                  />
+                  fancy
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-dropdown">
+        <div class="dropdown is-active">
+          <div class="dropdown-trigger">
+            <button class="dropbtn">Help</button>
+          </div>
+
+          <div class="dropdown-menu" id="dropdown-menu">
+            <div class="dropdown-content">
+              <div class="dropdown-item" onclick="openDocuBrowser('')">
+                <p>Manual</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-   
-   <div class="switch-dropdown">      
-     <div class="dropdown is-active">
-      <div class="dropdown-trigger">
-          <button class="dropbtn">Switch</button>
-      </div>
 
-      <div class="dropdown-menu" id="dropdown-menu">
-        <div class="dropdown-content">
- 
-          <div class="dropdown-item">
-             <label class="checkbox">
-               <input type="checkbox" onclick="setReduceSwitch('readlatextoken', this.checked)">
-              readLatexToken
-             </label>    
-          </div>
-   
-          <hr class="dropdown-divider">
+    <script>
+      var hist = [];
+      var hist_index = 1;
 
-          <div class="dropdown-item">
-             <label class="checkbox">
-               <input type="checkbox" onclick="setReduceSwitch('latexout', this.checked)">
-              latexout
-             </label>    
-          </div>  
-          
-          <hr class="dropdown-divider">
-      
-          <div class="dropdown-item">
-             <label class="checkbox">
-               <input type="checkbox" onclick="setReduceSwitch('fancy', this.checked)">
-              fancy
-             </label>  
-          </div>            
-        </div>
-      </div>
-      
-     </div>
-   </div>
-   
- <div class="help-dropdown">
-     <div class="dropdown is-active">
-      <div class="dropdown-trigger">
-          <button class="dropbtn">Help</button>
-      </div>
+      function mkInputMf() {
+        var redInMf = new MathfieldElement();
+        redInMf.addEventListener("mount", (ev) => {
+          redInMf.mathVirtualKeyboardPolicy = "manual";
+          redInMf.smartFence = "false";
+          redInMf.inlineShortcutTimeout = 1000;
+          redInMf.defaultMode = "math";
+          redInMf.mathModeSpace = "\\:";
+          redInMf.smartSuperscript = "false";
+          redInMf.addEventListener("pointerup", (ev) => {
+            console.log(JSON.stringify(redInMf.selection));
+          });
+          //  {console.log(redInMf.selection.ranges);});
 
-      <div class="dropdown-menu" id="dropdown-menu">
-        <div class="dropdown-content">
- 
-          <div class="dropdown-item" onclick="openDocuBrowser('')">
-             <p>Manual</p>
-          </div>  
-        </div>
-      </div>
+          redInMf.addEventListener("keydown", (ev) => {
+            console.log(ev.code);
+            console.log(ev.which);
+            console.log(ev.ctrlKey);
+            console.log(ev.key);
+            //      if (ev.code === 'numpadEnter') { //this is not working!!
+            //                                var e = new KeyboardEvent('keydown');
+            //                                e.ctrlKey = 'true';
+            //                                e.code = 'Enter' ;
+            //                                e.which = 13;
+            //                                ev.target.dispatchEvent(e);
 
-     </div>
-    </div>
-  
-</div>
+            //                                ev.preventDefault();
+            //                                      } ;
+            //    if (ev.code === 'KeyS') {ev.preventDefault();
+            //                             console.log(ev.which);
+            //                             console.log(ev.code); //return false;
+            if (ev.code === "Enter") {
+              ev.preventDefault();
+              //                             console.log(ev.which);
+              //                             console.log(ev.code);
+              redInMf.executeCommand("addRowAfter");
+              return "";
+            }
+          });
+          //    } else if (ev.code === 'Space') {//ev.preventDefault();
+          //                                 console.log(ev.which);
+          //                                     console.log(ev.code);
+          //    } else if (ev.which === 13) {ev.preventDefault();
+          //                                 console.log(ev.keyCode);
+          //                                 console.log(ev.which);};
+          //    console.log(JSON.stringify(redInMf.caretPoint));
+          //    console.log(redInMf.position);
 
+          //    });
 
-<script>
+          redInMf.placeholderSymbol = "▢";
+          redInMf.onInlineShortcut = (_redInMf, s) => {
+            console.log("Multichar ", s);
 
+            if (
+              /^([a-zA-Z]|(![\x00-\x7F]))([a-zA-Z0-9_]|(![\x00-\x7F]))*([a-zA-Z0-9_]|(![\x00-\x7F]))$/.test(
+                s,
+              )
+            ) {
+              console.log("Multichar true", s);
+              return `\\mathrm{${s}}`;
+            }
+            return "";
+          };
+          redInMf.macros = {
+            ...redInMf.macros,
+            // Associate the latex printing in the editor.
 
-var hist = [];
-var hist_index = 1;
+            quote: "^{\\prime}",
+            Hodge: "^{\\star}",
+            //                             smallfrac: '{}^{#1}\\!\\!/\\!{}_{#2}',
+          };
 
-function mkInputMf(){
-    var redInMf = new MathfieldElement();
-    redInMf.addEventListener('mount', (ev) => { 
-            redInMf.mathVirtualKeyboardPolicy = 'manual';
-            redInMf.smartFence = 'false';
-            redInMf.inlineShortcutTimeout = 1000;
-            redInMf.defaultMode = 'math';
-            redInMf.mathModeSpace = '\\:';
-            redInMf.smartSuperscript = 'false';
-            redInMf.addEventListener('pointerup',
-                             (ev) => {console.log(JSON.stringify(redInMf.selection));});
-                                 //  {console.log(redInMf.selection.ranges);});
+          redInMf.inlineShortcuts = {
+            ...redInMf.inlineShortcuts, // Preserve default
 
-  redInMf.addEventListener('keydown', (ev) => {console.log(ev.code); console.log(ev.which); console.log(ev.ctrlKey); console.log(ev.key);
-//      if (ev.code === 'numpadEnter') { //this is not working!!
-//                                var e = new KeyboardEvent('keydown');
-//                                e.ctrlKey = 'true';
-//                                e.code = 'Enter' ;
-//                                e.which = 13;
-//                                ev.target.dispatchEvent(e);
+            // Shortcuts for dealing with sub and superscripts.
+            // The first one is used to 'bind' indices to the previously typed character or group.
+            // It serves as a parsing aid. We might want to use a differnt character for that.
+            // The next two are for sup- and sub-indices. The seemingly proliferation with curly
+            // brackets is done to ease parsing on the REDUCE side.
+            // The last index shortcut is for stacked scripts (i.e. sup- over subscript). Positioning
+            // is poor in that case. Beware that this is not LaTeX semantics.
+            "@": { mode: "math", value: "\\enskip{#@}" },
+            "^": { mode: "math", value: "{^{{#?}}}" },
+            _: { mode: "math", value: "{\\phantom{}_ {{#?}}}" },
+            //                                "_^": { mode: 'math', value: '{{_{{#?}}^{{#?}}}}' },
 
-//                                ev.preventDefault();
-//                                      } ;
-//    if (ev.code === 'KeyS') {ev.preventDefault();
-//                             console.log(ev.which);
-//                             console.log(ev.code); //return false;
-      if (ev.code === 'Enter') {ev.preventDefault();
-//                             console.log(ev.which);
-//                             console.log(ev.code);
-                               redInMf.executeCommand("addRowAfter");
-                               return '';};
-});
-//    } else if (ev.code === 'Space') {//ev.preventDefault();
-//                                 console.log(ev.which);
-//                                     console.log(ev.code);
-//    } else if (ev.which === 13) {ev.preventDefault();
-//                                 console.log(ev.keyCode);
-//                                 console.log(ev.which);};
-//    console.log(JSON.stringify(redInMf.caretPoint));
-//    console.log(redInMf.position);
-    
-//    });
-    
-              redInMf.placeholderSymbol = "▢";
-              redInMf.onInlineShortcut = (_redInMf, s) => {console.log('Multichar ',s);
+            // For easy input of wedge.
+            "^^": { mode: "math", value: "\\wedge" },
+            // Now a construct to input a star in a superscript position. The actual typesetting in the
+            // editor is done via a macro.
+            "^*": { mode: "math", value: "\\Hodge{#?}" },
+            // Input of Lisp quote. This is not quite working correctly at the moment and needs more work.
+            "'": { mode: "math", value: "\\quote" },
+            // Easy input for Pounds. Used in Excalc for the Lie derivative.
+            pounds: "\\pounds",
+            int: "\\int{#?}{\\,\\operatorname{d}\\,}{#?}",
+            // Shortcut for exponentiation.
+            "**": "^{#?}",
+            mat: "\\begin{pmatrix}#0\\end{pmatrix}\\:",
+            smat: "\\left(\\begin{smallmatrix}#0\\end{smallmatrix}\\right)\\:",
+          };
+        });
 
-      if (/^([a-zA-Z]|(![\x00-\x7F]))([a-zA-Z0-9_]|(![\x00-\x7F]))*([a-zA-Z0-9_]|(![\x00-\x7F]))$/.test(s))
-                                          {console.log('Multichar true',s); return `\\mathrm{${s}}`};
-                                          return '';
-                                                            };
-             redInMf.macros = {...redInMf.macros,
-// Associate the latex printing in the editor.
+        document.body.appendChild(redInMf);
+        redInMf.focus();
+        // The next enables multiline input.
+        redInMf.setValue(
+          "#0",
+          // '\\begin{multline}#0\\end{multline}',
+          { focus: true, selectionMode: "placeholder" },
+        );
 
-                               quote: '^{\\prime}',
-                               Hodge: '^{\\star}',    
-//                             smallfrac: '{}^{#1}\\!\\!/\\!{}_{#2}',
-                      };
-            
-            
-              redInMf.inlineShortcuts = { ...redInMf.inlineShortcuts, // Preserve default
+        let button = document.createElement("button");
+        button.id = "curSubmit";
+        button.appendChild(document.createTextNode("Submit"));
+        button.addEventListener("click", (event) => {
+          doSubmit(redInMf);
+        });
+        document.body.appendChild(button);
+      }
 
-// Shortcuts for dealing with sub and superscripts.
-// The first one is used to 'bind' indices to the previously typed character or group.
-// It serves as a parsing aid. We might want to use a differnt character for that.
-// The next two are for sup- and sub-indices. The seemingly proliferation with curly 
-// brackets is done to ease parsing on the REDUCE side.
-// The last index shortcut is for stacked scripts (i.e. sup- over subscript). Positioning
-// is poor in that case. Beware that this is not LaTeX semantics.
-                                "@":  { mode: 'math', value: '\\enskip{#@}' },
-                                "^":  { mode: 'math', value: '{^{{#?}}}' },
-                                "_":  { mode: 'math', value: '{\\phantom{}_ {{#?}}}' },
-//                                "_^": { mode: 'math', value: '{{_{{#?}}^{{#?}}}}' },
+      function doSubmit(redInMf) {
+        var redOutMf = new MathfieldElement();
 
-// For easy input of wedge.
-                                "^^": { mode: 'math', value: '\\wedge' },
-// Now a construct to input a star in a superscript position. The actual typesetting in the
-// editor is done via a macro.
-                                "^*": { mode: 'math', value: '\\Hodge{#?}' },
-// Input of Lisp quote. This is not quite working correctly at the moment and needs more work.
-                                "'":  { mode: 'math', value: "\\quote" },
-// Easy input for Pounds. Used in Excalc for the Lie derivative.
-                                "pounds": '\\pounds',
-                                "int": '\\int{#?}{\\,\\operatorname{d}\\,}{#?}',
-// Shortcut for exponentiation.                                          
-                                "**": '^{#?}',
-                                "mat": '\\begin{pmatrix}#0\\end{pmatrix}\\:',
-                                "smat":'\\left(\\begin{smallmatrix}#0\\end{smallmatrix}\\right)\\:',
-};
+        redInMf.readOnly = "true";
+        redOutMf.readOnly = "true";
+        hist.push(redInMf.value);
+        //console.log(redInMf.getValue('math-ml'));
+        passToReduce(redInMf.value).then(function (result) {
+          if (result == " ") {
+            document.getElementById("curSubmit").remove();
+            mkInputMf();
+          } else {
+            redOutMf.value = result;
+            //                                            '\\begin{align}' + result + '\\end{align}';
+            console.log(result);
+            document.getElementById("curSubmit").remove();
+            document.body.appendChild(redOutMf);
+            // don't like the next one much.
+            redOutMf.applyStyle(
+              { backgroundColor: "teal" },
+              { range: [0, -1] },
+            );
+            mkInputMf();
+          }
+        });
+      }
 
-  });
-
-
-  
-    document.body.appendChild(redInMf);
-    redInMf.focus();
-// The next enables multiline input.
-    redInMf.setValue('#0',
-// '\\begin{multline}#0\\end{multline}',
-{focus: true, selectionMode: "placeholder"});
-    
-    let button = document.createElement('button');    
-    button.id = 'curSubmit';
-    button.appendChild(document.createTextNode('Submit'));
-    button.addEventListener('click', event => {doSubmit(redInMf);});
-    document.body.appendChild(button);
-   }
-
-function doSubmit(redInMf){
-    var redOutMf = new MathfieldElement( );
-                                        
-    redInMf.readOnly = 'true';
-    redOutMf.readOnly = 'true';
-    hist.push(redInMf.value);
-//console.log(redInMf.getValue('math-ml'));
-    passToReduce(redInMf.value)
-       .then(function(result) {if ( result == " " )
-                                  {document.getElementById('curSubmit').remove();
-                                   mkInputMf();
-                                  } else {redOutMf.value = result;
-//                                            '\\begin{align}' + result + '\\end{align}';
-                                          console.log(result);
-                                          document.getElementById('curSubmit').remove();
-                                          document.body.appendChild(redOutMf);
-                                          // don't like the next one much.
-                                          redOutMf.applyStyle(
-                                                              {backgroundColor: 'teal' },
-                                                              {range: [0, -1]}
-                                                              );
-                                          mkInputMf();}});
-   }
-   
-mkInputMf();
-
-   
-</script>
-</body>
+      mkInputMf();
+    </script>
+  </body>
 </html>
