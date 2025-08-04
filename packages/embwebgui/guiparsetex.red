@@ -67,6 +67,36 @@ deflist('((!\!! skipOverLatexCmd) (!\!; skipOverLatexCmd)
           (!\quad skipOverLatexCmd) (!\!\ skipOverLatexCmd)),
          'scan_action!*);
 
+% invisible times:
+%newtok '((!\ u n i c o d e !2 !0 !6 !2) !\unicode2062);
+
+%flag('(!\unicode2062), 'need_termination);
+
+%put('!\unicode2062, 'scan_action!*, 'invisibleTimes2Times);
+
+%symbolic procedure invisibleTimes2Times;
+%   begin
+%     token();
+%     return cursym!* := 'times
+%   end; 
+
+% this is better than using unicode.
+
+newtok '((!\ v p h a n t o m) !\vphantom);
+put('!\vphantom, 'scan_action!*, 'readVPhantomCmd);
+
+symbolic procedure readVPhantomCmd;
+   begin scalar arg, x;
+     token();
+     arg := token();
+     if x := get(arg, 'phantomArg) then arg := x;
+     token();
+     token();
+     return cursym!* := arg
+  end;
+
+put('!*, 'phantomArg, 'times);
+
 % Conversion of brackets.
 
 newtok '((!\ l b r a c e) !*lcbkt!*);
@@ -87,7 +117,8 @@ put('readlatextoken, 'simpfg,
 switch latexout=off;
 put('latexout, 'simpfg,
     '((t (progn (load "tmprint") (onoff 'fancy t)
-                (put 'times 'fancy!-prtch "\cdot ")
+%                (put 'times 'fancy!-prtch "\cdot ")
+                (put 'times 'fancy!-prtch "\unicode{x2062}")
                 (setq !*fancy!-out!-noheader t)
                 (setq !*multilines t)
                 (onoff 'nat t)))
@@ -259,7 +290,7 @@ put('!\mathtt, 'stat, 'latexOperatornameStat);
 put('!\mathnormal, 'stat, 'latexOperatornameStat);
 put('!\mathit, 'stat, 'latexOperatornameStat);
 %put('!\text, 'stat, 'latexTextStat);
-put('!\enskip, 'stat, 'latexSubSupStat);
+%put('!\enskip, 'stat, 'latexSubSupStat);
 
 put('!\pi, 'newnam, 'pi);
 
