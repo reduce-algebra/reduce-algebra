@@ -122,26 +122,33 @@
    <div class="load-dropdown">
      <div class="dropdown is-active">
       <div class="dropdown-trigger">
-          <button class="dropbtn">Load Package</button>
+          <button class="dropbtn">Load gui packages</button>
       </div>
 
       <div class="dropdown-menu" id="dropdown-menu">
         <div class="dropdown-content">
- 
-          <div class="dropdown-item" onclick="loadReducePackage('embwebgui')">
-             <p>embwebgui</p>
+
+          <div class="dropdown-item">
+             <label class="checkbox">
+               <input type="checkbox" onclick="loadReducePackage('embwebgui')">
+              embwebgui
+             </label>
           </div>
-   
+
           <hr class="dropdown-divider">
-  
-          <div class="dropdown-item" onclick="loadReducePackage('tmprint')">
-             <p>tmprint</p>
+
+          <div class="dropdown-item">
+             <label class="checkbox">
+               <input type="checkbox" onclick="loadReducePackage('tmprint')">
+              tmprint
+             </label>
           </div>
         </div>
       </div>
 
      </div>
-    </div>
+   </div>
+
    
    <div class="switch-dropdown">      
      <div class="dropdown is-active">
@@ -270,30 +277,21 @@ function mkInputMf(){
             
               redInMf.inlineShortcuts = { ...redInMf.inlineShortcuts, // Preserve default
 
-// Shortcuts for dealing with sub and superscripts.
-// The first one is used to 'bind' indices to the previously typed character or group.
-// It serves as a parsing aid. We might want to use a differnt character for that.
-// The next two are for sup- and sub-indices. The seemingly proliferation with curly 
-// brackets is done to ease parsing on the REDUCE side.
-// The last index shortcut is for stacked scripts (i.e. sup- over subscript). Positioning
-// is poor in that case. Beware that this is not LaTeX semantics.
-                                "@":  { mode: 'math', value: '\\enskip{#@}' },
-                                "^":  { mode: 'math', value: '{^{{#?}}}' },
-                                "_":  { mode: 'math', value: '{\\phantom{}_ {{#?}}}' },
+//                              "*": { mode: 'math', value: '\\unicode{2062}' },
+                                "*": { mode: 'math', value: '\\vphantom{*}' },
+//                               "*": { mode: 'math', value: '\\unicode{8230}' },
+//                                 "*": { mode: 'math', value: ' \\char{x2062}' }, 
+//                                "*": { mode: 'math', value: '^^^^2062' },
+//                                "@":  { mode: 'math', value: '\\enskip{#@}' },
+//                                "^":  { mode: 'math', value: '{^{{#?}}}' },
+//                                "_":  { mode: 'math', value: '\\unicode{x05f}'},
 //                                "_^": { mode: 'math', value: '{{_{{#?}}^{{#?}}}}' },
 
-// For easy input of wedge.
-                                "^^": { mode: 'math', value: '\\wedge' },
-// Now a construct to input a star in a superscript position. The actual typesetting in the
-// editor is done via a macro.
-                                "^*": { mode: 'math', value: '\\Hodge{#?}' },
 // Input of Lisp quote. This is not quite working correctly at the moment and needs more work.
                                 "'":  { mode: 'math', value: "\\quote" },
-// Easy input for Pounds. Used in Excalc for the Lie derivative.
-                                "pounds": '\\pounds',
                                 "int": '\\int{#?}{\\,\\operatorname{d}\\,}{#?}',
 // Shortcut for exponentiation.                                          
-                                "**": '^{#?}',
+//                                "**": '^{#?}',
                                 "mat": '\\begin{pmatrix}#0\\end{pmatrix}\\:',
                                 "smat":'\\left(\\begin{smallmatrix}#0\\end{smallmatrix}\\right)\\:',
 };
@@ -304,10 +302,7 @@ function mkInputMf(){
   
     document.body.appendChild(redInMf);
     redInMf.focus();
-// The next enables multiline input.
-    redInMf.setValue('#0',
-// '\\begin{multline}#0\\end{multline}',
-{focus: true, selectionMode: "placeholder"});
+    redInMf.setValue('#0', {focus: true, selectionMode: "placeholder"});
     
     let button = document.createElement('button');    
     button.id = 'curSubmit';
@@ -327,8 +322,8 @@ function doSubmit(redInMf){
        .then(function(result) {if ( result == " " )
                                   {document.getElementById('curSubmit').remove();
                                    mkInputMf();
-                                  } else {redOutMf.value = result;
-//                                            '\\begin{align}' + result + '\\end{align}';
+                                  } else {redOutMf.value = 
+                                          redOutMf.value = '\\displaylines{' + result + '}';
                                           console.log(result);
                                           document.getElementById('curSubmit').remove();
                                           document.body.appendChild(redOutMf);

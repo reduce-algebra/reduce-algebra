@@ -95,7 +95,7 @@ create!-package('(gf2 gf2groeb), nil);
 switch gf2_sparse=on;
 
 fluid '(gf2_var_names gf2_count gf2_degree_bits gf2_overflow_bits);
-gf2_var_names := mkhash(10, 0);
+gf2_var_names := mkhash(16, 0, 1.5);
 gf2_degree_bits := 12;
 
 % All gf2_vars will do is to allocate an index in the range 1,2,... to each
@@ -179,7 +179,7 @@ symbolic procedure gf2_vars l;
 % on the property list of the operator "op". This will hash based on "EQ"
 % since the only keys I should ever use will be fixnums, and that then
 % will be as fast as possible.
-        if null h then put(car v, 'gf2_opindex, h := mkhash(10, 0));
+        if null h then put(car v, 'gf2_opindex, h := mkhash(16, 0, 1.5));
         if gethash(cadr v, h) then
           rederr "repeated (operator) name in gf2_vars"
         else puthash(cadr v, h, gf2_count)

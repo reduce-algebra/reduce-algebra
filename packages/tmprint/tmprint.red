@@ -247,6 +247,7 @@ fluid '(
       !*fancy_tex
       !*fancy!-lower    % control of conversion to lower case
       !*multilines      % multiline experiment
+      !*fancy!-out!-noheader
       );
 
 fluid '(fancy!-texwidth fancy!-texpos tex!-pointsize);
@@ -516,6 +517,7 @@ symbolic procedure fancy!-assgnpri u;
 
 
 symbolic procedure fancy!-out!-header();
+   if !*fancy!-out!-noheader then <<if posn()>0 then terpri(); nil>> else
     <<
        if posn()>0 then terpri();
 % The leading U+0002 (STX) is what TeXmacs wanted here.
@@ -524,6 +526,7 @@ symbolic procedure fancy!-out!-header();
     >>;
 
 symbolic procedure fancy!-out!-trailer();
+   if !*fancy!-out!-noheader then nil else
     <<
        prin2 "$";
 % The trailing U+0005 (ENQ) is what TeXmacs wanted here.
