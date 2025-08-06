@@ -689,6 +689,7 @@ symbolic procedure token!-number x;
        else if x eq '!\ then <<
           if (x := readch1()) = !$eol!$ then go to num2;
           peekchar!* := '!\ . x . peekchar!*;
+          x := blank;
           go to ret >>
 % In a way intended to be consistent with the treatment within hex numbers
 % one can embed an underscore followed by any amount of whitespace in
@@ -1170,6 +1171,7 @@ symbolic procedure token;
 % and all the other supplemental characters (to say nothing of Greek letters)
 % will be a matter for the underlying Lisp to worry about.
          else if liter x then go to letter
+         else if (y := get(x, 'tokprop)) then lispapply(y, nil)
 % Comments introduced by "%" are detected here in token() so that they are
 % honoured within quoted expressions. Comments starting with either the
 % word "comment" or with "/*" are handled by scan() and will not be
