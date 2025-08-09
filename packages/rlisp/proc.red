@@ -138,7 +138,7 @@ symbolic procedure formproc(u,vars,mode);
         varlis := cadr u;
 #endif
         body := caddr u;
-        if pairp cdddr u then info := cadddr u; 
+        if pairp cdddr u then info := cadddr u;
         x := if eqcar(body,'rblock) then cadr body else nil;
         y := pairxvars(varlis,x,vars,mode);
         if x then body := car body . rplaca!*(cdr body,cdr y);
@@ -241,7 +241,7 @@ symbolic procedure formproc(u,vars,mode);
 put('procedure,'formfn,'formproc);
 
 symbolic procedure formde(u, vars, mode);
-   if mode = 'symbolic then      
+   if mode = 'symbolic then
       formproc(
          list('procedure, cadr u, 'symbolic, 'expr, caddr u,
             if null cddddr u then cadddr u else 'progn . cdddr u),
@@ -321,8 +321,16 @@ symbolic procedure simplify!-filename s;
 % messy. But because hash tables are not very heavily used this is not a high
 % priority!
 
-symbolic procedure mkhash(size, type, expansion);
-  type . nil;
+% symbolic procedure mkhash(size, type, expansion);
+%   type . nil;
+
+% Redefine mkhash this way to allow the last argument to be omitted,
+% and because this file is read fairly early in the bootstrapping
+% process.
+
+putd('mkhash, 'macro, '(lambda (u) (list 'cons (caddr u) nil)));
+
+flag('(mkhash), 'variadic);
 
 symbolic procedure clrhash u;
   rplacd(u, nil);
@@ -592,7 +600,7 @@ symbolic procedure procstat;
   procstat1 nil;
 
 % A lazy hack to allow for list procedures.
-% 
+%
 
 symbolic procedure listprocify u;
   if atom u then u
@@ -608,11 +616,11 @@ symbolic procedure readlistproc;
 %                   or       (progn ... ... (procedure ...))
 % where the first parts of the progn block establish file and line-number
 % information.
-     return listprocify w; 
+     return listprocify w;
    end;
 
 symbolic procedure formlistproc(u,v,w);
-   begin 
+   begin
      return list('progn,
              formproc(cdr u,v,w),
              list('put,mkquote caddr u,''rtypefn,''(lambda(x) 'list)),
@@ -627,7 +635,7 @@ put('listproc,'formfn,'formlistproc);
 
 symbolic procedure listproceval(op,u,v);
    reval1(opfneval(op . u),v);
-     
+
 
 deflist ('((procedure procstat) (expr procstat) (fexpr procstat)
            (emb procstat) (macro procstat) (inline procstat)
