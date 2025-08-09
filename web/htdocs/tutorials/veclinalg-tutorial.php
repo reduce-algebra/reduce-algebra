@@ -13,7 +13,7 @@ include '../include/begin-body.php';
 
     <div>
         <!-- Problem MTH4103 Exam 2014 Q1 -->
-	Let \(A = (1,3,-1)\) and \(B = (4,1,1)\), and let
+        Let \(A = (1,3,-1)\) and \(B = (4,1,1)\), and let
         \(\mathbf{a}\) and \(\mathbf{b}\) be the position vectors
         of \(A\) and \(B\) respectively. Determine:
         <ol style="list-style: lower-alpha">
@@ -75,14 +75,14 @@ a dot k;  V := 7 abs ws;</pre>
 
     <div>
         <!-- Problem Q3 -->
-	Determine <em>all</em> solutions to the following system of linear
+        Determine <em>all</em> solutions to the following system of linear
         equations in \(x, y, z\) defined over \(\mathbb{R}\):
         \[
-        \left.\begin{eqnarray*}
-        -x-2y+5z &=& 8 \\
-        3x+2y+ z &=& -4 \\
-        x+ y- z &=& -3
-        \end{eqnarray*}\right\}.
+        \left.\begin{aligned}
+        -x-2y+5z &= 8 \\
+        3x+2y+z &= -4 \\
+        x+y-z &= -3
+        \end{aligned}\right\}.
         \]
         <!-- Solution -->
         <pre>eqns := {-x-2y+5z = 8, 3x+2y+z = -4, x+y-z = -3};
@@ -91,17 +91,17 @@ solve ws;  % regarding arbcomplex() as a real parameter</pre>
 
     <div>
         <!-- Problem Q4 -->
-	Calculate the distance between the <strong>parallel</strong>
+        Calculate the distance between the <strong>parallel</strong>
         lines with vector equations
         \[
         r = \left(\begin{array}{c}2\\1\\2\end{array}\right) + \lambda
         \left(\begin{array}{c}1\\2\\3\end{array}\right)
-        \quad\mbox{and}\quad
+        \quad\text{and}\quad
         r =\left(\begin{array}{c}2\\-1\\3\end{array}\right) + \mu
         \left(\begin{array}{c}-2\\-4\\-6\end{array}\right)
         \]
         respectively. (The parameters \(\lambda\) and \(\mu\) both range over
-        the whole of  \(\mathbb{R}\).)
+        the whole of \(\mathbb{R}\).)
         <!-- Solution -->
         <pre>load_package avector;
 % This is a vector from one line to the other:
@@ -112,10 +112,10 @@ vmod(ws cross avec(1,2,3));</pre>
 
     <div>
         <!-- Problem Q5 -->
-	Let
+        Let
         \[
         A = \left(\begin{array}{rrr}1 & 2 & 0\\-1 & 1 & 2\\1 & -2 & -1\end{array}\right)
-        \quad\mbox{and}\quad
+        \quad\text{and}\quad
         B = \left(\begin{array}{rrr}2 & -1 & 0\\-1 & 2 & 0\\1 & -2 & -3\end{array}\right).
         \]
         Calculate the following:
@@ -137,8 +137,8 @@ det b;</pre>
 
     <div>
         <!-- Problem Q8(c) -->
-	Let \(S_\theta\) denote the \(2\times2\) matrix representing the
-        reflexion (in the \((x,y)\)-plane) in the line through the origin at
+        Let \(S_\theta\) denote the \(2\times2\) matrix representing the
+        reflection (in the \((x,y)\)-plane) in the line through the origin at
         anticlockwise angle \(\theta/2\) to the \(x\)-axis. Then
         \[
         S_\theta = \left(\begin{array}{cc}
@@ -148,7 +148,7 @@ det b;</pre>
         \]
         <ol style="list-style: lower-alpha">
             <li>Determine the eigenvalues of \(S_\theta\).</li>
-            <li>Now let \(S\) be the matrix of the reflexion in
+            <li>Now let \(S\) be the matrix of the reflection in
                 the line \(y = x\). Write down \(S\), and write
                 down an eigenvector of \(S\) and its corresponding
                 eigenvalue.</li>
@@ -167,20 +167,20 @@ third first ws; % with corresponding eigenvalue 1.</pre>
 
     <div>
         <!-- Problem MTH5112 Exam 2014 Q1 -->
-	Compute the determinant of the matrix
+        Compute the determinant of the matrix
         \[ \left(\begin{array}{ccc}
-        1  & -1 & 1 \\
-        2  & 0  & 1 \\
-        -1 & 2  & -2
+        1 & -1 & 1 \\
+        2 & 0 & 1 \\
+        -1 & 2 & -2
         \end{array}\right).
         \]
         Is this matrix invertible? If so, find its inverse.
         Hence or otherwise solve the linear system
-        \[ \begin{eqnarray}
-        x_1 - x_2 + x_3 &=& 1 \\
-        2x_1 + x_3 &=& 2 \\
-        -x_1 + 2x_2 - 2x_3 &=& -3.
-        \end{eqnarray}
+        \[ \begin{aligned}
+        x_1 - x_2 + x_3 &= 1 \\
+        2x_1 + x_3 &= 2 \\
+        -x_1 + 2x_2 - 2x_3 &= -3.
+        \end{aligned}
         \]
         <!-- Solution -->
         <pre>M := mat((1,-1,1),(2,0,1),(-1,2,-2));
@@ -195,16 +195,16 @@ solve ws;</pre>
 
     <div>
         <!-- Problem Q2 -->
-	Let
+        Let
         \[
         A = \left(\begin{array}{cc}
-        0  & 3 \\
+        0 & 3 \\
         -1 & 2
         \end{array}\right), \quad
         B =\left(\begin{array}{cc}
         -1 & 2 \\
-        0  & 3 \\
-        1  & -2
+        0 & 3 \\
+        1 & -2
         \end{array}\right).
         \]
         For each of the products \(A^2\), \(AB\), \(BA\), \(B^2\), state
@@ -216,8 +216,8 @@ A^2;  A*B;  B*A;  B^2;</pre>
 
     <div>
         <!-- Problem -->
-	Suppose that \(B\) is a square matrix and \(B^2 = O\).  Prove that
-        \(I+B\) is invertible, and find its inverse.  Illustrate with a
+        Suppose that \(B\) is a square matrix and \(B^2 = O\). Prove that
+        \(I+B\) is invertible, and find its inverse. Illustrate with a
         \(2\times2\) example.
         <!-- Solution -->
         <pre>% (I + B)(I - B) = I^2 - B^2 = I, hence (I + B)^-1 = (I - B)
@@ -228,7 +228,7 @@ A^-1 = Id - B;</pre>
 
     <div>
         <!-- Problem Q3 -->
-	For each of the following statements about \(n\times n\) matrices
+        For each of the following statements about \(n\times n\) matrices
         \(A\) and \(B\), state whether it is true or false, and illustrate
         with general \(2\times2\) matrices.
         <ol style="list-style: lower-alpha">
@@ -257,7 +257,7 @@ if det(lam*A) = lam*det(A) then true else false;</pre>
 
     <div>
         <!-- Problem Q4(b) -->
-	Let \(V = \mathbb{R}^4\), and let
+        Let \(V = \mathbb{R}^4\), and let
         \[
         S = \{(0,2,1,-3)^T, (1,1,1,2)^T, (3,0,-1,-1)^T, (-1,4,4,2)^T\}.
         \]
@@ -275,9 +275,9 @@ rank S;
 
     <div>
         <!-- Problem Q5 -->
-	Let \(P_2\) denote the set of polynomials of degree at most \(2\), that is
+        Let \(P_2\) denote the set of polynomials of degree at most \(2\), that is
         \[
-        P_2 = \{\mathbf{p} \mid \mathbf{p}(x) = a_2x^2 + a_1x + a_0 \mbox{ for some }
+        P_2 = \{\mathbf{p} \mid \mathbf{p}(x) = a_2x^2 + a_1x + a_0 \text{ for some }
         a_0, a_1, a_2 \in \mathbb{R}\}.
         \]
         Let \(D : P_2 \to P_2\) be the mapping given by \(D(\mathbf{p}) =
@@ -306,8 +306,8 @@ solve(ws, {a2,a1,a0});
 
     <div>
         <!-- Problem Q6(d) -->
-	Let \(H\) be a subspace of \(\mathbb{R}^n\) and let \(H^\perp\) denote
-        the <em>orthogonal complement</em> of \(H\).  Suppose \(n = 4\) and
+        Let \(H\) be a subspace of \(\mathbb{R}^n\) and let \(H^\perp\) denote
+        the <em>orthogonal complement</em> of \(H\). Suppose \(n = 4\) and
         \[
         H = \{(x,y,z,t)^T \mid x + 2y - 3z = 0, 3y + 2z - t = 0\}.
         \]
@@ -331,12 +331,12 @@ hp2 := sub(arbcomplex(3)=0, arbcomplex(4)=1, hp);</pre>
 
     <div>
         <!-- Problem Q8 -->
-	Let
+        Let
         \[
         A = \left(\begin{array}{ccc}
         -1 & 0 & 1 \\
-        2  & 3 & 2 \\
-        2  & 4 & 0
+        2 & 3 & 2 \\
+        2 & 4 & 0
         \end{array}\right), \quad
         \mathbf{v}_1 = \left(\begin{array}{c}
         -2 \\

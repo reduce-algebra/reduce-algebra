@@ -16,8 +16,8 @@ include '../include/begin-body.php';
         <ol style="list-style: lower-alpha">
             <li>Find a function \(f(u)\) such that the
                 differential equation
-	        \[ f(x + y) + \ln x + \left(e^{x+y} + y^2\right)
-	        \frac{dy}{dx} = 0 \] is exact.</li>
+                \[ f(x + y) + \ln x + \left(e^{x+y} + y^2\right)
+                \frac{dy}{dx} = 0 \] is exact.</li>
             <li>For the chosen \(f(u)\) find the corresponding
                 solution in implicit form.</li>
         </ol>
@@ -56,15 +56,15 @@ soln := odesolve(ws, {x=1, y=0});</pre>
         <!-- Problem Q2 -->
         <ol style="list-style: lower-alpha">
             <li>Find the general solution of the homogeneous ODE
-	        \[ y'' + 9y = 0. \]</li>
+                \[ y'' + 9y = 0. \]</li>
             <li>Find the general solution of the non-homogeneous
-	        ODE
+                ODE
                 \[ y'' + 9y = \sin(2x). \]</li>
             <li>Find the general solution to the first-order
-	        homogeneous linear ODE
+                homogeneous linear ODE
                 \[ y' = \tan(x)\,y. \]</li>
             <li>Solve the initial-value problem for the
-	        first-order linear non-homogeneous ODE
+                first-order linear non-homogeneous ODE
                 \[ y' = \tan(x)\,y + 1, \quad y(0) = 2. \]</li>
         </ol>
         <!-- Solution -->
@@ -96,16 +96,16 @@ df(y,x,2) = x^2;  odesolve(ws, {{x = 0, y = 0}, {x = 1, df(y,x) = 0}});</pre>
         \[ \dot{x} = -x - 3y - 3x^3, \quad \dot{y} = \frac43x - y - \frac13 x^3. \]
         <ol style="list-style: lower-alpha">
             <li>Write down in the matrix form the system obtained
-	        by linearization of the above equations around the
-	        point \(x = y = 0\) and find the corresponding
-	        eigenvalues and eigenvectors.</li>
+                by linearization of the above equations around the
+                point \(x = y = 0\) and find the corresponding
+                eigenvalues and eigenvectors.</li>
             <li>Find the solution of the linear system
-	        corresponding to the initial conditions \(x(0) =
-	        2, y(0) = 0\). Determine the type of equilibrium
-	        for the system and describe in words the shape of
-	        trajectory in the phase plane corresponding to the
-	        specified initial conditions. Determine the
-	        tangent vector to the trajectory at \(t = 0\).</li>
+                corresponding to the initial conditions \(x(0) =
+                2, y(0) = 0\). Determine the type of equilibrium
+                for the system and describe in words the shape of
+                trajectory in the phase plane corresponding to the
+                specified initial conditions. Determine the
+                tangent vector to the trajectory at \(t = 0\).</li>
         </ol>
         <!-- Solution -->
         <pre>% (a)
@@ -145,7 +145,7 @@ sub(t=0, sub(x=soln(1,1), y=soln(2,1), dxy));</pre>
         Find the power series solution \(y(x)\) up to degree
         \(x^7\) to the differential equation
         \[ y''+(1+x)y'-6y^2=0 \] such that
-        \[ y(0)=1 \mbox{ and } y'(0)=-1. \]
+        \[ y(0)=1 \quad\text{and}\quad y'(0)=-1. \]
         <!-- Solution -->
         <pre>% The following switch settings display the solution as usual for a
 % power series:

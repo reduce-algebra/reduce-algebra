@@ -50,10 +50,10 @@ algebraic$</pre>
         Solve the following system of equations over
         \(\mathbb{Z}_{11}\) for \(x\) and \(y\).
         \[
-        \begin{eqnarray*}
-        [4]_{11} x + [7]_{11} y &=& [4]_{11} \\
-        [2]_{11} x + [6]_{11} y &=& [1]_{11}.
-        \end{eqnarray*}
+        \begin{aligned}
+        [4]_{11} x + [7]_{11} y &= [4]_{11} \\
+        [2]_{11} x + [6]_{11} y &= [1]_{11}.
+        \end{aligned}
         \]
         Check your answer.
         <!-- Solution -->
@@ -88,10 +88,10 @@ d(n+1) - d(n);
         \[ K = \{at+bu : a,b\in\mathbb{R}\}, \]
         where \(t\) and \(u\) are formal symbols, be defined as follows:
         \[
-        \begin{eqnarray*}
-        (at+bu)+(ct+du) &=& (a+c)t+(b+d)u, \\
-        (at+bu) \cdot (ct+du) &=& (ac+ad+bc-bd)t+(-ac+ad+bc+bd)u.
-        \end{eqnarray*}
+        \begin{aligned}
+        (at+bu)+(ct+du) &= (a+c)t+(b+d)u, \\
+        (at+bu) \cdot (ct+du) &= (ac+ad+bc-bd)t+(-ac+ad+bc+bd)u.
+        \end{aligned}
         \]
         <ol style="list-style: lower-alpha">
             <li>Compute \((\frac12 t - \frac12 u)^2\) and express
