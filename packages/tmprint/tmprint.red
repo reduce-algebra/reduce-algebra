@@ -296,8 +296,8 @@ fluid '(lispsystem!*);
 
 procedure texmacsp;
    % Texmacs predicate. Returns [t] iff Texmacs is running.
-   % The second test is probably now redundant, as texmacs no longer 
-   % seems to set this environment variable, but is included just in case! 
+   % The second test is probably now redundant, as texmacs no longer
+   % seems to set this environment variable, but is included just in case!
    if memq('texmacs, lispsystem!*) or getenv("TEXMACS_REDUCE_PATH") then t;
 
 % Protect against copyd being called twice
@@ -602,9 +602,9 @@ symbolic procedure fancy!-flush();
           terpri() >>;
       math!-display 3 >> where !*standard!-output!*=!*math!-output!*
     else for each lines on reverse fancy!-page!* do
-      if car lines and not eqcar(caar lines,'tab) 
+      if car lines and not eqcar(caar lines,'tab)
          then <<if null !*multilines then fancy!-out!-header()
-                 else if null done then <<done := t; 
+                 else if null done then <<done := t;
                                           fancy!-out!-header()>>;
 % If somehow "on fancy" is true but I am not talking to the GUI then the
 % expectation will be that I am talking to TeXmacs. In that case I do
@@ -621,7 +621,7 @@ symbolic procedure fancy!-flush();
             prin2 "::||::" >>;
          most_recent_fancy := nil;
          for each it in balance!-parens car lines do fancy!-out!-item it;
-         if cdr lines and !*multilines then prin2 " \\ " 
+         if cdr lines and !*multilines then prin2 " \\ "
                    else fancy!-out!-trailer() >>;
     set!-fancymode nil
   end;
@@ -638,22 +638,22 @@ symbolic procedure fancy!-flush_ ();
         >>;
         set!-fancymode nil;
       >> where !*lower=nil;
-      
+
  symbolic procedure fancy!-flush();
    begin scalar !*lower, done;
      fancy!-terpri!* t;
      for each lines on reverse fancy!-page!* do
         if car lines and not eqcar(caar lines,'tab)
            then <<if null !*multilines then fancy!-out!-header()
-                   else if null done then <<done := t; 
+                   else if null done then <<done := t;
                                             fancy!-out!-header()>>;
-                  for each it in balance!-parens car lines 
+                  for each it in balance!-parens car lines
                       do fancy!-out!-item it;
-                  if cdr lines and !*multilines then prin2 " \\ " 
+                  if cdr lines and !*multilines then prin2 " \\ "
                    else fancy!-out!-trailer();
                 >>;
         set!-fancymode nil;
-   end;     
+   end;
 
 #endif
 
@@ -1493,7 +1493,7 @@ symbolic procedure fancy!-oprin op;
 % me saying "ha ha ha"?
 
 for each x in '(
- ("alpha"   "\alpha")      ("aLPHA"   "\alpha")      (#alpha;   "\alpha")         
+ ("alpha"   "\alpha")      ("aLPHA"   "\alpha")      (#alpha;   "\alpha")
  ("beta"    "\beta")       ("bETA"    "\beta")       (#beta;    "\beta")
  ("gamma"   "\gamma")      ("gAMMA"   "\gamma")      (#gamma;   "\gamma")
  ("delta"   "\delta")      ("dELTA"   "\delta")      (#delta;   "\delta")
@@ -1514,6 +1514,7 @@ for each x in '(
  ("tau"     "\tau")        ("tAU"     "\tau")        (#tau;     "\tau")
  ("upsilon" "\upsilon")    ("uPSILON" "\upsilon")    (#upsilon; "\upsilon")
  ("phi"     "\phi")        ("pHI"     "\phi")        (#phi;     "\phi")
+ ("varphi"  "\varphi")
  ("chi"     "\chi")        ("cHI"     "\chi")        (#chi;     "\chi")
  ("psi"     "\psi")        ("pSI"     "\psi")        (#psi;     "\psi")
  ("omega"   "\omega")      ("oMEGA"   "\omega")      (#omega;   "\omega")
@@ -1545,7 +1546,7 @@ for each x in '(
  ("Phi"     "\Phi")       ("PHI"     "\Phi")       (#Phi;     "\Phi")
  ("Chi"     "\Chi")       ("CHI"     "\Chi")       (#Chi;     "\Chi")
  ("Psi"     "\Psi")       ("PSI"     "\Psi")       (#Psi;     "\Psi")
- ("Omega"   "\Omega")     ("OMEGA"   "\Omega")     (#Omega;   "\Omega")         
+ ("Omega"   "\Omega")     ("OMEGA"   "\Omega")     (#Omega;   "\Omega")
 ) do put(intern car x, 'fancy!-special!-symbol, cadr x);
 
 
@@ -2613,7 +2614,7 @@ symbolic procedure fancy!-Stirling(u);
       w := fancy!-print!-indexlist1({cadr u}, '!_, '!*comma!*);
       if testing!-width!* and w eq 'failed then return w;
       w := fancy!-print!-indexlist1({caddr u}, '!^, '!*comma!*);
-      return w;     
+      return w;
    end;
 
 % Other Special Functions
@@ -2999,4 +3000,3 @@ statcounter := 0;
 endmodule;
 
 end;
-
