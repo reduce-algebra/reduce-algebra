@@ -1,5 +1,35 @@
 // ftmod.cpp                                      Copyright 2025 A C Norman
-// BSD license.
+
+/**************************************************************************
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+
 
 // This is code that I am working on and that is not yet either complete
 // or debugged, but when sorted I expect to merge it in with "arithlib".
@@ -11,7 +41,8 @@
 // and 5, 25, 125. With those options the passing required is limited to
 // about 10% rather than a factor of 2, and my hope is that that will
 // balance out the extra complication of the FFT on a slightly more
-// composite length.
+// composite length. But the code also provides other padding options so
+// that I will be able to compare.
 // I pad each of a and b to length N with zeros. I have three primes P1,
 // P2 and P3 such that each fits in 64-bits and eachg is a multiple of
 // every possible length that I will be using. This limits the length
@@ -353,8 +384,7 @@ void slow_ft(uint64_t* a, size_t N)
 // data in a new vector. This code would work for arbitrary length vectors
 // not just powers of 2 so it may be a useful basis for checking when
 // I code up more complicated versions.
-    assert(N < 10000);
-    uint64_t temp[10000];
+    uint64_t* temp = new uint64_t[N];
     for (size_t i=0; i<N; i++)
     {   uint64_t w = 0;
         for (size_t j=0; j<N; j++)
@@ -363,6 +393,7 @@ void slow_ft(uint64_t* a, size_t N)
     }
     for (size_t i=0; i<N; i++)
         a[i] = temp[i];
+    delete [] temp;
 }
 
 template <uint64_t P, uint64_t omega>
@@ -374,7 +405,7 @@ void inverse_slow_ft(uint64_t*a, size_t N)
 // data in a new vector. This code would work for arbitrary length vectors
 // not just powers of 2 so it may be a useful basis for checking other
 // (faster) versions.
-    uint64_t temp[10000];
+    uint64_t* temp = new uint64_t[N];
     for (size_t i=0; i<N; i++)
     {   uint64_t w = 0;
         for (size_t j=0; j<N; j++)
@@ -383,6 +414,7 @@ void inverse_slow_ft(uint64_t*a, size_t N)
     }
     for (size_t i=0; i<N; i++)
         a[i] = temp[i];
+    delete [] temp;
 }
 
 // Given a and b I want to find x and y such that
@@ -838,6 +870,10 @@ size_t bitreverse(size_t i, size_t N)
 // C++20 provides functions for counting zeros. Unlike the GNU intrinsics
 // they have defined behaviour when presented with a zero word.
 
+inline int nlz(uint64_t x)
+{   return countl_zero(x);
+}
+
 inline int ntz(uint64_t x)
 {   return countr_zero(x);
 }
@@ -847,15 +883,45 @@ inline int ntz(uint64_t x)
 // Note that __GNUC__ also gets defined by clang on the Macintosh, so
 // this code is probably optimized there too.
 
+inline int nlz(uint64_t x)
+{   return x==0 ? 64 : __builtin_clzll(x);
+}
+
 inline int ntz(uint64_t x)
 {   return x==0 ? 64 : __builtin_ctzll(x);
 }
 
 #else // __GNUC__
 
-inline int ntz(uint64_t n)
+inline int nlz(uint64_t x)
+{   constexpr static struct nlztable_t
+    {
+    public:
+        int8_t tt[67] = {0};
+        constexpr nlztable_t()
+        {   uint64_t w = -1;
+            int i = 0;
+            while (w != 0)
+            {   tt[w%67] = i;
+                w = w>>1;
+                i++;
+            {
+        }
+    } nlztable;
+    x |= x>>1;
+    x |= x>>2;
+    x |= x>>4;
+    x |= x>>8;
+    x |= x>>16;
+    x |= x>>32;
+// Now x is a number with all bits up as far as its highest one set, and I
+// have achieved that without performing any tests.
+    return nlztable.tt[(x & -x) % 67];
+}
+
+inline int ntz(uint64_t x)
 {
-// I count the number of trailing zeros by first ensuring that n has only
+// I count the number of trailing zeros by first ensuring that x has only
 // its bottom bit set (by ANDing it with its negative) and then I can
 // use a 67 entry table. I fill in the values in that table using a bit
 // of compile-time code so as to avoid use of "magic numbers" that could
@@ -871,7 +937,7 @@ inline int ntz(uint64_t n)
             }
         }
     } ntztable;
-    return ntztable.tt[(n & -n) % 67];
+    return ntztable.tt[(x & -x) % 67];
 }
 
 #endif // various versions of ntz()
@@ -920,7 +986,7 @@ size_t bitreverse(size_t i, size_t N)
     }
 // I will only support vector lengths that would fit in a 32-bit
 // unsigned integer.
-    else abort();
+    else return 0;
 }
 
 #endif // SIMPLEST_BIT_REVERSE
@@ -988,7 +1054,6 @@ void fast_ft(uint64_t* x, size_t N)
     uint64_t ww = exptmod(baseomega, LCMlengths/N, P);
     uint64_t R = 1;
     roots[0] = R;
-    assert(N < 10000);
     for (size_t i=1; i<N; i++)                   // N
         roots[i] = (R = timesmod(ww, R, P));
 //    cout << "N=" << N << " baseomega=" << baseomega << " ww = " << ww << "\n";
@@ -1004,7 +1069,6 @@ void inverse_fast_ft(uint64_t* x, size_t N)
     uint64_t ww = exptmod(baseomega, LCMlengths-LCMlengths/N, P);
     uint64_t R = 1;
     roots[0] = R;
-    assert(N < 10000);
     for (size_t i=1; i<N; i++)
         roots[i] = (R = timesmod(ww, R, P));
 //    cout << "N=" << N << " baseomega=" << baseomega << " ww = " << ww << "\n";
@@ -1017,16 +1081,49 @@ void inverse_fast_ft(uint64_t* x, size_t N)
 void fastmul(uint64_t* a, size_t lena,
              uint64_t* b, size_t lenb,
              uint64_t* c)
-{   uint64_t a1[10000], b1[10000], a2[10000], b2[10000], a3[10000], b3[10000];
-
-    size_t N = lena+lenb;
+{   size_t N = lena+lenb;
+// I offer several options for how the length is rounded up for use with
+// FFTs
+#if FANCY_LENGTHS
+// Here I round up to a size that passes the "valid" test. That sees if the
+// only factors of N other than 2 are up to 4 threes and up to 3 fives.
+// Using this the amount of padding is kept pretty low.
 // This looks pretty inefficient, but its cost is just proportional
 // to the number of digits I am working with and the rounding up that
 // it does is typically by a small factor - compared with the N*log(N)
 // work involving a great deal of modular arithmetic I think tha the cost
 // here is not liable to be a big issue.
+// A worry about this is that the code (at least as I have it at present)
+// that handles FFT on lengths that are not powers of 2 may be slower than
+// the purs power of 2 case - especially for fairly short vectors.
     while (!valid(N)) N++;
-// First collect images of a and b modulu each of P1, P2 and P3 and pad
+#elif ONLY_POWERS_OF_TWO
+// Here is the FFT traditional scheme or rounding up to the next power
+// of two, potentially wasting both space and work when some sizes get
+// almost doubled.
+    N = static_cast<uint64_t>(1)<<(64-nlz(N-1);
+#else
+// Now try rounding up so that apart from powers of two there can be a single
+// factor of 3. So possible sizes go 2, 3, 4, 6, 8, 12, 16, ... and the
+// expansion is at worst by a factor of 1.5 and some informal argument
+// suggests that on average it might be around 20%. This might be good value
+// because the padding is not too bad and it only needs a single level of
+// my (perhaps clumsy) code that decimates by a factor of 3.
+    size_t temp1 = static_cast<uint64_t>(1)<<(64-nlz(N-1));
+    size_t temp2 = 3*temp1/4;
+    N = N<=temp2 ? temp2 : temp1;
+#endif
+    uint64_t* workspace = new uint64_t[9*N];
+    uint64_t* a1 = workspace;
+    uint64_t* a2 = workspace+N;
+    uint64_t* a3 = workspace+2*N;
+    uint64_t* b1 = workspace+3*N;
+    uint64_t* b2 = workspace+4*N;
+    uint64_t* b3 = workspace+5*N;
+    uint64_t* c1 = workspace+6*N;
+    uint64_t* c2 = workspace+7*N;
+    uint64_t* c3 = workspace+8*N;
+// First collect images of a and b modulo each of P1, P2 and P3 and pad
 // each out to length N with zeros.
     size_t i;
     for (i=0; i<lena; i++)
@@ -1057,7 +1154,6 @@ void fastmul(uint64_t* a, size_t lena,
     slow_ft<P3,omega3>(a3, N);
     slow_ft<P3,omega3>(b3, N);
 // Pointwise multiplication 
-    uint64_t c1[10000], c2[10000], c3[10000];
     for (size_t i=0; i<N; i++)
     {   c1[i] = timesmod(a1[i], b1[i], P1);
         c2[i] = timesmod(a2[i], b2[i], P2);
@@ -1104,20 +1200,54 @@ void fastmul(uint64_t* a, size_t lena,
     }
     c[i++] = carry;
     assert(carry1 == 0);
+    delete [] workspace;
 }
 
 void fastermul(uint64_t* a, size_t lena,
                uint64_t* b, size_t lenb,
                uint64_t* c)
-{   uint64_t a1[10000], b1[10000], a2[10000], b2[10000], a3[10000], b3[10000];
-
-    size_t N = lena+lenb;
+{   size_t N = lena+lenb;
+// I offer several options for how the length is rounded up for use with
+// FFTs
+#if FANCY_LENGTHS
+// Here I round up to a size that passes the "valid" test. That sees if the
+// only factors of N other than 2 are up to 4 threes and up to 3 fives.
+// Using this the amount of padding is kept pretty low.
 // This looks pretty inefficient, but its cost is just proportional
 // to the number of digits I am working with and the rounding up that
 // it does is typically by a small factor - compared with the N*log(N)
 // work involving a great deal of modular arithmetic I think tha the cost
 // here is not liable to be a big issue.
+// A worry about this is that the code (at least as I have it at present)
+// that handles FFT on lengths that are not powers of 2 may be slower than
+// the purs power of 2 case - especially for fairly short vectors.
     while (!valid(N)) N++;
+#elif ONLY_POWERS_OF_TWO
+// Here is the FFT traditional scheme or rounding up to the next power
+// of two, potentially wasting both space and work when some sizes get
+// almost doubled.
+    N = static_cast<uint64_t>(1)<<(64-nlz(N-1);
+#else
+// Now try rounding up so that apart from powers of two there can be a single
+// factor of 3. So possible sizes go 2, 3, 4, 6, 8, 12, 16, ... and the
+// expansion is at worst by a factor of 1.5 and some informal argument
+// suggests that on average it might be around 20%. This might be good value
+// because the padding is not too bad and it only needs a single level of
+// my (perhaps clumsy) code that decimates by a factor of 3.
+    size_t temp1 = static_cast<uint64_t>(1)<<(64-nlz(N-1));
+    size_t temp2 = 3*temp1/4;
+    N = N<=temp2 ? temp2 : temp1;
+#endif
+    uint64_t* workspace = new uint64_t[9*N];
+    uint64_t* a1 = workspace;
+    uint64_t* a2 = workspace+N;
+    uint64_t* a3 = workspace+2*N;
+    uint64_t* b1 = workspace+3*N;
+    uint64_t* b2 = workspace+4*N;
+    uint64_t* b3 = workspace+5*N;
+    uint64_t* c1 = workspace+6*N;
+    uint64_t* c2 = workspace+7*N;
+    uint64_t* c3 = workspace+8*N;
 // First collect images of a and b modulu each of P1, P2 and P3 and pad
 // each out to length N with zeros.
     size_t i;
@@ -1149,7 +1279,6 @@ void fastermul(uint64_t* a, size_t lena,
     fast_ft<P3,omega3>(a3, N);
     fast_ft<P3,omega3>(b3, N);
 // Pointwise multiplication 
-    uint64_t c1[10000], c2[10000], c3[10000];
     for (size_t i=0; i<N; i++)
     {   c1[i] = timesmod(a1[i], b1[i], P1);
         c2[i] = timesmod(a2[i], b2[i], P2);
@@ -1196,6 +1325,7 @@ void fastermul(uint64_t* a, size_t lena,
     }
     c[i++] = carry;
     assert(carry1 == 0);
+    delete [] workspace;
 }
 
 //=========================================================================
@@ -1238,109 +1368,156 @@ mt19937_64 twister(*get_random_seed());
 
 #include <iostream>
 
+void timetest(size_t N, int ntrials)
+{   uint64_t* a = new uint64_t[N];
+    uint64_t* b = new uint64_t[N];
+    uint64_t* c = new uint64_t[2*N];
+    uint64_t* cslow = new uint64_t[2*N];
+
+    for (size_t i=0; i<N; i++)
+    {   a[i] = twister();
+        b[i] = twister();
+        c[i] = c[i+N] = 0;
+        cslow[i] = cslow[i+N] = 0;
+    }
+
+    uint64_t tt0 = microseconds();
+    for (int trial=0; trial<ntrials; trial++)
+    {   slowmul(a, N, b, N, cslow);
+    }
+    uint64_t tt1 = microseconds();
+    for (int trial=0; trial<ntrials; trial++)
+    {   fastermul(a, N, b, N, c);
+    }
+    uint64_t tt2 = microseconds();
+
+    uint64_t t;
+    cout << setw(6) << N
+         << setw(12) << (t = tt1-tt0)
+         << " (" << (double)t/(N*N) << ")"
+         << setw(12) << (t = tt2-tt1)
+         << " (" << (double)t/(N*log(N)) << ")"
+         << "\n";
+
+// Check that classical and fast methods gave the same result.
+    for (int i=2*N-1; i>=0; i--)
+    {   if (c[i] != cslow[i])
+        {   cout << "\n**FAIL** at " << i << "\n";
+            abort();
+        }
+    }
+
+    delete [] a;
+    delete [] b;
+    delete [] c;
+    delete [] cslow;
+}
+
 int main(int argc, char* argv[])
 {
-    size_t N = 4;
+    size_t N = -1;
     if (argc > 1) N = atoi(argv[1]);
-    cout << "N=" << N << "\n";
 
-    uint64_t a[10000], b[10000], c[10000], cslow[10000], cfaster[10000];
-    uint64_t fslow[10000], islow[10000], ffast[10000], ifast[10000]; 
-    uint64_t rand[10001];
+    int ntrials = 100;
+    if (argc > 2) ntrials = atoi(argv[1]);
 
-    for (size_t i=0; i<10001; i++) rand[i] = twister() % (P1/2);
+    cout << " digits       slow (tt/N*N)      fast (tt/NlogN)\n";
 
-    for (size_t i=0; i<10000; i++)
-    {   a[i] = rand[i];
-        b[i] = rand[i] ^ rand[i+1];
-        c[i] = 0;
-    }
-
-    cout << "P=" << P1 << " omega = " << omega1 << "\n";
-    cout << "\nSLOW scheme\n";
-    prinvec("input", a, N);
-    uint64_t t0 = microseconds();
-    slow_ft<P1,omega1>(a, N);
-    cout << "slow time = " << (t0=microseconds()-t0)
-         << " " << (double)t0/(N*N) << " " << (double)t0/(N*log(N))
-         << "\n";
-    for (int i=0; i<10000; i++) fslow[i] = a[i];
-    prinvec("result", a, N);
-
-    inverse_slow_ft<P1,omega1>(a, N);
-    prinvec("inverse", a, N);
-    for (int i=0; i<10000; i++) islow[i] = a[i];
-
-    for (size_t i=0; i<10000; i++)
-    {   a[i] = rand[i];
-        b[i] = rand[i] ^ rand[i+1];
-        cfaster[i] = 0;
-    }
-
-    cout << "\nFASTER scheme\n";
-    prinvec("input", a, N);
-    t0 = microseconds();
-    fast_ft<P1,omega1>(a, N);
-    cout << "\"fast\" time = " << (t0 = microseconds()-t0)
-         << " " << (double)t0/(N*N) << " " << (double)t0/(N*log(N))
-         << "\n";
-    for (int i=0; i<10000; i++) ffast[i] = a[i];
-    prinvec("result", a, N);
-
-    inverse_fast_ft<P1,omega1>(a, N);
-    prinvec("inverse", a, N);
-    for (int i=0; i<10000; i++) ifast[i] = a[i];
-
-    for (int i=0; i<10000; i++)
-    {   if (fslow[i] != ffast[i])
-        {   cout << "\n@@@ Forward xform bad at " << i << "\n";
-            return 1;
+    cout << fixed << setprecision(2);
+    if (N != -1) timetest(N, ntrials);
+    else
+    {   for (N=2; N<=8192; N=2*N)
+        {   timetest(N, ntrials);
+            timetest(3*N/2, ntrials);
         }
     }
-
-    for (int i=0; i<10000; i++)
-    {   if (islow[i] != ifast[i])
-        {   cout << "\n@@@Backward xform bad at " << i << "\n";
-            return 1;
-        }
-    }
-
-// For now I will just collect timings of a single fourier transform.
-
-    int ntrials = 4000000/N/N + 1;
-
-    for (int trial=0; trial<ntrials; trial++)
-    {   for (size_t i=0; i<10000; i++)
-            a[i] = b[i] = c[i] = cslow[i] = 0;
-        for (size_t i=0; i<N; i++)
-        {   a[i] = twister();
-            b[i] = twister();
-        }
-
-        uint64_t tt0 = microseconds();
-//      fastmul(a, N, b, N, c);           This is in fact hideously slow!
-        uint64_t tt1 = microseconds();
-        slowmul(a, N, b, N, cslow);
-        uint64_t tt2 = microseconds();
-        fastermul(a, N, b, N, cfaster);
-        uint64_t tt3 = microseconds();
-
-        if (trial == 0)
-        {   cout << "slowmul " << (tt2-tt1) << "\n";
-            cout << "fastmul " << (tt1-tt0) << "\n";
-            cout << "faster  " << (tt3-tt2) << "\n";
-        }
-
-        for (int i=2*N; i>=0; i--)
-        {   if (//c[i] != cslow[i] ||
-                cslow[i] != cfaster[i])
-            {   cout << "\n**FAIL** at " << i << "\n";
-                return 1;
-            }
-        }
-    }
- 
     return 0;
 }
 
 // end of fftmod.cpp
+
+
+#ifdef REVCOUNT
+
+// This is code to count in a 32-bit integer but in a bit-reversed order
+// It is here because in due course I will want to merge it in with the
+// above. But just for now it is a bit of freestanding technology.
+
+#include <iostream>
+#include <cstdint>
+#include <cassert>
+
+using namespace std;
+
+
+// At the start of some versions of FFT code I need to count from
+// 0 to some power of 2 and use a bit-reversed version of the index.
+// The code here is to support that in a 32-bit word and almost always
+// getting the next count in its reversed for involved just one
+// table-lookup and a few shifts.
+//
+// To use this to count up to 2^N use revstep()>>(32-N).
+
+uint32_t i = 0;      // These need to be encapsulated so the code here
+uint32_t revi = 0;   // is merely an explanation of the process.
+
+uint32_t revstep()
+{   constexpr static struct byterevtab_t
+    {
+    public:
+        uint8_t tt[256] = {0};
+// This sets up (at compile time) a table showing how to bit reverse
+// numbers in the range 0-255.
+        constexpr byterevtab_t()
+        {   for (int i=0; i<256; i++)
+            {   int w = i, r = 0;
+                for (int j=0; j<8; j++)
+                {   r = (r<<1) | (w&1);
+                    w = w>>1;
+                }
+                tt[i] = r;
+            }
+        }
+    } byterevtab;
+// Everything down to here has happened at compile time and so does not
+// contribute to run-time costs.
+    if ((i & 0xff) != 0)
+        return revi = (revi&0xffffff) | (byterevtab.tt[i++ & 0xff]<<24);
+// What follows happens only one time in 256 ..
+    i++; // does not change higher bits of i.
+    revi = (revi&0xffff) | (byterevtab.tt[(i >> 8) & 0xff] << 16);
+    if ((i & 0xff00) != 0) return revi;
+// .. one time in 65536 ..
+    revi = (revi&0xff) | (byterevtab.tt[(i >> 16) & 0xff] << 8);
+    if ((i & 0xff0000) != 0) return revi;
+// one time in 16777216!
+    revi = byterevtab.tt[(i >> 24) & 0xff];
+    return revi;
+}
+
+// To test the above I provide a simple bit-reverse function
+
+uint64_t bitreverse(uint64_t i, uint64_t N)
+{   uint64_t r=0;
+    while (N != 1)
+    {   r = (r<<1) | (i & 1);
+        i = i>>1;
+        N = N>>1;
+    }
+    return r;
+}
+
+int main(int argc, char* argv[])
+{
+    for (uint64_t j=0; j<0x100000000; j++)
+    {   uint32_t r1 = bitreverse(j, 0x100000000);
+        uint32_t r2 = revstep();
+        if (r1 != r2)
+        {   std::cout << hex << j << ": ref=" << r1 << " step=" << r2 << "\n";
+            std::abort();
+        }
+    }
+    std::cout << "OK\n";
+}
+
+#endif REVCOUNT
