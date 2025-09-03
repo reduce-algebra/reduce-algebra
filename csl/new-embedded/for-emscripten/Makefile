@@ -1,17 +1,28 @@
-# Makefile for building reduce.img suitable for embedded use.
-#	 Arthur Norman & Avery Laird, 2020--2021.
+# Makefile for building reduce.img suitable for embedded use. -*-makefile-gmake-*-
+#	Arthur Norman & Avery Laird, 2020--2021.
 
 # This version uses emscripten (em++ etc.) to create JavaScript/WebAssembly versions
 # for use with Node.js (reduce.{js,wasm}) and web browsers (reduce.web.{js,wasm}).
 
 # $Id$
 
+
+# FJW: This file targets the latest Emscripten (4.0.13) and Node
+# (24.7.0), and REDUCE 7169.  It will not work with significantly
+# older versions.  It builds bootstrapreduce.{js,wasm} but it hangs
+# when run.  I have probably updated the CSL files wrongly!
+
+# I was able to build REDUCE 6762 that ran in Node (only) using a
+# similar make file (but appropraite CSL files), although with any
+# optimization bootstrapreduce failed to run, apparently due to
+# alignment issues in arith01.cpp.
+
+
 # For a FULL bootstrapped build for Node.js you need to run
 #
 #	make bootstrapreduce.img
 #	rm bootstrapreduce.img; make bootstrapreduce.img
-#	make c-code
-#	make reduce.img
+#	make c-code; make reduce.img
 #
 # To add a build for web browsers, run the above, then run
 #
@@ -25,7 +36,7 @@
 #
 #	make mini-webreduce
 #
-# runs the same steps to build min-REDUCE.  This uses "./package.map",
+# runs the same steps to build mini-REDUCE.  This uses "./package.map",
 # which should have most packages commented out, and a smaller memory
 # size to build a version of REDUCE with a smaller footprint.
 
@@ -50,10 +61,7 @@
 # maps, i.e. just use 'make USERFLAGS="-O0 -g"', and debug using
 # Chrome; see https://developer.chrome.com/blog/wasm-debugging-2020/
 
-OPT=-O1
-
-# FJW, 02/05/2024: Using Emscripten 2.0.34 and Wasm exception handling
-# (as below), the build fails with optimization level above O1.
+# OPT=-O1
 
 # with certain emscripten builds, the linker can take a long time.
 # linking with a lower opt level, like O0, may help with this.
@@ -66,38 +74,37 @@ CXX=em++
 # to avoid warnings.
 
 # Emscripten compile and link flags:
-EM_CC_LD_FLAGS = -flto -sUSE_ZLIB -fwasm-exceptions
+EM_CC_LD_FLAGS = -sUSE_ZLIB -flto -fwasm-exceptions# -fsanitize=undefined
 # USE_ZLIB needed (initially) at compile time to install <zlib.h>!
 
 # Emscripten compile flags:
 EM_CCFLAGS = $(EM_CC_LD_FLAGS)
 
 ifdef MINIREDUCE
- initial_memory = 256mb
+ initial_heap = 256MB
 else
- initial_memory = 1024mb
+ initial_heap = 1GB
 endif
 
-# Emscripten versions up to 3.1.26 use a fixed stack size of 5MB and *do not accept* a STACK_SIZE parameter.
-# Subsequent versions use a default stack size of 64KB, which is too small for REDUCE
-# and must be set explicitly to a larger value, for which 5MB seem reasonable.
-# *** NOTE: the following code only works for an emscripten version earlier than 3.2.0. ***
+# Emscripten versions > 3.1.26 uses a default stack size of 64KB,
+# which is too small for REDUCE and must be set explicitly to a larger
+# value, for which 5MB seems reasonable.
+
 SHELL = /bin/bash
-stack_size != [[ `emcc -v |& sed -n '1s/.*) 3.1.\([0-9]\+\) (.*/\1/p'` > 26 ]] && echo '-sSTACK_SIZE=5MB'
 
 # Emscripten link flags:
 EM_LDFLAGS = $(EM_CC_LD_FLAGS)\
  -sEXIT_RUNTIME\
- -sNO_ERROR_ON_UNDEFINED_SYMBOLS\
- -sINITIAL_MEMORY=$(initial_memory)\
- $(stack_size)
-
+ -sINITIAL_HEAP=$(initial_heap) -sALLOW_MEMORY_GROWTH\
+ -sSTACK_SIZE=5MB
+# -sASSERTIONS=2
+# -sSAFE_HEAP
 
 #ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
 #ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
 
 CPPFLAGS = $(EM_CCFLAGS)\
- -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S)\
+ -std=gnu++20 $(OPT) -I. -I../include -Iinclude -I$(S)\
  -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1\
  -DAVOID_KARATSUBA_THREADS=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
 
@@ -113,18 +120,19 @@ JSOPTS = $(USERFLAGS)
 # a command like   "node bootstrapreduce.js"   I get a failure, but if I
 # use a fully-rooted path for the "node" command all is well. I do not
 # understand! But this setting for NODE arranges the careful scheme for me.
-NODE = $(shell which node) --experimental-wasm-eh
+NODE = node # $(shell which node)
 
 # Emscripten link flags when building for Node.Js:
-NODE_EM_LDFLAGS= -sNODERAWFS -sFORCE_FILESYSTEM
+NODE_EM_LDFLAGS = -sNODERAWFS -sFORCE_FILESYSTEM
 
 PRE_JS = --pre-js js/init.js
 # WEBOPTS= $(PRE_JS) -s ENVIRONMENT=worker -s BUILD_AS_WORKER --js-library js/io.js
 
 # FJW: Gnuplot support is not currently required for the mobile version.
-ifndef MINIREDUCE
-  JS_LIB = --js-library js/library.js
-endif
+# Commented out temporarily to avoid distractions!
+# ifndef MINIREDUCE
+#   JS_LIB = --js-library js/library.js
+# endif
 WEBOPTS = -sENVIRONMENT=worker -sBUILD_AS_WORKER $(PRE_JS) $(JS_LIB)
 
 
@@ -161,7 +169,7 @@ include/crlibm.h lib/libcrlibm.a:
 	rm -rf crlibm include lib; \
 	mkdir -p crlibm; \
 	cd crlibm; \
-	../../../../libraries/crlibm/configure\
+	../../../../libraries/crlibm/configure --host none\
 	 CC=emcc CFLAGS="$(EM_CCFLAGS) -D__INTEL_COMPILER=1 -O3"\
 	 LDFLAGS="$(EM_LDFLAGS)" AR=emar RANLIB=emranlib\
 	 --prefix=`pwd`/..; \
@@ -171,14 +179,16 @@ include/crlibm.h lib/libcrlibm.a:
 	cd ..
 
 
+# This file list should work with REDUCE 7169 (but it doesn't!):
 main_o_files =\
- allocate.o arith01.o arith02.o arith03.o arith04.o\
+ newallocate.o arith01.o arith02.o arith03.o arith04.o\
  arith05.o arith06.o arith07.o arith08.o arith09.o\
  arith10.o arith11.o arith12.o arith13.o arith14.o\
  bytes1.o showhdr.o char.o cslmpi.o cslread.o eval1.o\
  eval2.o eval3.o eval4.o fasl.o fns1.o fns2.o fns3.o\
- fwin.o cslgc.o lisphash.o isprime.o print.o\
- restart.o sysfwin.o termed.o inthash.o serialize.o
+ fwin.o newcslgc.o lisphash.o isprime.o print.o\
+ restart.o sysfwin.o termed.o inthash.o serialize.o\
+ qsieve.o jit.o forks.o gc-check.o
 
 special_o_files = csl.o preserve.o
 
@@ -191,7 +201,7 @@ bootstrapreduce.js bootstrapreduce.wasm &: $(bootstrapObjects) lib/libcrlibm.a
 	$(CXX) $(bootstrapObjects)\
 	 $(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o bootstrapreduce.js
 
-.PHONY:	bootstrapreduce
+.PHONY: bootstrapreduce
 bootstrapreduce: bootstrapreduce.js bootstrapreduce.wasm
 	@echo '=== Built "bootstrapreduce.js" and "bootstrapreduce.wasm".'
 
@@ -202,7 +212,7 @@ bootstrapreduce: bootstrapreduce.js bootstrapreduce.wasm
 # I'm also going to add .yo for object files which have been compiled
 # with the asynchronous javascript IO library (just so we don't have
 # to rebuild each time we want to switch between Node.js/browser), and .xo for
-# for a copy of Reduce to be run using Node.js but with its "image file" stored
+# a copy of Reduce to be run using Node.js but with its "image file" stored
 # as static data within the executable.
 
 # However, this creates a lot of identical object files, so re-use
@@ -224,7 +234,7 @@ bootstrapreduce.img: bootstrapreduce.js bootstrapreduce.wasm $(package_map)
 	 -Dbootstrap -D@srcdir=$(S) -D@reduce=$(R)\
 	 -o bootstrapreduce.img -L bootstrap_image.log
 
-c-code:	bootstrapreduce.img
+c-code: bootstrapreduce.img
 	$(NODE) bootstrapreduce.js -w $(CSLFLAGS)\
 	 -Dno_init_file\
 	 $(S)/make-c-code.red\
@@ -243,6 +253,7 @@ unn_oo_files =\
  u41.oo u42.oo u43.oo u44.oo u45.oo u46.oo u47.oo u48.oo u49.oo u50.oo\
  u51.oo u52.oo u53.oo u54.oo u55.oo u56.oo u57.oo u58.oo u59.oo u60.oo
 
+# reduceObjects = $(main_o_files:.o=.oo) $(special_o_files:.o=.oo) $(unn_oo_files)
 # Re-use $(main_o_files) and $(special_o_files), since the .oo files
 # are identical, as would be shown by running
 # for f in *.o; do echo $f; cmp $f ${f%.o}.oo; done
@@ -259,10 +270,11 @@ reduce.js reduce.wasm &: $(reduceObjects)
 reducexObjects = $(main_o_files:.o=.xo) $(special_o_files:.o=.xo) $(unn_oo_files:.oo=.xo)
 
 reducex.js reducex.wasm &: $(reducexObjects)
-	$(CXX) $(reducexObjects) \
-		$(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o reducex.js
+	$(CXX) $(reducexObjects)\
+	 $(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o reducex.js
 
 # The web-based (non-Node.js) version
+# reduceWebObjects = $(main_o_files:.o=.yo) $(special_o_files:.o=.yo) $(unn_oo_files:.oo=.yo)
 # Re-use $(main_o_files) and $(unn_oo_files), since the .yo files are
 # identical, as would be shown by running
 # for f in *.oo; do echo $f; cmp $f ${f%.oo}.yo; done
@@ -274,8 +286,8 @@ reduce.web.js reduce.web.wasm &: $(reduceWebObjects)
 	 $(LDFLAGS) $(LINK_OPT) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS)\
 	 -o reduce.web.js
 
-.PHONY:	reduce
-reduce:	reduce.js
+.PHONY: reduce
+reduce: reduce.js
 	@echo '=== Built "reduce.js" and "reduce.wasm".'
 
 .PHONY: reduce-web
@@ -290,14 +302,14 @@ reduce.img: reduce.js reduce.wasm $(package_map)
 	 -D@srcdir=$(S) -D@reduce=$(R) -o reduce.img\
 	 -L reduce_image.log
 
-HEADERS = ../include/config.h include/crlibm.h \
-	$(S)/md5.h		 $(S)/termed.h	  $(S)/arith.h		 $(S)/openmath.h \
-	$(S)/bigvector.h $(S)/entries.h	  $(S)/proc.h						 \
-	$(S)/uninames.h	 $(S)/bytes.h	  $(S)/externs.h	 $(S)/int128_t.h \
-	$(S)/sockhdr.h	 $(S)/version.h	  $(S)/charmetrics.h $(S)/fwin.h	 \
-	$(S)/inthash.h	 $(S)/stream.h	  $(S)/cslerror.h	 $(S)/headers.h	 \
-	$(S)/lispthrow.h $(S)/syscsl.h	  $(S)/cslread.h	 $(S)/machine.h	 \
-	$(S)/tags.h
+HEADERS = ../include/config.h include/crlibm.h\
+ $(S)/md5.h $(S)/termed.h $(S)/arith.h $(S)/openmath.h\
+ $(S)/bigvector.h $(S)/entries.h $(S)/proc.h\
+ $(S)/uninames.h $(S)/bytes.h $(S)/externs.h $(S)/int128_t.h\
+ $(S)/sockhdr.h $(S)/version.h $(S)/charmetrics.h $(S)/fwin.h\
+ $(S)/inthash.h $(S)/stream.h $(S)/cslerror.h $(S)/headers.h\
+ $(S)/lispthrow.h $(S)/syscsl.h $(S)/cslread.h $(S)/machine.h\
+ $(S)/tags.h
 
 make-image.js make-image.wasm &: $(S)/make-image.cpp $(HEADERS)
 	$(CXX) $(CPPFLAGS) $(NODE_EM_LDFLAGS) $(S)/make-image.cpp\
@@ -331,9 +343,7 @@ image.cpp: make-image.js make-image.wasm reduce.img
 # prerequisites are specified explicitly but the recipes use the
 # implicit rules above:
 
-bytes1.o   bytes1.xo   : $(S)/bytes1.cpp $(S)/opnames.cpp $(HEADERS)
-cslmpi.o   cslmpi.xo   : $(S)/cslmpi.cpp $(S)/mpipack.cpp $(HEADERS)
-embedcsl.o embedcsl.xo : $(S)/embedcsl.cpp $(S)/csl.cpp $(HEADERS)
+cslmpi.o cslmpi.oo cslmpi.xo cslmpi.yo : $(S)/cslmpi.cpp $(S)/mpipack.cpp $(HEADERS)
 
 makeheaders.o : $(S)/makeheaders.cpp
 objtype.o : $(S)/objtype.cpp
