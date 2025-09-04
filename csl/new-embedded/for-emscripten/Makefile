@@ -7,15 +7,10 @@
 # $Id$
 
 
-# FJW: This file targets the latest Emscripten (4.0.13) and Node
-# (24.7.0), and REDUCE 7169.  It will not work with significantly
-# older versions.  It builds bootstrapreduce.{js,wasm} but it hangs
-# when run.  I have probably updated the CSL files wrongly!
-
-# I was able to build REDUCE 6762 that ran in Node (only) using a
-# similar make file (but appropraite CSL files), although with any
-# optimization bootstrapreduce failed to run, apparently due to
-# alignment issues in arith01.cpp.
+# FJW: This file targets the latest Emscripten (4.0.13), Node (24.7.0)
+# and REDUCE (7169).  It will not work with significantly older
+# versions.  It builds an optimized bootstrapreduce.img and node
+# bootstrapreduce works, but it will not build reduce.img.
 
 
 # For a FULL bootstrapped build for Node.js you need to run
@@ -61,7 +56,7 @@
 # maps, i.e. just use 'make USERFLAGS="-O0 -g"', and debug using
 # Chrome; see https://developer.chrome.com/blog/wasm-debugging-2020/
 
-# OPT=-O1
+OPT=-Oz
 
 # with certain emscripten builds, the linker can take a long time.
 # linking with a lower opt level, like O0, may help with this.
@@ -74,8 +69,8 @@ CXX=em++
 # to avoid warnings.
 
 # Emscripten compile and link flags:
-EM_CC_LD_FLAGS = -sUSE_ZLIB -flto -fwasm-exceptions# -fsanitize=undefined
-# USE_ZLIB needed (initially) at compile time to install <zlib.h>!
+EM_CC_LD_FLAGS = -sUSE_ZLIB -sMEMORY64 -flto -fwasm-exceptions
+# -fsanitize=undefined
 
 # Emscripten compile flags:
 EM_CCFLAGS = $(EM_CC_LD_FLAGS)
@@ -179,7 +174,7 @@ include/crlibm.h lib/libcrlibm.a:
 	cd ..
 
 
-# This file list should work with REDUCE 7169 (but it doesn't!):
+# This file list should work with REDUCE 7169:
 main_o_files =\
  newallocate.o arith01.o arith02.o arith03.o arith04.o\
  arith05.o arith06.o arith07.o arith08.o arith09.o\
@@ -225,13 +220,15 @@ ifdef MINIREDUCE
  package_map = package.map
 endif
 
+PACKAGE=package
+
 # If MINIREDUCE is set (to -Dminireduce) then buildreduce.lsp reads
 # "./package.map", which should have most packages commented out.  See
 # target mini-webreduce at the end of this file.
 bootstrapreduce.img: bootstrapreduce.js bootstrapreduce.wasm $(package_map)
 	-rm -f bootstrapreduce.img
 	$(NODE) bootstrapreduce.js -z -Dno_init_file $(MINIREDUCE) $(S)/buildreduce.lsp\
-	 -Dbootstrap -D@srcdir=$(S) -D@reduce=$(R)\
+	 -Dbootstrap -D@srcdir=$(S) -D@reduce=$(R) -D@package=$(PACKAGE)\
 	 -o bootstrapreduce.img -L bootstrap_image.log
 
 c-code: bootstrapreduce.img
@@ -299,8 +296,8 @@ reduce.img: reduce.js reduce.wasm $(package_map)
 	export reduce=$(R) &&\
 	 $(NODE) reduce.js -z -Dforce_c_code\
 	 -Dno_init_file $(MINIREDUCE) $(S)/buildreduce.lsp\
-	 -D@srcdir=$(S) -D@reduce=$(R) -o reduce.img\
-	 -L reduce_image.log
+	 -D@srcdir=$(S) -D@reduce=$(R) -D@package=$(PACKAGE)\
+	 -o reduce.img -L reduce_image.log
 
 HEADERS = ../include/config.h include/crlibm.h\
  $(S)/md5.h $(S)/termed.h $(S)/arith.h $(S)/openmath.h\
