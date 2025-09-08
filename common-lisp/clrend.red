@@ -1,53 +1,56 @@
-module rend;  % CL REDUCE "back-end".
+module clrend;  % CL REDUCE "back-end".
 
 % Authors: Anthony C. Hearn, Martin L. Griss, Arthur C. Norman, et al.
-% Modified by FJW for Common Lisp REDUCE.
-% The standard version is "$reduce/packages/support/*rend.red".
+% Modified by FJW for REDUCE on Common Lisp.
+% Time-stamp: <2025-07-01 15:13:01 franc>
+% The standard versions are "packages/support/*rend.red".
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Redistribution and use in source and binary forms, with or without               %
+% Redistribution and use in source and binary forms, with or without           %
 % modification, are permitted provided that the following conditions are met:  %
-%                                                                                                                                                          %
-%    * Redistributions of source code must retain the relevant copyright           %
-%      notice, this list of conditions and the following disclaimer.               %
-%    * Redistributions in binary form must reproduce the above copyright           %
-%      notice, this list of conditions and the following disclaimer in the         %
-%      documentation and/or other materials provided with the distribution.        %
-%                                                                                                                                                          %
+%                                                                              %
+%    * Redistributions of source code must retain the relevant copyright       %
+%      notice, this list of conditions and the following disclaimer.           %
+%    * Redistributions in binary form must reproduce the above copyright       %
+%      notice, this list of conditions and the following disclaimer in the     %
+%      documentation and/or other materials provided with the distribution.    %
+%                                                                              %
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"  %
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE        %
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE    %
 % IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE   %
-% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE        %
-% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR              %
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF             %
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS         %
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN          %
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)          %
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE    %
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR          %
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF         %
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS     %
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN      %
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)      %
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE   %
-% POSSIBILITY OF SUCH DAMAGE.                                                                                              %
+% POSSIBILITY OF SUCH DAMAGE.                                                  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create!-package('(clrend),nil);
 
 fluid '(!*echo
-        !*int
-        !*mode
-        ifl!*
-        lispsystem!*
-        promptstring!*
-        outputhandler!*);
+    !*int
+    !*mode
+    ifl!*
+    lispsystem!*
+    no!_init!_file
+    promptstring!*
+    reduce!-startup!-hooks!*
+    outputhandler!*);
 
 global '(tab!* !$eol!$ ff!* cr!*
-         !*extraecho
-         !*loadversion
-         date!*
-         ipl!*
-         largest!-small!-modulus
-         ofl!*
-         spare!*
-         statcounter
-         version!*
-         symchar!*);
+     !*extraecho
+     !*loadversion
+     date!*
+     ipl!*
+     largest!-small!-modulus
+     ofl!*
+     spare!*
+     statcounter
+     version!*
+     symchar!*);
 
 switch break, gc, printlower, redefmsg, debug, verboseload;
 
@@ -60,14 +63,14 @@ Comment The following functions, which are referenced in the basic
 REDUCE source (RLISP, ALG1, ALG2, MATR and PHYS) should be defined to
 complete the definition of REDUCE:
 
-        BYE
-        EVLOAD -- defined in "clprolo.red"
-        ERROR1 -- defined in "sl-on-cl.lisp"
-        MKFIL
-        ORDERP -- defined in "sl-on-cl.lisp"
-        QUIT
-        SEPRP
-        SETPCHAR.
+    BYE
+    EVLOAD -- defined in "clprolo.red"
+    ERROR1 -- defined in "sl-on-cl.lisp"
+    MKFIL
+    ORDERP -- defined in "sl-on-cl.lisp"
+    QUIT
+    SEPRP
+    SETPCHAR.
 
 Prototypical descriptions of these functions are as follows;
 
@@ -104,9 +107,9 @@ symbolic procedure mkfil u;
 % pslrend.red and should return explicitly either t or nil.
 
 % These definitions are from "psl/boot.sl":
-cr!*  := intern int2id 13;              % carriage return (^M)
-ff!*  := intern int2id 12;              % form feed (^L)
-tab!* := intern int2id 9;               % tab key (^I)
+cr!*  := intern int2id 13;      % carriage return (^M)
+ff!*  := intern int2id 12;      % form feed (^L)
+tab!* := intern int2id 9;       % tab key (^I)
 
 symbolic procedure seprp u;
    % Return t if U is a blank, tab, end-of-line, form feed or carriage
@@ -119,12 +122,12 @@ symbolic procedure setpchar c;
    begin scalar oldprompt;
       oldprompt := promptstring!*;
       promptstring!* := if stringp c then c
-          else if idp c then id2string c
+      else if idp c then id2string c
 
-          % FJW: I don't really want to import the CL format function just
-          % to use it here.  Is this line actually used?
-          else error(0, "Unexpected prompt in setpchar");
-          % else format(nil, "~a", c);
+      % FJW: I don't really want to import the CL format function just
+      % to use it here.  Is this line actually used?
+      else error(0, "Unexpected prompt in setpchar");
+      % else format(nil, "~a", c);
     return oldprompt
    end;
 
@@ -142,20 +145,20 @@ set, or the functions are actually defined. They are defined in another
 module, which is not needed to build the basic system. The name of the
 flag follows the function name, enclosed in parentheses:
 
-        CEDIT (?)
-        COMPD (COMP)
-        EDIT1   This function provides a link to an editor. However, a
-                definition is not necessary, since REDUCE checks to see
-                if it has a function value.
-        EZGCDF (EZGCD)
-        PRETTYPRINT (DEFN --- also called by DFPRINT)
-                This function is used in particular for output of RLISP
-                expressions in LISP syntax. If that feature is needed,
-                and the prettyprint module is not available, then it
-                should be defined as PRINT
-        RPRINT (PRET)
-        TIME (TIME) returns elapsed time from some arbitrary initial
-                    point in milliseconds;
+    CEDIT (?)
+    COMPD (COMP)
+    EDIT1   This function provides a link to an editor. However, a
+        definition is not necessary, since REDUCE checks to see
+        if it has a function value.
+    EZGCDF (EZGCD)
+    PRETTYPRINT (DEFN --- also called by DFPRINT)
+        This function is used in particular for output of RLISP
+        expressions in LISP syntax. If that feature is needed,
+        and the prettyprint module is not available, then it
+        should be defined as PRINT
+    RPRINT (PRET)
+    TIME (TIME) returns elapsed time from some arbitrary initial
+            point in milliseconds;
 
 
 % Operating system interface:
@@ -189,24 +192,41 @@ call to REDUCE, and sets the appropriate variables;
 
 remflag('(begin),'go);
 
-symbolic procedure begin;
+% The ! escape below is to avoid confusing GNU Emacs REDUCE mode; it
+% should not upset REDUCE itself.
+
+symbolic procedure !begin;
    begin
-        !*echo := not !*int;
-        !*extraecho := t;
-        ifl!* := ipl!* := ofl!* := nil;
-        if null date!* then go to a;
-        if !*loadversion then errorset('(load entry),nil,nil);
-                linelength 80;
-                prin2 version!*;
-                prin2 ", ";
-        prin2 date!*;
-        prin2t " ...";
-        !*mode := if getd 'addsq then 'algebraic else 'symbolic;
-        if !*mode eq 'algebraic then !*break := nil;
-           %since most REDUCE users won't use LISP
-        date!* := nil;
-  a:    if errorp errorset('(begin1),nil,nil) then go to a;
-        prin2t "Entering LISP ... "
+      !*echo := not !*int;
+      !*extraecho := t;
+      ifl!* := ipl!* := ofl!* := nil;
+      if null date!* then go to a;
+      if !*loadversion then errorset!*('(load entry),nil);
+      linelength 80;
+      prin2 version!*;
+      prin2 ", build date ";
+      prin2 date!*;
+      prin2t " ...";
+      !*mode := if getd 'addsq then 'algebraic else 'symbolic;
+      if !*mode eq 'algebraic then !*break := nil;
+      % ... since most REDUCE users won't use LISP
+      if null getd 'mathprint then no!_init!_file := t;
+      % ... since bootstrap REDUCE should not read the init file
+      date!* := nil;
+   a:
+      % Process startup hooks:
+      while pairp reduce!-startup!-hooks!* do <<
+         lispeval car reduce!-startup!-hooks!*;
+         reduce!-startup!-hooks!* := cdr reduce!-startup!-hooks!*
+      >>;
+      % Read init file:
+      if null no!_init!_file then
+      begin scalar erfg!*;
+         read!-init!-file "reduce"
+      end;
+      % Start main system:
+      if errorp errorset!*('(begin1),nil) then go to a;
+      prin2t "Entering LISP ... "
    end;
 
 flag('(begin),'go);
@@ -214,14 +234,14 @@ flag('(begin),'go);
 
 Comment Initial setups for REDUCE;
 
-spare!* := 0;              % We need this for bootstrapping. (FJW: Maybe!)
+spare!* := 0;          % We need this for bootstrapping. (FJW: Maybe!)
 
-symchar!* := t;                            % Changed prompt when in symbolic mode.
+symchar!* := t;                % Changed prompt when in symbolic mode.
 
 symbolic procedure initreduce;
    % Initial declarations for REDUCE
    <<
-          statcounter := 0;
+      statcounter := 0;
       spare!* := 0;
       !*int := t;
       crbuflis!* := nil;     % We don't want to leave old input around.
@@ -246,8 +266,8 @@ deflist('((tr rlis) (untr rlis) (trst rlis) (untrst rlis)),'stat);
 
 % symbolic procedure find!!minnorm();
 %    <<
-%         !!minnorm := least!-positive!-normalized!-single!-float;
-%         !!minnegnorm := -!!minnorm;
+%     !!minnorm := least!-positive!-normalized!-single!-float;
+%     !!minnegnorm := -!!minnorm;
 %    >>;
 
 % flag('(find!!minnorm), 'lose);
@@ -270,15 +290,10 @@ symbolic procedure ttab n;  while posn() < n do prin2 " ";
 symbolic inline procedure explodec x; explode2 x;
 
 
-% Make ON DEFN load the prettyprinter if necessary and
-% OFF DEFN reinstate property lists saved during ON DEFN:
-% put('defn, 'simpfg, '((t (!require '!eslpretty))
-%                       (nil (!esl!-reinstate!-plists))));
-
 #if (memq 'sbcl lispsystem!*)
 % Make the COMP switch control the SBCL evaluation mode:
 put('comp, 'simpfg, '((t (compilation t))
-                      (nil (compilation nil))));
+              (nil (compilation nil))));
 #endif
 
 
@@ -364,12 +379,12 @@ symbolic procedure lalr_collect_terminals grammar;
     scalar rhs_symbols;
     for each productions in grammar do
       for each production in cdr productions do
-        for each symbol in car production do
-        <<
-           if idp symbol then symbol := intern symbol; % FJW
-           if not (symbol member rhs_symbols) then
-              rhs_symbols := symbol . rhs_symbols
-        >>;
+    for each symbol in car production do
+    <<
+       if idp symbol then symbol := intern symbol; % FJW
+       if not (symbol member rhs_symbols) then
+          rhs_symbols := symbol . rhs_symbols
+    >>;
     return setdiff(rhs_symbols, nonterminals)
   end;
 
