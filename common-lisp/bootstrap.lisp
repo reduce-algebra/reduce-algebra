@@ -1,7 +1,15 @@
 ;; Lisp code to build a REDUCE image for bootstrapping on Common Lisp
-;; FJW, April 2022
 
-(load "sl-on-cl")
+;; FJW -- Time-stamp: <2025-08-10 11:22:45 franc>
+
+(load (concatenate 'string "fasl."
+                   #+SBCL "sbcl"
+                   #+CLISP "clisp"
+                   #+ABCL "abcl"
+                   #+CCL "ccl"
+                   #+ECLP "eclp"
+                   #+ECLN "ecln"
+                   "/sl-on-cl")) ; could probably make this more elegant!
 
 ;; (unless (sl:getenv "reduce")
 ;;   ;; No easy way to support setenv in ABCL, so $reduce must be set explicitly!
@@ -53,7 +61,8 @@
       ((filep "../psl/boot.sl") (load "../psl/boot.sl"))
       (t (error 0 "Cannot find boot file.") (exit 1)))
 
-(setq !*comp t)  % It's faster in some lisps if we compile.
+% It's faster in some lisps if we compile.
+(setq !*comp (not (memq 'ecl lispsystem!*)))
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %% Start of build.sl %%
@@ -125,7 +134,6 @@
 %%%%%%%%%%%%%%%%%%%%%
 
 (load!-package!-sources 'clprolo nil)
-(load!-package!-sources 'revision 'support)
 (load!-package!-sources 'rlisp 'rlisp)
 (load!-package!-sources 'smacros 'support)
 (load!-package!-sources 'clrend nil)
@@ -153,4 +161,4 @@
 (initreduce)
 (setq date!* (date))
 (setq version!* "Bootstrap REDUCE")
-(save!-reduce!-image "bootstrap")
+(save!-reduce!-image "bootstrap")       % doesn't save or stop ECL

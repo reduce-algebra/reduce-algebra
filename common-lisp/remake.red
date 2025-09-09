@@ -1,37 +1,41 @@
 module remake; % Update the fast loading (fasl) version of a file.
 
-% Authors: Martin L. Griss and Anthony C. Hearn.
+% Essentially "packages/support/remake.red" minus the cross-reference
+% code, with which it may need to be re-synchronised occasionally!
+
+% Original Authors: Martin L. Griss and Anthony C. Hearn.
 % Modified by ACN for the Sourceforge version.
-% Modified again by FJW for REDUCE on Common Lisp.
-% The standard version is "packages/support/remake.red".
+
+% This version for REDUCE on Common Lisp by FJW.
+% It broadly follows PSL.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Redistribution and use in source and binary forms, with or without		   %
+% Redistribution and use in source and binary forms, with or without           %
 % modification, are permitted provided that the following conditions are met:  %
-%																			   %
-%    * Redistributions of source code must retain the relevant copyright	   %
-%      notice, this list of conditions and the following disclaimer.		   %
-%    * Redistributions in binary form must reproduce the above copyright	   %
-%      notice, this list of conditions and the following disclaimer in the	   %
-%      documentation and/or other materials provided with the distribution.	   %
-%																			   %
+%                                                                              %
+%    * Redistributions of source code must retain the relevant copyright       %
+%      notice, this list of conditions and the following disclaimer.           %
+%    * Redistributions in binary form must reproduce the above copyright       %
+%      notice, this list of conditions and the following disclaimer in the     %
+%      documentation and/or other materials provided with the distribution.    %
+%                                                                              %
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"  %
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE	   %
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE    %
 % IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE   %
-% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE	   %
-% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR		   %
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF		   %
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS	   %
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN	   %
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)	   %
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE    %
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR          %
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF         %
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS     %
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN      %
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)      %
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE   %
-% POSSIBILITY OF SUCH DAMAGE.												   %
+% POSSIBILITY OF SUCH DAMAGE.                                                  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fluid '(!*break
         !*faslp
         !*forcecompile
-   	    !*int
+        !*int
         !*loadall
         !*writingfaslfile
         lispsystem!*);
@@ -42,9 +46,10 @@ global '(loaded!-modules!* fasl!-dir!* fasl!-ext!*);
 
 symbolic procedure olderfaslp(u,v);
    % Return t if file u does not exist or is older than file v.
-   % (Return nil if file v does not exist, but this should not happen!)
+   % Throw an error if file v does not exist, but this should not happen!
    not filep u or
-	  (filep v and file!-write!-date u < file!-write!-date v);
+      if not filep v then rederr list("Missing file", v)
+      else file!-write!-date u < file!-write!-date v;
 
 % Support for packages directory.
 
@@ -56,24 +61,17 @@ fluid '(new_inline_definitions);
 
 new_inline_definitions := nil;
 
-% Now indicate where the file listing inline-definitions will live.
-% Note that it is in different places for different flavours of Lisp.
-% For now put it in the fasl directory.
-
 symbolic procedure inline_defs_file();
+   % Return the pathname of the file listing inline proc definitions.
+   % Note that this is in different places for different flavours of
+   % Lisp.  For Common Lisp (as for PSL), put it in the fasl directory
+   % fasl!-dir!*, which depends on the version of Common Lisp and is
+   % defined as a constant in "sl-on-cl.lisp".
    concat2(fasl!-dir!*, "inline-defs.dat");
 
 symbolic procedure load_saved_inlines();
   begin
-    scalar ff, u, v;
-%
-% There is another bit of fun here. I would like to be able to call
-% module!-rebuild at any time, and that means that the current directory
-% is uncertain when that happens. So with CSL I arrange that I always keep
-% my "inline-defs.dat" file in the directory where generated C lives.
-% For PSL I put things where fasl files go.
-% FJW: CL follows PSL here.
-%
+    scalar ff, u, v, !*echo;       % rebind !*echo to nil to be quiet.
     ff := inline_defs_file();
     if not filep ff then return nil;
     ff := open(ff, 'input);
@@ -157,7 +155,7 @@ symbolic procedure save_inlines();
 symbolic procedure package!-remake2(u,v);
    % Remake module u in directory packages/v or current directory if v
    % is nil.
-   begin scalar y, !*int;		% to avoid faslout interaction message
+   begin scalar y, !*int;       % to avoid faslout interaction message
       load_saved_inlines();
       new_inline_definitions := nil;
       update!-fasl2(u,v);
@@ -173,7 +171,7 @@ symbolic procedure update!-fasl2(u,v);
    % Update fasl file for module u in directory packages/v or current
    % directory if v is nil.
    begin scalar y,z;
- 	  y := concat(fasl!-dir!*, mkfil u, fasl!-ext!*);
+      y := concat(fasl!-dir!*, mkfil u, fasl!-ext!*);
       z := module2!-to!-file(u,v);
       if olderfaslp(y,z) or !*forcecompile
         then <<terpri();
@@ -197,7 +195,7 @@ symbolic procedure upd!-fasl1(u,v,w);
       u := mkfil u;
       lprim list("Compiling",u,"...");
       terpri();
-	  lispeval list('faslout, concat2(fasl!-dir!*, u));
+      lispeval list('faslout, concat2(fasl!-dir!*, u));
       infile v;
       lispeval '(faslend)
    end;
@@ -207,9 +205,9 @@ symbolic procedure module2!-to!-file(u,v);
    % directory if v is nil, to a file name.
    % Also defined in build.red!
    <<
-   	  u := concat2(mkfil u, ".red");
-   	  if v then concat("$reduce/packages/", mkfil v, "/", u)
-	  else u
+      u := concat2(mkfil u, ".red");
+      if v then concat("$reduce/packages/", mkfil v, "/", u)
+      else u
    >>;
 
 endmodule;

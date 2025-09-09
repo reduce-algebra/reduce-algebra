@@ -4,30 +4,48 @@
 # Based on "psl/bootstrap.sh" and "psl/build.sh".
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
+# Time-stamp: <2025-09-08 15:44:08 franc>
 # Preliminary support for Armed Bear Common Lisp by Rainer Schöpf.
 # Support for Clozure Common Lisp by Marco Ferraris.
 
-# 1. Compile sl-on-cl, which implements Standard Lisp on Common Lisp.
-# 2. Build an initial bootstrap REDUCE image without REDUCE fasl files,
-#    which does not form part of the final REDUCE system and should not
-#    need to be rebuilt very often.  It is used to compile REDUCE.
-# 3. Compile all required fasl files and save a final REDUCE image.
+# This script assumes that the version of Common Lisp to be used has
+# already been built if necessary and installed in a directory on your
+# command search path.  It then does the following, where the details
+# depend on the Lisp in use:
 
-# This script must be run in the top-level CL REDUCE directory.
+# 1. Compile "sl-on-cl.lisp", which implements Standard Lisp on Common
+#    Lisp.
+
+# 2. Build an initial bootstrap REDUCE system by using only REDUCE
+#    source files.  This does not form part of the final REDUCE system
+#    and should not need to be rebuilt very often.  It is used to
+#    compile a full REDUCE system.
+
+# 3. Compile "trace.lisp", which provides rudimentary function
+#    tracing.
+
+# 4. Compile all required fasl files and save a build REDUCE system..
+
+# This script must be run with the top-level CL REDUCE directory
+# called "common-lisp" as the current directory.
+
 # Always do a clean build after updating your version of Common Lisp!
 
 function help {
-    echo 'Build REDUCE on Common Lisp.'
-    echo 'Usage: ./build.sh [-h] -l sbcl/clisp/abcl/ccl [-r revision] [-c/f] [-b]'
+    echo 'Build REDUCE on Common Lisp'
+    echo 'Usage: ./build.sh [-h] -l <lisp> [-r revision] [-c/f] [-b]'
+    echo '<lisp> = sbcl/clisp/abcl/ccl/ecl[pn]'
     echo 'Option -r sets the REDUCE revision number (overriding the default).'
     echo 'Option -c ensures a clean build by deleting any previous build.'
     echo 'Option -f forces recompilation of all packages.'
     echo 'Option -b builds only the bootstrap REDUCE image.'
+    echo 'Option -o builds only the core REDUCE packages.'
     echo 'Option -h displays this help message and exits.'
+    echo '(ECL: ecl[p] - Portable byte-code; ecln - Native binary code).'
     exit 1
 }
 
-while getopts l:r:cfbh option
+while getopts l:r:cfboh option
 do
     case $option in
         l) lisp=$OPTARG;;
@@ -35,6 +53,7 @@ do
         c) clean=true;;
         f) force='!*forcecompile := t;';;
         b) bootstraponly=true;;
+        o) coreonly=true;;
         h) help;;
         ?) exit 1;;
     esac
@@ -50,7 +69,6 @@ case $lisp in
         faslext='fasl';;
     'clisp')
         runlisp='clisp -ansi -norc'
-        runlispfile='clisp -ansi'
         runlispfile='clisp -ansi'
         runbootstrap='clisp -q -norc -M fasl.clisp/bootstrap.mem'
         runreduce='clisp -q -norc -M fasl.clisp/reduce.mem'
@@ -78,13 +96,30 @@ case $lisp in
             CYGWIN*)            # MS Windows
                 faslext='wx64fsl';;
         esac;;
+    'ecl')
+        # Use portable byte-code FASL files by default.
+        lisp='eclp';&            # fall through
+    'eclp')
+        # Use portable byte-code FASL files.
+        runlisp='ecl --norc --eval "(pushnew :ECLP *features*)"'
+        runlispfile='ecl --norc --eval "(pushnew :ECLP *features*)" --load'
+        runbootstrap='ecl --norc --eval "(pushnew :ECLP *features*)" --load fasl.eclp/bootstrapreduce'
+        runreduce='./redeclp'
+        faslext='fasc';;
+    'ecln')
+        # Use native binary FASL files (the ECL default).
+        runlisp='ecl --norc --eval "(pushnew :ECLN *features*)"'
+        runlispfile='ecl --norc --eval "(pushnew :ECLN *features*)" --load'
+        runbootstrap='ecl --norc --eval "(pushnew :ECLN *features*)" --load fasl.ecln/bootstrapreduce'
+        runreduce='./redecln'
+        faslext='fas';;
     *)
-        echo 'Error: option "-l sbcl/clisp/abcl/ccl" is required'; help;;
+        echo 'Error: option "-l <lisp>" is required'; help;;
 esac
 
 if [ $clean ]; then
     echo '+++++ Clean build'
-    rm -rf sl-on-cl.$faslext trace.$faslext fasl.$lisp log.$lisp
+    rm -rf fasl.$lisp log.$lisp
 fi
 
 if [ -z "$reduce" ]; then
@@ -118,13 +153,16 @@ mkdir -p fasl.$lisp
 # Compile sl-on-cl if necessary #
 #################################
 
-if [ "sl-on-cl.lisp" -nt "sl-on-cl.$faslext" ]
+if [ "sl-on-cl.lisp" -nt "fasl.$lisp/sl-on-cl.$faslext" ]
 then
-    echo '+++++ Compiling sl-on-cl'
-    $runlisp << XXX &> log.$lisp/sl-on-cl.blg
-(or (compile-file "sl-on-cl")
-    #+CCL (quit 1) #-CCL (exit #+SBCL :code 1))
-XXX
+    echo $'\n+++++ Compiling sl-on-cl'
+    time eval $runlisp << EOF &> log.$lisp/sl-on-cl.blg
+#+ECLP (ext:install-bytecodes-compiler)
+(or (compile-file "sl-on-cl.lisp")
+    #+(or CCL ECL) (quit 1)
+    #-(or CCL ECL) (exit #+SBCL :code 1))
+EOF
+    mv sl-on-cl.$faslext fasl.$lisp
 fi || { echo '***** Compilation failed'; exit 1; }
 
 ########################################################
@@ -132,22 +170,59 @@ fi || { echo '***** Compilation failed'; exit 1; }
 ########################################################
 
 function grep_errors {
-    grep --ignore-case '\*\{5\} \| error \|COMMON-LISP:ERROR' log.$lisp/$1.blg | uniq
+    grep -i '^\*\{5\} \| error \|COMMON-LISP:ERROR' log.$lisp/$1.blg | uniq |\
+        grep -viw errorset      # except matching lines
 }
 
-if [ ! -e fasl.$lisp/bootstrap.$saveext ]
-then
-    echo '+++++ Building bootstrap REDUCE...'
-    time $runlispfile bootstrap &> log.$lisp/bootstrap.blg
-    if [ ! -e fasl.$lisp/bootstrap.$saveext ]
-    then
-        echo $'\n***** Building bootstrap REDUCE failed'; exit 1
-    else
-        echo $'\n+++++ Built bootstrap REDUCE.  Possible errors:'
+case $lisp in
+    'eclp' | 'ecln')
+        echo $'\n+++++ Building' ${lisp@U} 'bootstrap REDUCE...'
+        time eval $runlispfile bootstrap << EOF &> log.$lisp/bootstrap.blg
+% Compile fasl files for the minimal set of packages:
+symbolic; $force
+off redefmsg;
+package!-remake2('clprolo, nil);
+package!-remake 'rlisp;
+package!-remake2('smacros,'support);
+package!-remake2('clrend, nil);
+package!-remake 'poly;
+package!-remake 'alg;
+package!-remake 'rtools;
+package!-remake 'arith;
+package!-remake2('entry, 'support);
+package!-remake2('remake, nil);
+bye;
+EOF
+        echo $'\n+++++ Building' ${lisp@U} 'bootstrap REDUCE done.  Possible errors:'
         grep_errors bootstrap
-    fi
-    echo $'\a'
-fi
+
+        echo $'\n+++++ Building the' ${lisp@U} 'bootstrap REDUCE dynamic load file...'
+
+        # Can't currently build REDUCE the conventional way,
+        # i.e. statically!  Instead, build "fasl.ecl/bootstrapreduce.lisp",
+        # which builds bootstrap REDUCE dynamically.
+
+        date=\"$(date +%d-%b-%Y)\"
+        sed "s/revision\!\\*)\\s*%.*/revision\!* $revision)/;s/(date)/$date/" \
+            bootstrapreduce-ecl.lisp > fasl.$lisp/bootstrapreduce.lisp
+
+        echo "+++++ Built the ${lisp@U} bootstrap REDUCE dynamic load file."$'\a'
+        ;;
+    *)
+        if [ ! -e fasl.$lisp/bootstrap.$saveext ]
+        then
+            echo $'\n+++++ Building bootstrap REDUCE...'
+            time $runlispfile bootstrap &> log.$lisp/bootstrap.blg
+            if [ ! -e fasl.$lisp/bootstrap.$saveext ]
+            then
+                echo $'\n***** Building bootstrap REDUCE failed'; exit 1
+            else
+                echo $'\n+++++ Built bootstrap REDUCE.  Possible errors:'
+                grep_errors bootstrap
+            fi
+            echo $'\a'
+        fi;;
+esac
 
 if [ $bootstraponly ]; then exit; fi
 
@@ -155,9 +230,9 @@ if [ $bootstraponly ]; then exit; fi
 # Build REDUCE #
 ################
 
-echo '+++++ Building REDUCE...'
+echo $'\n+++++ Building REDUCE...'
 
-$runbootstrap << XXX &> log.$lisp/build.blg
+eval $runbootstrap << EOF &> log.$lisp/build.blg
 symbolic; $force
 
 off redefmsg;
@@ -165,10 +240,6 @@ off redefmsg;
 % First, compile fasl files for non-package source files:
 
 package!-remake2('clprolo, nil);
-if "$revision" = "" then
-   package!-remake2('revision, 'support)
-else
-   revision!* := "$revision";
 package!-remake2('clrend, nil);
 package!-remake2('entry, 'support);
 package!-remake2('smacros,'support);
@@ -177,30 +248,32 @@ package!-remake2('remake, nil); % for building noncore packages
 % Second, create .dat files that list core and non-core modules to build:
 
 begin
-  scalar w, i, s, core, noncore;
-  i := open("$reduce/packages/package.map", 'input);
-  s := rds i;
-  w := read();
-  rds s;
-  close i;
-  for each x in w do
-     if member('csl, x) and member('psl, x) then <<
-        if member('core, x) then core := x . core
-        else noncore := x . noncore >>;
-  i := open("fasl.$lisp/core-packages.dat", 'output);
-  s := wrs i;
-  for each x in reverse core do print car x;
-  wrs s;
-  close i;
-  i := open("fasl.$lisp/noncore-packages.dat", 'output);
-  s := wrs i;
-  for each x in reverse noncore do print car x;
-  wrs s;
-  close i;
+   scalar w, i, s, core, noncore;
+   i := open("$reduce/packages/package.map", 'input);
+   s := rds i;
+   w := read();
+   rds s;
+   close i;
+   for each x in w do     % x is a row of package.map
+      if member('csl, x) and member('psl, x) then <<
+         if member('core, x) then
+            << if not (car x eq 'revision) then
+               core := car x . core >>
+         else noncore := car x . noncore >>;
+   i := open("fasl.$lisp/core-packages.dat", 'output);
+   s := wrs i;
+   for each x in reverse core do print x;
+   wrs s;
+   close i;
+   i := open("fasl.$lisp/noncore-packages.dat", 'output);
+   s := wrs i;
+   for each x in reverse noncore do print x;
+   wrs s;
+   close i;
 end;
 
 bye;
-XXX
+EOF
 
 if [ ! -e fasl.$lisp/core-packages.dat -o ! -e fasl.$lisp/noncore-packages.dat ]
 then echo '***** Running bootstrap REDUCE failed'; exit 1
@@ -212,50 +285,73 @@ fi
 time for p in $(< fasl.$lisp/core-packages.dat)
 do
     echo "+++++ Remaking core package $p"
-    $runbootstrap << XXX &> log.$lisp/$p.blg
+    eval $runbootstrap << EOF &> log.$lisp/$p.blg
 symbolic; $force
 
 off redefmsg;
 
 begin
-  scalar w, i, s;
-  i := open("$reduce/packages/package.map", 'input);
-  s := rds i;
-  w := read();
-  rds s;
-  close i;
-  for each x in w do put(car x, 'folder, cadr x)
+   scalar w, i, s;
+   i := open("$reduce/packages/package.map", 'input);
+   s := rds i;
+   w := read();
+   rds s;
+   close i;
+   for each x in w do put(car x, 'folder, cadr x)
 end;
 
 package!-remake '$p;
 
 bye;
-XXX
+EOF
 
 grep_errors $p
 
 done
 
+if [ $coreonly ]; then exit; fi
+
+##############################
+# Compile trace if necessary #
+##############################
+
+if [ "trace.lisp" -nt "fasl.$lisp/trace.$faslext" ]
+then
+    echo $'\n+++++ Compiling trace'
+    time eval $runlisp << EOF &> log.$lisp/trace.blg
+(load "fasl.$lisp/sl-on-cl")
+(or (compile-file "trace.lisp") (exit 1))
+EOF
+    mv trace.$faslext fasl.$lisp
+fi || { echo '***** Compiling trace failed'; exit 1; }
+
 ###############################
 # Build the REDUCE image file #
 ###############################
 
-if [ "trace.lisp" -nt "trace.$faslext" ]
-then
-    echo '+++++ Compiling trace'
-    $runlisp << XXX &> log.$lisp/trace.blg
-(load "sl-on-cl")
-(or (compile-file "trace") (exit 1))
-XXX
-fi || { echo '***** Compiling trace failed'; exit 1; }
+case $lisp in
+    'eclp' | 'ecln')
+        echo $'\n+++++ Building the' ${lisp@U} 'REDUCE dynamic load file...'
 
-echo $'\n+++++ Building the REDUCE image file...'
+        # Can't currently build REDUCE the conventional way,
+        # i.e. statically!  Instead, build "fasl.ecl/reduce.lisp",
+        # which builds REDUCE dynamically.
 
-# Start a new invocation of Lisp and load the key modules compiled
-# above.  Then save a final REDUCE image that will be used below to
-# compile the non-core modules.
+        date=\"$(date +%d-%b-%Y)\"
+        sed "s/revision\!\\*)\\s*%.*/revision\!* $revision)/;s/(date)/$date/" \
+            reduce-ecl.lisp > fasl.$lisp/reduce.lisp
 
-time $runlisp << XXX &> log.$lisp/reduce.blg
+        echo '+++++ Built the' ${lisp@U} $'REDUCE dynamic load file.\n'
+        ;;
+
+    *)
+        echo $'\n+++++ Building the REDUCE image file...'
+
+        # Start a new invocation of Lisp and load the key modules compiled
+        # above.  Then save a final REDUCE image that will be used below to
+        # compile the non-core modules.
+
+        time eval $runlisp << EOF &> log.$lisp/reduce.blg
 (load "sl-on-cl") (load "trace") ; temporary -- until I can arrange autoloading!
 (standard-lisp)
 
@@ -268,8 +364,8 @@ time $runlisp << XXX &> log.$lisp/reduce.blg
 (load "module")                 % for definition of load-package
 (load "clprolo")                % initial CL specific code
 
-(cond ((equal "$revision" "") (load!-package 'revision))
-      (t (setq revision!* "$revision")))
+(cl:defvar revision!* $revision)
+(cl:if (not (cl:boundp 'revision!*)) (setq revision!* nil))
 (load!-package 'rlisp)
 (load!-package 'clrend)
 (load!-package 'smacros)
@@ -288,7 +384,7 @@ time $runlisp << XXX &> log.$lisp/reduce.blg
       (cond ((memq 'sbcl lispsystem!*) "SBCL")
             ((memq 'clisp lispsystem!*) "CLISP")
             ((memq 'ccl lispsystem!*) "CCL"))
-      revision!*))
+      (or revision!* "???")))
 
 (initreduce)
 
@@ -313,14 +409,16 @@ time $runlisp << XXX &> log.$lisp/reduce.blg
 
 (save!-reduce!-image "reduce")
 
-XXX
+EOF
 
-if [ ! -e fasl.$lisp/reduce.$saveext ]
-then
-    echo $'\n***** Building the REDUCE image failed'; exit 1
-else
-    echo $'\n+++++ Built the REDUCE image file\n'
-fi
+        if [ ! -e fasl.$lisp/reduce.$saveext ]
+        then
+            echo $'\n***** Building the REDUCE image failed'; exit 1
+        else
+            echo $'\n+++++ Built the REDUCE image file\n'
+        fi
+        ;;
+esac
 
 # Finally, compile the "noncore" packages using reduce.img rather than
 # bootstrap.img.
@@ -328,7 +426,7 @@ fi
 time for p in $(< fasl.$lisp/noncore-packages.dat)
 do
     echo "+++++ Remaking noncore package $p"
-    $runreduce << XXX &> log.$lisp/$p.blg
+    eval $runreduce << EOF &> log.$lisp/$p.blg
 symbolic; $force
 
 on verboseload;
@@ -337,7 +435,8 @@ off redefmsg;
 if '$p eq 'fps then load_package limits,factor,specfn,sfgamma
 else if '$p eq 'mrvlimit then load_package taylor
 % Temporary hacks to avoid build errors:
-else if '$p eq 'rubi_red then flag('(flush),'rlisp)
+else if '$p eq 'corrundum then
+   << if 'ecl memq lispsystem!* then bye else flag('(flush),'rlisp) >>
 else if '$p eq 'tmprint then <<
    lispsystem!* := 'psl . lispsystem!*;
    switch usermode >>;
@@ -345,25 +444,25 @@ else if '$p eq 'tmprint then <<
 !*argnochk := t;
 
 begin
-  scalar w, i, s;
-  i := open("$reduce/packages/package.map", 'input);
-  s := rds i;
-  w := read();
-  rds s;
-  close i;
-  for each x in w do put(car x, 'folder, cadr x)
+   scalar w, i, s;
+   i := open("$reduce/packages/package.map", 'input);
+   s := rds i;
+   w := read();
+   rds s;
+   close i;
+   for each x in w do put(car x, 'folder, cadr x)
 end;
 
 package!-remake '$p; % autoloads remake
 
 % Temporary hack to make gnuplot package work on Common Lisp:
 if '$p eq 'gnuplot then
-   begin scalar !*int, !*forcecompile; !*forcecompile := t;
+   begin scalar !*int, !*forcecompile := t;
       update!-fasl2('gnuintfc, nil);
    end;
 
 bye;
-XXX
+EOF
 
 grep_errors $p
 

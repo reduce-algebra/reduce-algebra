@@ -1,14 +1,16 @@
 ;;; sl-on-cl.lisp --- Standard Lisp on Common Lisp
 
-;; Copyright (C) 2018-2024 Francis J. Wright
+;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
+;; Time-stamp: <2025-09-07 18:00:36 franc>
 ;; Created: 4 November 2018
 
-;; Current target implementations of Common Lisp:
-;; - SBCL (Steel Bank Common Lisp); see http://www.sbcl.org/
+;; Currently supported implementations of Common Lisp:
+;; - SBCL (Steel Bank Common Lisp); see https://www.sbcl.org/
 ;; - CLISP; see https://clisp.sourceforge.io/
 ;; - CCL (Clozure Common Lisp); see https://ccl.clozure.com/
+;; - ECL (Embeddable Common Lisp); see https://ecl.common-lisp.dev/
 
 ;; Support for Armed Bear Common Lisp by Rainer Schöpf, but not yet complete!
 ;; Support for Clozure Common Lisp by Marco Ferraris.
@@ -21,7 +23,7 @@
 ;; inversion of symbol names and is case-sensitive internally.
 
 ;; For Common Lisp documentation see
-;; http://www.lispworks.com/documentation/HyperSpec/Front/
+;; https://www.lispworks.com/documentation/HyperSpec/Front/
 
 (eval-when (:compile-toplevel :load-toplevel :execute) (push :debug *features*))
 
@@ -60,7 +62,7 @@
            :apply :eval :function :close :open :princ :print :prin1
            :read :terpri :complexp :union :load :time
            :char-downcase :char-upcase :string-downcase :mod
-           :char-code :symbol-name :number)
+           :file-write-date :char-code :symbol-name :number)
 
   #+SBCL (:import-from :sb-ext :quit :gc)
   #+SBCL (:import-from :sb-posix :getenv)
@@ -70,6 +72,8 @@
   #+ABCL (:import-from :ext :getenv)
 
   #+CCL (:import-from :ccl :quit :getenv :setenv :gc :gctime)
+
+  #+ECL (:import-from :ext :quit :getenv :setenv)
   )
 
 (in-package :standard-lisp)
@@ -2135,9 +2139,9 @@ of a page, 0 is returned."
   0)
 
 (defun substitute-in-file-name (filename)
-  "Return a copy of FILENAME with all environment variables expanded.
+  "Return a copy of FILENAME with all environment variables substituted.
 Replace every substring of the form `$name' terminated by a
-non-alphanumeric character by its value.  Called by `open'."
+non-alphanumeric character by its value.  Called by `open', etc."
   ;; A simplified version of the Elisp function
   ;; `substitute-in-file-name'.
   ;; Replace environment variables with their values:
@@ -2765,7 +2769,7 @@ Records the number of times that the garbage collector has been
 invoked.  Gcknt* may be reset to another value to record counts
 incrementally, as desired.")
 
-#+SBCL (progn                           ; use sb-ext:*after-gc-hooks*
+#+SBCL (progn                          ; <use sb-ext:*after-gc-hooks*>
 
 (defvar *previous-gc-run-time* 0
   "Total (internal) GC time up to previous garbage collection.")
@@ -2790,14 +2794,17 @@ A function hung on the garbage collection hook."
 
 (defvar *gc-hook*)
 
+;; For example, this works:
+;; (setq *gc-hook* (lambda () (format *terminal-io* "Running hook!")))
+
 (defun %run-gc-hook ()
   "Run the REDUCE procedure (if any) assigned to the variable *gc-hook*."
-  (if (fboundp *gc-hook*) (funcall *gc-hook* nil))
+  (if *gc-hook* (funcall *gc-hook*))
   nil)
 
 (push #'%run-gc-hook sb-ext:*after-gc-hooks*)
 
-)                                       ; use sb-ext:*after-gc-hooks*
+)                                     ; </use sb-ext:*after-gc-hooks*>
 
 (defun gtheap ()
   "Size of the free dynamic space in bytes."
@@ -2827,13 +2834,13 @@ PRIN2-like version of EXPLODE without escapes or double quotes."
 
 (defun concat2 (s1 s2)
   "Concatenates its two string arguments, returning the newly created string."
-  (declare (simple-string s1 s2))
+  (declare (string s1 s2))              ; might not be simple!
   (the simple-string (concatenate 'string s1 s2)))
 
 (defun concat (&rest s)
   "Concatenates all of its string arguments, returning the newly created string."
   ;; Flagged variadic in clprolo.
-  (declare (list s))
+  ;; (declare ((list string) s))  ; can't easily specify list of strings!
   (the simple-string (cl:apply #'concatenate 'string s)))
 
 ;; (defalias 'allocate-string 'cl:make-string ; PSL
@@ -3094,6 +3101,7 @@ should be true with current REDUCE.  Ignore case."
 ;;    (sb-ext:run-program "cmd" (cons "/c" command)
 ;;                     :search t :output t :escape-arguments nil)))
 
+#+(or SBCL CLISP CCL)      ; to avoid a syntax error with other Lisps!
 (defun system (command)                 ; PSL
   "(system COMMAND:string):undefined expr
 Run a (system specific) command interpreter synchronously, pass
@@ -3206,24 +3214,41 @@ not sucessful, the value Nil is returned."
   (setq dir (merge-pathnames dir))
   (and (probe-file dir) (namestring (ccl::cd dir))))
 
+#+(or SBCL CLISP CCL)      ; to avoid a syntax error with other Lisps!
 (defalias 'chdir 'cd)                   ; CSL / MS Windows
 
-(defalias 'filep 'probe-file)           ; PSL
+(defun filep (file)                     ; PSL
+  "Return false if FILE does not exist, otherwise return the truename of
+FILE.  Substitutes environment variables in file name."
+  ;; should perhaps be inlined.
+  (declare (simple-string file))
+  (cl:probe-file (substitute-in-file-name file)))
+
+(defun file-write-date (file)           ; PSL, used in remake
+  "Return the time at which FILE was last written (or created), or nil if
+such a time cannot be determined.  Substitutes environment variables
+in file name."
+  ;; Should perhaps be inlined.
+  (declare (simple-string file))
+  (cl:file-write-date (substitute-in-file-name file)))
 
 #+SBCL (import 'sb-posix:getpid)
 #+CLISP (defalias 'getpid 'os:process-id)
 
-#-CCL
+#+(or SBCL CLISP)               ; to avoid a warning with other Lisps!
 (defun setenv (name value)
   "Create or update an environment variable"
   #+SBCL (sb-posix:setenv name value 1) ; non-zero => overwrite
   #+CLISP (setf (ext:getenv name) value))
 
+#+(or SBCL CLISP ABCL CCL ECL)  ; to avoid a warning with other Lisps!
 (defun exit (&optional code)
   #+SBCL (sb-ext:exit :code code)
   #+CLISP (ext:exit code)
   #+ABCL (ext:exit :status code)
-  #+CCL (ccl:quit code))
+  #+CCL (ccl:quit code)
+  #+ECL (ext:quit code t)               ; kill-all-threads
+  )
 
 (export '(getenv setenv exit))          ; used in "bootstrap.lisp"
 
@@ -3231,16 +3256,24 @@ not sucessful, the value Nil is returned."
 ;;; Compile and load
 ;;; ================
 
-(defconstant %fasl-directory-pathname
-  ;; *Must* be independent of the current working directory, i.e.
-  ;; absolute.
-  (merge-pathnames
-   (make-pathname :directory '(:relative
-                               #+SBCL "fasl.sbcl"
-                               #+CLISP "fasl.clisp"
-                               #+ABCL "fasl.abcl"
-                               #+CCL "fasl.ccl"))
-   (truename *default-pathname-defaults*))
+(defconstant %fasl-directory-pathname   ; MUST be absolute
+  (let* ((dir (pathname-directory
+               (or *load-truename* *default-pathname-defaults*)))
+         ;; Should be a list ending with either "fasl.*" or "common-lisp".
+         (last-dir-comp (car (last dir))))
+    (make-pathname
+     :directory
+     (cond ((cl:equal (cl:subseq last-dir-comp 0 4) "fasl") ; compiled
+            dir)
+           ((cl:equal last-dir-comp "common-lisp") ; source
+            (cl:append dir (list
+                         #+SBCL "fasl.sbcl"
+                         #+CLISP "fasl.clisp"
+                         #+ABCL "fasl.abcl"
+                         #+CCL "fasl.ccl"
+                         #+ECLP "fasl.eclp" #+ECLN "fasl.ecln"
+                         )))
+           (t (error-internal "Cannot locate fasl directory")))))
   "Absolute pathname of fasl directory.")
 
 (defvar *verboseload nil
@@ -3284,11 +3317,36 @@ Load a \".sl\" file using Standard Lisp read syntax."
           (if (string-equal (pathname-type file-pathname) "sl")
               (setq *readtable* *sl-readtable*))))
     (if (eqcar (pathname-directory file-pathname) :absolute)
-        (cl:load file-pathname)
-        ;; Relative filename -- look in current directory and fasl
-        ;; directory; if not found then throw an error:
-        (or (cl:load file-pathname :if-does-not-exist nil)
-            (cl:load (merge-pathnames file-pathname %fasl-directory-pathname))))))
+        (%load-extensions file-pathname)
+        ;; Relative filename -- look first in fasl directory and then
+        ;; in current directory; if not found throw an error:
+        (or (%load-extensions (merge-pathnames file-pathname %fasl-directory-pathname)
+                              :if-does-not-exist nil)
+            (%load-extensions file-pathname)))))
+
+;; ECL docstring for load [with corrections]:
+;; If the filetype is not specified, ECL first tries to load the fasl
+;; file with filetype ".fasl" [also, apparently, ".fas"], then tries
+;; to load the source file with filetype ".lsp" [also, apparently,
+;; ".lisp"], and then tries to load the source file with no filetype.
+;; ***** CCL may do something similar - CHECK! *****
+#-ECLP
+(defalias '%load-extensions 'cl:load)
+
+#+ECLP
+(defun %load-extensions (&rest args)
+  "As cl:load but add a filename extension if missing.
+If filename has an extension then load it; otherwise try adding first
+the fasl extension (\".fasc\", system dependent) and then the source
+extension (\".lisp\")."
+  (cl:cond
+    ((pathname-type (car args)) (cl:apply #'cl:load args))
+    ((cl:apply #'cl:load
+               (merge-pathnames (car args) (make-pathname :type "fasc"))
+               :if-does-not-exist nil (cdr args)))
+    ((cl:apply #'cl:load
+               (merge-pathnames (car args) (make-pathname :type "lisp"))
+               (cdr args)))))
 
 
 ;;; Faslout/faslend interface
@@ -3302,6 +3360,7 @@ Load a \".sl\" file using Standard Lisp read syntax."
   ;; #+(and CCL LINUX) ".lx64fsl"
   ;; #+(and CCL MACOS) ".dx64fsl"          ; ???
   #+CCL (namestring ccl:*.fasl-pathname*)
+  #+ECLP ".fasc" #+ECLN ".fas"
   "Standard Lisp fasl filename extension beginning with \".\", used by \"remake.red\".")
 
 (defconstant fasl-dir*
@@ -3359,7 +3418,8 @@ When all done, execute FASLEND;~2%" name))
             (cl:open (setq %faslout-name.lisp (concat2 name ".lisp"))
                      :direction :output :if-exists :supersede
                      #-CCL :external-format
-                     #+SBCL :UTF-8 #+CLISP charset:UTF-8 #+ABCL :UTF-8))
+                     #+CLISP charset:UTF-8
+                     #-CLISP :UTF-8))
     (error-internal "FASLOUT cannot open ~a" %faslout-name.lisp))
   (if %faslout-header
       (cl:princ %faslout-header %faslout-stream))
@@ -3393,7 +3453,8 @@ When all done, execute FASLEND;~2%" name))
   (let ((*readtable* (copy-readtable nil))) ; normal CL syntax
     (compile-file %faslout-name.lisp
                   #-CCL :external-format
-                  #+SBCL :UTF-8 #+CLISP charset:UTF-8 #+ABCL :UTF-8 ))
+                  #+CLISP charset:UTF-8
+                  #-CLISP :UTF-8))
   ;;      ;; (progn
   ;;      ;; (delete-file %faslout-name.lisp) ; keep to aid debugging ???
   ;;      (format t "Compiling ~a...done" %faslout-name.lisp)
@@ -3471,9 +3532,10 @@ When all done, execute FASLEND;~2%" name))
          (begin))))
   (ext:exit))
 
-#+CCL (defun reduce-init-function ()
-        (standard-lisp)
-        (begin))
+#+(or CCL ECL)
+(defun reduce-init-function ()
+  ;; (standard-lisp)                       ; redundant!
+  (begin))
 
 (defun save-reduce-image (name)
   "Save a REDUCE memory image with main filename component NAME."
@@ -3490,6 +3552,7 @@ When all done, execute FASLEND;~2%" name))
   #+CCL
   (ccl:save-application (concat "fasl.ccl/" name ".image")
                         :toplevel-function #'reduce-init-function)
+  #+ECL (reduce-init-function)
   )
 
 (pushnew :standard-lisp *features*)
@@ -3498,12 +3561,22 @@ When all done, execute FASLEND;~2%" name))
   "Information about the Lisp system supporting REDUCE.
 A list of identifiers indicating system properties.")
 
-(pushnew #+SBCL 'SBCL #+CLISP 'CLISP #+ABCL 'ABCL #+CCL 'CCL lispsystem*)
+#+SBCL  (pushnew 'SBCL  lispsystem*)
+#+CLISP (pushnew 'CLISP lispsystem*)
+#+ABCL  (pushnew 'ABCL  lispsystem*)
+#+CCL   (pushnew 'CCL   lispsystem*)
+#+ECL   (progn (pushnew 'ECL lispsystem*)
+               (pushnew #+ECLP 'ECLP #+ECLN 'ECLN lispsystem*))
+
 ;; The symbols UNIX, CYGWIN and WIN32 are used in gnuintfc.red.
-#+(or WIN32 WINDOWS) (pushnew 'WIN32 lispsystem*) ; SBCL, CCL
-#+CYGWIN (pushnew 'CYGWIN lispsystem*)            ; CLISP
-#+UNIX (pushnew 'UNIX lispsystem*)      ; appears together with CYGWIN
-#+(or MACOS OS-MACOSX) (pushnew 'MACOS lispsystem*) ; CLISP, CCL
+#+(or WIN32 WINDOWS) (pushnew 'WIN32 lispsystem*)
+#+CYGWIN (pushnew 'CYGWIN lispsystem*)
+#+UNIX (pushnew 'UNIX lispsystem*)
+#+(or MACOS OS-MACOSX) (pushnew 'MACOS lispsystem*)
+
+;; For ECLP, use the portable bytecode compiler:
+#+ECLP (ext:install-bytecodes-compiler)
+;; For ECLN, use the DEFAULT native binary compiler.
 
 #+SBCL
 (defun compilation (on)
@@ -3525,7 +3598,6 @@ interpret otherwise.  The default is compile."
    unwind-protect evenp oddp
    string-not-greaterp y-or-n-p         ; used in clprolo
    force-output                         ; used in clrend
-   file-write-date                      ; used in remake
    catch throw                          ; used in rubi_red
    sleep                                ; used in crack
    #+SBCL sb-ext:*muffled-warnings*     ; used in build.sh
