@@ -739,11 +739,19 @@ if test "$enable_webgui" = "yes"
 then
   AC_DEFINE([ENABLE_WEBGUI], [1], [this option enabled])
   AC_DEFINE([WEBVIEW_API], [inline], [webview.h can then be included twice])
-  CXXFLAGS="$CXXFLAGS -I$srcdir/../../libraries/webgui"
+  CXXFLAGS="$CXXFLAGS -I$srcdir/../../libraries/webview"
   CXXFLAGS="$CXXFLAGS `pkg-config --cflags webkit2gtk-4.1`"
   CXXFLAGS="$CXXFLAGS `pkg-config --cflags gtk+-3.0`"
   LIBS="$LIBS `pkg-config --libs webkit2gtk-4.1`"
   LIBS="$LIBS `pkg-config --libs gtk+-3.0`"
+# Reminder:
+# for MacOS we need to link with
+# -framework WebKit
+# for minGW
+# -static -mwindows -Ilibs -ladvapi32 -lole32 -lshell32 -lshlwapi -luser32 \\
+# -lversion
+# and and in libraries webview we need to put WebView2.h
+# for Cygwin the necessary libs are not available.
 fi
 
 

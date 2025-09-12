@@ -99,8 +99,8 @@
 //  #C0C0C0;
   position: sticky;
 //  position: -webkit-sticky;
-  top: 8px;
-  z-index: 10;
+//  top: 8px;
+  z-index: 15;
 }
 
 .load-dropdown {
@@ -112,12 +112,45 @@
 }
 
 .help-dropdown {
-  margin-left: auto;
+//  margin-left: auto;
+align-self: flex-start;
 }
+
+math-field::part(virtual-keyboard-toggle) {
+  display: none;
+}
+
+math-field::part(menu-toggle) {
+  display: none;
+}
+
+.kbd {
+  background-color: #909497;
+}
+
+#kbd-container {
+  display: flex;
+// top: 25px;
+  height: 80px;
+//  height: 444px;
+  min-width: 400px;
+}
+
+body {
+--keycap-font-size: 16px;
+//--keycap-max-width: 20px;
+//--keycap-height: 18px;
+//--keyboard-toolbar-font-size: 8px;
+--keyboard-padding-top: 14px;
+--keyboard-toolbar-background: #909497;
+//--keycap-background: #909497;
+--keyboard-zindex: 10;
+}
+
 
 </style>
 
-<div class="top-bar">
+<div class="top-bar" id="red-top">
 
    <div class="load-dropdown">
      <div class="dropdown is-active">
@@ -206,7 +239,11 @@
 
      </div>
     </div>
+
   
+</div>
+
+<div id="kbd-container" class="kbd">
 </div>
 
 
@@ -216,10 +253,38 @@
 var hist = [];
 var hist_index = 1;
 
+
+window.mathVirtualKeyboard.container =
+  document.getElementById("kbd-container");
+
+
+window.mathVirtualKeyboard.addEventListener(
+  'before-virtual-keyboard-toggle',
+  (ev) => {
+    if (mathVirtualKeyboard.visible) ev.preventDefault();
+  }
+);
+
+//mathVirtualKeyboard.layouts = ["minimalist", "compact"];
+
+
+mathVirtualKeyboard.layouts = {
+  label: 'reduce',
+
+  rows: [
+[{label: 'Menu', command: ['toggleContextMenu'],},
+     "\\alpha", "\\beta", "\\gamma", "\\delta", "\\epsilon", "\\zeta", "\\eta", "\\theta", "\\iota", "\\kappa", "\\lambda", "\\mu", "\\nu", "\\xi", "\\omicron", "\\pi", "\\rho", "\\sigma", "\\tau", "\\upsilon", "\\phi", "\\chi", "\\psi", "\\omega" ],
+   ]
+   };
+
+//querySelectorAll('.ML__edit-toolbar');
+
+mathVirtualKeyboard.visible = true;
+
 function mkInputMf(){
     var redInMf = new MathfieldElement();
     redInMf.addEventListener('mount', (ev) => { 
-            redInMf.mathVirtualKeyboardPolicy = 'manual';
+//            redInMf.mathVirtualKeyboardPolicy = 'manual';
             redInMf.smartFence = 'false';
             redInMf.inlineShortcutTimeout = 1000;
             redInMf.defaultMode = 'math';

@@ -41,6 +41,8 @@ module guiparsetex;
 fluid '(!*fancy!-out!-noheader !*multilines !*ignoreLatexEOL);
 global '(cursym!* nxtsym!*);
 
+off lower;
+
 
 newtok '((!\) !\);
 
@@ -269,7 +271,7 @@ put('smallmatrix, 'latexEnvStat, 'latexMatrixStat);
 put('cases, 'latexEnvStat, 'latexMatrixStat);
 
 symbolic procedure latexDisplayLines;
-   begin scalar x, p;
+   begin scalar x;
     scan();
     x := xread 'group;
     cursym!* := '!*semicol!*;
@@ -282,7 +284,6 @@ put('!\displaylines, 'stat, 'latexDisplayLines);
 newtok '((!\ c o l o n e q) setq);
 newtok '((!\ c d o t) times);
 
-put('!\sin, 'newnam, 'sin);
 put('!\quote, 'newnam, 'quote);
 put('!\operatorname, 'stat, 'latexOperatornameStat);
 put('!\mathrm, 'stat, 'latexOperatornameStat);
@@ -294,6 +295,9 @@ put('!\mathit, 'stat, 'latexOperatornameStat);
 
 put('!\pi, 'newnam, 'pi);
 
+
 endmodule;
 
 end;
+
+

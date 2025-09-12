@@ -49,7 +49,7 @@ webview::webview redGUI(true, nullptr);
 void setup_web_reduce(void)
  {
   redGUI.set_title("Reduce");
-  redGUI.set_size(720, 480, WEBVIEW_HINT_NONE);
+  redGUI.set_size(1080, 720, WEBVIEW_HINT_NONE);
   redGUI.bind("passToReduce", passToReduce);
   redGUI.bind("loadReducePackage", loadReducePackage);
   redGUI.bind("setReduceSwitch", setReduceSwitch);
