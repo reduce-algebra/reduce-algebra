@@ -30,7 +30,7 @@ module embwebgui;
  *************************************************************************/
 
 
-create!-package('(embwebgui guiparsetex), nil);
+create!-package('(embwebgui guiparsetex latexsyms embwebguiform), nil);
 
 endmodule;
 
