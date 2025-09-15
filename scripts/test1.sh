@@ -35,20 +35,24 @@
 #      --X=installed: Use a version from the system $PATH rather than
 #           one in the current tree.
 #      --X=debug: For CSL based versions use the debug build.
-#      {--X-debug: temporary synonym for --X=debug for backwards compatibility} 
+#      {--X-debug: temporary synonym for --X=debug for backwards compatibility}
 #      --X=windows, =cygwin, =windows, =native, =universal, =cygwin-debug,
 #           =windows-debug, =native-debug, =universal-debug: On Windows
 #           for CSL based versions this allows selection as between a native
 #           windows version and a cygwin one. On the Macintosh between
-#           a native (only) build and an universal one. 
+#           a native (only) build and an universal one.
 #
 #     --psl=VARIANT
 #                 Use a PSL Reduce from .../pslbuild/VARIANT.
 #
 # Jlisp is not very much supported, but these will perhaps be of use to
-# anyone trying to use it again. 
+# anyone trying to use it again.
 #     --jlisp     Run tests using Jlisp.
 #     --jlispboot Run tests using Jlisp "bootstrapreduce.jar".
+#
+# Common Lisp -- specifically Steel Bank Common Lisp (SBCL).
+# (Other Common Lisp variants might be supported later.)
+#     --sbcl      Use SBCL REDUCE from ../common-lisp.
 #
 #
 # PACKAGE or REGRESSION
@@ -156,7 +160,7 @@ do
     ;;
   --noregressions)
 # This is not a useful option here so it is ignored, but doing so
-# simplifies things for testall.sh. 
+# simplifies things for testall.sh.
     shift
     ;;
   --rr)
@@ -327,7 +331,7 @@ f="$winhere/packages/$d/$p.tst"
 
 dd="$winhere/packages/$d"
 
-# 
+#
 # Use /dev/null if the .rlg file doesn't exist
 
 if test -f "$here/packages/$d/$p.rlg"
@@ -362,7 +366,7 @@ SED1='/^Total time taken:/d;
       /^max_gc_int :/d;
       /^max_gc_fac :/d'
 
-# To be able to replace full pathnames I generate a version of the path with 
+# To be able to replace full pathnames I generate a version of the path with
 # directory separators / and \ escaped:
 
 ESCAPED_DIR=`echo $dd | sed -e 's/[\/\\\\]/\\\\&/g'`
@@ -621,6 +625,68 @@ XXX
   fi
 }
 
+#######################################################################
+# SBCL testing
+#######################################################################
+
+sbcltest() {
+  cmd="$1"
+  logdir="$2"
+  mkdir -p "$logdir"
+  ( limittime $cmd > $logdir/$p.rlg.tmp ) <<XXX 2>$p.howlong.tmp
+off int;
+symbolic linelength 80;
+symbolic(!*redefmsg := nil);
+on errcont;
+$loader
+lisp (testdirectory:="$dd");
+lisp random_new_seed 1;
+resettime1;
+write "START OF REDUCE TEST RUN ON $mc"\$ \
+lisp begin with!-timeout($TIME1, << semic!* := '!;; in "$f">>) end\$ \
+write "END OF REDUCE TEST RUN"\$
+symbolic eval '
+  (prog (cpu_time gc_time)
+    (setq cpu_time  (difference (time) otime1!*))
+    (setq gc_time   (difference (gctime) ogctime1!*))
+    (wrs (open "$logdir/$p.showtime" 'output))
+    (print (list "$p" cpu_time gc_time))
+    (close (wrs nil))
+    (prin2 "Time: ") (prin2 "$p")
+    (prin2 "  ") (prin2 cpu_time)
+    (prin2 "  ") (prin2 gc_time)
+    (terpri))\$
+end\$
+quit\$
+XXX
+  if test -f $logdir/$p.showtime
+  then
+    cat $logdir/$p.showtime >> $logdir/showtimes
+  fi
+  cat $p.howlong.tmp >> $logdir/$p.rlg.tmp
+  printf "${logdir%-times}.."
+  sed -e "/^Tested on /,//d" <$rlgfile |
+    sed -e "$SED1" >$logdir/$p.rlg.orig
+  sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
+      -e "/OMIT/,/TIMO/d" <$logdir/$p.rlg.tmp | \
+    sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
+    sed -e "$SED1" >$logdir/$p.rlg
+  diffBw $logdir/$p.rlg.orig $logdir/$p.rlg >$logdir/$p.rlg.diff
+  if test -s $logdir/$p.rlg.diff
+    then printf "Diff is in $logdir/$p.rlg.diff "
+    else printf "OK " ; rm -f $logdir/$p.rlg.diff $logdir/$p.rlg.orig
+  fi
+  printf "Tested on $mc SBCL\n" > $logdir/$p.time
+  sed -e "1,/END OF REDUCE TEST RUN/d"  <$logdir/$p.rlg.tmp | \
+    sed -e '/^1: *$/d;' >>$logdir/$p.time
+  if test "$keep" = "no"
+  then
+    rm -f $logdir/$p.rlg.tmp
+  fi
+}
+
+#######################################################################
+
 for pp in $platforms
 do
   pp=`getplatform "$pp"`
@@ -677,6 +743,11 @@ do
   jlispboot)
     jlisptest "jlispboot" "bootstrapreduce.jar" "$logdir"
     ;;
+
+  sbcl)
+    sbcltest "$here/common-lisp/redsbcl" "$logdir"
+    ;;
+
   *)
     printf "\n+++ Platform $pp not recognized\n"
     exit 1
@@ -725,7 +796,7 @@ then
     tt=`cat $logdir/$p.showtime | \
         sed -e 's/[^ ]* //; s/ .*//'`
 # base gets set to the time recorded for the first platform in the list.
-    
+
     if test "$none" = "yes"
     then
 # If the recorded time is zero (which at least sometimes comes out

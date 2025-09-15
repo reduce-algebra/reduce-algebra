@@ -114,6 +114,9 @@ getplatform() {
   --jlispboot)
     printf "jlispboot"
     ;;
+  --sbcl)
+    printf "sbcl"
+    ;;
   esac
 }
 
@@ -134,7 +137,7 @@ getlogdir() {
     else
       logdir="csl:${var#${mc}}"
     fi
-    ;; 
+    ;;
   psl=*)
     var=${pp#psl=}
     if test "$var" = "$mc"
