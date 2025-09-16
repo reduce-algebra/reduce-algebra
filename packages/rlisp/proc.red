@@ -357,6 +357,20 @@ symbolic procedure puthash(key, table, val);
     return val
   end;
 
+symbolic procedure remhash(key, table);
+  % Remove item with given KEY from TABLE (if it exists).
+  % Always return nil.  This is very inefficient!
+  begin
+    scalar w;
+    w := if car table = 0 then atsoc(key, cdr table)
+         else assoc(key, cdr table);
+    if w then rplacd(table, delete(w, cdr table))
+    %% It would be more efficient to delete in place:
+    % if w then deletip(w, cdr table)
+    %% deletip is defined in PSL, but not in CSL or (currently) in
+    %% SL-on-CL.
+  end;
+
 symbolic procedure hashcontents table;
   cdr table;
 
