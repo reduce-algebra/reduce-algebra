@@ -61,32 +61,39 @@ rlgensymfast!* := rlgensymfast!* or ('!_k . 0);
 global '(rlgensymcountal!*);
 rlgensymcountal!* := rlgensymcountal!* or {rlgensymfast!*};
 
-#if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
-   fluid '(!*lower loadextentions!*);
+% #if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
+%    fluid '(!*lower loadextentions!*);
 
-   procedure modulep(u);
-      begin scalar found,ld,le,!*lower;
-         !*lower := t;
-         ld := loaddirectories!*;
-         while ld and not found do <<
-            le := loadextensions!*;
-            while le and not found do <<
-               if filep bldmsg("%w%w%w",first ld,u,car first le) then
-                  found := cdr first le;
-                  le := rest le
-            >>;
-            ld := rest ld
-         >>;
-         return not null found
-      end;
-#endif
+%    procedure modulep(u);
+%       begin scalar found,ld,le,!*lower;
+%          !*lower := t;
+%          ld := loaddirectories!*;
+%          while ld and not found do <<
+%             le := loadextensions!*;
+%             while le and not found do <<
+%                if filep bldmsg("%w%w%w",first ld,u,car first le) then
+%                   found := cdr first le;
+%                   le := rest le
+%             >>;
+%             ld := rest ld
+%          >>;
+%          return not null found
+%       end;
+% #endif
 
-if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
-   if modulep 'groebner then
-      load!-package 'groebner;
-   if modulep 'groebnr2 then
-      load!-package 'groebnr2
->>;
+% if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
+%    if modulep 'groebner then
+%       load!-package 'groebner;
+%    if modulep 'groebnr2 then
+%       load!-package 'groebnr2
+% >>;
+
+% FJW: I can't imagine a version of REDUCE that includes redlog but
+% not groebner, and modulep is not used elsewhere (except by CSL).
+% But if conditional code such as that commented out above is
+% re-instated then the conditions should include Common Lisp.
+
+load_package groebner, groebnr2;
 
 endmodule;  % [rltools]
 
