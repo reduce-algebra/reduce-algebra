@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-09-07 18:00:36 franc>
+;; Time-stamp: <2025-09-26 14:51:31 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -287,6 +287,37 @@ the same value and type."               ; i.e. the same SL type!
 ;;    (and (floatp u) (floatp v) (= u v))
 ;;    (and (vectorp u) (vectorp v) (equalp u v))))
 
+;; The following definition is too inefficient!
+;; ibalp.tst fails badly when using it.
+;; (defun equal (u v)
+;;   "EQUAL(U:any, V:any):boolean eval, spread
+;; Returns T if U and V are the same. Dotted-pairs are compared
+;; recursively to the bottom levels of their trees. Vectors must
+;; have identical dimensions and EQUAL values in all
+;; positions. Strings must have identical characters. Function
+;; pointers must have EQ values. Other atoms must be EQN equal."
+;;   (and (cl:equal (type-of u) (type-of v))
+;;        (if (atom u) (cond ((cl:symbolp u) (eq u v))
+;;                           ((cl:floatp u) (= u v))
+;;                           ((cl:numberp u) (eql u v))
+;;                           ((cl:stringp u) (string= u v))
+;;                           ((cl:vectorp u) (equalp u v)))
+;;            ;; (and (equal (car u) (car v)) (equal (cdr u) (cdr v)))
+;;            (loop for utail on u for vtail on v
+;;               unless (equal (car utail) (car vtail)) do (return nil)
+;;               while (and (consp (cdr utail)) (consp (cdr vtail)))
+;;               finally (return (equal (cdr utail) (cdr vtail)))))))
+
+;; The following definition fails for the sparse package, which uses
+;; lists containing vectors; equivalent vectors are not cl:equal!
+;; (import 'cl:equal)
+;; EQUAL(U:any, V:any):boolean eval, spread
+;; Returns T if U and V are the same. Dotted-pairs are compared
+;; recursively to the bottom levels of their trees. Vectors must
+;; have identical dimensions and EQUAL values in all
+;; positions. Strings must have identical characters. Function
+;; pointers must have EQ values. Other atoms must be EQN equal.
+
 (defun equal (u v)
   "EQUAL(U:any, V:any):boolean eval, spread
 Returns T if U and V are the same. Dotted-pairs are compared
@@ -294,17 +325,12 @@ recursively to the bottom levels of their trees. Vectors must
 have identical dimensions and EQUAL values in all
 positions. Strings must have identical characters. Function
 pointers must have EQ values. Other atoms must be EQN equal."
-  (and (cl:equal (type-of u) (type-of v))
-       (if (atom u) (cond ((cl:symbolp u) (eq u v))
-                          ((cl:floatp u) (= u v))
-                          ((cl:numberp u) (eql u v))
-                          ((cl:stringp u) (string= u v))
-                          ((cl:vectorp u) (equalp u v)))
-           ;; (and (equal (car u) (car v)) (equal (cdr u) (cdr v)))
-           (loop for utail on u for vtail on v
-              unless (equal (car utail) (car vtail)) do (return nil)
-              while (and (consp (cdr utail)) (consp (cdr vtail)))
-              finally (return (equal (cdr utail) (cdr vtail)))))))
+  (tree-equal u v :test
+              #'(lambda (u v)
+                  ;; Compare SL vectors using equalp:
+                  (if (vectorp u)
+                      (and (vectorp v) (equalp u v))
+                      (cl:equal u v)))))
 
 (defalias 'fixp 'cl:integerp
   "FIXP(U:any):boolean eval, spread
@@ -430,7 +456,7 @@ rplaca. If L is not a pair then a type mismatch error occurs.
   ;; The inconsistent description above is from the PSL manual!
   (if (atom l) l (cl:last l)))
 
-(defun lastcar (l)                      ; inlined
+(defun lastcar (l)                      ; inline
   "(lastcar L:pair): any expr
 Returns the last element of the pair L. A type mismatch error results
 if L is not a pair.
@@ -439,7 +465,7 @@ if L is not a pair.
   ;; The inconsistent description above is from the PSL manual!
   (if (atom l) l (car (cl:last l))))
 
-(defun nth (l n)                        ; inlined
+(defun nth (l n)                        ; inline
   "(nth L:pair N:integer): any expr
 Returns the Nth element of the list L. If L is atomic or contains
 fewer than N elements, an out of range error occurs.
@@ -453,7 +479,7 @@ of a list to be the \"zeroth\" element."
   (declare (list l) (fixnum n))
   (cl:nth (1- n) l))
 
-(defun pnth (l n)                       ; inlined
+(defun pnth (l n)                       ; inline
   "(pnth L:list N:integer): any expr
 Returns a list starting with the nth element of the list L. Note
 that the result is a pointer to the nth element of L, a
@@ -596,9 +622,12 @@ printing (using prin1) to a list.  E.g.
                   collect (%intern-character-invert-case c)
                   when (char= c #\") collect '\")
                (list '\")))
-             (number
-              (cl:map 'list #'%intern-character-invert-case ; might not be portable!
+             (integer
+              (cl:map 'list #'%intern-character-preserve-case
                       (princ-to-string u)))
+             (cl:float
+              (cl:map 'list #'%intern-character-invert-case
+                      (%prin-float-to-string u)))
              (t
               ;; Assume identifier -- insert ! before an upper-case
               ;; letter, leading digit or _, or special character
@@ -612,11 +641,23 @@ printing (using prin1) to a list.  E.g.
                  collect '\!
                  collect (%intern-character-preserve-case c)))))))
 
-(defalias 'gensym 'cl:gensym)
+;; (defalias 'gensym 'cl:gensym)
 ;; GENSYM():identifier eval, spread
 ;; Creates an identifier which is not interned on the OBLIST and
 ;; consequently not EQ to anything else.
 ;; Defined this way so that I can overwrite it in faslout.
+
+(defvar %gensym-counter% 0
+  "A non-negative integer used in constructing the name of the next
+symbol generated by the function gensym.")
+
+(defun gensym ()
+  "GENSYM():identifier eval, spread
+Creates an identifier which is not interned on the OBLIST and
+consequently not EQ to anything else."
+  (prog1
+      (make-symbol (format nil "G~4,'0d" %gensym-counter%))
+    (incf %gensym-counter%)))
 
 (defun gensymp (u)                      ; from pslrend
   (and (symbolp u) (not (cl:find-symbol (cl:symbol-name u)))))
@@ -843,7 +884,9 @@ FEXPR PROCEDURE DM(U);
   "GETD(FNAME:any):{NIL, dotted-pair} eval, spread
 If FNAME is not the name of a defined function, return NIL. If
 FNAME is a defined function then return the dotted-pair
-\(TYPE:ftype . DEF:{function-pointer, lambda})."
+\(TYPE:ftype . DEF:{function-pointer, lambda}).
+
+*** CURRENTLY RETURNS A LAMBDA FORM EVEN FOR COMPILED FUNCTIONS! ***"
   (the list
        (and (symbolp fname) (fboundp fname)
             ;; Assume expr unless fname was defined using SL dm macro.
@@ -2176,7 +2219,7 @@ parent.  Called by `open' and `cd' on SBCL."
   (let ((d (copy-list (pathname-directory filename))))
     (when (eq (car d) :relative)
       ;; Replace a leading "." with the current working directory:
-      (when (equal (cadr d) ".")
+      (when (cl:equal (cadr d) ".")
         (setf (cdr d) (cddr d))         ; remove "." component
         (setq filename (merge-pathnames
                         (make-pathname :directory d :defaults filename))))
@@ -2369,63 +2412,54 @@ in vector-notation.  The value of U is returned."
           finally (return
                     (cl:apply #'concatenate 'string (nreverse v))))))
 
-(defparameter *float-print-precision* 12
-  ;; The choice of 12 is somewhat arbitrary.  Algebraic output seems
-  ;; to default to 6.  13 or less makes arith.tst agree with its
-  ;; reference output.  Should perhaps try to compute this; cf. !!nfpd
-  ;; defined in the REDUCE source file "arith/paraset.red".
+(defparameter *float-print-precision* 6
   "Number of significant decimal digits to include when printing floats, or nil.
 If nil then floats are printed without any additional rounding.")
 
-;; (defun %prin-float-to-string (u)
-;;   "Print a float to a string rounded to include only significant digits."
-;;   ;; Rescale u so that the significant digits form the integer part,
-;;   ;; round that and then undo the rescaling.
-;;   (princ-to-string
-;;    (if (and *float-print-precision* (not (zerop u)))
-;;        (let* ((e (floor (log (abs u) 10d0))) ; decimal exponent
-;;               ;; |u| = m 10^e, where 0 <= m < 10, so (for e >= 0) the
-;;               ;; integer part of u contains e+1 digits.  To make u
-;;               ;; contain d significant digits, multiply by a scale
-;;               ;; factor s = 10^(d-e-1), round and divide s out again:
-;;               (s (expt 10d0 (- *float-print-precision* e 1))))
-;;          (setq u (/ (fround (* u s)) s)))
-;;        u)))
-
-;; Using `format' instead of `princ-to-string' below might be better.
-;; (format nil "~,,,,,,'ee" 1e10) -> "1.0e+10"
-;; But deciding between ~f and ~e format to emulate Standard Lisp
-;; print output might not be so easy.  So, at least for now, use the
-;; following hack!
-
-(defun %prin-float-to-string (u)
-  "Print a float to a string rounded to include only significant digits."
+(defun %round-float (u)
+  "Round a float to include only *float-print-precision* significant digits."
   ;; Rescale u so that the significant digits form the integer part,
   ;; round that and then undo the rescaling.
   (declare (double-float u))
-  (let ((s (cl:princ-to-string
-            (if (and *float-print-precision* (not (zerop u)))
-                (let* ((e (floor (log (abs u) 10d0))) ; decimal exponent
-                       ;; |u| = m 10^e, where 0 <= m < 10, so (for e >= 0) the
-                       ;; integer part of u contains e+1 digits.  To make u
-                       ;; contain d significant digits, multiply by a scale
-                       ;; factor s = 10^(d-e-1), round and divide s out again:
-                       (e1 (- *float-print-precision* e 1))
-                       (s (expt 10d0 (if (> e1 300) 300 e1)))
-                       ;; Code for (> e1 300) added by RS.
-                       (s1 (if (> e1 300) (expt 10d0 (- e1 300)) 1d0)))
-                  (if (> e1 300)
-                   (setq u (/ (/ (fround (* (* u s) s1)) s) s1))
-                  (setq u (/ (fround (* u s)) s))))
-                u)))
-        p)
-    ;; Lower-case an E if necessary and follow e with + unless there is already a -.
-    (when (setq p (position #+SBCL #\e #-SBCL #\E s))
-      #+CLISP (setf (aref s p) #\e)
-      (incf p)
-      (unless (char-equal (aref s p) #\-)
-        (setq s (concatenate 'string (subseq s 0 p) "+" (subseq s p)))))
-    (the simple-string s)))
+  (the double-float
+       (if (and *float-print-precision* (not (zerop u)))
+           (let* ((e (floor (log (abs u) 10d0))) ; decimal exponent
+                  ;; |u| = m 10^e, where 0 <= m < 10, so (for e >= 0) the
+                  ;; integer part of u contains e+1 digits.  To make u
+                  ;; contain d significant digits, multiply by a scale
+                  ;; factor s = 10^(d-e-1), round and divide s out again:
+                  (e1 (- *float-print-precision* e 1))
+                  ;; Code for e1 > 300 added by RS.
+                  (e1>300 (> e1 300))
+                  (s (cl:expt 10d0 (if e1>300 300 e1)))
+                  (s1 (if e1>300 (cl:expt 10d0 (- e1 300)))))
+             (if e1>300
+                 (/ (/ (fround (* (* u s) s1)) s) s1)
+                 (/ (fround (* u s)) s)))
+           0d0)))
+
+(defun %prin-float-to-string (u)
+  "Print a float to a string rounded to include only significant digits
+specified by the value of *float-print-precision*."
+  (declare (double-float u))
+  (setq u (%round-float u))
+  (let ((absu (abs u)))
+    (the simple-string
+         (if (or (>= absu 999999.5d0) (and (> absu 0d0) (< absu 0.0001d0)))
+             ;; Exponential (e) format, e.g. 9.99999e-05
+             ;; Trim up to 4 trailing 0s from mantissa:
+             (let* ((s (format nil "~,5,2,,,,'ee" u))
+                    (l (- (cl:length s) 5))) ; index of last mantissa digit
+               (do ((f l (1- f))) ; index of first 0 to remove (maybe)
+                   ((or (char/= (elt s f) #\0)
+                        (= (- l f) 4))
+                    (if (/= f l)
+                        (concatenate
+                         'string
+                         (subseq s 0 (1+ f)) (subseq s (1+ l)))
+                        s))))
+             ;; Fixed (f) format, e.g. 99999.9
+             (format nil "~f" u)))))
 
 (defun %prin-vector (u prinfn)
   "Print vector U delimited by [ and ] using PRINFN to print each element."
@@ -2631,12 +2665,8 @@ selected output file.
   (the filehandle
        (prog1
            %write-stream
-         ;; This fails to compile (report as SBCL bug?):
-         ;; (setq *standard-output* (cdr +default-write-stream+)
-         ;;    %write-stream +default-write-stream+)
-         ;; But this version compiles OK:
-         (setq %write-stream +default-write-stream+
-               *standard-output* (cadr %write-stream))
+         (setq *standard-output* (cadr +default-write-stream+)
+               %write-stream +default-write-stream+)
          (when filehandle
            (ecase (car filehandle)
              (file
@@ -2821,16 +2851,23 @@ A function hung on the garbage collection hook."
 (defun explode2 (u)                     ; PSL
   "(explode2 U:atom-vector): id-list expr
 PRIN2-like version of EXPLODE without escapes or double quotes."
-  (cl:map 'list #'%intern-character-preserve-case
-          (if (or (stringp u) (floatp u))
-              (%string-invert-case (cl:princ-to-string u))
-              (cl:princ-to-string u))))
+  ;; NB: invert case because of symbol name case inversion!
+  (typecase u
+    (string (cl:map 'list #'%intern-character-invert-case u))
+    (cl:float (cl:map 'list #'%intern-character-invert-case
+                      (%prin-float-to-string u)))
+    (t (cl:map 'list #'%intern-character-preserve-case
+               (princ-to-string u)))))
 
 (defun explode2uc (u)                   ; defined in "pslrend.red"
   "Upper-case version of explode2."
   ;; NB: downcase because of symbol name case inversion!
   (cl:map 'list #'%intern-character-preserve-case
-          (cl:string-downcase (cl:princ-to-string u))))
+          (cl:string-downcase
+           (typecase u
+             (string u)
+             (cl:float (%prin-float-to-string u))
+             (t (princ-to-string u))))))
 
 (defun concat2 (s1 s2)
   "Concatenates its two string arguments, returning the newly created string."
@@ -3419,7 +3456,7 @@ When all done, execute FASLEND;~2%" name))
                      :direction :output :if-exists :supersede
                      #-CCL :external-format
                      #+CLISP charset:UTF-8
-                     #-CLISP :UTF-8))
+                     #-(or CLISP CCL) :UTF-8))
     (error-internal "FASLOUT cannot open ~a" %faslout-name.lisp))
   (if %faslout-header
       (cl:princ %faslout-header %faslout-stream))
@@ -3454,7 +3491,7 @@ When all done, execute FASLEND;~2%" name))
     (compile-file %faslout-name.lisp
                   #-CCL :external-format
                   #+CLISP charset:UTF-8
-                  #-CLISP :UTF-8))
+                  #-(or CLISP CCL) :UTF-8))
   ;;      ;; (progn
   ;;      ;; (delete-file %faslout-name.lisp) ; keep to aid debugging ???
   ;;      (format t "Compiling ~a...done" %faslout-name.lisp)
@@ -3534,7 +3571,7 @@ When all done, execute FASLEND;~2%" name))
 
 #+(or CCL ECL)
 (defun reduce-init-function ()
-  ;; (standard-lisp)                       ; redundant!
+  #+CCL (standard-lisp)
   (begin))
 
 (defun save-reduce-image (name)
@@ -3598,9 +3635,10 @@ interpret otherwise.  The default is compile."
    unwind-protect evenp oddp
    string-not-greaterp y-or-n-p         ; used in clprolo
    force-output                         ; used in clrend
-   catch throw                          ; used in rubi_red
+   catch throw                          ; used in corrundum (sic)
    sleep                                ; used in crack
    #+SBCL sb-ext:*muffled-warnings*     ; used in build.sh
+   symbol-function ; since *currently* getd always returns lambda form
    ))
 
 ;; Cease inheriting the external symbols of :common-lisp except for
@@ -3621,4 +3659,5 @@ interpret otherwise.  The default is compile."
 ;; Use pathnames more consistently.
 ;; Revise documentation strings and function order to follow PSL manual more closely.
 
-;; Move implementation into a separate package and only export required symbols.  This should make profiling easier!
+;; Move implementation into a separate package and only export
+;; required symbols.  This should make profiling easier!

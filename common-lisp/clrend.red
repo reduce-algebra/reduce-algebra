@@ -2,7 +2,7 @@ module clrend;  % CL REDUCE "back-end".
 
 % Authors: Anthony C. Hearn, Martin L. Griss, Arthur C. Norman, et al.
 % Modified by FJW for REDUCE on Common Lisp.
-% Time-stamp: <2025-07-01 15:13:01 franc>
+% Time-stamp: <2025-09-12 17:33:48 franc>
 % The standard versions are "packages/support/*rend.red".
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -297,18 +297,6 @@ put('comp, 'simpfg, '((t (compilation t))
 #endif
 
 
-remflag('(systo_get!-resource!-directory), 'lose);
-
-% This function is called in redlog but only defined for PSL or CSL
-% specifically.  Otherwise, it only gets an autoload definition that
-% causes infinite recursion when called.  This stub is an attempt to
-% avoid this error, but nothing more.  It may need attention later,
-% but what is the Common Lisp resource directory?
-symbolic procedure systo_get!-resource!-directory; "";
-
-flag('(systo_get!-resource!-directory), 'lose);
-
-
 % This function is called in tmprint and apparently defined in PSL.
 % This stub is an attempt to avoid an error, but nothing more.  It
 % will need attention later!
@@ -360,6 +348,22 @@ symbolic procedure rename!-file(fromname, toname)$
 %%     if sa eq car c and sd eq cdr c then return c
 %%     else return sa . sd
 %%   end;
+
+% Fixes for the redlog suite
+% ==========================
+
+remflag('(systo_get!-resource!-directory), 'lose);
+
+% This function is called in redlog but only defined for PSL or CSL
+% specifically.  Otherwise, it only gets an autoload definition that
+% causes infinite recursion when called.  This stub is an attempt to
+% avoid this error, but nothing more.  It may need attention later,
+% but what is the Common Lisp resource directory?
+symbolic procedure systo_get!-resource!-directory; "";
+   % "C:/Program Files/Reduce/lib/csl/reduce.resources"; % Windows CSL
+   % "$reduce/lib/psl/red";                              % Windows PSL
+
+flag('(systo_get!-resource!-directory), 'lose);
 
 % Fixes for the lalr package
 % ==========================

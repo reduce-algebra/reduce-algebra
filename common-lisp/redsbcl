@@ -1,5 +1,12 @@
 #!/bin/bash
-# Start the Cygwin, Linux or macOS SBCL REDUCE image.
+# Start Cygwin, Linux or macOS SBCL REDUCE.
 cl=$(realpath $(dirname $0)) # common-lisp directory
 if [ "$OSTYPE" == 'cygwin' ]; then cl=$(cygpath -m $cl); fi
-sbcl --noinform --core $cl/fasl.sbcl/reduce.img
+sbcl --noinform --core $cl/fasl.sbcl/reduce.img $*
+# Useful command-line arguments:
+#   --control-stack-size megabytes
+#     Size of control stack reserved for each thread in megabytes.
+#     Default value is 2
+#   --dynamic-space-size megabytes
+#     Size of the dynamic space reserved on startup in megabytes.
+#     Default value is platform dependent.

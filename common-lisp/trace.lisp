@@ -3,7 +3,7 @@
 ;; Copyright (C) 2019, 2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-06-30 17:02:45 franc>
+;; Time-stamp: <2025-09-22 10:38:11 franc>
 ;; Created: 20 February 2019
 
 ;; Based on, and hopefully consistent with, the portable REDUCE
@@ -213,7 +213,7 @@ Abort with an error if the answer is no.")
 (defun run-traced-function (name params args)
   (let ((trace-depth (1+ trace-depth))
         (result (get name 'traced-function)))
-    (format *trace-output* "Enter (~a) ~a~%" trace-depth name)
+    (format *trace-output* "~&Enter (~a) ~a~%" trace-depth name)
     (loop for param in params for arg in args do
          (format *trace-output* "   ~a:  ~s~%" param arg))
 
@@ -225,7 +225,7 @@ Abort with an error if the answer is no.")
     (if (or (atom result) (cdr result)) ; errorp result
         (sl::error 0 sl::emsg*)
         (setq result (car result)))
-    (format *trace-output* "Leave (~a) ~a = ~s~%" trace-depth name result)
+    (format *trace-output* "~&Leave (~a) ~a = ~s~%" trace-depth name result)
     result))
 
 (defmacro traced-setq (left right)
