@@ -137,6 +137,7 @@ then
     #-CCL (exit #+SBCL :code 1))
 EOF
     mv sl-on-cl.$faslext fasl.$lisp
+    if [ $lisp = 'clisp' ]; then mv sl-on-cl.lib fasl.clisp; fi
 fi || { echo '***** Compilation failed'; exit 1; }
 
 ########################################################
@@ -261,6 +262,7 @@ then
 (or (compile-file "trace.lisp") (exit 1))
 EOF
     mv trace.$faslext fasl.$lisp
+    if [ $lisp = 'clisp' ]; then mv trace.lib fasl.clisp; fi
 fi || { echo '***** Compiling trace failed'; exit 1; }
 
 ###############################
@@ -297,6 +299,10 @@ time eval $runlisp << EOF &> log.$lisp/reduce.blg
 (load!-package 'rtools)
 (load!-package 'mathpr)
 (load!-package 'entry)
+
+% cf. support/fastmath.red:
+(flag '(sin cos tan sind cosd tand cotd secd cscd asin acos atan
+   asecd acscd atan2d atan2 sqrt exp log hypot cosh sinh tanh) 'lose)
 
 (cl:fmakunbound 'prettyprint)   % otherwise defautoload has no effect!
 (defautoload prettyprint pretty)  % since only in entry file for PSL!

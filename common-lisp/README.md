@@ -22,7 +22,7 @@ I recommend that you use [Subversion](https://en.wikipedia.org/wiki/Apache_Subve
 
 You need to obtain, build (if necessary) and install the version(s) of Common Lisp that you intend to use (see links above), which is not part of this project.  Most are available as pre-built binary distributions.  Possibly out-of-date versions of SBCL and CLISP on Linux should be available via a Linux package manager such as Synaptic (but not via a software installer for windowed applications).  To use CCL you need to create a command called either `ccl` or `ccl64`, as explained in the CCL documentation.  The build and run scripts use whichever is available, preferring `ccl64`.  I have only tested 64-bit CCL and I call the command to run it `ccl`.  The build and run scripts expect to find the commands `sbcl`, `clisp`, `ccl` and/or `ccl64` on your search path.
 
-You need to use a minimal Unix-like environment including `bash` and `grep`; on MS Windows I use [Cygwin](https://cygwin.com/).  (The `grep` command is used only for reporting an error summary, which could be commented out without affecting the build process.)
+You need to use a minimal Unix-like environment including **fairly recent** versions of `bash` and `grep`; on MS Windows I use [Cygwin](https://cygwin.com/).  (The `grep` command is used only for reporting an error summary, which could be commented out without affecting the build process.)
 
 Run the build script by executing the `bash` command
 
@@ -113,6 +113,17 @@ The order of precedence of the two mechanisms for determining the REDUCE revisio
 ### Using Unsupported Versions of Common Lisp
 
 To use ABCL, you need to ensure that you have a suitable Java runtime environment installed; the build and run scripts expect to find the command `java` on your search path.  You also need to download [abcl-bin-1.8.0.zip](https://abcl.org/releases/1.8.0/abcl-bin-1.8.0.zip) and unzip it (or build and install it) so that `abcl-bin-1.8.0/abcl.jar` exists in the `common-lisp` directory.
+
+## Required Version of `bash`
+
+If you get `bash` errors then it is probably because you are running too old a version, so I recommend that you update it.  Alternatively, if you have a recent version of bash available but it is not run by default, you could run any of the commands described here using
+```sh
+/path/to/alternative/bash command
+```
+instead of
+```sh
+./command
+```
 
 ## Implementation-specific functionality
 
