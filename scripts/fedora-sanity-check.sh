@@ -3,68 +3,62 @@
 # Install all packages needed for REDUCE development
 # on a Fedora Workstation spin.
 
-# When I started with a minimal install of Fedora 26 I installed
-# vim, openssh and subversion manually - I could then fetch first
-# fetchreduce.sh from another of my machines and then use that to
-# invoke subversion to grab all of Reduce - including this script.
-# Running this script seemed to get enough installed that I could
-# configure and build Reduce. But PLEASE NOTE that Fedora packaging
-# could change without me being aware, or changes to Reduce might
-# add extra needs that I fail to include here, so if you get a build
-# failure because of some missing header file or library first try
-# to identify a package to install to satisfy the dependancy. Then report
-# to the Reduce mailing lists so tha thos script can catch up.
+# I used to use some package groups here, but they are not quite stable as
+# across Fedora releases so I am moving to a clumsy detailed list.
 
-sudo dnf -y group install C\ Development\ Tools\ and\ Libraries
 
-# The above command installs
-
-#   valgrind        astyle       automake
-#   pkgconfig       gcc-c++      binutils
-#   indent          make         elfutils
-#   gdb             ltrace       flex    
-#   gcc             autoconf     bison   
-#   cscope          strace       byacc   
-#   oprofile        ccache       ctags   
-#   glibc-devel     libtool              
-
-sudo dnf -y group install Development\ Tools
-
-# This installs 
-
-#   patchutils           systemtap           diffstat
-#   doxygen              git                 gettext 
-#   subversion           highlight           patch   
-
+sudo dbf -y install valgrind
+sudo dbf -y install astyle
+sudo dbf -y install automake
+sudo dbf -y install pkgconfig
+sudo dbf -y install gcc-c++
+sudo dbf -y install binutils
+sudo dbf -y install indent
+sudo dbf -y install make
+sudo dbf -y install elfutils
+sudo dbf -y install gdb
+sudo dbf -y install ltrace
+sudo dbf -y install flex
+sudo dbf -y install gcc
+sudo dbf -y install autoconf
+sudo dbf -y install libtool
+sudo dbf -y install bison
+sudo dbf -y install cscope
+sudo dbf -y install strace
+sudo dbf -y install byacc
+sudo dbf -y install oprofile
+sudo dbf -y install ccache
+sudo dbf -y install ctags
+sudo dbf -y install glibc-devel
+sudo dbf -y install libtool
+sudo dbf -y install patchutils
+sudo dbf -y install systemtap
+sudo dbf -y install diffstat
+sudo dbf -y install doxygen
+sudo dbf -y install git
+sudo dbf -y install gettext
+sudo dbf -y install subversion
+sudo dbf -y install highlight
+sudo dbf -y install patch
 sudo dnf -y install clang
-
 sudo dnf -y install openssh
 sudo dnf -y install vim
-sudo dng -y install cmake
-
+sudo dnf -y install cmake
+sudo dnf -y install ccache
 sudo dnf -y install gnuplot
 sudo dnf -y install ImageMagick
-
 sudo dnf -y install libXft-devel
 sudo dnf -y install libXext-devel
-
 sudo dnf -y install ncurses-devel
 sudo dnf -y install ncurses-compat-libs
-
 sudo dnf -y install polyml
-
 sudo dnf -y install redhat-lsb-core
-
 sudo dnf -y install bc
 sudo dnf -y install dc
-
-# The following pull in a lot of subpackages. Maybe be more selective?
-
 sudo dnf -y install texlive-collection-fontsextra
 sudo dnf -y install texlive-collection-fontsrecommended
 sudo dnf -y install texlive-collection-latex
 sudo dnf -y install texlive-collection-latexextra
-
 sudo dnf -y install libatomic
 
 exit 0
