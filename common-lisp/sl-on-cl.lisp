@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-09-26 14:51:31 franc>
+;; Time-stamp: <2025-09-28 17:05:49 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -2412,54 +2412,42 @@ in vector-notation.  The value of U is returned."
           finally (return
                     (cl:apply #'concatenate 'string (nreverse v))))))
 
-(defparameter *float-print-precision* 6
-  "Number of significant decimal digits to include when printing floats, or nil.
-If nil then floats are printed without any additional rounding.")
-
-(defun %round-float (u)
-  "Round a float to include only *float-print-precision* significant digits."
-  ;; Rescale u so that the significant digits form the integer part,
-  ;; round that and then undo the rescaling.
-  (declare (double-float u))
-  (the double-float
-       (if (and *float-print-precision* (not (zerop u)))
-           (let* ((e (floor (log (abs u) 10d0))) ; decimal exponent
-                  ;; |u| = m 10^e, where 0 <= m < 10, so (for e >= 0) the
-                  ;; integer part of u contains e+1 digits.  To make u
-                  ;; contain d significant digits, multiply by a scale
-                  ;; factor s = 10^(d-e-1), round and divide s out again:
-                  (e1 (- *float-print-precision* e 1))
-                  ;; Code for e1 > 300 added by RS.
-                  (e1>300 (> e1 300))
-                  (s (cl:expt 10d0 (if e1>300 300 e1)))
-                  (s1 (if e1>300 (cl:expt 10d0 (- e1 300)))))
-             (if e1>300
-                 (/ (/ (fround (* (* u s) s1)) s) s1)
-                 (/ (fround (* u s)) s)))
-           0d0)))
-
 (defun %prin-float-to-string (u)
-  "Print a float to a string rounded to include only significant digits
-specified by the value of *float-print-precision*."
+  "Print a float to a string, rounded to 6 significant digits."
+  ;; Must be able to handle 2.0^1023 and 2.0^(-1022), used in
+  ;; "arith/rounded.red"!
   (declare (double-float u))
-  (setq u (%round-float u))
-  (let ((absu (abs u)))
-    (the simple-string
-         (if (or (>= absu 999999.5d0) (and (> absu 0d0) (< absu 0.0001d0)))
-             ;; Exponential (e) format, e.g. 9.99999e-05
-             ;; Trim up to 4 trailing 0s from mantissa:
-             (let* ((s (format nil "~,5,2,,,,'ee" u))
-                    (l (- (cl:length s) 5))) ; index of last mantissa digit
-               (do ((f l (1- f))) ; index of first 0 to remove (maybe)
-                   ((or (char/= (elt s f) #\0)
-                        (= (- l f) 4))
-                    (if (/= f l)
-                        (concatenate
-                         'string
-                         (subseq s 0 (1+ f)) (subseq s (1+ l)))
-                        s))))
-             ;; Fixed (f) format, e.g. 99999.9
-             (format nil "~f" u)))))
+  (the simple-string
+       (if (zerop u) "0.0"
+           (let* ((absu (abs u))
+                  (e (floor (log absu 10d0)))) ; decimal exponent
+             ;; |u| = m 10^e, where 0 <= m < 10, so (for e >= 0) the
+             ;; integer part of u contains e+1 digits.  To make u
+             ;; contain d significant digits, multiply by a scale
+             ;; factor s = 10^(d-e-1), round and divide s out again.
+             ;; The multiplication by s is done in two steps to avoid
+             ;; overflow!
+             (setq u (* u (cl:expt 10d0 (- e)))
+                   u (fround (* u 1d5))) ; 6 sig figs as integer-valued float
+             (if (or (>= absu 999999.5d0) (< absu 0.0001d0))
+                 ;; Exponential (e) format, e.g. 9.99999e-05
+                 (progn
+                   ;; Special case: if 999999.5 <= absu < 1000000.0
+                   ;; then it rounds up to 1000000 with 7 significant
+                   ;; digits!
+                   (when (eql (abs u) 1d6) (setq u (* u 1d-1)) (incf e))
+                   ;; Trim up to 4 trailing 0s from mantissa:
+                   (let* ((m (format nil "~,5f" (* u 1d-5))) ; mantissa string
+                          (l (1- (cl:length m)))) ; index of last mantissa digit
+                     (do ((f l (1- f))) ; index of first 0 to remove (maybe)
+                         ((or (char/= (elt m f) #\0)
+                              (= (- l f) 4))
+                          (when (/= f l) (setq m (subseq m 0 (1+ f))))))
+                     (if (< e 0)
+                         (format nil "~ae-~2,'0d" m (- e))
+                         (format nil "~ae+~2,'0d" m e))))
+                 ;; Fixed (f) format, e.g. 99999.9
+                 (format nil "~f" (/ u (cl:expt 10d0 (- 5 e)))))))))
 
 (defun %prin-vector (u prinfn)
   "Print vector U delimited by [ and ] using PRINFN to print each element."
