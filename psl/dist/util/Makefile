@@ -68,7 +68,7 @@ all: \
 	$(PL)/f-evectors.b $(PL)/fast-int.b $(PL)/pipes.b \
 	$(PL)/fast-math.b $(PL)/f-strings.b  $(PL)/fcomp.b \
 	$(PL)/fast-vector.b $(PL)/f-vectors.b $(PL)/find.b \
-	$(PL)/for-macro.b $(PL)/gsort.b $(PL)/hcons.b \
+	$(PL)/for-macro.b $(PL)/gsort.b $(PL)/hashtable.b $(PL)/hcons.b \
 	$(PL)/if-system.b $(PL)/if.b $(PL)/init-file.b \
 	$(PL)/inum.b $(PL)/iter-macros.b $(PL)/macroexpand.b \
 	$(PL)/mathlib.b $(PL)/merge-sort.b $(PL)/misc-macros.b \
@@ -193,6 +193,10 @@ $(PL)/for-macro.b: $(PU)/for-macro.sl \
 
 $(PL)/gsort.b: $(PU)/gsort.sl $(PL)/if.b
 	$(PDIST)/make-lap $(PU) gsort
+
+$(PL)/hashtable.b: $(PU)/hashtable.sl $(PL)/if.b \
+	$(PL)/inum.b $(PL)/f-vectors.b $(PL)/f-evectors.b $(PL)/vfvect.b
+	$(PDIST)/make-lap $(PU) hashtable
 
 $(PL)/hcons.b: $(PU)/hcons.sl $(PL)/useful.b
 	$(PDIST)/make-lap $(PU) hcons
