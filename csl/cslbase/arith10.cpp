@@ -389,7 +389,7 @@ static double iln(double x)
     else return 0.0;
 }
 
-static double rsqrt(double x)
+static double CSLrsqrt(double x)
 {   if (!(x == x)) return x;   // Ie a NaN
     else if (x < 0.0) return 0.0;
     else return std::sqrt(x);
@@ -1150,7 +1150,7 @@ static trigfn_record const trig_functions[] =
     {my_sin, nullptr,CSLcsin,   "sin"},   // sin    39 sine, rads
     {rsind,  nullptr,CSLcsind,  "sind"},  // sind   40 sine, degs
     {CSLsinh,nullptr,CSLcsinh,  "sinh"},  // sinh   41 hyperbolic sine
-    {rsqrt,  isqrt,  CSLcsqrt,  "sqrt"},  // sqrt   42 square root
+    {CSLrsqrt,isqrt, CSLcsqrt,  "sqrt"},  // sqrt   42 square root
     {CSLtan, nullptr,CSLctan,   "tan"},   // tan    43 tangent, rads
     {rtand,  nullptr,CSLctand,  "tand"},  // tand   44 tangent, degs
     {std::tanh,nullptr,CSLctanh,"tanh"},  // tanh   45 hyperbolic tangent

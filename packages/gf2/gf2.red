@@ -459,7 +459,7 @@ symbolic procedure gf2_fancy_print u;
 
 put('!*gf2, 'fancy!-prifn, 'gf2_fancy_print);
 
-tr gf2_fancy_print;
+% tr gf2_fancy_print;
 
 symbolic operator prefix_to_gf2;
 
