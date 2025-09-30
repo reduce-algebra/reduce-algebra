@@ -180,7 +180,7 @@ I cannot see any way to support the facilities for restricting execution time on
 
 ## To do
 
-* Implement the hash-table code (`mkhash` etc.) defined in `rlisp/proc.red` more efficiently in Lisp.  Re-implement the sparse package to use hash tables as a test?
+* Re-implement the sparse package to use hash tables as a test?
 * Make `getd` return something other than a `lambda` form for compiled code, cf. CSL/PSL, which gives the impression that compilation doesn't work.  Revise printing to display arbitrary Common Lisp objects as a fall-back option.
 * Command-line option to suppress reading the REDUCE Startup File.
 

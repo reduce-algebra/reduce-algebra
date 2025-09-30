@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-09-28 17:05:49 franc>
+;; Time-stamp: <2025-09-30 12:32:45 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -25,7 +25,7 @@
 ;; For Common Lisp documentation see
 ;; https://www.lispworks.com/documentation/HyperSpec/Front/
 
-(eval-when (:compile-toplevel :load-toplevel :execute) (push :debug *features*))
+;; (eval-when (:compile-toplevel :load-toplevel :execute) (push :debug *features*))
 
 #-DEBUG (declaim (optimize speed))
 #+DEBUG (declaim (optimize debug safety))
@@ -274,63 +274,15 @@ the same value and type."               ; i.e. the same SL type!
   ;;  (eql/equal -0.0 0.0) is false in SBCL although true in CLISP!
   (if (and (floatp u) (floatp v)) (= u v) (eql u v)))
 
-;; (defun equal (u v)
-;;   "EQUAL(U:any, V:any):boolean eval, spread
-;; Returns T if U and V are the same. Dotted-pairs are compared
-;; recursively to the bottom levels of their trees. Vectors must
-;; have identical dimensions and EQUAL values in all
-;; positions. Strings must have identical characters. Function
-;; pointers must have EQ values. Other atoms must be EQN equal."
-;;   (or (cl:equal u v)
-;;    ;;  equal may not be true of two floats even when they represent
-;;    ;;  the same value. = is used to compare mathematical values.
-;;    (and (floatp u) (floatp v) (= u v))
-;;    (and (vectorp u) (vectorp v) (equalp u v))))
-
-;; The following definition is too inefficient!
-;; ibalp.tst fails badly when using it.
-;; (defun equal (u v)
-;;   "EQUAL(U:any, V:any):boolean eval, spread
-;; Returns T if U and V are the same. Dotted-pairs are compared
-;; recursively to the bottom levels of their trees. Vectors must
-;; have identical dimensions and EQUAL values in all
-;; positions. Strings must have identical characters. Function
-;; pointers must have EQ values. Other atoms must be EQN equal."
-;;   (and (cl:equal (type-of u) (type-of v))
-;;        (if (atom u) (cond ((cl:symbolp u) (eq u v))
-;;                           ((cl:floatp u) (= u v))
-;;                           ((cl:numberp u) (eql u v))
-;;                           ((cl:stringp u) (string= u v))
-;;                           ((cl:vectorp u) (equalp u v)))
-;;            ;; (and (equal (car u) (car v)) (equal (cdr u) (cdr v)))
-;;            (loop for utail on u for vtail on v
-;;               unless (equal (car utail) (car vtail)) do (return nil)
-;;               while (and (consp (cdr utail)) (consp (cdr vtail)))
-;;               finally (return (equal (cdr utail) (cdr vtail)))))))
-
-;; The following definition fails for the sparse package, which uses
-;; lists containing vectors; equivalent vectors are not cl:equal!
-;; (import 'cl:equal)
-;; EQUAL(U:any, V:any):boolean eval, spread
-;; Returns T if U and V are the same. Dotted-pairs are compared
-;; recursively to the bottom levels of their trees. Vectors must
-;; have identical dimensions and EQUAL values in all
-;; positions. Strings must have identical characters. Function
-;; pointers must have EQ values. Other atoms must be EQN equal.
-
-(defun equal (u v)
+(defalias 'equal 'cl:equalp
+  ;; This definition is not strictly correct but it seems to be the
+  ;; best compromise!
   "EQUAL(U:any, V:any):boolean eval, spread
 Returns T if U and V are the same. Dotted-pairs are compared
 recursively to the bottom levels of their trees. Vectors must
 have identical dimensions and EQUAL values in all
 positions. Strings must have identical characters. Function
-pointers must have EQ values. Other atoms must be EQN equal."
-  (tree-equal u v :test
-              #'(lambda (u v)
-                  ;; Compare SL vectors using equalp:
-                  (if (vectorp u)
-                      (and (vectorp v) (equalp u v))
-                      (cl:equal u v)))))
+pointers must have EQ values. Other atoms must be EQN equal.")
 
 (defalias 'fixp 'cl:integerp
   "FIXP(U:any):boolean eval, spread
@@ -3106,7 +3058,65 @@ should be true with current REDUCE.  Ignore case."
   "Used in various places in REDUCE.  Should make it do something!")
 
 
-;;; Operating system interface
+;;; Hash Tables
+;;; ===========
+
+;; These functions are used in REDUCE and implemented in CSL and PSL,
+;; but not really documented anywhere, although fall-back versions are
+;; defined in "rlisp/proc.red".
+
+(defmacro mkhash (size type &optional expansion)
+  "Create and return a new hash table.
+- SIZE is a non-negative integer that determines approximately the
+  number of entries that can be inserted without having to enlarge the
+  hash table.
+- If TYPE is 0 then the test used is eq, otherwise it is cl:equal.
+- EXPANSION specifies how much to increase the size of the hash table
+  when it becomes full.  This can be an integer greater than zero,
+  which is the number of entries to add, or it can be a floating-point
+  number greater than 1, which is the ratio of the new size to the old
+  size. The default value for this argument is implementation-dependent."
+  `(make-hash-table
+   :test (if (eql ,type 0) 'eq 'cl:equal) ; should this be equalp?
+   :size ,size
+   ,@(and expansion `(:rehash-size ,expansion))))
+
+(flag '(mkhash) 'variadic)
+
+(import 'hash-table-p)
+;; hash-table-p is true if its argument is a hash table, and otherwise
+;; is false.
+
+(import 'gethash)
+;; gethash finds the entry in hash-table whose key is key and returns
+;; the associated value.  If there is no such entry, gethash returns
+;; default, which is nil if not specified.
+
+(defun puthash (key table val)
+  "Make a new entry with the specified key KEY in hash
+table TABLE with value VAL.  If an entry with the specified key
+already exists, it is removed before the new entry is added."
+  (setf (gethash key table) val))
+
+(import 'remhash)
+;; remhash removes any entry for key in hash-table. This is a
+;; predicate that is true if there was an entry or false if there was
+;; not.
+
+(defun hashcontents (table)
+  ;; Not defined in Common Lisp but used in REDUCE.
+  ;; So this is a first guess at what it should do!
+  "Return the contents of hash table TABLE as an association list."
+  (let (alist)
+    (maphash #'(lambda (key val) (push (cons key val) alist)) table)
+    alist))
+
+(import 'clrhash)
+;; This removes all the entries from hash-table and returns the hash
+;; table itself.
+
+
+;;; Operating System Interface
 ;;; ==========================
 
 ;; (defun system (command)                  ; PSL
