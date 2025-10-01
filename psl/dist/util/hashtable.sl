@@ -87,7 +87,7 @@
      )
    (when (equal bitsperword 32)
      (ds sxhash-float (o)
-	 (wshift (wxor (floathighorder o) (floatloworder o)) -8))
+         (wshift (wxor (floathighorder o) (floatloworder o)) -8))
      (ds get-hash-multiplier () (int2sys !#hash-multiplier!#))
      )
    ))
@@ -116,33 +116,33 @@
          (let ((n (upbv o))
                (s 0))
            (ifor (from i 0 n 1)
-		%% do a left shift of 5 bits before using the intermediate value
-		%% otherwise all vectors with the same elements but different order would hash to the same value
+                %% do a left shift of 5 bits before using the intermediate value
+                %% otherwise all vectors with the same elements but different order would hash to the same value
                 (do (setq s (inf (wxor (wshift s 5) (sxhash-internal (igetv o i) depth))))))
            s))
         ((pair-tag)
-	 (progn
-	   (if (not (wgreaterp depth 0))
-	       *sxhash-cons-default-value*
-	     (let ((s 0)
-		   (o1 o))
-	       (while (and (pairp o1) (wgreaterp depth 1))
-		 %% do a left shift of 3 bits before using the intermediate value
-		 %% otherwise all lists with the same elements but different order would hash to the same value
-		 %% use a different shift than for vectors in order to hash a list to another value than a vector with the same elements
-		 (setq depth (isub1 depth))
-		 (setq s (inf (wxor (wshift s 3) (sxhash-internal (car o1) depth))))
-		 (setq o1 (cdr o1)))
-	       %% At this point we are either at the end of the list (o1 is not a pair) or depth is 1
-	       %% In both cases we recurse on o1
-	       (setq depth (isub1 depth))
-	       (setq s (inf (wxor (wshift s 3) (sxhash-internal o1 depth))))
-	       s))))
+         (progn
+           (if (not (wgreaterp depth 0))
+               *sxhash-cons-default-value*
+             (let ((s 0)
+                   (o1 o))
+               (while (and (pairp o1) (wgreaterp depth 1))
+                 %% do a left shift of 3 bits before using the intermediate value
+                 %% otherwise all lists with the same elements but different order would hash to the same value
+                 %% use a different shift than for vectors in order to hash a list to another value than a vector with the same elements
+                 (setq depth (isub1 depth))
+                 (setq s (inf (wxor (wshift s 3) (sxhash-internal (car o1) depth))))
+                 (setq o1 (cdr o1)))
+               %% At this point we are either at the end of the list (o1 is not a pair) or depth is 1
+               %% In both cases we recurse on o1
+               (setq depth (isub1 depth))
+               (setq s (inf (wxor (wshift s 3) (sxhash-internal o1 depth))))
+               s))))
         ((evector-tag)
          (let ((n (eupbv o))
                (s 0))
            (ifor (from i 0 n 1)
-		%% see comments on vectors and pairs above
+                %% see comments on vectors and pairs above
                 (do (setq s (inf (wxor (wshift s 7) (sxhash-internal (egetv o i) depth))))))
            s))
         ((id-tag) (id2int o))
@@ -167,7 +167,7 @@
 
 (de big-sxhash (b)
     (let ((l (veclen (vecinf b)))
-	  (result 0))
+          (result 0))
       (vfor (from i 1 l 1) (do (setq result (inf (wxor (igetv b i) result)))))
       (if (eq (igetv b 0) 'bigneg) (setq result (inf (wnot result))))
       result))
@@ -182,18 +182,18 @@
 
 (de mkhash1 (size flavor)
     (let ((len
-	   (and (fixp size)
-		(greaterp size 1)
-		(lessp size 65537)
-		(ht-check-twopower size))))
+           (and (fixp size)
+                (greaterp size 1)
+                (lessp size 65537)
+                (ht-check-twopower size))))
       (cond ((null len)
-	     (stderror (bldmsg "Argument size to mkhash must be an integer of the form 2^n, 1<=n<=16, not %w" size)))
-	    ((not (or (eq flavor 0) (eq flavor 'eq) (eq flavor 3) (eq flavor 'equal)))
-	     (stderror (bldmsg "Argument %w to mkhash invalid as flavor" flavor)))
-	    (t
-	     (let ((comp (if (or (eq flavor 0) (eq flavor 'eq)) 'eq 'equal))
-		   (v (mkvect size)))
-	       (iputv v 0 (list '!#hashtable!# comp len (isub1 size)))
+             (stderror (bldmsg "Argument size to mkhash must be an integer of the form 2^n, 1<=n<=16, not %w" size)))
+            ((not (or (eq flavor 0) (eq flavor 'eq) (eq flavor 3) (eq flavor 'equal)))
+             (stderror (bldmsg "Argument %w to mkhash invalid as flavor" flavor)))
+            (t
+             (let ((comp (if (or (eq flavor 0) (eq flavor 'eq)) 'eq 'equal))
+                   (v (mkvect size)))
+               (iputv v 0 (list '!#hashtable!# comp len (isub1 size)))
                v)))))
 
 %%
@@ -206,17 +206,17 @@
 
 (de ht-compute-size (size)
     (cond ((or (not (fixp size)) (lessp size 2) (greaterp size 65536))
-	   (stderror (bldmsg "Argument size to mkhash must be an integer of the form 2^n, 1<=n<=16, not %w" size)))
-	  (t
-	   (let ((power 1))
-	     (while (wlessp power size)
-	       (setq power (wshift power 1)))
-	     power))))
+           (stderror (bldmsg "Argument size to mkhash must be an integer of the form 2^n, 1<=n<=16, not %w" size)))
+          (t
+           (let ((power 1))
+             (while (wlessp power size)
+               (setq power (wshift power 1)))
+             power))))
     
 (ds is-hashtable (table)
     (and (vectorp table)
-	 (let ((first (igetv table 0)))
-	   (and (pairp first) (eq (car first) '!#hashtable!#)))))
+         (let ((first (igetv table 0)))
+           (and (pairp first) (eq (car first) '!#hashtable!#)))))
 
 (ds valid-hashtable (table fnc)
     (if (not (is-hashtable table))
@@ -229,56 +229,65 @@
 (de puthash (key table value)
     (if (valid-hashtable table 'puthash)
         (prog (x comp len mask shftamount hkey v found oldvalue)
-	      (setq x (cdr (igetv table 0)))
+              (setq x (cdr (igetv table 0)))
               (setq comp (car x))
-	      (setq len (cadr x))
-	      (setq mask (caddr x))
-	      (setq shftamount (wdifference len 32))
-	      (setq hkey (hash-to-key key shftamount mask))
-	      (setq v (igetv table hkey))
-	      (setq found (if (eq comp 'eq) (atsoc key v)
+              (setq len (cadr x))
+              (setq mask (caddr x))
+              (setq shftamount (wdifference len 32))
+              (setq hkey (hash-to-key key shftamount mask))
+              (setq v (igetv table hkey))
+              (setq found (if (eq comp 'eq) (atsoc key v)
                         (assoc key v)))
-	      (if (not found)
-		  (iputv table hkey (cons (cons key value) v))
-		(progn
-		  (setq oldvalue (cdr found))
-		  (cond ((and (eq comp 'equal) (not (equal value oldvalue)))
-			 (rplacd found value))
-			((and (eq comp 'eq) (not (eq value oldvalue)))
-			 (rplacd found value)))))
-	      return value
-	      )))
+              (if (not found)
+                  (iputv table hkey (cons (cons key value) v))
+                (progn
+                  (setq oldvalue (cdr found))
+                  (cond ((and (eq comp 'equal) (not (equal value oldvalue)))
+                         (rplacd found value))
+                        ((and (eq comp 'eq) (not (eq value oldvalue)))
+                         (rplacd found value)))))
+              return value
+              )))
 
 
 (de gethash (key table)
     (if (valid-hashtable table 'gethash)
-	(prog (x comp len mask shftamount hkey v found)
-	      (setq x (cdr (igetv table 0)))
-	      (setq comp (car x))
-	      (setq len (cadr x))
-	      (setq mask (caddr x))
-	      (setq shftamount (wdifference len 32))
-	      (setq hkey (hash-to-key key shftamount mask))
-	      (setq v (igetv table hkey))
-	      (setq found (if (eq comp 'eq) (atsoc key v)
-			    (assoc key v)))
-	      (if found (return (cdr found))))))
+        (prog (x comp len mask shftamount hkey v found)
+              (setq x (cdr (igetv table 0)))
+              (setq comp (car x))
+              (setq len (cadr x))
+              (setq mask (caddr x))
+              (setq shftamount (wdifference len 32))
+              (setq hkey (hash-to-key key shftamount mask))
+              (setq v (igetv table hkey))
+              (setq found (if (eq comp 'eq) (atsoc key v)
+                            (assoc key v)))
+              (if found (return (cdr found))))))
     
 (de remhash (key table)
     (if (valid-hashtable table 'remhash)
         (prog (x comp len mask shftamount hkey v found)
-	      (setq x (cdr (igetv table 0)))
-	      (setq comp (car x))
-	      (setq len (cadr x))
-	      (setq mask (caddr x))
-	      (setq shftamount (wdifference len 32))
-	      (setq hkey (hash-to-key key shftamount mask))
-	      (setq v (igetv table hkey))
-	      (setq found (if (eq comp 'eq) (atsoc key v)
-			    (assoc key v)))
-	      %% In the following use the more efficient destructive versions delqip and deletip
-	      (if found (iputv table hkey
-			       (if (eq comp 'eq)
-				   (delqip found v)
-				 (deletip found v))))
-	  )))
+              (setq x (cdr (igetv table 0)))
+              (setq comp (car x))
+              (setq len (cadr x))
+              (setq mask (caddr x))
+              (setq shftamount (wdifference len 32))
+              (setq hkey (hash-to-key key shftamount mask))
+              (setq v (igetv table hkey))
+              (setq found (if (eq comp 'eq) (atsoc key v)
+                            (assoc key v)))
+              %% In the following use the more efficient destructive versions delqip and deletip
+              (if found (iputv table hkey
+                               (if (eq comp 'eq)
+                                   (delqip found v)
+                                 (deletip found v))))
+          )))
+
+(de hashcontents (table)
+    (if (valid-hashtable table 'hashcontents)
+        (prog (x mask v)
+           (setq x (cdr (igetv table 0)))
+           (setq mask (caddr x))
+           (for (from i 1 (iadd1 mask) 1)
+                (do (setq v (append v (igetv table i)))))
+           (return v))))
