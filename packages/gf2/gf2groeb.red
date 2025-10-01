@@ -67,6 +67,10 @@ gf2_steps_count := 0;
 
 fluid '(G); % To interact via resource!-limit
 
+#if (memq 'psl lispsystem!*)
+symbolic procedure optterpri;if posn()>0 then terpri();
+#endif
+
 symbolic procedure gf2_groeb F;
   begin
     scalar G;
@@ -74,8 +78,7 @@ symbolic procedure gf2_groeb F;
 % Note that I untag the distributed forms (ie remove the "!*g2f" from the
 % front of the list.
     G := for each u in cdr F collect cdr prefix_to_gf2 u;
-    resource!-limit(
-      '(setq G (gf2_expand_base G)), gf2_time_limit);
+    with!-timeout(1000*gf2_time_limit, '(setq G (gf2_expand_base G)));
     return 'list . for each u in g collect gf2_to_prefix u
   end;
 

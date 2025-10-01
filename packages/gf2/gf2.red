@@ -1,6 +1,7 @@
 module gf2;  % Polynomial arithmetic where coefficients are in GF(2).
 
 lisp if !*csl then enable!-errorset(3, 3); % Debugging option while I develop.
+lisp if !*psl then on backtrace;
 
 % Author: Arthur Norman
 % Copyright (c) 2025 Arthur Norman
