@@ -3,7 +3,8 @@
 load_package gf2;
 
 on echo;
-if !*csl then lisp force!-output!-radix 16$
+lisp if !*csl then force!-output!-radix 16
+      else if !*psl then outputbase!* := 16$
 
 operator vv;
 gf2_vars {x, y, z};
