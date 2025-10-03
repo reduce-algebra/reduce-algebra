@@ -238,8 +238,14 @@ symbolic procedure defint11(exp,var,llim,ulim,dtst);
      if (q1 := specformtestint(q,p,var,llim,ulim)) then return q1;
     % beyond here, only rational functions are handled.
      if not (m := sq2int m) or not (n := sq2int n) then
-       <<write "this irrational function case not handled"; terpri();
-         error(99,'failed)>>;
+       <<r := simpint {prepsq exp,var};
+       if not eqcar(prepsq r,'int) then
+       <<p:= simplimit list('limit,mk!*sq(r),var,if ulim='inf then 'infinity else ulim);
+	 q:= simplimit list('limit,mk!*sq(r),var,if llim='minf then '(minus infinity) else llim);
+	 return addsq(p,negsq q);
+       >>;
+       write "this irrational function case not handled"; terpri();
+       error(99,'failed)>>;
      if n - m < 2 then go to div;
      if dtst and !*diffsoln then
         if (q1 := diffsol(q,p,m,n,var,llim,ulim)) then return q1;
@@ -644,9 +650,9 @@ symbolic procedure evalplus(a,b);
 symbolic procedure varpwrtst(exp,var);
    if atom exp then if exp = var then 1 else 0
    else if car exp eq 'minus then varpwrtst(cadr exp,var)
-   else if car exp member '(plus,difference) then
-     (<<for each c in cdr exp do q := evalmax(q,varpwrtst(c,var)); q>>
-      where q=0)
+%   else if car exp member '(plus,difference) then
+%     (<<for each c in cdr exp do q := evalmax(q,varpwrtst(c,var)); q>>
+%      where q=0)
    else if eqcar(exp,'expt) then
      prepsq simp!* aeval{'times,varpwrtst(cadr exp,var),caddr exp}
    else if eqcar(exp,'sqrt) then
