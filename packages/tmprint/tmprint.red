@@ -1950,7 +1950,7 @@ put('prod,'fancy!-pprifn,'fancy!-prodpri);
 
 symbolic procedure fancy!-limpri(u,p);
   if p>get('minus,'infix) then
-    fancy!-in!-brackets({'fancy!-sumpri,mkquote u,0},'!(,'!))
+    fancy!-in!-brackets({'fancy!-limpri,mkquote u,0},'!(,'!))
    else
   fancy!-level
    begin scalar w,lo,var;
