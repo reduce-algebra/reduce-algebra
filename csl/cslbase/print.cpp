@@ -1705,17 +1705,19 @@ LispObject Llist_directory(LispObject env, LispObject name)
 
 int escaped_printing;
 
-bool force_hex = false, force_octal = false, force_binary = false;
+bool force_hex = false, force_decimal = false,
+     force_octal = false, force_binary = false;
 uintptr_t prev_force = 10;
 
 // This forces all output to use the specified radix, which can be
-// 16, 8 or 2, with any other value treated as 10. It returns the
+// 16, 10, 8 or 2, with any other value treated as 10. It returns the
 // previous state.
 
 LispObject Lforce_output_radix(LispObject env, LispObject arg)
 {   force_hex = force_octal = force_binary = false;
     if (arg == fixnum_of_int(16)) force_hex = true;
     else if (arg == fixnum_of_int(8)) force_octal = true;
+    else if (arg == fixnum_of_int(10)) force_decimal = true;
     else if (arg == fixnum_of_int(2)) force_binary = true;
     uintptr_t w = prev_force;
     if (is_fixnum(arg)) prev_force = int_of_fixnum(arg);
@@ -3618,6 +3620,16 @@ static LispObject prinhex(LispObject u, int n)
     return u;
 }
 
+static LispObject prindecimal(LispObject u, int n)
+{   escaped_printing = escape_yes+((n & 0x3f)<<8);
+    active_stream = qvalue(standard_output);
+    if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
+    if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+    internal_prin(u, 0);
+    checkResources();
+    return u;
+}
+
 static LispObject prinoctal(LispObject u, int n)
 {   escaped_printing = escape_yes+escape_octal+((n & 0x3f)<<8);
     active_stream = qvalue(standard_output);
@@ -3945,9 +3957,40 @@ static LispObject Lprinhex(LispObject env, LispObject a)
     return a;
 }
 
+static LispObject Lprinthex(LispObject env, LispObject a)
+{   SingleValued fn;
+    prinhex(a, 0);
+    Lterpri(env);
+    checkResources();
+    return a;
+}
+
+static LispObject Lprindecimal(LispObject env, LispObject a)
+{   SingleValued fn;
+    prindecimal(a, 0);
+    checkResources();
+    return a;
+}
+
+static LispObject Lprintdecimal(LispObject env, LispObject a)
+{   SingleValued fn;
+    prindecimal(a, 0);
+    Lterpri(env);
+    checkResources();
+    return a;
+}
+
 static LispObject Lprinoctal(LispObject env, LispObject a)
 {   SingleValued fn;
     prinoctal(a, 0);
+    checkResources();
+    return a;
+}
+
+static LispObject Lprintoctal(LispObject env, LispObject a)
+{   SingleValued fn;
+    prinoctal(a, 0);
+    Lterpri(env);
     checkResources();
     return a;
 }
@@ -3959,10 +4002,26 @@ static LispObject Lprinbinary(LispObject env, LispObject a)
     return a;
 }
 
+static LispObject Lprintbinary(LispObject env, LispObject a)
+{   SingleValued fn;
+    prinbinary(a, 0);
+    Lterpri(env);
+    checkResources();
+    return a;
+}
+
 static LispObject Lprinhex2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     if (!is_fixnum(b)) return aerror1("prinhex", b);
     prinhex(a, int_of_fixnum(b));
+    checkResources();
+    return a;
+}
+
+static LispObject Lprindecimal2(LispObject env, LispObject a, LispObject b)
+{   SingleValued fn;
+    if (!is_fixnum(b)) return aerror1("prindecimal", b);
+    prindecimal(a, int_of_fixnum(b));
     checkResources();
     return a;
 }
@@ -6089,8 +6148,13 @@ setup_type const print_setup[] =
     DEF_0("binary_close_input",   Lbinary_close_input),
     DEF_1("prinraw",              Lprinraw),
     {"prinhex",                   G0Wother, Lprinhex, Lprinhex2, G3Wother, G4Wother},
+    DEF_1("printhex",             Lprinthex),
+    {"prindecimal",               G0Wother, Lprindecimal, Lprindecimal2, G3Wother, G4Wother},
+    DEF_1("printdecimal",         Lprintdecimal),
     {"prinoctal",                 G0Wother, Lprinoctal, Lprinoctal2, G3Wother, G4Wother},
+    DEF_1("printoctal",           Lprintoctal),
     {"prinbinary",                G0Wother, Lprinbinary, Lprinbinary2, G3Wother, G4Wother},
+    DEF_1("printbinary",          Lprintbinary),
     DEF_1("force-output-radix",   Lforce_output_radix),
     DEF_1("math-display",         Lmath_display),
     DEF_1("debug-print",          Ldebug_print),

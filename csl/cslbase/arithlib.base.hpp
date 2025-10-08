@@ -4025,7 +4025,7 @@ inline std::seed_seq* get_random_seed()
             static_cast<Digit>(
                 reinterpret_cast<std::uintptr_t>(&seed_component_1))>>32)
     };
-   return &random_seed;
+    return &random_seed;
 }
 
 // Should this be thread_local? 

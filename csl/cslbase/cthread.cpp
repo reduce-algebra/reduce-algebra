@@ -33,11 +33,12 @@
  *************************************************************************/
 
 // Here I provide an abstraction for running several tasks in
-// parallel.
-//    runInThreads(fn, N)
-// will obey fn(0), fn(1), ..., fn(N-1) in N separate threads (one of
+// parallel. The first argument v is a std::vector<T> and the second
+// is a function that accepts a T as its argument. So
+//    runInThreads(v, fn)
+// will obey fn(v[0]), fn(v[1]), ..., fn(v[last]) in separate threads (one of
 // those will be the thread of the caller. If this call is made and there
-// are not enough available threads to service all N tasks then it will
+// are not enough available threads to service all N tasks then it may
 // drop back to executing things sequentially.
 
 // If USE_EXECUTION is defined this uses some C++17 functionality that
@@ -47,36 +48,37 @@
 // enough that for small tasks it will impose costs that I would like
 // to avoid. To cope with those two issues I also provide my own
 // implementation that allows for a somewhat limited number of worker
-// tasks but which may be lighter weight.
+// tasks but which may be lighter weight. I will be measuring to see
+// if there are performance issues but the mess of needing "-ltbb" is
+// enough to cause me to do all this at least for now.
 
 #include <iostream>
 #include <thread>
 #include <mutex>
 #include <atomic>
 #include <vector>
+#include <algorithm>
+
 #ifdef USE_EXECUTION
 #pragma message "You may need to link in libtbb"
+
 #include <execution>
-#endif
 
-void (*workerTask)(unsigned int);
-
-#ifdef USE_EXECUTION
-
-void runInThreads(void (*fn)(unsigned int), unsigned int n)
-{
-    vector <int> counter;
-    for (int i=0; i<n; i++) counter.push_back(i);;
-    std::for_each(std::execution::par,
-                  std::begin(counter),
-                  std::end(counter),
+template <typename T>
+inline void runInThreads(std::vector<T> v, void (*fn)(T))
+{   std::for_each(std::execution::par,
+                  std::begin(v),
+                  std::end(v),
                   fn);
 }
 
 #else // USE_EXECUTION
 
+// I specify the size of the thread-pool that gets set up, and have a
+// bitmap that records which of those are in use.
+
 inline const size_t POOLSIZE = 16;
-std::atomic<uint32_t> activeThreads(0);
+inline std::atomic<uint32_t> activeThreads(0);
 
 // There are 4 mutexes for each worker thread, but each synchronization step
 // just involves a single mutex, transferring ownership between main and worker
@@ -181,11 +183,45 @@ inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
 
 #endif // __CYGWIN__ or __MINGW32__
 
+// I cope with the need to support tasks over different types of data
+// by having a base class that specifies an apply() method and then
+// deriving versions for each type that is used.
+
+class WorkerTaskBase
+{
+public:
+    WorkerTaskBase()
+    {}
+    virtual ~WorkerTaskBase()
+    {}
+    virtual void apply()
+    {}
+};
+
+template <typename T>
+class WorkerTask : public virtual WorkerTaskBase
+{
+public:
+    void (*func)(T);
+    T argument;
+    WorkerTask(void (*f)(T), T a)
+    {   func = f;
+        argument = a;
+    } 
+    void apply() override
+    {   (*func)(argument);
+    } 
+};
+
 class WorkerData
 {
 public:
-    int which;                
+// The task to be performed has to have a polymorphic type.
+    WorkerTaskBase* workerTask;
+
     std::atomic<bool> ready;
+    bool quit_flag;
+
 #if defined USE_MICROSOFT_SRW
     SRWLOCK mutex[4];
 #elif defined USE_MICROSOFT_MUTEX
@@ -194,7 +230,6 @@ public:
     std::mutex mutex[4];
 #endif // end of mutex selection
     int sendCount;
-    bool quit_flag;
 
 // When I construct an instance of Worker data I set its quit_flag to
 // false and lock two of the mutexes. That sets things up so that when
@@ -203,6 +238,7 @@ public:
     WorkerData()
     {   ready = false;
         quit_flag = false;
+        workerTask = nullptr;
 #if defined USE_MICROSOFT_SRW
         InitializeSRWLock(&mutex[0]);
         InitializeSRWLock(&mutex[1]);
@@ -222,15 +258,13 @@ public:
 #endif // Mutexes now initialized and locked as needed
         sendCount = 0;
     }
-    void setWhich(int n)
-    {   which = n;
-    }
 #ifdef USE_MICROSOFT_MUTEX
     ~WorkerData()
     {   CloseHandle(mutex[0]);
         CloseHandle(mutex[1]);
         CloseHandle(mutex[2]);
         CloseHandle(mutex[3]);
+        delete workerTask;
     }
 #endif // USE_MICROSOFT_MUTEX
 };
@@ -254,9 +288,7 @@ public:
 
     DriverData()
     {   for (int i=0; i<POOLSIZE; i++)
-        {   wd[i].setWhich(i+1);
             w[i] = std::thread(workerThread, &wd[i]);
-        }
 // I busy-wait until all the threads have both claimed the mutexes that they
 // need to own at the start! Without this the main thread may post a
 // multiplication, so its part of the work and try to check that the worker
@@ -272,7 +304,7 @@ public:
     }
 
 // When the DriverData object is to be destroyed it must arrange to
-// stop and then join the two threads that it set up. This code that sends
+// stop and then join all the threads that it set up. This code that sends
 // a "quit" message to each thread will be executed before the thread object
 // is deleted, and the destructor of the thread object should be activated
 // before that of the WorkerData and the mutexes within that.
@@ -320,11 +352,11 @@ public:
     }
 };
 
-static DriverData driverData;
+inline DriverData driverData;
 
 #if defined USE_MICROSOFT_SRW
 
-void workerThread(WorkerData* wd)
+inline void workerThread(WorkerData* wd)
 {   ThreadLocal::initialize();
     AcquireSRWLockExclusive(&wd->mutex[2]);
     AcquireSRWLockExclusive(&wd->mutex[3]);
@@ -333,7 +365,7 @@ void workerThread(WorkerData* wd)
     for (;;)
     {   AcquireSRWLockExclusive(&wd->mutex[receiveCount]);
         if (wd->quit_flag) return;
-        (*workerTask)(which);
+        wd->workerTask->apply();
         ReleaseSRWLockExclusive(&wd->mutex[receiveCount^2]);
         receiveCount = (receiveCount + 1) & 3;
     }
@@ -341,7 +373,7 @@ void workerThread(WorkerData* wd)
 
 #elif defined USE_MICROSOFT_MUTEX
 
-void workerThread(WorkerData* wd)
+inline void workerThread(WorkerData* wd)
 {   WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
     WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
     wd->ready = true;
@@ -352,7 +384,7 @@ void workerThread(WorkerData* wd)
 // during close-down, so putting a timeout on it would nor make sense.
         WaitForSingleObject(wd->mutex[receiveCount], MICROSOFT_INFINITE);
         if (wd->quit_flag) return;
-        (*workerTask)(which);
+        wd->workerTask->apply();
         ReleaseMutex(wd->mutex[receiveCount^2]);
         receiveCount = (receiveCount + 1) & 3;
     }
@@ -360,7 +392,7 @@ void workerThread(WorkerData* wd)
 
 #else // Here I use C++ std::mutex
 
-void workerThread(WorkerData* wd)
+inline void workerThread(WorkerData* wd)
 {   wd->mutex[2].lock();
     wd->mutex[3].lock();
     wd->ready = true;
@@ -368,7 +400,7 @@ void workerThread(WorkerData* wd)
     for (;;)
     {   wd->mutex[receiveCount].lock();
         if (wd->quit_flag) return;
-        (*workerTask)(wd->which);
+        wd->workerTask->apply();
         wd->mutex[receiveCount^2].unlock();
         receiveCount = (receiveCount + 1) & 3;
     }
@@ -376,8 +408,9 @@ void workerThread(WorkerData* wd)
 
 #endif // definition of workerThread
 
-void runInThreads(void (*fn)(unsigned int), unsigned int n)
-{   if (n > POOLSIZE) abort();  // Too many!
+template <typename T>
+inline void runInThreads(std::vector<T> v, void (*fn)(T))
+{   int n = v.size();
 // Here I want to see if there are any worker threads available to
 // dedicate to this task.
     uint32_t active = activeThreads.exchange((1<<POOLSIZE)-1);
@@ -394,9 +427,10 @@ void runInThreads(void (*fn)(unsigned int), unsigned int n)
 // are all making active use of ALL available workers or the awkward case
 // that I am part way through the few lines of code that temporarily
 // pretend that while working out what can be done.
-    if (active == (1<<POOLSIZE-1))
-    {   for (int i=0; i<n; i++)
-            (*fn)(i);
+    if (active == ((1<<POOLSIZE)-1))
+    {   std::for_each(std::begin(v),    // Sequential mode here.
+                      std::end(v),
+                      fn);
         return;
     }
 // See if I can find n-1 threads that are not in use at present. I look for
@@ -418,8 +452,9 @@ void runInThreads(void (*fn)(unsigned int), unsigned int n)
 // nobody can have started more threads since the exchange() that I did
 // earlier so this should alwaye be proper. Then I work sequentially.
         activeThreads = active;   
-        for (int i=0; i<n; i++)
-            (*fn)(i);
+        std::for_each(std::begin(v),   // Sequential mode here.
+                      std::end(v),
+                      fn);
         return;
     }
 // Now there are enough threads left, and threadIds[] tabulates the
@@ -429,12 +464,13 @@ void runInThreads(void (*fn)(unsigned int), unsigned int n)
 // From now anybody else can start trying to grab workers and be in with
 // a chance.
 // 
-    workerTask = fn;
 // Release (ie start up) all the worker threads I have picked.
     for (int i=0; i<n-1; i++)
+    {   driverData.wd[threadIds[i]].workerTask = new WorkerTask<T>(fn, v[i+1]);
         driverData.releaseWorker(threadIds[i]);
-// Use this main thread to do work, calling itself "task 0".
-    (*fn)(0);
+    }
+// Use this main thread to do work on the first item in the vector.
+    (*fn)(v[0]);
 // Wait until everybody has completed their job.
     for (int i=0; i<n-1; i++)
         driverData.waitForWorker(threadIds[i]);
@@ -445,26 +481,54 @@ void runInThreads(void (*fn)(unsigned int), unsigned int n)
 
 #endif // USE_EXECUTION
 
+//*************************************************************************
+//*************************************************************************
+//*************************************************************************
+//*************************************************************************
+
 #ifdef TEST_CODE
+
+#include <string>
+#include <unordered_map>
 
 std::mutex g;
 
-void task(unsigned int n)
+std::hash<std::string> hashfn;
+
+void task(int n)
 {   {   std::lock_guard<std::mutex> guard(g);
         std::cout << "Running with n = " << n << "\n";
     }
 
     {   std::lock_guard<std::mutex> guard(g);
         uint64_t w = 1;
-        for (std::uint64_t i=0; i<10000000*((123456*n)%97); i++)
+        for (std::uint64_t i=0; i<1000000*((123456*n)%97); i++)
             w = 139*w + 11213;
-        std::cout << "Ending task " << n << " with value " << w << "\n";
+        std::cout << "End task " << n << " with value " << (w%1000) << "\n";
+    }
+}
+
+void task(std::string n)
+{   {   std::lock_guard<std::mutex> guard(g);
+        std::cout << "Running with n = " << n << "\n";
+    }
+
+    {   std::lock_guard<std::mutex> guard(g);
+        uint64_t w = 1;
+        for (std::uint64_t i=0; i<1000000*(hashfn(n)%97); i++)
+            w = 139*w + 11213;
+        std::cout << "End task " << n << " with value " << (w%1000) << "\n";
     }
 }
 
 int main()
 {
-    runInThreads(task, 7);
+    std::vector<int> v1 = {2,4,6,8,10,12,14};
+    runInThreads<int>(v1, task);
+
+    std::vector<std::string> v2 = {"two", "four", "six", "eight", "ten"};
+    runInThreads<std::string>(v2, task);
+
     std::cout << "finished\n";
     return 0;
 }

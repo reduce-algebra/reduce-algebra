@@ -25,7 +25,8 @@
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
  * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
  * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQ
+UENTIAL DAMAGES (INCLUDING,   *
  * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
  * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
@@ -74,6 +75,17 @@
 // series that I sum have a few more terms that the very best that could
 // be used. I do not have a test suite for testing my results and so
 // they have at best been subject to spot-checks!
+
+// Well some of my code will use a "quad-double" library that represents
+// values as four IEEE doubles. This means it provides over 200 bits of
+// precision which is much more that I will end up keeping, but the extra
+// bits will act as guard bits and ensure that the accuracy that I deliver
+// is good. It may slow me down, but for this I am not going to worry at all
+// about ultimate performance - the basic 128-bit float code is already only
+// as fast as it can be.
+// I will have an issue that the range supported by quad-double is much
+// less than that for IEEE-style 128-bit floats, so I will need to make
+// most elementary function calls do some range reduction...
 
 QuadFloat qsqrt(QuadFloat a)
 {   if (a < 0.0_Q) return QuadFloat(f128_NaN);
@@ -1366,127 +1378,63 @@ QuadFloat qcoth(QuadFloat a)
     else return qcosh(a)/qsinh(a);
 }
 
-// I will have placeholders here that yield the correct types
-// but only compute results to double precision accuracy - ie 53-bits.
-// Eventually I intend work through and replace all these with
-// proper 128-bit floating point versions.
+// a^b = exp(b*ln(a)), however the ln() function there compresses the
+// range of values and in effect loses around 16 bits of significance.
+// To handle this I will use the qdouble package that does arithmetic
+// using 4 double precision numbers and so has working precision over 200
+// bits. However that has a smaller range of exponents, so I need to
+// do some pre-filtering.
 
-// a^b = 2^(b*log_2(a))
-// The mantissa of the result comes from the fractional part of b*log_2(a)
-// and as one approaches arithmetic overflow the integer part of that can
-// use 15 bits. So b*log_2(a) needs to be computed to about 16 extra bits.
-// if a>=2 then the integer part of log_2(a) is easy - so we see that the
-// hardest case to get correct here will be when a is in the range 1..2 and
-// n is large. I cam calculate the logarithm just abou the same way I
-// calculate ln(x) but using some extra precision, and the rational
-// approximation I need does not have very many extra terms - but each
-// coefficient in it has to be specified with extra precision.
-//
-// Well that means I need to sum series and perform a division in arithmetic
-// which has prevision at least 128 bits. This arithmetic can all be on
-// numbers of modest magnitude, so exponent range in it will be unimportant.
-// The nicest way I can see will be to use triple-double for it so each
-// number is represented by the sum of three IEEE doubles. That leads to
-// around 160 bits in all (and note that double-double is not good enough
-// for me). If I had been going to multiply by the coefficients I could
-// have stored them in 27-bit chunks, but since I only ever add them in
-// that is not helpful. Also Fabiano, Muller and Picot have a paper in this
-// are https://hal.science/hal-01869009v2/document which reduces accuracy
-// a little but improves speed. Here I will have precision to spare...
-// Note that C++17 introduced hex floating point literals which make it
-// possible to be very confident about exact values involved.
+qdouble QuadFloat_to_qdouble(QuadFloat a)
+{   qdouble r;
 
-void tripleAdd(double ahi, double amid, double alo,
-               double bhi, double bmid, double blo,
-               double& rhi, double& rmid, double& rlo)
-{   rhi = ahi + bhi;
-    rmid = rlo = 0.0;
-} 
-
-void tripleMultiply(double ahi, double amid, double alo,
-                    double bhi, double bmid, double blo,
-                    double& rhi, double& rmid, double& rlo)
-{   rhi = ahi + bhi;
-    rmid = rlo = 0.0;
-} 
-
-void tripleDivide(double ahi, double amid, double alo,
-                  double bhi, double bmid, double blo,
-                  double& rhi, double& rmid, double& rlo)
-{   rhi = ahi / bhi;
-    rmid = rlo = 0.0;
+    return r;
 }
 
-struct tripleDouble
-{   double hi;
-    double mid;
-    double lo;
-};
-
-void tripleSeries(double xhi, double xmid, double xlo,
-                  const tripleDouble coeffsP[], size_t nP,
-                  const tripleDouble coeffsQ[], size_t nQ,
-                  double& rhi, double& rmid, double& rlo)
-{   const tripleDouble* p = coeffsP+nP-1;
-    double phi = p->hi, pmid = p->mid, plo = p->lo;
-    while (nP-- != 0)
-    {   tripleMultiply(phi, pmid, plo, xhi, xmid, xlo, phi, pmid, plo);
-        p--;
-        tripleAdd(phi, pmid, plo, p->hi, p->mid, p->lo, phi, pmid, plo);
-    }
-    p = coeffsQ+nQ-1;
-    double qhi = p->hi, qmid = p->mid, qlo = p->lo;
-    while (nQ-- != 0)
-    {   tripleMultiply(qhi, qmid, qlo, xhi, xmid, xlo, qhi, qmid, qlo);
-        p--;
-        tripleAdd(qhi, qmid, qlo, p->hi, p->mid, p->lo, qhi, qmid, qlo);
-    }
-    tripleDivide(phi, pmid, plo, qhi, qmid, qlo, rhi, rmid, rlo);
+QuadFloat qdouble_to_QuadFloat(qdouble& a)
+{   QuadFloat r = (QuadFloat)a.a[3]; 
+    r += (QuadFloat)a.a[2];
+    r += (QuadFloat)a.a[1];
+    r += (QuadFloat)a.a[0];
+    return r;
 }
-
-// Strategy for exponentiation:
-//    a^b
-// If a == +0.0 or -0.0 or 1.0 of it b == 0.0 or if
-//   there are any infinities or NaNs then take a special case.
-//
-// If the value of b is an exact integer then take a special case. 
-// If a < 0.0 then fail (note b is not an integer here)
-//
-// If |a| >= 2 or |a| < 0.5 then if |b| >= 16384 there will be
-//   overflow or underflow, so after that case has been filtered
-// one can assume |b| is smallish.
-//
-// The result will be 2^(b log2(a)).
-// [When I write the number 16384 here a pedant would use a number
-// of about that magnitude!]
-//
-// Then log2 a = exponent(a) + log2(mantissa(a)) and I will express
-// b as int(b) + frac(b). So I now have 2 to the power exponent(a)*int(b)
-// to simply go into the exponent of my result, and then
-// log2(mantissa(a))*b + exponent(a)*frac(b) as a messy part. The
-// largest value that can be allowed to have will be around 16384.0. Well
-// the second term achieved that automatically and has not involved
-// any transcendental calculation. The first may be more fun because
-// log2(mantissa(a)) is anywhere in the range [0.0,1.0) but b can be
-// up to 2^16384.
-//
-// To get a fully accurate answer at the end I need the power that 2 must
-// be raised to to be accurate to around 128 bits. That is because about
-// 16 of those bits move into the result's exponent field and I need
-// enough left after that to get the mantissa right. So I will need a
-// function two_to_the(QuintPrecision x) that copes with any argument
-// with |x| < 16384.
-//
-// So I will then need QuintPrecision quint_log2(QuadPrecision mant_a)
-// which only needs to handle arguments in the range [1.0,2.0) and that
-// might sensibly be calculated via log2(x+1)/x;
 
 QuadFloat qexpt(QuadFloat a, QuadFloat b)
 {
-#pragma message ("qexpt not coded yet")
+// If a!=1 then it is at least 1+macheps where macheps = 2^(-112)
+// so if b = 2^112 a^b is about e. If b is bigger that that by
+// a factor of 11356.5 we will certainly get exponent overflow. I think
+// that a reasonable and conservative limit is to say that if b>=6.0e37
+// that a^b will underflow or overflow save in the cases a=-1 and a=+1.
+// Note that if b is that big its limited precision representation will
+// necessarily stand for an even integer, so (-1)^b = 1 in such cases,
+    if (b > 6.0e37_Q)
+    {   if (a == 1.0_Q || a == -1.0_Q) return 1.0_Q;
+        else if (a < 1.0_Q && a > -1.0_Q) return 0.0_Q;
+        else return f128_inf;
+    }
+    else if (b < -6.0e37_Q)
+    {   if (a == 1.0_Q || a == -1.0_Q) return 1.0_Q;
+// Again b will be an even integer here so the result is going to end
+// up positive and either zero or infinite.
+        else if (a < 1.0_Q && a > -1.0_Q) return f128_inf;
+        else return 0.0_Q;
+    }
+// Now I will used a^b = 2^(b*ln2(a)) as calculated mostly in qdouble.
+// Everything save the final result is in range for qdouble. So what
+// I will need will be q qdouble ln2() function that can get the result
+// with around 128 bits of precision. Of those 15 will go into the
+// integer part of b*ln2(a) and 113 into the fractional part. These
+// can then be separated and converted back to QuadFloat where the
+// power of 2 can be calculated.
+
+#pragma message "expt for 120-bit floats"
+// @@@@ PENDING.
+    
     return QuadFloat(f128_NaN);
 }
 
+#pragma message "inverse hyperbolics for 128-bit floats"
 // Inverse hyperbolic are not yet sorted out! @@@@@@@@@@@@@@@@@@@@@
 
 QuadFloat qasinh(QuadFloat a)
