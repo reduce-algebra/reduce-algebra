@@ -4,7 +4,11 @@ load_package gf2;
 
 on echo;
 lisp if !*csl then force!-output!-radix 16
-      else if !*psl then outputbase!* := 16$
+else if 'psl memq lispsystem!* then outputbase!* := 16
+else if 'common!-lisp memq lispsystem!* then !*print!-base!* := 16$
+% FJW: *psl is currently true in REDUCE on Common Lisp so that readch1
+% works correctly, therefore it is safest to avoid it in tests like
+% that above!
 
 operator vv;
 gf2_vars {x, y, z};
