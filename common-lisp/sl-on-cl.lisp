@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-09-30 12:32:45 franc>
+;; Time-stamp: <2025-10-08 17:49:06 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -126,7 +126,7 @@ system dependent messages may be displayed.")
 ;; **********************************************************************
 
 (defvar *raise t
-  "*RAISE = NIL global
+  "*RAISE = NIL fluid
 Follow the PSL convention: If !*RAISE is non-NIL all characters input
 through Standard LISP input functions will be converted to a standard
 case.  Currently, this is upper case on SBCL and lower case on CLISP.
@@ -2541,9 +2541,6 @@ selected input file is reached."
     ;; of curline* and this is used in rlisp88.tst.
     (cl:read-preserving-whitespace (%read-stream) nil $eof$)))
 
-(defvar %readch-escape nil
-  "True if the next character to be read by READCH should be escaped.")
-
 (defun readch ()
   "READCH():id
 Returns the next interned character from the file currently selected
@@ -2554,21 +2551,15 @@ Comments delimited by % and end-of-line are not transparent to READCH."
   ;; This function must perform any required case conversion.
   (the symbol
        (let ((c (read-char (%read-stream) nil $eof$)))
-         (if (eq c $eof$)
-             (progn
-               (setq %readch-escape nil)
-               $eof$)
+         (if (eq c $eof$) $eof$         ; not a char!
              (progn
                (when *echo              ; track output position
                  (setq %posn (if (char= c #\Newline) 0 (1+ %posn))))
-               (cond ((char= c #\!)
-                      (setq %readch-escape (not %readch-escape)) '!)
-                     (%readch-escape    ; preserve case
-                      (setq %readch-escape nil) (%intern-character-invert-case c))
-                     (*raise            ; down-case
-                      (%intern-character-preserve-case (cl:char-upcase c)))
-                     (t                 ; preserve case
-                      (%intern-character-invert-case c))))))))
+               (if *raise
+                   ;; down-case (because REDUCE is now LC, not UC!)
+                   (%intern-character-preserve-case (cl:char-upcase c))
+                   ;; preserve case
+                   (%intern-character-invert-case c)))))))
 
 (defun terpri ()
   "TERPRI():NIL
@@ -3043,19 +3034,75 @@ Returns the union of sets X and Y."
 (defalias 'mod 'cl:mod) ; not just imported because cali redefines mod
 (defalias 'gcdn 'cl:gcd)
 (defalias 'lcmn 'cl:lcm)
-(defalias 'yesp1 'cl:y-or-n-p)
 
 (defun orderp (u v)
-  "This CL-specific definition of ORDERP is designed to work in
-lexicographical order.  It assumes arguments are truly id's, which
-should be true with current REDUCE.  Ignore case."
-  ;; Previously defined in clprolo, but I want to use cl:symbol-name
-  ;; to avoid unnecessary case inversions.
+  "Return true if U = V or U sorts before V, where U and V are identifiers.
+Ordering is lexicographic with upper-case letters sorting before
+lower-case letters (i.e. ASCII code U <= ASCII code V)."
   (declare (symbol u v))
-  (string-not-greaterp (cl:symbol-name u) (cl:symbol-name v)))
+  ;; (string<=
+  ;;  (%string-invert-case (cl:symbol-name u))
+  ;;  (%string-invert-case (cl:symbol-name v)))
+  ;; A more efficient character-based implementation
+  ;; following that in "support/pslrend.red":
+  (let ((u (cl:symbol-name u)) (v (cl:symbol-name v)))
+    (do ((i 0 (1+ i)) (j (1- (cl:length u))) (k (1- (cl:length v))) l m)
+        (nil)
+      (cond ((char/= (setq l (aref u i)) (setq m (aref v i)))
+             ;; Undo case inversion of letters before further testing:
+             (when (both-case-p l)
+               (setq l (if (upper-case-p l)
+                           (cl:char-downcase l)
+                           (cl:char-upcase l))))
+             (when (both-case-p m)
+               (setq m (if (upper-case-p m)
+                           (cl:char-downcase m)
+                           (cl:char-upcase m))))
+             (return (char< l m)))
+            ((= i j) (return (<= j k)))
+            ((= i k) (return nil))))))
 
 (defvar *backtrace nil
   "Used in various places in REDUCE.  Should make it do something!")
+
+(defvar bfz*)
+
+(defun fl2bf (x)
+  "Convert float x to REDUCE binary bigfloat format."
+  ;; Replace default version defined in "arith/smlbflot.red".
+  (if (cl:zerop x) bfz*
+      (multiple-value-bind (signif expon sign)
+          (integer-decode-float x)
+        (cons '\:rd\: (cons (* sign signif) expon)))))
+
+(flag '(fl2bf) 'lose)
+
+(defvar cursym*)
+(defvar curescaped*)
+
+(defun yesp (u)
+  "Ask the user the question that is the value of U.
+This may be an atom or a list."
+  ;; Redefine yesp and yesp1 defined in "rlisp/inter.red".
+  (prog1
+      (y-or-n-p (if (listp u) "~{~a ~}" "~a") u)
+    (setq cursym* '*semicol*
+          curescaped* nil)))
+
+(flag '(yesp yesp1) 'lose)
+
+(defun resource-limit (exprn time_limit)
+  "Evaluate EXPRN until TIME_LIMIT seconds have expired.
+But Lisps other than SBCL currently ignore the timeout!
+Return (list (eval exprn)) or atomic if there is a timeout,
+rather like errorset."
+  ;; ***** NEEDS MORE WORK. *****
+  ;; ***** SEEMS TO IGNORE THE TIMEOUT EVEN ON SBCL! *****
+  #+SBCL (handler-case
+             (sb-ext:with-timeout time_limit (list (eval exprn)))
+           (t () nil))
+  #-SBCL (declare (ignore time_limit))
+  #-SBCL (list (eval exprn)))
 
 
 ;;; Hash Tables
@@ -3631,10 +3678,10 @@ interpret otherwise.  The default is compile."
 (import
  '(lambda warning
    unwind-protect evenp oddp
-   string-not-greaterp y-or-n-p         ; used in clprolo
    force-output                         ; used in clrend
    catch throw                          ; used in corrundum (sic)
    sleep                                ; used in crack
+   *print-base*                         ; used in gf2.tst
    #+SBCL sb-ext:*muffled-warnings*     ; used in build.sh
    symbol-function ; since *currently* getd always returns lambda form
    ))

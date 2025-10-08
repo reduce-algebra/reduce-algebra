@@ -1,8 +1,8 @@
 module clrend;  % CL REDUCE "back-end".
 
 % Authors: Anthony C. Hearn, Martin L. Griss, Arthur C. Norman, et al.
-% Modified by FJW for REDUCE on Common Lisp.
-% Time-stamp: <2025-09-12 17:33:48 franc>
+% Modified by FJW for REDUCE on Common Lisp via "sl-on-cl.lisp".
+% Time-stamp: <2025-10-07 17:19:55 franc>
 % The standard versions are "packages/support/*rend.red".
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -123,18 +123,17 @@ symbolic procedure setpchar c;
       oldprompt := promptstring!*;
       promptstring!* := if stringp c then c
       else if idp c then id2string c
-
       % FJW: I don't really want to import the CL format function just
-      % to use it here.  Is this line actually used?
+      % to use it here.  I don't think this line is actually used:
+      % else format(nil, "~a", c);  % so instead...
       else error(0, "Unexpected prompt in setpchar");
-      % else format(nil, "~a", c);
     return oldprompt
    end;
 
-% This procedure has already been defined in rlisp/superv, but must be
-% redefined for Common Lisp to call force-output so that the prompt
-% appears when it should.  This is the approach taken in the SBCL
-% default top-level REPL.
+% This procedure has already been defined in "rlisp/superv.red", but
+% must be redefined for Common Lisp to call force-output so that the
+% prompt appears when it should.  This is the approach taken in the
+% SBCL default top-level REPL.
 symbolic procedure printprompt u;
    %Prints the prompt expression for input;
    << ofl!* and wrs nil; prin2 u; force!-output(); ofl!* and wrs cdr ofl!* >>;

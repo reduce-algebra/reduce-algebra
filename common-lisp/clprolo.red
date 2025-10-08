@@ -1,8 +1,8 @@
 % module clprolo;  % CL dependent code for REDUCE.
 
 % Author: Anthony C. Hearn.
-% Modified by FJW for REDUCE on Common Lisp.
-% Time-stamp: <2025-06-25 17:28:34 franc>
+% Modified by FJW for REDUCE on Common Lisp via "sl-on-cl.lisp".
+% Time-stamp: <2025-10-08 16:27:59 franc>
 % The standard version is "packages/support/pslprolo.red".
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -36,6 +36,10 @@ fluid '(!*savedef !*gc!-hook!* !*noinlines);
 
 global '(!*psl !*csl);                  % CL is neither
 !*psl := t;                             % but pretend to be PSL!
+
+% NB: !*psl is used dynamically and essentially in readch1 in
+% "rlisp/tok.red" (and statically in code that is ignored in
+% "rlisp/switch.red").
 
 % Support for package creation.
 
@@ -96,9 +100,6 @@ flag('(gcdn lcmn),'lose);
 % correctly accept mixed-type arguments, to which I alias geq and leq,
 % so...
 flag('(geq leq),'lose);
-
-% yesp1 is defined (as an alias for Common Lisp y-or-n-p) in sl-on-cl:
-flag('(yesp1),'lose);
 
 % red!-char!-downcase is defined in sl-on-cl, used in rlisp/tok.red
 % and redefined in several files:
