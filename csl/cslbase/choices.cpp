@@ -147,14 +147,14 @@ static double t = 0.0;
 void measure(std::string s, proc *p)
 {   const size_t count = 200000000;
 
-    std::chrono::high_resolution_clock::time_point clk, clk2;
+    std::chrono::steady_clock::time_point clk, clk2;
     std::chrono::duration<double, std::micro> elapsed;
     std::chrono::nanoseconds timing;
 
-    clk = std::chrono::high_resolution_clock::now();
+    clk = std::chrono::steady_clock::now();
     for (auto i=0; i<count; i++)
         (*p)();
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);

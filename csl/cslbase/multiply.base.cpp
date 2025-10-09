@@ -13,7 +13,7 @@
 //        that a different case applies.
 //    (5) If N,M and less than another threshold do Karatsuba.
 //    (6) Use 3-thread Karatsuba or 4-thread Toom32.
-//
+//    (7) FFT-based scheme.
 
 // So here is a more detailed commentary talking about the thresholds in
 // the treatment of large cases in extra detail.
@@ -389,6 +389,8 @@ public:
     {   if (mayUseThreads) threadsInUse.store(false);
     }
 };
+
+#include "fftmod.cpp"
 
 class BigMultiplication
 {

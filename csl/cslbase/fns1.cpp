@@ -1794,7 +1794,7 @@ LispObject Lstop(LispObject env)
 
 uint64_t base_time;
 uint64_t gc_time;
-std::chrono::high_resolution_clock::time_point base_walltime;
+std::chrono::steady_clock::time_point base_walltime;
 
 LispObject Ltime(LispObject env)
 {   SingleValued fn;
@@ -1833,7 +1833,7 @@ LispObject Lnanoelapsed(LispObject env)
 LispObject Lwalltime(LispObject env)
 {   SingleValued fn;
     using namespace std::chrono;
-    high_resolution_clock::time_point t0 = high_resolution_clock::now();
+    steady_clock::time_point t0 = steady_clock::now();
     duration<double> span =
         duration_cast<duration<double>>(t0 - base_walltime);
     LispObject r = make_lisp_unsigned64((uint64_t)(1000.0*span.count()));

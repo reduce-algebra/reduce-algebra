@@ -749,7 +749,7 @@ extern int window_heading;
 [[noreturn]] extern void my_exit();
 
 extern uint64_t base_time;
-extern std::chrono::high_resolution_clock::time_point base_walltime;
+extern std::chrono::steady_clock::time_point base_walltime;
 extern uint64_t gc_time;
 extern bool trap_floating_overflow;
 extern const volatile char* errorset_msg;

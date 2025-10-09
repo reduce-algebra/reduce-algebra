@@ -147,9 +147,9 @@ using uint128 = unsigned __int128;
 // sometimes not be monotonic. I believe I observe that oddity under WSL2,
 // so using steady_clock seems safer,
 
-auto basetime = std::chrono::steady_clock::now();
+inline auto basetime = std::chrono::steady_clock::now();
 
-auto microseconds()
+inline auto microseconds()
 {   auto tt = std::chrono::steady_clock::now() - basetime;
     return std::chrono::duration_cast<std::chrono::microseconds>(tt).count();
 }
@@ -158,7 +158,7 @@ auto microseconds()
 // integers to an output stream. So here I have a little function that
 // ts to convert from such an integer to a string so I can print it.
 
-char* hex(uint128 a)
+inline char* hex(uint128 a)
 {   static char str[40];
     for (int i=31; i>=0; i--)
     {   str[i] = "0123456789abcdef"[a&0xf];
@@ -168,7 +168,7 @@ char* hex(uint128 a)
     return str;
 }
 
-char* dec(uint128 a)
+inline char* dec(uint128 a)
 {   static char str[44];
     char temp[44];
     size_t i=0, j=0;
@@ -185,21 +185,21 @@ char* dec(uint128 a)
 // in the vectors are so large that trace output becomes unduly bulky. For
 // some level of checking it will be OK if I just display the low 4 digits.
 
-int64_t Sig(uint64_t a, uint64_t P)
+inline int64_t Sig(uint64_t a, uint64_t P)
 {   return a>(P/2) ? a-P : a;
 }
 
-void prinvec(const char* s, uint64_t* v, int n, uint64_t P)
+inline void prinvec(const char* s, uint64_t* v, size_t n, uint64_t P)
 {   std::cout << s;
-    if (n > 10) n = 10; // to limit printout!
+    if (n > 10u) n = 10; // to limit printout!
     for (size_t i=0; i<n; i++)
         std::cout << " " << Sig(v[i], P)%10000;
     std::cout << "\n";
 }
 
-void prinvec(const char* s, uint64_t w, uint64_t* v, int n, uint64_t P)
+inline void prinvec(const char* s, uint64_t w, uint64_t* v, size_t n, uint64_t P)
 {   std::cout << s << " " << w << ":";
-    if (n > 10) n = 10; // to limit printout!
+    if (n > 10u) n = 10; // to limit printout!
     for (size_t i=0; i<n; i++)
         std::cout << " " << Sig(v[i], P)%10000;
     std::cout << "\n";
@@ -244,7 +244,9 @@ void prinvec(const char* s, uint64_t w, uint64_t* v, int n, uint64_t P)
 // (2)    Chinese Remainder mod P1, P2 and P2 to get a 172 bit result
 //        expressed in 64-bit segments.
 //
-// For the product I intend to go
+// Pretty much the standard scheme for performing modular multiplication
+// when the remaindering operation could be expensive but the modulus is
+// a known value goes along the lines:
 //       w = u*v     as a result of width 128. I note that the computers
 //                   I am most interested in support forming a product
 //                   in this form.
@@ -267,8 +269,14 @@ void prinvec(const char* s, uint64_t w, uint64_t* v, int n, uint64_t P)
 // the primes each one greater than the LCM of all lengths I will support,
 // with that being reasonable given the constraints I apply the the
 // vector-length N.
+//
+// HOWEVER I find that with g++ and clang++ the code (u*v)%P gets compiled
+// into something very much like the above when P is know, so for reduction
+// modulo a 64-bit prime I do not need to write all this out! But later on
+// I will want to perform a multiplication modulo a value that is 128-bits
+// wide, and there I will need to code up a version of it.
 
-// So first I will have a pile of compile-time-executed code that selects
+// First I will have a pile of compile-time-executed code that selects
 // primes and yields associated constants.
 
 // Form (a+b) % N where all three inputs are 64-bit unsigned integers
@@ -310,7 +318,7 @@ inline constexpr uint64_t timesmod(uint64_t a, uint64_t b)
 
 // Compute x^n mod N where all values are 64 bits.
 
-constexpr uint64_t exptmod(uint64_t x, uint64_t n, uint64_t N)
+inline constexpr uint64_t exptmod(uint64_t x, uint64_t n, uint64_t N)
 {   if (n == 0) return 1;
     uint64_t y = 1;
     while (n > 1)
@@ -324,7 +332,7 @@ constexpr uint64_t exptmod(uint64_t x, uint64_t n, uint64_t N)
 // Find the reciprocal of a mod N.
 
 template <uint64_t P>
-constexpr uint64_t recipmod(uint64_t a)
+inline constexpr uint64_t recipmod(uint64_t a)
 {   int64_t y = 0, x = 1;
     uint64_t m = P;
     while (a > 1)
@@ -339,7 +347,7 @@ constexpr uint64_t recipmod(uint64_t a)
 // Use Miller-Rabin with base a to see if it can show that N is
 // composite. 
 
-CONSTEVAL bool miller_rabin_probably_prime(uint64_t a, uint64_t N)
+inline CONSTEVAL bool miller_rabin_probably_prime(uint64_t a, uint64_t N)
 {   uint64_t d = N-1;
     int s = 0;
     while ((d % 2) == 0)  // Find largest power of 2 dividing n-1
@@ -361,7 +369,7 @@ CONSTEVAL bool miller_rabin_probably_prime(uint64_t a, uint64_t N)
 // out all composite numbers so this is a fully reliable check for
 // primality in that range.
 
-CONSTEVAL bool isprime(uint64_t N)
+inline CONSTEVAL bool isprime64(uint64_t N)
 {   const uint64_t witnesses[] =
         {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
     for (auto a:witnesses)
@@ -378,11 +386,11 @@ CONSTEVAL bool isprime(uint64_t N)
 // The density of primes (in arithmetic progressions) tells me that
 // I will not have a totally unreasonable search to perform.
 
-constexpr uint64_t LCMlengths = (3*3*3*3*5*5*5LU) << 44;
+inline constexpr uint64_t LCMlengths = (3*3*3*3*5*5*5LU) << 44;
 
-CONSTEVAL uint64_t findP(uint64_t start)
+inline CONSTEVAL uint64_t findP(uint64_t start)
 {   uint64_t p = LCMlengths*(start/LCMlengths) + 1;
-    while (!isprime(p)) p -= LCMlengths;
+    while (!isprime64(p)) p -= LCMlengths;
     return p;
 }
 
@@ -394,15 +402,15 @@ CONSTEVAL uint64_t findP(uint64_t start)
 // simple literals. But by using constexpr compile-time calculation I
 // "show my working" and protect against typos.
 
-constexpr uint64_t P1 = findP(1LU<<63);   // 0x6a4af00000000001
-constexpr uint64_t P2 = findP(P1-2);      // 0x2022900000000001
-constexpr uint64_t P3 = findP(P2-2);      // 0x0278d00000000001
+inline constexpr uint64_t P1 = findP(1LU<<63);   // 0x6a4af00000000001
+inline constexpr uint64_t P2 = findP(P1-2);      // 0x2022900000000001
+inline constexpr uint64_t P3 = findP(P2-2);      // 0x0278d00000000001
 
 // For each prime I want a value (omega1,...) that is a primitive
 // LCMlength root of unity.
 
 template <uint64_t P>
-CONSTEVAL uint64_t rootofunity()
+inline CONSTEVAL uint64_t rootofunity()
 {   for (uint64_t k=2;;k++)
     {   if (exptmod(k, P-1, P) != 1) continue; // should never happen!
 // The next 3 lines verify that no lower power of k will be 1. Ie that
@@ -418,9 +426,9 @@ CONSTEVAL uint64_t rootofunity()
     }
 }
 
-constexpr uint64_t omega1 = rootofunity<P1>();   // 0x546e6cc8bf755453
-constexpr uint64_t omega2 = rootofunity<P2>();   // 0x168f08f8e7
-constexpr uint64_t omega3 = rootofunity<P3>();   // 0xe
+inline constexpr uint64_t omega1 = rootofunity<P1>();   // 0x546e6cc8bf755453
+inline constexpr uint64_t omega2 = rootofunity<P2>();   // 0x168f08f8e7
+inline constexpr uint64_t omega3 = rootofunity<P3>();   // 0xe
 
 //*************************************************************************
 //*************************************************************************
@@ -460,7 +468,7 @@ struct XGCD64
     }
 };
 
-constexpr XGCD64 P1_P2(P1, P2);
+inline constexpr XGCD64 P1_P2(P1, P2);
 
 // now suppose X = a mod P1 and b mod P2 then
 //    x = a*P2*P1_P2.x - b*P1*P1_P2.y  [uniquely mod P1*P2]
@@ -486,12 +494,13 @@ struct XGCD128
     }
 };
 
-constexpr uint128 P1xP2 = (uint128)P1*P2;
+inline constexpr uint128 P1xP2 = (uint128)P1*P2;
 
-constexpr XGCD128 P1_P2_P3(P1xP2, P3);
+inline constexpr XGCD128 P1_P2_P3(P1xP2, P3);
 
 // I observe that in the two cases I am using here neither ends up
-// with x negated.
+// with x negated. However the code above shows awareness that that
+// situation could arise.
 
 // Now a bit of code that finds given
 //    X = a1 mod P1,   a2 mod P2,   a3 mod P3
@@ -501,8 +510,8 @@ constexpr XGCD128 P1_P2_P3(P1xP2, P3);
 // is basically "short multiplication" because I view the 128 bit
 // number as two 64-bit digits.
 
-constexpr void times_64_128(uint64_t a, uint128 b,
-                        uint64_t& hi, uint64_t& mid, uint64_t& lo)
+inline constexpr void times_64_128(uint64_t a, uint128 b,
+                                   uint64_t& hi, uint64_t& mid, uint64_t& lo)
 {   uint64_t bhi = static_cast<uint64_t>(b>>64);
     uint64_t blo = static_cast<uint64_t>(b);
     uint128 w1 = (uint128)a*blo;
@@ -524,7 +533,7 @@ struct P1xP2xP3_t
     }
 };
 
-constexpr P1xP2xP3_t P1xP2xP3;
+inline constexpr P1xP2xP3_t P1xP2xP3;
 
 // I want (a*b)%P1xP2 where all the values are 128-bit integers.
 // I had experimented with code to do this on 64-bit inputs but found
@@ -534,7 +543,7 @@ constexpr P1xP2xP3_t P1xP2xP3;
 // totally in vain.
 
 template <uint128 P>
-CONSTEVAL int leadingzeros()
+inline CONSTEVAL int leadingzeros()
 {   for (int i=0; i<128; i++)
         if ((P>>(127-i)) == 1) return i;
     return 128;
@@ -546,7 +555,7 @@ CONSTEVAL int leadingzeros()
 // overflow or division by zero.
 
 template <uint128 P>
-CONSTEVAL uint128 inverse()
+inline CONSTEVAL uint128 inverse()
 {   uint128 phi=static_cast<uint128>(1)<<(128-leadingzeros<P>()), plo=0;
     uint128 q = P;    
     uint128 r = 0;
@@ -562,11 +571,11 @@ CONSTEVAL uint128 inverse()
     return r;
 }
 
-constexpr uint128 invP1xP2 = inverse<P1xP2>();
+inline constexpr uint128 invP1xP2 = inverse<P1xP2>();
 
 // Multiply a pair of 128-bit values to get a 256 bit result.
 
-void times_128(uint128 a, uint128 b, uint128& chi, uint128& clo)
+inline void times_128(uint128 a, uint128 b, uint128& chi, uint128& clo)
 {
     uint64_t ahi = a>>64, alo = a;
     uint64_t bhi = b>>64, blo = b;
@@ -589,7 +598,7 @@ void times_128(uint128 a, uint128 b, uint128& chi, uint128& clo)
 // the value I get may be low by 1 or 2. In context I will not worry
 // about this.
 
-constexpr uint128 times_hi_128(uint128 a, uint128 b)
+inline constexpr uint128 times_hi_128(uint128 a, uint128 b)
 {   uint64_t ahi = a>>64, alo = a;
     uint64_t bhi = b>>64, blo = b;
     uint128 hi = (uint128)ahi*bhi;
@@ -603,30 +612,30 @@ constexpr uint128 times_hi_128(uint128 a, uint128 b)
 // a couple of high zero bits.
 
 template <uint128 P>
-constexpr uint128 timesmod(uint128 a, uint128 b)
-{    uint128 phi, plo;
-     times_128(a, b, phi, plo);
+inline constexpr uint128 timesmod(uint128 a, uint128 b)
+{   uint128 phi, plo;
+    times_128(a, b, phi, plo);
 // Here a and b each have (at least) leadingzeros<P>() leading zeros and so
 // their product has at least 2*leadingzeros<P>(). So if I shift the 256-bit
 // version of the product right by 128-2*leadingzeros<P>() I should get a
 // value that fits into 128 bits and that has as much accuracy as I can. 
-     uint128 ptop = phi<<(2*leadingzeros<P>()) |
+    uint128 ptop = phi<<(2*leadingzeros<P>()) |
                     (plo>>(128-2*leadingzeros<P>()));
-     uint128 quot = times_hi_128(ptop, invP1xP2);
+    uint128 quot = times_hi_128(ptop, invP1xP2);
 // I now want to set rem = a*b - quot*P1xP2
 // Well quot needs shifting to allow for that fact that invP1xP2 had
 // been shifted up to get extra precision.
-     quot >>= (leadingzeros<P>()-1);
-     uint128 qhi, qlo;
-     times_128(quot, P1xP2, qhi, qlo);
-     phi -= qhi;
-     uint128 r = plo - qlo;
-     if (r > plo) phi--;
-     assert(phi == 0);
+    quot >>= (leadingzeros<P>()-1);
+    uint128 qhi, qlo;
+    times_128(quot, P1xP2, qhi, qlo);
+    phi -= qhi;
+    uint128 r = plo - qlo;
+    if (r > plo) phi--;
+//  assert(phi == 0);
 // I very much expect that after this {phi,plo} will be my remainder
 // and since that is < 2^128 only plo matters.
-     if (r > P1xP2) r -= P1xP2;
-     return r;
+    if (r > P1xP2) r -= P1xP2;
+    return r;
 }
 
 //*************************************************************************
@@ -659,8 +668,8 @@ constexpr uint128 timesmod(uint128 a, uint128 b)
 // (but now having to use larger numbers) to merge in the the effect
 // of P3. The result will be returned as three 64-bit digits.
 
-void chinese_remainder(uint64_t a1, uint64_t a2, uint64_t a3,
-                       uint64_t& hi, uint64_t& mid, uint64_t& lo)
+inline void chinese_remainder(uint64_t a1, uint64_t a2, uint64_t a3,
+                              uint64_t& hi, uint64_t& mid, uint64_t& lo)
 {
 // First find a1a2 which will be a1 mod P1 and a2 mod P2
     uint128 a1a2A = (((uint128)a2*P1_P2.x)%P2)*P1;
@@ -727,9 +736,9 @@ void chinese_remainder(uint64_t a1, uint64_t a2, uint64_t a3,
 // can try random cases and compare fast and slow versions for both
 // results and timings.
 
-void slowmul(uint64_t* a, size_t lena,
-             uint64_t* b, size_t lenb,
-             uint64_t* c)
+inline void slowmul(uint64_t* a, size_t lena,
+                    uint64_t* b, size_t lenb,
+                    uint64_t* c)
 {   size_t N = lena+lenb;
     for (size_t i=0; i<N; i++)
         c[i] = 0;
@@ -752,7 +761,7 @@ void slowmul(uint64_t* a, size_t lena,
 // debugging but still posisbly useful as documentation/reference.
 
 template <uint64_t P, uint64_t omega>
-void slow_ft(uint64_t* a, size_t N)
+inline void slow_ft(uint64_t* a, size_t N)
 {   uint64_t root = exptmod(omega, LCMlengths/N, P);
 // Here I have a really simple Fourier Transform (and its inverse)
 // coded as simply multiplication of the input vector by a matrix
@@ -773,7 +782,7 @@ void slow_ft(uint64_t* a, size_t N)
 }
 
 template <uint64_t P, uint64_t omega>
-void inverse_slow_ft(uint64_t*a, size_t N)
+inline void inverse_slow_ft(uint64_t*a, size_t N)
 {   uint64_t root = exptmod(omega, LCMlengths-LCMlengths/N, P);
 // Here I have a really simple Fourier Transform (and its inverse)
 // coded as simply multiplication of the input vector by a matrix
@@ -836,7 +845,7 @@ inline void butterfly2A(uint64_t& a, uint64_t& b)
 // but the output appears in natural order.
 
 template <uint64_t P>
-void dit_ft(uint64_t* x, size_t N, uint64_t* roots)
+inline void dit_ft(uint64_t* x, size_t N, uint64_t* roots)
 {   for (size_t m=2; m<=N; m=2*m)
     {   for (size_t k=0; k<N; k+=m)
         {
@@ -876,7 +885,7 @@ inline void butterfly2B(uint64_t& a, uint64_t& b)
 }
 
 template <uint64_t P>
-void dif_ft(uint64_t* x, size_t N, uint64_t* roots)
+inline void dif_ft(uint64_t* x, size_t N, uint64_t* roots)
 {   for (size_t m=N; m>=2; m=m/2)
     {   for (size_t k=0; k<N; k+=m)
         {   size_t w = N/2;
@@ -902,7 +911,7 @@ class FFTParams
 {
 public:
     int which;    // Index of the prime to be used.
-    int N;        // Length of all vectors.
+    size_t N;     // Length of all vectors.
     uint64_t* a;  // First input vector .
     uint64_t* b;  // Second input vector.
     uint64_t* c;  // Result is places here.
@@ -912,8 +921,8 @@ public:
         a = b = c = w = nullptr;
         N = 0;
     }
-    FFTParams(int xwhich, int xN, uint64_t* xa, uint64_t* xb,
-                                  uint64_t* xc, uint64_t* xw)
+    FFTParams(int xwhich, size_t xN, uint64_t* xa, uint64_t* xb,
+                                     uint64_t* xc, uint64_t* xw)
     {   which = xwhich;
         N = xN;
         a = xa;
@@ -923,63 +932,50 @@ public:
     }
 };
 
-void useOneModulus(FFTParams d)
-{   uint64_t ww, R=1;
-    switch (d.which)
-    {
-    case 1:
-        ww = exptmod(omega1, LCMlengths/d.N, P1);
-        d.w[0] = R;
-        for (size_t i=1; i<d.N; i++)
-            d.w[i] = (R = timesmod<P1>(ww, R));
-        dif_ft<P1>(d.a, d.N, d.w);
-        dif_ft<P1>(d.b, d.N, d.w);
+// For the threads that I use I have two challenges. First each thread
+// needs different vectors to work on but my scheme only passed a single
+// argument. So I make that argument a structure (FFTParams). And then
+// for performance I want to have the prime used in each task passed
+// as a template parameter. So I pass in information field called which and
+// dispatch on that to code using each value for the template parameters.
+
+template <uint64_t P, uint64_t omega>
+inline void useOneModuleT(FFTParams d)
+{   uint64_t R = 1, ww = exptmod(omega, LCMlengths/d.N, P);
+    d.w[0] = R;
+    for (size_t i=1; i<d.N; i++)
+        d.w[i] = (R = timesmod<P>(ww, R));
+    dif_ft<P>(d.a, d.N, d.w);
+    dif_ft<P>(d.b, d.N, d.w);
 // Pointwise multiplication
-        for (size_t i=0; i<d.N; i++)
-            d.c[i] = timesmod<P1>(d.a[i], d.b[i]);
-        dit_ft<P1>(d.c, d.N, d.w);
+    for (size_t i=0; i<d.N; i++)
+        d.c[i] = timesmod<P>(d.a[i], d.b[i]);
+    dit_ft<P>(d.c, d.N, d.w);
 // There is a stray factor of d.N that I must divide out...
-        {   uint64_t R1 = recipmod<P1>(d.N);
-            for (size_t i=0; i<d.N; i++)
-                d.c[i] = timesmod<P1>(d.c[i], R1);
-        }
-        return;
-    case 2:
-        ww = exptmod(omega2, LCMlengths/d.N, P2);
-        d.w[0] = R;
-        for (size_t i=1; i<d.N; i++)
-            d.w[i] = (R = timesmod<P2>(ww, R));
-        dif_ft<P2>(d.a, d.N, d.w);
-        dif_ft<P2>(d.b, d.N, d.w);
+    {   uint64_t R1 = recipmod<P>(d.N);
         for (size_t i=0; i<d.N; i++)
-            d.c[i] = timesmod<P2>(d.a[i], d.b[i]);
-        dit_ft<P2>(d.c, d.N, d.w);
-        {   uint64_t R2 = recipmod<P2>(d.N);
-            for (size_t i=0; i<d.N; i++)
-                d.c[i] = timesmod<P2>(d.c[i], R2);
-        }
-        return;
-    case 3:
-        ww = exptmod(omega3, LCMlengths/d.N, P3);
-        d.w[0] = R;
-        for (size_t i=1; i<d.N; i++)
-            d.w[i] = (R = timesmod<P3>(ww, R));
-        dif_ft<P3>(d.a, d.N, d.w);
-        dif_ft<P3>(d.b, d.N, d.w);
-        for (size_t i=0; i<d.N; i++)
-            d.c[i] = timesmod<P3>(d.a[i], d.b[i]);
-        dit_ft<P3>(d.c, d.N, d.w);
-        {   uint64_t R3 = recipmod<P3>(d.N);
-            for (size_t i=0; i<d.N; i++)
-                d.c[i] = timesmod<P3>(d.c[i], R3);
-        }
-        return;
+            d.c[i] = timesmod<P>(d.c[i], R1);
     }
 }
 
-void fastmul(uint64_t* a, size_t lena,
-             uint64_t* b, size_t lenb,
-             uint64_t* c)
+inline void useOneModulus(FFTParams d)
+{   switch (d.which)
+    {
+    case 1:
+        useOneModuleT<P1,omega1>(d);
+        break;
+    case 2:
+        useOneModuleT<P2,omega2>(d);
+        break;
+    case 3:
+        useOneModuleT<P3,omega3>(d);
+        break;
+    }
+}
+
+inline void fftmul(uint64_t* a, size_t lena,
+            uint64_t* b, size_t lenb,
+            uint64_t* c)
 {   size_t N = lena+lenb;
     while ((N & -N) != N) N++;
 // Here I round up to a power of 2 in a rather simplistic way. The
@@ -1069,6 +1065,8 @@ void fastmul(uint64_t* a, size_t lena,
 //=========================================================================
 //=========================================================================
 
+#ifdef TEST_FFT
+
 // There are people who believe that the next line can fail to provide
 // really proper "random" sequences, but for now it suffices.
 
@@ -1104,7 +1102,7 @@ void timetest(size_t N, int ntrials)
     }
     auto tt2 = microseconds();
     for (int trial=0; trial<ntrials; trial++)
-    {   fastmul(a, N, b, N, c);
+    {   fftmul(a, N, b, N, c);
     }
     auto tt3 = microseconds();
 
@@ -1147,7 +1145,7 @@ int main(int argc, char* argv[])
     std::cout << " digits       slow (tt/N*N)      fast (tt/NlogN)\n";
 
     std::cout << std::fixed << std::setprecision(2);
-    if (N != -1) timetest(N, ntrials);
+    if (N != -1u) timetest(N, ntrials);
     else
     {   for (N=4; N<2*slowLimit; N=2*N)
         {   timetest(N, ntrials);
@@ -1155,5 +1153,7 @@ int main(int argc, char* argv[])
     }
     return 0;
 }
+
+#endif // TEST_FFT
 
 // end of fftmod.cpp

@@ -205,10 +205,10 @@ int main(int argc, char *argv[])
               << "  KARABIG = " << arithlib_implementation::BigMultiplication::KARABIG << "\n";
 
     int maxbits, ntries;
-    std::chrono::high_resolution_clock::time_point clk, clk2;
+    std::chrono::steady_clock::time_point clk, clk2;
     std::chrono::duration<double, std::micro> elapsed;
     std::chrono::nanoseconds timing;
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
                 {   a[i] = mersenne_twister();
                     b[i] = mersenne_twister();
                 }
-                clk = std::chrono::high_resolution_clock::now();
+                clk = std::chrono::steady_clock::now();
 // When using Karatsuba the cost of a multiplication is expected to
 // grow as n^1.585, and so to arrange that I take roughly the same
 // absolute time on each number-length I perform my tests a number of
@@ -429,7 +429,7 @@ int main(int argc, char *argv[])
                     for (std::size_t i=0; i<lenb; i++)
                         b[i] = MULT*b[i] + ADD;
                 }
-                clk2 = std::chrono::high_resolution_clock::now();
+                clk2 = std::chrono::steady_clock::now();
                 elapsed = clk2 - clk;
                 timing =
                     std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -575,7 +575,7 @@ int main(int argc, char *argv[])
     ntries = 50*MILLION;
 
     std::cout << "Start of bitwise operation testing" << "\n";
-    clk = std::chrono::high_resolution_clock::now();
+    clk = std::chrono::steady_clock::now();
 
     for (int i=1; i<=ntries; i++)
     {   Bignum a = randomUptoBitsBignum(maxbits);
@@ -614,7 +614,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -636,7 +636,7 @@ int main(int argc, char *argv[])
     ntries = 50*MILLION;
 
     std::cout << "Start of shift testing" << "\n";
-    clk = std::chrono::high_resolution_clock::now();
+    clk = std::chrono::steady_clock::now();
 
     for (int i=1; i<=ntries; i++)
     {   Bignum a = randomUptoBitsBignum(maxbits);
@@ -678,7 +678,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -701,7 +701,7 @@ int main(int argc, char *argv[])
     ntries = 50*MILLION;
 
     std::cout << "Start of Plus and Times testing" << "\n";
-    clk = std::chrono::high_resolution_clock::now();
+    clk = std::chrono::steady_clock::now();
 
     for (int i=1; i<=ntries; i++)
     {   Bignum a = randomUptoBitsBignum(maxbits);
@@ -732,7 +732,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -755,7 +755,7 @@ int main(int argc, char *argv[])
     ntries = 50*MILLION;
 
     std::cout << "Start of division testing" << "\n";
-    clk = std::chrono::high_resolution_clock::now();
+    clk = std::chrono::steady_clock::now();
 
     for (int i=1; i<=ntries; i++)
     {   Bignum divisor, remainder, quotient;
@@ -807,7 +807,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -825,7 +825,7 @@ int main(int argc, char *argv[])
     ntries = 20*MILLION;
 
     std::cout << "Start of GCD testing" << "\n";
-    clk = std::chrono::high_resolution_clock::now();
+    clk = std::chrono::steady_clock::now();
 
     for (int i=1; i<=ntries; i++)
     {   Bignum a, b, g;
@@ -868,7 +868,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -887,7 +887,7 @@ int main(int argc, char *argv[])
     ntries = 50*MILLION;
 
     std::cout << "Start of isqrt testing" << "\n";
-    clk = std::chrono::high_resolution_clock::now();
+    clk = std::chrono::steady_clock::now();
 
     for (int i=1; i<=ntries; i++)
     {   Bignum a, b;
@@ -908,7 +908,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -937,7 +937,7 @@ int main(int argc, char *argv[])
     volatile double fp_forcer;
 
     std::cout << "Start of float testing" << "\n";
-    clk = std::chrono::high_resolution_clock::now();
+    clk = std::chrono::steady_clock::now();
 
     for (int i=1; i<=ntries; i++)
     {   Bignum a, b;
@@ -999,7 +999,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);

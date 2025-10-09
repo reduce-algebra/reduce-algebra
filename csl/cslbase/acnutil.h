@@ -109,12 +109,12 @@ template<std::size_t start, std::size_t count, class F>
 //   ... microseconds(t1, t0) ...
 
 inline auto now()
-{   return std::chrono::high_resolution_clock::now();
+{   return std::chrono::steady_clock::now();
 }
 
 inline std::uint64_t microseconds(
-    std::chrono::time_point<std::chrono::high_resolution_clock> t1,
-    std::chrono::time_point<std::chrono::high_resolution_clock> t0)
+    std::chrono::time_point<std::chrono::steady_clock> t1,
+    std::chrono::time_point<std::chrono::steady_clock> t0)
 {   return
         std::chrono::duration_cast<std::chrono::microseconds>(t1-t0).count();
 }

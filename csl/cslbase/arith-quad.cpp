@@ -1385,19 +1385,19 @@ QuadFloat qcoth(QuadFloat a)
 // bits. However that has a smaller range of exponents, so I need to
 // do some pre-filtering.
 
-qdouble QuadFloat_to_qdouble(QuadFloat a)
-{   qdouble r;
+//qdouble QuadFloat_to_qdouble(QuadFloat a)
+//{   1double r;
+//
+//    return r;
+//}
 
-    return r;
-}
-
-QuadFloat qdouble_to_QuadFloat(qdouble& a)
-{   QuadFloat r = (QuadFloat)a.a[3]; 
-    r += (QuadFloat)a.a[2];
-    r += (QuadFloat)a.a[1];
-    r += (QuadFloat)a.a[0];
-    return r;
-}
+//QuadFloat qdouble_to_QuadFloat(qdouble& a)
+//{   QuadFloat r = (QuadFloat)a.a[3]; 
+//    r += (QuadFloat)a.a[2];
+//    r += (QuadFloat)a.a[1];
+//    r += (QuadFloat)a.a[0];
+//    return r;
+//}
 
 QuadFloat qexpt(QuadFloat a, QuadFloat b)
 {

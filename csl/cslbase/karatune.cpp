@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     else seed = mersenne_twister() & 0xffff;
     cout << "seed = " << seed << "\n";
 
-    chrono::high_resolution_clock::time_point clk, clk2;
+    chrono::steady_clock::time_point clk, clk2;
     chrono::duration<double, micro> elapsed;
     chrono::nanoseconds timing;
 
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
         {   cout <<   "start = " << setw(3) << start
                  << "  start_parallel = " << setw(3) << start_parallel
                  << "     ";
-            clk = chrono::high_resolution_clock::now();
+            clk = chrono::steady_clock::now();
             for (size_t i=1; i<=ntries; i++)
             {   size_t lenc;
                 arithlib_implementation::bigmultiply(a, N, b, N, c, lenc);
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 // product will have had to be computed.
                 q += c[0] + c[lenc-1];
             }
-            clk2 = chrono::high_resolution_clock::now();
+            clk2 = chrono::steady_clock::now();
             elapsed = clk2 - clk;
             timing =
                 chrono::duration_cast<chrono::nanoseconds>(elapsed);
@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
         {   cout <<   "start = " << setw(3) << start
                  << "  start_parallel = " << setw(3) << start_parallel
                  << "     ";
-            clk = chrono::high_resolution_clock::now();
+            clk = chrono::steady_clock::now();
             for (size_t i=1; i<=ntries; i++)
             {   size_t lenc;
                 arithlib_implementation::bigmultiply(a, N, b, N, c, lenc);
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 // omits most of the work.
                 q += c[0] + c[lenc-1];
             }
-            clk2 = chrono::high_resolution_clock::now();
+            clk2 = chrono::steady_clock::now();
             elapsed = clk2 - clk;
             timing =
                 chrono::duration_cast<chrono::nanoseconds>(elapsed);

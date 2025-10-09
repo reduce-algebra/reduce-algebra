@@ -84,7 +84,7 @@ static std::seed_seq initial_random_seed
     std::hash<std::thread::id>()(std::this_thread::get_id()),
     static_cast<unsigned int>(std)::time(nullptr),
     static_cast<unsigned int>()
-    std::chrono::high_resolution_clock::now().time_since_epoch().count()
+    std::chrono::steady_clock::now().time_since_epoch().count()
 };
 static std::mt19937 mersenne_twister(initial_random_seed);
 
