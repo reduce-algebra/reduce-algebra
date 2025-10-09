@@ -8,9 +8,13 @@ on echo;
 
 
 lisp if !*csl then force!-output!-radix 16
-      else if !*psl then outputbase!* := 16$
+else if 'psl memq lispsystem!* then outputbase!* := 16
+else if 'common!-lisp memq lispsystem!* then !*print!-base!* := 16$
 
 
+% FJW: *psl is currently true in REDUCE on Common Lisp so that readch1
+% works correctly, therefore it is safest to avoid it in tests like
+% that above!
 
 operator vv;
 
@@ -168,6 +172,9 @@ Arg1: ((((0 . 1) (3 . 1)) ((0 . 1) (2 . 1)) ((0 . 1) (1 . 1))) (((0 . 1) (5 . 1)
 1)) ((0 . 1) (6 . 1))) (((0 . 2) (1 . 1) (5 . 1)) ((0 . 1) (6 . 1))) (((0 . 3) (
 3 . 3)) ((0 . 2) (1 . 1) (6 . 1))) (((0 . 2) (3 . 2)) ((0 . 2) (2 . 1) (3 . 1)) 
 ((0 . 1) (6 . 1))))
+Inside: with!-timeout
+Arg 1: 1388
+Arg 2: (setq g (gf2_expand_base g))
 Inside: gf2_groeb
 Arg1: (list (plus b p s) (plus p s t) (plus (expt b 2) (times p s) w) (plus (
 times p t) w) (plus (expt b 3) (times p w)) (plus (expt b 2) (times b s) w))

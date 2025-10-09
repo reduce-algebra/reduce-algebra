@@ -259,7 +259,9 @@ then
     echo $'\n+++++ Compiling trace'
     time eval $runlisp << EOF &> log.$lisp/trace.blg
 (load "fasl.$lisp/sl-on-cl")
-(or (compile-file "trace.lisp") (exit 1))
+(or (compile-file "trace.lisp")
+    #+CCL (quit 1)
+    #-CCL (exit #+SBCL :code 1))
 EOF
     mv trace.$faslext fasl.$lisp
     if [ $lisp = 'clisp' ]; then mv trace.lib fasl.clisp; fi

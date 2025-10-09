@@ -1,7 +1,7 @@
-// arith-headers.h                              Copyright (C) 2025 Codemist
+// qdouble.cpp                                  Copyright (C) 2025 Codemist
 
-#ifndef header_arith_headers_h
-#define header_arith_headers_h 1
+// $Id$
+
 
 /**************************************************************************
  * Copyright (C) 2025, Codemist.                         A C Norman       *
@@ -32,27 +32,15 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id$
+// This file is solely to include the non-inline parts of the
+// qdouble library as below...
 
-//
-// The header-only library "arithlib.hpp" is a bulky file and it does
-// not make sense to include it when compiling parts of CSL that do not
-// need it. So those files that do need it will #include "arith-headers.h"
-// rather than merely #include "headers.h".
-// The dispatch code that copes with selecting which version of an
-// arithmetic operation is needed based on operand types is also only
-// #included here.
-//
+/*
+Source: Algorithms for Quad-Double Precision Floating Point Arithmetic.
+Yozo Hida, Xiaoye S. Li, David H. Bailey.
+*/
 
-#if defined DEBUG && !defined CHECK_TIMES
-/////  #define CHECK_TIMES 1
-#endif // DEBUG
+#define QDOUBLE_IMPLEMENTATION 1
+#include "qdouble.h"
 
-#include "headers.h"
-
-#include "arithlib.hpp"
-#include "dispatch.h"
-
-#endif // header_arith_headers_h
-
-// end of arith-headers.h
+// end of qdouble.cpp

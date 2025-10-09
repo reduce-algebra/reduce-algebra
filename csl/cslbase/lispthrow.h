@@ -600,8 +600,16 @@ public:
     }
 };
 
+#ifdef DEBUG
+// If these are enable I can get distinctly better backtraces through
+// bytecoded functions - however they can lead to quite bad storage
+// use.
 #define RECORD_CALL(x) ForBacktrace btr(x);
 #define RECORD_TAILCALL(x) ForBacktraceTailCall btr(x);
+#else
+#define RECORD_CALL(x)
+#define RECORD_TAILCALL(x)
+#endif
 
 // I am going to have some macros that provide a level of abstraction
 // around "catch" and "throw". The reason for this is that in the special

@@ -225,7 +225,7 @@ trap!-time!* := nil; % nil here means no trapping active.
 % or atomic if there is a timeout. Rather like the behaviour of errorset.`
 
 
-#if (member 'csl lispsystem!*)
+#if (getd 'resource!-limit)             % CSL, SL-on-CL
 
 symbolic procedure with!-timeout(n, u);
   resource!-limit(u, fix(n/1000));
@@ -239,7 +239,7 @@ symbolic procedure with!-timeout(n, u);
 symbolic procedure with!-normalized!-timeout(n, u);
   resource!-limit(u, fix(n/(1000.0*machine_speed())));
 
-#else   % Now an "anything but CSL" version
+#else   % Now an "other Lisps" version
 
 symbolic procedure aftergcsystemhook();
   if trap!-time!* and

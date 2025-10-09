@@ -67,7 +67,7 @@ gf2_steps_count := 0;
 
 fluid '(G); % To interact via resource!-limit
 
-#if (memq 'psl lispsystem!*)
+#if (not (getd 'optterpri))
 symbolic procedure optterpri;if posn()>0 then terpri();
 #endif
 
@@ -128,7 +128,7 @@ symbolic procedure gf2_S(u, v, G);
 
 % If the leading coefficient of u (u0) is divisible by the leading
 % coefficient of v (v0) set u = u + (u0/v0)*v. Repeat this step as
-% many times as possible. 
+% many times as possible.
 
 fluid '(changed);
 

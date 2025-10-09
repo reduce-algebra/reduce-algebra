@@ -1,7 +1,7 @@
 module gf2;  % Polynomial arithmetic where coefficients are in GF(2).
 
-lisp if !*csl then enable!-errorset(3, 3); % Debugging option while I develop.
-lisp if !*psl then on backtrace;
+lisp if !*csl then enable!-errorset(3, 3) % Debugging option while I develop.
+else on backtrace;
 
 % Author: Arthur Norman
 % Copyright (c) 2025 Arthur Norman
@@ -82,7 +82,7 @@ create!-package('(gf2 gf2groeb), nil);
 % as 2^10-1 = 1023. I intend to detect exponent overflow so if you start
 % with too small a setting (the default is 12, allowing degrees to be
 % as high as 4095) a diagnostic will be issued and you can perhaps restart
-% with a larger value. 
+% with a larger value.
 %
 % One must first declare the variables using a statement such as
 %    operator v;
@@ -207,7 +207,7 @@ symbolic procedure gf2_index v;
     v := gethash(cadr v, h);
     if null v then rederr "unknown operator-form variable used"
     else return v
-  end;    
+  end;
 
 % Add two distributed polynominals. Note that the inputs may either be
 % tagged or untagged.
@@ -243,7 +243,7 @@ symbolic procedure gf2_sparse_before(a, b);
 symbolic procedure dense_gf2_plus(u, v);
   if null u then v
   else if null v then u
-  else if gf2_lt u > gf2_lt v then gf2_lt u . dense_gf2_plus(gf2_red u, v) 
+  else if gf2_lt u > gf2_lt v then gf2_lt u . dense_gf2_plus(gf2_red u, v)
   else if gf2_lt u < gf2_lt v then gf2_lt v . dense_gf2_plus(u, gf2_red v)
   else dense_gf2_plus(gf2_red u, gf2_red v);
 
@@ -381,10 +381,10 @@ symbolic procedure gf2_sparse_term_to_sf a;
     scalar r := 1, v;
 % I will ignore the first term of u because that just holds the total
 % degree.
-    for each w in cdr a do << 
+    for each w in cdr a do <<
       v := gethash(car w, gf2_var_names);
       r := multf(r, !*p2f mksp(car v, cdr w)) >>;
-    return r 
+    return r
   end;
 
 symbolic procedure dense_gf2_to_sf u;
@@ -524,11 +524,11 @@ symbolic procedure gf2_sparse_lcm_two_terms(a, b);
     while a do <<
       r := car a . r;
       n := n + cdar a;
-      a := cdr a >>; 
+      a := cdr a >>;
     while b do <<
       r := car b . r;
       n := n + cdar b;
-      b := cdr b >>; 
+      b := cdr b >>;
     return (0 . n) . reverse r
   end;
 

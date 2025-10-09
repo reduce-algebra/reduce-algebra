@@ -3,7 +3,7 @@
 ;; Copyright (C) 2019, 2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-09-22 10:38:11 franc>
+;; Time-stamp: <2025-10-04 12:10:16 franc>
 ;; Created: 20 February 2019
 
 ;; Based on, and hopefully consistent with, the portable REDUCE
@@ -65,15 +65,19 @@ If no functions are specified then list all traced functions."
 
 (setf (macro-function 'untrst) (macro-function 'untr))
 
+(defparameter %fasl.lisp-pathname-template%
+  (make-pathname :directory (pathname-directory *load-truename*)
+                 :type "lisp")
+  "Absolute pathname of the form \"/.../fasl.which/???.lisp\".")
+
 (defun get-fasl-source (name)
-  "Get DE form for function NAME from \"fasl/modulename.lisp\"."
+  "Get DE form for function NAME from file \"/.../fasl.which/modulename.lisp\"."
   (let ((*readtable* (copy-readtable nil)) ; read CL syntax
-        file pos stream form)
-    (when (and
-           (setq file (get name 'sl::defined-in-file)) ; e.g. "pgk/mod.red"
-           (setq pos (position #\/ (setq file (symbol-name file))))) ; e.g. 3
-      (setq file (subseq file pos (- (length file) 3))) ; e.g. "/mod."
-      (setq file (concatenate 'string "fasl" file "lisp")) ; e.g. "fasl/mod.lisp"
+        file stream form)
+    (when (setq file (get name 'sl::defined-in-file)) ; e.g. |pgk/mod.red|
+      (setq file (pathname-name (symbol-name file))) ; e.g. "mod"
+      (setq file (merge-pathnames file %fasl.lisp-pathname-template%))
+      ;; e.g. "/.../fasl.which/mod.lisp"
       (when (setq stream (open file :external-format
                                #+SBCL :UTF-8 #+CLISP charset:UTF-8))
         (loop
