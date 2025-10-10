@@ -1453,7 +1453,8 @@ $(cslbase)/lvector.h:	$(cslbase)/flatten $(cslbase)/lvector.base.h \
 
 $(cslbase)/multiply.cpp:	$(cslbase)/flatten \
 		$(cslbase)/multiply.base.cpp $(cslbase)/inlinemul.cpp \
-		$(cslbase)/lvector.h
+		$(cslbase)/lvector.h $(cslbase)/cthread.cpp \
+		$(cslbase)/fftmod.cpp
 	cd $(cslbase) && ./flatten multiply.base.cpp multiply.cpp
 
 $(cslbase)/arithlib.hpp:	$(cslbase)/flatten \

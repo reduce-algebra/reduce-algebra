@@ -28,17 +28,17 @@ static const size_t count = 1000000000U;
 
 int main()
 {
-    std::chrono::high_resolution_clock::time_point clk, clk2;
+    std::chrono::steady_clock::time_point clk, clk2;
     std::chrono::duration<double, std::micro> elapsed;
     std::chrono::nanoseconds timing;
 
     x1 = 0;
-    clk = std::chrono::high_resolution_clock::now();
+    clk = std::chrono::steady_clock::now();
 
     for (size_t i=0; i<count; i++)
         incx1();
 
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -46,12 +46,12 @@ int main()
     std::cout << x1 << std::endl;
 
     x2 = 0;
-    clk = std::chrono::high_resolution_clock::now();
+    clk = std::chrono::steady_clock::now();
 
     for (size_t i=0; i<count; i++)
         incx2();
 
-    clk2 = std::chrono::high_resolution_clock::now();
+    clk2 = std::chrono::steady_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -60,5 +60,4 @@ int main()
     return 0;
 }
 
-
-
+// end of thread_local.cpp

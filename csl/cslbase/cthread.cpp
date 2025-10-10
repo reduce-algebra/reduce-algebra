@@ -213,7 +213,7 @@ public:
     } 
 };
 
-class WorkerData
+class WorkerTaskData
 {
 public:
 // The task to be performed has to have a polymorphic type.
@@ -235,7 +235,7 @@ public:
 // false and lock two of the mutexes. That sets things up so that when
 // it is passed to a new worker thread that thread behaves in the way I
 // want it to.
-    WorkerData()
+    WorkerTaskData()
     {   ready = false;
         quit_flag = false;
         workerTask = nullptr;
@@ -259,7 +259,7 @@ public:
         sendCount = 0;
     }
 #ifdef USE_MICROSOFT_MUTEX
-    ~WorkerData()
+    ~WorkerTaskData()
     {   CloseHandle(mutex[0]);
         CloseHandle(mutex[1]);
         CloseHandle(mutex[2]);
@@ -274,28 +274,28 @@ public:
 // them and that they then access. When this structures is created it will
 // cause the worker threads and the data block they need to be constructed.
 
-inline void workerThread(WorkerData* wd);
+inline void workerThreadFunction(WorkerTaskData* wd);
 
-class DriverData
+class ThreadDriverData
 {
 public:
-    WorkerData wd[POOLSIZE];
-// When the instance of DriverData is created the WorkerData instances
+    WorkerTaskData wd[POOLSIZE];
+// When the instance of ThreadDriverData is created the WorkerTaskData instances
 // get constructed with two of their mutexes locked. This will mean that when
 // worker threads are created and start running they will politely wait for
 // things to do.
     std::thread w[POOLSIZE];
 
-    DriverData()
-    {   for (int i=0; i<POOLSIZE; i++)
-            w[i] = std::thread(workerThread, &wd[i]);
+    ThreadDriverData()
+    {   for (size_t i=0; i<POOLSIZE; i++)
+            w[i] = std::thread(workerThreadFunction, &wd[i]);
 // I busy-wait until all the threads have both claimed the mutexes that they
 // need to own at the start! Without this the main thread may post a
 // multiplication, so its part of the work and try to check that the worker
 // has finished (by claiming one of these mutexes) before the worker thread
 // has got started up and has claimed them. This feels clumsy, but it only
 // happens at system-startup.
-        for (int i=0; i<POOLSIZE; i++)
+        for (size_t i=0; i<POOLSIZE; i++)
         {   if (!wd[i].ready.load())
             {   std::this_thread::sleep_for(std::chrono::microseconds(1));
                 i--;  // I only proceed once the thread is ready.
@@ -303,18 +303,18 @@ public:
         }
     }
 
-// When the DriverData object is to be destroyed it must arrange to
+// When the ThreadDriverData object is to be destroyed it must arrange to
 // stop and then join all the threads that it set up. This code that sends
 // a "quit" message to each thread will be executed before the thread object
 // is deleted, and the destructor of the thread object should be activated
-// before that of the WorkerData and the mutexes within that.
+// before that of the WorkerTaskData and the mutexes within that.
 
 // The expectation here is that this termination will happen at a time
 // when none of the worker threads are doing anything, and thus they are
 // all sitting ready to accept this request. Abrupt (ie error) termination
 // of the program might not manage that!
-    ~DriverData()
-    {   for (int i=0; i<POOLSIZE; i++)
+    ~ThreadDriverData()
+    {   for (size_t i=0; i<POOLSIZE; i++)
         {   wd[i].quit_flag = true;
             releaseWorker(i);
             w[i].join();
@@ -322,7 +322,7 @@ public:
     }
 
 // Using the worker threads is then rather easy: one sets up data in
-// the WorkerData structures and then call releaseWorker() for each
+// the WorkerTaskData structures and then call releaseWorker() for each
 // one that must start. Then the driver program can do whatever it
 // wishes to while the workers just started do what they are set up for.
 // When you are ready you call waitForWorker() on each sub-process,
@@ -352,11 +352,11 @@ public:
     }
 };
 
-inline DriverData driverData;
+inline ThreadDriverData threadDriverData;
 
 #if defined USE_MICROSOFT_SRW
 
-inline void workerThread(WorkerData* wd)
+inline void workerThreadFunction(WorkerTaskData* wd)
 {   ThreadLocal::initialize();
     AcquireSRWLockExclusive(&wd->mutex[2]);
     AcquireSRWLockExclusive(&wd->mutex[3]);
@@ -373,7 +373,7 @@ inline void workerThread(WorkerData* wd)
 
 #elif defined USE_MICROSOFT_MUTEX
 
-inline void workerThread(WorkerData* wd)
+inline void workerThreadFunction(WorkerTaskData* wd)
 {   WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
     WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
     wd->ready = true;
@@ -392,7 +392,7 @@ inline void workerThread(WorkerData* wd)
 
 #else // Here I use C++ std::mutex
 
-inline void workerThread(WorkerData* wd)
+inline void workerThreadFunction(WorkerTaskData* wd)
 {   wd->mutex[2].lock();
     wd->mutex[3].lock();
     wd->ready = true;
@@ -406,7 +406,7 @@ inline void workerThread(WorkerData* wd)
     }
 }
 
-#endif // definition of workerThread
+#endif // definition of workerThreadFunction
 
 template <typename T>
 inline void runInThreads(std::vector<T> v, void (*fn)(T))
@@ -439,7 +439,7 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
     int threadIds[POOLSIZE];
     int w = 0;
     uint32_t claimed = 0;
-    for (int i=0; i<POOLSIZE && w<n-1; i++)
+    for (size_t i=0; i<POOLSIZE && w<n-1; i++)
     {   if ((active & (1<<i)) == 0)
         {   threadIds[w++] = i;
             claimed |= 1<<i;
@@ -466,14 +466,14 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
 // 
 // Release (ie start up) all the worker threads I have picked.
     for (int i=0; i<n-1; i++)
-    {   driverData.wd[threadIds[i]].workerTask = new WorkerTask<T>(fn, v[i+1]);
-        driverData.releaseWorker(threadIds[i]);
+    {   threadDriverData.wd[threadIds[i]].workerTask = new WorkerTask<T>(fn, v[i+1]);
+        threadDriverData.releaseWorker(threadIds[i]);
     }
 // Use this main thread to do work on the first item in the vector.
     (*fn)(v[0]);
 // Wait until everybody has completed their job.
     for (int i=0; i<n-1; i++)
-        driverData.waitForWorker(threadIds[i]);
+        threadDriverData.waitForWorker(threadIds[i]);
 // Tell the system that the threads I had just been using are now free for
 // others to use.
     activeThreads &= ~claimed;
