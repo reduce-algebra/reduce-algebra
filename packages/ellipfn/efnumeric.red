@@ -316,6 +316,13 @@ algebraic procedure RC(x,y);
       tmp := ceiling(oldprec/3);
       tol := 10.0^(-tmp);
       % relative truncation error of result approx. 10^-(2*oldprec)
+      mu := (x+2*y)/3;
+      if mu =0 then <<
+      	 lamda := 2*sqrt(x)*sqrt(y) + y;
+	 x := (x+lamda)/4;
+	 y := (y+lamda)/4;
+      >>;
+
       tmp := t;
       while tmp do <<
 	 mu := (x+2*y)/3;
@@ -333,48 +340,57 @@ algebraic procedure RC(x,y);
       return tmp;
    end;
 
-% uses Carlson's duplication method
-algebraic procedure RF(x,y,z);
-   begin scalar dx,dy,dz,xr,yr,zr,mu,lamda,e2, e3,tol,tmp,oldprec,n:=0;
+algebraic procedure symint_check(x,y,z);
+   begin scalar tmp,n;
+      n := 0;
       if impart x=0  then
          << tmp := sign x;
             if tmp = -1 then
-               lisp error(99, "divergent integral RF: negative 1st argument");
+               rederr("divergent integral: negative 1st argument");
  	    if tmp = 0 then n := n+1
 	 >>;
       if impart y=0  then
          << tmp := sign y;
             if tmp = -1 then
-      	       lisp error(99, "divergent integral RF: negative 2nd argument");
+      	       rederr("divergent integral: negative 2nd argument");
  	    if tmp = 0 then n := n+1
 	 >>;
       if impart z=0  then
          << tmp := sign z;
             if tmp = -1 then
-      	       lisp error(99, "divergent integral RF: negative 3rd argument");
+      	       rederr("divergent integral: negative 3rd argument");
  	    if tmp = 0 then n := n+1;
 	 >>;
       if n>1 then
-      lisp error(99, "divergent integral RF: more than one argument is zero");
+         rederr("divergent integral: more than one argument is zero");
+      return n;
+end;
 
-      oldprec := precision(0);
-      n := ceiling(oldprec/3);
-      tol := 10.0^(-n);
+% uses Carlson's duplication method
+algebraic procedure RF(x,y,z);
+   begin scalar dx,dy,dz,xr,yr,zr,mu,lamda,e2, e3,tol,tmp,oldprec;
+      tmp := symint_check(x,y,z);
+      if tmp=1 then return  % one zero parameter
+      	 if x=0 then  RF0(y,z)
+	 else if y=0 then RF(x,z) else RF0(x,y);
+      
       % relative trunction error of result approx. 10^-(2*oldprec)
-      tmp := t;
-      while tmp do <<
-      	 mu := (x+y+z)/3;
+      oldprec := precision(0);
+      tol := 10.0^-ceiling(oldprec/3);
+      mu := (x+y+z)/3;
+      tmp := nil;
+      repeat <<
+	 xr := sqrt x; yr := sqrt y; zr := sqrt z;
+	 lamda := xr*(yr+zr)+yr*zr;
+	 x := (x+lamda)/4;
+	 y := (y+lamda)/4;
+	 z := (z+lamda)/4;
+	 mu := (x+y+z)/3;
       	 dx :=2-(mu+x)/mu; dy :=2-(mu+y)/mu; dz :=2-(mu+z)/mu;
       	 if max(abs(dx), abs(dy), abs(dz)) < tol then
-	    tmp := nil
-	 else  <<
-	    xr := sqrt x; yr := sqrt y; zr := sqrt z;
-	    lamda := xr*(yr+zr)+yr*zr;
-	    x := (x+lamda)/4;
-	    y := (y+lamda)/4;
-	    z := (z+lamda)/4;
-	 >>;
-      >>;
+	    tmp := t;
+      >> until tmp;
+      
       e2 := dx*dy-dz*dz;
       e3 := dx*dy*dz;
       tmp := (1 + e2*(e2/24-3*e3/44-1/10)+e3/14)/sqrt(mu);
@@ -383,35 +399,33 @@ algebraic procedure RF(x,y,z);
 
 algebraic procedure RD(x,y,z);
    begin scalar dx,dy,dz,xr,yr,zr,mu,lamda,sigma,e1,e2,e3,e4,
-	        tol,tmp,oldprec,pow;
-      if impart x=0 and x<0 then
-      	 lisp error(99, "divergent integral RD: 1st argument is negative")
-      else if impart y=0 and y<0 then
-      	 lisp error(99, "divergent integral RD: 2nd argument is negative")
-      else if impart(x+y)=0 and x+y<=0 then
-      	 lisp error(99, "divergent integral RD: sum of 1st two arguments <= 0")
-      else if impart z =0 and z<=0 then
-      	 lisp error(99, "divergent integral RD: 3rd argument <= 0");
+	        tol,tmp,pow, oldprec;
+      tmp := symint_check(x,y,z);
+      if tmp=1 then
+	 if z=0 then
+      	    rederr("divergent integral RD: third argument  is zero")
+         else if y=0 then return RD0(x,z) else return RD0(y,z);
 
+    % relative trunction error of result approx. 10^-(2*oldprec)
       oldprec := precision(0);
-      tmp := ceiling(oldprec/3);
-      tol := 10.0^(-tmp);
-      tmp := t; sigma := 0; pow := 1;
-      while tmp do <<
-	 mu := (x+y+3*z)/5;
+      tol := 10.0^-ceiling(oldprec/3);
+
+      sigma := 0; pow := 1;
+      tmp := nil;
+      repeat <<
+         xr := sqrt x; yr := sqrt y; zr := sqrt z;
+	 lamda := xr*(yr+zr)+yr*zr;
+	 sigma := sigma+pow/(zr*(z+lamda));
+	 x := (x+lamda)/4;
+	 y := (y+lamda)/4;
+	 z := (z+lamda)/4;
+	 pow := pow/4;
+	 mu := (x+y+3*z)/5;	 
 	 dx := (mu-x)/mu; dy := (mu-y)/mu; dz := (mu-z)/mu;
       	 if max(abs(dx), abs(dy), abs(dz)) < tol then
-	    tmp := nil
-	 else <<
-	    xr := sqrt x; yr := sqrt y; zr := sqrt z;
-	    lamda := xr*(yr+zr)+yr*zr;
-	    sigma := sigma+pow/(zr*(z+lamda));
-	    x := (x+lamda)/4;
-	    y := (y+lamda)/4;
-	    z := (z+lamda)/4;
-	    pow := pow/4;
-	 >>;
-      >>;
+	    tmp := t;
+      >> until tmp;
+
       e1 := dx*dy;
       tmp := dz*dz;
       e2 := e1-tmp;
@@ -423,76 +437,71 @@ algebraic procedure RD(x,y,z);
       return tmp;
    end;
 
+algebraic procedure RJ1(x,y,z,p);
+% Called when p is real and negative. Returns the principal value.
+begin scalar a,b, tmp, tmp1, tmp2;
+   if y = 0 then <<
+      tmp := x; x := 0; y := tmp;
+   >>;
+   a := 1/(y-p);
+   b := a*(z-y)*(y-x);
+   tmp := y+b;
+   tmp1 := x*z/y;
+   tmp2 :=p*tmp/y;
+   p := tmp;
+   tmp1 := RC(tmp1,tmp2);
+   tmp := RJ(x,y,z,p);
+   tmp2 := RF(x,y,z);
+   return a*(b*tmp + 3*(tmp1-tmp2));
+end;
+
 algebraic procedure RJ(x,y,z,p);
-   begin scalar oldprec,tol,dx,dy,dz,dp,xr,yr,zr,pow,tmp,rcx,
-	 oldp,a,b,tmp2,tmp3,sigma,alfa,beta,mu,lamda,n,
+   begin scalar tol,dx,dy,dz,dp,xr,yr,zr,tmp,tmp1,
+	 oldp, mu,lamda,delta,d,pow,r,s,
          ea,eb,ec,e1,e2;
-      n := 0;
       if p = 0 then
-      	 lisp error(99, "divergent integral RJ: 4th argument is zero");
-      if impart x=0  then
-         << tmp := sign x;
-            if tmp = -1 then
-      	       lisp error(99, "divergent integral RJ: negative 1st argument");
- 	    if tmp = 0 then n := n+1
-	 >>;
-      if impart y=0  then
-         << tmp := sign y;
-            if tmp = -1 then
-      lisp error(99, "divergent integral RJ: negative 2nd argument");
- 	    if tmp = 0 then n := n+1
-	 >>;
-      if impart z=0  then
-         << tmp := sign z;
-            if tmp = -1 then
-      	       lisp error(99, "divergent integral RJ: negative 3rd argument");
- 	    if tmp = 0 then n := n+1;
-	 >>;
-      if n>1 then
-      	 lisp error(99, "divergent integral RJ: two of 1st 3 args are zero");
+	 rederr ("divergent integral RJ: 4th argument is zero");
+      tmp := symint_check(x,y,z);
+      if impart p=0 and p<0 then
+	 return RJ1(x,y,z,p);
+      
+      oldp := precision(0);
+      tol := 10.0^-ceiling(oldp/3);
 
-      oldprec := precision(0);
-      n := ceiling(oldprec/3);
-      tol := 10.0^(-n);
+      pow :=1;
+      delta := (p-x)*(p-y)*(p-z);
 
-      oldp := p;
-      if p < 0 then <<
-	 if y = 0 then <<
-	    tmp := x; x := y; y := tmp;
-	 >>;
-	 a := 1/(y-p);
-	 b := a*(z-y)*(y-x);
-	 tmp := y+b;
-	 tmp1 := x*z/y;
-	 tmp2 :=p*tmp/y;
-	 p := tmp;
-	 rcx:= RC(tmp1,tmp2);
-      >>;
+      tmp1 := sqrt p;
+      xr := sqrt x; yr := sqrt y; zr := sqrt z;
+      d := (tmp1+xr)*(tmp1+yr)*(tmp1+zr);
+      s := d/2;
+      
+      tmp := nil;
+      repeat <<
+      	 pow :=pow/4;
+      	 lamda := xr*(yr+zr)+yr*zr;
+      	 x := (x+lamda)/4;
+      	 y := (y+lamda)/4;
+      	 z := (z+lamda)/4;
+      	 p := (p+lamda)/4;
+      	 r := s*(1+sqrt(1+pow*delta/s^2));
+      	 xr := sqrt x; yr := sqrt y; zr := sqrt z;
+      	 tmp1 := sqrt p;
+      	 d := (tmp1+xr)*(tmp1+yr)*(tmp1+zr);
 
-      tmp := t; pow := 1; sigma := 0;
-      while tmp do <<
 	 mu := (x+y+z+2*p)/5;
 	 dx := (mu-x)/mu;
 	 dy := (mu-y)/mu;
 	 dz := (mu-z)/mu;
 	 dp := (mu-p)/mu;
 	 if max(abs(dx), abs(dy), abs(dz), abs(dp)) < tol then
-	    tmp := nil
+	    tmp := t
 	 else <<
 	    xr :=sqrt x; yr :=sqrt y; zr := sqrt z;
-	    lamda := xr*(yr+zr)+yr*zr;
-	    alfa := p*(xr+yr+zr) + xr*yr*zr;
-	    alfa := alfa*alfa;
-	    beta := p*(p+lamda)^2;
-	    tmp2 := RC(alfa,beta);
-	    sigma := sigma+pow*tmp2;
-	    pow := pow/4;
-	    x := (x+lamda)/4;
-	    y := (y+lamda)/4;
-	    z := (z+lamda)/4;
-	    p := (p+lamda)/4;
-	 >>;
-      >>;
+      	    s := (d*r-pow^2*delta)/(2*(d+pow*r));
+	 >>
+      >> until tmp;
+
       ea := dx*(dy+dz) + dy*dz;
       eb := dx*dy*dz;
       ec := dp*dp;
@@ -501,13 +510,64 @@ algebraic procedure RJ(x,y,z,p);
       tmp := 1 + e2*(-3/14 + 9/88*e2 - 9/52*e3);
       tmp2 := eb*(1/6 + 3*dp*(-1/11 + dp/26));
       tmp3 := dp*ea*(1/3 - 3*dp/22) - 1/3*dp*ec;
-      tmp := 3*sigma + pow*(tmp+tmp2+tmp3)/(mu*sqrt mu);
-      if oldp < 0 then <<
-      	 tmp2 := RF(x,y,z);
-         tmp := a*(b*tmp + 3*(rcx-tmp2));
-      >>;
-      return tmp;
+      tmp := pow*(tmp+tmp2+tmp3)/(mu*sqrt mu);
+      return tmp+3*RC(1, 1+pow*delta/s^2)/s;
    end;
+
+algebraic procedure RG(x,y,z);
+begin scalar n, tmp;
+    tmp := symint_check(x,y,z);
+    if tmp=1 then
+       if  z=0 then
+       	  return RG0(x,y)
+       else if x=0 then
+	  return RG0(y,z)
+       else return RG0(x,z);
+    % no zero parameters
+       return z*RF(x,y,z)/2-(x-z)*(y-z)*RD(x,y,z)/6+sqrt(x*y/z)/2;
+end;
+
+algebraic procedure RF0(x,y);
+begin scalar xr,yr,tol,oldp,tmp;
+   oldp := precision(0);
+   tol := 10.0^-ceiling(oldp/2);
+   tmp := t;
+   xr := sqrt x; yr := sqrt y;
+   while tmp do <<
+      x := (xr+yr)/2;
+      y := sqrt(xr*yr);
+      if abs(x-y) < 2.7*tol*abs x then
+	 tmp := nil
+      else << xr := x; yr := y>>;
+   >>;
+   return pi/(x+y);
+end;
+
+algebraic procedure RG0(x,y);
+begin scalar xr,yr,tol,oldp,tmp,s,d;
+   oldp := precision(0);
+   tol := 10.0^-ceiling(oldp/2);
+   tmp := t;
+   xr := sqrt x; yr := sqrt y;
+   s := (xr+yr)^2/4;
+   d := 1/2;
+   while tmp do <<
+      x := (xr+yr)/2;
+      y := sqrt(xr*yr);
+      s :=s -(x-y)^2*d;
+      d :=d*2;
+      if abs(x-y) < 2.7*tol*abs x then
+	 tmp := nil
+      else << xr := x; yr := y>>;
+   >>;
+   return s/2*pi/(x+y);
+end;
+
+algebraic procedure RD0(x,y);
+   if x=0 or y=0 then
+      rederr("RD: divergent integral (2 zero arguments)")
+   else if x=y then 3pi*y^(-3/2)/4
+   else 3*(2*RG0(x,y)-y*RF0(x,y))/(y*(x-y));  
 
 % The next 4 functions may well get replaced by alternative versions
 % in efnumeric.red using the duplication method for evaluation rather
@@ -658,22 +718,22 @@ algebraic procedure RJ(x,y,z,p);
 %% % It uses inverse hyperbolic tangent with a possibly imaginary parameter.
 
 algebraic procedure RC1(x,y);
-begin scalar oldprec, res, z;
-   if y = 0 or (impart x = 0 and x<0) then
-      rederr("1st parameter of RC must be non-negative and 2nd non-zero");
-   oldprec := precision(0);
-   precision max(oldprec+4,16);
-   if x=y then res := 1/sqrt x
-   else if x=0 then res :=pi/(2*sqrt y)
-   else <<
-      z := sqrt(x-y);
-      if impart y=0 and y<0 then
-	 res:=  atanh(sqrt x/z)/z % Cauchy principal value
-      else res := atanh(z/sqrt x)/z;
-   >>;
-   precision oldprec;
-   return res;
-end;
+   begin scalar oldprec, res, z;
+      if y = 0 or (impart x = 0 and x<0) then
+      	 rederr("1st parameter of RC must be non-negative and 2nd non-zero");
+      oldprec := precision(0);
+      precision max(oldprec+4,16);
+      if x=y then res := 1/sqrt x
+      else if x=0 then res :=pi/(2*sqrt y)
+      else <<
+      	 z := sqrt(x-y);
+      	 if impart y=0 and y<0 then
+	    res:=  atanh(sqrt x/z)/z % Cauchy principal value
+      	 else res := atanh(z/sqrt x)/z;
+      >>;
+      precision oldprec;
+      return res;
+   end;
 
 %% % uses quadratic transformations and RC1 above
 algebraic procedure RF1(x,y,z);
@@ -754,11 +814,11 @@ algebraic procedure check_factors(fac1, fac2, fac3, fac4, fac5);
 >>;
 
 algebraic procedure ellint_1st(lowlim, uplim, fac1, fac2, fac3, fac4);
-   begin scalar x1,x2,x3,x4, y1,y2,y3,y4, u12, u13, u23;
+   begin scalar x1,x2,x3,x4, y1,y2,y3,y4, u12, u13, u23, L;
       check_factors(fac1, fac2, fac3, fac4, 0);
       if uplim=infinity and lowlim=-infinity then
-      	 ellint_1st(-infinity, 0, fac1, fac2, fac3, fac4) +
-	 ellint_1st(0, infinity, fac1, fac2, fac3, fac4);
+      	 return ellint_1st(-infinity, 0, fac1, fac2, fac3, fac4) +
+	 	ellint_1st(0, infinity, fac1, fac2, fac3, fac4);
 
       if uplim = infinity then <<
 	 x1 := sqrt(second(fac1));
@@ -774,10 +834,10 @@ algebraic procedure ellint_1st(lowlim, uplim, fac1, fac2, fac3, fac4);
       >>;
 
       if lowlim = -infinity then <<
-	 y1 := sqrt(-second(fac1));
-	 y2 := sqrt(-second(fac2));
-	 y3 := sqrt(-second(fac3));
-	 y4 := sqrt(-second(fac4));
+	 y1 := sqrt(second(fac1));
+	 y2 := sqrt(second(fac2));
+	 y3 := sqrt(second(fac3));
+	 y4 := sqrt(second(fac4));
       >> else <<
 	 y1 := sqrt(first(fac1)+second(fac1)*lowlim);
 	 y2 := sqrt(first(fac2)+second(fac2)*lowlim);
@@ -794,16 +854,17 @@ algebraic procedure ellint_1st(lowlim, uplim, fac1, fac2, fac3, fac4);
 	 u13 := u13/(uplim-lowlim);
 	 u23 := u23/(uplim-lowlim);
       >>;
-      return 2*RF(u12^2, u13^2, u23^2);
+      L := u12*u13+u12*u23+u13*u23;
+      return 4*RF(u12^2+L, u13^2+L, u23^2+L);	
    end;
 
-
 algebraic procedure ellint_2nd(lowlim, uplim, fac1, fac2, fac3, fac4);
-   begin scalar x1,x2,x3,x4, y1,y2,y3,y4, u12, u13, u23, d12, d13;
+   begin scalar x1,x2,x3,x4, y1,y2,y3,y4, u12, u13, u23, d2, d3, L,
+                s1, s2, s3, M;
       check_factors(fac1, fac2, fac3, fac4, 0);
-      if uplim=infinity and lowlim=-infinity then return
-   	 ellint_2nd(-infinity, 0, fac1, fac2, fac3, fac4) +
-      	 ellint_2nd(0, infinity, fac1, fac2, fac3, fac4);
+      if uplim=infinity and lowlim=-infinity then
+   	 return ellint_2nd(-infinity, 0, fac1, fac2, fac3, fac4) +
+      	         ellint_2nd(0, infinity, fac1, fac2, fac3, fac4);
 
       if uplim = infinity then <<
 	 x1 := sqrt(second(fac1));
@@ -819,61 +880,72 @@ algebraic procedure ellint_2nd(lowlim, uplim, fac1, fac2, fac3, fac4);
       >>;
 
       if lowlim = -infinity then <<
-	 y1 := sqrt(-second(fac1));
-	 y2 := sqrt(-second(fac2));
-	 y3 := sqrt(-second(fac3));
-	 y4 := sqrt(-second(fac4));
+	 y1 := sqrt(second(fac1));
+	 y2 := sqrt(second(fac2));
+	 y3 := sqrt(second(fac3));
+	 y4 := sqrt(second(fac4));
       >> else <<
 	 y1 := sqrt(first(fac1)+second(fac1)*lowlim);
 	 y2 := sqrt(first(fac2)+second(fac2)*lowlim);
 	 y3 := sqrt(first(fac3)+second(fac3)*lowlim);
 	 y4 := sqrt(first(fac4)+second(fac4)*lowlim);
       >>;
+      if x4=0 or y4=0 then
+	 rederr("RD: integral diverges");
 
       u23 := x2*x3*y1*y4 + y2*y3*x1*x4;
-      if u23=0 then   % awkward case. Note confusing use of d12, d13, u12
+      if u23=0 then   % awkward case  x2=0 and y3=0 or vice-versa. 
 	 if second(fac2) neq 0 then <<
-	    d12 := first(fac1)*second(fac2) - first(fac2)*second(fac1);
-	    d13 := first(fac2)*second(fac4) - first(fac4)*second(fac2); % d24
-	    u12 := ellint_2nd(lowlim,uplim,fac2,fac1,fac3,fac4);
-	    return (second(fac1)+second(fac4)*d12/d13)*u12/second(fac2) -
-	       d12/d13*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
-	 >> else <<
-	    d12 := first(fac1)*second(fac3) - first(fac3)*second(fac1); % d13
-	    d13 := first(fac3)*second(fac4) - first(fac4)*second(fac3); % d34
-	    u12 := ellint_2nd(lowlim,uplim,fac3,fac1,fac3,fac4);
-	    return (second(fac1)+second(fac4)*d12/d13)*u12/second(fac3) -
-	       d12/d13*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
+	    d2 := first(fac1)*second(fac2) - first(fac2)*second(fac1); % d12
+	    d3 := first(fac2)*second(fac4) - first(fac4)*second(fac2); % d24
+	    L := ellint_2nd(lowlim,uplim,fac2,fac1,fac3,fac4);
+	    return (second(fac1)+second(fac4)*d2/d3)*L/second(fac2) -
+	       d2/d3*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
+	 >> else << % never called? Factors are not independent
+	            % integral is actually elementary and finite
+	    d2 := first(fac1)*second(fac3) - first(fac3)*second(fac1); % d13
+	    d3 := first(fac3)*second(fac4) - first(fac4)*second(fac3); % d34
+	    L := ellint_2nd(lowlim,uplim,fac3,fac1,fac3,fac4);
+	    return (second(fac1)+second(fac4)*d12/d13)*L/second(fac3) -
+	       d2/d3*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
 	 >>;
 
       % generic case
       u12 := x1*x2*y3*y4 + y1*y2*x3*x4;
       u13 := x1*x3*y2*y4 + y1*y3*x2*x4;
-
+      s1 := X1*Y4+X4*Y1;
+      s2 := X2*Y4+X4*Y2;
+      s3 := X3*Y4+X4*Y3; 
       if uplim neq infinity and lowlim neq -infinity then <<
 	 u12 := u12/(uplim-lowlim);
 	 u13 := u13/(uplim-lowlim);
 	 u23 := u23/(uplim-lowlim);
-      >>;
+	 M := 2*(uplim-lowlim)*s1/(X4*Y4*s2*s3);
+      >>
+      else
+      	 M := 2*s1/(X4*Y4*s2*s3);
+      L := u12*u13+u12*u23+u13*u23;
 
-      d12 := first(fac1)*second(fac2) - first(fac2)*second(fac1);
-      if u23 neq 0 and u12^2 neq u13^2 then
-	 d13 := first(fac1)*second(fac3) - first(fac3)*second(fac1)
-      else <<  % swap  u232 & u13
-	 y2 := u13; u13 := u23; u23 := y2;
-	 d13 := first(fac2)*second(fac3) - first(fac3)*second(fac2);
+      d2 := first(fac1)*second(fac2) - first(fac2)*second(fac1);   % d12
+      if u12^2 neq u13^2 then
+	 d3 := first(fac1)*second(fac3) - first(fac3)*second(fac1)   % d13
+      else <<  % swap  u23 & u13
+	 y2 := u13; u13 := u23; u23 := y2;    % real y2 not needed
+	 d3 := first(fac2)*second(fac3) - first(fac3)*second(fac2);   % d23
       >>;
-      return 2*d12*d13*RD(u12^2, u13^2, u23^2)/3 +2*x1*y1/(x4*y4*u23);
-   end;
+      return 4*d2*d3*RD(u12^2+L, u13^2+L, u23^2+L)/3 +M;
+   end;	
+
 
 
 algebraic procedure ellint_3rd(lowlim, uplim, fac1, fac2, fac3, fac4, fac5);
-   begin scalar x1,x2,x3,x4,y1,y2,y3,y4,
-	 u12,u13,u23,  d12,d13,d14,d15,d25, u15,s15,q15;
-      check_factors(fac1, fac2, fac3, fac4, 0);
+   begin scalar x1,x2,x3,x4,x5,y1,y2,y3,y4,y5,
+	 u12,u13,u23,u15,L, d12,d13,d14,d15,d25,d35,d45,
+	 b15,c15,t15,p15;
+      check_factors(fac1, fac2, fac3, fac4, fac5);
       if uplim=infinity and lowlim=-infinity then
-   	 ellint_3rd(-infinity, 0, fac1, fac2, fac3, fac4, fac5) +
-      	 ellint_3rd(0, infinity, fac1, fac2, fac3, fac4, fac5);
+   	 return ellint_3rd(-infinity, 0, fac1, fac2, fac3, fac4, fac5) +
+      	        ellint_3rd(0, infinity, fac1, fac2, fac3, fac4, fac5);
 
       if uplim = infinity then <<
       	 x1 := sqrt(second(fac1));
@@ -891,10 +963,10 @@ algebraic procedure ellint_3rd(lowlim, uplim, fac1, fac2, fac3, fac4, fac5);
       >>;
 
       if lowlim = -infinity then <<
-      	 y1 := sqrt(-second(fac1));
-      	 y2 := sqrt(-second(fac2));
-      	 y3 := sqrt(-second(fac3));
-      	 y4 := sqrt(-second(fac4));
+      	 y1 := sqrt(second(fac1));
+      	 y2 := sqrt(second(fac2));
+      	 y3 := sqrt(second(fac3));
+      	 y4 := sqrt(second(fac4));
       	 y5 := sqrt(-second(fac5));
       >> else <<
       	 y1 := sqrt(first(fac1)+second(fac1)*lowlim);
@@ -907,22 +979,22 @@ algebraic procedure ellint_3rd(lowlim, uplim, fac1, fac2, fac3, fac4, fac5);
 	 if x2 neq 0 and y2 neq 0 and second(fac2) neq 0 then <<
 	    d12 := first(fac1)*second(fac2) - first(fac2)*second(fac1);
 	    d25 := first(fac2)*second(fac5) - first(fac5)*second(fac2);
-	    u12 := ellint_3rd(lowlim,uplim,fac2,fac1,fac3,fac4,fac5);
-	    return (second(fac1)+second(fac5)*d12/d25)*u12/second(fac2) -
+	    L := ellint_3rd(lowlim,uplim,fac2,fac1,fac3,fac4,fac5);
+	    return (second(fac1)+second(fac5)*d12/d25)*L/second(fac2) -
 	       d12/d25*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
 	 >>
 	 else if x3 neq 0 and y3 neq 0 and second(fac3) neq 0 then
      	 <<
 	    d13 := first(fac1)*second(fac3) - first(fac3)*second(fac1);
 	    d35 := first(fac3)*second(fac4) - first(fac4)*second(fac3);
-	    u12 := ellint_3rd(lowlim,uplim,fac3,fac1,fac2,fac4,fac5);
-	    return (second(fac1)+second(fac5)*d13/d35)*u12/second(fac3) -
+	    L := ellint_3rd(lowlim,uplim,fac3,fac1,fac2,fac4,fac5);
+	    return (second(fac1)+second(fac5)*d13/d35)*L/second(fac3) -
 	       d13/d35*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
 	 >> else <<
 	    d14 := first(fac1)*second(fac4) - first(fac4)*second(fac1);
 	    d45 := first(fac4)*second(fac5) - first(fac5)*second(fac4);
-	    u12 := ellint_3rd(lowlim,uplim,fac4,fac1,fac2,fac3,fac5);
-	    return (second(fac1)+second(fac5)*d14/d45)*u12/second(fac4) -
+	    L := ellint_3rd(lowlim,uplim,fac4,fac1,fac2,fac3,fac5);
+	    return (second(fac1)+second(fac5)*d14/d45)*L/second(fac4) -
 	       d14/d45*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
 	 >>;
 
@@ -930,14 +1002,13 @@ algebraic procedure ellint_3rd(lowlim, uplim, fac1, fac2, fac3, fac4, fac5);
       u12 := x1*x2*y3*y4 + y1*y2*x3*x4;
       u13 := x1*x3*y2*y4 + y1*y3*x2*x4;
       u23 := x2*x3*y1*y4 + y2*y3*x1*x4;
-      s15 := (x2*x3*x4*y5^2/x1  + y2*y3*y4*x5^2/y1);
-
+     
       if uplim neq infinity and lowlim neq -infinity then <<
       	 u12 := u12/(uplim-lowlim);
       	 u13 := u13/(uplim-lowlim);
       	 u23 := u23/(uplim-lowlim);
-      	 s15 := s15/(uplim-lowlim);
       >>;
+      L := u12*u13+u12*u23+u13*u23;
 
       d12 := first(fac1)*second(fac2) - first(fac2)*second(fac1);
       d13 := first(fac1)*second(fac3) - first(fac3)*second(fac1);
@@ -947,9 +1018,22 @@ algebraic procedure ellint_3rd(lowlim, uplim, fac1, fac2, fac3, fac4, fac5);
       d35 := first(fac3)*second(fac5) - first(fac5)*second(fac3);
       d45 := first(fac4)*second(fac5) - first(fac5)*second(fac4);
 
-      u15 := u12^2 - d13*d14*d25/d15;  % actually u15^2
-      q15 := (x5*y5)^2/(x1*y1)^2*u15; % actually q15^2
-      return 2*d12*d13*d14*RJ(u12^2, u13^2, u23^2, u15)/(3*d15) + 2*RC(s15^2,q15);
+      fac5 := u12^2-d13*d14*d25/d15;
+      u15 := sqrt(fac5);  
+      
+      b15 := d15*(u15+u12)*(u15+u13)*(u15+u23)/(d12*d13*d14);
+       if uplim neq infinity and lowlim neq -infinity then 
+      	  c15 := (x2*x3*x4*y5^2/x1+y2*y3*y4*x5^2/y1)/(uplim-lowlim)+
+	  x5*y5*u15/(x1*y1)
+       else
+	  c15 := (x2*x3*x4*y5^2/x1+y2*y3*y4*x5^2/y1) + x5*y5*u15/(x1*y1);
+      t15 := d25*d35*d45/d15;
+      p15 :=(b15*c15+t15)/(b15+c15);
+      if p15 neq 0 then
+      	 return 4*d12*d13*d14*RJ(u12^2+L, u13^2+L, u23^2+L, fac5+L)/(3*d15)
+      	     + 4*RC(1, 1-t15/p15^2)/p15
+      else return 4*d12*d13*d14*RJ(u12^2+L, u13^2+L, u23^2+L, fac5+L)/(3*d15)
+             + 2pi/sqrt(-t15);
    end;
 
 endmodule;
