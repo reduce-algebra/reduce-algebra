@@ -582,6 +582,7 @@ line and involve the function $s(t)=\sqrt{t+x}\sqrt{t+y}\sqrt{t+z}$ where
 $x,y,z\in \mathbb{C} \setminus(-\infty, 0]$ but, except where otherwise stated, at most
 one of $x,y,z$ may be zero.
 \ttindextype[ELLIPFN]{RF}{operator}
+\ttindextype[ELLIPFN]{RG}{operator}
 \ttindextype[ELLIPFN]{RD}{operator}
 \ttindextype[ELLIPFN]{RJ}{operator}
 \ttindextype[ELLIPFN]{RC}{operator}
@@ -606,8 +607,7 @@ evaluated efficiently without needing to distinguish between the trigonometric
 and hyperbolic cases. For certain special values of $p$ the integral
 $\mathrm{RJ}$ of the third kind degenerates into integrals of the first and
 second kinds. For numeric evaluations it turns out that the use of $\mathrm{RD}$
-is more convenient than that of $\mathrm{RG}$ (which is not currently
-implemented in \REDUCE). For more information see
+is more convenient than that of $\mathrm{RG}$. For more information see
 \href{https://dlmf.nist.gov/19#PT3}{\S19.15-19.29} of the DLMF:NIST.
 
 The Legendre elliptic integrals may all be expressed in terms of the symmetric
@@ -634,12 +634,19 @@ elliptic integrals.
 
 Currently the Carlson's duplication method is used to evaluate the
 symmetric elliptic integrals of the first, second and third kinds
-$\mathrm{RF}$, $\mathrm{RD}$ and $\mathrm{RJ}$ (and also the related
-elementary integral $\mathrm{RC}$).  For more details see the DLMF website:
-\href{https://dlmf.nist.gov/19.36#i}{Duplication Method}.
+$\mathrm{RF}$, $\mathrm{RD}$, $\mathrm{RG}$ and $\mathrm{RJ}$ (and also the
+related elementary integral $\mathrm{RC}$).  For more details see the DLMF
+website: \href{https://dlmf.nist.gov/19.36#i}{Duplication Method}.
 In particular the \REDUCE code  is essentially a translation from
 Fortran of the code of Carlson \& Notis \cite{CarlsonNotis:81} generalised
-for complex arguments and structured to avoid GO TO.
+for complex arguments and structured to avoid GO TO. The code for $\mathrm{RJ}$
+has recently been improved to remove the need to evaluate $\mathrm{RC}$ at each
+stage of the interation as suggested by Carlson \& FitzSimmons
+\cite{CarlsonFitzSimmons:00}. The code for all four elliptic integrals has also been
+restructured so that a more efficient algorithm is used for complete integrals
+(i.e.\ when one parameter is zero) and also so that certain boundary cases such as
+when the sum of all three arguments of $\mathrm{RF}$ is zero no longer result in
+division by zero errors.
 
 Alternatively the symmetric integral $\mathrm{RF}$ may be evaluated
 using a sequence of quadratic transformations
@@ -652,12 +659,55 @@ may be found on the DLMF website:
 
 \subsubsection{Basic Elliptic Integrals}
 \index{Basic Elliptic Integrals}
+First consider elliptic integrals involving the square root of a
+quartic polynomial in which the range of integration is the interval
+$[0,\infty)$ of the real line. Let
+\[s(t)=\prod_{j=1}^4\sqrt{t+z_j}.\]
+There are three basic kinds: first, second and third. Carlson \cite{Carlson:88},
+\cite{Carlson:99} \& \cite{CarlsonFitzsimmons} showed how each of these can be
+expressed as a fundamental symmetric elliptic integral of the corresponding
+kind. Let $z_1, z_2, z_3, z_4$ lie in the complex plane cut along the negative
+real axis and take their square roots in the right-hand half-plane.
+Let $\{i,j,k,l\}$ be any permutation  of $\{1,2,3,4\}$ and define
+\begin{eqnarray*}
+  z_{ij}&=&z_i-z_j\\
+  V_{ij}&=&V_{ji}=V_{kl}=V_{lk}= \sqrt{z_i}\sqrt{z_j}+\sqrt{z_k}\sqrt{z_l}\\
+  \lambda&=&V_{12}V_{13}+V_{12}V_{23}+V_{13}V_{23}\qquad\mbox{Note:}\\
+  V_{ij}^2 +\lambda &=& (V_{ij}+V_{ik})(V_{ij}+V_{il}).
+\end{eqnarray*}
+Clearly $V_{\alpha\beta}=V_{\beta\alpha}=V_{\gamma\delta}=V_{\delta\gamma}$ and thus there
+are only 3 distinct values of the $V_{\alpha\beta}$'s. Then assuming
+$V_{12}+V_{13}$, $V_{12}+V_{23}$ \& $V_{13}+V_{23}$ have positive real
+parts and that the integrals converge then
+\begin{eqnarray*}
+\int_0^\infty \frac{\mathrm{d}t}{s(t)} &=& 4\mathrm{RF}(V_{12}^2+\lambda,
+V_{13}^2+\lambda, V_{23}^2+\lambda)\\
+\int_0^\infty \frac{(t+z_i)\mathrm{d}t}{(t+z_l)s(t)} &=&
+\frac{4}{3}z_{ij}z_{ik}\mathrm{RD}(V_{ij}^2+\lambda, V_{ik}^2+\lambda, V_{il}^2+\lambda) \\
+&+&\frac{2(\sqrt{z_i}+\sqrt{z_l})}{\sqrt{z_i}(\sqrt{z_j}+\sqrt{z_l})(\sqrt{z_k}+\sqrt{z_l})}\qquad
+\mbox{if }z_l\neq 0
+\end{eqnarray*}
+
+Further let $z_\nu$ be non-zero and not equal to $z_i$ and define
+\[z_{i\nu}=z_i-z_\nu,\qquad V_{i\nu}^2 = V_{ij}^2-\frac{z_{ik}z_{il}z_{j\nu}}{z_{i\nu}} \]
+Assume $V_{i\nu}^2$ is not real and negative  and take $V_{i\nu}$ to have positive
+real part, then
+\begin{eqnarray*}
+\int_0^\infty \frac{(t+z_i)\mathrm{d}t}{(t+z_\nu)s(t)} &=&
+\frac{4z_{ij}z_{ik}z_{il}}{3z_{i\nu}}\mathrm{RJ}(V_{ij}^2+\lambda, V_{ik}^2+\lambda, V_{il}^2+\lambda) \\
+&+&\frac{4}{\omega_{i\nu}}RC(1, 1-\theta_{i\nu}/\omega_{i\nu}^2) \qquad
+\mbox{if }\omega_{i\nu} \neq 0.
+\end{eqnarray*}
+If $\omega_{i\nu}=0$, the last term in the above equation reduces to
+$2\pi/\sqrt{-\theta_{i\nu}}$. 
+
+
 Elliptic integrals involving the square root $s(t)$ of a cubic or quartic
 polynomial in which the range of integration is an arbitrary interval $[y,x]$
 of the real line are considered. Again there are three basic kinds: first,
 second and third. Carlson \cite{Carlson:88} \& \cite{Carlson:99} showed how each
 of these can be expressed as a fundamental symmetric elliptic integral of the
-corresponding kind over the range $[0,\infty)$. Let
+corresponding kind over the range $[0,\infty)$.Let
 \begin{eqnarray*}
 X_\alpha  = & \sqrt{a_\alpha+b_\alpha x} \quad & 1 \leq \alpha \leq 5\\
 Y_\beta  = & \sqrt{a_\beta+b_\beta y} \quad & 1 \leq \beta \leq 5\\
@@ -666,104 +716,77 @@ s(t)  = &  \prod^4_{\alpha=1} \sqrt{a_\alpha+b_\alpha t}
 \end{eqnarray*}
 and where the four line segments with end points $a_\alpha+b_\alpha y$ and
 $a_\alpha+b_\alpha x$ for $1\leq\alpha\leq 4$ lie in $ \mathbb{C} \setminus (-\infty, 0)$.
-Note that if $s(t)$ is a cubic then one simply chooses supplies unity
+Note that if $s(t)$ is a cubic then one simply supplies unity
 i.e. $a_\alpha=1, b_\alpha=0$ as a fourth factor of $s(t)$.
-
-Then integrals of the first and second kinds take the form:
-\ttindextype[ELLIPFN]{ellint\_1st}{operator}
-\ttindextype[ELLIPFN]{ellint\_2nd}{operator}
+For any permutation $\{\alpha,\beta,\gamma,\delta\}$ of $\{1,2,3,4\}$, let
 \begin{eqnarray*}
-\int_y^x \frac{\mathrm{d}t}{s(t)} &=& 2\mathrm{RF}(U_{12}^2, U_{13}^2, U_{23}^2)\\
-\int_y^x\frac{(a_1+b_1t)\mathrm{d}t}{(a_4+b_4t)s(t)} &=& \frac{2}{3}d_{12}d_{14}
-\mathrm{RD}(U_{12}^2, U_{13}^2, U_{23}^2) +\frac{2X_1Y_1}{X_4Y_4U_{23}}\qquad
-\mbox{if }U_{23}\neq 0
-\end{eqnarray*}
-where in the second equation we have chosen (wlog) the distinguished factors to have
-indices 1 \& 4.
-
-For any permutation $\alpha,\beta,\gamma,\delta$ of 1,2,3,4, let
-\begin{eqnarray*}
-U_{\alpha\beta} & = &(X_\alpha X_\beta Y_\gamma Y_\delta + X_\gamma X_\delta Y_\alpha Y_\beta)
-  /(x-y) \qquad \mbox{for } x,y \mbox{ finite}\\
+U_{\alpha\beta} &=& (X_\alpha X_\beta Y_\gamma Y_\delta + X_\gamma X_\delta Y_\alpha Y_\beta)
+  /(x-y) \qquad \mbox{for } x,y \mbox{ finite},\\
   & = & \sqrt{b_\alpha}\sqrt{b_\beta}Y_\gamma Y_\delta + Y_\alpha Y_\beta
-  \sqrt{b_\gamma}\sqrt{b_\delta} \qquad \qquad \mbox{for } x = \infty\\
+  \sqrt{b_\gamma}\sqrt{b_\delta} \qquad \qquad \mbox{for } x = \infty,\\
   & = & X_\alpha X_\beta \sqrt{-b_\gamma}\sqrt{-b_\delta}+X_\gamma X_\delta
-      \sqrt{-b_\alpha}\sqrt{-b_\beta}X_\gamma \qquad \mbox{for } y = -\infty
+  \sqrt{-b_\alpha}\sqrt{-b_\beta}X_\gamma \qquad \mbox{for } y = -\infty.\\
+  \sigma_{ij} &=& (X_iY_j+Y_iX_j)/(x-y)\qquad \mbox{for } x,y \mbox{ finite},\\
+  & = & X_iY_j+Y_iX_j \qquad \mbox{for }x =\infty \mbox{ or } y=-\infty.\\
+  \Lambda &=& U_{12}U_{13}+U_{12}U_{23}+U_{13}U_{23}.\quad \mbox{Note:} \\
+  U_{ij}^2 +\Lambda &=& (U_{ij}+U_{ik})(U_{ij}+U_{il}).
 \end{eqnarray*}
-Clearly $U_{\alpha\beta}=U_{\beta\alpha}=U_{\gamma\delta}=U_{\delta\gamma}$ and at most
-one of $U_{12}, U_{13}, U_{23}$ is zero since
-$U_{\alpha\beta}^2 - U_{\alpha\gamma}^2 = d_{\alpha\delta}d_{\beta\gamma} \neq 0$, thus
-at most one of the parameters of $\mathrm{RF}$ and $\mathrm{RD}$ is zero.
-If $X_4$ or $Y_4$ is zero,that is if $a_4+b_4t$ vanishes at one end of the range
-of integration, the integral of the second kind diverges.
-
-In the `awkward' case when $U_{23}=0$ or $U_{12}^2+U_{13}^2=0$, the above method breaks
-down. However it is still possible to calculate the required integral; choose
-$\beta =2$ or $\beta=3$ so that $b_\beta \neq 0$ and note that
+Clearly $U_{\alpha\beta}=U_{\beta\alpha}=U_{\gamma\delta}=U_{\delta\gamma}$ and thus there
+are only 3 distinct values of the $U_{\alpha\beta}$'s. Then
 \begin{eqnarray*}
-b_\beta\int \frac{(a_1+b_1t)\mathrm{d}t} {(a_4+b_4t)s(t)}
--b_1\int \frac{(a_\beta+b_\beta t)\mathrm{d}t}{(a_4+b_4t)s(t)}
-&=& d_{1\beta}\int \frac{\mathrm{d}t}{(a_4+b_4t)s(t)} \\
-b_4\int \frac{(a_\beta+b_\beta t)\mathrm{d}t}{(a_4+b_4t)s(t)}
--b_\beta\int\frac{(a_4+b_4 t)\mathrm{d}t}{(a_4+b_4t)s(t)}
-&=& d_{\beta 4}\int \frac{\mathrm{d}t}{(a_4+b_4t)s(t)}.
+  \int_y^x \frac{\mathrm{d}t}{s(t)} &=& 4\mathrm{RF}(U_{12}^2+\Lambda,
+  U_{13}^2+\Lambda, U_{23}^2+\Lambda)\\
+\int_y^x\frac{(a_i+b_it)\mathrm{d}t}{(a_l+b_lt)s(t)} &=& \frac{4}{3}d_{ij}d_{ik}
+\mathrm{RD}(U_{12}^2+\Lambda, U_{13}^2+\Lambda, U_{23}^2+\Lambda) +
+\frac{2\sigma_{il}}{X_lY_l\sigma_{jl}\sigma_{ik}}.
 \end{eqnarray*}
-The second term on the lhs of the second equation reduces to
-$b_\beta\int 1/s(t)\mathrm{d}t$ and so is an integral of the first kind.
-Thus the required integral can be expressed in terms of an integral of the
-second kind and one of the first kind.
+If $X_l$ or $Y_l$ is zero,that is if $a_l+b_lt$ vanishes at one end of the range
+of integration, the integral of the second kind diverges. The last term in the
+formula for the integral of the second kind is not valid if either $\sigma_{jl}$
+or $\sigma_{ik}$ vanishes; in this case $a_j+b_jt$ and $a_l+b_lt$ or $a_i+b_it$
+and $a_k+b_kt$ respectively linearly dependent.  In these cases the integrals
+are elementary; (they diverge when one of the limits is infinite.
 
-Integrals of the third kind take the form
-\ttindextype[ELLIPFN]{ellint\_3rd}{operator}
-\[\int_y^x\frac{(a_1+b_1t)\mathrm{d}t}{(a_5+b_5t)s(t)} = \frac{2d_{12}d_{13}
-d_{14}}{3d_{15}}\mathrm{RJ}(U_{12}^2, U_{13}^2, U_{23}^2,U_{15}^2) +
-\mathrm{RC}(S_{15}^2,Q_{15}^2)\]
-where
+Further, if $a_\nu+b_\nu t$ is independent of any of $a_i+b_i t$, define
+ $d_{i\nu}=a_ib_\nu-a_\nu b_i$ and $U_{i\nu}^2=U_{ij}^2+d_{ik}d_{il}d_{j\nu}/d_{i\nu}$ 
+then
 \begin{eqnarray*}
-S_{15}  &=& \left(\frac{X_2X_3X_4}{X_1}Y_5^2+\frac{Y_2Y_3Y_4}{Y_1}X_5^2\right)/(x-y) \qquad
-\mbox{for }x,y\mbox{ finite}\\
-&=& \frac{X_2X_3X_4}{X_1}Y_5^2+\frac{Y_2Y_3Y_4}{Y_1}X_5^2 \quad \qquad \mbox{for }
-x = \infty \mbox{ or } y = -\infty \\
-U_{15}^2 &=& U_{1\beta}^2-\frac{d_{1\gamma}d_{1\delta}d_{\beta 5}}{d_{15}}
-= U_{\beta\gamma}^2-\frac{d_{1\beta}d_{1\gamma}d_{\delta 5}}{d_{15}} \neq 0\\
-Q_{15}^2 &=& \frac{(X_5Y_5)^2}{(X_1Y_1)^2}U_{15}^2\qquad\mbox{ where }
-S_{15}^2-Q_{15}^2 = \frac{d_{25}d_{35}d_{45}}{d_{15}} \neq 0
+\int_y^x\frac{(a_i+b_it)\mathrm{d}t}{(a_\nu+b_\nu)s(t)} &=& \frac{4d_{ij}d_{ik}
+d_{il}}{3d_{i\nu}}\mathrm{RJ}(U_{12}^2 +\Lambda, U_{13}^2 +\Lambda, U_{23}^2+\Lambda,U_{i\nu}^2) +\Lambda)\\
+&+&\frac{4}{P_{i\nu}}\mathrm{RC}(1, 1-T_{i\nu}/P_{i\nu}^2),\\
+\mbox{where }\qquad\qquad
+T_{i\nu}&=& d_{j\nu}d_{k\nu}d_{l\nu}/d_{i\nu},\\
+P_{i\nu}&=& \frac{B_{i\nu}C_{i\nu}+T_{i\nu}}{B_{i\nu}+C_{i\nu}},\\
+B_{i\nu} &=& \frac{d_{i\nu}}{d_{ij}d_{ik}d_{il}}(U_{i\nu}+U_{ij})(U_{i\nu}+U_{ik})(U_{i\nu}+U_{il})\\
+C_{i\nu} &=& \left(\frac{X_jX_kX_l}{X_i}Y_\nu^2+\frac{Y_iY_jY_k}{Y_i}X_\nu^2\right)/(x-y)+\frac{X_\nu Y_\nu U_{i\nu}}{X_i^2Y_i^2}\qquad \mbox{for }x,y\mbox{ finite}\\
+&=& \frac{X_jX_kX_l}{X_i}Y_\nu^2+\frac{Y_iY_jY_k}{Y_i}X_\nu^2+\frac{X_\nu Y_\nu U_{i\nu}}{X_i^2Y_i^2} \qquad \mbox{for } x = \infty \mbox{ or } y = -\infty
 \end{eqnarray*}
-where $\beta,\gamma,\delta$ is a permutation of 2,3,4. Again at most one of the
-parameters of $\mathrm{RJ}$ is zero. This method will break down when calculating
-$S_{15}$ if $a_1+b_1t$ vanishes at either the upper or lower limit of integration as
-either $X_1$ or $Y_1$ is zero. However the situation can be remedied by choosing $\beta$
-so that $X_\beta \neq 0$, $Y_\beta \neq 0$ and $b_\beta \neq 0$ and using similar
-methods to that used for the awkward case for integrals of the second kind.
+and where $\{i,j,k,l\}$ is a permutation of $\{1,2,3,4\}$. If $P_{i\nu} =0$, then
+the last term on the rhs of the integral reduces to $2\pi/\sqrt{-T_{i\nu}}$.
+
+The formulae for $C_{i\nu}$ is not valid if either $X_i$ or $Y_i$ vanishes. In
+these cases the integral still be evaluated as a linear combination of an
+integral of the first and third kinds or in certain degenerate cases as an
+elementary integral. See the subsection \emph{Some Examples} below for more
+details.
 
 Note if the integration range is $(-\infty, +\infty)$, the above formulae for
 integrals of all three kinds are not valid and the integral needs to be split
-into two at, say, zero.
-Similarly if the integration range is such that the integrand has branch points,
-the integration range will need to be split into two at each of these branch
-points.
+into two at, say, zero. Similarly if the integration range is such that the
+integrand has branch points, the integration range will need to be split into
+two at each of these branch points.
 
+\ttindextype[ELLIPFN]{ellint\_1st}{operator}
+\ttindextype[ELLIPFN]{ellint\_2nd}{operator}
+\ttindextype[ELLIPFN]{ellint\_3rd}{operator}
 In \REDUCE elliptic integrals of the three kinds may be evaluated numerically
 when the switch \sw{rounded}\ is ON by calling the functions
-\f{ellint\_1st},  \f{ellint\_2nd} and \f{ellint\_3rd}. The first two
-parameters are the lower and upper limits of the integration range; these are
-followed by 4 (or 5 for \f{ellint\_3rd}) two-element lists
-$\{a_1,b_1\}, \{a_2,b_2\} \ldots$.
-
-
-\textbf{Known bug:} As pointed out by Carlson \& FitzSimmons \cite{CarlsonFitzSimmons:00},
-the algorithms for $\mathrm{RF}$ \& $\mathrm{RJ}$ may break down when $s(t)$ is the product
-of two quadratic factors each with complex conjugate zeros $x_1\pm i y_1$ \&
-$x_2\pm i y_2$. One of the three quantities
-$U_{12}, U_{13}, U_{23}$ may be negative and this causes the algorithm to return an
-incorrect result. This error only arises when the crossing point (neccessarily real) of
-the diagonals of the parallellogram in the complex plane formed by the four zeros of
-$s(t)$  lies inside the range of integration. The algorithm also appears to produce the
-correct result when the crossing point is inside the range of integration but is
-`sufficiently close' to either end of the range -- the precise condition appears to be
-unknown.
-In the same paper Carlson \& FitzSimmons propose a modified algorithm of the same ilk
-to overcome these difficulties, however it is yet to be implemented in \REDUCE.
+\f{ellint\_1st},  \f{ellint\_2nd} and \f{ellint\_3rd} respectively.
+The first two parameters are the lower and upper limits of the integration
+range; these are followed by 4 (or 5 for \f{ellint\_3rd}) two-element lists
+$\{a_1,b_1\}, \{a_2,b_2\} \ldots$.  Without loss of generality by re-ordering
+the factors in $s(t)$, for \f{ellint\_2nd} we take $i=1$ and $l=4$, whilst for
+\f{ellint\_3rd}  we take $i=1$ and $\nu=5$.
 
 \subsubsection{Some Examples}
 In this subsection some of the advantages of symmetry are illustrated; the formula for the
@@ -772,12 +795,32 @@ case one of the factors in $s(t)$ is simply taken to be unity whilst for cases o
 \[\int_\alpha^\beta \frac{\mathrm{d}x}{\sqrt{(a+b x^2)(c+d x^2)}}\]
 one must use the substitution $t=x^2$ to obtain
 \[\frac{1}{2}\int_{\alpha^2}^{\beta^2} \frac{\mathrm{d}t}{\sqrt{t(a+b t)(c+d t)}}\]
-Moreover the restriction that one limit of integration be a branch point of the integrand is
+Moreover the restriction  in Gradshteyn and Ryzhik that one limit of integration
+be a branch point of the integrand is
 eliminated without doubling the number of standard integrals in the result.
-Similarly the formula for the integral of the second kind replaces no less than 144 cases
-in Gradshteyn and Ryzhik (72 each for the quartic and cubic cases). For cases where the
-numerator in the integrand is unity one simply takes $a_1=0, b_1=1$ and if there is to be no
-apparent term of the form $(a_4+b_4t)^{3/2}$ in its denominator one takes $a_4=0, b_4=1$.
+Similarly the formula for the integral of the second kind replaces no less than
+144 cases in Gradshteyn and Ryzhik (72 each for the quartic and cubic cases).
+For cases where the numerator in the integrand is unity one simply takes $a_1=0,
+b_1=1$ and if there is to be no apparent term of the form $(a_4+b_4t)^{3/2}$ in
+its denominator one takes $a_4=0, b_4=1$.
+
+For integrals of the third kind the 'awkward' case where $X_1$ or $Y_1$ vanishes,
+note that provided $X_2 \neq 0,\ Y_2 \neq 0$ and $b_2 \neq 0$,
+\[ \int \frac{(a_1+b_1t)\mathrm{d}t} {(a_5+b_5t)s(t)} =
+\frac{(b_1+b_5)d_{12}}{b_2d_{25}}\int\frac{a_2+b_2t)\mathrm{d}t} {(a_5+b_5t)s(t)}
+ -\frac{d_{12}}{d_{25}}\int \frac{\mathrm{d}t} {s(t)},\]
+otherwise  provided $X_3 \neq 0,\ Y_3 \neq 0$ and $b_3 \neq 0$,
+\[ \int \frac{(a_1+b_1t)\mathrm{d}t} {(a_5+b_5t)s(t)} =
+\frac{(b_1+b_5)d_{13}}{b_3d_{35}}\int\frac{a_3+b_3t)\mathrm{d}t} {(a_5+b_5t)s(t)}
+- \frac{d_{13}}{d_{35}}\int \frac{\mathrm{d}t} {s(t)},\]
+otherwise
+\[ \int \frac{(a_1+b_1t)\mathrm{d}t} {(a_5+b_5t)s(t)} =
+\frac{(b_1+b_5)d_{14}}{b_4d_{45}}\int\frac{a_4+b_4t)\mathrm{d}t} {(a_5+b_5t)s(t)}
+-\frac{d_{14}}{d_{45}}\int \frac{\mathrm{d}t} {s(t)}.\]
+
+Thus the required integral can be expressed in terms of a linear combination of
+an integral of the third kind and one of the first kind.
+
 
 When $0 \leq \phi \leq \pi/2$, the fundamental integrals of the first, second
 and third kinds $\mathrm{F}(\phi,k)$, $\mathrm{E}(\phi,k)$, $\mathrm{D}(\phi,k)$
