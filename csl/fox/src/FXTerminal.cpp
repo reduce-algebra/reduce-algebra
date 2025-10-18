@@ -162,6 +162,8 @@
 
 #include <windows.h>
 
+using namespace CSL_LISP;
+
 namespace FX {
 
 HANDLE pipedes;
@@ -178,6 +180,8 @@ int pipedes[2];
 #endif /* WIN32 */
 
 static FXPrinter printer;
+int showmathInitialised = 0;
+
 
 // I need an event table of things that the user interface must respond to.
 //
@@ -276,6 +280,8 @@ static int paste_flags, paste_n, paste_p, paste_is_html;
 
 FXIMPLEMENT(FXTerminal, FXText, FXTerminalMap, ARRAYNUMBER(FXTerminalMap))
 
+using namespace CSL_LISP;
+
 FXTerminal::FXTerminal(const char *argv0,
                        FXComposite *p,FXObject* tgt,FXSelector sel,
                        FXuint opts,
@@ -353,6 +359,8 @@ FXTerminal::FXTerminal()
         "I hope this never happens: report \"@FXT@\" to Codemist please\n");
     fflush(stderr);
 }
+
+using namespace CSL_LISP;
 
 FXTerminal::~FXTerminal()
 {
@@ -1704,6 +1712,8 @@ long FXTerminal::onCmdBreak(FXObject *c, FXSelector s, void *ptr)
     return 1;
 }
 
+using namespace CSL_LISP;
+
 long FXTerminal::onCmdBacktrace(FXObject *c, FXSelector s, void *ptr)
 {
     keyFlags &= ~ESC_PENDING;
@@ -2195,6 +2205,8 @@ long FXTerminal::onCmdSelectBrowser(FXObject *c, FXSelector s, void *ptr)
 
 #endif
 
+using namespace CSL_LISP;
+
 long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
 {
     UNUSED_ARG(c); UNUSED_ARG(s); UNUSED_ARG(ptr);
@@ -2334,6 +2346,8 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
     setFocus();
     return 1;
 }
+
+using namespace CSL_LISP;
 
 long FXTerminal::onCmdAbout(FXObject *c, FXSelector s, void *ptr)
 {
@@ -4992,9 +5006,5 @@ void FXTerminal::drawBufferText(FXDCWindow& dc,FXint x,FXint y,FXint,FXint,FXint
 
 
 } // end of FX namespace
-
-// not in the FX namespace...
-
-int showmathInitialised = 0;
 
 // End of FXTerminal.cpp

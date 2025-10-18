@@ -40,6 +40,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifndef ARITHLIB
 
 #define topdigit(a) \
@@ -1121,5 +1124,7 @@ LispObject logand2(LispObject a, LispObject b)
 }
 
 #endif // ARITHLIB
+
+} // end namespace
 
 // end of arith09.cpp

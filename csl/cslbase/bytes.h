@@ -1,4 +1,4 @@
-#// bytes.h                                 Copyright (C) Codemist 1993-2025
+// bytes.h                                 Copyright (C) Codemist 1993-2025
 
 
 /**************************************************************************
@@ -39,6 +39,9 @@
 
 #ifndef header_bytes_h
 #define header_bytes_h 1
+
+namespace CSL_LISP
+{
 
 // With each opcode I put a byte where the low 4 bits give the number of
 // bytes used in an instructions headed by that code and the 0x10 bit marks
@@ -329,6 +332,8 @@ inline const uint8_t oparginfo[] =
     0xff
 };
 #undef X
+
+} // end namespace
 
 #endif // header_bytes_h
 

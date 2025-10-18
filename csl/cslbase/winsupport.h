@@ -41,12 +41,6 @@
 #include <ctime>
 #include <new>
 
-extern uintptr_t C_stackBase;
-extern const char *fullProgramName;
-extern const char *programName;
-extern bool programNameDotCom;
-extern const char *programDir;
-
 #ifdef WIN32
 
 // Various definitions in <windows.h> clash with other things I use in CSL
@@ -56,11 +50,19 @@ extern const char *programDir;
 
 // The aim here is to avoid use of the Microsoft versions of printf and
 // friends and (hence) allow g++ to parse and check format strings reliably.
+
 #define __USE_MINGW_ANSI_STDIO 1
 
 #include <windows.h>
 #include <winsock.h>
 #include <process.h>
+
+#endif // WINDOWS
+
+namespace CSL_LISP
+{
+
+#ifdef WIN32
 
 extern void win32_stacklimit(uintptr_t &C_stacklimit);
 extern int find_program_directory(const char *argv0);
@@ -93,14 +95,20 @@ extern size_t windowsGetTempPath(size_t n, char *s);
 extern bool valid_address(void *pointer);
 extern int windowsFindGnuplot2(char *name);
 
-#else
-#ifdef __CYGWIN__
+#elif defined __CYGWIN__
 
 extern size_t windowsGetTempPath(size_t n, char *s);
 extern int windowsFindGnuplot2(char *name);
 
-#endif // __CYGWIN__
-#endif // WIN32
+#endif // __CYGWIN__, __WIN32__
+
+extern uintptr_t C_stackBase;
+extern const char *fullProgramName;
+extern const char *programName;
+extern bool programNameDotCom;
+extern const char *programDir;
+
+} // end namespace
 
 #endif // __header_winsupport_h
 

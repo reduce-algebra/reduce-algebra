@@ -67,6 +67,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifdef GC_CHECK
 
 #if true // New idea...
@@ -755,5 +758,6 @@ void gc_end(bool final)
 
 #endif // GC_CHECK
 
+} // end namespace
 
 // end of gc-check.cpp

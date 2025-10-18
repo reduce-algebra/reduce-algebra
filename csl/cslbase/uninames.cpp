@@ -97,6 +97,9 @@
 // by spliting this into parts I improve these to 2.5 and 25 seconds, which
 // is perhaps worth the ugliness.
 
+namespace CSL_LISP
+{
+
 static const char *uniname0(int codepoint)
 {   switch (codepoint)
     {   case   0x0020: return "SPACE";
@@ -28305,5 +28308,7 @@ const char *uniname(int codepoint)
     else if (codepoint < 0x12202) return uniname2(codepoint);
     else return uniname3(codepoint);
 }
+
+} // end namespace
 
 // end of uninames.cpppp

@@ -36,8 +36,8 @@
  *************************************************************************/
 
 
-// Note that the above terms apply and must persist regardless of where or how
-// this code is used. A copy of this will be included within a modified
+// Note that the above terms apply and must persist regardless of where or
+// how this code is used. A copy of this will be included within a modified
 // version of the FOX library and in that context the whole work has to
 // be treated subject to the constraints of the LGPL (and not the FOX
 // license addendum that would have granted static linking rights, because
@@ -47,6 +47,89 @@
 // ones do.
 
 // $Id$
+
+#if __has_cpp_attribute(maybe_unused)
+// C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
+// and functions. Earlier versions of gcc and clang supported [[gnu::unused]]
+// as a non-standard annotation with similar effect.
+#define UNUSED_NAME [[maybe_unused]]
+
+#elif defined __GNUC__
+#define UNUSED_NAME [[gnu::unused]]
+
+#else // [[maybe_unused]] or [[gnu::unused]] availability
+// In any other case I just omit any annotation and if I get warnings about
+// unused things then so be it.
+#define UNUSED_NAME
+
+#endif // annotation for unused things
+
+#ifdef WIN32
+#include <windows.h>
+#include <io.h>
+#endif // WIN32
+
+#include <cstring>
+#include <cstdio>
+#include <cstdint>
+#include <cinttypes>
+#include <cstdlib>
+#include <cstdarg>
+#include <cctype>
+#include <cwchar>
+#include <cwctype>
+#include <ctime>
+#include <csignal>
+#include <thread>
+#include <chrono>
+#include <atomic>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <filesystem>
+
+#include <utime.h>
+#if __has_include(<unistd.h>)
+#include <unistd.h>
+#else // HAVE_UNISTD_H
+// The declaration here is an expression of optimism! It applies
+// if <unistd.h> seems not to be available and in that case I just
+// HOPE there is a getcwd() with this signature.
+extern "C" char *getcwd(char *s, int n);
+#pragma message "without unistd.h"
+#endif // HAVE_UNISTD_H
+
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <cerrno>
+
+#ifndef WIN32
+#include <pwd.h>
+#include <glob.h>
+#endif // WIN32
+
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
+#elif defined WIN32
+#include <direct.h>
+#else
+#include <sys/dir.h>
+#endif // HAVE_DIRENT_H
+
+#ifdef __APPLE__
+#include <Carbon/Carbon.h>
+#include <CoreServices/CoreServices.h>
+#endif // __APPLE__
+
+#include "termed.h"
+#include "fwin.h"
+
+using std::int32_t;
+using std::int64_t;
+using std::uint32_t;
+using std::uint64_t;
+using std::string;
 
 // The "#ifdef" mess here has been getting out of control. The major
 // choice are:
@@ -72,161 +155,21 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#else
- // HAVE_CONFIG_H
+#else // HAVE_CONFIG_H
 #define PART_OF_FOX 1
-extern void initThreadLocals();
 #endif // HAVE_CONFIG_H
 
-// For the bulk of CSL the tests on C++ dialect are done in "machine.h",
-// but this file is shared with FOX and can not use that header, so it has
-// its own copies of the tests.
+namespace FX
+{
 
-#ifndef __has_cpp_attribute
-#define __has_cpp_attribute(name) 0
-#endif // C++17 support
-
-#if __has_cpp_attribute(maybe_unused)
-// C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
-// and functions. Earlier versions of gcc and clang supported [[gnu::unused]]
-// as a non-standard annotation with similar effect.
-#define UNUSED_NAME [[maybe_unused]]
-#elif defined __GNUC__
-#define UNUSED_NAME [[gnu::unused]]
-#else // [[maybe_unused]] or [[gnu::unused]] availability
-// In any other case I just omit any annotation and if I get warnings about
-// unused things then so be it.
-#define UNUSED_NAME
-#endif // annotation for unused things
-
-// I am now insisting that CSL be built with C++17 and so the following
-// paragraph should be fading in relevance!
-
-// On some platforms it will APPEAR that <filesystem> and std::filesystem
-// are available but they will not be. This can perhaps be a consequenec of
-// transition arrangements in the C++ comnpiler, library and even the
-// operating system being used. On sufficiently old platforms there will be
-// no pretence of their availability so I will not have trouble, and on
-// fully up to date ones this part of the C++17 standard should be properly
-// supported, but somewher in between there can be "trouble"! So I have a
-// configure time test that can set FILESYSTEM_NOT_USABLE in the case when
-// the notionally standard-conforming test will not suffice.
-
-// I am really sorry about the following test! It is because on a Mac
-// one can have #include <filesystem> work and __cpp_lib_filesystem get
-// defined for you but std::filesystem may still not be properly available
-// because at least some parts of it were not supported until 10.15. I rather
-// firmly believe that __cpp_lib_filesystem ought not to have ended up
-// defined if the C++17 feature was not actually going to be available. But
-// there we go!
-
-#if defined __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ && \
-            __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 101500 && \
-            !defined FILESYSTEM_NOT_USABLE
-
-#define FILESYSTEM_NOT_USABLE 1
-
-#endif // Hack for Macintosh.
-
-#if !defined FILESYSTEM_NOT_USABLE
-
-#ifndef __has_include
-#define __has_include(name) 0
-#endif
-
-// I will allow config.h to define HAVE_FILESYSTEM as a promise thae this
-// is all OK!
-#if !defined HAVE_FILESYSTEM && __has_include(<filesystem>)
-#define HAVE_FILESYSTEM 1
-#endif // HAVE_FILESYSTEM
-
-#ifdef HAVE_FILESYSTEM
-#include <filesystem>
-#endif // HAVE_FILESYSTEM
-
-#endif
-
-// Now I can test __cpp_lib_filesystem to see if std::filesystem is
-// actually available. If I use it I may need to link -lstdc++fs in gcc
-// or -lc++fs in clang!
-
-#include "fwin.h"
+extern void initThreadLocals();
 
 extern int fwin_main(int argc, const char *argv[]);
-
-#ifdef WIN32
-#include <windows.h>
-#include <io.h>
-#endif // WIN32
-
-#include <cstring>
-#include <cstdio>
-#include <cstdint>
-#include <cinttypes>
-#include <cstdlib>
-#include <cstdarg>
-#include <cctype>
-#include <cwchar>
-#include <cwctype>
-#include <ctime>
-#include <csignal>
-#include <thread>
-#include <chrono>
-#include <atomic>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <algorithm>
-
-using std::atomic;
-
-#if HAVE_UNISTD_H
-#include <unistd.h>
-#else // HAVE_UNISTD_H
-// The declaration here is an expression of optimism!
-extern "C" char *getcwd(const char *s, size_t n);
-#endif // HAVE_UNISTD_H
-
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <cerrno>
-
-#ifdef WIN32
-#include <windows.h>
-#else // WIN32
-#include <glob.h>
-#endif // WIN32
-
-#ifdef HAVE_DIRENT_H
-#include <dirent.h>
-#elif defined WIN32
-#include <direct.h>
-#else
-#include <sys/dir.h>
-#endif // HAVE_DIRENT_H
-
-#ifdef __APPLE__
-
-#include <Carbon/Carbon.h>
-#include <CoreServices/CoreServices.h>
-
-#endif // __APPLE__
-
-#include "termed.h"
-
-#include <cstdio>
-#include <cstdlib>
-
-using std::int32_t;
-using std::int64_t;
-using std::uint32_t;
-using std::uint64_t;
-using std::string;
 
 static string EOFstring = "\x04";
 
 // An "my_assert" scheme that lets me write in my own code to print the
-// diagnostics. Included here because this files does not icnlude "fx.h".
+// diagnostics. Included here because this files does not include "fx.h".
 
 [[noreturn]] inline void my_abort()
 {   std::exit(EXIT_FAILURE);
@@ -1106,7 +1049,7 @@ void fwin_report_right(const char *s)
 {
 }
 
-atomic<bool> mustQuit(false);
+std::atomic<bool> mustQuit(false);
 
 int fwin_getchar()
 {   return fwin_plain_getchar();
@@ -1846,8 +1789,6 @@ int my_system(const char *s)
 // properly available. Not having it will make the treatment of
 // (eg) "~xxx/..." in filenames less satisfactory.
 
-#include <pwd.h>
-
 int get_home_directory(char *b, size_t len)
 {   int i;
     struct passwd *pw = getpwuid(getuid());
@@ -1907,8 +1848,6 @@ typedef void filescan_function(string name, string leafname,
 // then they can be moved outside the scope of the #ifdef.
 
 #ifdef WIN32
-
-#include "windows.h"
 
 int Cmkdir(const char *name)
 {   SECURITY_ATTRIBUTES s;
@@ -1984,7 +1923,6 @@ int Cmkdir(const char *s)
     return 1;
 }
 
-#include <utime.h>
 
 #if defined EMBEDDED && defined __ARM_EABI__ && !defined __linux__
 
@@ -2446,8 +2384,6 @@ int rename_file(char *from_name, const char *from_old,
 
 #ifdef WIN32
 
-#include "windows.h"
-
 int Cmkdir(const char *name)
 {   SECURITY_ATTRIBUTES s;
     s.nLength = sizeof(s);
@@ -2522,7 +2458,6 @@ int Cmkdir(const char *s)
     return 1;
 }
 
-#include <utime.h>
 
 #if defined EMBEDDED && defined __ARM_EABI__ && !defined __linux__
 
@@ -3219,6 +3154,8 @@ int rename_file(char *from_name, const char *from_old,
 }
 
 #endif // __cpp_lib_filesystem
+
+} // end namespace
 
 
 // end of fwin.cpp

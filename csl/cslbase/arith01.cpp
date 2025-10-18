@@ -40,6 +40,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifdef ARITHLIB
 
 LispObject make_lisp_integer32_fn(int32_t n)
@@ -2587,5 +2590,7 @@ LispObject sub1(LispObject p)
 }
 
 #endif // ARITHLIB
+
+} // end of namespace
 
 // end of arith01.cpp

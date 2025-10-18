@@ -41,6 +41,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 Page* consCurrent;
 Page* vecCurrent;
 Page* borrowCurrent;
@@ -802,5 +805,7 @@ LispObject Lgc_error(LispObject env, LispObject a)
 bool volatile already_in_gc;
 bool volatile interrupt_pending;
 bool pageFull;
+
+} // end namespace
 
 // end of newallocate.cpp

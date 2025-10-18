@@ -49,8 +49,12 @@
 
 #ifdef USE_MPI
 #include "mpi.h"
+#endif // USE_MPI
+
+namespace CSL_LISP
+{
+
 extern int32_t mpi_rank,mpi_size;
-#endif
 
 extern void** pages;
 extern void** heap_pages;
@@ -160,9 +164,9 @@ typedef struct directory
 
 #ifdef COMMON
 #  define MIDDLE_INITIAL   'C'
-#else
+#else // COMMON
 #  define MIDDLE_INITIAL   'S'
-#endif
+#endif // COMMON
 
 inline int get_dirused(directory &d)
 {   return d.h.dirused + ((d.h.dirext & 0x0f)<<8);
@@ -280,7 +284,7 @@ inline void if_check_stack()
         aerror("stack overflow");
     }
 }
-#else
+#else // CHECK_STACK
 inline void if_check_stack()
 {   const char* _p_ = reinterpret_cast<const char*>(&_p_);
     if (reinterpret_cast<uintptr_t>(_p_) < C_stackLimit)
@@ -288,7 +292,7 @@ inline void if_check_stack()
         aerror("stack overflow");
     }
 }
-#endif
+#endif // CHECK_STACK
 
 //
 // Extra debugging help...
@@ -314,7 +318,7 @@ extern void debug_show_trail_raw(const char* msg, const char* file, int line);
 #define debug_assert(x) \
   if (!(x)) { debug_show_trail("Assertion failed"); my_exit(); }
 
-#else
+#else // DEBUG
 
 #define debug_record(data)
 #define debug_record_int(s, n)
@@ -324,7 +328,7 @@ extern void debug_show_trail_raw(const char* msg, const char* file, int line);
 
 #define debug_assert(x)
 
-#endif
+#endif // DEBUG
 
 // I give myself a margin of SPARE bytes at the end of a page so that I can
 // always CONS that amount (even without a garbage collection check) and not
@@ -480,7 +484,7 @@ extern LispObject om_supportsSymbol(LispObject, LispObject, LispObject);
 extern LispObject om_listCDs(LispObject, int nargs, ...);
 extern LispObject om_listSymbols(LispObject, LispObject);
 extern LispObject om_whichCDs(LispObject, LispObject);
-#endif
+#endif // OPENMATH
 
 extern LispObject user_base_0, user_base_1, user_base_2;
 extern LispObject user_base_3, user_base_4, user_base_5;
@@ -533,9 +537,9 @@ extern size_t repeat_count;
 
 #ifdef BUILTIN_IMAGE
 extern const unsigned char* binary_read_filep;
-#else
+#else // BUILTIN_IMAGE
 extern std::FILE *binary_read_file;
-#endif
+#endif // BUILTIN_IMAGE
 
 extern std::FILE *binary_write_file;
 
@@ -554,7 +558,7 @@ extern void review_switch_settings();
 #ifdef SOCKETS
 extern bool sockets_ready;
 extern void flush_socket();
-#endif
+#endif // SOCKETS
 
 extern void report_file(const char* s);
 
@@ -590,7 +594,7 @@ inline bool cons_forced(size_t n)
         return true;
     }
     force_cons -= n;
-#endif
+#endif // DEBUG
     return false;
 }
 
@@ -604,7 +608,7 @@ inline bool vec_forced(size_t n)
         return true;
     }
     force_vec -= n;
-#endif
+#endif // DEBUG
     return false;
 }
 
@@ -731,10 +735,6 @@ extern bool Zread(void* buff, size_t size);
 extern bool Zputc(int ch);
 extern bool Zwrite(const void* buff, size_t size);
 extern long int Ioutsize();
-extern const char* CSLtmpdir();
-extern const char* CSLtmpnam(const char* suffix, size_t suffixlen);
-extern int Cmkdir(const char* s);
-extern char* look_in_lisp_variable(char* o, int prefix);
 
 extern void CSL_MD5_Init();
 extern void CSL_MD5_Update(const unsigned char* data, size_t len);
@@ -811,7 +811,7 @@ extern bool        traced_equal_fn(LispObject a, LispObject b,
                                    const char* , int, int);
 #define equal_fn(a, b) traced_equal_fn(a, b, __FILE__, __LINE__, 0)
 extern void        dump_equals();
-#endif
+#endif // TRACED_EQUAL
 extern bool        equalp(LispObject a, LispObject b);
 extern LispObject  apply(LispObject fn, LispObject args,
                          LispObject env,
@@ -878,16 +878,16 @@ extern void term_printf(const char* fmt, ...);
 extern void err_printf(const char* fmt, ...);
 extern void debug_printf(const char* fmt, ...);
 extern void trace_printf(const char* fmt, ...);
-extern const char* my_getenv(const char* name);
+//extern const char* my_getenv(const char* name);
 extern LispObject  ncons(LispObject a);
 extern LispObject  ndelete(LispObject a, LispObject b);
 extern LispObject  negate(LispObject a);
 extern LispObject  nreverse(LispObject a);
 extern LispObject  nreverse2(LispObject a, LispObject b);
-extern std::FILE*  open_file(char* filename,
-                             const char* original_name,
-                             size_t n, const char* dirn,
-                             std::FILE* old_file);
+//extern std::FILE*  open_file(char* filename,
+//                             const char* original_name,
+//                             size_t n, const char* dirn,
+//                             std::FILE* old_file);
 extern LispObject  plus2(LispObject a, LispObject b);
 extern void        preserve(const char* msg, size_t len);
 extern LispObject prin(LispObject u);
@@ -1271,8 +1271,8 @@ INLINE_VAR const char* list_names[] =
 
 #undef X
 
-extern const char* find_image_directory(int argc, const char* argv[]);
-extern char program_name[64];
+//extern const char* find_image_directory(int argc, const char* argv[]);
+//extern char program_name[64];
 extern LispObject declare_fn(LispObject args, LispObject env);
 extern LispObject function_fn(LispObject args, LispObject env);
 extern LispObject let_fn_1(LispObject bvl, LispObject body,
@@ -1430,6 +1430,8 @@ INLINE_VAR const char* system_variable_names[] =
 };
 
 #undef X
+
+} // end namespace
 
 #endif // header_externs_h
 

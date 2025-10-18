@@ -35,6 +35,9 @@
 
 #include "arith-headers.h"
 
+namespace CSL_LISP
+{
+
 // Each generic arithmetic operation will involve a class styled rather
 // along the lines of this one. It will use mechanisms from the header
 // file dispatch.h to go from tagged LispObjects to the data for each
@@ -48,84 +51,75 @@
 // Well I will make it even worse and include LispObject in the overloads
 // and that makes it 81 little functions!
 
-using number_dispatcher::Fixnum;
-// uint64_t *
-using number_dispatcher::Rat;
-using number_dispatcher::Cpx;
-using number_dispatcher::SFlt;
-// double
-using number_dispatcher::Flt;
-using number_dispatcher::LFlt;
-
 // The main generic addition function is
 //       LispObject Plus.op(LispObject, LispObject);
 
 LispObject Plus::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<LispObject,Plus>("plus", a, b);
+{   return binary<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+{   return binaryR<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+{   return binaryR<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+{   return binaryR<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+{   return binaryR<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+{   return binaryR<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+{   return binaryR<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+{   return binaryR<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+{   return binaryR<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+{   return binaryL<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+{   return binaryL<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+{   return binaryL<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+{   return binaryL<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+{   return binaryL<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+{   return binaryL<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+{   return binaryL<LispObject,Plus>("plus", a, b);
 }
 
 LispObject Plus::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+{   return binaryL<LispObject,Plus>("plus", a, b);
 }
 
 // fixnum + fixnum
@@ -415,87 +409,87 @@ LispObject Plus::op(LFlt a, LFlt b)
 
 LispObject Difference::op(LispObject a, LispObject b)
 {   return
-        number_dispatcher::binary<LispObject,Difference>("difference", a, b);
+        binary<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(LispObject a, Fixnum b)
 {   return
-        number_dispatcher::binaryR<LispObject,Difference>("difference", a, b);
+        binaryR<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(LispObject a, uint64_t *b)
 {   return
-        number_dispatcher::binaryR<LispObject,Difference>("difference", a, b);
+        binaryR<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(LispObject a, Rat b)
 {   return
-        number_dispatcher::binaryR<LispObject,Difference>("difference", a, b);
+        binaryR<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(LispObject a, Cpx b)
 {   return
-        number_dispatcher::binaryR<LispObject,Difference>("difference", a, b);
+        binaryR<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(LispObject a, SFlt b)
 {   return
-        number_dispatcher::binaryR<LispObject,Difference>("difference", a, b);
+        binaryR<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(LispObject a, Flt b)
 {   return
-        number_dispatcher::binaryR<LispObject,Difference>("difference", a, b);
+        binaryR<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(LispObject a, double b)
 {   return
-        number_dispatcher::binaryR<LispObject,Difference>("difference", a, b);
+        binaryR<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(LispObject a, LFlt b)
 {   return
-        number_dispatcher::binaryR<LispObject,Difference>("difference", a, b);
+        binaryR<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(Fixnum a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,Difference>("difference", a, b);
+        binaryL<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(uint64_t *a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,Difference>("difference", a, b);
+        binaryL<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(Rat a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,Difference>("difference", a, b);
+        binaryL<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(Cpx a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,Difference>("difference", a, b);
+        binaryL<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(SFlt a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,Difference>("difference", a, b);
+        binaryL<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(Flt a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,Difference>("difference", a, b);
+        binaryL<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(double a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,Difference>("difference", a, b);
+        binaryL<LispObject,Difference>("difference", a, b);
 }
 
 LispObject Difference::op(LFlt a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,Difference>("difference", a, b);
+        binaryL<LispObject,Difference>("difference", a, b);
 }
 
 // fixnum - fixnum
@@ -800,7 +794,7 @@ LispObject Difference::op(LFlt a, LFlt b)
 // add1
 
 LispObject Add1::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Add1>("add1", a);
+{   return unary<LispObject,Add1>("add1", a);
 }
 
 LispObject Add1::op(Fixnum a)
@@ -839,7 +833,7 @@ LispObject Add1::op(LFlt a)
 // sub1
 
 LispObject Sub1::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Sub1>("sub1", a);
+{   return unary<LispObject,Sub1>("sub1", a);
 }
 
 LispObject Sub1::op(Fixnum a)
@@ -878,7 +872,7 @@ LispObject Sub1::op(LFlt a)
 // minus
 
 LispObject Minus::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Minus>("minus", a);
+{   return unary<LispObject,Minus>("minus", a);
 }
 
 LispObject Minus::op(Fixnum a)
@@ -1040,6 +1034,8 @@ LispObject Nisub1(LispObject env, LispObject a1)
 {   SingleValued fn;
     return Difference::op(a1, fixnum_of_int(1));
 }
+
+} // end of namespace
 
 #endif // ARITHLIB
 

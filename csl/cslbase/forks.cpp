@@ -165,6 +165,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #if defined WIN32 || !defined ENABLE_FORKS
 
 LispObject Lopen_fork(LispObject env)
@@ -650,5 +653,7 @@ setup_type const forks_setup[] =
     DEF_1("close-fork",       Lclose_fork),
     {nullptr,                 nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of forks.cpp

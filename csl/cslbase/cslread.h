@@ -41,6 +41,9 @@
 #ifndef header_read_h
 #define header_read_h 1
 
+namespace CSL_LISP
+{
+
 typedef struct Package
 {   Header header;
     LispObject packageid;  // 'package as type of this struct
@@ -162,6 +165,8 @@ public:
         reader_workspace = *stack--;
     }
 };
+
+} // end namespace
 
 #endif // header_read_h
 

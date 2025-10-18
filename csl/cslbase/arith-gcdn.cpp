@@ -35,33 +35,27 @@
 
 #include "arith-headers.h"
 
-using number_dispatcher::Fixnum;
-// uint64_t *
-using number_dispatcher::Rat;
-using number_dispatcher::Cpx;
-using number_dispatcher::SFlt;
-// double
-using number_dispatcher::Flt;
-using number_dispatcher::LFlt;
+namespace CSL_LISP
+{
 
 LispObject Gcdn::op(LispObject a, LispObject b)
-{   return number_dispatcher::ibinary<LispObject,Gcdn>("gcdn", a, b);
+{   return ibinary<LispObject,Gcdn>("gcdn", a, b);
 }
 
 LispObject Gcdn::op(LispObject a, Fixnum b)
-{   return number_dispatcher::ibinaryR<LispObject,Gcdn>("gcdn", a, b);
+{   return ibinaryR<LispObject,Gcdn>("gcdn", a, b);
 }
 
 LispObject Gcdn::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::ibinaryR<LispObject,Gcdn>("gcdn", a, b);
+{   return ibinaryR<LispObject,Gcdn>("gcdn", a, b);
 }
 
 LispObject Gcdn::op(Fixnum a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Gcdn>("gcdn", a, b);
+{   return ibinaryL<LispObject,Gcdn>("gcdn", a, b);
 }
 
 LispObject Gcdn::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Gcdn>("gcdn", a, b);
+{   return ibinaryL<LispObject,Gcdn>("gcdn", a, b);
 }
 
 LispObject Gcdn::op(Fixnum a, Fixnum b)
@@ -81,23 +75,23 @@ LispObject Gcdn::op(uint64_t *a, uint64_t *b)
 }
 
 LispObject Lcmn::op(LispObject a, LispObject b)
-{   return number_dispatcher::ibinary<LispObject,Lcmn>("lcmn", a, b);
+{   return ibinary<LispObject,Lcmn>("lcmn", a, b);
 }
 
 LispObject Lcmn::op(LispObject a, Fixnum b)
-{   return number_dispatcher::ibinaryR<LispObject,Lcmn>("lcmn", a, b);
+{   return ibinaryR<LispObject,Lcmn>("lcmn", a, b);
 }
 
 LispObject Lcmn::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::ibinaryR<LispObject,Lcmn>("lcmn", a, b);
+{   return ibinaryR<LispObject,Lcmn>("lcmn", a, b);
 }
 
 LispObject Lcmn::op(Fixnum a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Lcmn>("lcmn", a, b);
+{   return ibinaryL<LispObject,Lcmn>("lcmn", a, b);
 }
 
 LispObject Lcmn::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Lcmn>("lcmn", a, b);
+{   return ibinaryL<LispObject,Lcmn>("lcmn", a, b);
 }
 
 LispObject Lcmn::op(Fixnum a, Fixnum b)
@@ -115,6 +109,8 @@ LispObject Lcmn::op(Fixnum a, uint64_t *b)
 LispObject Lcmn::op(uint64_t *a, uint64_t *b)
 {   return arithlib_lowlevel::Lcm::op(a, b);
 }
+
+} // end of namespace
 
 #endif //ARITHLIB
 

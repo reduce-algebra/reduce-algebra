@@ -40,6 +40,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifndef ARITHLIB
 
 LispObject copyb(LispObject a)
@@ -963,5 +966,6 @@ CSL_Complex Cpow(CSL_Complex z1, CSL_Complex z2)
 // End of complex-to-complex-power code.
 //
 
+} // end of namespace
 
 // end of arith07.cpp

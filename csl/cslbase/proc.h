@@ -39,7 +39,8 @@
 // Definitions useful for driving the procedural interface to Reduce...
 //
 
-
+namespace CSL_LISP
+{
 
 // It may be useful to call this at the start...
 extern int find_program_directory(const char *argv0);
@@ -404,6 +405,9 @@ extern int buff_size;
 
 
 };
+
+} // end namespace
+
 #endif // header_proc_h
 
 // end of proc.h

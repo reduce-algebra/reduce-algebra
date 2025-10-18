@@ -3543,7 +3543,8 @@ car o) d)))) (setq d (compress (cons (quote !") (cons (cadr w) (cons (car w)
 (cons (quote !-) d)))))) (setq O_file (wrs C_file)) (setq c!:defnames nil) (
 c!:printf "\n// %s.c %tMachine generated C code\n\n" name 25) (c!:printf 
 "// $I") (c!:printf "d: $\n\n") (c!:printf "#include \qconfig.h\q\n") (
-c!:printf "#include \qheaders.h\q\n\n") (wrs O_file) (return nil)))
+c!:printf "#include \qheaders.h\q\n\n") (c!:printf 
+"namespace CSL_LISP\n{\n\n") (wrs O_file) (return nil)))
 
 (de C!-end nil (prog (checksum c1 c2 c3 stubs) (wrs C_file) (cond ((equal (
 explodec Setup_name) (explodec (quote stubs))) (progn (setq stubs t) (setq 
@@ -3579,19 +3580,19 @@ setq i 2) lab1255 (cond ((minusp (times 1 (difference 60 i))) (return nil)))
 "        reinterpret_cast<one_arg *>(\n") (c!:printf 
 "            reinterpret_cast<uintptr_t>(%a)),\n" checksum) (c!:printf 
 "        nullptr, nullptr, nullptr}\n};\n\n")) (setq i (plus i 1)) (go 
-lab1255)) (c!:printf "\n\n")))) (c!:printf "%<// end of generated code\n") (
-close C_file) (setq L_file (open L_file (quote output))) (wrs L_file) (
-linelength 72) (terpri) (princ "% ") (princ Setup_name) (princ ".lsp") (ttab 
-20) (princ "Machine generated Lisp") (terpri) (terpri) (princ 
-"(check!-c!-code ") (princ (quote !")) (princ Setup_name) (princ (quote !")) 
-(princ " ") (princ checksum) (printc ")") (terpri) (prog (var1257) (setq 
-var1257 (reverse L_contents)) lab1256 (cond ((null var1257) (return nil))) (
-prog (x) (setq x (car var1257)) (progn (princ "(c!:install '") (prin (car x))
-(princ " '") (prin (cadr x)) (princ " ") (prin (cddr x)) (princ ")") (terpri
-) (terpri))) (setq var1257 (cdr var1257)) (go lab1256)) (terpri) (princ 
-"% End of generated Lisp code") (c!:reset_gensyms) (terpri) (terpri) (setq 
-L_contents nil) (wrs O_file) (close L_file) (setq !*defn nil) (setq dfprint!*
-dfprintsave)))
+lab1255)) (c!:printf "\n\n")))) (c!:printf "\n} // end of namespace\n\n") (
+c!:printf "%<// end of generated code\n") (close C_file) (setq L_file (open 
+L_file (quote output))) (wrs L_file) (linelength 72) (terpri) (princ "% ") (
+princ Setup_name) (princ ".lsp") (ttab 20) (princ "Machine generated Lisp") (
+terpri) (terpri) (princ "(check!-c!-code ") (princ (quote !")) (princ 
+Setup_name) (princ (quote !")) (princ " ") (princ checksum) (printc ")") (
+terpri) (prog (var1257) (setq var1257 (reverse L_contents)) lab1256 (cond ((
+null var1257) (return nil))) (prog (x) (setq x (car var1257)) (progn (princ 
+"(c!:install '") (prin (car x)) (princ " '") (prin (cadr x)) (princ " ") (
+prin (cddr x)) (princ ")") (terpri) (terpri))) (setq var1257 (cdr var1257)) (
+go lab1256)) (terpri) (princ "% End of generated Lisp code") (
+c!:reset_gensyms) (terpri) (terpri) (setq L_contents nil) (wrs O_file) (close
+L_file) (setq !*defn nil) (setq dfprint!* dfprintsave)))
 
 (put (quote C!-end) (quote stat) (quote endstat))
 

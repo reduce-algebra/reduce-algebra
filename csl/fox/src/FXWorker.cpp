@@ -77,8 +77,12 @@
 
 #include "fwin.h"
 
+namespace FX
+{
 
-namespace FX {
+using namespace CSL_LISP;
+
+std::atomic<bool> mustQuit(false);
 
 // In general things that for part of the interface that fwin wants to
 // provide must not be in the FX namespace.
@@ -944,9 +948,6 @@ static void rewrite_title_bar()
 }
 
 
-}  // end of "namespace FX"
-
-
 
 // The following parts of the fwin interface would be relevant even when
 // fwin was using something other than FOX to provide its GUI, and so they
@@ -1052,8 +1053,6 @@ void fwin_ensure_screen()
     if (delay_callback != NULL) (*delay_callback)(0);
     UnlockMutex(term->pauseMutex);
 }
-
-std::atomic<bool> mustQuit(false);
 
 int fwin_getchar()
 {   if (mustQuit) return EOF;
@@ -1172,9 +1171,12 @@ void fwin_report_right(const char *msg)
     rewrite_title_bar();
 }
 
-int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
-{ return FX::windowed_worker(argc, argv, fwin_main);
-}
+//int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
+//{ return FX::windowed_worker(argc, argv, fwin_main);
+//}
+
+}  // end of namespace
+
 
 // end of FXWorker.cpp
 

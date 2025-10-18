@@ -34,6 +34,9 @@
 #ifndef header_entries_h
 #define header_entries_h 1
 
+namespace CSL_LISP
+{
+
 //
 // things with no args...
 //
@@ -817,6 +820,8 @@ extern LispObject om_listCDs(LispObject env, LispObject a1,
 extern LispObject om_listSymbols(LispObject env, LispObject lcd);
 extern LispObject om_whichCDs(LispObject env, LispObject lsym);
 #endif
+
+} // end namespace
 
 #endif // header_entries_h
 

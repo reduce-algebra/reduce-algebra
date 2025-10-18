@@ -48,6 +48,9 @@
 #include <vector>
 #include <deque>
 
+namespace FX
+{
+
 //
 // This supports modest line-editing and history for terminal-mode
 // use of "fwin" applications.
@@ -201,6 +204,8 @@ extern uniname unicode_names[];
 #define is_surrogate(x)      (sizeof(wchar_t)==2 && ((x)&0xf800)==0xf800)
 #define is_high_surrogate(x) (sizeof(wchar_t)==2 && ((x)&0xfc00)==0xf800)
 #define is_low_surrogate(x)  (sizeof(wchar_t)==2 && ((x)&0xfc00)==0xfc00)
+
+} // end namespace
 
 #endif // header_termed_h
 

@@ -40,6 +40,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifndef ARITHLIB
 
 LispObject Lfrexp(LispObject env, LispObject a)
@@ -904,5 +907,7 @@ setup_type const arith12_setup[] =
 #endif // ARITHLIB
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of arith12.cpp

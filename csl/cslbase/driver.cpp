@@ -46,6 +46,8 @@
 
 #include "proc.h"
 
+namespace CSL_LISP
+{
 
 static char ibuff[100], obuff[10000];
 static int ibufp = 0, obufp = 0;
@@ -236,6 +238,9 @@ static int submain(int argc, char *argv[])
     return rc;
 }
 
+} // end namespace
+
+using namespace CSL_LISP;
 
 int main(int argc, char *argv[])
 {   volatile int res;

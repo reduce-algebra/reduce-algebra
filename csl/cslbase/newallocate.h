@@ -43,6 +43,9 @@
 using std::hex;
 using std::dec;
 
+namespace CSL_LISP
+{
+
 // A totally unused page must still have its type field filled in as
 // emptyPageType so that ambiguous pointers that refer within it can
 // be disregarded.
@@ -1795,6 +1798,8 @@ inline Page* findPage(uintptr_t p)
     if (n < 0) return nullptr;
     return reinterpret_cast<Page*>(p & -pageSize);
 }
+
+} // end namespace
 
 #endif // header_newallocate_h
 

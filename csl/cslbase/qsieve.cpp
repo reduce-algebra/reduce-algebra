@@ -94,7 +94,19 @@
 // will be returned in a way that other parts of CSL can handle.
 
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <inttypes.h>
+#include <assert.h>
+#include <unistd.h>
+#include <sys/time.h>
 #include <string.h>
+
+namespace CSL_LISP
+{
 
 // This file is released "as it" into the public domain, without any
 // warranty, express or implied.
@@ -338,11 +350,6 @@ __attribute__((unused)) void avl_walk(const struct avl_manager *manager,
  of a red-black tree.
  Read more : https://www.math.toronto.edu/askold/2014-UMN-4-e-Adelson-.pdf
 */
-
-
-#include <stdint.h>
-#include <stdlib.h>
-#include <assert.h>
 
 // The tiny Big Integer Library (released "as is", into the public domain,
 // without any warranty, express or implied) is provided for handling
@@ -1254,14 +1261,6 @@ int cint_is_prime(cint_sheet *sheet, const cint *N, int iterations,
 }
 
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <assert.h>
-#include <unistd.h>
-#include <sys/time.h>
 
 // Quadratic sieve integers.
 typedef uint32_t qs_sm; // small size, like a factor base prime number (32-bit)
@@ -4707,7 +4706,12 @@ int Xmain(int argc, const char *argv[])
     return state.code;
 }
 
+} // end namespace
+
 #include "headers.h"
+
+namespace CSL_LISP
+{
 
 static LispObject* raddr = nullptr;
 
@@ -4746,5 +4750,7 @@ LispObject Lsieve_factor(LispObject env, LispObject n)
     Xmain(sizeof(args)/sizeof(args[0]), args);
     return Lreverse(nil, r);
 }
+
+} // end namespace
 
 // end of qsieve.cpp

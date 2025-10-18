@@ -33,6 +33,8 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
 
 extern LispObject om_read(LispObject, LispObject);
 extern LispObject om_supportsCD(LispObject, LispObject);
@@ -51,5 +53,7 @@ setup_type const om_parse_setup[] =
     DEF_1("om-whichCDs",        om_whichCDs),
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of ompsetup.cpp

@@ -118,14 +118,22 @@
 #include <cassert>
 
 
+#ifndef HAVE_INT128_T
+
 // This makes 128-bit integers available using either g++ or clang++.
 // It is not standard-compliant and even with those compilers it may
 // not be available on all computers.
 
 #ifdef __GNUC__
-using int128  = __int128;
-using uint128 = unsigned __int128;
-#endif
+using INT128  = __int128;
+using UINT128 = unsigned __int128;
+#endif // __GNUC__
+
+#else // HAVE_UINT128_t
+
+using namespace arithlib_implementation;
+
+#endif // HAVE_INT128_T
 
 // C++20 introduces "consteval" which is like "constexpr" save that it
 // INSISTS that evaluation happens at compile time. I will use it it
@@ -158,7 +166,7 @@ inline auto microseconds()
 // integers to an output stream. So here I have a little function that
 // ts to convert from such an integer to a string so I can print it.
 
-inline char* hex(uint128 a)
+inline char* hex128(UINT128 a)
 {   static char str[40];
     for (int i=31; i>=0; i--)
     {   str[i] = "0123456789abcdef"[a&0xf];
@@ -168,7 +176,7 @@ inline char* hex(uint128 a)
     return str;
 }
 
-inline char* dec(uint128 a)
+inline char* dec128(UINT128 a)
 {   static char str[44];
     char temp[44];
     size_t i=0, j=0;
@@ -308,12 +316,12 @@ inline constexpr uint64_t differencemod(uint64_t a, uint64_t b)
 // and a and b are both less than N.
 
 inline constexpr uint64_t timesmod(uint64_t a, uint64_t b, uint64_t N)
-{   return (uint64_t)(((uint128)a * b) % N);
+{   return (uint64_t)(((UINT128)a * b) % N);
 }
 
 template <uint64_t P>
 inline constexpr uint64_t timesmod(uint64_t a, uint64_t b)
-{   return (uint64_t)(((uint128)a * b) % P);
+{   return (uint64_t)(((UINT128)a * b) % P);
 }
 
 // Compute x^n mod N where all values are 64 bits.
@@ -476,13 +484,13 @@ inline constexpr XGCD64 P1_P2(P1, P2);
 // other way round.
 
 struct XGCD128
-{   int128 x = 1, y = 0;
+{   INT128 x = 1, y = 0;
     bool x_negated = false;
-    CONSTEVAL XGCD128(int128 a, int128 b)
-    {   int128 u=1, v=0;
+    CONSTEVAL XGCD128(INT128 a, INT128 b)
+    {   INT128 u=1, v=0;
         while (b!=0)
-        {   int128 q=a/b;
-            int128 temp=a-q*b; a=b; b=temp;
+        {   INT128 q=a/b;
+            INT128 temp=a-q*b; a=b; b=temp;
             temp=y-u*q;        y=u; u=temp;
             temp=x-v*q;        x=v; v=temp;
         }
@@ -494,7 +502,7 @@ struct XGCD128
     }
 };
 
-inline constexpr uint128 P1xP2 = (uint128)P1*P2;
+inline constexpr UINT128 P1xP2 = (UINT128)P1*P2;
 
 inline constexpr XGCD128 P1_P2_P3(P1xP2, P3);
 
@@ -510,13 +518,13 @@ inline constexpr XGCD128 P1_P2_P3(P1xP2, P3);
 // is basically "short multiplication" because I view the 128 bit
 // number as two 64-bit digits.
 
-inline constexpr void times_64_128(uint64_t a, uint128 b,
+inline constexpr void times_64_128(uint64_t a, UINT128 b,
                                    uint64_t& hi, uint64_t& mid, uint64_t& lo)
 {   uint64_t bhi = static_cast<uint64_t>(b>>64);
     uint64_t blo = static_cast<uint64_t>(b);
-    uint128 w1 = (uint128)a*blo;
+    UINT128 w1 = (UINT128)a*blo;
     lo = static_cast<uint64_t>(w1);
-    uint128 w2 = (uint128)a*bhi + (w1>>64);
+    UINT128 w2 = (UINT128)a*bhi + (w1>>64);
     mid = static_cast<uint64_t>(w2);
     hi = static_cast<uint64_t>(w2>>64);
 }
@@ -529,7 +537,7 @@ struct P1xP2xP3_t
     uint64_t mid = 0;
     uint64_t lo = 0;
     CONSTEVAL P1xP2xP3_t()
-    {   times_64_128(P1, (uint128)P2*P3, hi, mid, lo);
+    {   times_64_128(P1, (UINT128)P2*P3, hi, mid, lo);
     }
 };
 
@@ -542,7 +550,7 @@ inline constexpr P1xP2xP3_t P1xP2xP3;
 // compiler take the strain! Well that means my previous work was not
 // totally in vain.
 
-template <uint128 P>
+template <UINT128 P>
 inline CONSTEVAL int leadingzeros()
 {   for (int i=0; i<128; i++)
         if ((P>>(127-i)) == 1) return i;
@@ -554,11 +562,11 @@ inline CONSTEVAL int leadingzeros()
 // not try very hard re performance. Also I will not worry about
 // overflow or division by zero.
 
-template <uint128 P>
-inline CONSTEVAL uint128 inverse()
-{   uint128 phi=static_cast<uint128>(1)<<(128-leadingzeros<P>()), plo=0;
-    uint128 q = P;    
-    uint128 r = 0;
+template <UINT128 P>
+inline CONSTEVAL UINT128 inverse()
+{   UINT128 phi=static_cast<UINT128>(1)<<(128-leadingzeros<P>()), plo=0;
+    UINT128 q = P;    
+    UINT128 r = 0;
     for (int i=0; i<128; i++)
     {   r <<= 1;
         if (phi >= q)
@@ -571,18 +579,18 @@ inline CONSTEVAL uint128 inverse()
     return r;
 }
 
-inline constexpr uint128 invP1xP2 = inverse<P1xP2>();
+inline constexpr UINT128 invP1xP2 = inverse<P1xP2>();
 
 // Multiply a pair of 128-bit values to get a 256 bit result.
 
-inline void times_128(uint128 a, uint128 b, uint128& chi, uint128& clo)
+inline void times_128(UINT128 a, UINT128 b, UINT128& chi, UINT128& clo)
 {
     uint64_t ahi = a>>64, alo = a;
     uint64_t bhi = b>>64, blo = b;
-    uint128 hh = (uint128)ahi*bhi;
-    uint128 hl = (uint128)ahi*blo;
-    uint128 lh = (uint128)alo*bhi;
-    uint128 ll = (uint128)alo*blo;
+    UINT128 hh = (UINT128)ahi*bhi;
+    UINT128 hl = (UINT128)ahi*blo;
+    UINT128 lh = (UINT128)alo*bhi;
+    UINT128 ll = (UINT128)alo*blo;
     chi = hh + (hl>>64) + (lh>>64);
     hl <<= 64;
     lh <<= 64;
@@ -598,12 +606,12 @@ inline void times_128(uint128 a, uint128 b, uint128& chi, uint128& clo)
 // the value I get may be low by 1 or 2. In context I will not worry
 // about this.
 
-inline constexpr uint128 times_hi_128(uint128 a, uint128 b)
+inline constexpr UINT128 times_hi_128(UINT128 a, UINT128 b)
 {   uint64_t ahi = a>>64, alo = a;
     uint64_t bhi = b>>64, blo = b;
-    uint128 hi = (uint128)ahi*bhi;
-    uint128 mid1 = ((uint128)ahi*blo)>>64;
-    uint128 mid2 = ((uint128)bhi*alo)>>64;
+    UINT128 hi = (UINT128)ahi*bhi;
+    UINT128 mid1 = ((UINT128)ahi*blo)>>64;
+    UINT128 mid2 = ((UINT128)bhi*alo)>>64;
     return hi + mid1 + mid2;
 } 
 
@@ -611,25 +619,25 @@ inline constexpr uint128 times_hi_128(uint128 a, uint128 b)
 // taking advantage of the fact that the value of P is known and has
 // a couple of high zero bits.
 
-template <uint128 P>
-inline constexpr uint128 timesmod(uint128 a, uint128 b)
-{   uint128 phi, plo;
+template <UINT128 P>
+inline constexpr UINT128 timesmod(UINT128 a, UINT128 b)
+{   UINT128 phi, plo;
     times_128(a, b, phi, plo);
 // Here a and b each have (at least) leadingzeros<P>() leading zeros and so
 // their product has at least 2*leadingzeros<P>(). So if I shift the 256-bit
 // version of the product right by 128-2*leadingzeros<P>() I should get a
 // value that fits into 128 bits and that has as much accuracy as I can. 
-    uint128 ptop = phi<<(2*leadingzeros<P>()) |
+    UINT128 ptop = phi<<(2*leadingzeros<P>()) |
                     (plo>>(128-2*leadingzeros<P>()));
-    uint128 quot = times_hi_128(ptop, invP1xP2);
+    UINT128 quot = times_hi_128(ptop, invP1xP2);
 // I now want to set rem = a*b - quot*P1xP2
 // Well quot needs shifting to allow for that fact that invP1xP2 had
 // been shifted up to get extra precision.
     quot >>= (leadingzeros<P>()-1);
-    uint128 qhi, qlo;
+    UINT128 qhi, qlo;
     times_128(quot, P1xP2, qhi, qlo);
     phi -= qhi;
-    uint128 r = plo - qlo;
+    UINT128 r = plo - qlo;
     if (r > plo) phi--;
 //  assert(phi == 0);
 // I very much expect that after this {phi,plo} will be my remainder
@@ -672,19 +680,19 @@ inline void chinese_remainder(uint64_t a1, uint64_t a2, uint64_t a3,
                               uint64_t& hi, uint64_t& mid, uint64_t& lo)
 {
 // First find a1a2 which will be a1 mod P1 and a2 mod P2
-    uint128 a1a2A = (((uint128)a2*P1_P2.x)%P2)*P1;
-    uint128 a1a2B = (((uint128)a1*P1_P2.y)%P1)*P2;
-    uint128 a1a2;
+    UINT128 a1a2A = (((UINT128)a2*P1_P2.x)%P2)*P1;
+    UINT128 a1a2B = (((UINT128)a1*P1_P2.y)%P1)*P2;
+    UINT128 a1a2;
 // In fact I because I am using a fixed set of primes I happen to know
 // that x_negated will NOT be set here, but I expect that a good compiler
 // will understand that and the redundant code here will not hurt - and
 // having it here makes what I write "more honest".
     if (P1_P2.x_negated)
         a1a2 = a1a2B >= a1a2A ? a1a2B - a1a2A
-                              : a1a2B + (uint128)P1xP2 - a1a2A;
+                              : a1a2B + (UINT128)P1xP2 - a1a2A;
     else
         a1a2 = a1a2A >= a1a2B ? a1a2A - a1a2B
-                              : a1a2A + (uint128)P1xP2 - a1a2B;
+                              : a1a2A + (UINT128)P1xP2 - a1a2B;
 // Now the next step is logically the same but looks messier
 // because I need to go to 192 bits. Well more pedantically around 170
 // would suffice, but that still means I will yse three 64-bit digits.
@@ -694,12 +702,12 @@ inline void chinese_remainder(uint64_t a1, uint64_t a2, uint64_t a3,
 //    q = ((a1a2*P1_P2_P3.y)%(P1*P2)) * P3;   a1a2 & p1_p2_p3.y both 128 bits
 //    (p - q) % (P1*P2*P3);
 
-    uint128 temp = a3*P1_P2_P3.x;   // will not overflow because .x is 64-bits
+    UINT128 temp = a3*P1_P2_P3.x;   // will not overflow because .x is 64-bits
     uint64_t phi, pmid, plo;
     times_64_128(temp%P3, P1xP2, phi, pmid, plo);
 // Now for the messier one: I need (a1a2*P1_P2_P3.y) % (P1*P2)
 // and all three values involved are 128-bits wide.
-    uint128 q1 = timesmod<P1xP2>(a1a2, P1_P2_P3.y);
+    UINT128 q1 = timesmod<P1xP2>(a1a2, P1_P2_P3.y);
     uint64_t qhi, qmid, qlo;
     times_64_128(P3, q1, qhi, qmid, qlo);
 // Now I need to return p-q  mod P1xP2xP3. Note that both p and q are
@@ -744,7 +752,7 @@ inline void slowmul(uint64_t* a, size_t lena,
         c[i] = 0;
     for (size_t i=0; i<lena; i++)
     {   for (size_t j=0; j<lenb; j++)
-        {   uint128 w = (uint128)a[i]*b[j];
+        {   UINT128 w = (UINT128)a[i]*b[j];
             size_t k = i+j;
             while (w != 0)
             {   uint64_t loww = w;

@@ -66,6 +66,9 @@
 
 using namespace asmjit;
 
+namespace CSL_LISP
+{
+
 struct JitFailed : public std::exception
 {   const char* msg;
     JitFailed()
@@ -1429,6 +1432,7 @@ void Ljit_unfinished()
 
 }; // end of JITCompile class
 
+
 // Now the simple entrypoint...
 
 void* jitcompile(const unsigned char* bytes, size_t len,
@@ -1462,7 +1466,12 @@ LispObject Ljit_unfinished(LispObject env)
     return nil;
 }
 
+} // end namespace
+
 #else // ENABLE_JIT
+
+namespace CSL_LISP
+{
 
 // The functions here are no use, but are provided so that image files
 // are compatible across architectures. By always returning nullptr this
@@ -1477,7 +1486,12 @@ LispObject Ljit_unfinished(LispObject env)
 {   return nil;
 }
 
+} // end namespace
+
 #endif // ENABLE_JIT
+
+namespace CSL_LISP
+{
 
 static void show(int count, const unsigned char* code)
 {   printf("For %d args at %p...\n", count, code);
@@ -1496,4 +1510,6 @@ LispObject Lop_bytes(LispObject env, LispObject ff)
     return nil;
 }
 
+} // end namespace
+ 
 // end of jit.cpp

@@ -35,6 +35,9 @@ allocate.h                             Copyright (C) Codemist, 1990-2025
 #ifndef header_allocate_h
 #define header_allocate_h 1
 
+namespace CSL_LISP
+{
+
 extern uintptr_t lfringe;
 extern uintptr_t lheaplimit;
 extern uintptr_t vfringe;
@@ -222,6 +225,8 @@ inline LispObject list2(LispObject a, LispObject b)
         return reclaim(r, "internal list2", GC_CONS, 0);
     else return r;
 }
+
+} // end of namespace
 
 #endif // header_allocate_h
 

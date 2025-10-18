@@ -44,6 +44,9 @@ SOFTWARE.
  * #include "qdouble.h"
  */
 
+// ACN has removed various good parts of this code that are not needed in the
+// context of CSL so as to make it smaller and perhaps simpler. And otherwise
+// made the code here less generic.
 
 #ifndef QDOUBLE_H
 #define QDOUBLE_H
@@ -53,23 +56,13 @@ SOFTWARE.
 #include <string>
 #include <iostream>
 
-#ifndef QDOUBLEDEF
-#ifdef QDOUBLE_STATIC
-#define QDOUBLEDEF static
-#else
-#define QDOUBLEDEF extern
-#endif
-#endif
-
-#ifndef QDOUBLEINLINE
-#define QDOUBLEINLINE inline 
-#endif
-
+namespace CSL_LISP
+{
 
 /* The following code computes s = fl(a+b) and error(a + b),
    assuming |a| >= |b|.
  */
-QDOUBLEINLINE double quick_two_sum(double a, double b, double& error)
+inline double quick_two_sum(double a, double b, double& error)
   {
   double s = a + b;
   error = b - (s - a);
@@ -79,7 +72,7 @@ QDOUBLEINLINE double quick_two_sum(double a, double b, double& error)
 /* The following code computes s = fl(a-b) and error(a - b),
    assuming |a| >= |b|.
  */
-QDOUBLEINLINE double quick_two_diff(double a, double b, double& error)
+inline double quick_two_diff(double a, double b, double& error)
   {
   double s = a - b;
   error = (a - s) - b;
@@ -87,7 +80,7 @@ QDOUBLEINLINE double quick_two_diff(double a, double b, double& error)
   }
 
 /* The following code computes s = fl(a+b) and error(a + b). */
-QDOUBLEINLINE double two_sum(double a, double b, double& error)
+inline double two_sum(double a, double b, double& error)
   {
   double s = a + b;
   double v = s - a;
@@ -96,7 +89,7 @@ QDOUBLEINLINE double two_sum(double a, double b, double& error)
   }
 
 /* The following code computes s = fl(a-b) and error(a - b). */
-QDOUBLEINLINE double two_diff(double a, double b, double& error)
+inline double two_diff(double a, double b, double& error)
   {
   double s = a - b;
   double v = s - a;
@@ -109,7 +102,7 @@ QDOUBLEINLINE double two_diff(double a, double b, double& error)
    bits of significand, such that a is the sum of the high word with
    the low word. The high word will contain the first 26 bits,
    while the low word will contain the lower 26 bits.*/
-QDOUBLEINLINE void split(double a, double& high, double& low)
+inline void split(double a, double& high, double& low)
   {
   double temp = 134217729.0 * a; // 134217729.0 = 2^27 + 1
   high = temp - (temp - a);
@@ -117,7 +110,7 @@ QDOUBLEINLINE void split(double a, double& high, double& low)
   }
 
 /* The following code computes fl(a x b) and error(a x b). */
-QDOUBLEINLINE double two_prod(double a, double b, double& error)
+inline double two_prod(double a, double b, double& error)
   {
   double a_high, a_low, b_high, b_low;
   double p = a * b;
@@ -129,7 +122,7 @@ QDOUBLEINLINE double two_prod(double a, double b, double& error)
   }
 
 /* The following code computes fl(a x a) and error(a x a). */
-QDOUBLEINLINE double two_sqr(double a, double& error)
+inline double two_sqr(double a, double& error)
   {
   double a_high, a_low;
   double p = a * a;
@@ -138,7 +131,7 @@ QDOUBLEINLINE double two_sqr(double a, double& error)
   return p;
   }
 
-QDOUBLEINLINE void three_sum(double& a, double& b, double& c)
+inline void three_sum(double& a, double& b, double& c)
   {
   double t1, t2, t3;
   t1 = two_sum(a, b, t2);
@@ -146,7 +139,7 @@ QDOUBLEINLINE void three_sum(double& a, double& b, double& c)
   b = two_sum(t2, t3, c);
   }
 
-QDOUBLEINLINE void three_sum2(double& a, double& b, double& c)
+inline void three_sum2(double& a, double& b, double& c)
   {
   double t1, t2, t3;
   t1 = two_sum(a, b, t2);
@@ -159,7 +152,7 @@ struct qdouble
   {
   double a[4];
 
-  QDOUBLEINLINE qdouble()
+  inline qdouble()
     {
     a[0] = 0.0;
     a[1] = 0.0;
@@ -167,7 +160,7 @@ struct qdouble
     a[3] = 0.0;
     }
 
-  QDOUBLEINLINE qdouble(double a0, double a1, double a2, double a3)
+  inline qdouble(double a0, double a1, double a2, double a3)
     {
     a[0] = a0;
     a[1] = a1;
@@ -175,7 +168,7 @@ struct qdouble
     a[3] = a3;
     }
 
-  QDOUBLEINLINE qdouble(const double* aa)
+  inline qdouble(const double* aa)
     {
     a[0] = aa[0];
     a[1] = aa[1];
@@ -183,7 +176,7 @@ struct qdouble
     a[3] = aa[3];
     }
 
-  QDOUBLEINLINE qdouble(double a0)
+  inline qdouble(double a0)
     {
     a[0] = a0;
     a[1] = 0.0;
@@ -191,7 +184,7 @@ struct qdouble
     a[3] = 0.0;
     }
 
-  QDOUBLEINLINE qdouble(int i)
+  inline qdouble(int i)
     {
     a[0] = static_cast<double>(i);
     a[1] = 0.0;
@@ -200,7 +193,7 @@ struct qdouble
     }
 
   template <class TType>
-  QDOUBLEINLINE qdouble(TType i)
+  inline qdouble(TType i)
     {
     a[0] = static_cast<double>(i);
     a[1] = 0.0;
@@ -209,13 +202,13 @@ struct qdouble
     }
 
   template <class TType>
-  QDOUBLEINLINE double operator[] (TType i) const
+  inline double operator[] (TType i) const
     {
     return a[i];
     }
 
   template <class TType>
-  QDOUBLEINLINE double& operator[] (TType i)
+  inline double& operator[] (TType i)
     {
     return a[i];
     }
@@ -278,57 +271,57 @@ static const qdouble qdouble_safe_max = qdouble(
   5.53956966280111259858e+275, 3.07507889307840487279e+259);
 
 
-QDOUBLEINLINE bool operator == (const qdouble& a, const qdouble& b)
+inline bool operator == (const qdouble& a, const qdouble& b)
   {
   return (a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3]);
   }
 
-QDOUBLEINLINE bool operator == (const qdouble& a, double b)
+inline bool operator == (const qdouble& a, double b)
   {
   return (a[0] == b && a[1] == 0.0 && a[2] == 0.0 && a[3] == 0.0);
   }
 
-QDOUBLEINLINE bool operator == (double a, const qdouble& b)
+inline bool operator == (double a, const qdouble& b)
   {
   return b == a;
   }
 
-QDOUBLEINLINE bool operator != (const qdouble& a, const qdouble& b)
+inline bool operator != (const qdouble& a, const qdouble& b)
   {
   return !(a == b);
   }
 
-QDOUBLEINLINE bool operator != (const qdouble& a, double b)
+inline bool operator != (const qdouble& a, double b)
   {
   return !(a == b);
   }
 
-QDOUBLEINLINE bool operator != (double a, const qdouble& b)
+inline bool operator != (double a, const qdouble& b)
   {
   return !(a == b);
   }
 
-QDOUBLEINLINE bool operator < (const qdouble& a, double b)
+inline bool operator < (const qdouble& a, double b)
   {
   return (a[0] < b || (a[0] == b && a[1] < 0.0));
   }
 
-QDOUBLEINLINE bool operator > (const qdouble& a, double b)
+inline bool operator > (const qdouble& a, double b)
   {
   return (a[0] > b || (a[0] == b && a[1] > 0.0));
   }
 
-QDOUBLEINLINE bool operator < (double a, const qdouble& b)
+inline bool operator < (double a, const qdouble& b)
   {
   return b > a;
   }
 
-QDOUBLEINLINE bool operator > (double a, const qdouble& b)
+inline bool operator > (double a, const qdouble& b)
   {
   return b < a;
   }
 
-QDOUBLEINLINE bool operator < (const qdouble& a, const qdouble& b)
+inline bool operator < (const qdouble& a, const qdouble& b)
   {
   return (a[0] < b[0] ||
     (a[0] == b[0] && (a[1] < b[1] ||
@@ -336,7 +329,7 @@ QDOUBLEINLINE bool operator < (const qdouble& a, const qdouble& b)
         (a[2] == b[2] && a[3] < b[3]))))));
   }
 
-QDOUBLEINLINE bool operator > (const qdouble& a, const qdouble& b)
+inline bool operator > (const qdouble& a, const qdouble& b)
   {
   return (a[0] > b[0] ||
     (a[0] == b[0] && (a[1] > b[1] ||
@@ -345,27 +338,27 @@ QDOUBLEINLINE bool operator > (const qdouble& a, const qdouble& b)
   }
 
 
-QDOUBLEINLINE bool operator <= (const qdouble& a, double b)
+inline bool operator <= (const qdouble& a, double b)
   {
   return (a[0] < b || (a[0] == b && a[1] <= 0.0));
   }
 
-QDOUBLEINLINE bool operator >= (const qdouble& a, double b)
+inline bool operator >= (const qdouble& a, double b)
   {
   return (a[0] > b || (a[0] == b && a[1] >= 0.0));
   }
 
-QDOUBLEINLINE bool operator <= (double a, const qdouble& b)
+inline bool operator <= (double a, const qdouble& b)
   {
   return b >= a;
   }
 
-QDOUBLEINLINE bool operator >= (double a, const qdouble& b)
+inline bool operator >= (double a, const qdouble& b)
   {
   return b <= a;
   }
 
-QDOUBLEINLINE bool operator <= (const qdouble& a, const qdouble& b)
+inline bool operator <= (const qdouble& a, const qdouble& b)
   {
   return (a[0] < b[0] ||
     (a[0] == b[0] && (a[1] < b[1] ||
@@ -373,7 +366,7 @@ QDOUBLEINLINE bool operator <= (const qdouble& a, const qdouble& b)
         (a[2] == b[2] && a[3] <= b[3]))))));
   }
 
-QDOUBLEINLINE bool operator >= (const qdouble& a, const qdouble& b)
+inline bool operator >= (const qdouble& a, const qdouble& b)
   {
   return (a[0] > b[0] ||
     (a[0] == b[0] && (a[1] > b[1] ||
@@ -381,17 +374,17 @@ QDOUBLEINLINE bool operator >= (const qdouble& a, const qdouble& b)
         (a[2] == b[2] && a[3] >= b[3]))))));
   }
 
-QDOUBLEINLINE bool is_inf(const qdouble& a)
+inline bool is_inf(const qdouble& a)
   {
   return a[0] == std::numeric_limits<double>::infinity();
   }
 
-QDOUBLEINLINE bool is_nan(const qdouble& a)
+inline bool is_nan(const qdouble& a)
   {
   return a[0] != a[0] || a[1] != a[1] || a[2] != a[2] || a[3] != a[3];
   }
 
-QDOUBLEINLINE void renormalize(double& a0, double& a1, double& a2, double& a3)
+inline void renormalize(double& a0, double& a1, double& a2, double& a3)
   {
   double s0, s1, s2 = 0.0, s3 = 0.0;
   s0 = quick_two_sum(a2, a3, a3);
@@ -421,7 +414,7 @@ QDOUBLEINLINE void renormalize(double& a0, double& a1, double& a2, double& a3)
   a3 = s3;
   }
 
-QDOUBLEINLINE void renormalize(double& a0, double& a1, double& a2, double& a3, double& a4)
+inline void renormalize(double& a0, double& a1, double& a2, double& a3, double& a4)
   {
   double s0, s1, s2 = 0.0, s3 = 0.0;
 
@@ -481,7 +474,7 @@ QDOUBLEINLINE void renormalize(double& a0, double& a1, double& a2, double& a3, d
   a3 = s3;
   }
 
-QDOUBLEINLINE qdouble operator + (const qdouble& a, double b)
+inline qdouble operator + (const qdouble& a, double b)
   {
   double b0, b1, b2, b3;
   double e;
@@ -494,7 +487,7 @@ QDOUBLEINLINE qdouble operator + (const qdouble& a, double b)
   return qdouble(b0, b1, b2, b3);
   }
 
-QDOUBLEINLINE qdouble operator + (double a, const qdouble& b)
+inline qdouble operator + (double a, const qdouble& b)
   {
   return (b + a);
   }
@@ -506,7 +499,7 @@ contain more than one double worth of significand. u and v are
 modified to represent the other two components in the sum.
 */
 
-QDOUBLEINLINE double double_accumulate(double& u, double& v, double x)
+inline double double_accumulate(double& u, double& v, double x)
   {
   double s;
   bool zu, zv;
@@ -533,7 +526,7 @@ QDOUBLEINLINE double double_accumulate(double& u, double& v, double x)
   return 0.0;
   }
 
-QDOUBLEINLINE qdouble operator + (const qdouble& a, const qdouble& b)
+inline qdouble operator + (const qdouble& a, const qdouble& b)
   {
   int i, j, k;
   double s, t;
@@ -587,51 +580,51 @@ QDOUBLEINLINE qdouble operator + (const qdouble& a, const qdouble& b)
   return qdouble(x[0], x[1], x[2], x[3]);
   }
 
-QDOUBLEINLINE qdouble operator - (const qdouble& a)
+inline qdouble operator - (const qdouble& a)
   {
   return qdouble(-a[0], -a[1], -a[2], -a[3]);
   }
 
-QDOUBLEINLINE qdouble operator - (const qdouble& a, double b)
+inline qdouble operator - (const qdouble& a, double b)
   {
   return a + (-b);
   }
 
-QDOUBLEINLINE qdouble operator - (double a, const qdouble& b)
+inline qdouble operator - (double a, const qdouble& b)
   {
   return (-b) + a;
   }
 
-QDOUBLEINLINE qdouble operator - (const qdouble& a, const qdouble& b)
+inline qdouble operator - (const qdouble& a, const qdouble& b)
   {
   return a + (-b);
   }
 
-QDOUBLEINLINE qdouble& operator += (qdouble& a, const qdouble& b)
+inline qdouble& operator += (qdouble& a, const qdouble& b)
   {
   a = (a + b);
   return a;
   }
 
-QDOUBLEINLINE qdouble& operator += (qdouble& a, double b)
+inline qdouble& operator += (qdouble& a, double b)
   {
   a = (a + b);
   return a;
   }
 
-QDOUBLEINLINE qdouble& operator -= (qdouble& a, const qdouble& b)
+inline qdouble& operator -= (qdouble& a, const qdouble& b)
   {
   a = (a - b);
   return a;
   }
 
-QDOUBLEINLINE qdouble& operator -= (qdouble& a, double b)
+inline qdouble& operator -= (qdouble& a, double b)
   {
   a = (a - b);
   return a;
   }
 
-QDOUBLEINLINE qdouble operator * (const qdouble& a, double b)
+inline qdouble operator * (const qdouble& a, double b)
   {
   double p0, p1, p2, p3;
   double q0, q1, q2;
@@ -650,12 +643,12 @@ QDOUBLEINLINE qdouble operator * (const qdouble& a, double b)
   return qdouble(s0, s1, s2, s3);
   }
 
-QDOUBLEINLINE qdouble operator * (double a, const qdouble& b)
+inline qdouble operator * (double a, const qdouble& b)
   {
   return b * a;
   }
 
-QDOUBLEINLINE qdouble operator * (const qdouble& a, const qdouble& b)
+inline qdouble operator * (const qdouble& a, const qdouble& b)
   {
   double p0, p1, p2, p3, p4, p5;
   double q0, q1, q2, q3, q4, q5;
@@ -718,7 +711,7 @@ QDOUBLEINLINE qdouble operator * (const qdouble& a, const qdouble& b)
   return qdouble(p0, p1, s0, t0);
   }
 
-QDOUBLEINLINE qdouble sqr(const qdouble& a)
+inline qdouble sqr(const qdouble& a)
   {
   double p0, p1, p2, p3, p4, p5;
   double q0, q1, q2, q3;
@@ -761,7 +754,7 @@ QDOUBLEINLINE qdouble sqr(const qdouble& a)
   return qdouble(p0, p1, p2, p3);
   }
 
-QDOUBLEINLINE qdouble operator / (const qdouble& a, const qdouble& b)
+inline qdouble operator / (const qdouble& a, const qdouble& b)
   {
   double q0, q1, q2, q3;
 
@@ -786,51 +779,51 @@ QDOUBLEINLINE qdouble operator / (const qdouble& a, const qdouble& b)
   return qdouble(q0, q1, q2, q3);
   }
 
-QDOUBLEINLINE qdouble operator / (double a, const qdouble& b)
+inline qdouble operator / (double a, const qdouble& b)
   {
   return qdouble(a) / b;
   }
 
-QDOUBLEINLINE qdouble operator / (const qdouble& a, double b)
+inline qdouble operator / (const qdouble& a, double b)
   {
   return a / qdouble(b);
   }
 
-QDOUBLEINLINE qdouble& operator *= (qdouble& a, const qdouble& b)
+inline qdouble& operator *= (qdouble& a, const qdouble& b)
   {
   a = (a * b);
   return a;
   }
 
-QDOUBLEINLINE qdouble& operator *= (qdouble& a, double b)
+inline qdouble& operator *= (qdouble& a, double b)
   {
   a = (a * b);
   return a;
   }
 
-QDOUBLEINLINE qdouble& operator /= (qdouble& a, const qdouble& b)
+inline qdouble& operator /= (qdouble& a, const qdouble& b)
   {
   a = (a / b);
   return a;
   }
 
-QDOUBLEINLINE qdouble& operator /= (qdouble& a, double b)
+inline qdouble& operator /= (qdouble& a, double b)
   {
   a = (a / b);
   return a;
   }
 
-QDOUBLEINLINE qdouble abs(const qdouble& a)
+inline qdouble abs(const qdouble& a)
   {
   return (a[0] < 0.0) ? -a : a;
   }
 
-QDOUBLEINLINE qdouble fabs(const qdouble& a)
+inline qdouble fabs(const qdouble& a)
   {
   return abs(a);
   }
 
-QDOUBLEINLINE qdouble floor(const qdouble& a)
+inline qdouble floor(const qdouble& a)
   {
   double x0, x1, x2, x3;
   x1 = x2 = x3 = 0.0;
@@ -857,7 +850,7 @@ QDOUBLEINLINE qdouble floor(const qdouble& a)
   }
 
 
-QDOUBLEINLINE qdouble ceil(const qdouble& a)
+inline qdouble ceil(const qdouble& a)
   {
   double x0, x1, x2, x3;
   x1 = x2 = x3 = 0.0;
@@ -883,22 +876,22 @@ QDOUBLEINLINE qdouble ceil(const qdouble& a)
   return qdouble(x0, x1, x2, x3);
   }
 
-QDOUBLEINLINE double to_double(const qdouble& a)
+inline double to_double(const qdouble& a)
   {
   return a[0];
   }
 
-QDOUBLEINLINE int to_int(const qdouble& a)
+inline int to_int(const qdouble& a)
   {
   return static_cast<int>(a[0]);
   }
 
-QDOUBLEINLINE qdouble mul_pwr2(const qdouble& a, double b)
+inline qdouble mul_pwr2(const qdouble& a, double b)
   {
   return qdouble(a[0] * b, a[1] * b, a[2] * b, a[3] * b);
   }
 
-QDOUBLEINLINE qdouble sqrt(const qdouble& a)
+inline qdouble sqrt(const qdouble& a)
   {
   /* Strategy:
 
@@ -932,7 +925,7 @@ QDOUBLEINLINE qdouble sqrt(const qdouble& a)
   return r;
   }
 
-QDOUBLEINLINE qdouble ldexp(const qdouble& a, int n)
+inline qdouble ldexp(const qdouble& a, int n)
   {
   return qdouble(std::ldexp(a[0], n), std::ldexp(a[1], n),
     std::ldexp(a[2], n), std::ldexp(a[3], n));
@@ -972,7 +965,7 @@ static const qdouble qdouble_inv_fact[qdouble_n_inv_fact] = {
   -2.87777179307447918e-50, 4.27110689256293549e-67)
   };
 
-QDOUBLEINLINE qdouble exp(const qdouble& a)
+inline qdouble exp(const qdouble& a)
   {
   /* Strategy:  We first reduce the size of x by noting that
 
@@ -983,7 +976,7 @@ QDOUBLEINLINE qdouble exp(const qdouble& a)
   evaluated using the familiar Taylor series.  Reducing the
   argument substantially speeds up the convergence.       */
 
-  const double k = ldexp(1.0, 16);
+  const double k = std::ldexp(1.0, 16);
   const double inv_k = 1.0 / k;
 
   if (a[0] <= -709.0)
@@ -1036,7 +1029,7 @@ QDOUBLEINLINE qdouble exp(const qdouble& a)
 
 /* Logarithm.  Computes log(x) in quad-double precision.
 This is a natural logarithm (i.e., base e).            */
-QDOUBLEINLINE qdouble log(const qdouble& a)
+inline qdouble log(const qdouble& a)
   {
   /* Strategy.  The Taylor series for log converges much more
   slowly than that of exp, due to the lack of the factorial
@@ -1078,12 +1071,12 @@ QDOUBLEINLINE qdouble log(const qdouble& a)
   return x;
   }
 
-QDOUBLEINLINE qdouble log10(const qdouble& a)
+inline qdouble log10(const qdouble& a)
   {
   return log(a) / qdouble_log10;
   }
 
-QDOUBLEINLINE qdouble pow(const qdouble& a, int n)
+inline qdouble pow(const qdouble& a, int n)
   {
   if (n == 0)
     return 1.0;
@@ -1120,11 +1113,11 @@ QDOUBLEINLINE qdouble pow(const qdouble& a, int n)
   return s;
   }
 
-QDOUBLEINLINE qdouble pow(const qdouble& a, const qdouble& b) {
+inline qdouble pow(const qdouble& a, const qdouble& b) {
   return exp(b * log(a));
   }
 
-QDOUBLEINLINE qdouble operator^(const qdouble& a, int n)
+inline qdouble operator^(const qdouble& a, int n)
   {
   return pow(a, n);
   }
@@ -1132,7 +1125,7 @@ QDOUBLEINLINE qdouble operator^(const qdouble& a, int n)
 /* polyeval(coeff, n, x)
 Evaluates the given n-th degree polynomial at x.
 The polynomial is given by the array of (n+1) coefficients. */
-QDOUBLEINLINE qdouble polyeval(const qdouble* coeff, int n, const qdouble& x)
+inline qdouble polyeval(const qdouble* coeff, int n, const qdouble& x)
   {
   qdouble r = coeff[n];
   for (int i = n - 1; i >= 0; --i)
@@ -1146,7 +1139,7 @@ QDOUBLEINLINE qdouble polyeval(const qdouble* coeff, int n, const qdouble& x)
 /* polyroot(coeff, n, x0)
 Given an n-th degree polynomial, finds a root close to
 the given guess x0. */
-QDOUBLEINLINE qdouble polyroot(const qdouble* coeff, int n, const qdouble& x0, int max_iter = 64, double thresh = 0.0)
+inline qdouble polyroot(const qdouble* coeff, int n, const qdouble& x0, int max_iter = 64, double thresh = 0.0)
   {
   qdouble x = x0;
   qdouble f;
@@ -1191,7 +1184,7 @@ QDOUBLEINLINE qdouble polyroot(const qdouble* coeff, int n, const qdouble& x0, i
   }
 
 /* Computes the n-th root of a */
-QDOUBLEINLINE qdouble nroot(const qdouble& a, int n)
+inline qdouble nroot(const qdouble& a, int n)
   {
   /* Strategy:  Use Newton's iteration to solve
 
@@ -2282,7 +2275,7 @@ static const qdouble cos_table[] = {
 
 /* Computes sin(a) and cos(a) using Taylor series.
 Assumes |a| <= pi/2048.                           */
-QDOUBLEINLINE void sincos_taylor(const qdouble& a, qdouble& sin_a, qdouble& cos_a)
+inline void sincos_taylor(const qdouble& a, qdouble& sin_a, qdouble& cos_a)
   {
   const double thresh = 0.5 * qdouble_eps * std::abs(to_double(a));
   qdouble p, s, t, x;
@@ -2309,7 +2302,7 @@ QDOUBLEINLINE void sincos_taylor(const qdouble& a, qdouble& sin_a, qdouble& cos_
     cos_a = sqrt(1.0 - sqr(s));
   }
 
-QDOUBLEINLINE qdouble sin_taylor(const qdouble& a)
+inline qdouble sin_taylor(const qdouble& a)
   {
   const double thresh = 0.5 * qdouble_eps * std::abs(to_double(a));
   qdouble p, s, t, x;
@@ -2333,7 +2326,7 @@ QDOUBLEINLINE qdouble sin_taylor(const qdouble& a)
     return s;
   }
 
-QDOUBLEINLINE qdouble cos_taylor(const qdouble& a)
+inline qdouble cos_taylor(const qdouble& a)
   {
   const double thresh = 0.5 * qdouble_eps;
   qdouble p, s, t, x;
@@ -2358,7 +2351,7 @@ QDOUBLEINLINE qdouble cos_taylor(const qdouble& a)
   }
 
 
-QDOUBLEINLINE qdouble round(const qdouble& a)
+inline qdouble round(const qdouble& a)
   {
   double x0, x1, x2, x3;
 
@@ -2406,7 +2399,7 @@ QDOUBLEINLINE qdouble round(const qdouble& a)
   }
 
 
-QDOUBLEINLINE qdouble sin(const qdouble& a)
+inline qdouble sin(const qdouble& a)
   {
 
   /* Strategy.  To compute sin(x), we choose integers a, b so that
@@ -2500,7 +2493,7 @@ QDOUBLEINLINE qdouble sin(const qdouble& a)
   return r;
   }
 
-QDOUBLEINLINE qdouble cos(const qdouble& a) {
+inline qdouble cos(const qdouble& a) {
 
   if (a == 0.0) {
     return 1.0;
@@ -2584,7 +2577,7 @@ QDOUBLEINLINE qdouble cos(const qdouble& a) {
   return r;
   }
 
-QDOUBLEINLINE void sincos(const qdouble& a, qdouble& sin_a, qdouble& cos_a)
+inline void sincos(const qdouble& a, qdouble& sin_a, qdouble& cos_a)
   {
 
   if (a == 0.0) {
@@ -2686,365 +2679,19 @@ QDOUBLEINLINE void sincos(const qdouble& a, qdouble& sin_a, qdouble& cos_a)
     }
   }
 
-QDOUBLEINLINE qdouble tan(const qdouble& a)
+inline qdouble tan(const qdouble& a)
   {
   qdouble s, c;
   sincos(a, s, c);
   return s / c;
   }
 
-QDOUBLEDEF std::string to_string(const qdouble& a, std::streamsize precision, std::streamsize width, std::ios_base::fmtflags fmt, bool showpos, bool uppercase, char fill);
-
-QDOUBLEDEF std::ostream& operator << (std::ostream& s, const qdouble& a);
-
-QDOUBLEDEF qdouble make_qdouble(const char* s);
-
-namespace std {
-  template <>
-  class numeric_limits<qdouble> : public numeric_limits < double > {
-  public:
-    inline static double epsilon() { return qdouble_eps; }
-    inline static double min() { return qdouble_min_normalized; }
-    inline static qdouble max() { return qdouble_max; }
-    inline static qdouble safe_max() { return qdouble_safe_max; }
-    static const int digits = 209;
-    static const int digits10 = 62;
-    };
-  }
+extern qdouble make_qdouble(const char* s);
 
 #endif // #ifndef QDOUBLE_H
 
 
 #ifdef QDOUBLE_IMPLEMENTATION
-
-#include <iomanip>
-
-void to_digits(const qdouble& a, char* s, int& expn, std::streamsize precision)
-  {
-  auto D = precision + 1;  /* number of digits to compute */
-
-  qdouble r = abs(a);
-  int e;  /* exponent */
-  std::streamsize i;
-  int d;
-
-  if (a[0] == 0.0)
-    {
-    expn = 0;
-    for (i = 0; i < precision; i++) s[i] = '0';
-    return;
-    }
-
-  /* First determine the (approximate) exponent. */
-  e = static_cast<int>(std::floor(std::log10(std::abs(a[0]))));
-
-  if (e < -300) {
-    r *= qdouble(10.0) ^ 300;
-    r /= qdouble(10.0) ^ (e + 300);
-    }
-  else if (e > 300) {
-    r = ldexp(r, -53);
-    r /= qdouble(10.0) ^ e;
-    r = ldexp(r, 53);
-    }
-  else {
-    r /= qdouble(10.0) ^ e;
-    }
-
-  /* Fix exponent if we are off by one */
-  if (r >= 10.0) {
-    r /= 10.0;
-    e++;
-    }
-  else if (r < 1.0) {
-    r *= 10.0;
-    e--;
-    }
-
-  if (r >= 10.0 || r < 1.0) {
-    //"(qdouble::to_digits): can't compute exponent.";
-    return;
-    }
-
-  /* Extract the digits */
-  for (i = 0; i < D; i++) {
-    d = static_cast<int>(r[0]);
-    r -= d;
-    r *= 10.0;
-
-    s[i] = static_cast<char>(d + '0');
-    }
-
-  /* Fix out of range digits. */
-  for (i = D - 1; i > 0; i--) {
-    if (s[i] < '0') {
-      s[i - 1]--;
-      s[i] += 10;
-      }
-    else if (s[i] > '9') {
-      s[i - 1]++;
-      s[i] -= 10;
-      }
-    }
-
-  if (s[0] <= '0') {
-    //"(qdouble::to_digits): non-positive leading digit.";
-    return;
-    }
-
-  /* Round, handle carry */
-  if (s[D - 1] >= '5') {
-    s[D - 2]++;
-
-    i = D - 2;
-    while (i > 0 && s[i] > '9') {
-      s[i] -= 10;
-      s[--i]++;
-      }
-    }
-
-  /* If first digit is 10, shift everything. */
-  if (s[0] > '9') {
-    e++;
-    for (i = precision; i >= 2; i--) s[i] = s[i - 1];
-    s[0] = '1';
-    s[1] = '0';
-    }
-
-  s[precision] = 0;
-  expn = e;
-  }
-
-
-void round_string_qdouble(char* s, std::streamsize precision, int* offset) {
-  /*
-  Input string must be all digits or errors will occur.
-  */
-
-  std::streamsize i;
-  auto D = precision;
-
-  /* Round, handle carry */
-  if (s[D - 1] >= '5') {
-    s[D - 2]++;
-
-    i = D - 2;
-    while (i > 0 && s[i] > '9') {
-      s[i] -= 10;
-      s[--i]++;
-      }
-    }
-
-  /* If first digit is 10, shift everything. */
-  if (s[0] > '9') {
-    // e++; // don't modify exponent here
-    for (i = precision; i >= 2; i--) s[i] = s[i - 1];
-    s[0] = '1';
-    s[1] = '0';
-
-    (*offset)++; // now offset needs to be increased by one
-    precision++;
-    }
-
-  s[precision] = 0; // add terminator for array
-  }
-
-
-void append_expn(std::string& str, int expn)
-  {
-  int k;
-
-  str += (expn < 0 ? '-' : '+');
-  expn = std::abs(expn);
-
-  if (expn >= 100) {
-    k = (expn / 100);
-    str += '0' + char(k);
-    expn -= 100 * k;
-    }
-
-  k = (expn / 10);
-  str += '0' + char(k);
-  expn -= 10 * k;
-
-  str += '0' + char(expn);
-  }
-
-std::string to_string(const qdouble& a, std::streamsize precision, std::streamsize width, std::ios_base::fmtflags fmt, bool showpos, bool uppercase, char fill)
-  {
-  std::string s;
-  bool fixed = (fmt & std::ios_base::fixed) != 0;
-  bool sgn = true;
-  int i, e = 0;
-
-  if (is_inf(a)) {
-    if (a < 0.0)
-      s += '-';
-    else if (showpos)
-      s += '+';
-    else
-      sgn = false;
-    s += uppercase ? "INF" : "inf";
-    }
-  else if (is_nan(a)) {
-    s = uppercase ? "NAN" : "nan";
-    sgn = false;
-    }
-  else {
-    if (a < 0.0)
-      s += '-';
-    else if (showpos)
-      s += '+';
-    else
-      sgn = false;
-
-    if (a == 0.0)
-      {
-      /* Zero case */
-      s += '0';
-      if (precision > 0)
-        {
-        s += '.';
-        s.append(precision, '0');
-        }
-      }
-    else {
-      /* Non-zero case */
-      int off = (fixed ? (1 + to_int(floor(log10(abs(a))))) : 1);
-      auto d = precision + off;
-
-      auto d_with_extra = d;
-      if (fixed)
-        d_with_extra = std::max<std::streamsize>(120, d); // longer than the max accuracy for DD
-
-      // highly special case - fixed mode, precision is zero, abs(a) < 1.0
-      // without this trap a number like 0.9 printed fixed with 0 precision prints as 0
-      // should be rounded to 1.
-      if (fixed && (precision == 0) && (abs(a) < 1.0)) {
-        if (abs(a) >= 0.5)
-          s += '1';
-        else
-          s += '0';
-
-        return s;
-        }
-
-      // handle near zero to working precision (but not exactly zero)
-      if (fixed && d <= 0) {
-        s += '0';
-        if (precision > 0) {
-          s += '.';
-          s.append(precision, '0');
-          }
-        }
-      else {  // default
-
-        char* t; // = new char[d+1];
-        int j;
-
-        if (fixed) {
-          t = new char[d_with_extra + 1];
-          to_digits(a, t, e, d_with_extra);
-          }
-        else {
-          t = new char[d + 1];
-          to_digits(a, t, e, d);
-          }
-
-
-        if (fixed) {
-          // fix the string if it's been computed incorrectly
-          // round here in the decimal string if required
-          round_string_qdouble(t, d + 1, &off);
-
-          if (off > 0) {
-            for (i = 0; i < off; i++) s += t[i];
-            if (precision > 0) {
-              s += '.';
-              for (j = 0; j < precision; j++, i++) s += t[i];
-              }
-            }
-          else {
-            s += "0.";
-            if (off < 0) s.append(-off, '0');
-            for (i = 0; i < d; i++) s += t[i];
-            }
-          }
-        else {
-          s += t[0];
-          if (precision > 0) s += '.';
-
-          for (i = 1; i <= precision; i++)
-            s += t[i];
-
-          }
-        delete[] t;
-        }
-      }
-
-    // trap for improper offset with large values
-    // without this trap, output of values of the for 10^j - 1 fail for j > 28
-    // and are output with the point in the wrong place, leading to a dramatically off value
-    if (fixed && (precision > 0)) {
-      // make sure that the value isn't dramatically larger
-      double from_string = atof(s.c_str());
-
-      // if this ratio is large, then we've got problems
-      if (fabs(from_string / a[0]) > 3.0) {
-
-        // loop on the string, find the point, move it up one
-        // don't act on the first character
-        for (size_t i = 1; i < s.length(); i++) {
-          if (s[i] == '.') {
-            s[i] = s[i - 1];
-            s[i - 1] = '.';
-            break;
-            }
-          }
-
-        from_string = atof(s.c_str());
-        // if this ratio is large, then the string has not been fixed
-        if (fabs(from_string / a[0]) > 3.0)
-          {
-          // ("Re-rounding unsuccessful in large number fixed point trap.");
-          }
-        }
-      }
-
-    if (!fixed) {
-      /* Fill in exponent part */
-      s += uppercase ? 'E' : 'e';
-      append_expn(s, e);
-      }
-    }
-
-  /* Fill in the blanks */
-  std::streamsize len = s.length();
-  if (len < width) {
-    auto delta = width - len;
-    if (fmt & std::ios_base::internal) {
-      if (sgn)
-        s.insert(static_cast<std::string::size_type>(1), delta, fill);
-      else
-        s.insert(static_cast<std::string::size_type>(0), delta, fill);
-      }
-    else if (fmt & std::ios_base::left) {
-      s.append(delta, fill);
-      }
-    else {
-      s.insert(static_cast<std::string::size_type>(0), delta, fill);
-      }
-    }
-
-  return s;
-  }
-
-std::ostream& operator << (std::ostream& s, const qdouble& a)
-  {
-  bool showpos = (s.flags() & std::ios_base::showpos) != 0;
-  bool uppercase = (s.flags() & std::ios_base::uppercase) != 0;
-  return s << to_string(a, s.precision(), s.width(), s.flags(), showpos, uppercase, s.fill());
-  }
 
 qdouble make_qdouble(const char* s)
   {
@@ -3135,5 +2782,7 @@ qdouble make_qdouble(const char* s)
 
   return (sign < 0) ? -r : r;
   }
+
+} // end namespace
 
 #endif // #ifdef QDOUBLE_IMPLEMENTATION

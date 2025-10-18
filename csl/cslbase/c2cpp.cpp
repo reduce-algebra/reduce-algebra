@@ -3,7 +3,7 @@
 // This changes comments from C to C++ style.... with all sorts of odd
 // stylistic choices motivated by the CSL source code. The task that
 // this file was written for is now done, so it is at most of historical
-// interest.
+// interest. I will delete it soon!!!
 
 /**************************************************************************
  * Copyright (C) 2025, Codemist.                         A C Norman       *

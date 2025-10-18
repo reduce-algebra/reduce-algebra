@@ -44,6 +44,11 @@
 #include "sockhdr.h"
 #endif
 
+namespace CSL_LISP
+{
+
+using namespace FX;
+
 // At present CSL is single threaded - at least as regards file IO - and
 // using the unlocked versions of putc and getc can be a MAJOR saving.
 
@@ -797,11 +802,11 @@ LispObject make_symbol(char const *s, int restartp,
 // symbols predefined in Lisp in the normal way, but ones established
 // using command-line options like -Dname could cause trouble?
 #ifdef DEBUG
-    if (!valid_address((void *)s))
+    if (!FX::valid_address((void *)s))
     {   fprintf(stderr, "s = %p\n", (void *)s);
         my_abort("make_symbol: s is not a valid address");
     }
-    if (!valid_address((void *)&boffo_char(0)))
+    if (!FX::valid_address((void *)&boffo_char(0)))
     {   my_abort("make_symbol: boffo is not a valid address");
     }
     if (std::strlen(s) > 200)
@@ -4222,5 +4227,7 @@ setup_type const read_setup[] =
 #endif
     {nullptr,               nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of cslread.cpp

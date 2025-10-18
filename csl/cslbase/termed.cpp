@@ -148,14 +148,6 @@ using std::endl;
 
 #include "log.h"
 
-// The following variables must hold arrays of strings to be used in
-// the completion of various items... For CSL they are provided with
-// useful values - for free-standing use they can be defined with
-// the value nullptr.
-
-extern char **loadable_packages, **switches;
-
-
 #ifdef WIN32
 
 #include <windows.h>
@@ -239,6 +231,16 @@ using std::string;
 
 #include "termed.h"
 
+namespace FX
+{
+
+// The following variables must hold arrays of strings to be used in
+// the completion of various items... For CSL they are provided with
+// useful values - for free-standing use they can be defined with
+// the value nullptr.
+
+extern char **loadable_packages, **switches;
+
 static std::string EOFstring = "\x04";
 
 // When the code is built it can still determine (dynamically) that it
@@ -303,7 +305,7 @@ static void quitKeyboardThread()
         keyboardThread.get_id() != std::this_thread::get_id())
     {   keyboardThreadActive = false;
         if (write(keyboardPipe[1], "\n\n\n\n", 4) != 4)
-           my_abort("failed to send terminate message to keyboard thread");
+           CSL_LISP::my_abort("failed to send terminate message to keyboard thread");
         keyboardThread.join();
         close(keyboardPipe[1]);
     }
@@ -428,7 +430,7 @@ int getFromKeyboard()
     int r = select(n+1, &readFd, nullptr, nullptr, nullptr);
     if (r == -1)
     {   std::printf("select failed, errno=%d\n", errno);
-        my_abort(where("select failed")); // select failed
+        CSL_LISP::my_abort(where("select failed")); // select failed
     }
     if (FD_ISSET(n2, &readFd))
     {   close(n2);
@@ -5949,6 +5951,8 @@ std::string term_getline()
     return narrow;
 }
 
+} // end namespace
+
 #ifdef RECORD_KEYS
 // This abomination is here to permit me to collect the key-sequences
 // that a whole bunch of things generate for me. I do not guarantee that
@@ -5989,7 +5993,8 @@ static void record_keys()
         nullptr
     };
     char **p = keys;
-    std::printf("\r\nFor each key listed here press the key and then an \"x\"\r\n");
+    std::printf(
+        "\r\nFor each key listed here press the key and then an \"x\"\r\n");
     while (*p != nullptr)
     {   int ch;
         std::printf("%s: ", *p++);
@@ -6005,7 +6010,7 @@ static void record_keys()
 }
 
 int main(int argc, char *argv[])
-{   TermSetup ts(argv[0], nullptr);
+{   FX::TermSetup ts(argv[0], nullptr);
     record_keys();
     return 0;
 }

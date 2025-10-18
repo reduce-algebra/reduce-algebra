@@ -44,6 +44,8 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
 
 // Note VERY WELL....
 // I have not even compiled this code at all recently, though I made
@@ -853,5 +855,7 @@ setup_type const mpi_setup[] =
     DEF_2("mpi_alltoall",     Lmpi_alltoall),
     {nullptr,                 nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of cslmpi.cpp

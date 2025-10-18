@@ -38,6 +38,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 const char *decodeObject(LispObject a)
 {   static char r[64];
     switch (a & TAG_BITS)
@@ -245,5 +248,7 @@ const char *decodeObject(LispObject a)
         return r;
     }
 }
+
+} // end namespace
 
 // end of showhdr.cpp

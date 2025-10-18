@@ -32,7 +32,6 @@
 
 // $Id$
 
-
 //
 // This somewhat ridiculous file is established like this to try
 // to cope with a future GNU Automake transition that forces the

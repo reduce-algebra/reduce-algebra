@@ -38,6 +38,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifndef ARITHLIB
 
 static LispObject Lboole_3(LispObject env, LispObject op,
@@ -1289,5 +1292,7 @@ setup_type const arith08_setup[] =
 #endif // ARITHLIB
     {nullptr,                     nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end of namespace
 
 // end of arith08.cpp

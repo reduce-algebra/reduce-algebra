@@ -42,15 +42,14 @@
 // drop back to executing things sequentially.
 
 // If USE_EXECUTION is defined this uses some C++17 functionality that
-// makes this rather easy to express. However as of late 2025 use of
-// the <execution> header and std::execution::par requires an extra
-// library (-ltbb) to be loaded. I also suspect it of being general
-// enough that for small tasks it will impose costs that I would like
-// to avoid. To cope with those two issues I also provide my own
+// makes this rather easy to express. However in late 2025 my measurements
+// show that it is heavy-duty enough that for small tasks it imposes costs
+// that I would like to avoid. To cope with this I also my own
 // implementation that allows for a somewhat limited number of worker
-// tasks but which may be lighter weight. I will be measuring to see
-// if there are performance issues but the mess of needing "-ltbb" is
-// enough to cause me to do all this at least for now.
+// tasks but which may be lighter weight.
+
+// With some older releases of g++ and its libraries it may be necessary
+// to link in "-ltbb".
 
 #include <iostream>
 #include <thread>
@@ -60,7 +59,7 @@
 #include <algorithm>
 
 #ifdef USE_EXECUTION
-#pragma message "You may need to link in libtbb"
+//@#pragma message "You may need to link in libtbb"
 
 #include <execution>
 

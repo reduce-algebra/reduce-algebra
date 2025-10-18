@@ -48,6 +48,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifndef ARITHLIB
 
 #ifdef HAVE_COMPLEX
@@ -586,5 +589,7 @@ setup_type const arith13_setup[] =
 #endif // ARITHLIB
     {nullptr,               nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of arith13.cpp

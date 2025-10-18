@@ -2,6 +2,8 @@
 
 // $Id$
 
+// Hand edited to insert refererence to FX.
+
 namespace FX
 {
 
@@ -185,4 +187,7 @@ extern const unsigned char winminimize[];
 // created by reswrap from file winrestore.gif
 extern const unsigned char winrestore[];
 
-}
+} // end namespace
+
+// end of icons.h
+

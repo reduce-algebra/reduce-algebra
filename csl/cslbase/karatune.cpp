@@ -46,6 +46,8 @@
 #define KARASTART     start
 #define KARABIG       start_parallel
 
+using namespace CSL_LISP;
+
 size_t start, start_parallel;
 
 // This program is intended to help select good values for the above

@@ -46,6 +46,9 @@
 
 #define VERSION_ID "$Id$"
 
+namespace CSL_LISP
+{
+
 // Extract the revision number.
 
 inline constexpr int REVISION = []() constexpr {
@@ -93,7 +96,7 @@ inline constexpr int day_of_week(int m, int d,int y)
 inline bool initialize_version_date()
 {
     const char* v = &VERSION_ID[0];
-// Format:         "$Id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxfilename revision yyyy-mm-dd hh:mm:ss..."
+// Format:         "$Id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxfilename revision yyyy-mm-dd hh:mm:ss..."
     while (*v != ' ') v++;      // Skip past "$Id"
     v++;
     while (*v != ' ') v++;      // Skip past name of file
@@ -124,6 +127,8 @@ inline bool initialize_version_date()
 }
 
 inline bool version_date_initialized = initialize_version_date();
+
+} // end namespace
 
 #endif // header_version_h
 

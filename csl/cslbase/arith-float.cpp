@@ -36,6 +36,9 @@
 
 #include "arith-headers.h"
 
+namespace CSL_LISP
+{
+
 // I first provide some helper functions for directed rouding in
 // floating point division. Well C++ provides "fesetround()" to establish
 // a (global) rounding mode, but that needs to be enabled using
@@ -313,17 +316,8 @@ float128_t long_ceiling(float128_t a, float128_t b)
 }
 
 
-using number_dispatcher::Fixnum;
-// uint64_t *
-using number_dispatcher::Rat;
-using number_dispatcher::Cpx;
-using number_dispatcher::SFlt;
-// double
-using number_dispatcher::Flt;
-using number_dispatcher::LFlt;
-
 LispObject Float::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Float>("float", a);
+{   return unary<LispObject,Float>("float", a);
 }
 
 // A mere cast to double here would not guarantee the rounding mode in
@@ -413,86 +407,86 @@ LispObject Float::op(LFlt a)
 // instances where premature overflow can arise.              ACN June 2020
 
 LispObject Float::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<LispObject,Float>("float", a, b);
+{   return binary<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<LispObject,Float>("float", a,
+{   return binaryR<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<LispObject,Float>("float", a,
+{   return binaryR<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<LispObject,Float>("float", a,
+{   return binaryR<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<LispObject,Float>("float", a,
+{   return binaryR<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<LispObject,Float>("float", a,
+{   return binaryR<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<LispObject,Float>("float", a,
+{   return binaryR<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<LispObject,Float>("float", a,
+{   return binaryR<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<LispObject,Float>("float", a,
+{   return binaryR<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Float>("float", a,
+{   return binaryL<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Float>("float", a,
+{   return binaryL<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Float>("float", a,
+{   return binaryL<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Float>("float", a,
+{   return binaryL<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Float>("float", a,
+{   return binaryL<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Float>("float", a,
+{   return binaryL<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Float>("float", a,
+{   return binaryL<LispObject,Float>("float", a,
             b);
 }
 
 LispObject Float::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Float>("float", a,
+{   return binaryL<LispObject,Float>("float", a,
             b);
 }
 
@@ -838,7 +832,7 @@ LispObject Float::op(LFlt a, LFlt b)
 }
 
 float RawFloat32::op(LispObject a)
-{   return number_dispatcher::unary<double,RawFloat32>("float32", a);
+{   return unary<double,RawFloat32>("float32", a);
 }
 
 float RawFloat32::op(Fixnum a)
@@ -854,9 +848,9 @@ float RawFloat32::op(Rat a)
 // The code here avoids problems with overflow but if I am worried about
 // perfect rounding in every case I may need to do more.
     double p =
-       number_dispatcher::unary<double,Frexp>("frexp", a.numerator(), px);
+       unary<double,Frexp>("frexp", a.numerator(), px);
     double q =
-       number_dispatcher::unary<double,Frexp>("frexp", a.denominator(), qx);
+       unary<double,Frexp>("frexp", a.denominator(), qx);
     return (float)std::ldexp(p/q, px-qx);
 }
 
@@ -883,7 +877,7 @@ float RawFloat32::op(LFlt a)
 }
 
 double RawFloat::op(LispObject a)
-{   return number_dispatcher::unary<double,RawFloat>("float", a);
+{   return unary<double,RawFloat>("float", a);
 }
 
 double RawFloat::op(Fixnum a)
@@ -899,9 +893,9 @@ double RawFloat::op(Rat a)
 // The code here avoids problems with overflow but if I am worried about
 // perfect rounding in every case I may need to do more.
     double p =
-       number_dispatcher::unary<double,Frexp>("frexp", a.numerator(), px);
+       unary<double,Frexp>("frexp", a.numerator(), px);
     double q =
-       number_dispatcher::unary<double,Frexp>("frexp", a.denominator(), qx);
+       unary<double,Frexp>("frexp", a.denominator(), qx);
     return std::ldexp(p/q, px-qx);
 }
 
@@ -934,7 +928,7 @@ double RawFloat::op(LFlt a)
 
 float128_t Float128::op(LispObject a)
 {   //return
-    //    number_dispatcher::unary<float128_t,Float128>("float128", a);
+    //    unary<float128_t,Float128>("float128", a);
     return i64_to_f128(0);
 }
 
@@ -987,7 +981,7 @@ float128_t Float128::op(LFlt a)
 }
 
 LispObject Fix::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Fix>("fix", a);
+{   return unary<LispObject,Fix>("fix", a);
 }
 
 LispObject Fix::op(Fixnum a)
@@ -1024,7 +1018,7 @@ LispObject Fix::op(LFlt a)
 }
 
 LispObject Truncate::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Truncate>("truncate", a);
+{   return unary<LispObject,Truncate>("truncate", a);
 }
 
 LispObject Truncate::op(Fixnum a)
@@ -1060,7 +1054,7 @@ LispObject Truncate::op(LFlt a)
 }
 
 LispObject Floor::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Floor>("floor", a);
+{   return unary<LispObject,Floor>("floor", a);
 }
 
 LispObject Floor::op(Fixnum a)
@@ -1098,7 +1092,7 @@ LispObject Floor::op(LFlt a)
 }
 
 LispObject Ceiling::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Ceiling>("ceiling", a);
+{   return unary<LispObject,Ceiling>("ceiling", a);
 }
 
 LispObject Ceiling::op(Fixnum a)
@@ -1137,7 +1131,7 @@ LispObject Ceiling::op(LFlt a)
 }
 
 LispObject Ftruncate::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Ftruncate>("floor", a);
+{   return unary<LispObject,Ftruncate>("floor", a);
 }
 
 LispObject Ftruncate::op(Fixnum a)
@@ -1175,7 +1169,7 @@ LispObject Ftruncate::op(LFlt a)
 }
 
 LispObject Ffloor::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Ffloor>("floor", a);
+{   return unary<LispObject,Ffloor>("floor", a);
 }
 
 LispObject Ffloor::op(Fixnum a)
@@ -1212,7 +1206,7 @@ LispObject Ffloor::op(LFlt a)
 }
 
 LispObject Fceiling::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Fceiling>("ceiling", a);
+{   return unary<LispObject,Fceiling>("ceiling", a);
 }
 
 LispObject Fceiling::op(Fixnum a)
@@ -1251,7 +1245,7 @@ LispObject Fceiling::op(LFlt a)
 // (frexp nn) => (double-float . fixnum)
 
 LispObject Frexp::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Frexp>("frexp", a);
+{   return unary<LispObject,Frexp>("frexp", a);
 }
 
 LispObject frexp_finalize(double d, int x)
@@ -1306,7 +1300,7 @@ double frexp_finalize(double d, int x, int64_t &xx)
 }
 
 double Frexp::op(LispObject a, int64_t &xx)
-{   return number_dispatcher::unary<double,Frexp>("frexp", a, xx);
+{   return unary<double,Frexp>("frexp", a, xx);
 }
 
 double Frexp::op(Fixnum a, int64_t &xx)
@@ -1393,7 +1387,7 @@ LispObject Frexp128::op(LFlt a)  // maybe this should return just a double?
 }
 
 float128_t Frexp128::op(LispObject a, int64_t &xx)
-{   //return number_dispatcher::unary<float128_t,Frexp128>("frexp128",
+{   //return unary<float128_t,Frexp128>("frexp128",
     //        a, xx);
     return i64_to_f128(0);
 }
@@ -1445,7 +1439,7 @@ float128_t Frexp128::op(LFlt a, int64_t &xx)  // maybe this should return just a
 }
 
 LispObject Ldexp::op(LispObject a, LispObject b)
-{   return number_dispatcher::ibinary<LispObject,Ldexp>("ldexp", a,
+{   return ibinary<LispObject,Ldexp>("ldexp", a,
             b);
 }
 
@@ -1546,7 +1540,7 @@ LispObject Ldexp::op(LFlt a, uint64_t *b)
 }
 
 LispObject Sqrt::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Sqrt>("sqrt", a);
+{   return unary<LispObject,Sqrt>("sqrt", a);
 }
 
 LispObject Sqrt::op(Fixnum a)
@@ -1593,7 +1587,7 @@ LispObject Sqrt::op(LFlt a)
 }
 
 LispObject Isqrt::op(LispObject a)
-{   return number_dispatcher::iunary<LispObject,Isqrt>("isqrt", a);
+{   return iunary<LispObject,Isqrt>("isqrt", a);
 }
 
 LispObject Isqrt::op(Fixnum a)
@@ -2604,6 +2598,8 @@ LispObject Ninteger_decode_float(LispObject env, LispObject a)
                  neg ? fixnum_of_int(-1) : fixnum_of_int(1));
 #endif
 }
+
+} // end of namespace
 
 #endif // ARITHLIB
 

@@ -67,6 +67,9 @@
 #define UNUSED_NAME
 #endif
 
+namespace CSL_LISP
+{
+
 // Since this file exists to define just a single external function I will
 // write its declaration here rather than having a trivial header file
 // to declare it.
@@ -1014,5 +1017,7 @@ bool isprime(uint64_t n)
                 miller_rabin_isprime(witness52[hash52_function(n)], n)) ;
     else return lucas_test(n);
 }
+
+} // end namespace
 
 // end of isprime.cpp

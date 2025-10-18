@@ -34,6 +34,9 @@
 #ifndef header_arith_defs_h
 #define header_arith_defs_h 1
 
+namespace CSL_LISP
+{
+
 inline LispObject onebool(bool b)
 {   return b ? lisp_true : nil;
 }
@@ -566,6 +569,8 @@ extern LispObject N_rationalf(double d);
 #ifdef SOFTFLOAT
 extern LispObject N_rationalf128(float128_t d);
 #endif // SOFTFLOAT
+
+} // end of namespace
 
 #endif // header_arith_defs_h
 

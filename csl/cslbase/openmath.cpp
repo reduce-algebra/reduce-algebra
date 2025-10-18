@@ -36,6 +36,9 @@
 
 #ifdef OPENMATH
 
+namespace CSL_LISP
+{
+
 //
 // Reading and writing of OpenMath objects, using the INRIA OpenMath library.
 // Developed as a deliverable of the OpenMath Project (ESPRIT Project 24969).
@@ -1635,4 +1638,8 @@ setup_type const om_setup[] =
     {nullptr,  nullptr,  nullptr,  nullptr, nullptr, nullptr}
 };
 
+} // end namespace
+
 #endif // OPENMATH
+
+// end of openmath.cpp

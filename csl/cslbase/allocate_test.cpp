@@ -46,6 +46,8 @@
 
 #include "headers.h"
 
+using namespace CSL_LISP;
+
 void term_printf(const char *fm, ...)
 {   my_abort();
 }

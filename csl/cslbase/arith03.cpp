@@ -39,6 +39,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifndef ARITHLIB
 //
 // Division
@@ -1721,5 +1724,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
 }
 
 #endif // ARITHLIB
+
+} // end of namespace
 
 // end of arith03.cpp

@@ -37,6 +37,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 LispObject nreverse(LispObject a)
 {   LispObject b = nil;
     while (consp(a))
@@ -2252,5 +2255,7 @@ setup_type const eval1_setup[] =
     {"show-stack",         Lshow_stack_0, Lshow_stack_1, Lshow_stack_2, G3Wother, G4Wother},
     {nullptr,              nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of eval1.cpp

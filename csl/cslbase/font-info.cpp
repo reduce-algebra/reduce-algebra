@@ -13,6 +13,8 @@
 
 // $Id$
 
+namespace CSL_LISP
+{
 
 typedef struct font_info
 {   const char *name;
@@ -1250,5 +1252,6 @@ static font_info font_widths[] =
     {(char *)0, 0,0,0,0,0,0,0,0, {0}}
 };
 
+} // end namespace
 
 // End of font-info.cpp

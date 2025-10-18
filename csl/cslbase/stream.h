@@ -40,6 +40,9 @@
 #ifndef header_stream_h
 #define header_stream_h 1
 
+namespace CSL_LISP
+{
+
 extern std::FILE *non_terminal_input;
 extern int terminal_pushed;
 
@@ -381,6 +384,8 @@ inline const char* streamop(uintptr_t x)
     else if (x==(uintptr_t)read_action_fork)         return "read_action_fork";
     else return "unknown";
 }
+
+} // end namespace
 
 #endif // header_stream_h
 

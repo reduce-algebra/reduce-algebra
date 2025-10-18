@@ -48,6 +48,7 @@
 
 // $Id$
 
+using namespace CSL_LISP;
 
 volatile int a = 0;
 

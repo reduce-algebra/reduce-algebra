@@ -99,8 +99,11 @@
 
 #include "arithlib.hpp"
 
-namespace number_dispatcher
+namespace CSL_LISP
 {
+
+//@namespace number_dispatcher
+//@{
 
 // Bignums are passed as uintptr_t* pointers to a block of digits
 // Doubles are passed using the C++ type double
@@ -170,10 +173,10 @@ public:
     {   return v;
     }
     LispObject numerator()
-    {   return ::numerator(v);
+    {   return CSL_LISP::numerator(v);
     }
     LispObject denominator()
-    {   return ::denominator(v);
+    {   return CSL_LISP::denominator(v);
     }
 };
 class Cpx // for complex numbers
@@ -187,10 +190,10 @@ public:
     {   return v;
     }
     LispObject real_part()
-    {   return ::real_part(v);
+    {   return CSL_LISP::real_part(v);
     }
     LispObject imag_part()
-    {   return ::imag_part(v);
+    {   return CSL_LISP::imag_part(v);
     }
 };
 class SFlt// for short floats
@@ -261,7 +264,7 @@ public:
 
 template <class R, class T, typename V>
 inline R binaryL(const char *fname, V lhsVal, LispObject b)
-{   using namespace number_dispatcher;
+{   //@ using namespace number_dispatcher;
     switch (b & XTAG_BITS)
     {   default:
             UNLIKELY
@@ -304,7 +307,7 @@ inline R binaryL(const char *fname, V lhsVal, LispObject b)
 
 template <class R, class T, typename V>
 inline R binaryR(const char *fname, LispObject a, V rhsval)
-{   using namespace number_dispatcher;
+{   //@ using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
             UNLIKELY
@@ -352,7 +355,7 @@ inline R binaryR(const char *fname, LispObject a, V rhsval)
 
 template <class R, class T>
 inline R binary(const char *fname, LispObject a, LispObject b)
-{   using namespace number_dispatcher;
+{   //@ using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
             UNLIKELY
@@ -398,7 +401,7 @@ inline R binary(const char *fname, LispObject a, LispObject b)
 
 template <class R, class T, typename V>
 inline R ibinaryL(const char *fname, V lhsVal, LispObject b)
-{   using namespace number_dispatcher;
+{   //@ using namespace number_dispatcher;
     switch (b & XTAG_BITS)
     {   default:
             UNLIKELY
@@ -421,7 +424,7 @@ inline R ibinaryL(const char *fname, V lhsVal, LispObject b)
 
 template <class R, class T, typename V>
 inline R ibinaryR(const char *fname, LispObject a, V rhsval)
-{   using namespace number_dispatcher;
+{   //@ using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
             UNLIKELY
@@ -444,7 +447,7 @@ inline R ibinaryR(const char *fname, LispObject a, V rhsval)
 
 template <class R, class T>
 inline R ibinary(const char *fname, LispObject a, LispObject b)
-{   using namespace number_dispatcher;
+{   //@ using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
             UNLIKELY
@@ -472,7 +475,7 @@ inline R ibinary(const char *fname, LispObject a, LispObject b)
 
 template <class R, class T>
 inline R unary(const char *fname, LispObject a)
-{   using namespace number_dispatcher;
+{   //@ using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
             UNLIKELY
@@ -517,7 +520,7 @@ inline R unary(const char *fname, LispObject a)
 
 template <class R, class T>
 inline R iunary(const char *fname, LispObject a)
-{   using namespace number_dispatcher;
+{   //@ using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
             UNLIKELY
@@ -540,7 +543,7 @@ inline R iunary(const char *fname, LispObject a)
 
 template <class R, class T>
 inline R unary(const char *fname, LispObject a, int64_t &xx)
-{   using namespace number_dispatcher;
+{   //@ using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
             UNLIKELY
@@ -579,21 +582,21 @@ inline R unary(const char *fname, LispObject a, int64_t &xx)
     }
 }
 
-} // end of number_dispatcher namespace.
+//@ } // end of number_dispatcher namespace.
 
-using number_dispatcher::Fixnum;     // Small integer
-//                       uint64_t *  // Big integer
-using number_dispatcher::Rat;        // Rational number
-using number_dispatcher::Cpx;        // Complex number
-using number_dispatcher::SFlt;       // 28 bit immediate float
-using number_dispatcher::Flt;        // 32 bit float (immediate on 64-bit host)
-//                       double      // 64 bit float
-using number_dispatcher::LFlt;       // 128 bit float supported in software
+//@ using number_dispatcher::Fixnum;     // Small integer
+//@ //                       uint64_t *  // Big integer
+//@ using number_dispatcher::Rat;        // Rational number
+//@ using number_dispatcher::Cpx;        // Complex number
+//@ using number_dispatcher::SFlt;       // 28 bit immediate float
+//@ using number_dispatcher::Flt;        // 32 bit float (immediate on 64-bit host)
+//@ //                       double      // 64 bit float
+//@ using number_dispatcher::LFlt;       // 128 bit float supported in software
 
 // I declare a class for each operation that is to be supported... The
-// bulk of all the declarations here represents a real statement or reminder
-// of how much work it is to support Lisp generic arithmetic! Because this
-// is just the declarations, not the implementation.
+// huge bulk of all the declarations here makes a real statement or reminder
+// of just how much work it is to support Lisp generic arithmetic!
+// And this is just the declarations, not the implementation.
 
 
 // Basic generic arithmetic
@@ -3718,6 +3721,8 @@ public:
     static LispObject op(LFlt b);
 #endif // softfloat_h
 };
+
+} // end namespace
 
 #endif // header_dispatch_h
 

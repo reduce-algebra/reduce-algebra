@@ -40,6 +40,9 @@
 
 #include "bytes.h"
 
+namespace CSL_LISP
+{
+
 // I can arrange that the option that allows me to count the number of byte
 // opcodes that are executed also lets me collect statistics on which
 // indicators are most heavily used with PUT and GET.
@@ -1386,6 +1389,8 @@ LispObject bytestream_interpret1(size_t ppc, LispObject lit,
 
     return A_reg;
 }
+
+} // end namespace
 
 // end of bytes1.cpp
 

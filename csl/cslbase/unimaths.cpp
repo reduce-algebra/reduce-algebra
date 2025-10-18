@@ -39,6 +39,9 @@
 
 #include "uninames.h"
 
+namespace CSL_LISP
+{
+
 // This code maps simple letters from the range A-Z and a-z onto Unicode
 // codepoints corresponding to various "mathematical" styles. The converted
 // values are all available in STIXGeneral-Regular so even Bold and Italic
@@ -218,5 +221,6 @@ int map_math_digit(int style, int c)
     }
 }
 
+} // end namespace
 
 // end of unimaths.cpp

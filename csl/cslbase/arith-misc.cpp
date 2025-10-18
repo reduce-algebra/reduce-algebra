@@ -38,6 +38,9 @@
 
 #include "arith-headers.h"
 
+namespace CSL_LISP
+{
+
 // The intent here is to take a single precision floating point value and
 // mask off its low 4 bits. The code here is a fine example of the sort
 // of thing that runs up against strict aliasing rules. Here I believe that
@@ -955,6 +958,8 @@ LispObject Nconjugate(LispObject env, LispObject a)
     }
     else return a;
 }
+
+} // en dof namespace
 
 #endif // ARITHLIB
 

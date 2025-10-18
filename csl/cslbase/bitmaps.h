@@ -65,6 +65,9 @@
 using std::uint64_t;
 using std::size_t;
 
+namespace CSL_LISP
+{
+
 #ifndef  HAVE_NLZ_AND_NTZ
 
 #if defined _cpp_lib_bitops
@@ -441,6 +444,8 @@ inline size_t previousZeroBit(uint64_t map[], size_t n)
     } while ((bits = ~map[word]) == 0);
     return n + 63 - nlz(bits);
 }
+
+} // end namespace
 
 #endif // header_bitmaps_h
 

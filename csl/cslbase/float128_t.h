@@ -127,6 +127,9 @@ extern "C" {
 #define LOPART 1
 #endif // LITTLEENDIAN
 
+namespace CSL_LISP
+{
+
 inline int  f128_exponent(const float128_t p);
 inline void f128_set_exponent(float128_t *p, int n);
 extern void f128_ldexp(float128_t *p, int n);
@@ -1141,6 +1144,8 @@ constexpr inline OctFloat operator ""_QQX (const char* s)
     r.lo.v[low] = data[3];
     return OctFloat(r);
 }
+
+} // end namespace
 
 #endif // header_float128_t
 
