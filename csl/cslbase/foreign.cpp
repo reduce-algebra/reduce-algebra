@@ -50,6 +50,9 @@
 // can be tried.
 //
 
+namespace CSL_LISP
+{
+
 static int32_t k = 12345;
 
 //
@@ -184,5 +187,7 @@ int32_t two_way(int32_t x)
     x = PROC_integer_value(w);                  // should be x^6!
     return x;
 }
+
+} // end namespace
 
 // End of test loadable module, foreign.cpp

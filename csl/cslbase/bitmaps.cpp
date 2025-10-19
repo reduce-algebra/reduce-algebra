@@ -42,6 +42,9 @@
 
 #include "bitmaps.h"
 
+namespace CSL_LISP
+{
+
 static int N, M;
 
 // This displays a 64-bit value in binary, using I and O rather than 1 and 0
@@ -118,6 +121,8 @@ int main()
     std::printf("\n");
     return 0;
 }
+
+} // end namespace
 
 // end of bitmaps.cpp
 

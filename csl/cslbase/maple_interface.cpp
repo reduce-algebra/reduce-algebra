@@ -59,6 +59,9 @@ int std::atexit(void (*fn)())
 {
 }
 
+namespace CSL_LISP
+{
+
 //
 // The sizes of the buffers here are arbitrary and a trap for
 // the over-enthusiastic!
@@ -94,6 +97,8 @@ void start_csl()
     std::fprintf(stderr, "%s\n", obuff);
 }
 
+} // end namespace
+
 #include "machine.h"
 #include "tags.h"
 #include "externs.h"
@@ -101,6 +106,9 @@ void start_csl()
 #include "entries.h"
 #include "lispthrow.h"
 
+
+namespace CSL_LISP
+{
 
 int execute_lisp_function(char *fname,
                           character_reader *r, character_writer *w)
@@ -157,6 +165,7 @@ void use_csl1(unsigned int s)
     std::fflush(stderr);
 }
 
+} // end namespace
 
 // end of maple_interface.cpp
 

@@ -37,6 +37,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 LispObject Lget_bps(LispObject env, LispObject n)
 {   SingleValued fn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("get-bps", n);
@@ -3421,5 +3424,7 @@ setup_type const funcs2_setup[] =
     DEF_0("unserialize",        Lunserialize),
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of fns2.cpp

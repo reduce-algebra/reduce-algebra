@@ -44,6 +44,9 @@
 #include <iostream>
 #include <filesystem>
 
+namespace CSL_LISP
+{
+
 static char obuff[10000];
 static int obufp = 0;
 
@@ -110,6 +113,8 @@ int main(int argc, const char *argv[])
  //   ensure_screen();
     return res;
 }
+
+} // end namespace
 
 // end of webdriver.cpp
 

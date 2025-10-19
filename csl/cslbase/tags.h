@@ -39,6 +39,9 @@
 #ifndef header_tags_h
 #define header_tags_h 1
 
+namespace CSL_LISP
+{
+
 // General objects in Lisp are represented as pointer-sized integers
 // and the type LispObject reflects this representation and
 // not the elaborate tagged union that at some other level exists.
@@ -2674,6 +2677,8 @@ INLINE_VAR constexpr int HASH_AS_EQUAL     = 3;
 INLINE_VAR constexpr int HASH_AS_EQUALP    = 4;
 INLINE_VAR constexpr int HASH_AS_SYMBOL    = 5;
 INLINE_VAR constexpr int HASH_AS_SXHASH    = 6;
+
+} // end namespace
 
 #endif // header_tags_h
 

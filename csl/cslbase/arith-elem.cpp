@@ -45,6 +45,8 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
 
 /*****************************************************************************/
 //**              Transcendental functions etcetera.                       **
@@ -2385,5 +2387,7 @@ LispObject Nisqrt(LispObject env, LispObject a1)
 
 
 #endif // HAVE_COMPLEX
+
+} // end of namespace
 
 // end of arith-elem.cpp

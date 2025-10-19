@@ -35,6 +35,9 @@
 #ifndef header_arith_h
 #define header_arith_h 1
 
+namespace CSL_LISP
+{
+
 #define TWO_32    4294967296.0      // 2^32
 #define TWO_31    2147483648.0      // 2^31
 #define TWO_24    16777216.0        // 2^24
@@ -1146,7 +1149,12 @@ extern float128_t qlog2(float128_t a);
 #define DGEQ2                   Geq::op
 #define DZEROP                  Dzerop     // must accept non-numbers
 
+} // end namespace
+
 #include "dispatch.h"
+
+namespace CSL_LISP
+{
 
 inline bool Dzerop(LispObject n)
 {   return is_number(n) && Zerop::op(n);
@@ -1236,6 +1244,8 @@ extern uint64_t multSizes[MULSIZE][MULSIZE];
 extern size_t biggestMult;
 extern uint64_t shortResult, longResult;
 #endif
+
+} // end of namespace
 
 #endif // header_arith_h
 

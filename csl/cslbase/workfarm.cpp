@@ -51,6 +51,9 @@
 #endif
 
 
+namespace CSL_LISP
+{
+
 // I now try to encapsulate the variations between thread support across
 // Windows and the rest of the world... I will set a limit on the total
 // number of processes I will support.
@@ -236,5 +239,7 @@ int main(int argc, char *argv[])
     std::printf("finished: final result is %d : %d\n", result1, result2);
     return 0;
 }
+
+} // end namespace
 
 // end of workfarm.cpp

@@ -5,7 +5,6 @@
 //
 //
 
-
 /**************************************************************************
  * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
@@ -71,8 +70,10 @@
 #include <string>
 #include <deque>
 
-
 using std::atomic;
+
+namespace FX
+{
 
 //
 // Logging support, only enabled in debug mode.
@@ -81,7 +82,7 @@ using std::atomic;
 //
 
 #ifdef DEBUG
-extern void fwin_write_log(const char *s, ...);
+extern void fwin_write_log(const char* s, ...);
 #define FWIN_LOG(...) fwin_write_log(__VA_ARGS__)
 #else
 #define FWIN_LOG(...) ((void)0)
@@ -92,7 +93,7 @@ extern void fwin_write_log(const char *s, ...);
 // The C++ code will eventually be entered at fwin_main() in what looks like
 // a normal way. This is a type for it.
 //
-typedef int fwin_entrypoint(int argc, const char *argv[]);
+typedef int fwin_entrypoint(int argc, const char* argv[]);
 
 //
 // To start things going you call the following. It sets up the windowed-style
@@ -100,7 +101,7 @@ typedef int fwin_entrypoint(int argc, const char *argv[]);
 // main application.
 //
 
-extern int fwin_startup(int argc, const char *argv[],
+extern int fwin_startup(int argc, const char* argv[],
                         fwin_entrypoint *fwin_main);
 
 //
@@ -110,14 +111,14 @@ extern int fwin_startup(int argc, const char *argv[],
 // other suffix. I will try to find a full path for the executable on
 // Unix too.
 //
-extern const char *fullProgramName;
+extern const char* fullProgramName;
 
 //
 // programName holds just the "something" out of fullProgramName.
 // Note that I impose an arbitrary limit on the length of the name of the
 // executable.
 //
-extern const char *programName;
+extern const char* programName;
 
 //
 // programDir gives the directory from which this application was launched.
@@ -125,7 +126,7 @@ extern const char *programName;
 // or possibly in a path that has really funny characters in in, you do so
 // at your own risk!
 //
-extern const char *programDir;
+extern const char* programDir;
 
 //
 // This returns bits that indicates what options fwin is running with:
@@ -201,12 +202,12 @@ extern void fwin_restore(void);
 // I have not thought too hard about TAB and FormFeed here... yet.
 //
 extern void fwin_putchar(int c);
-extern void fwin_puts(const char *s);
+extern void fwin_puts(const char* s);
 
-extern void fwin_showmath(const char *s);
+extern void fwin_showmath(const char* s);
 
-extern void fwin_printf(const char *fmt, ...);
-extern void fwin_vfprintf(const char *fmt, std::va_list a);
+extern void fwin_printf(const char* fmt, ...);
+extern void fwin_vfprintf(const char* fmt, std::va_list a);
 
 //
 // fwin_linelength holds the number of normal-sized (ie the basic
@@ -264,7 +265,7 @@ extern int fwin_screen_size();
 // expansion or nullptr if there is none.
 // If you do not register anything then no custom lookup is performed.
 //
-typedef char *lookup_function(char *s, int ch);
+typedef char* lookup_function(char* s, int ch);
 
 extern void fwin_set_lookup(lookup_function *f);
 
@@ -321,14 +322,14 @@ extern void fwin_callback_on_delay(delay_callback_t *f);
 //
 typedef void review_switch_settings_function();
 
-extern void fwin_menus(char **modules, char **switches,
+extern void fwin_menus(char** modules, char** switches,
                        review_switch_settings_function *f);
 
 //
 // The next is used when the application has re-set some switches without the
 // GUI's help, and it updates the menu
 //
-extern void fwin_refresh_switches(char **switches, char **packages);
+extern void fwin_refresh_switches(char** switches, char** packages);
 
 
 //
@@ -343,9 +344,9 @@ extern void fwin_refresh_switches(char **switches, char **packages);
 // re-instate the default display. Use fwin_report_left("") is a yet clearer
 // way of indicating that blank info to the left is required.
 //
-extern void fwin_report_left(const char *msg);
-extern void fwin_report_mid(const char *msg);
-extern void fwin_report_right(const char *msg);
+extern void fwin_report_left(const char* msg);
+extern void fwin_report_mid(const char* msg);
+extern void fwin_report_right(const char* msg);
 
 //
 // The following four strings may be updated (but PLEASE keep within the
@@ -380,13 +381,13 @@ extern char about_box_rights_4[40];    // "ditto";
 // not in any file that CSL has direct access to, and the new help items may
 // not be visible until the user exits from CSL and re-starts it.
 //
-extern void fwin_set_help_file(const char *key, const char *path);
+extern void fwin_set_help_file(const char* key, const char* path);
 
 //
 // The declarations below here are to be treated as private and should
 // not be touched by users.
 //
-extern int plain_worker(int argc, const char *argv[],
+extern int plain_worker(int argc, const char* argv[],
                         fwin_entrypoint *fwin_main);
 extern delay_callback_t *delay_callback;
 
@@ -446,7 +447,7 @@ extern std::wstring input_history_get(size_t n);
 // link then that will be followed so that the path delivered is that of the
 // true file.
 //
-extern int find_program_directory(const char *argv0);
+extern int find_program_directory(const char* argv0);
 
 // Support for file date manipulation
 
@@ -457,11 +458,11 @@ typedef struct date_and_type_
 
 // Reinstate date and filetype...
 
-extern void set_filedate(const char *name,
+extern void set_filedate(const char* name,
                          unsigned long int datestamp,
                          unsigned long int ftype);
 
-extern void put_fileinfo(date_and_type *p, const char *name);
+extern void put_fileinfo(date_and_type *p, const char* name);
 
 //
 // Some things that are really intended to be private to the implementation
@@ -479,12 +480,12 @@ extern int windowed;
 
 extern void consoleWait();
 
-extern int windowed_worker(int argc, const char *argv[],
+extern int windowed_worker(int argc, const char* argv[],
                            fwin_entrypoint *fwin_main);
 
 extern bool fwin_use_xft;
 
-extern bool directoryp(char *f, const char *o, size_t n);
+extern bool directoryp(char* f, const char* o, size_t n);
 
 extern bool using_termed;
 
@@ -498,23 +499,24 @@ extern void sigint_handler(int signo, siginfo_t *t, void *v);
 extern void sigint_handler(int signo);
 #endif // !HAVE_SIGACTION
 
-extern int plain_worker(int argc, const char *argv[],
+extern int plain_worker(int argc, const char* argv[],
                         fwin_entrypoint *fwin_main);
 extern std::string fwin_prompt_string;
 
-extern int get_current_directory(char *s, size_t n);
-extern bool file_readable(char *filename, const char *old, size_t n);
-extern bool file_writeable(char *filename, const char *old, size_t n);
-extern bool file_executable(char *filename, const char *old,
+extern int get_current_directory(char* s, size_t n);
+extern bool file_readable(char* filename, const char* old, size_t n);
+extern bool file_writeable(char* filename, const char* old, size_t n);
+extern bool file_executable(char* filename, const char* old,
                             size_t n);
-extern int rename_file(char *from_name, const char *from_old,
+extern int rename_file(char* from_name, const char* from_old,
                        size_t from_size,
-                       char *to_name, const char *to_old, size_t to_size);
-extern int get_home_directory(char *b, size_t len);
-extern int get_users_home_directory(char *b, size_t len);
-extern int my_system(const char *s);
+                       char* to_name, const char* to_old, size_t to_size);
+extern int get_home_directory(char* b, size_t len);
+extern int get_users_home_directory(char* b, size_t len);
+extern int my_system(const char* s);
 extern int truncate_file(std::FILE *f, long int where);
 
+} // end namespace
 
 #endif // header_fwin_h
 

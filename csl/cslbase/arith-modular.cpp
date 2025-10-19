@@ -36,42 +36,36 @@
 
 #include "arith-headers.h"
 
-using number_dispatcher::Fixnum;
-// uint64_t *
-using number_dispatcher::Rat;
-using number_dispatcher::Cpx;
-using number_dispatcher::SFlt;
-// double
-using number_dispatcher::Flt;
-using number_dispatcher::LFlt;
+namespace CSL_LISP
+{
 
 LispObject ModularPlus::op(LispObject a, LispObject b)
 {   return
-        number_dispatcher::ibinary<LispObject,ModularPlus>("modular-plus", a,
+        ibinary<LispObject,ModularPlus>("modular-plus", a,
                 b);
 }
 
 LispObject ModularPlus::op(LispObject a, Fixnum b)
 {   return
-        number_dispatcher::ibinaryR<LispObject,ModularPlus>("modular-plus", a,
+        ibinaryR<LispObject,ModularPlus>("modular-plus", a,
                 b);
 }
 
 LispObject ModularPlus::op(LispObject a, uint64_t *b)
 {   return
-        number_dispatcher::ibinaryR<LispObject,ModularPlus>("modular-plus", a,
+        ibinaryR<LispObject,ModularPlus>("modular-plus", a,
                 b);
 }
 
 LispObject ModularPlus::op(Fixnum a, LispObject b)
 {   return
-        number_dispatcher::ibinaryL<LispObject,ModularPlus>("modular-plus", a,
+        ibinaryL<LispObject,ModularPlus>("modular-plus", a,
                 b);
 }
 
 LispObject ModularPlus::op(uint64_t *a, LispObject b)
 {   return
-        number_dispatcher::ibinaryL<LispObject,ModularPlus>("modular-plus", a,
+        ibinaryL<LispObject,ModularPlus>("modular-plus", a,
                 b);
 }
 
@@ -94,31 +88,31 @@ LispObject ModularPlus::op(uint64_t *a, uint64_t *b)
 
 LispObject ModularTimes::op(LispObject a, LispObject b)
 {   return
-        number_dispatcher::ibinary<LispObject,ModularTimes>("modular-times",
+        ibinary<LispObject,ModularTimes>("modular-times",
                 a, b);
 }
 
 LispObject ModularTimes::op(LispObject a, Fixnum b)
 {   return
-        number_dispatcher::ibinaryR<LispObject,ModularTimes>("modular-times",
+        ibinaryR<LispObject,ModularTimes>("modular-times",
                 a, b);
 }
 
 LispObject ModularTimes::op(LispObject a, uint64_t *b)
 {   return
-        number_dispatcher::ibinaryR<LispObject,ModularTimes>("modular-times",
+        ibinaryR<LispObject,ModularTimes>("modular-times",
                 a, b);
 }
 
 LispObject ModularTimes::op(Fixnum a, LispObject b)
 {   return
-        number_dispatcher::ibinaryL<LispObject,ModularTimes>("modular-times",
+        ibinaryL<LispObject,ModularTimes>("modular-times",
                 a, b);
 }
 
 LispObject ModularTimes::op(uint64_t *a, LispObject b)
 {   return
-        number_dispatcher::ibinaryL<LispObject,ModularTimes>("modular-times",
+        ibinaryL<LispObject,ModularTimes>("modular-times",
                 a, b);
 }
 
@@ -142,31 +136,31 @@ LispObject ModularTimes::op(uint64_t *a, uint64_t *b)
 
 LispObject ModularDifference::op(LispObject a, LispObject b)
 {   return
-        number_dispatcher::ibinary<LispObject,ModularDifference>("modular-difference",
+        ibinary<LispObject,ModularDifference>("modular-difference",
                 a, b);
 }
 
 LispObject ModularDifference::op(LispObject a, Fixnum b)
 {   return
-        number_dispatcher::ibinaryR<LispObject,ModularDifference>("modular-difference",
+        ibinaryR<LispObject,ModularDifference>("modular-difference",
                 a, b);
 }
 
 LispObject ModularDifference::op(LispObject a, uint64_t *b)
 {   return
-        number_dispatcher::ibinaryR<LispObject,ModularDifference>("modular-difference",
+        ibinaryR<LispObject,ModularDifference>("modular-difference",
                 a, b);
 }
 
 LispObject ModularDifference::op(Fixnum a, LispObject b)
 {   return
-        number_dispatcher::ibinaryL<LispObject,ModularDifference>("modular-difference",
+        ibinaryL<LispObject,ModularDifference>("modular-difference",
                 a, b);
 }
 
 LispObject ModularDifference::op(uint64_t *a, LispObject b)
 {   return
-        number_dispatcher::ibinaryL<LispObject,ModularDifference>("modular-difference",
+        ibinaryL<LispObject,ModularDifference>("modular-difference",
                 a, b);
 }
 
@@ -190,31 +184,31 @@ LispObject ModularDifference::op(uint64_t *a, uint64_t *b)
 
 LispObject ModularQuotient::op(LispObject a, LispObject b)
 {   return
-        number_dispatcher::ibinary<LispObject,ModularQuotient>("modular-quotient",
+        ibinary<LispObject,ModularQuotient>("modular-quotient",
                 a, b);
 }
 
 LispObject ModularQuotient::op(LispObject a, Fixnum b)
 {   return
-        number_dispatcher::ibinaryR<LispObject,ModularQuotient>("modular-quotient",
+        ibinaryR<LispObject,ModularQuotient>("modular-quotient",
                 a, b);
 }
 
 LispObject ModularQuotient::op(LispObject a, uint64_t *b)
 {   return
-        number_dispatcher::ibinaryR<LispObject,ModularQuotient>("modular-quotient",
+        ibinaryR<LispObject,ModularQuotient>("modular-quotient",
                 a, b);
 }
 
 LispObject ModularQuotient::op(Fixnum a, LispObject b)
 {   return
-        number_dispatcher::ibinaryL<LispObject,ModularQuotient>("modular-quotient",
+        ibinaryL<LispObject,ModularQuotient>("modular-quotient",
                 a, b);
 }
 
 LispObject ModularQuotient::op(uint64_t *a, LispObject b)
 {   return
-        number_dispatcher::ibinaryL<LispObject,ModularQuotient>("modular-quotient",
+        ibinaryL<LispObject,ModularQuotient>("modular-quotient",
                 a, b);
 }
 
@@ -238,7 +232,7 @@ LispObject ModularQuotient::op(uint64_t *a, uint64_t *b)
 
 //LispObject ModularExpt::op(LispObject a, LispObject b)
 //{   return
-//        number_dispatcher::ibinary<LispObject,ModularExpt>("modular-expt", a,
+//        ibinary<LispObject,ModularExpt>("modular-expt", a,
 //                b);
 //}
 //
@@ -262,7 +256,7 @@ LispObject ModularQuotient::op(uint64_t *a, uint64_t *b)
 
 LispObject ModularReciprocal::op(LispObject a)
 {   return
-        number_dispatcher::iunary<LispObject,ModularReciprocal>("modular-reciprocal",
+        iunary<LispObject,ModularReciprocal>("modular-reciprocal",
                 a);
 }
 
@@ -277,7 +271,7 @@ LispObject ModularReciprocal::op(uint64_t *a)
 
 LispObject SafeModularReciprocal::op(LispObject a)
 {   return
-        number_dispatcher::iunary<LispObject,SafeModularReciprocal>("modular-reciprocal",
+        iunary<LispObject,SafeModularReciprocal>("modular-reciprocal",
                 a);
 }
 
@@ -292,7 +286,7 @@ LispObject SafeModularReciprocal::op(uint64_t *a)
 
 LispObject ModularMinus::op(LispObject a)
 {   return
-        number_dispatcher::iunary<LispObject,ModularMinus>("modular-minus",
+        iunary<LispObject,ModularMinus>("modular-minus",
                 a);
 }
 
@@ -307,7 +301,7 @@ LispObject ModularMinus::op(uint64_t *a)
 
 LispObject SetModulus::op(LispObject a)
 {   return
-        number_dispatcher::iunary<LispObject,SetModulus>("set-modulus", a);
+        iunary<LispObject,SetModulus>("set-modulus", a);
 }
 
 // -fixnum
@@ -321,7 +315,7 @@ LispObject SetModulus::op(uint64_t *a)
 
 LispObject ModularNumber::op(LispObject a)
 {   return
-        number_dispatcher::iunary<LispObject,ModularNumber>("modular-number",
+        iunary<LispObject,ModularNumber>("modular-number",
                 a);
 }
 
@@ -838,6 +832,8 @@ LispObject Nmodular_number(LispObject env, LispObject a1)
 }
 
 #endif // NOT_YET
+
+} // end of namespace
 
 #endif // ARITHLIB
 

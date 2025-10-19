@@ -41,6 +41,23 @@
 #include "sockhdr.h"
 #endif
 
+#if defined HAVE_LIBFOX
+namespace FX
+{
+extern void *text;
+}
+#define GUI_TEST FX::text
+#endif
+#if defined HAVE_LIBWX
+extern void *panel;
+#define GUI_TEST panel
+#endif
+
+namespace CSL_LISP
+{
+
+using namespace FX;
+
 void debugprint(const char *s, LispObject a)
 {   std::printf("%s", s);
     debugprint(a);
@@ -162,7 +179,7 @@ int32_t terminal_line_length = (int32_t)0x80000000;
 #define VPRINTF_CHUNK 2048
 
 void ensure_screen()
-{   fwin_ensure_screen();
+{   FX::fwin_ensure_screen();
     if (spool_file != nullptr) std::fflush(spool_file);
 }
 
@@ -769,7 +786,7 @@ int char_to_terminal(int c, LispObject)
         return 0;
     }
 #endif // WITH_GUI
-    fwin_putchar(c);
+    FX::fwin_putchar(c);
     return 0;   // indicate success
 }
 
@@ -1020,7 +1037,7 @@ LispObject Ltmpnam1(LispObject env, LispObject extn)
     size_t suffixlen = 0;
     LispObject r;
     suffix = get_string_data(extn, "tmpnam", suffixlen);
-    suffix1 = CSLtmpnam(suffix, suffixlen);
+    suffix1 = FX::CSLtmpnam(suffix, suffixlen);
     if (suffix1 == nullptr) return nil;
     r = make_string(suffix1);
     return r;
@@ -1042,7 +1059,7 @@ LispObject Ltmpnam(LispObject env)
 // respectable than the standard one, but using it avoids linker messages
 // that are clearly intended to be useful but which are in fact a nuisance.
 {   SingleValued fn;
-    return make_string(CSLtmpnam("tmp", 3));
+    return make_string(FX::CSLtmpnam("tmp", 3));
 }
 
 LispObject Ltmpdir(LispObject env)
@@ -1052,7 +1069,7 @@ LispObject Ltmpdir(LispObject env)
 // it is in "mixed" mode, so the directory is indicated with "x:" but "/"
 // rather than "\" is used as the path separator.
 {   SingleValued fn;
-    return make_string(CSLtmpdir());
+    return make_string(FX::CSLtmpdir());
 }
 
 #ifdef DEBUG
@@ -1372,18 +1389,6 @@ LispObject Lclose(LispObject env, LispObject a)
     return nil;
 #endif
 }
-
-#if defined HAVE_LIBFOX
-namespace FX
-{
-extern void *text;
-}
-#define GUI_TEST FX::text
-#endif
-#if defined HAVE_LIBWX
-extern void *panel;
-#define GUI_TEST panel
-#endif
 
 void checkResources()
 {   if (time_limit >= 0) time_now = read_clock()/1000;
@@ -6198,5 +6203,7 @@ setup_type const print_setup[] =
     DEF_1("~tyo",                 Ltyo),
     {nullptr,                     nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of print.cpp

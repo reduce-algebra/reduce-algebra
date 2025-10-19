@@ -106,6 +106,21 @@
 #endif
 #endif
 
+namespace CSL_LISP
+{
+bool valid_address(uintptr_t x)
+{   return FX::valid_address(x);
+}
+bool valid_address(void* x)
+{   return FX::valid_address(x);
+}
+} // end of namespace
+
+using namespace CSL_LISP;
+
+namespace FX
+{
+
 // Jollies re GC statistics...
 
 static char time_string[64], space_string[64];
@@ -660,7 +675,20 @@ bool valid_address(void *pointer)
 }
 
 #elif defined WIN32
-// code for this is in winsupport.cpp
+
+// On Windows I can query the page that the address is within, and accept
+// it if there is read/write access and if it is not a guard page.
+
+bool valid_address(void *pointer)
+{   MEMORY_BASIC_INFORMATION mbi = {0};
+    if (::VirtualQuery(pointer, &mbi, sizeof(mbi)))
+    {   if (mbi.State != MEM_COMMIT) return false;
+        // check the page is not a guard page
+        if (mbi.Protect & (PAGE_GUARD|PAGE_NOACCESS)) return false;
+        return ((mbi.Protect & (PAGE_NOACCESS)) == 0);
+    }
+    return false;  // ::VirtualQuery failed.
+}
 
 #else
 
@@ -854,5 +882,7 @@ uint64_t read_elapsed_nanosecond()
 //-- }
 //--
 //-- };
+
+} // end namespace
 
 // end of sysfwin.cpp

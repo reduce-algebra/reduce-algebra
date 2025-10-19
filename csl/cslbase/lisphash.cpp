@@ -40,6 +40,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 // Various internal functions that work on hash tables return either an
 // index into a table or the marker value NOT_PRESENT.
 
@@ -1431,5 +1434,7 @@ setup_type const lisphash_setup[] =
     DEF_1("sxhash",         Lsxhash),
     {nullptr,          nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of lisphash.cpp

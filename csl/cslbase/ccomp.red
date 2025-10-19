@@ -975,6 +975,7 @@ princ "C file = "; print name;
     c!:printf("d: $\n\n");
     c!:printf "#include \qconfig.h\q\n";
     c!:printf "#include \qheaders.h\q\n\n";
+    c!:printf "namespace CSL_LISP\n{\n\n";
     wrs O_file;
     return nil
   end;
@@ -1038,7 +1039,8 @@ symbolic procedure C!-end;
         c!:printf("            reinterpret_cast<uintptr_t>(%a)),\n", checksum);
         c!:printf("        nullptr, nullptr, nullptr}\n};\n\n") >>;
       c!:printf("\n\n") >>;
-        c!:printf "%<// end of generated code\n";
+    c!:printf "\n} // end of namespace\n\n";
+    c!:printf "%<// end of generated code\n";
     close C_file;
 #if common!-lisp!-mode
     L_file := open(L_file, !:direction, !:output);

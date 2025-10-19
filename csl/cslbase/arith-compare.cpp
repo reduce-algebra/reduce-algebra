@@ -36,14 +36,8 @@
 
 #include "arith-headers.h"
 
-using number_dispatcher::Fixnum;
-// uint64_t *
-using number_dispatcher::Rat;
-using number_dispatcher::Cpx;
-using number_dispatcher::SFlt;
-// double
-using number_dispatcher::Flt;
-using number_dispatcher::LFlt;
+namespace CSL_LISP
+{
 
 // (eqn a b) will be true if a and b are both numbers of the same
 // type and their values match. So note that all the mixed mode variants
@@ -54,71 +48,71 @@ bool Eqn::op(LispObject a, LispObject b)
 // Immediate numbers would only be EQN if they were in fact EQ, so for
 // them the heavier duty dispatch is not needed. 
     if (!is_boxed_number(a) || !is_boxed_number(b)) return false;
-    return number_dispatcher::binary<bool,Eqn>("eqn", a, b);
+    return binary<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<bool,Eqn>("eqn", a, b);
+{   return binaryR<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<bool,Eqn>("eqn", a, b);
+{   return binaryR<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<bool,Eqn>("eqn", a, b);
+{   return binaryR<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<bool,Eqn>("eqn", a, b);
+{   return binaryR<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<bool,Eqn>("eqn", a, b);
+{   return binaryR<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<bool,Eqn>("eqn", a, b);
+{   return binaryR<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<bool,Eqn>("eqn", a, b);
+{   return binaryR<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<bool,Eqn>("eqn", a, b);
+{   return binaryR<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Eqn>("eqn", a, b);
+{   return binaryL<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Eqn>("eqn", a, b);
+{   return binaryL<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Eqn>("eqn", a, b);
+{   return binaryL<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Eqn>("eqn", a, b);
+{   return binaryL<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Eqn>("eqn", a, b);
+{   return binaryL<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Eqn>("eqn", a, b);
+{   return binaryL<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Eqn>("eqn", a, b);
+{   return binaryL<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Eqn>("eqn", a, b);
+{   return binaryL<bool,Eqn>("eqn", a, b);
 }
 
 // fixnum == fixnum
@@ -395,71 +389,71 @@ bool Eqn::op(LFlt a, LFlt b)
 // pair of rational numbers.
 
 bool CLEqn::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<bool,CLEqn>("eqn", a, b);
+{   return binary<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<bool,CLEqn>("eqn", a, b);
+{   return binaryR<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<bool,CLEqn>("eqn", a, b);
+{   return binaryR<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<bool,CLEqn>("eqn", a, b);
+{   return binaryR<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<bool,CLEqn>("eqn", a, b);
+{   return binaryR<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<bool,CLEqn>("eqn", a, b);
+{   return binaryR<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<bool,CLEqn>("eqn", a, b);
+{   return binaryR<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<bool,CLEqn>("eqn", a, b);
+{   return binaryR<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<bool,CLEqn>("eqn", a, b);
+{   return binaryR<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<bool,CLEqn>("eqn", a, b);
+{   return binaryL<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<bool,CLEqn>("eqn", a, b);
+{   return binaryL<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<bool,CLEqn>("eqn", a, b);
+{   return binaryL<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<bool,CLEqn>("eqn", a, b);
+{   return binaryL<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,CLEqn>("eqn", a, b);
+{   return binaryL<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,CLEqn>("eqn", a, b);
+{   return binaryL<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<bool,CLEqn>("eqn", a, b);
+{   return binaryL<bool,CLEqn>("eqn", a, b);
 }
 
 bool CLEqn::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,CLEqn>("eqn", a, b);
+{   return binaryL<bool,CLEqn>("eqn", a, b);
 }
 
 // fixnum CL== fixnum
@@ -566,7 +560,7 @@ bool CLEqn::op(SFlt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return false;
     LispObject aa = N_rationalf(d);
-    return number_dispatcher::binaryR<bool,CLEqn>("CLeqn", aa, b);
+    return binaryR<bool,CLEqn>("CLeqn", aa, b);
 }
 
 // single float CL== rational
@@ -575,7 +569,7 @@ bool CLEqn::op(Flt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return false;
     LispObject aa = N_rationalf(d);
-    return number_dispatcher::binaryR<bool,CLEqn>("CLeqn", aa, b);
+    return binaryR<bool,CLEqn>("CLeqn", aa, b);
 }
 
 // double float CL== rational
@@ -583,7 +577,7 @@ bool CLEqn::op(double a, Rat b)
 {   if (std::isnan(a)) return false;
     if (std::isinf(a)) return false;
     LispObject aa = N_rationalf(a);
-    return number_dispatcher::binaryR<bool,CLEqn>("CLeqn", aa, b);
+    return binaryR<bool,CLEqn>("CLeqn", aa, b);
 }
 
 extern LispObject N_rationalf128(float128_t d);
@@ -594,7 +588,7 @@ bool CLEqn::op(LFlt aa, Rat b)
     if (f128_nanp(a)) return false;
     if (f128_infinitep(a)) return false;
     LispObject aaa = N_rationalf128(a);
-    return number_dispatcher::binaryR<bool,CLEqn>("CLeqn", aaa, b);
+    return binaryR<bool,CLEqn>("CLeqn", aaa, b);
 }
 // fixnum CL== complex
 bool CLEqn::op(Fixnum a, Cpx b)
@@ -764,71 +758,71 @@ bool CLEqn::op(LFlt a, LFlt b)
 bool Neqn::op(LispObject a, LispObject b)
 {   if (a == b) return false;
     if (!is_boxed_number(a) || !is_boxed_number(b)) return true;
-    return number_dispatcher::binary<bool,Neqn>("neqn", a, b);
+    return binary<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<bool,Neqn>("neqn", a, b);
+{   return binaryR<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<bool,Neqn>("neqn", a, b);
+{   return binaryR<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<bool,Neqn>("neqn", a, b);
+{   return binaryR<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<bool,Neqn>("neqn", a, b);
+{   return binaryR<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<bool,Neqn>("neqn", a, b);
+{   return binaryR<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<bool,Neqn>("neqn", a, b);
+{   return binaryR<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<bool,Neqn>("neqn", a, b);
+{   return binaryR<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<bool,Neqn>("neqn", a, b);
+{   return binaryR<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Neqn>("neqn", a, b);
+{   return binaryL<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Neqn>("neqn", a, b);
+{   return binaryL<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Neqn>("neqn", a, b);
+{   return binaryL<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Neqn>("neqn", a, b);
+{   return binaryL<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Neqn>("neqn", a, b);
+{   return binaryL<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Neqn>("neqn", a, b);
+{   return binaryL<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Neqn>("neqn", a, b);
+{   return binaryL<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Neqn>("neqn", a, b);
+{   return binaryL<bool,Neqn>("neqn", a, b);
 }
 
 // fixnum != fixnum
@@ -1101,71 +1095,71 @@ bool Neqn::op(LFlt a, LFlt b)
 // slightly messy in general and very messy for floating point.
 
 bool Greaterp::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<bool,Greaterp>("greaterp", a, b);
+{   return binary<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 // fixnum > fixnum
@@ -1274,7 +1268,7 @@ bool Greaterp::op(SFlt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return d > 0.0;
     LispObject aa = N_rationalf(d);
-    return number_dispatcher::binaryR<bool,Greaterp>("greaterp", aa, b);
+    return binaryR<bool,Greaterp>("greaterp", aa, b);
 }
 // single float > rational
 bool Greaterp::op(Flt a, Rat b)
@@ -1282,14 +1276,14 @@ bool Greaterp::op(Flt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return d > 0.0;
     LispObject aa = N_rationalf(d);
-    return number_dispatcher::binaryR<bool,Greaterp>("greaterp", aa, b);
+    return binaryR<bool,Greaterp>("greaterp", aa, b);
 }
 // double float > rational
 bool Greaterp::op(double a, Rat b)
 {   if (std::isnan(a)) return false;
     if (std::isinf(a)) return a > 0.0;
     LispObject aa = N_rationalf(a);
-    return number_dispatcher::binaryR<bool,Greaterp>("greaterp", aa, b);
+    return binaryR<bool,Greaterp>("greaterp", aa, b);
 }
 // long float > rational
 bool Greaterp::op(LFlt a, Rat b)
@@ -1299,7 +1293,7 @@ bool Greaterp::op(LFlt a, Rat b)
     if (f128_eq(r, f128_0))             // a is infinite
         return f128_lt(f128_0, d);
     LispObject aa = N_rationalf128(d);
-    return number_dispatcher::binaryR<bool,Greaterp>("greaterp", aa, b);
+    return binaryR<bool,Greaterp>("greaterp", aa, b);
 }
 // fixnum > complex
 bool Greaterp::op(Fixnum a, Cpx b)
@@ -1465,71 +1459,71 @@ bool Greaterp::op(LFlt a, LFlt b)
 // (geq a b) is very much like (greaterp a b)...
 
 bool Geq::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<bool,Geq>("geq", a, b);
+{   return binary<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<bool,Geq>("geq", a, b);
+{   return binaryR<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<bool,Geq>("geq", a, b);
+{   return binaryR<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<bool,Geq>("geq", a, b);
+{   return binaryR<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<bool,Geq>("geq", a, b);
+{   return binaryR<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<bool,Geq>("geq", a, b);
+{   return binaryR<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<bool,Geq>("geq", a, b);
+{   return binaryR<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<bool,Geq>("geq", a, b);
+{   return binaryR<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<bool,Geq>("geq", a, b);
+{   return binaryR<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Geq>("geq", a, b);
+{   return binaryL<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Geq>("geq", a, b);
+{   return binaryL<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Geq>("geq", a, b);
+{   return binaryL<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Geq>("geq", a, b);
+{   return binaryL<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Geq>("geq", a, b);
+{   return binaryL<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Geq>("geq", a, b);
+{   return binaryL<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Geq>("geq", a, b);
+{   return binaryL<bool,Geq>("geq", a, b);
 }
 
 bool Geq::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Geq>("geq", a, b);
+{   return binaryL<bool,Geq>("geq", a, b);
 }
 
 // fixnum >= fixnum
@@ -1626,7 +1620,7 @@ bool Geq::op(SFlt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return d > 0.0;
     LispObject aa = N_rationalf(d);
-    return number_dispatcher::binaryR<bool,Geq>("geq", aa, b);
+    return binaryR<bool,Geq>("geq", aa, b);
 }
 // single float >= rational
 bool Geq::op(Flt a, Rat b)
@@ -1634,14 +1628,14 @@ bool Geq::op(Flt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return d > 0.0;
     LispObject aa = N_rationalf(d);
-    return number_dispatcher::binaryR<bool,Geq>("geq", aa, b);
+    return binaryR<bool,Geq>("geq", aa, b);
 }
 // double float >= rational
 bool Geq::op(double a, Rat b)
 {   if (std::isnan(a)) return false;
     if (std::isinf(a)) return a > 0.0;
     LispObject aa = N_rationalf(a);
-    return number_dispatcher::binaryR<bool,Geq>("geq", aa, b);
+    return binaryR<bool,Geq>("geq", aa, b);
 }
 // long float >= rational
 bool Geq::op(LFlt a, Rat b)
@@ -1651,7 +1645,7 @@ bool Geq::op(LFlt a, Rat b)
     if (f128_eq(r, f128_0))             // a is infinite
         return f128_lt(f128_0, d);
     LispObject aa = N_rationalf128(d);
-    return number_dispatcher::binaryR<bool,Geq>("geq", aa, b);
+    return binaryR<bool,Geq>("geq", aa, b);
 }
 // fixnum >= complex
 bool Geq::op(Fixnum a, Cpx b)
@@ -1816,71 +1810,71 @@ bool Geq::op(LFlt a, LFlt b)
 }
 
 bool Lessp::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<bool,Lessp>("lessp", a, b);
+{   return binary<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<bool,Lessp>("lessp", a, b);
+{   return binaryR<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<bool,Lessp>("lessp", a, b);
+{   return binaryR<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<bool,Lessp>("lessp", a, b);
+{   return binaryR<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<bool,Lessp>("lessp", a, b);
+{   return binaryR<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<bool,Lessp>("lessp", a, b);
+{   return binaryR<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<bool,Lessp>("lessp", a, b);
+{   return binaryR<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<bool,Lessp>("lessp", a, b);
+{   return binaryR<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<bool,Lessp>("lessp", a, b);
+{   return binaryR<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Lessp>("lessp", a, b);
+{   return binaryL<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Lessp>("lessp", a, b);
+{   return binaryL<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Lessp>("lessp", a, b);
+{   return binaryL<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Lessp>("lessp", a, b);
+{   return binaryL<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Lessp>("lessp", a, b);
+{   return binaryL<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Lessp>("lessp", a, b);
+{   return binaryL<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Lessp>("lessp", a, b);
+{   return binaryL<bool,Lessp>("lessp", a, b);
 }
 
 bool Lessp::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Lessp>("lessp", a, b);
+{   return binaryL<bool,Lessp>("lessp", a, b);
 }
 
 // fixnum < fixnum
@@ -1980,7 +1974,7 @@ bool Lessp::op(SFlt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return d < 0.0;
     LispObject aa = N_rationalf(d);
-    return number_dispatcher::binaryR<bool,Lessp>("lessp", aa, b);
+    return binaryR<bool,Lessp>("lessp", aa, b);
 }
 // single float < rational
 bool Lessp::op(Flt a, Rat b)
@@ -1988,14 +1982,14 @@ bool Lessp::op(Flt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return d < 0.0;
     LispObject aa = N_rationalf(d);
-    return number_dispatcher::binaryR<bool,Lessp>("lessp", aa, b);
+    return binaryR<bool,Lessp>("lessp", aa, b);
 }
 // double float < rational
 bool Lessp::op(double a, Rat b)
 {   if (std::isnan(a)) return false;
     if (std::isinf(a)) return a < 0.0;
     LispObject aa = N_rationalf(a);
-    return number_dispatcher::binaryR<bool,Lessp>("lessp", aa, b);
+    return binaryR<bool,Lessp>("lessp", aa, b);
 }
 // long float < rational
 bool Lessp::op(LFlt a, Rat b)
@@ -2005,7 +1999,7 @@ bool Lessp::op(LFlt a, Rat b)
     if (f128_eq(r, f128_0))             // a is infinite
         return f128_lt(d, f128_0);
     LispObject aa = N_rationalf128(d);
-    return number_dispatcher::binaryR<bool,Lessp>("lessp", aa, b);
+    return binaryR<bool,Lessp>("lessp", aa, b);
 }
 
 // fixnum < complex
@@ -2170,71 +2164,71 @@ bool Lessp::op(LFlt a, LFlt b)
 }
 
 bool Leq::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<bool,Leq>("leq", a, b);
+{   return binary<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<bool,Leq>("leq", a, b);
+{   return binaryR<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<bool,Leq>("leq", a, b);
+{   return binaryR<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<bool,Leq>("leq", a, b);
+{   return binaryR<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<bool,Leq>("leq", a, b);
+{   return binaryR<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<bool,Leq>("leq", a, b);
+{   return binaryR<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<bool,Leq>("leq", a, b);
+{   return binaryR<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<bool,Leq>("leq", a, b);
+{   return binaryR<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<bool,Leq>("leq", a, b);
+{   return binaryR<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Leq>("leq", a, b);
+{   return binaryL<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Leq>("leq", a, b);
+{   return binaryL<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Leq>("leq", a, b);
+{   return binaryL<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Leq>("leq", a, b);
+{   return binaryL<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Leq>("leq", a, b);
+{   return binaryL<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Leq>("leq", a, b);
+{   return binaryL<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Leq>("leq", a, b);
+{   return binaryL<bool,Leq>("leq", a, b);
 }
 
 bool Leq::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Leq>("leq", a, b);
+{   return binaryL<bool,Leq>("leq", a, b);
 }
 
 // fixnum <= fixnum
@@ -2334,7 +2328,7 @@ bool Leq::op(SFlt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return d < 0.0;
     LispObject aa = N_rationalf(d);
-    return number_dispatcher::binaryR<bool,Leq>("leq", aa, b);
+    return binaryR<bool,Leq>("leq", aa, b);
 }
 // single float <= rational
 bool Leq::op(Flt a, Rat b)
@@ -2342,14 +2336,14 @@ bool Leq::op(Flt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return d < 0.0;
     LispObject aa = N_rationalf(d);
-    return number_dispatcher::binaryR<bool,Leq>("leq", aa, b);
+    return binaryR<bool,Leq>("leq", aa, b);
 }
 // double float <= rational
 bool Leq::op(double a, Rat b)
 {   if (std::isnan(a)) return false;
     if (std::isinf(a)) return a < 0.0;
     LispObject aa = N_rationalf(a);
-    return number_dispatcher::binaryR<bool,Leq>("leq", aa, b);
+    return binaryR<bool,Leq>("leq", aa, b);
 }
 // long float <= rational
 bool Leq::op(LFlt a, Rat b)
@@ -2359,7 +2353,7 @@ bool Leq::op(LFlt a, Rat b)
     if (f128_eq(r, f128_0))             // a is infinite
         return f128_lt(d, f128_0);
     LispObject aa = N_rationalf128(d);
-    return number_dispatcher::binaryR<bool,Leq>("leq", aa, b);
+    return binaryR<bool,Leq>("leq", aa, b);
 }
 // fixnum <= complex
 bool Leq::op(Fixnum a, Cpx b)
@@ -2523,7 +2517,7 @@ bool Leq::op(LFlt a, LFlt b)
 }
 
 bool Onep::op(LispObject a)
-{   return number_dispatcher::unary<bool,Onep>("onep", a);
+{   return unary<bool,Onep>("onep", a);
 }
 
 bool Onep::op(Fixnum a)
@@ -2559,7 +2553,7 @@ bool Onep::op(LFlt a)
 }
 
 bool MinusOnep::op(LispObject a)
-{   return number_dispatcher::unary<bool,MinusOnep>("minusonep", a);
+{   return unary<bool,MinusOnep>("minusonep", a);
 }
 
 bool MinusOnep::op(Fixnum a)
@@ -2595,7 +2589,7 @@ bool MinusOnep::op(LFlt a)
 }
 
 bool Zerop::op(LispObject a)
-{   return number_dispatcher::unary<bool,Zerop>("zerop", a);
+{   return unary<bool,Zerop>("zerop", a);
 }
 
 bool Zerop::op(Fixnum a)
@@ -2631,7 +2625,7 @@ bool Zerop::op(LFlt a)
 }
 
 bool Oddp::op(LispObject a)
-{   return number_dispatcher::iunary<bool,Oddp>("oddp", a);
+{   return iunary<bool,Oddp>("oddp", a);
 }
 
 bool Oddp::op(Fixnum a)
@@ -2643,7 +2637,7 @@ bool Oddp::op(uint64_t *a)
 }
 
 bool Evenp::op(LispObject a)
-{   return number_dispatcher::iunary<bool,Evenp>("evenp", a);
+{   return iunary<bool,Evenp>("evenp", a);
 }
 
 bool Evenp::op(Fixnum a)
@@ -2655,7 +2649,7 @@ bool Evenp::op(uint64_t *a)
 }
 
 bool Minusp::op(LispObject a)
-{   return number_dispatcher::unary<bool,Minusp>("minusp", a);
+{   return unary<bool,Minusp>("minusp", a);
 }
 
 bool Minusp::op(Fixnum a)
@@ -2691,7 +2685,7 @@ bool Minusp::op(LFlt a)
 }
 
 bool Plusp::op(LispObject a)
-{   return number_dispatcher::unary<bool,Plusp>("plusp", a);
+{   return unary<bool,Plusp>("plusp", a);
 }
 
 bool Plusp::op(Fixnum a)
@@ -2727,7 +2721,7 @@ bool Plusp::op(LFlt a)
 }
 
 LispObject Abs::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Abs>("abs", a);
+{   return unary<LispObject,Abs>("abs", a);
 }
 
 LispObject Abs::op(Fixnum a)
@@ -3250,5 +3244,7 @@ LispObject Nineqn(LispObject env, LispObject a1, LispObject a2,
 }
 
 #endif // ARITHLIB
+
+} // end of namespace
 
 // end of arith-compare.cpp

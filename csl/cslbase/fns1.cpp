@@ -43,6 +43,9 @@
 #include <dlfcn.h>
 #endif
 
+namespace CSL_LISP
+{
+
 /*!!! csl
 */
 
@@ -2818,5 +2821,7 @@ setup_type const funcs1_setup[] =
     DEF_1("sigsegv",            Lsigsegv),
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of fns1.cpp

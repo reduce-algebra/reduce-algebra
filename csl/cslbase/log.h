@@ -1,4 +1,4 @@
-// "log.h"                                              2020-22, A C Norman
+//  log.h                                               2020-22, A C Norman
 //
 // logging...
 //
@@ -38,6 +38,7 @@
 #ifndef header_log_h
 #define header_log_h 1
 
+#include <cstddef>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -63,13 +64,15 @@
 #include <thread>
 #include <chrono>
 
+namespace FX
+{
+extern void term_close();
+}
 
-#ifdef CSL
+namespace CSL_LISP
+{
 
 extern std::FILE *spool_file;
-extern void term_close();
-
-#endif // CSL
 
 // An "my_assert" scheme that lets me write in my own code to print the
 // diagnostics. I also "exit()" rather than "abort()" since that is slightly
@@ -95,7 +98,7 @@ extern void displayAllPages(const char*);
         std::fclose(spool_file);
         spool_file = nullptr;
     }
-    term_close();
+    FX::term_close();
     std::exit(999);
 #endif
 #ifdef HAVE_QUICK_EXIT
@@ -121,7 +124,7 @@ extern void displayAllPages(const char*);
         std::fclose(spool_file);
         spool_file = nullptr;
     }
-    term_close();
+    FX::term_close();
 #endif
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #ifdef HAVE_QUICK_EXIT
@@ -190,7 +193,7 @@ inline void my_assert1(unsigned int line, const char* file,
         std::fclose(spool_file);
         spool_file = nullptr;
     }
-    term_close();
+    FX::term_close();
 #endif
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #ifdef HAVE_QUICK_EXIT
@@ -242,8 +245,8 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
 // whereFn is used via one of these nacros so that the location of its
 // call is captured.
 
-#define __WHERE__ whereFn(__FILE__, __LINE__)
-#define where(msg) whereFn(__FILE__, __LINE__, msg)
+#define __WHERE__ CSL_LISP::whereFn(__FILE__, __LINE__)
+#define where(msg) CSL_LISP::whereFn(__FILE__, __LINE__, msg)
 
 // This simpler version is available as just a string without needing any
 // computation. However the file-name is liable to be rather bulky! In case
@@ -1466,6 +1469,8 @@ void zprintf(formatString<my_type_identity_t<Args> ...> format,
     (std::strcpy(formatLocation(), where(".. ")),      \
      zprintf(__VA_ARGS__))
 #endif
+
+} // end namespace
 
 #endif // header_log_h
 

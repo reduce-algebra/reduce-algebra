@@ -38,6 +38,8 @@
 #ifndef header_mpipack_h
 #define header_mpipack_h
 
+namespace CSL_LISP
+{
 
 // Code to pack a Lisp cons-structure into a linear buffer and retrieve it.
 
@@ -340,6 +342,8 @@ static LispObject unpack_list()
         }
     }
 }
+
+} // end namespace
 
 #endif
 

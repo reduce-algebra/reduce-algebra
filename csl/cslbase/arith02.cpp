@@ -42,6 +42,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifndef ARITHLIB
 
 #ifdef WITH_CILK
@@ -1427,5 +1430,7 @@ LispObject times2a(LispObject a, LispObject b)
 }
 
 #endif // ARITHLIB
+
+} // end of namespace
 
 // end of arith02.cpp

@@ -43,6 +43,9 @@
 #include <dlfcn.h>
 #endif
 
+namespace CSL_LISP
+{
+
 extern "C"
 {   extern int variable_in_base;
     extern int function_in_base(int x);
@@ -64,6 +67,10 @@ int clone(int x)
 }
 
 typedef int onearg(int a);
+
+} // end namespace
+
+using namespace CSL_LISP;
 
 int main(int argc, char *argv[])
 {   onearg *b = nullptr;

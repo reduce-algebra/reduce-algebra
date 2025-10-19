@@ -48,6 +48,9 @@
 
 #include "winsupport.h"
 
+namespace CSL_LISP
+{
+
 void win32_stacklimit(uintptr_t &stacklimit)
 {   HMODULE h = GetModuleHandle(nullptr); // For current executable
     if (h != nullptr)
@@ -314,19 +317,7 @@ size_t windowsGetTempPath(size_t n, char *s)
 {   return GetTempPath(n, s);
 }
 
-// On Windows I can query the page that the address is within, and accept
-// it if there is read/write access and if it is not a guard page.
-
-bool valid_address(void *pointer)
-{   MEMORY_BASIC_INFORMATION mbi = {0};
-    if (::VirtualQuery(pointer, &mbi, sizeof(mbi)))
-    {   if (mbi.State != MEM_COMMIT) return false;
-        // check the page is not a guard page
-        if (mbi.Protect & (PAGE_GUARD|PAGE_NOACCESS)) return false;
-        return ((mbi.Protect & (PAGE_NOACCESS)) == 0);
-    }
-    return false;  // ::VirtualQuery failed.
-}
+} // end namespace
 
 #elif defined __CYGWIN__
 
@@ -342,6 +333,9 @@ bool valid_address(void *pointer)
 #include <cstdio>
 
 #include "winsupport.h"
+
+namespace CSL_LISP
+{
 
 int windowsFindGnuplot2(char *name)
 {   HKEY keyhandle;
@@ -388,6 +382,8 @@ int windowsFindGnuplot2(char *name)
 size_t windowsGetTempPath(size_t n, char *s)
 {   return GetTempPath(n, s);
 }
+
+} // end namespace
 
 #endif // Windows & Cygwin
 

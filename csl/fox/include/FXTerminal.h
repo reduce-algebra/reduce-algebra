@@ -62,7 +62,12 @@
 #include <unistd.h>
 #endif
 
+namespace CSL_LISP
+{
+
 extern int windowed;
+
+} // end namespace
 
 namespace FX {
 

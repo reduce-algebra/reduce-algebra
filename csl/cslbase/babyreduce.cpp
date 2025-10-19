@@ -51,6 +51,9 @@
 #include "termed.h"
 #include "proc.h"
 
+namespace CSL_LISP
+{
+
 static std::string line = "";
 
 static int iget()
@@ -100,5 +103,7 @@ int main(int argc, char *argv[])
     }
     return res;
 }
+
+} // end namespace
 
 // End of babyreduce.cpp

@@ -38,6 +38,9 @@
 #ifndef header_cslerror_h
 #define header_cslerror_h 1
 
+namespace CSL_LISP
+{
+
 extern LispObject interrupted(bool noisy);
 
 extern LispObject error(int nargs, int code, ...);
@@ -278,6 +281,8 @@ INLINE_VAR const char *error_message_table[] =
     "dummy final error message"
 };
 #undef X
+
+} // end namespace
 
 #endif //  header_cslerror_h
 

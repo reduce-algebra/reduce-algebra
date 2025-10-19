@@ -38,7 +38,9 @@
 
 #include "headers.h"
 
-//
+namespace CSL_LISP
+{
+
 // Here is a bit of a commentary about calling arrangements.
 //
 // When a Lisp function is called in the C code it will have 0, 1, 2, 3
@@ -1305,5 +1307,7 @@ LispObject Lunmake_jit(LispObject env, LispObject fname)
 }
 
 #endif // ENABLE_JIT
+
+} // end namespace
 
 // end of eval4.cpp

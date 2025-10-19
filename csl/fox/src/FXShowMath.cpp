@@ -78,8 +78,13 @@
 
 #include <stdlib.h>
 
+namespace CSL_LISP
+{
+
 extern bool directoryp(char *a, const char *b, size_t n);
 extern bool file_readable(char *a, const char *b, size_t n);
+
+} // end namespace
 
 #include <string.h>
 #include <ctype.h>
@@ -92,6 +97,8 @@ extern bool file_readable(char *a, const char *b, size_t n);
 
 
 namespace FX {
+
+using namespace CSL_LISP;
 
 // By compiling with -DDEBUGFONT=NNN the debug printing can be enabled.
 #ifndef DEBUGFONT

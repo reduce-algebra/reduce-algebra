@@ -40,6 +40,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifndef ARITHLIB
 
 LispObject make_n_word_bignum(int32_t a2, uint32_t a1, uint32_t a0,
@@ -1765,5 +1768,7 @@ bool geq2(LispObject a, LispObject b)
 }
 
 #endif // ARITHLIB
+
+} // end of namespace
 
 // end of arith04.cpp

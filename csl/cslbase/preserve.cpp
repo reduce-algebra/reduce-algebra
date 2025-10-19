@@ -85,6 +85,9 @@
 
 #define CHUNK ((size_t)16384)
 
+namespace CSL_LISP
+{
+
 static z_stream strm;
 static unsigned char in[CHUNK];
 static unsigned char out[CHUNK];
@@ -1827,7 +1830,7 @@ bool finished_with(int j)
         }
         std::fflush(d->f);
         if (hwm != bits32(d->h.eof))
-        {   truncate_file(d->f, hwm);
+        {   FX::truncate_file(d->f, hwm);
             setbits32(d->h.eof, (int32_t)hwm);
         }
     }
@@ -1996,5 +1999,7 @@ void preserve(const char *banner, size_t len)
     if (IcloseOutput()) error(0, err_write_err);
     return;
 }
+
+} // end namespace
 
 // end of file preserve.cpp

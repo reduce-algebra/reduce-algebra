@@ -37,6 +37,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 // After (trace-count n) each "Calling ..." line of output when a function
 // is being traced will include a sequence number starting with n if n>0.
 // And the matching return value will echo the same number to make it easy
@@ -901,5 +904,7 @@ setup_type const eval2_setup[] =
     DEF_special("~let",          let_fn),
     {nullptr,                    nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of eval2.cpp

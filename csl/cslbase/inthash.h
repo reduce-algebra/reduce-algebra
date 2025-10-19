@@ -69,6 +69,9 @@
 #ifndef __inthash_h
 #define __inthash_h 1
 
+namespace CSL_LISP
+{
+
 // The structure "inthash" is used to encapsulate a table. In almost
 // all cases I hope that people will neither need nor want to inspect the
 // fields within it. However such operations as iterating over keys or
@@ -157,6 +160,8 @@ extern bool hash_delete(inthash *h, uintptr_t k);
 // doing things in two steps.
 
 extern size_t hash_insert(inthash *h, uintptr_t k);
+
+} // end namespace
 
 #endif // __inthash_h
 

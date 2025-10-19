@@ -303,14 +303,9 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #include <unistd.h>
 #endif //WIN32
 
-// I now include eg <cstdio> rather than <stdio.h>. The consequence is that
-// all the names that are declared are certain to be present in the std::
-// namespace. They MIGHT be present in the global namespace too, but there is
-// no guarantee of that.
-
-// The consequence is that I ought to go "using std::fopen;" and things like
-// that wherever I use a C library function, or as an alternative write the
-// calls as std::fopen(...) instead of just fopen(...). At present it is not
+// I ought to go "using std::fopen;" and things like that wherever I use a
+// C library function, or as an alternative write the calls as
+// std::fopen(...) instead of just fopen(...). At present it is not
 // clear how I can police my adherence to this requirement!
 
 #include <cstdio>
@@ -488,6 +483,9 @@ inline uint64_t ASL(uint64_t a, int n)
     return a << n;
 }
 
+namespace CSL_LISP
+{
+
 // It is useful to have some integer constants that I KNOW are 64-bit
 // wide or that I KNOW are the width of pointers - these are for instance
 // for us in code of that shape (x & (1U<<n)) where I need the "1" to be at
@@ -507,6 +505,8 @@ inline uintptr_t& indirect(uintptr_t address)
 #endif // DEBUG
     return *reinterpret_cast<uintptr_t*>(address);
 }
+
+} // end namespace
 
 #endif // header_machine_h
 

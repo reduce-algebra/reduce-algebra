@@ -45,6 +45,9 @@
 #include <unordered_set>
 #include <stack>
 
+namespace CSL_LISP
+{
+
 INLINE_VAR std::unordered_set<LispObject> visited;
 INLINE_VAR std::stack<LispObject> trail;
 INLINE_VAR std::stack<intptr_t> state;
@@ -398,6 +401,8 @@ inline void validateAll(const char* why, bool forwardOK=false, bool oldSpaceVali
         validateObject(*sp, forwardOK, oldSpaceValid);
     if (GCTRACE) zprintf("Validation success\n");
 }
+
+} // end namespace
 
 #endif // header_validate_h
 

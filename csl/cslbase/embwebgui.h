@@ -38,6 +38,8 @@
 #include <string>
 #include "headers.h"
 
+namespace CSL_LISP
+{
         void setup_web_reduce(void);
 
         std::string passToReduce(std::string arguments);
@@ -56,6 +58,8 @@
         
         LispObject Lexec_JS_in_webv(LispObject, LispObject);
        
+} // end namespace
+
 #endif
 
 // end of embwebgui.h

@@ -80,6 +80,9 @@
 #include "validate.h"
 #endif // EXTREME_DEBUG
 
+namespace CSL_LISP
+{
+
 unsigned int gcNumber = 0;
 
 // The default is gcTrace=0 which leads to no trace.
@@ -1720,7 +1723,7 @@ static void report_at_end(uint64_t t0)
 // vecCurrent are not at this stage totally full.
     double z = (100.0*n)/n1;
 #ifdef WITH_GUI
-    report_space(gcNumber, z, fn1);
+    FX::report_space(gcNumber, z, fn1);
 #endif // WITH_GUI
     if (verbos_flag & 1 || force_verbos)
     {   trace_printf(
@@ -1767,7 +1770,7 @@ NOINLINE void garbage_collect(const char* why)
 // At present messages go to the normal output stream, which only makes
 // sense if GC messages are almost always disabled - maybe that will
 // be the case!
-        report_time(t, gct);
+        FX::report_time(t, gct);
         time_now = read_clock()/1000;
         if ((verbos_flag & 1) || force_verbos)
         {   freshline_trace();
@@ -1919,3 +1922,7 @@ void dumpToFile(const char* filename)
 
 #endif // DEBUG
 
+} // end namespace
+
+
+// end of newcslgc.cpp

@@ -125,6 +125,9 @@
 #include <sys/resource.h>
 #endif
 
+namespace CSL_LISP
+{
+
 // These flags are used to ensure that protected symbols don't get
 // overwritten by default, and that the system keeps quiet about it.
 
@@ -4128,6 +4131,12 @@ PROC_handle PROC_rest(PROC_handle p)
 {   return reinterpret_cast<PROC_handle>(
                static_cast<LispObject>(
                    cdr(reinterpret_cast<LispObject>(p))));
+}
+
+} // end namespace
+
+int main(int argc, const char *argv[])
+{   CSL_LISP::main(argc, argv);
 }
 
 // End of csl.cpp

@@ -41,7 +41,8 @@
 
 #include "headers.h"
 
-
+namespace CSL_LISP
+{
 
 setup_type const u01_setup[] =
 {   {nullptr,               nullptr, nullptr, nullptr, nullptr, nullptr}
@@ -284,5 +285,6 @@ setup_type const u60_setup[] =
 {   {nullptr,               nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
+} // end namespace
 
 // end of stubs.cpp

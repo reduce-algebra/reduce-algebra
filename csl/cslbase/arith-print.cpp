@@ -36,6 +36,8 @@
 
 #include "arith-headers.h"
 
+namespace CSL_LISP
+{
 
 static thread_local std::vector<char> print_buffer;
 
@@ -178,6 +180,8 @@ void print_newbighexoctbin(LispObject u, int radix, int width,
             return;
     }
 }
+
+} // end of namespace
 
 #endif // ARITHLIB
 

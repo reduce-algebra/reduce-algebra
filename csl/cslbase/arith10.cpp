@@ -39,6 +39,8 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
 
 #ifndef ARITHLIB
 
@@ -1921,5 +1923,7 @@ setup_type const arith10_setup[] =
 #endif // ARITHLIB
     {nullptr,             nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of arith10.cpp

@@ -38,6 +38,9 @@
 
 #include <cstdio>
 
+namespace CSL_LISP
+{
+
 extern "C"
 {   extern int variable_in_base;
     extern int function_in_base(int x);
@@ -61,5 +64,7 @@ extern "C" int callme(int x)
                 function_in_base);
     return 3*function_in_base(x) + 1;
 }
+
+} // end namespace
 
 // end of dynmodule.cpp

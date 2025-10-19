@@ -44,6 +44,8 @@
 
 // $Id$
 
+namespace CSL_LISP
+{
 
 #ifdef CREATE
 
@@ -2727,5 +2729,7 @@ int main(int argc, char *argv[])
 
 #endif // TEST
 #endif // CREATE
+
+} // end namespace
 
 // end of charmetrics.cpp

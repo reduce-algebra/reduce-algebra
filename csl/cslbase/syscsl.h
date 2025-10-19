@@ -42,6 +42,19 @@
 #ifndef header_syscsl_h
 #define header_syscsl_h 1
 
+namespace FX
+{
+
+extern uint64_t read_clock();
+extern uint64_t read_clock_cycles();
+extern uint64_t read_clock_microsecond();
+extern uint64_t read_clock_nanosecond();
+extern uint64_t read_process_nanosecond();
+extern uint64_t read_elapsed_nanosecond();
+
+extern const char* fullProgramName;
+extern int showmathInitialised;
+extern char* look_in_lisp_variable(char* o, int prefix);
 //
 // find_image_directory is handed the information that main() sees when
 // the application is started up, and it returns a string (in freshly
@@ -105,8 +118,7 @@ extern bool file_exists(char *filename, const char *old, size_t n,
 // such as "tempfile*.log" should be safe!
 //
 
-extern int create_directory(char *filename, const char *old,
-                            size_t n);
+extern int create_directory(char *filename, const char *old, size_t n);
 
 extern int delete_file(char *filename, const char *old, size_t n);
 
@@ -129,8 +141,7 @@ extern bool file_readable(char *filename, const char *old, size_t n);
 
 extern bool file_writeable(char *filename, const char *old, size_t n);
 
-extern bool file_executable(char *filename, const char *old,
-                            size_t n);
+extern bool file_executable(char *filename, const char *old, size_t n);
 
 extern bool directoryp(char *filename, const char *old, size_t n);
 
@@ -196,6 +207,7 @@ extern void list_directory_members(char *filename, const char *old,
 //
 // (f) is an open file - truncate it at position (where).
 //
+
 extern int truncate_file(std::FILE *f, long int where);
 
 //
@@ -275,17 +287,38 @@ extern int my_pipe_flush(std::FILE *f);
 //
 extern int batchp(void);
 
+} // end of namespace
+
+namespace CSL_LISP
+{
+
 //
 // Ideally I will want the clock to report "user time" to me rather than
 // "elapsed time", since that will make recording benchmark info easier.
 //
-extern uint64_t read_clock(void);
+inline uint64_t read_clock()
+{   return FX::read_clock();
+}
 
-extern uint64_t read_clock_cycles();
-extern uint64_t read_clock_microsecond();
-extern uint64_t read_clock_nanosecond();
-extern uint64_t read_process_nanosecond();
-extern uint64_t read_elapsed_nanosecond();
+inline uint64_t read_clock_cycles()
+{   return FX::read_clock_cycles();
+}
+
+inline uint64_t read_clock_microsecond()
+{   return FX::read_clock_microsecond();
+}
+
+inline uint64_t read_clock_nanosecond()
+{   return FX::read_clock_nanosecond();
+}
+
+inline uint64_t read_process_nanosecond()
+{   return FX::read_process_nanosecond();
+}
+
+inline uint64_t read_elapsed_nanosecond()
+{   return FX::read_elapsed_nanosecond();
+}
 
 
 #ifdef SHOW_COUNTS_AVAILABLE
@@ -318,6 +351,17 @@ extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
 extern int32_t ok_to_grab_memory(int32_t current_pages);
 
 //
+// I may want to redirect stdout to a file, in which case the following
+// is the handle that I will use.  See "--" decoding in csl.c
+//
+extern std::FILE *alternative_stdout;
+
+}
+
+namespace FX
+{
+
+//
 // The following returns the number of processor cores that may be available.
 // If that information is not available it will return 1. The information is
 // a "hint" not definitive!
@@ -336,11 +380,6 @@ extern void putc_stdout(int c);
 // flush_screen() tries to make sure that the display is up to date.
 //
 extern void flush_screen(void);
-//
-// I may want to redirect stdout to a file, in which case the following
-// is the handle that I will use.  See "--" decoding in csl.c
-//
-extern std::FILE *alternative_stdout;
 //
 // Ditto reading from stdin.  Reads chars into buffer, returns count.
 //
@@ -366,6 +405,12 @@ extern void report_space(uint64_t gccount, double percent, double mbytes);
 
 extern bool valid_address(void *p);
 extern bool valid_address(uintptr_t p);
+
+extern const char* CSLtmpdir();
+extern const char* CSLtmpnam(const char* suffix, size_t suffixlen);
+extern int Cmkdir(const char* s);
+
+} // end namespace
 
 #endif // header_syscsl_h
 

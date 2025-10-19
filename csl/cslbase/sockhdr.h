@@ -41,7 +41,12 @@
 // Some declarations for my own variables and functions.
 //
 
+namespace CSL_LISP
+{
+
 extern const char *WSAErrName(int i);
 extern int ensure_sockets_ready(void);
+
+} // end namespace
 
 // End of sockhdr.h

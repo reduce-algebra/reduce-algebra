@@ -40,6 +40,8 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
 
 #define BODY_LET            0
 #define BODY_COMPILER_LET   1
@@ -1165,5 +1167,7 @@ setup_type const eval3_setup[] =
     DEF_special("throw",                throw_fn),
     {nullptr,                           nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of eval3.cpp

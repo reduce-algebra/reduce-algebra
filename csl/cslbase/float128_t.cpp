@@ -43,6 +43,8 @@
 #include "bitmaps.h"
 #include "tags.h"
 
+namespace CSL_LISP
+{
 
 
 #ifdef HAVE_SOFTFLOAT
@@ -897,6 +899,8 @@ int f128_print_G(int width, int prec, float128_t p)
 }
 
 #endif // HAVE_SOFTFLOAT
+
+} // end namespace
 
 // end of float128_t.cpp
 

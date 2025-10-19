@@ -57,6 +57,9 @@
 #define UNUSED_NAME
 #endif
 
+namespace CSL_LISP
+{
+
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -166,6 +169,8 @@ inline uint64_t nextGoodPrime(uint64_t p)
 {   return p == goodPrimes[goodPrimesCount-1] ? p :
                            goodPrimes[primeIndex(p)+1];
 }
+
+} // end namespace
 
 #endif // header_isprime
 

@@ -39,6 +39,9 @@
 #include "headers.h"
 #endif
 
+namespace CSL_LISP
+{
+
 // Before any use the hash one must initialize the structure. The argument
 // bits indicates how large the table should be to start with (2^bits), but
 // it will expand as necessary. Keys are going to be non-zero uintptr_t
@@ -710,5 +713,7 @@ int main(int argc, char *argv[])
 }
 
 #endif // TEST
+
+} // end namespace
 
 // end of inthash.cpp

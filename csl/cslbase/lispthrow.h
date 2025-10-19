@@ -36,6 +36,9 @@
 #ifndef __lispthrow_h
 #define __lispthrow_h 1
 
+namespace CSL_LISP
+{
+
 // If NO_THROW is defined this uses a flag rather than genuine C++ exceptions!
 
 //extern LispObject *stack;
@@ -1271,6 +1274,8 @@ public:
     ANOTHER_CATCH(LispSimpleError)            \
     {}                                        \
     END_CATCH
+
+} // end namespace
 
 #endif // __lispthrow_h
 

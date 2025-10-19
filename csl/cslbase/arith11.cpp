@@ -42,6 +42,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 #ifndef ARITHLIB
 
 LispObject rembi(LispObject a, LispObject b)
@@ -1191,5 +1194,7 @@ bool SL_numeq2(LispObject a, LispObject b)
 }
 
 #endif // ARITHLIB
+
+} // end namespace
 
 // end of arith11.cpp

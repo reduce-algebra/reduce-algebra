@@ -53,6 +53,9 @@
 #include "fwin.xpm" // Icon to use in non-Windows cases
 #endif
 
+namespace CSL_LISP
+{
+
 class wsDemo : public wxApp
 {
 public:
@@ -137,5 +140,6 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
     dc.DrawText(msg, (WIDTH-s.GetWidth())/2, (HEIGHT-3*s.GetHeight())/2);
 }
 
+} // end namespace
 
 // end of wxdemo.cpp

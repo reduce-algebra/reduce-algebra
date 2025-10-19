@@ -230,7 +230,12 @@ inline double CSLpow(double x, double y)
 
 #ifdef ARITHLIB
 #include "arith-defs.h"
+#endif // ARITHLIB
 
+namespace CSL_LISP
+{
+
+#ifdef ARITHLIB
 // Here we hava another oddity! The JIT must call different things for
 // various basic arithmetic operations depending on whether ARITHLIB is
 // active or not. But I want to be able to initialize the table of
@@ -250,7 +255,9 @@ inline const lispFn2& JITquotient2Val = Quotient::op;
 inline const lispFn2& JITremainderVal = Remainder::op;
 inline const makebigFn& JITint_from_ptrVal =
                       arithlib_implementation::intToBignum;
+
 #else // ARITHLIB
+
 inline const auto& JITlessp2Val = lessp2;
 inline const auto& JITleq2Val = lesseq2;
 inline const auto& JITplus2Val = plus2;
@@ -259,6 +266,7 @@ inline const auto& JITtimes2Val = times2;
 inline const auto& JITquotient2Val = quot2;
 inline const auto& JITremainderVal = Cremainder;
 inline const auto& JITint_from_ptrVal = make_lisp_integerptr;
+
 #endif // ARITHLIB
 
 inline LispObject do_tailcall()
@@ -303,6 +311,7 @@ inline const LispObject nil =
     reinterpret_cast<LispObject>(&myNilBlock.Inil_symbol) + TAG_SYMBOL;
 inline LispObject* workbase = &myNilBlock.workbaseVec[0];
 
+} // end namespace
 
 namespace FX
 {

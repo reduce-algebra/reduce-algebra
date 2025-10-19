@@ -12,6 +12,9 @@
 
 #include <stdint.h>
 
+namespace CSL_LISP
+{
+
 typedef struct font_width
 {   const char *name;
     int32_t checksum;
@@ -2683,5 +2686,7 @@ static font_width cm_font_width[] =
     {nullptr, 0, 0, {0}}
 };
 
+
+} // end namespace
 
 // End of cmfont-widths.cpp

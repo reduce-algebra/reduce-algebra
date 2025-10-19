@@ -39,6 +39,9 @@
 
 #include <stdint.h>
 
+namespace CSL_LISP
+{
+
 // Character metric hash table created using the program charmetrics.cpp
 // sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfontxs
 // contains README files with full credits to the fonts this is used with
@@ -36795,5 +36798,7 @@ const uint32_t ligaturetable[] =
     64259,    // [71] ff + i => ffi (cslSTIXMath-Regular)
     64260     // [72] ff + l => ffl (cslSTIXMath-Regular)
 };
+
+} // end namespace
 
 // end of charmetrics.h

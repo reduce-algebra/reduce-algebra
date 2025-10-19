@@ -184,6 +184,9 @@
 // is to be constructed. It will be based on having a 3-bit opcode in each
 // byte
 
+namespace CSL_LISP
+{
+
 static bool descend_symbols = true;
 
 INLINE_VAR const int SER_OPBITS = 0xe0; // top 3 bits are major opcode
@@ -4515,5 +4518,7 @@ LispObject Lmapstore0(LispObject env)
 {   SingleValued fn;
     return Lmapstore(env, nil);
 }
+
+} // end namespace
 
 // end of serialize.cpp

@@ -39,6 +39,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 //
 // Common Lisp and Standard Lisp disagree about vector sizes.  Common
 // Lisp counts the number of elements in a vector (with make-simple-vector
@@ -2151,5 +2154,7 @@ setup_type const funcs3_setup[] =
 #endif
     {nullptr,                  nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of fns3.cpp

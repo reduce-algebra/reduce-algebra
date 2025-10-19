@@ -58,8 +58,12 @@
 #include <sys/types.h>
 
 #include "md5.h"
+#include "md5.cpp"
 
-extern int showmathInitialised;
+namespace CSL_LISP
+{
+
+using namespace FX;
 
 #ifndef S_IRUSR
 #ifdef __S_IRUSR
@@ -1385,7 +1389,7 @@ LispObject set_up_variables(int restart_flag)
         w = cons(make_keyword("RECORD_GET"), w);
 #endif
         w = acons(make_keyword("EXECUTABLE"),
-                  make_string(fullProgramName), w);
+                  make_string(FX::fullProgramName), w);
         w = acons(make_keyword("NAME"), make_string(IMPNAME), w);
         w = acons(make_keyword("REVISION"), fixnum_of_int(REVISION), w);
         w = cons(make_keyword("CCL"), w);
@@ -1481,9 +1485,9 @@ LispObject set_up_variables(int restart_flag)
         w = cons(make_keyword("record_get"), w);
 #endif
         w = acons(make_keyword("executable"),
-                  make_string(fullProgramName), w);
+                  make_string(FX::fullProgramName), w);
         w = acons(make_keyword("shortname"),
-                  make_string(programName), w);
+                  make_string(FX::programName), w);
         if (!restartp) w = cons(make_keyword("cold-start"), w);
         w = acons(make_keyword("name"), make_string(IMPNAME), w);
         w = acons(make_keyword("revision"), fixnum_of_int(REVISION), w);
@@ -2204,8 +2208,6 @@ LispObject multiplication_buffer;
 //     into C++ and put in u01.cpp .. u60.cpp is only activated when a
 //     Lisp function with the same checksum is to be used.
 
-#include "md5.cpp"
-
 MD5_CTX context;
 
 void CSL_MD5_Init()
@@ -2221,5 +2223,7 @@ void CSL_MD5_Final(unsigned char *md)
 {   MD5_Final(md, &context);
     CSL_MD5_busy = false;
 }
+
+} // end namespace
 
 // end of restart.cpp

@@ -43,6 +43,9 @@
 #include <filesystem>
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 webview::webview redGUI(true, nullptr);
 
 
@@ -220,6 +223,7 @@ LispObject queryval(const char *var)
 
 //LispObject LbrowserMsg
 
+} // end namespace
       
 // end of embwebgui.cpp
 

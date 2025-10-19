@@ -38,6 +38,9 @@
 
 #include "uninames.h"
 
+namespace CSL_LISP
+{
+
 // This maps the 128 characters in the fint "cmr10" (and its immediate
 // friends) to Unicode in a way that should suit use with STIXMath.ttf
 
@@ -439,5 +442,7 @@ int cmsy_to_unicode[128] =
 int cmex_to_unicode[128] =
 {   // not done yet!
 };
+
+} // end namespace
 
 // end of cm-to-unicode.cpp

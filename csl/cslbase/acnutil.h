@@ -80,7 +80,9 @@ template <class T1, std::size_t V1, class T2, std::size_t V2>
 {   return std::integral_constant<std::size_t, t1()+t2()>{};
 }
 
-namespace acnutil {
+//@#pragma message "start namespace acnutil"
+namespace acnutil
+{
 
 template<std::size_t start, std::size_t... inds, class F>
 [[gnu::always_inline]] inline constexpr void loopInner(
@@ -89,8 +91,6 @@ template<std::size_t start, std::size_t... inds, class F>
                               std::integral_constant<std::size_t, inds>{})),
        ...);
 }
-
-};
 
 template<std::size_t start, std::size_t count, class F>
 [[gnu::always_inline]] inline constexpr void forloop(F&& f)
@@ -127,6 +127,9 @@ inline std::string concat(std::string a, int n)
     ss << a << n;
     return ss.str();
 }
+
+//@#pragma message "end namespace acnutil"
+} // end namespace
 
 #endif // __header_acnutil
 

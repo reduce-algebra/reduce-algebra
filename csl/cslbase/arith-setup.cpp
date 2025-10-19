@@ -39,6 +39,9 @@
 
 #include "arith-headers.h"
 
+namespace CSL_LISP
+{
+
 setup_type const arith_setup[] =
 {   DEF_1("modf",         Nmodf),
     {"plus",              Nplus, Nplus, Nplus, Nplus, Nplus},
@@ -324,6 +327,8 @@ setup_type const arith_setup[] =
     {"validate-number", G0Wother, Nvalidate_number, Nvalidate_number, G3Wother, G4Wother},
     {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end of namespace
 
 #endif // ARITHLIB
 

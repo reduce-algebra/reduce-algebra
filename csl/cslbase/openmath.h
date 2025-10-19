@@ -4,7 +4,6 @@
 #define header_openmath_h
 
 
-
 /**************************************************************************
  * Copyright (C) -2025, Codemist and NAG Ltd.            A C Norman       *
  *                                                                        *
@@ -78,6 +77,9 @@
 // </OMOBJ>
 //
 
+
+namespace CSL_LISP
+{
 
 //
 // OpenMath / Lisp conversion functions.
@@ -193,5 +195,7 @@ extern LispObject om_stringPtrToString(LispObject env,
                                        LispObject lpstr);
 
 #endif // header_openmath_h
+
+} // end namespace
 
 // end of openmath.h

@@ -476,6 +476,7 @@ inline bool inChild = false;
 #include "acnutil.h"
 #include "lvector.h"
 
+//#pragma message "start namespace arithlib_implementation"
 namespace arithlib_implementation
 {
 
@@ -799,22 +800,13 @@ private:
     }
 };
 
-} // temporary end of namespace arithlib
-
 // I want a new io manipulator "std::bin" to select binary mode output.
 // This will be used much as std::oct, std::dec and std::hex.
 
-namespace std
-{   inline std::ostream& bin(std::ostream& os)
-    {   arithlib_implementation::radix::set_binary_output(os);
-        return os;
-    }
+inline std::ostream& bin(std::ostream& os)
+{   arithlib_implementation::radix::set_binary_output(os);
+    return os;
 }
-
-
-
-namespace arithlib_implementation
-{
 
 // Declare a number of functions that might usefully be used elsewhere.
 
@@ -1413,6 +1405,8 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 // project.
 
 #if defined CSL
+
+using namespace CSL_LISP;
 
 // The code here can only make sense in the context of the CSL sources,
 // and it is assumed that all the relevant CSL header files have already
@@ -3536,11 +3530,11 @@ inline Digit subtractWithBorrow(Digit a1,
 // called UINT128.
 
 #ifdef __CLANG__
-typedef __int128  INT128;
-typedef __uint128 UINT128;
+using INT128 = __int128;
+using UINT128 = __uint128;
 #else // __CLANG__
-typedef __int128  INT128;
-typedef unsigned __int128 UINT128;
+using INT128 = __int128;
+using UINT128 = unsigned __int128;
 #endif // __CLANG__
 
 // At least for debugging I may wish to display 128-bit integers. Here I
@@ -9344,10 +9338,9 @@ inline std::intptr_t Ceiling::op(SignedDigit a, SignedDigit b)
 // as a function that delivers the quotient as its result and saves
 // the remainder via an additional argument.
 
-}
-
-namespace arithlib_implementation
-{
+//@#pragma message "start namespace arithlib_implementation"
+//@namespace arithlib_implementation
+//@{
 
 inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
@@ -10487,7 +10480,8 @@ inline std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
 
 #endif // CSL
 
-} // end of namespace arithlib_implementation
+//#pragma message "end namespace arithlib_implementation"
+} // end namespace arithlib_implementation
 
 // I want a namespace that the user can activate via "using" that only
 // gives access to things that ought to be exported by this library. So
@@ -10499,6 +10493,7 @@ inline std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
 //  remains uncertain, however a user can either add to the section here
 //  or use the arithlib_implementation namespace directly in case of upset]
 
+//#pragma message "start namespace arithlib"
 namespace arithlib
 {
 using arithlib_implementation::operator"" _Z;
@@ -10518,10 +10513,16 @@ using arithlib_implementation::randomUptoBitsBignum;
 
 using arithlib_implementation::display;
 using arithlib_implementation::fixBignum;
+
+using arithlib_implementation::INT128;
+using arithlib_implementation::UINT128;
+
+//#pragma message "end namespace arithlib"
 }
 
 // I am putting in names that CSL uses here...
 
+//#pragma message "start namespace arithlib_lowlevel"
 namespace arithlib_lowlevel
 {
 using arithlib_implementation::Plus;
@@ -10634,6 +10635,10 @@ using arithlib_implementation::modf;
 //using arithlib_implementation::multiply64;
 
 using arithlib_implementation::castTo_float;
+
+using arithlib_implementation::INT128;
+using arithlib_implementation::UINT128;
+//#pragma message "end namespace arithlib_lowlevel"
 }
 
 // This can not have its initial value specfied within the class. Maybe

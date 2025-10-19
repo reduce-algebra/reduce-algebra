@@ -44,6 +44,9 @@
 #endif
 #endif
 
+namespace CSL_LISP
+{
+
 // I need to explain the operations that happen on FASL files as regards
 // preservation of source code. This describes a post-2016 implementation
 // which has been simplified and rationalised compared with earlier versions.
@@ -585,5 +588,7 @@ LispObject Lsetpchar(LispObject env, LispObject a)
     fwin_set_prompt(std::string(prompt_string));
     return old;
 }
+
+} // end namespace
 
 // end of fasl.cpp

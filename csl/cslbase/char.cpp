@@ -38,6 +38,9 @@
 
 #include "headers.h"
 
+namespace CSL_LISP
+{
+
 // I am now situation where all internal data is Unicode,
 // stored in strings in utf-8 format.
 
@@ -1615,5 +1618,7 @@ setup_type const char_setup[] =
     DEF_2("string-not-lessp2",  L_string_not_lessp_2),
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+} // end namespace
 
 // end of char.cpp
