@@ -468,9 +468,11 @@ inline bool inChild = false;
 #include <vector>
 #include <unordered_map>
 #include <type_traits>
+#include <algorithm>
 
 #include "acnutil.h"
 #include "lvector.h"
+#include "cthread.cpp"
 
 //#pragma message "start namespace arithlib_implementation"
 namespace arithlib_implementation

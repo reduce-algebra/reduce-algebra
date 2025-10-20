@@ -72,7 +72,8 @@ flatten:	flatten.cpp
 lvector.h:	flatten lvector.base.h threadloc.h
 	./flatten lvector.base.h lvector.h
 
-multiply.cpp:	flatten multiply.base.cpp inlinemul.cpp lvector.h fftmod.cpp
+multiply.cpp:	flatten multiply.base.cpp inlinemul.cpp lvector.h \
+		cthread.cpp fftmod.cpp
 	./flatten multiply.base.cpp multiply.cpp
 
 arithlib.hpp:	flatten arithlib.base.hpp lvector.h \
