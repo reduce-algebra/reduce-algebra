@@ -368,3 +368,66 @@
 
 # /psl/dist/kernel/win32/
 /psl/dist/kernel/win32/main.s.orig
+
+# /psl/dist/manual/
+/psl/dist/manual/allman1.pdf
+/psl/dist/manual/allman1.css
+/psl/dist/manual/*.html
+/psl/dist/manual/*.4??
+/psl/dist/manual/*x.png
+/psl/dist/manual/idxmake.*
+/psl/dist/manual/*.aux
+/psl/dist/manual/*.toc
+/psl/dist/manual/*.idx
+/psl/dist/manual/*.ind
+/psl/dist/manual/*.ilg
+/psl/dist/manual/*.log
+/psl/dist/manual/*.out
+/psl/dist/manual/*.tmp
+/psl/dist/manual/*.lg
+/psl/dist/manual/*.idv
+/psl/dist/manual/*.xref
+/psl/dist/manual/*.dvi
+
+# /scripts/
+/scripts/Makefile.in
+/scripts/autom4te.cache
+/scripts/compile
+/scripts/config.guess
+/scripts/config.sub
+/scripts/install-sh
+/scripts/ltmain.sh
+/scripts/m4
+/scripts/missing
+
+# /vsl/
+/vsl/vslmanual.log
+/vsl/vslmanual.dvi
+/vsl/vslmanual.idx
+/vsl/vslmanual.ind
+/vsl/vslmanual.ilg
+/vsl/*.img
+/vsl/*.log
+/vsl/vsl
+/vsl/modules
+
+# /web/
+/web/htdocs/lisp-docs
+/web/htdocs/manual
+/web/htdocs/reduce38-docs
+/web/htdocs/reduce40.pdf
+
+# /web/htdocs/manpages/
+/web/htdocs/manpages/*.html *.pdf
+
+# /web/htdocs/reduce-ide/
+/web/htdocs/reduce-ide/packages
+/web/htdocs/reduce-ide/reduce-ide.pdf
+/web/htdocs/reduce-ide/reduce-ide_html
+
+# /winbuild64/
+/winbuild64/Output
+/winbuild64/reduce.iss
+/winbuild64/reduce.img
+/winbuild64/*.log
+/winbuild64/*.stamp
