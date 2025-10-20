@@ -410,10 +410,6 @@ inline bool inChild = false;
 
 #endif // default the allocation scheme
 
-#ifndef __cpp_inline_variables
-#error "Arithlib.hpp needs __cpp_inline_variables (ie C++17 or above)"
-#endif // inline_variables
-
 // A useful C++17 feature.... with a fallback to a GNU-specific
 // way of achieving the same through use of C++11 annotations. And a final
 // fall back to just not worrying.
@@ -1075,7 +1071,6 @@ typedef std::uint64_t* FreehainTable_t[64];
 #ifdef ARITHLIB_THREAD_LOCAL
 inline thread_local FreehainTable_t freechainTable;
 #else // ARITHLIB_THREAD_LOCAL
-#ifdef __cpp_inline_variables
 class freechainTable
 {   static inline FreehainTable_t freechainTableVar;
 public:
@@ -1083,16 +1078,6 @@ public:
     {   return freechainTableVar;
     }
 };
-#else // __cpp_inline_variables
-class freechainTable
-{
-public:
-    static FreehainTable_t& get()
-    {   static FreehainTable_t freechainTableVar;
-        return freechainTableVar;
-    }
-};
-#endif // __cpp_inline_variables
 #endif // ARITHLIB_THREAD_LOCAL
 
 // In this case the header word at r[-1] is treated as a pair of 32-bit
@@ -1204,7 +1189,6 @@ public:
 #ifdef ARITHLIB_THREAD_LOCAL
 inline thread_local Freechains freechain;
 #else // ARITHLIB_THREAD_LOCAL
-#ifdef __cpp_inline_variables
 class freechains
 {   static inline Freechains freechainsVar;
 public:
@@ -1212,16 +1196,6 @@ public:
     {   return freechainsVar;
     }
 };
-#else // __cpp_inline_variables
-class freechains
-{
-public:
-    static Freechains& get()
-    {   static Freechains freechainsVar;
-        return freechainsVar;
-    }
-};
-#endif // __cpp_inline_variables
 #endif // ARITHLIB_THREAD_LOCAL
 
 inline std::uint64_t* reserve(std::size_t n)

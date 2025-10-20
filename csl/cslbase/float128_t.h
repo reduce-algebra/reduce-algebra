@@ -163,14 +163,6 @@ extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
 #endif // annotation for unused things
 #endif // UNUSED_NAME
 
-#ifndef INLINE_VAR
-#ifdef __cpp_inline_variables
-#define INLINE_VAR inline
-#else // inline variables
-#define INLINE_VAR UNUSED_NAME static
-#endif // inline variables
-#endif // INLINE_VAR
-
 
 extern float128_t f128_NaN;         // a NaN
 extern float128_t f128_inf;         // infinity
@@ -926,31 +918,31 @@ inline constexpr QuadFloat operator ""_QX (const char* s)
     return QuadFloat(r);
 }
 
-INLINE_VAR float128_t f128_NaN          = {fpOrder(0, 0x7fff800000000000LL)}; 
-INLINE_VAR float128_t f128_inf          = {fpOrder(0, 0x7fff000000000000LL)}; 
-INLINE_VAR float128_t f128_minf         = {fpOrder(0, 0xffff000000000000LL)}; 
-INLINE_VAR float128_t f128_0            = 0.0_Q . v;
-INLINE_VAR float128_t f128_half         = 0.5_Q . v;
-INLINE_VAR float128_t f128_mhalf        = (-0.5_Q) . v;
-INLINE_VAR float128_t f128_1            = 1.0_Q . v;
-INLINE_VAR float128_t f128_m1           = (-1.0_Q) . v;
-INLINE_VAR float128_t f128_10_16        = 1.0e16_Q . v;
-INLINE_VAR float128_t f128_10_17        = 1.0e17_Q . v;
-INLINE_VAR float128_t f128_10_18        = 1.0e18_Q . v;
-INLINE_VAR float128_t f128_10_19        = 1.0e19_Q . v;
-INLINE_VAR float128_t f128_scale        = {fpOrder(0x0080000000000000ULL, 0x4038000000000000ULL)};
-INLINE_VAR float128_t f128_N1           = {fpOrder(0, 0x4fff000000000000ULL)}; // 2^4096
+inline float128_t f128_NaN          = {fpOrder(0, 0x7fff800000000000LL)}; 
+inline float128_t f128_inf          = {fpOrder(0, 0x7fff000000000000LL)}; 
+inline float128_t f128_minf         = {fpOrder(0, 0xffff000000000000LL)}; 
+inline float128_t f128_0            = 0.0_Q . v;
+inline float128_t f128_half         = 0.5_Q . v;
+inline float128_t f128_mhalf        = (-0.5_Q) . v;
+inline float128_t f128_1            = 1.0_Q . v;
+inline float128_t f128_m1           = (-1.0_Q) . v;
+inline float128_t f128_10_16        = 1.0e16_Q . v;
+inline float128_t f128_10_17        = 1.0e17_Q . v;
+inline float128_t f128_10_18        = 1.0e18_Q . v;
+inline float128_t f128_10_19        = 1.0e19_Q . v;
+inline float128_t f128_scale        = {fpOrder(0x0080000000000000ULL, 0x4038000000000000ULL)};
+inline float128_t f128_N1           = {fpOrder(0, 0x4fff000000000000ULL)}; // 2^4096
 
-INLINE_VAR float128_t f128_epsilon      = 1.925929944387235853055977942584927319e-34_Q . v;
-INLINE_VAR float128_t f128_half_epsilon = 9.629649721936179265279889712924636593e-35_Q . v;
-INLINE_VAR float128_t f128_max          = 1.18973149535723176508575932662800702e+4932_Q . v;
-INLINE_VAR float128_t f128_negmax       = (-1.18973149535723176508575932662800702e+4932_Q) . v;
-INLINE_VAR float128_t f128_min          = {fpOrder(1, 0)};
+inline float128_t f128_epsilon      = 1.925929944387235853055977942584927319e-34_Q . v;
+inline float128_t f128_half_epsilon = 9.629649721936179265279889712924636593e-35_Q . v;
+inline float128_t f128_max          = 1.18973149535723176508575932662800702e+4932_Q . v;
+inline float128_t f128_negmax       = (-1.18973149535723176508575932662800702e+4932_Q) . v;
+inline float128_t f128_min          = {fpOrder(1, 0)};
 //                                        6.47517511943802511092443895822764655e-4966_Q . v;
-INLINE_VAR float128_t f128_negmin       = {fpOrder(1, 0x8000000000000000ULL)};
+inline float128_t f128_negmin       = {fpOrder(1, 0x8000000000000000ULL)};
 //                                        (-6.47517511943802511092443895822764655e-4966_Q) . v;
-INLINE_VAR float128_t f128_normmin      = 3.36210314311209350626267781732175260e-4932_Q . v; 
-INLINE_VAR float128_t f128_negnormmin   = (-3.36210314311209350626267781732175260e-4932_Q) . v;
+inline float128_t f128_normmin      = 3.36210314311209350626267781732175260e-4932_Q . v; 
+inline float128_t f128_negnormmin   = (-3.36210314311209350626267781732175260e-4932_Q) . v;
 
 // Now some limited support for 256-bit floats, implemented as pairs
 // of 128-bit numbers using the strategy sometimes known as double-double.

@@ -742,6 +742,7 @@ then
   CXXFLAGS="$CXXFLAGS -I$srcdir/../../libraries/webview"
   CXXFLAGS="$CXXFLAGS `pkg-config --cflags webkit2gtk-4.1`"
   CXXFLAGS="$CXXFLAGS `pkg-config --cflags gtk+-3.0`"
+  CXXFLAGS="$CXXFLAGS -I/usr/include/webkitgtk-4.1"
   LIBS="$LIBS `pkg-config --libs webkit2gtk-4.1`"
   LIBS="$LIBS `pkg-config --libs gtk+-3.0`"
 # Reminder:
@@ -1786,6 +1787,8 @@ then
   AC_DEFINE(HAVE_LIBWX, [1], [wxWidgets library will be used])
 fi
 
+AC_SEARCH_LIBS([deflate], [z])
+
 #
 # The extra libraries listed here seem to need to be scanned last.
 #
@@ -1811,6 +1814,10 @@ findlib() {
     echo "${LL}lib/$1"
   else
     names=`find ${LL%/} -name $1 2>/dev/null`
+    if test "$names" = ""
+    then
+      names=`find /usr/lib -name $1 2>/dev/null`
+    fi
     echo `firstfound $names`
   fi
 }

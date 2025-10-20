@@ -1254,7 +1254,7 @@ extern setup_type const om_parse_setup[];
 
 // Note that the Lisp stack also counts as a bunch of bases.
 
-INLINE_VAR LispObject* list_bases[] =
+inline LispObject* list_bases[] =
 {   LIST_BASES
 };
 
@@ -1265,7 +1265,7 @@ INLINE_VAR LispObject* list_bases[] =
 #undef X
 #define X(name) #name
 
-INLINE_VAR const char* list_names[] =
+inline const char* list_names[] =
 {   LIST_BASES
 };
 
@@ -1411,21 +1411,21 @@ extern size_t fullest_hash_table;
 #undef X
 #define X(name) &name
 
-INLINE_VAR void* system_variables[] =
+inline void* system_variables[] =
 {   SYSTEM_VARIABLES
 };
 
 #undef X
 #define X(name) sizeof(name)
 
-INLINE_VAR std::size_t system_variable_sizes[] =
+inline std::size_t system_variable_sizes[] =
 {   SYSTEM_VARIABLES
 };
 
 #undef X
 #define X(name) #name
 
-INLINE_VAR const char* system_variable_names[] =
+inline const char* system_variable_names[] =
 {   SYSTEM_VARIABLES
 };
 

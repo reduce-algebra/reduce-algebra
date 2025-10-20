@@ -143,8 +143,8 @@ extern char prompt_string[MAX_PROMPT_LENGTH];
 // a power of 2. And then a scheme that given one size I can find the
 // next larger or smaller one rapidly.
 
-INLINE_VAR const uint64_t INITIAL_OBVEC_SIZE=goodPrimes[11];  // 2036
-INLINE_VAR const uint64_t MAX_OBVEC_SIZE=goodPrimes[30]; // 2147483647
+inline const uint64_t INITIAL_OBVEC_SIZE=goodPrimes[11];  // 2036
+inline const uint64_t MAX_OBVEC_SIZE=goodPrimes[30];      // 2147483647
 
 extern LispObject Lread_sub(LispObject stream, int cursave);
 

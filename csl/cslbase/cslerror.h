@@ -275,7 +275,7 @@ enum
 #undef X
 
 #define X(name, text) text,
-INLINE_VAR const char *error_message_table[] =
+inline const char *error_message_table[] =
 {
     ERROR_MESSAGES
     "dummy final error message"

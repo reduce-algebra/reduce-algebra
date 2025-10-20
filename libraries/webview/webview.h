@@ -2,7 +2,7 @@
  * MIT License
  *
  * Copyright (c) 2017 Serge Zaitsev
- * Copyright (c) 2022 Steffen André Langnes
+ * Copyright (c) 2022 Steffen AndrC) Langnes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -2645,7 +2645,7 @@ namespace detail {
 namespace cocoa {
 
 enum NSEventType : NSUInteger {
-  // For macOS 10.12+; replaces NSApplicationDefined (macOS 10.0–10.12)
+  // For macOS 10.12+; replaces NSApplicationDefined (macOS 10.0b 10.12)
   // with the same value
   NSEventTypeApplicationDefined = 15
 };

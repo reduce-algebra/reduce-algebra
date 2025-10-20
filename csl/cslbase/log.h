@@ -212,14 +212,6 @@ inline void my_assert1(unsigned int line, const char* file,
     give_up();
 }
 
-#ifndef INLINE_VAR
-#ifdef __cpp_inline_variables
-#define INLINE_VAR inline
-#else // inline variables
-#define INLINE_VAR UNUSED_NAME static
-#endif // inline variables
-#endif // INLINE_VAR
-
 // This is to help me in trace messages. The main issue it addresses is that
 // __FILE__ expands to the full path of the file being compiled, and
 // in many cases all but the final component are both not especially
@@ -227,7 +219,7 @@ inline void my_assert1(unsigned int line, const char* file,
 // a file-name and a line number into a single string based on the leaf
 // part of the file-name.
 
-INLINE_VAR char whereMsg[128];
+inline char whereMsg[128];
 
 inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
 {
@@ -321,7 +313,7 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
 // problems. I an not terribly sympathetic! Mostly I hope that I
 // truncate names rather than suffer buffer overflow.
 
-INLINE_VAR const size_t LONGEST_LEGAL_FILENAME_1 = 1024;
+inline const size_t LONGEST_LEGAL_FILENAME_1 = 1024;
 
 // This is maybe a more principled scheme that sends its output to a file
 // debug.log, typically in the current directory but failing that in /tmp.
