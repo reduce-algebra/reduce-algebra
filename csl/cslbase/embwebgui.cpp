@@ -46,6 +46,8 @@
 namespace CSL_LISP
 {
 
+using namespace FX;
+
 webview::webview redGUI(true, nullptr);
 
 

@@ -120,6 +120,7 @@ profile=
 test=
 arithlib=
 nothrow=
+webreduce=
 original=$host
 
 nogui=default
@@ -160,6 +161,9 @@ do
     ;;
   --with-arithlib*)
     arithlib=-arithlib
+    ;;
+  --enable-webgui*)
+    webgui=-webgui
     ;;
   --with-throw=no | --without-throw)
     nothrow=-nothrow
@@ -232,6 +236,6 @@ fi
 fox=
 
 # Nota that if "nogui" is used it comes first. I rely on that in run.sh
-echo $host$nogui$fox$wx$test$arithlib$nothrow$debug$profile$tag
+echo $host$nogui$webgui$fox$wx$test$arithlib$nothrow$debug$profile$tag
 
 exit 0

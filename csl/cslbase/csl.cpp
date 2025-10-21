@@ -105,7 +105,6 @@
  * \end{document}
  */
 
-
 #include "headers.h"
 #include "version.h"
 
@@ -135,7 +134,7 @@ bool symbol_protect_flag = true;
 bool warn_about_protected_symbols = false;
 
 // used in char_from_string
-const char *proc_data_string = ";";
+const char* proc_data_string = ";";
 
 #ifdef USE_MPI
 int32_t mpi_rank,mpi_size;
@@ -165,12 +164,12 @@ static uintptr_t spbase = 0, spmin;
 
 static uintptr_t stack_depth[C_STACK_ALLOCATION];
 static int stack_line[C_STACK_ALLOCATION];
-static const char *stack_file[C_STACK_ALLOCATION];
+static const char* stack_file[C_STACK_ALLOCATION];
 static uintptr_t c_stack_ptr = 0;
 
-int check_stack(const char *file, int line)
+int check_stack(const char* file, int line)
 {   uintptr_t temp = reinterpret_cast<intptr_t>(&temp);
-    char *file1;
+    char* file1;
     int first = 1;
     if (!spset)
     {   spbase = spmin = temp;
@@ -225,11 +224,11 @@ void show_stack()
 #endif
 
 std::mutex debug_lock;
-const char *debug_file;
+const char* debug_file;
 int debug_line;
 
 void DebugTrace()
-{   const char *leaf = std::strrchr(debug_file, '/');
+{   const char* leaf = std::strrchr(debug_file, '/');
     if (leaf != nullptr) debug_file = leaf+1;
     leaf = std::strrchr(debug_file, '\\');
     if (leaf != nullptr) debug_file = leaf+1;
@@ -239,7 +238,7 @@ void DebugTrace()
 }
 
 void DebugTrace(int i)
-{   const char *leaf = std::strrchr(debug_file, '/');
+{   const char* leaf = std::strrchr(debug_file, '/');
     if (leaf != nullptr) debug_file = leaf+1;
     leaf = std::strrchr(debug_file, '\\');
     if (leaf != nullptr) debug_file = leaf+1;
@@ -248,8 +247,8 @@ void DebugTrace(int i)
     std::fflush(stderr);
 }
 
-void DebugTrace(const char *msg)
-{   const char *leaf = std::strrchr(debug_file, '/');
+void DebugTrace(const char* msg)
+{   const char* leaf = std::strrchr(debug_file, '/');
     if (leaf != nullptr) debug_file = leaf+1;
     leaf = std::strrchr(debug_file, '\\');
     if (leaf != nullptr) debug_file = leaf+1;
@@ -258,8 +257,8 @@ void DebugTrace(const char *msg)
     std::fflush(stderr);
 }
 
-void DebugTrace(const char *fmt, int i)
-{   const char *leaf = std::strrchr(debug_file, '/');
+void DebugTrace(const char* fmt, int i)
+{   const char* leaf = std::strrchr(debug_file, '/');
     if (leaf != nullptr) debug_file = leaf+1;
     leaf = std::strrchr(debug_file, '\\');
     if (leaf != nullptr) debug_file = leaf+1;
@@ -462,7 +461,7 @@ LispObject interrupted()
     THROW(LispSimpleError);
 }
 
-LispObject aerror(const char *s)
+LispObject aerror(const char* s)
 {   errorNest safe;
     LispObject w;
     if (miscflags & HEADLINE_FLAG)
@@ -481,7 +480,7 @@ LispObject aerror(const char *s)
     THROW(LispSimpleError);
 }
 
-LispObject aerror0(const char *s)
+LispObject aerror0(const char* s)
 {   errorNest safe;
     LispObject w;
     if (miscflags & HEADLINE_FLAG)
@@ -500,7 +499,7 @@ LispObject aerror0(const char *s)
     THROW(LispSimpleError);
 }
 
-LispObject aerror1(const char *s, LispObject a)
+LispObject aerror1(const char* s, LispObject a)
 {   errorNest safe;
     LispObject w;
     if (miscflags & HEADLINE_FLAG)
@@ -522,7 +521,7 @@ LispObject aerror1(const char *s, LispObject a)
     THROW(LispSimpleError);
 }
 
-LispObject aerror2(const char *s, LispObject a, LispObject b)
+LispObject aerror2(const char* s, LispObject a, LispObject b)
 {   errorNest safe;
     LispObject w;
     if (miscflags & HEADLINE_FLAG)
@@ -546,7 +545,7 @@ LispObject aerror2(const char *s, LispObject a, LispObject b)
     THROW(LispSimpleError);
 }
 
-LispObject aerror2(const char *s, const char *a, LispObject b)
+LispObject aerror2(const char* s, const char* a, LispObject b)
 {   errorNest safe;
     LispObject w;
     if (miscflags & HEADLINE_FLAG)
@@ -568,7 +567,7 @@ LispObject aerror2(const char *s, const char *a, LispObject b)
     THROW(LispSimpleError);
 }
 
-LispObject aerror3(const char *s, LispObject a, LispObject b,
+LispObject aerror3(const char* s, LispObject a, LispObject b,
                    LispObject c)
 {   errorNest safe;
     LispObject w;
@@ -598,7 +597,7 @@ LispObject aerror3(const char *s, LispObject a, LispObject b,
 static LispObject wrong(int given, int wanted, LispObject env)
 {   errorNest safe;
     char msg[128];
-    const char *fname = "function";
+    const char* fname = "function";
     int namelen=8;
     if (is_symbol(env))
     {   env = qpname(env);
@@ -625,7 +624,7 @@ static LispObject wrong(int given, int wanted, LispObject env)
 static LispObject wrong(int given, LispObject env)
 {   errorNest safe;
     char msg[128];
-    const char *fname = "function";
+    const char* fname = "function";
     int namelen=8;
     if (is_symbol(env))
     {   env = qpname(env);
@@ -781,11 +780,11 @@ LispObject bad_specialn(LispObject, int, ...)
 }
 
 char dependency_file[LONGEST_LEGAL_FILENAME] = {0};
-static std::vector<char *> dependency_map;
+static std::vector<char*> dependency_map;
 
-void report_file(const char *s)
-{   char *c;
-    const char *s1;
+void report_file(const char* s)
+{   char* c;
+    const char* s1;
     if (dependency_file[0] == 0) return;
 // In a really odd way I will avoid recording inline-defs.dat as a
 // dependency and insist that if it is to be one that the Makefile should
@@ -798,7 +797,7 @@ void report_file(const char *s)
     else if ((s1 = std::strrchr(s, '\\')) != nullptr) s1++;
     else s1 = s;
     if (std::strcmp(s1, "inline-defs.dat") == 0) return;
-    for (char *s1 : dependency_map)
+    for (char* s1 : dependency_map)
     {   if (std::strcmp(s, s1)==0) return; // already recorded
     }
     c = new (std::nothrow) char[std::strlen(s) + 1];
@@ -814,14 +813,14 @@ void report_file(const char *s)
     {}
 }
 
-static bool alphorder(const char *a, const char *b)
+static bool alphorder(const char* a, const char* b)
 {   return std::strcmp(a, b) < 0;
 }
 
 static void report_dependencies()
 {   std::FILE *f;
     int c;
-    const char *p;
+    const char* p;
     if (dependency_file[0] == 0) return;
     f = std::fopen(dependency_file, "w");
     if (f == nullptr) return;
@@ -831,7 +830,7 @@ static void report_dependencies()
                                   (p - dependency_file)),
                  dependency_file);
     std::sort(dependency_map.begin(), dependency_map.end(), alphorder);
-    for (char *pp : dependency_map)
+    for (char* pp : dependency_map)
     {   std::putc('\t', f);
 // If I am on Windows some files may at this stage be shown with names
 // of the form "X:/..." where X denotes the drive. But the dependencies I
@@ -858,7 +857,7 @@ static void report_dependencies()
 // Now I put in empty rules for each file that was used... By having
 // rules with no prerequisites and no recipes I avoid trouble
 // when files get moved.
-    for (char *pp : dependency_map)
+    for (char* pp : dependency_map)
     {   if (pp[0] != 0 &&
             pp[1] == ':' &&
             (pp[2] == '/' || pp[2] == '\\'))
@@ -874,7 +873,7 @@ static void report_dependencies()
     }
     std::putc('\n', f);
     std::fclose(f);
-    for (char *pp : dependency_map)
+    for (char* pp : dependency_map)
         delete [] pp;
     dependency_map.clear();
     dependency_file[0] = 0;
@@ -958,8 +957,8 @@ int debug_trail_line[32] =
 
 int debug_trailp = 0;
 
-void debug_record_raw(const char *data, const char *file, int line)
-{   const char *f1 = std::strrchr(file, '/');
+void debug_record_raw(const char* data, const char* file, int line)
+{   const char* f1 = std::strrchr(file, '/');
     if (f1 != nullptr) f1++;
     else f1 = file;
     if (data != nullptr)
@@ -970,9 +969,9 @@ void debug_record_raw(const char *data, const char *file, int line)
     }
 }
 
-void debug_record_int_raw(const char *data, int n, const char *file,
+void debug_record_int_raw(const char* data, int n, const char* file,
                           int line)
-{   const char *f1 = std::strrchr(file, '/');
+{   const char* f1 = std::strrchr(file, '/');
     if (f1 != nullptr) f1++;
     else f1 = file;
     if (data != nullptr)
@@ -983,9 +982,9 @@ void debug_record_int_raw(const char *data, int n, const char *file,
     }
 }
 
-void debug_show_trail_raw(const char *msg, const char *file, int line)
+void debug_show_trail_raw(const char* msg, const char* file, int line)
 {   int i;
-    const char *f1 = std::strrchr(file, '/');
+    const char* f1 = std::strrchr(file, '/');
     if (f1 == nullptr) f1 = "?";
     else f1++;
     std::printf("\n+++++ Debug trail %s\n", msg);
@@ -1042,7 +1041,7 @@ static LispObject lisp_main()
             {   if (exit_tag == fixnum_of_int(0))      // "stop"
                     return_code = static_cast<int>(int_of_fixnum(exit_value));
                 else if (exit_tag == fixnum_of_int(1)) // "preserve"
-                {   const char *msg = "";
+                {   const char* msg = "";
                     int len = 0;
                     return_code = EXIT_SUCCESS;
                     if (is_vector(exit_value) &&
@@ -1050,7 +1049,7 @@ static LispObject lisp_main()
 // celt returns a vector of atomic characters but here I need to treat that
 // as just plain characters. Casting away the std<<atomic> stuff is liable
 // to be evil (eg wrt strict aliasing rules)!
-                    {   msg = reinterpret_cast<const char *>(&celt(exit_value, 0));
+                    {   msg = reinterpret_cast<const char*>(&celt(exit_value, 0));
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
@@ -1058,7 +1057,7 @@ static LispObject lisp_main()
                     preserve(msg, len);
                 }
                 else if (exit_tag == fixnum_of_int(3)) // "preserve & restart"
-                {   const char *msg = "";
+                {   const char* msg = "";
                     int len = 0;
                     int32_t fd = stream_pushed_char(lisp_terminal_io);
                     Lrds(nil, nil);
@@ -1066,7 +1065,7 @@ static LispObject lisp_main()
                     return_code = EXIT_SUCCESS;
                     if (is_vector(exit_value) &&
                         is_string(exit_value))
-                    {   msg = reinterpret_cast<const char *>(&celt(exit_value, 0));
+                    {   msg = reinterpret_cast<const char*>(&celt(exit_value, 0));
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
@@ -1134,7 +1133,7 @@ static LispObject lisp_main()
                                 int32_t len = length_of_byteheader(h) - CELL;
                                 if (len > 63) len = 63;
                                 std::memcpy(new_module,
-                                            reinterpret_cast<char *>(modname) + (CELL - TAG_VECTOR),
+                                            reinterpret_cast<char*>(modname) + (CELL - TAG_VECTOR),
                                             (size_t)len);
                                 new_module[len] = 0;
                             }
@@ -1144,7 +1143,7 @@ static LispObject lisp_main()
                                 int32_t len = length_of_byteheader(h) - CELL;
                                 if (len > 63) len = 63;
                                 std::memcpy(new_fn,
-                                            reinterpret_cast<char *>(exit_value) + (CELL - TAG_VECTOR),
+                                            reinterpret_cast<char*>(exit_value) + (CELL - TAG_VECTOR),
                                             (size_t)len);
                                 new_fn[len] = 0;
                             }
@@ -1214,7 +1213,7 @@ std::FILE *alternative_stdout = nullptr;
 
 // standard_directory holds the name of the default image file that CSL
 // would load.
-const char *standard_directory;
+const char* standard_directory;
 
 // If non-empty the string module_enquiry is a name presenetd on the
 // command line in a "-T name" request, and this will cause the system
@@ -1227,7 +1226,7 @@ int errorset_min = 0, errorset_max = 3;
 int load_count = 0, load_limit = 0x7fffffff;
 
 int csl_argc;
-const char **csl_argv;
+const char** csl_argv;
 
 bool restartp;
 
@@ -1247,7 +1246,7 @@ int kara_done = 0;
 // to use a (potentially customized) version of it elsewhere...
 
 // Usage:
-//   void setupArgs(argSpec vec[], int argc, const char *argv[]);
+//   void setupArgs(argSpec vec[], int argc, const char* argv[]);
 // where vec is a vector whose elements esch specify a possible argument
 // format and provide an action to perform if it is seen in
 // argv. Args that are either just "-" or that do not start with a "-"
@@ -1267,7 +1266,7 @@ int kara_done = 0;
 typedef void argAction(string key, bool takesVal, string value);
 
 struct argSpec
-{   const char *name;      // e.g. "-x" or "--word".
+{   const char* name;      // e.g. "-x" or "--word".
     bool takesVal;         // Either "-xNN" or maybe "-x NN" will be valid.
     bool takesSeparateVal; // "-x NN" is valid as well as "-xNN".
     string help;           // e.g. "-k NN  Set memory allocation to NN."
@@ -1292,7 +1291,7 @@ static std::vector<string> simpleArgs;
 
 static std::vector<string> badArgs;
 
-void setupArgs(argSpec *v, int argc, const char *argv[])
+void setupArgs(argSpec *v, int argc, const char* argv[])
 {   argIndex.clear(); // Just to be safe!
     simpleArgs.clear();
     terminalUsed = false;
@@ -1415,8 +1414,8 @@ public:
 
 #endif //AVOID_KARATSUBA_THREADS, ARITHLIB
 
-char *mystrdup(const char *s)
-{   char *r = new char[std::strlen(s)+1];
+char* mystrdup(const char* s)
+{   char* r = new char[std::strlen(s)+1];
     std::strcpy(r, s);
     return r;
 }
@@ -1424,7 +1423,7 @@ char *mystrdup(const char *s)
 // Note that I will not have my signal handlers active during the call
 // to cslstart().
 
-void cslstart(int argc, const char *argv[], character_writer *wout)
+void cslstart(int argc, const char* argv[], character_writer *wout)
 {
     double store_size = 0.0;
 // I make "sp" volatile - it is a variable I declare here but then only use by
@@ -1703,7 +1702,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                                    [](int c)
                     {   return std::tolower(c);
                     });
-                    const char *valS = valLow.c_str();
+                    const char* valS = valLow.c_str();
                     double valD;
                     int valI = 1;
                     unsigned int len=std::strlen(valS), pos;
@@ -1788,7 +1787,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                                    [](int c)
                     {   return std::tolower(c);
                     });
-                    const char *valS = valLow.c_str();
+                    const char* valS = valLow.c_str();
                     double valD;
                     int valI = 1;
                     unsigned int len=std::strlen(valS), pos;
@@ -1987,7 +1986,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         particular one that may arise when GC is triggered from some particular\n"
                 "         context -- hence not useful for ordinary users.",
                 [&](string key, bool hasVal, string val)
-                {   char *end;
+                {   char* end;
                     reclaim_trigger_target = std::strtoull(val.c_str(), &end, 10);
                 }
             },
@@ -2142,7 +2141,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     [](int c)
                     {   return std::tolower(c);
                     });
-                    const char *valS = valLow.c_str();
+                    const char* valS = valLow.c_str();
                     double valD;
                     unsigned int len=std::strlen(valS), pos;
 // This is basically the same as the code used to decode "-kNNN".
@@ -2184,7 +2183,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     [](int c)
                     {   return std::tolower(c);
                     });
-                    const char *valS = valLow.c_str();
+                    const char* valS = valLow.c_str();
                     double valD;
                     unsigned int len=std::strlen(valS), pos;
 // This is basically the same as the code used to decode "-kNNN".
@@ -2227,7 +2226,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "--kara NN Set transition between single and multi-thread Karatsuba\n"
                 "          multiplication.",
                 [&](string key, bool hasVal, string val)
-                {   char *end;
+                {   char* end;
                     kparallel = static_cast<int>(
                         std::strtol(val.c_str(), &end, 10));
                     if (kparallel < KARATSUBA_CUTOFF) kparallel = KARATSUBA_CUTOFF;
@@ -2483,8 +2482,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         for reading.",
                 [&](string key, bool hasVal, string val)
                 {   if (val == "-") val = standard_directory;
-                    const char *val1 = val.c_str();
-                    char *val2 = new (std::nothrow) char[std::strlen(val1)+1];
+                    const char* val1 = val.c_str();
+                    char* val2 = new (std::nothrow) char[std::strlen(val1)+1];
                     if (val2 != nullptr) std::strcpy(val2, val1);
                     fasl_files.push_back(faslFileRecord(val2, false));
                 }
@@ -2514,7 +2513,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 [&](string key, bool hasVal, string val)
                 {   char filename[LONGEST_LEGAL_FILENAME];
                     std::memset(filename, 0, sizeof(filename));
-                    const char *w = val.c_str();
+                    const char* w = val.c_str();
                     if (std::strlen(w) == 0) w = "logfile.log";
                     spool_file = open_file(filename, w, std::strlen(w), "w", nullptr);
                     if (spool_file == nullptr)
@@ -2586,8 +2585,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 [&](string key, bool hasVal, string val)
                 {   if (val == "-") val = standard_directory;
                     output_directory = fasl_files.size();
-                    const char *val1 = val.c_str();
-                    char *val2 = new (std::nothrow) char[std::strlen(val1)+1];
+                    const char* val1 = val.c_str();
+                    char* val2 = new (std::nothrow) char[std::strlen(val1)+1];
                     if (val2 != nullptr) std::strcpy(val2, val1);
                     fasl_files.push_back(faslFileRecord(val2, true));
                 }
@@ -2634,7 +2633,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         Note that the Reduce-level code uses its own random source not\n"
                 "         the one controlled here.",
                 [&](string key, bool hasVal, string val)
-                {   char *end;
+                {   char* end;
                     initial_random_seed = std::strtoll(val.c_str(), &end, 10);
                 }
             },
@@ -2769,8 +2768,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     reclaim_trigger_target);
 
     if (fasl_files.empty())
-    {   const char *p = standard_directory;
-        char *p1;
+    {   const char* p = standard_directory;
+        char* p1;
         char cur[LONGEST_LEGAL_FILENAME];
 // If the user does not specify any image files then the behaviour
 // defaults as follows:
@@ -2827,7 +2826,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // it does not its creation should be deferred for as long as possible.
         output_directory = 0x40000000 + 0;
         if (p == standard_directory || p1 == nullptr)
-        {   char *val2 =
+        {   char* val2 =
                 new (std::nothrow) char[std::strlen(standard_directory)+1];
             if (val2 != nullptr) std::strcpy(val2, standard_directory);
             fasl_files.push_back(faslFileRecord(val2, true));
@@ -2836,7 +2835,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         else
         {   std::strcpy(p1, p+1);
             fasl_files.push_back(faslFileRecord(p1, true));
-            char *val2 =
+            char* val2 =
                 new (std::nothrow) char[std::strlen(standard_directory)+1];
             if (val2 != nullptr) std::strcpy(val2, standard_directory);
             fasl_files.push_back(faslFileRecord(val2, false));
@@ -3350,7 +3349,7 @@ int cslfinish(character_writer *w)
     return return_code;
 }
 
-int execute_lisp_function(const char *fname,
+int execute_lisp_function(const char* fname,
                           character_reader *r,
                           character_writer *w)
 {   LispObject ff;
@@ -3375,11 +3374,11 @@ int execute_lisp_function(const char *fname,
 #ifdef PROCEDURAL_WASM_XX
 
 int buff_ready = 0;
-const char *buffer = nullptr;
+const char* buffer = nullptr;
 int buff_size = 0;
 
 EMSCRIPTEN_KEEPALIVE // instead of adding function to EXPORTED_FUNCTIONS
-void insert_buffer(const char *buf, int size)
+void insert_buffer(const char* buf, int size)
 {   buffer = buf;
     buff_size = size;
     buff_ready = 1;
@@ -3479,7 +3478,7 @@ public:
 };
 #endif
 
-static int submain(int argc, const char *argv[])
+static int submain(int argc, const char* argv[])
 {   volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
 #ifdef HAVE_CRLIBM
@@ -3532,13 +3531,14 @@ static int submain(int argc, const char *argv[])
 
 #if defined EMBEDDED || defined ENABLE_WEBGUI
 #define ENTRYPOINT main
+
 #else // EMBEDDED
 
 #define ENTRYPOINT fwin_main
 
-extern int ENTRYPOINT(int argc, const char *argv[]);
+extern int ENTRYPOINT(int argc, const char* argv[]);
 
-int main(int argc, const char *argv[])
+int main(int argc, const char* argv[])
 {
 // On Windows and other platforms where thread local things are supported
 // using "emutls" the native C++ use of the "thread_local" qualifier leads to
@@ -3557,10 +3557,10 @@ int main(int argc, const char *argv[])
 EMSCRIPTEN_KEEPALIVE
 #endif
 
-int ENTRYPOINT(int argc, const char *argv[])
+int ENTRYPOINT(int argc, const char* argv[])
 {   int res;
 #if defined EMBEDDED || defined ENABLE_WEBGUI
-    if ((res = find_program_directory(argv[0])) != 0)
+    if ((res = FX::find_program_directory(argv[0])) != 0)
     {   std::fprintf(stderr,
                      "Unable to identify program name and directory (%d)\n", res);
         return 1;
@@ -3687,7 +3687,7 @@ int char_from_string()
     return c;
 }
 
-int PROC_process_one_reduce_statement(const char *s)
+int PROC_process_one_reduce_statement(const char* s)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     character_reader *save_read = procedural_input;
@@ -3708,7 +3708,7 @@ int PROC_process_one_reduce_statement(const char *s)
     return w != nil;
 }
 
-int PROC_load_package(const char *name)
+int PROC_load_package(const char* name)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
@@ -3720,7 +3720,7 @@ int PROC_load_package(const char *name)
     return 0;
 }
 
-int PROC_set_switch(const char *name, int val)
+int PROC_set_switch(const char* name, int val)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
@@ -3750,7 +3750,7 @@ int PROC_clear_stack()
 // The RPN stack is used to build a prefix-form expression for
 // evaluation. This code creates a Lisp symbol and pushes it.
 
-int PROC_push_symbol(const char *name)
+int PROC_push_symbol(const char* name)
 {   LispObject w = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
@@ -3765,7 +3765,7 @@ int PROC_push_symbol(const char *name)
 
 //    stack = the-string . stack;
 
-int PROC_push_string(const char *data)
+int PROC_push_string(const char* data)
 {   LispObject w = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
@@ -3796,7 +3796,7 @@ int PROC_push_small_integer(int32_t n)
     return 0;
 }
 
-int PROC_push_big_integer(const char *n)
+int PROC_push_big_integer(const char* n)
 {   LispObject w = nil;
     int len = 0;
     volatile uintptr_t sp;
@@ -3837,7 +3837,7 @@ int PROC_push_floating(double n)
 //       push(a3)
 //       make_function_call("f", 3)
 
-int PROC_make_function_call(const char *name, int n)
+int PROC_make_function_call(const char* name, int n)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
@@ -4093,26 +4093,26 @@ double PROC_floating_value(PROC_handle p)
 
 static char PROC_name[256];
 
-const char *PROC_symbol_name(PROC_handle p)
+const char* PROC_symbol_name(PROC_handle p)
 {   LispObject w = reinterpret_cast<LispObject>(p);
     intptr_t n;
     w = qpname(w);
     n = length_of_byteheader(vechdr(w)) - CELL;
     if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
-    std::strncpy(PROC_name, reinterpret_cast<const char *>(&celt(w, 0)),
+    std::strncpy(PROC_name, reinterpret_cast<const char*>(&celt(w, 0)),
                  n);
     PROC_name[n] = 0;
     return &PROC_name[0];
 }
 
-const char *PROC_string_data(PROC_handle p)
+const char* PROC_string_data(PROC_handle p)
 {   LispObject w = reinterpret_cast<LispObject>(p);
     intptr_t n;
     n = length_of_byteheader(vechdr(w)) - CELL;
 // NOTE that I truncate long strings here. Boo Hiss! This may make a mess
 // of dealing with big numbers, so in due course I will need to fix it!
     if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
-    std::strncpy(PROC_name, reinterpret_cast<const char *>(&celt(w, 0)),
+    std::strncpy(PROC_name, reinterpret_cast<const char*>(&celt(w, 0)),
                  n);
     PROC_name[n] = 0;
     return &PROC_name[0];
@@ -4135,8 +4135,16 @@ PROC_handle PROC_rest(PROC_handle p)
 
 } // end namespace
 
-int main(int argc, const char *argv[])
-{   CSL_LISP::main(argc, argv);
+#if !defined NO_STARTUP_CODE
+
+extern "C"
+{
+int main(int argc, const char* argv[])
+{
+    CSL_LISP::main(argc, argv);
 }
+}
+
+#endif // EMBEDDED, ENABLE_WEBGUI, NO_STARTUP_CODE
 
 // End of csl.cpp

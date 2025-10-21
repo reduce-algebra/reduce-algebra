@@ -1,4 +1,4 @@
-% Generated using doxtract Tue Oct 25 21:38:53 2022
+% Generated using doxtract Sat Oct 18 11:14:38 2025
 \documentclass[a4paper,11pt]{article}
 \title{CSL reference}
 \author{A C Norman}
@@ -13,7 +13,7 @@ are the ones that are initially present in a raw CSL image. Some
 proportion of them are not really intended to be used by end-users but
 are merely the internal components of some feature.
 
-% Generating section 01 [options] with 51 subsections
+% Generating section 01 [options] with 54 subsections
 \section{Command-line options}
 The items shown here are the ones that are recognized on the CSL command
 line. In general an option that requires an argument can be written as either
@@ -56,6 +56,9 @@ insensitive.
           * attempt from with the system to change that. Intended for use during system
           * debugging where it may be important to see when a garbage collection occurs
           * but undesirable to change the input script at all.
+
+\item [{\ttfamily --gc-error}] \index{{\ttfamily --gc-error}}
+          * --gc-error=N raises and error the start of GC number N.
 
 \item [{\ttfamily --gc-every}] \index{{\ttfamily --gc-every}}
           * --gc-every=N forced a GC every N conses (if N!=0).
@@ -102,6 +105,14 @@ insensitive.
           * This option allows one to override the default threshold so that
           * performance effects can be measured and the cut-off adjusted to suit the
           * machine involved.
+
+\item [{\ttfamily --kmax}] \index{{\ttfamily --kmax}}
+          * Normally this code goes back to the operating system and requests more memory
+          * at any time when it feels that would be useful.This option can be used to
+          * set an approximate limit on the amount it will use. See also -k
+
+\item [{\ttfamily --lisp}] \index{{\ttfamily --lisp}}
+          * This option causes Reduce to start up in symbolic mode.
 
 \item [{\ttfamily --maxmem}] \index{{\ttfamily --maxmem}}
           * Normally this code goes back to the operating system and requests more memory
@@ -153,7 +164,7 @@ item [{ttfamily --wait}] index{{ttfamily --wait}}
 \item [{\ttfamily -a}] \index{{\ttfamily -a}}
           * {\ttfamily -a} is a curious option, not intended for general or casual use.
           * If given it causes the {\ttfamily (batchp)} function to return the opposite
-          * result from normal!  Without ``{\ttfamily -a}'' {\ttfamily (batchp)} returns
+          * result from normal!  Without ``{attfamily -a}'' {\ttfamily (batchp)} returns
           * {\ttfamily T} either if at least one file was specified on the command line,
           * or if the standard input is ``not a tty'' (under some operating systems this
           * makes sense -- for instance the standard input might not be a ``tty'' if it

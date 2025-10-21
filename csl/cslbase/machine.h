@@ -212,25 +212,6 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #define UNUSED_NAME
 #endif // annotation for unused things
 
-#ifdef __cpp_inline_variables
-// For versions of C++ up to C++17 I will put constant values in header
-// files using something along the line of "static const int VAR = VAL;".
-// This should give the compiler a chance to replace the name with its value
-// throughout the compilation unit, and if the compiler is clever enough it
-// will avoid leaving a word of memory with the value stored if all uses
-// have been dealt with more directly. However it will tend to lead to a
-// lot of "static variable defined but not used" warnings.
-// From C++17 onwards (and C++ mandates the __cpp_inline_variables macro to
-// indicate if the feature is in place) I will use
-// "inline const int VAR = VAL;" and now if memory is allocated for the
-// variable it will only be allocated once, and I hope that compilers will
-// not feel entitled to moan about cases where there are no references.
-//
-#define INLINE_VAR inline
-#else // inline variables
-#define INLINE_VAR UNUSED_NAME static
-#endif // inline variables
-
 #if __has_cpp_attribute(gnu::no_sanitize)
 // If I build with the address sanitizer that protects me against reading
 // all my stack. However with a conservative garbage collector I want to
@@ -491,8 +472,8 @@ namespace CSL_LISP
 // for us in code of that shape (x & (1U<<n)) where I need the "1" to be at
 // least as wide as x and it would be excessive for it to be wider.
 
-INLINE_VAR const uintptr_t uptr_1 = 1ULL;
-INLINE_VAR const uint64_t u64_1 = 1LL;
+inline const uintptr_t uptr_1 = 1ULL;
+inline const uint64_t u64_1 = 1LL;
 
 // At times I wish to treat an integer address as a pointer and fetch
 // the value it refers to. I encapsulate this here so that the dubious

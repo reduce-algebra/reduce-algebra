@@ -390,8 +390,6 @@ public:
     }
 };
 
-#include "fftmod.cpp"
-
 class BigMultiplication
 {
 
@@ -541,8 +539,6 @@ static void verySimpleMul(ConstDigitPtr a, std::size_t N,
     result[N+M-1] = lo;
 }
 
-private:
-
 // I have a general idiom I intend to use for loops where the
 // body of the iteration is small. If one has
 //     for (i=A; i<B; i++) { X(i); }
@@ -576,7 +572,8 @@ static void simpleMul(ConstDigitPtr a, std::size_t N,
 //@@ The code shown with "//@@" here is the simple presentation of this
 //@@ loop, but the actual code unrolls the loop so that two steps are
 //@@ taken in each iteration (and potentially a final one is needed at
-//@@ the end. This is done to reduce loop overhead.
+//@@ the end. This is done to reduce loop overhead. Possibly clever compilers
+//@@ would do that for me anyway?
 //@@    for (i=0; i<=k; i++)
 //@@    {   multiply64(a[i], b[k-i], lo, hi1, lo);
 //@@        carry += addWithCarry(hi, hi1, hi);
@@ -648,7 +645,6 @@ static void simpleMul(ConstDigitPtr a, std::size_t N,
 // The very final digit of the result drops out here.
     result[k] = lo;
 }
-
 
 private:
 
@@ -969,8 +965,6 @@ static void generalMul(ConstDigitPtr a, std::size_t N,
     else biggerMul(a, N, b, M, result);
 }
 
-private:
-
 static void biggerMul(ConstDigitPtr a, std::size_t N,
                       ConstDigitPtr b, std::size_t M,
                       DigitPtr result)
@@ -1005,8 +999,7 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
 #endif // TRACE_TIMES
     }
     else 
-    {
-        if (manager.mayUseThreads)
+    {   if (manager.mayUseThreads)
             innerGeneralMul<true>(a, N, b, M, result, workspace);
         else innerGeneralMul(a, N, b, M, result, workspace);
 #ifdef TRACE_TIMES
@@ -1015,9 +1008,15 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
     }
 }
 
+private:
+
 // When thread is false this is being used when Kara or Toom32
 // recurses and so most of the time we will have M==N>KARASTART/2. With
 // thread true it is from the top-level and may fire up some workers.
+
+static void fftmul(ConstDigitPtr a, std::size_t N,
+                   ConstDigitPtr b, std::size_t M,
+                   DigitPtr result);
 
 template <bool thread=false>
 [[gnu::always_inline]]
@@ -1057,9 +1056,17 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
     display("b", b, M);
 #endif // TRACE_TIMES
 // Here I will call Kara if N <= 1.25*M.
-    if (4*N <= 5*M) kara<thread>(a, N, b, M, result, workspace);
+    if (4*N <= 5*M)
+    {   if (N > 100000) fftmul(a, N, b, M, result);
+        else kara<thread>(a, N, b, M, result, workspace);
+    }
 // If N <= 1.85*M I will use toom32.
-    else if (20*N <= 37*M) toom32<thread>(a, N, b, M, result, workspace);
+    else if (20*N <= 37*M)
+    {   if (N > 100000) fftmul(a, N, b, M, result);
+        else toom32<thread>(a, N, b, M, result, workspace);
+    }
+// If M and N are significantly different I will split the product
+// into two or more components, all better balanced.
     else innerBigMul<thread>(a, N, b, M, result, workspace);
     displayIndent -= 2;
 }
@@ -1688,6 +1695,8 @@ static void workerThread(WorkerData* wd)
 }
 
 #endif // definition of workerThread
+
+#include "fftmod.cpp"
 
 }; // end of BigMultiplication class
 

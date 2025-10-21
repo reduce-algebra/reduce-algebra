@@ -204,14 +204,14 @@ namespace CSL_LISP
 // overhead in the compiled binary of builds that happen not to use them.
 
 #ifdef MINIPAGE
-INLINE_VAR const size_t pageSize = 2*1024*1024u;     // Use 2 Mbyte pages
+inline const size_t pageSize = 2*1024*1024u;     // Use 2 Mbyte pages
 #else // MINIPAGE
-INLINE_VAR const size_t pageSize = 8*1024*1024u;     // Use 8 Mbyte pages
+inline const size_t pageSize = 8*1024*1024u;     // Use 8 Mbyte pages
 #endif // MINIPAGE
-INLINE_VAR const size_t chunkSize = 16*1024u;        // 16 Kbyte chunks
-INLINE_VAR const size_t chunkMask = chunkSize-1;
+inline const size_t chunkSize = 16*1024u;        // 16 Kbyte chunks
+inline const size_t chunkMask = chunkSize-1;
 
-INLINE_VAR const size_t vecAlign = 8;
+inline const size_t vecAlign = 8;
 
 extern bool allocateSegment(size_t);
 extern bool allocateAnotherSegment();
@@ -440,7 +440,7 @@ public:
     enum { value = ConsN };
 };
 
-INLINE_VAR const size_t ConsN = FindConsN<1,pageSize,1>::value;
+inline const size_t ConsN = FindConsN<1,pageSize,1>::value;
 //static_print(ConsN);
 
 template <size_t ChunkN, size_t TargetSize, size_t Gap>
@@ -463,16 +463,16 @@ public:
     enum { value = ChunkN };
 };
 
-INLINE_VAR const size_t ChunkN = FindChunkN<1,pageSize,1>::value;
+inline const size_t ChunkN = FindChunkN<1,pageSize,1>::value;
 //static_print(ChunkN);
 
 typedef PageTemplate<ConsN,ChunkN> Page;
 
-INLINE_VAR const size_t consPinBits     = Page::consDataCount;
-INLINE_VAR const size_t consPinBytes    = Page::consPinWords*8;
-INLINE_VAR const size_t vecPinBytes     = Page::vecPinWords*8;
-INLINE_VAR const size_t chunkInfoSize   = Page::chunkInfoSize;
-INLINE_VAR const size_t chunkBitmapBits = Page::chunkDataCount;
+inline const size_t consPinBits     = Page::consDataCount;
+inline const size_t consPinBytes    = Page::consPinWords*8;
+inline const size_t vecPinBytes     = Page::vecPinWords*8;
+inline const size_t chunkInfoSize   = Page::chunkInfoSize;
+inline const size_t chunkBitmapBits = Page::chunkDataCount;
 
 
 // So "just for fun and to show off" I will generate a warning message
@@ -611,7 +611,7 @@ inline Page* PageListIter::operator++()
 {   return (loc = loc->chain);
 }
 
-INLINE_VAR const size_t vecDataSize = sizeof(Page) - offsetof(Page, chunks);
+inline const size_t vecDataSize = sizeof(Page) - offsetof(Page, chunks);
 
 inline Page* pageOf(uintptr_t a)
 {  return reinterpret_cast<Page*>(a & (-pageSize));
