@@ -64,7 +64,7 @@ static int submain(int argc, const char *argv[])
     volatile uintptr_t sp;
 //    THREADID;
 //    genuineThreadId = 0; // the thread_local master variable.
-    std::sprintf(imageName, "%s/reduce.img", programDir);
+    std::sprintf(imageName, "%s/reduce.img", FX::programDir);
     nargv[0] = argv[0];
     nargv[1] = "-i";
     nargv[2] = imageName;
@@ -85,10 +85,13 @@ static int submain(int argc, const char *argv[])
 }
 
 
+extern "C"
+{
+
 int main(int argc, const char *argv[])
 {   int res;
 //    initThreadLocals();
-    if ((res = find_program_directory(argv[0])) != 0)
+    if ((res = FX::find_program_directory(argv[0])) != 0)
     {   std::fprintf(stderr,
                      "Unable to identify program name and directory (%d)\n", res);
         return 1;
@@ -112,6 +115,8 @@ int main(int argc, const char *argv[])
 
  //   ensure_screen();
     return res;
+}
+
 }
 
 } // end namespace
