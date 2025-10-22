@@ -80,7 +80,6 @@ template <class T1, std::size_t V1, class T2, std::size_t V2>
 {   return std::integral_constant<std::size_t, t1()+t2()>{};
 }
 
-//@#pragma message "start namespace acnutil"
 namespace acnutil
 {
 
@@ -102,11 +101,26 @@ template<std::size_t start, std::size_t count, class F>
     forloop<_init, _limit> ([&] (auto _var) [[gnu::always_inline]] { _body }) 
 
 
-// Using the high resolution clock is in many respects easy, but it is
-// also pretty clumsy because the function names are so long. So here is
-// a compact protocol for my own use:
-//   auto t0 = now(); DO SOMETHING; auto t1 = now();
-//   ... microseconds(t1, t0) ...
+// I find the extreme generality of the C++ <chrono> scheme rather
+// heavy - so here I wrap it up to give me a simple function that
+// reports microseconds used since this program was started. The
+// length of the lines here with multiple instances of "::" illustrates
+// what is involved!
+
+// high_resolution_clock may be an alias for system_clock and that may
+// sometimes not be monotonic. I believe I observe that oddity under WSL2,
+// so using steady_clock seems safer,
+
+// I have two overloads of microseconds(). Without arguments it returns
+// time since the program started, with two it gives the time between
+// a pair of results from now().
+
+inline auto basetime = std::chrono::steady_clock::now();
+
+inline auto microseconds()
+{   auto tt = std::chrono::steady_clock::now() - basetime;
+    return std::chrono::duration_cast<std::chrono::microseconds>(tt).count();
+}
 
 inline auto now()
 {   return std::chrono::steady_clock::now();
@@ -119,7 +133,8 @@ inline std::uint64_t microseconds(
         std::chrono::duration_cast<std::chrono::microseconds>(t1-t0).count();
 }
 
-// Given a string and an integer make a string that concatena tes them,
+
+// Given a string and an integer make a string that concatenates them,
 // so that e.g. concat("sss", 123) will yield "sss123".
 
 inline std::string concat(std::string a, int n)
@@ -128,7 +143,6 @@ inline std::string concat(std::string a, int n)
     return ss.str();
 }
 
-//@#pragma message "end namespace acnutil"
 } // end namespace
 
 #endif // __header_acnutil

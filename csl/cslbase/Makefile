@@ -77,7 +77,8 @@ multiply.cpp:	flatten multiply.base.cpp inlinemul.cpp lvector.h \
 	./flatten multiply.base.cpp multiply.cpp
 
 arithlib.hpp:	flatten arithlib.base.hpp lvector.h \
-		acnutil.h multiply.cpp inlinemul.cpp
+		acnutil.h multiply.base.cpp inlinemul.cpp \
+		fftutils.cpp fftmod.cpp
 	./flatten arithlib.base.hpp arithlib.hpp
 
 geninline:	geninline.cpp

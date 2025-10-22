@@ -51,6 +51,9 @@
 // With some older releases of g++ and its libraries it may be necessary
 // to link in "-ltbb".
 
+#ifndef cthread_cpp_loaded
+#define cthread_cpp_loaded
+
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -533,6 +536,9 @@ int main()
 }
 
 #endif // TEST_CODE
+
+#endif // cthread_cpp_loaded
+
 
 // end of cthread.cpp
 

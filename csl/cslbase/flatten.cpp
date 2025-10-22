@@ -52,6 +52,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstddef>
+#include <string>
+#include <unordered_set>
 
 using namespace std;
 
@@ -61,6 +63,7 @@ FILE* includeFile;
 
 const int maxLineLength = 2000;
 char lineBuffer[maxLineLength];
+unordered_set<string> included;
 
 void process(FILE* from)
 {   for (;;)
@@ -90,6 +93,9 @@ void process(FILE* from)
             }
             else fname[i] = c;
         }
+        string s(fname);
+        if (included.count(s) != 0) continue;
+        included.insert(s);
         FILE* incFile = fopen(fname, "r");
         if (incFile == nullptr)
         {   fprintf(destination, "%s\n", lineBuffer);
@@ -120,7 +126,6 @@ int main(int argc, char *argv[])
     printf("Completed\n");
     return 0;
 }
-
 
 // end of flatten.cpp
 

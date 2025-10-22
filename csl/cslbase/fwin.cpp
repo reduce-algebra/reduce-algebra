@@ -1841,7 +1841,7 @@ typedef void filescan_function(string name, string leafname,
 // needing to #include <filesystem> and in cases when code that uses
 // std::filesystem will then not even compile!
 
-#if defined __cpp_lib_filesystem && !defined FILESYSTEM_NOT_USABLE
+#if defined __cpp_lib_filesystem
 
 // Here is some code thar uses std::filesystem, or that might be able to!
 // If there are functions here that could not exploit the C++17 facilities
