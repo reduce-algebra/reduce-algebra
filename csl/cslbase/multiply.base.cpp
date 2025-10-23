@@ -1014,10 +1014,6 @@ private:
 // recurses and so most of the time we will have M==N>KARASTART/2. With
 // thread true it is from the top-level and may fire up some workers.
 
-static void fftmul(ConstDigitPtr a, std::size_t N,
-                   ConstDigitPtr b, std::size_t M,
-                   DigitPtr result);
-
 template <bool thread=false>
 [[gnu::always_inline]]
 static void innerGeneralMul(ConstDigitPtr a, std::size_t N,

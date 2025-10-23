@@ -117,8 +117,6 @@ const char *typeNames[] =
     "std::size_t",
     "int128_t",
     "uint128_t",
-    "INT128",
-    "UINT128",
     "char*",
     "signed char*",
     "unsigned char*",

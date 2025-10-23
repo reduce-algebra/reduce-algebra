@@ -643,7 +643,7 @@ inline intptr_t muldivptr(uintptr_t a, uintptr_t b, uintptr_t c)
 {   if (!SIXTY_FOUR_BIT || c <= 0xffffffffU)
         return ((uint64_t)a*(uint64_t)b)%(uintptr_t)c;
     else return (intptr_t)static_cast<int64_t>(
-        (uint128((uint64_t)a) * uint128((uint64_t)a)) % (uintptr_t)c);
+        (uint128_t((uint64_t)a) * uint128_t((uint64_t)a)) % (uintptr_t)c);
 }
 
 LispObject Nmodular_expt(LispObject env, LispObject a, LispObject b)

@@ -110,7 +110,7 @@ inline LispObject timesii(LispObject a, LispObject b)
 // C++ compiler, possibly with direct CPU assistance. In other cases it
 // will be implemented painfully in software in the files int128_t.h and
 // and int128_t.cpp.
-    return make_lisp_integer128(int128(aa) * int128(bb));
+    return make_lisp_integer128((int128_t)(aa) * (int128_t)(bb));
 }
 
 static LispObject timesis(LispObject a, LispObject b)

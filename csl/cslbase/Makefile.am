@@ -1459,7 +1459,8 @@ $(cslbase)/multiply.cpp:	$(cslbase)/flatten \
 
 $(cslbase)/arithlib.hpp:	$(cslbase)/flatten \
 		$(cslbase)/arithlib.base.hpp $(cslbase)/lvector.h \
-		$(cslbase)/acnutil.h $(cslbase)/multiply.cpp
+		$(cslbase)/acnutil.h $(cslbase)/multiply.base.cpp \
+		$(cslbase)/fftutils.cpp $(cslbase)/fftmod.cpp
 	cd $(cslbase) && ./flatten arithlib.base.hpp arithlib.hpp
 
 $(cslbase)/geninline:	$(cslbase)/geninline.cpp

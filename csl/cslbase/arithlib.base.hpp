@@ -10,6 +10,8 @@
 //     commentary included as comments here, and a file arithtest.cpp that
 //     can accompany it and illustrate its use]
 //    Re-work long division to approximate Karatsuba complexity.
+//    Mend toom3 multiplication.
+//    Optimise fft multiplication.
 
 /**************************************************************************
  * Copyright (C) 2019-2025, Codemist.                    A C Norman       *
@@ -386,6 +388,8 @@
 // too bad, but in many places I will in fact write the rather wordy but very
 // explicit (1ULL<<n).
 
+#define ARITHLIB_VERSION 1000
+
 // If I am in a process created using fork() this variable must be set
 // and doing that will disable use of threads here!
 inline bool inChild = false;
@@ -471,12 +475,14 @@ inline bool inChild = false;
 #include <algorithm>
 
 #include "acnutil.h"
-#include "lvector.h"
+#include "lvector.base.h"
 #include "cthread.cpp"
+#include "fftutils.cpp"
 
-//#pragma message "start namespace arithlib_implementation"
 namespace arithlib_implementation
 {
+
+using namespace fftutils;
 
 using Digit = std::uint64_t;
 using SignedDigit = std::int64_t;
@@ -3490,28 +3496,6 @@ inline Digit subtractWithBorrow(Digit a1,
 
 // I want code that will multiply two 64-bit values and yield a 128-bit
 // result. The result must be expressed as a pair of 64-bit integers.
-// If I have a type "__int128", as will often be the case when using gcc,
-// this is very easy to express. Otherwise I split the two inputs into
-// 32-bit halves, do 4 multiplications and some additions to construct
-// the result. My belief is that any platform that supports 128-bit
-// integers will define __SIZEOF_INT128__ (that is certainly the case
-// with gcc on cygwin and 64-bit ARM and with clang on a Mac m1).
-// If that is not defined I will suppose that I need to write the
-// calculations out in terms of 64-bit arithmetic.
-
-#ifdef __SIZEOF_INT128__
-
-// Well it seems that g++ and clang have different views about how to
-// ask for unsigned 128-bit integers! So I abstract that away via a typedef
-// called UINT128.
-
-#ifdef __CLANG__
-using INT128 = __int128;
-using UINT128 = __uint128;
-#else // __CLANG__
-using INT128 = __int128;
-using UINT128 = unsigned __int128;
-#endif // __CLANG__
 
 // At least for debugging I may wish to display 128-bit integers. Here I
 // only do hex printing. I could do decimal and octal if I really wanted
@@ -3519,7 +3503,7 @@ using UINT128 = unsigned __int128;
 // already supported printing of 128-bit ints this definition might clash
 // and would need commenting out.
 
-inline std::ostream & operator << (std::ostream &out, UINT128 a)
+inline std::ostream & operator << (std::ostream &out, uint128_t a)
 {   out << std::hex << std::setw(16) << std::setfill('0') <<
         static_cast<Digit>(a>>64)
         << " "
@@ -3527,14 +3511,14 @@ inline std::ostream & operator << (std::ostream &out, UINT128 a)
     return out;
 }
 
-inline UINT128 pack128(Digit hi, Digit lo)
-{   return (static_cast<UINT128>(hi)<<64) | lo;
+inline uint128_t pack128(Digit hi, Digit lo)
+{   return (static_cast<uint128_t>(hi)<<64) | lo;
 }
 
 [[gnu::always_inline]]
 inline void multiply64(Digit a, Digit b,
                        Digit &hi, Digit &lo)
-{   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b);
+{   uint128_t r = static_cast<uint128_t>(a)*static_cast<uint128_t>(b);
     hi = static_cast<Digit>(r >> 64);
     lo = static_cast<Digit>(r);
 }
@@ -3547,8 +3531,8 @@ inline void multiply64(Digit a, Digit b,
 inline void multiply64(Digit a, Digit b,
                        Digit c,
                        Digit &hi, Digit &lo)
-{   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b) +
-                static_cast<UINT128>(c);
+{   uint128_t r = static_cast<uint128_t>(a)*static_cast<uint128_t>(b) +
+                static_cast<uint128_t>(c);
     hi = static_cast<Digit>(r >> 64);
     lo = static_cast<Digit>(r);
 }
@@ -3556,8 +3540,8 @@ inline void multiply64(Digit a, Digit b,
 [[gnu::always_inline]]
 inline void signedMultiply64(SignedDigit a, SignedDigit b,
                              SignedDigit &hi, Digit &lo)
-{   INT128 r = static_cast<INT128>(a)*static_cast<INT128>(b);
-    hi = static_cast<SignedDigit>(static_cast<UINT128>(r) >> 64);
+{   int128_t r = static_cast<int128_t>(a)*static_cast<int128_t>(b);
+    hi = static_cast<SignedDigit>(static_cast<uint128_t>(r) >> 64);
     lo = static_cast<Digit>(r);
 }
 
@@ -3565,9 +3549,9 @@ inline void signedMultiply64(SignedDigit a, SignedDigit b,
 inline void signedMultiply64(SignedDigit a, SignedDigit b,
                              Digit c,
                              SignedDigit &hi, Digit &lo)
-{   UINT128 r = static_cast<UINT128>(
-                    static_cast<INT128>(a)*static_cast<INT128>(b))
-                + static_cast<UINT128>(c);
+{   uint128_t r = static_cast<uint128_t>(
+                    static_cast<int128_t>(a)*static_cast<int128_t>(b))
+                + static_cast<uint128_t>(c);
     hi = static_cast<SignedDigit>(r >> 64);
     lo = static_cast<Digit>(r);
 }
@@ -3580,164 +3564,10 @@ inline void signedMultiply64(SignedDigit a, SignedDigit b,
 inline void divide64(Digit hi, Digit lo,
                      Digit divisor,
                      Digit &q, Digit &r)
-{   UINT128 dividend = pack128(hi, lo);
+{   uint128_t dividend = pack128(hi, lo);
     q = dividend / divisor;
     r = dividend % divisor;
 }
-
-#else // __SIZEOF_INT128__
-
-// If the C++ system I am using does not support and 128-bit integer
-// type or if I have not detected it everything can still be done using
-// lots of 64-bit operations, with each 64-bit value often treated as
-// two 32-bit halves.
-
-inline void multiply64(Digit a, Digit b,
-                       Digit &hi, Digit &lo)
-{   Digit a1 = a >> 32,           // top half
-                  a0 = a & 0xFFFFFFFFU;   // low half
-    Digit b1 = b >> 32,           // top half
-                  b0 = b & 0xFFFFFFFFU;   // low half
-    Digit u1 = a1*b1,             // top of result
-                  u0 = a0*b0;             // bottom of result
-// Now I need to add in the two "middle" bits a0*b1 and a1*b0
-    Digit w = a0*b1;
-    u1 += w >> 32;
-    w <<= 32;
-    u0 += w;
-    if (u0 < w) u1++;
-// a0*b1 done
-    w = a1*b0;
-    u1 += w >> 32;
-    w <<= 32;
-    u0 += w;
-    if (u0 < w) u1++;
-    hi = u1;
-    lo = u0;
-}
-
-// Now much the same but forming a*b+c. Note that this can not overflow
-// the 128-bit result. Both hi and lo are only updated at the end
-// of this, and so they are allowed to be the same as other arguments.
-
-inline void multiply64(Digit a, Digit b,
-                       Digit c,
-                       Digit &hi, Digit &lo)
-{   Digit a1 = a >> 32,           // top half
-                  a0 = a & 0xFFFFFFFFU;   // low half
-    Digit b1 = b >> 32,           // top half
-                  b0 = b & 0xFFFFFFFFU;   // low half
-    Digit u1 = a1*b1,             // top of result
-                  u0 = a0*b0;             // bottom of result
-// Now I need to add in the two "middle" bits a0*b1 and a1*b0
-    Digit w = a0*b1;
-    u1 += w >> 32;
-    w <<= 32;
-    u0 += w;
-    if (u0 < w) u1++;
-// a0*b1 done
-    w = a1*b0;
-    u1 += w >> 32;
-    w <<= 32;
-    u0 += w;
-    if (u0 < w) u1++;
-    u0 += c;                         // add in C.
-    if (u0 < c) u1++;
-    hi = u1;
-    lo = u0;
-}
-
-[[gnu::always_inline]]
-inline void signedMultiply64(SignedDigit a, SignedDigit b,
-                             SignedDigit &hi, Digit &lo)
-{   Digit h, l;
-    multiply64(static_cast<Digit>(a),
-               static_cast<Digit>(b), h, l);
-    if (a < 0) h -= static_cast<Digit>(b);
-    if (b < 0) h -= static_cast<Digit>(a);
-    hi = static_cast<SignedDigit>(h);
-    lo = l;
-}
-
-[[gnu::always_inline]]
-inline void signedMultiply64(SignedDigit a, SignedDigit b,
-                             Digit c,
-                             SignedDigit &hi, Digit &lo)
-{   Digit h, l;
-    multiply64(static_cast<Digit>(a),
-               static_cast<Digit>(b), c, h,
-               l);
-    if (a < 0) h -= static_cast<Digit>(b);
-    if (b < 0) h -= static_cast<Digit>(a);
-    hi = static_cast<SignedDigit>(h);
-    lo = l;
-}
-
-inline void divide64(Digit hi, Digit lo,
-                     Digit divisor,
-                     Digit &q, Digit &r)
-{   Digit u1 = hi;
-    Digit u0 = lo;
-    Digit c = divisor;
-// See the Hacker's Delight for commentary about what follows. The associated
-// web-site explains usage rights:
-// "You are free to use, copy, and distribute any of the code on this web
-// site (www.hackersdelight.org) , whether modified by you or not. You need
-// not give attribution. This includes the algorithms (some of which appear
-// in Hacker's Delight), the Hacker's Assistant, and any code submitted by
-// readers. Submitters implicitly agree to this." and then "The author has
-// taken care in the preparation of this material, but makes no expressed
-// or implied warranty of any kind and assumes no responsibility for errors
-// or omissions. No liability is assumed for incidental or consequential
-// damages in connection with or arising out of the use of the information
-// or programs contained herein."
-// I may not be obliged to give attribution, but I view it as polite to!
-// Any error that have crept in in my adapaptation of the original code
-// will be my fault, but you see in the BSD license at the top of this
-// file that I disclaim any possible liability for consequent loss or damage.
-    const Digit base = 0x100000000U; // Number base (32 bits).
-    Digit un1, un0,        // Norm. dividend LSD's.
-        vn1, vn0,        // Norm. divisor digits.
-        q1, q0,          // Quotient digits.
-        un32, un21, un10,// Dividend digit pairs.
-        rhat;            // A remainder.
-// I am going to shift both operands left until the divisor has its
-// most significant bit set.
-    int s = nlz(c);           // Shift amount for norm. 0 <= s <= 63.
-    c = c << s;               // Normalize divisor.
-// Now I split the divisor from a single 64-bit number into a pair
-// of 32-vit values.
-    vn1 = c >> 32;            // Break divisor up into
-    vn0 = c & 0xFFFFFFFFU;    // two 32-bit digits.
-// Shift the dividend... and split it into parts.
-    if (s == 0) un32 = u1;
-    else un32 = (u1 << s) | (u0 >> (64 - s));
-    un10 = u0 << s;           // Shift dividend left.
-    un1 = un10 >> 32;         // Break right half of
-    un0 = un10 & 0xFFFFFFFFU; // dividend into two digits.
-// Predict a 32-bit quotient digit...
-    q1 = un32/vn1;            // Compute the first
-    rhat = un32 - q1*vn1;     // quotient digit, q1.
-again1:
-    if (q1 >= base || q1*vn0 > base*rhat + un1)
-    {   q1 = q1 - 1;
-        rhat = rhat + vn1;
-        if (rhat < base) goto again1;
-    }
-    un21 = un32*base + un1 - q1*c;  // Multiply and subtract.
-    q0 = un21/vn1;            // Compute the second
-    rhat = un21 - q0*vn1;     // quotient digit, q0.
-again2:
-    if (q0 >= base || q0*vn0 > base*rhat + un0)
-    {   q0 = q0 - 1;
-        rhat = rhat + vn1;
-        if (rhat < base) goto again2;
-    }
-    q = (q1 << 32) | q0;      // assemble and return quotient & remainder
-    r = (un21*base + un0 - q0*c) >> s;
-}
-
-#endif // __SIZEOF_INT128__
 
 // While my arithmetic is all done in uint64_t (and that is important so
 // that in C++ the consequences of overflow are defined) I need to treat
@@ -7629,7 +7459,7 @@ inline Digit subtractWithBorrow(const std::uint64_t* x,
     return b;
 }
 
-#include "multiply.cpp"
+#include "multiply.base.cpp"
 
 
 // Now some code that delivers just some of the digits from a product.
@@ -9314,10 +9144,6 @@ inline std::intptr_t Ceiling::op(SignedDigit a, SignedDigit b)
 // as a function that delivers the quotient as its result and saves
 // the remainder via an additional argument.
 
-//@#pragma message "start namespace arithlib_implementation"
-//@namespace arithlib_implementation
-//@{
-
 inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
@@ -10456,7 +10282,6 @@ inline std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
 
 #endif // CSL
 
-//#pragma message "end namespace arithlib_implementation"
 } // end namespace arithlib_implementation
 
 // I want a namespace that the user can activate via "using" that only
@@ -10469,7 +10294,6 @@ inline std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
 //  remains uncertain, however a user can either add to the section here
 //  or use the arithlib_implementation namespace directly in case of upset]
 
-//#pragma message "start namespace arithlib"
 namespace arithlib
 {
 using arithlib_implementation::operator"" _Z;
@@ -10489,16 +10313,10 @@ using arithlib_implementation::randomUptoBitsBignum;
 
 using arithlib_implementation::display;
 using arithlib_implementation::fixBignum;
-
-using arithlib_implementation::INT128;
-using arithlib_implementation::UINT128;
-
-//#pragma message "end namespace arithlib"
 }
 
 // I am putting in names that CSL uses here...
 
-//#pragma message "start namespace arithlib_lowlevel"
 namespace arithlib_lowlevel
 {
 using arithlib_implementation::Plus;
@@ -10610,11 +10428,10 @@ using arithlib_implementation::modf;
 //using arithlib_implementation::numberSize;
 //using arithlib_implementation::multiply64;
 
-using arithlib_implementation::castTo_float;
+using arithlib_implementation::DigitPtr;
+using arithlib_implementation::ConstDigitPtr;
 
-using arithlib_implementation::INT128;
-using arithlib_implementation::UINT128;
-//#pragma message "end namespace arithlib_lowlevel"
+using arithlib_implementation::castTo_float;
 }
 
 // This can not have its initial value specfied within the class. Maybe

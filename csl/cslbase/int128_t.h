@@ -3,37 +3,41 @@
 
 // $Id$
   
-#ifndef __INT128_T__
-#define __INT128_T__
+#ifndef __int128_t_h__
+#define __int128_t_h__
 
 /*
 If you go "#include "int128_t.h" you should end up with two types -
 uint128_t and int128_t for wide integers. If these are supported by
-your C++ compiler directly (possibly with names like unsigned __int128
+your C++ compiler directly (possibly via names like unsigned __int128
 and __int128) then the native versions will be used. Otherwise classes
 with the relevant names will be introduced with most arithmetic operators
-overloaded to use them. You are expected to have the following two lines in
-your "configure.ac" to check whether there are suitable built-in types, and
-then of course if relevant "config.h" must be loaded before this header file.
-        AC_CHECK_TYPES([__int128, unsigned __int128])
-        AC_CHECK_TYPES([int128_t, uint128_t])
+overloaded to use them.
 
-The INTENT is that when this header has been #included that the two types
-int128_t and uint128_t should be available for use within the following code
-almost as if they were part of the system in the way that std::int64_t etc
-are available. I use this with the CSL and Reduce systems and the 128-bit
-types suffice for that: I have NOT tested everything heavily beyond that so
-there can be a range of possible faults. And some of the C++ coding may
-be ugly or otherwise bad. The unsigned part is was originally by Jason Lee
-and should be robust (apart from where I altered it) but the signed variant
-and the way that the code tests for existing native 129-bit types is newer
-and and improvements from any C++ expert would be most welcome.
+The test of what to do is based around whether __SIZEOF_INT128__ is
+defined. This is automatically predefined by the compiler and does
+not need any action from the programmer. For at least the platforms I
+care about most (well x86_64 Linux, Raspberry Pi 5 (64-bit), Mac M1, all
+using g++ or clang++) this gets defined and then a type __int128_t exists.
+I then set up aliases int128_t and uint128_t.#
+
+I *ASSUME* that if __SIZEOF_INT128__ is not defined then both signed and
+unsigned 128-bit integers will be avaliable with __int128_t being the
+signed type. I also assume that the plain names int128_t and uint128_t
+will be available for me to define as classes that behave as much like
+regular integers as can reasonably be arranged.
+
+Some of my C++ coding may be ugly or otherwise bad! The unsigned part
+was originally by Jason Lee and should be robust and tidy (apart from where I
+altered it)  but the signed variant is mine and may be repetitive, ugly,
+incomplete or otherwise less satisfactory!
 
 I have also not worried very much about performance-tuning of the signed
 code. The unsigned version had some care to avoid unnecessary work, but here
 my stance is that a computer that does not support native 128-bit will be
-slow at big arithmetic whatever I do, so hurtying it a bit mnore will not
-upset me too much. A C++ expert may want to address that too!
+slow at big arithmetic whatever I do, so hurting it a bit mnore will not
+upset me too much. A C++ expert may want to address that issue as well as
+code style!
 
 I have a collection of uses of "typename enable_if<std::is_arithetic<..."
 in here that is sufficient to resolve some ambiguities that arose in use
@@ -74,16 +78,9 @@ to do a general rewrite of this class.
 This code incorporated the Jason Lee code but has been re-worked by Arthur
 Norman, 2020-, and now provides both signed and unsigned 128-bit types called
 uint128_t and int128_t, and to arrange that it can always be loaded as a
-header-only library that checks HAVE_INT128_T (etc) as set up using autoconf
-to decide how it will support the required types.
+header-only library.
 */
 
-
-// Tidy up re possible 128-bit arithmetic support. The required types may
-// already exist with names such as __int128 or int128_t. If neither of those
-// is available I set up an emulation that uses 64-bit arithmetic as its
-// base but provides a class that should behave like the 128-bit integer
-// type that I really want.
 
 // I want this to be a standalone header file that could be used outside
 // CSL, and so I include the C++ header files that it used and I will refer
@@ -96,36 +93,25 @@ to decide how it will support the required types.
 #include <iostream>
 #include <stdexcept>
 #include <utility>
+#include <type_traits>
 
+#ifdef __SIZEOF_INT128__
 
-// Note that even if the C++ environment provides a type called "int128_t"
-// it should not be in std::, and so I should expect to access it directly.
+#include <type_traits>
 
-#if !defined HAVE_UINT128_T && defined HAVE_UNSIGNED___INT128
-typedef unsigned __int128 uint128_t;
-#define HAVE_UINT128_T 1
-#endif // !defined HAVE_UINT128_T && defined HAVE_UNSIGNED___INT128
+// The following works with both gcc and clang++ on the platforms that
+// support 128-bit integers that I have tried. Note that for the unsigned
+// case I use type_traits to obtain the desired type because the names
+// used by the raw C++ compilers differ.
 
-#if !defined HAVE_INT128_T && defined HAVE___INT128
-typedef __int128 int128_t;
-#define HAVE_INT128_T 1
-#endif // !defined HAVE_INT128_T && defined HAVE___INT128
-
-#if !defined HAVE_UINT128_T
-class uint128_t;
-#endif
-
-#if !defined HAVE_INT128_T
-class int128_t;
-#endif
-
-#ifdef HAVE_UINT128_T
-
-// I provide getUPPER(), getLOWER() and PACK128() for conversions between
-// unsigned 128-bit integers and pairs of unsigned 64-bit values.
+using int128_t = __int128_t;
+using uint128_t = std::make_unsigned<__int128_t>::type;
 
 namespace INT128names
 {
+
+// I provide getUPPER(), getLOWER() and PACK128() for conversions between
+// unsigned 128-bit integers and pairs of unsigned 64-bit values.
 
 inline std::uint64_t getUPPER(uint128_t a)
 {   return a >> 64;
@@ -149,7 +135,11 @@ inline uint128_t UNSIGNED_FLIP_TOP_BIT(uint128_t a)
 
 } // end of namespace
 
-#else // HAVE_UINT128_T
+#else // __SIZEOF_INT128__
+
+class uint128_t;
+class int128_t;
+#define __SIZEOF_INT128__ 16
 
 class uint128_t
 {
@@ -1112,40 +1102,7 @@ inline std::ostream & operator<<(std::ostream & stream, const uint128_t & rhs)
     return stream;
 }
 
-#endif // HAVE_UINT128_T
-
-// Now I should certainly have a type uint128_t. It may be native or
-// simulated, but it should exist, and it should provide getUPPER(),
-// getLOWER() and PACK128() functions. I also have functions to test or
-// flip the top bit if an uint128_t.
-
-
-#ifdef HAVE_INT128_T
-
-namespace INT128names
-{
-
-inline std::uint64_t getLOWER(int128_t a)
-{   return static_cast<std::uint64_t>(a);
-}
-
-inline std::int64_t getUPPER(int128_t a)
-{   return static_cast<std::int64_t>((a - getLOWER(a)) /
-               static_cast<int128_t>(1)<<64);
-}
-
-inline int128_t PACK128(int64_t high, std::uint64_t low)
-{   return static_cast<int128_t>(high)<<64 | low;
-}
-
-inline uint128_t UNSIGNED(int128_t a)
-{   return PACK128(static_cast<std::uint64_t>(a>>64),
-                   static_cast<std::uint64_t>(a));
-}
-
-};
-
-#else // HAVE_INT128_T
+// Now I should certainly have a type uint128_t.
 
 namespace INT128names
 {
@@ -1936,8 +1893,6 @@ inline std::ostream & operator<<(std::ostream & stream, const int128_t & rhs)
     return stream;
 }
 
-#endif // HAVE_INT128_T
-
 inline uint128_t uint128(int128_t v)
 {   return INT128names::PACK128(static_cast<std::uint64_t>(v>>64),
                    INT128names::getLOWER(INT128names::UNSIGNED(v)));
@@ -1953,35 +1908,16 @@ inline uint128_t uint128(int64_t v)
         v);
 }
 
-#ifdef HAVE_INT128_T
-inline int128_t int128(int64_t v)
-{   return static_cast<int128_t>(v);
-}
-#else // HAVE_INT128_T
 inline int128_t int128(int64_t v)
 {   return int128_t(static_cast<std::int64_t>(v<0 ? -1 : 0),
                     static_cast<std::uint64_t>(v));
 }
-#endif // HAVE_INT128_T
 
-#ifndef HAVE_UINT128_T
-inline uint128_t::operator int128_t() const
-{   return INT128names::PACK128(static_cast<std::int64_t>(UPPER), LOWER);
-}
-inline uint128_t::uint128_t(int128_t a)
-{   UPPER = INT128names::getUPPER(a);
-    LOWER = INT128names::getLOWER(a);
-}
-
-inline uint128_t uint128_t::operator=(int128_t rhs)
-{   UPPER = static_cast<std::uint64_t>(INT128names::getUPPER(rhs));
-    LOWER = INT128names::getLOWER(rhs);
-    return *this;
-}
-#endif // HAVE_UINT128_T
+#endif // __SIZEOF_INT128__
 
 // Once this header has been installed both HAVE_UINT128_T and
-// HAVE_INT128_T will be defined.
+// HAVE_INT128_T will be defined. That is rather as if autoconf had
+// been used to check for the presence of 129-8 integer types.
 
 #ifndef HAVE_UINT128_T
 #define HAVE_UINT128_T 1
@@ -1991,7 +1927,6 @@ inline uint128_t uint128_t::operator=(int128_t rhs)
 #define HAVE_INT128_T 1
 #endif
 
-#endif // __INT128_T__
+#endif // __int128_t_h__
 
 // end of int128_t.h
-

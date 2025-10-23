@@ -404,7 +404,7 @@ uint128_t N_uint128_fix(float128_t *a)
 // shuffle to be in the form of the uint128_t integer.
     uint64_t hi = (aa.v[HIPART] & UINT64_C(0x0000ffffffffffff)) |
                   UINT64_C(0x0001000000000000);
-    uint128_t w = aa.v[LOPART] | (uint128(hi)<<64);
+    uint128_t w = aa.v[LOPART] | (uint128_t(hi)<<64);
 // Now I may need to shift b by an amount determined by x.
     x = x - 113;
     if (x > 0) w = w<<x;
