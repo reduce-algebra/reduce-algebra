@@ -29,7 +29,7 @@ module cedit; % REDUCE input string editor.
 
 create!-package('(cedit),'(util));
 
-fluid '(!*mode rprifn!* rterfn!*);
+fluid '(!*mode !*msg rprifn!* rterfn!*);
 
 global '(!$eol!$
          !*blanknotok!*
@@ -46,7 +46,7 @@ global '(!$eol!$
 
 %esc!* := intern ascii 125;   %this is system dependent and defines
                               %a terminator for strings.
-
+<<
 if !*msg then <<
   terpri();
   for each m in '(
@@ -55,7 +55,7 @@ if !*msg then <<
 "it, so your first use of it will fail and display this message, but"
 "from then on all that you type is preserved and can be used with cedit"
 "in the usual manner."
-  ) do << prin2 m; terpri() >>;
+  ) do << prin2 m; terpri() >> >>;
   cedit!-loaded!* := t >>;
 
 symbolic procedure rplacw(u,v);
