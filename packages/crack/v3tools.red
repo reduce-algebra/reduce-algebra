@@ -128,7 +128,7 @@ lisp(if getd 'set_bndstk_size then set_bndstk_size(50000))$
 load_package  'groebner$
 load_package 'crack$
 setcrackflags()$
-symbolic fluid '(print_more record_hist max_gc_short size_watch max_gc_fac
+fluid '(print_more record_hist max_gc_short size_watch max_gc_fac
                  print_ old_history tr_short tr_vec)$
 tr_vec:=nil$
 
@@ -137,7 +137,7 @@ tr_vec:=nil$
 algebraic operator poi_$
 
 %----------------------------------------------------
-symbolic fluid '(wgths_ fino_ nfct_)$
+fluid '(wgths_ fino_ nfct_)$
 
 symbolic procedure gen(all)$
 % The global variable wgths_ specifies the weights of the generated terms
@@ -354,7 +354,7 @@ begin scalar h,hm,p,perm,allperm,idli,idlicp$
 end$
 %----------------------------------------------------
 
-symbolic fluid '(algebraic_reduce_functions)$
+fluid '(algebraic_reduce_functions)$
 lisp (algebraic_reduce_functions:=
 '(plus minus difference times quotient expt arbcomplex list))$
 

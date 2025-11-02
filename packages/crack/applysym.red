@@ -31,7 +31,7 @@
 %******************************************************************************
 
 % $Id$
-symbolic fluid '(print_ logoprint_ nfct_ fname_ time_ facint_
+fluid '(print_ logoprint_ nfct_ fname_ time_ facint_
                  safeint_ freeint_ odesolve_)$
 lisp flag('(yesp),'boolean)$
 lisp(logoprint_:=t)$
@@ -210,7 +210,7 @@ begin
 
   % is oldsol an invariant?
   oldsol_ex:=equ_to_expr(oldsol)$      % oldsol as vanishing expression
-  prev_depend:=storedepend(vari)$  
+  prev_depend:=storedepend(vari)$
   h2:=sub(u_=oldsol_ex,pde);
   if h2 neq 0 then <<
     h1:=solve(oldsol_ex,vari);
@@ -220,7 +220,7 @@ begin
       if freeof(h3,arbcomplex) then h2:=sub(h3,h2)
     >>
   >>;
-  restoredepend(prev_depend)$  
+  restoredepend(prev_depend)$
   if 0=h2 then return lisp
   <<write"The special solution to be generalized is an invariant ",
 	 "with respect to";terpri()$
@@ -281,7 +281,7 @@ begin
       (el2 = x                                   ) or
       <<if not polynop(el2,cons(x,nil)) then nil
 			  	        else
-       <<coeff1(el2,x,nil)$ 
+       <<coeff1(el2,x,nil)$
 	 if hipow!*<hp then <<hp:=hipow!*; t>>
 		       else nil               >> >>    ) then el1:=el2
  >>;
@@ -301,7 +301,7 @@ begin
   dfy:=TransDf(y,yslist,vlist,rest indxlist);
   for each e1 in vlist sum <<
    n:=n+1;
-   df(dfy,e1)*Dv!/Dx(n,m)   
+   df(dfy,e1)*Dv!/Dx(n,m)
   >>
  >>
 end$ % of TransDf
@@ -339,7 +339,7 @@ begin
   >>
  >>;
  detpd:=det(dyx!/duv);
-%write"detpd=",detpd; 
+%write"detpd=",detpd;
  if detpd=0 then return
  <<write"The proposed transformation is not regular!";{}>>;
  clear dyx!/duv;
@@ -349,7 +349,7 @@ begin
  for each e2 in yslist do
  <<n:=totdeg(e1,lhs e2);
   if n>ordr then ordr:=n>>;
- 
+
  sb:=subdif1(for each e1 in xslist collect lhs e1,
 	     for each e1 in yslist collect lhs e1,ordr);
 
@@ -359,7 +359,7 @@ begin
   n:=n+1;m:=0;
   for each e2 in vlist do <<
    m:=m+1;
-   Dv!/Dx(n,m):=total_alg_mode_deriv(rhs e1,e2) 
+   Dv!/Dx(n,m):=total_alg_mode_deriv(rhs e1,e2)
              % it is assumed ulist does depend on vlist
   >>
  >>;
@@ -457,7 +457,7 @@ begin scalar h1,h2$
 	else
   <<lisp<<terpri()$
       write"The suggested solution of the algebraic system which will";
-      terpri()$   
+      terpri()$
       write"do the transformation is: ";
       terpri()
     >>;
@@ -488,8 +488,8 @@ begin scalar xslist,yslist,el3,h$
 	      " the dependent ";terpri()$
 	 if length yslist>2 then
 	 write"variables are the ",reval algebraic u,"i and " else
-	 write"variable is ",reval algebraic u," and "; 
-	 
+	 write"variable is ",reval algebraic u," and ";
+
 	 if length xslist>2 then
 	 write"the independent variables are the ",
 	      reval algebraic v,"i." else
@@ -498,7 +498,7 @@ begin scalar xslist,yslist,el3,h$
          write"The symmetry variable is ",reval algebraic smv,", i.e. the ",
               "transformed expression";terpri();
          write"will be free of ",reval algebraic smv,"."; terpri()
-  >>; 
+  >>;
   h:=if yesp "Is this selection of dependent and independent variables ok?"
     then nil else <<
     lisp <<write"Please enter a list of substitutions. For example, to";
@@ -588,10 +588,10 @@ begin scalar vari,pde,el1,el2,el3,el4,copgen,symvarfound,
   vari:=append(ylist,xlist);
   for each el1 in xlist do
   for each el2 in ylist do
-  if not my_freeof(el2,el1) then nodepend el2,el1;       
+  if not my_freeof(el2,el1) then nodepend el2,el1;
 
   lisp(
-  if tr_as then << 
+  if tr_as then <<
     write "The ODE/PDE (-system) under investigation is :";terpri()$
     for each el1 in cdr eqlist do algebraic write"0 = ",el1;
     terpri()$write "for the function(s) : ";
@@ -627,7 +627,7 @@ begin scalar vari,pde,el1,el2,el3,el4,copgen,symvarfound,
 %    if el1 neq el2 then copgen:=sub(el2=0,copgen);
 
     copgen:={}$
-    for each el1 in genlist do 
+    for each el1 in genlist do
     if freeof(eqlist,lhs el1) then copgen:=cons(el1,copgen);
     % only expressions for symmetry generators, not parameters
     % in the original diff. equations
@@ -726,7 +726,7 @@ begin scalar vari,pde,el1,el2,el3,el4,copgen,symvarfound,
       lisp<<terpri()$write"2. Determination of the symmetry variable">>;
       trans2 := quasilinpde1(pde,u_,vari);  % for the symmetry variable
 
-      if (length xlist=1) and (trans2={}) then 
+      if (length xlist=1) and (trans2={}) then
       for each e1 in fargs u_ do nodepend u_,e1
 					  else
       <<% If no symmetry variable is found (trans2={}) then proceed
@@ -798,10 +798,10 @@ begin scalar vari,pde,el1,el2,el3,el4,copgen,symvarfound,
 	  >>
 	>>$
 	%for each el1 in trans1 do
-	%for each el2 in trans2 do 
+	%for each el2 in trans2 do
 	el1:=first trans1;
 	el2:=first trans2;
-	
+
 %        <<
 	  %------- Grouping the new variables to ulist and vlist
 
@@ -858,14 +858,14 @@ begin scalar vari,pde,el1,el2,el3,el4,copgen,symvarfound,
 					   else el4
 	    >>;
 	    lisp deprint(cdr reval algebraic eqlist);
-	    
+
 	    if (length(vlist)>1) and (not freeof(vlist,smv)) then <<
 	      vlist:=cons(smv,lisp(delete(reval algebraic smv,
 					  reval algebraic vlist)));
-	      if yesp 
+	      if yesp
 	    "Shall the dependence on the symmetry variable be dropped?"
 	      then
-	      <<for each el3 in ulist do 
+	      <<for each el3 in ulist do
                 if not my_freeof(el3,smv) then nodepend el3,smv;
 		vlist:=rest vlist>>;
 	      eqlist:=for each el3 in eqlist collect <<
@@ -883,8 +883,8 @@ begin scalar vari,pde,el1,el2,el3,el4,copgen,symvarfound,
 %  >>;
   for each el1 in xlist do
   for each el2 in ylist do
-  depend el2,el1;      
-  
+  depend el2,el1;
+
   clear ff,ffi;
   return trafoprob
 end$ % of similarity
@@ -915,4 +915,3 @@ begin scalar trans1,e1,e2,q;
 end$ % of quasilinpde1
 
 end$
-

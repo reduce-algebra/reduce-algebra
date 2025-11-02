@@ -30,7 +30,7 @@ module linalgsys$
 %******************************************************************************
 
 % $Id$
-symbolic fluid '(count_tries tr_subsys max_losof matrix_849)$
+fluid '(count_tries tr_subsys max_losof matrix_849)$
 lisp(tr_subsys:=nil)$
 
 symbolic procedure trian_lin_alg(arglist)$
@@ -41,7 +41,7 @@ begin scalar h1,h2,h3,h4,f,fl,newfl,tr_opt,remain_pdes,remain_fl,li,
  tr_opt:=t;
 
  % get a list h1 of purely algebraic equation by disregarding the
- % non-algebraic equations 
+ % non-algebraic equations
  h2:=car arglist;
  while h2 do <<
   if is_algebraic(car h2) then h1:=cons(car h2,h1);
@@ -55,22 +55,22 @@ return nil;
 
  % start with reducing the length of all equations as much as possible
  repeat <<
-  h2:=alg_length_reduction({h1,nil,vl_,h1}); 
+  h2:=alg_length_reduction({h1,nil,vl_,h1});
   % nil for forg which is not used in alg_length_reduction()
   if h2 then h1:=car h2
  >> until contradiction_ or null h2;
- 
+
  remain_pdes:=h1;
  total_terms:=0;
  for each h2 in remain_pdes do total_terms:=total_terms+get(h2,'terms);
 
  % fl now becomes a list of lists: ((n1,f1,d11,d12,d13,..),
- % (n2,f2,d21,d22,d23,...),...) where fi are the functions, 
+ % (n2,f2,d21,d22,d23,...),...) where fi are the functions,
  % dij are equation names in which fi occurs and ni is the number of dij
  for each h2 in h1 do fl:=add_equ_to_fl(h2,fl)$
 
- % newfl is the final newly ordered list of functions 
- while fl and null contradiction_ do << 
+ % newfl is the final newly ordered list of functions
+ while fl and null contradiction_ do <<
   % re-order all functions, those occuring in the fewest equations
   % come first
   fl:=idx_sort fl;
@@ -93,7 +93,7 @@ return nil;
    % functions as equations
    % ...
 
-   % Find a function which is easiest decoupled/substituted 
+   % Find a function which is easiest decoupled/substituted
    %            (e.g. use min-growth-substitution for that)
    remain_fl:=for each h3 in fl collect cadr h3;
 
@@ -104,19 +104,19 @@ return nil;
     li:=nil;
     if null h2 then << % assign all allowed subst.
      for each f in remain_fl do
-     if not freeof(get(h1,'rational),f) then    
+     if not freeof(get(h1,'rational),f) then
 %    li:=cons(cons(reval coeffn(get(h1,'val),f,1),f),li);
-     li:=cons(cons(coeffn({'!*sq,get(h1,'sqval),t},f,1),f),li);  
+     li:=cons(cons(coeffn({'!*sq,get(h1,'sqval),t},f,1),f),li);
     >>        else << % keep only substitutions related to fl-functions
      while h2 do <<
       if not freeof(cdar h2,remain_fl) then li:=cons(car h2,li);
-      h2:=cdr h2  
+      h2:=cdr h2
      >>
     >>;
     if li then put(h1,'fcteval_lin,reverse li);
    >>;
 
-   % Do the substitution with the lowest upper bound of increase in complexity 
+   % Do the substitution with the lowest upper bound of increase in complexity
    % make_subst(pdes,forg,vl,l1,length_limit,pdelimit,less_vars,no_df,no_cases,
    %            lin_subst,min_growth,cost_limit,keep_eqn)$
    h1:=make_subst(remain_pdes,remain_fl,vl_,remain_pdes,
@@ -143,11 +143,11 @@ return nil;
 
     % Drop the entry for function f from fl. h4 is the list of
     % equations with f
-    if cadar fl = f then <<h4:=cddar fl;fl:=cdr fl>> 
-                    else << 
+    if cadar fl = f then <<h4:=cddar fl;fl:=cdr fl>>
+                    else <<
      h3:=fl;
-     while cadadr h3 neq f do h3:=cdr h3; 
-     h4:=cddadr h3;     
+     while cadadr h3 neq f do h3:=cdr h3;
+     h4:=cddadr h3;
      rplacd(h3,cddr h3);
     >>;
     % update the appearance of equations in fl in which f was substituted
@@ -158,7 +158,7 @@ return nil;
 
     % Have length reductions become possible through substitution?
     repeat <<
-     h2:=alg_length_reduction({remain_pdes,nil,vl_,remain_pdes}); 
+     h2:=alg_length_reduction({remain_pdes,nil,vl_,remain_pdes});
      % nil for forg which is not used in alg_length_reduction()
      if h2 then <<
       % update fl:
@@ -168,7 +168,7 @@ return nil;
       remain_pdes:=car h2;
       % now updating the entry for the changed equations
       for each h3 in caddr h2 do <<
-       fl:=del_equ_from_fl(h3,fl); 
+       fl:=del_equ_from_fl(h3,fl);
        if not freeof(remain_pdes,h3) then fl:=add_equ_to_fl(h3,fl)
       >>
      >>
@@ -186,17 +186,17 @@ symbolic procedure flin_non_triv_cond(pdes)$
 % This procedure computes necessary and sufficient conditions for
 % the existence of non-trivial solutions for homogeneous linear
 % equations with parametric potentially vanishing coefficients,
-% in other words for the case 
+% in other words for the case
 % alg_poly=t, not null flin_, not null fhom_, hom_deg={1,..} .
 if alg_poly and flin_ and fhom_ then
 begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
              some_new,no_of_pdes,umax,minsize,fi,a,save,ofl!*bak,!*natbat$
-%tr_subsys:=t$ 
+%tr_subsys:=t$
 
  % determination of all coefficients of all flin_ in all equations
  oldorder:=setkorder flin_;
- u:=0; 
- for each p in pdes do 
+ u:=0;
+ for each p in pdes do
  if (h:=get(p,'hom_deg)) and (car h = 1) then <<
   u:=add1 u;
   h:=reorder numr get(p,'sqval);
@@ -217,7 +217,7 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
   write"There will be ",algebraic(factorial(lisp u)/factorial(lisp u - lisp v)
                                                    /factorial(lisp v))," equations"$
   terpri()$
-  change_prompt_to ""$ 
+  change_prompt_to ""$
   write"How many shall be generated? "$
   umax:=termread()$
   restore_interactive_prompt()
@@ -245,8 +245,8 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
  ofl!*bak:=ofl!*$
  ofl!*:=fi$ % any value neq nil, to avoid problem with redfront
  save:=wrs a;
- !*natbat:=!*nat$                                                                
- off nat$                                                                        
+ !*natbat:=!*nat$
+ off nat$
 
  while sysli and (u<umax) do <<
   sy:=car sysli; sysli:=cdr sysli;
@@ -254,7 +254,7 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
 %  if print_ then write u,":"$
 %  if tr_subsys then <<write"sy=",sy$terpri()>>$
   machematrix('matrix_849,v,v);
-  for r:=1:v do 
+  for r:=1:v do
   for s:=1:v do
   setzewert('matrix_849,r,s,nth(nth(sy,s),r));
   h:=determinante('matrix_849);
@@ -273,7 +273,7 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
  >>;
  write"end$"$ terpri()$                                 %@@
  %algebraic (shut fi)$                                   %@@
- wrs save$ 
+ wrs save$
  ofl!*:=ofl!*bak$
  close a;
  if !*nat neq !*natbat then on nat$
@@ -296,12 +296,12 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
   for each h in cdr some_new do write", ",h
  >>$
 
- return if some_new or (no_of_pdes neq length pdes) then 
+ return if some_new or (no_of_pdes neq length pdes) then
  if in_cycle(<<u:=0;for each r in some_new do u:=u+get(r,'printlength);
                r:=length some_new;
                s:=0;h:=nil;
 	       while (s<3) and some_new do <<
-		s:=add1 s; 
+		s:=add1 s;
 		h:=cons(get(car some_new,'terms),h);
 		some_new:=cdr some_new
 	       >>$
@@ -346,11 +346,11 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
     coefgcd:=
     if null coefgcd then mk!*sq caar h
                     else err_catch_gcd(mk!*sq caar h,coefgcd);
-   >>  % if member(f,get(p,'fcts)) 
+   >>  % if member(f,get(p,'fcts))
   >>; % while pdescp
 
   if coefgcd neq 1 then <<
-   if pairp coefgcd and car coefgcd='!*sq then 
+   if pairp coefgcd and car coefgcd='!*sq then
 % better do a full factorization:
    h:=simplifySQ(cadr coefgcd,get(p,'fcts),t,nil,nil)
                                           else h:=(1 . 1)$
@@ -363,12 +363,12 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
  if print_ then <<
   if casesub then <<
    write"Case generating substitutions:"$terpri()$
-   mathprint cons('list,for each s in casesub collect 
+   mathprint cons('list,for each s in casesub collect
                         {'!*sq,multsq(cadar s,simp cdr s),t})
   >>$
   if nocasub then <<
    write"Non-case generating substitutions:"$terpri()$
-   mathprint cons('list,for each s in nocasub collect 
+   mathprint cons('list,for each s in nocasub collect
                         {'!*sq,multsq(cadar s,simp cdr s),t})
   >>
  >>$
@@ -395,7 +395,7 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
  if nocasub then
  for each s in nocasub do <<
 
-  % new function 
+  % new function
   ff:=mkid(fname_,nfct_)$
   nfct_:=add1 nfct_$
 
@@ -403,9 +403,9 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
   if pairp h then depl!*:=cons(cons(ff,cdr h),depl!*)$
 
   ftem_:=fctinsert(ff,ftem_)$
-  flin_:=sort_according_to(cons(ff,flin_),ftem_)$  
-  if member(cdr s,fhom_) then 
-  fhom_:=sort_according_to(cons(ff,fhom_),ftem_)$  
+  flin_:=sort_according_to(cons(ff,flin_),ftem_)$
+  if member(cdr s,fhom_) then
+  fhom_:=sort_according_to(cons(ff,fhom_),ftem_)$
 
   % new equation
   q:=mkeqSQ(subtrsq(multsq(cadar s,simp cdr s),simp ff),nil,nil,
@@ -414,9 +414,9 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
   pdes:=eqinsert(q,pdes)$
   fcteval q$
 
-  to_do_list:=cons(cons('subst_level_35, 
-                        {{q},     cdr s}),to_do_list)$ 
-%                       {{q},pdes,cdr s}),to_do_list)$ 
+  to_do_list:=cons(cons('subst_level_35,
+                        {{q},     cdr s}),to_do_list)$
+%                       {{q},pdes,cdr s}),to_do_list)$
 
  >>$
 
@@ -427,6 +427,3 @@ end$
 endmodule$
 
 end$
-
-
-

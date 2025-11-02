@@ -29,8 +29,8 @@
 %******************************************************************************
 
 % $Id$
-symbolic fluid '(print_ logoprint_ potint_ facint_ adjust_fnc flin_ 
-                 done_trafo inverse_trafo_list_incomplete)$ 
+fluid '(print_ logoprint_ potint_ facint_ adjust_fnc flin_
+                 done_trafo inverse_trafo_list_incomplete)$
 
 %-------------
 
@@ -77,7 +77,7 @@ begin
     write "This is CONLAW1 - a program for calculating conservation",
     " laws of DEs"; terpri()
   >>                 else terpri());
-  if nde = 1 
+  if nde = 1
   then write "The DE under investigation is :"
   else write "The DEs under investigation are :";
   for each e1 in eqlist do write e1;
@@ -93,8 +93,8 @@ begin
 
   %--- Here comes a test that lhs's are properly chosen
   chksub(eqlist,ulist)$
-  eqlist:=sqreverse for each e1 in eqlist collect 
-          if part(e1,0)=equal then lhs e1 - rhs e1 
+  eqlist:=sqreverse for each e1 in eqlist collect
+          if part(e1,0)=equal then lhs e1 - rhs e1
                               else e1;
 
   if contrace then write"ulist=",ulist,"    eqlist=",eqlist;
@@ -190,21 +190,21 @@ begin
     if densord+1<lhsord then lisp << write
       "The order of the ansatz is too low for substitutions of equations"$
       terpri()$write"to be done --> no investigation"$terpri()$terpri()
-    >>                  else <<     
+    >>                  else <<
       % If densord+1=lhsord then conservation laws of lower order
       % than the ansatz are to be considered because this is the
       % first time they can appear because for a lower order ansatz
       % substitutions can not be made and no non-trivial CLs can be detected
       if densord+1=lhsord then loworderlimit:=nil
                           else loworderlimit:=t;
-      if contrace then write"loworderlimit=",loworderlimit$   
+      if contrace then write"loworderlimit=",loworderlimit$
       %--- repeated initializations
 
       highdensord:=densord+extraorder;   %--- the max. order of P_xi
-         % which is the the order of P_x1 (densord) plus  extraorder 
+         % which is the the order of P_x1 (densord) plus  extraorder
          % to get the max order P_x2,P_x3,...
       maxord:=highdensord+1+extraorder;  %--- the maximal order of
-         % derivatives in condition, = highdensord + extraorder due 
+         % derivatives in condition, = highdensord + extraorder due
          % to substitutions + 1 due to Div
       if contrace then write"densord=",densord,"  highdensord=",highdensord,
                             "  maxord=",maxord;
@@ -231,8 +231,8 @@ begin
       %--- the conserved current pl and the condition condi
       if not flist then fl:={}
                    else fl:=flist;
-      deplist:=lisp(cons('list,setdiff(cdr ulist,cdr nodep))) . 
-               for n:=1:highdensord collect 
+      deplist:=lisp(cons('list,setdiff(cdr ulist,cdr nodep))) .
+               for n:=1:highdensord collect
                listdifdif2(nodep,sqpart(dulist,n+1));
       deplist1:=for h3:=1:(densord+1) collect sqpart(deplist,h3);
       if expl then << deplist :=xlist . deplist;
@@ -248,7 +248,7 @@ begin
         h4:=lisp(reval algebraic(sqpart(xlist,n)));
         h1:=mkid(p_,h4);
         if lisp(null get(mkid('p_,h4),'avalue)) then <<
-          nodependlist({h1}); 
+          nodependlist({h1});
           if n=1 then dependlist(h1, deplist1)
                  else dependlist(h1, deplist);
           fl:=h1 . fl;
@@ -273,8 +273,8 @@ begin
       desyli:={};     % list of symbols each representing an equation
       ddesyli:={};    % list of all these symbols + their derivatives
       % with the following structure: each element of ddesyli has
-      % the form {derivative of the symbol, 
-      %           {numbers of the differentiation variables}, 
+      % the form {derivative of the symbol,
+      %           {numbers of the differentiation variables},
       %           number of the symbol}
       h1:=treqlist;
       h2:=subl;
@@ -287,7 +287,7 @@ begin
         ddesyli:=sqcons({h4,{},h5},ddesyli);
         h3:=sqfirst h2;
         if h3 neq 0 then
-        sbreserve:=sqcons(h3 = h3 - (sqfirst h1)/coeffn(sqfirst h1,h3,1) + h4, 
+        sbreserve:=sqcons(h3 = h3 - (sqfirst h1)/coeffn(sqfirst h1,h3,1) + h4,
                           sbreserve);
         h1:=sqrest h1;
         h2:=sqrest h2;
@@ -333,7 +333,7 @@ begin
        rules:=sqcons(h5 => h6,rules)
       >>$
       if contrace then write"rules=",rules;
-      let rules; 
+      let rules;
       condi:=condi;
       clearrules rules$
       if contrace then write"condi=",condi;
@@ -358,7 +358,7 @@ begin
       condi:={condi};
 
       if (not lisp(null get('cl_condi,'avalue))) and
-         (part(cl_condi,0)=list) then 
+         (part(cl_condi,0)=list) then
       condi:=sqappend(condi,cl_condi)$
 
       %--- freeing some space
@@ -369,16 +369,16 @@ begin
       if lisp(!*time) then
       write "time to formulate condition: ", lisp time() - cpu,
             " ms    GC time : ", lisp gctime() - gc," ms"$
-      inverse_trafo_list_incomplete:=nil;  
+      inverse_trafo_list_incomplete:=nil;
       condi:=split_simp(condi,inequ,fl,vl,nil)$
       solns:=crack(condi,inequ,fl,vl);
 
       %--- postprocessing
 
-      lisp 
+      lisp
       if done_trafo and cdr done_trafo then <<
        terpri()$
-       if cddr done_trafo                                               then 
+       if cddr done_trafo                                               then
        write"The following transformations reverse the transformations" else
        write"The following transformation reverses the transformation"$
        terpri()$
@@ -393,7 +393,7 @@ begin
        >>$
 
        % fnc_of_new_var() uses global variables done_trafo,depl!*
-       % and determines all functions depending on (new) lhs variables 
+       % and determines all functions depending on (new) lhs variables
        % in done_trafo
        new_var_fnc:=fnc_of_new_var()$
       >>$
@@ -417,13 +417,13 @@ begin
         h2:={};
 
         for each e1 in h1 do <<
-          if not freeof(condi,e1) then fl:=sqcons(e1,fl); 
+          if not freeof(condi,e1) then fl:=sqcons(e1,fl);
           % fl to output remaining conditions later
           if freeof(paralist,e1) then h2:=sqcons(e1,h2)
         >>;
 
-        h1:=parti_fn(h2,condi)$ % h1 is a list of lists of fnc/const 
-        % in h2 (i.e. unknowns that are not parameters) that depend 
+        h1:=parti_fn(h2,condi)$ % h1 is a list of lists of fnc/const
+        % in h2 (i.e. unknowns that are not parameters) that depend
         % on each other through the list of unsolved conditions condi
 
         if contrace then write"h1(partitioned)=",h1;
@@ -432,8 +432,8 @@ begin
         nonconstc:={};
         % h1 is the list of lists of constants/functions
         % depending on each other
-        while h1 neq {} do << 
-          % i.e. for each subset of interdependent fnc/const, 
+        while h1 neq {} do <<
+          % i.e. for each subset of interdependent fnc/const,
           % each subset will give one conservation law
           h2:=sqfirst h1;h1:=sqrest h1;
 
@@ -453,16 +453,16 @@ begin
 
           if contrace then write"udens=",udens;
           h5:=udens;
-          if (cf0=nil) and loworderlimit then 
+          if (cf0=nil) and loworderlimit then
           while (h5 neq {}) and <<
             h6:=h4;
             while (h6 neq {}) and
-                  freeof(sqfirst h6,lisp reval algebraic sqfirst h5) do 
+                  freeof(sqfirst h6,lisp reval algebraic sqfirst h5) do
             h6:=sqrest h6;
             if h6={} then t else nil
           >> do h5:=sqrest h5;
           if contrace then write"h5=",h5;
-          if h5 neq {} then <<  
+          if h5 neq {} then <<
             % P_x1 in h4 is of order densord or no loworderlimit
             % h3 is the lhs of the conservation law
             h3:=for e1:=1:nx sum
@@ -470,7 +470,7 @@ begin
             if contrace then write"h3-1=",h3;
             if h3 neq 0 then << % non-trivial conservation law
               %--- Compute the characteristic functions
-              %--- We have already h3 = Div P 
+              %--- We have already h3 = Div P
               h3:=sub(sbreserve,h3);
               if contrace then write"h3-2=",h3;
               if contrace then write"ddesyli=",ddesyli;
@@ -490,7 +490,7 @@ begin
                 h9:=sqfirst e1;       % the coeff of the equn. derivative
                 e2:=sqsecond e1;
                 h10:=sqthird e1;
-                if h9 neq 0 then 
+                if h9 neq 0 then
                 if e2={} then
                 qlist:=part(qlist,h10):=
                        part(qlist,h10)+h9
@@ -511,7 +511,7 @@ begin
                     if e2 neq {} then <<
                       h8:=sqrest h8;
                       h6:=-h6;
-                    >>           else 
+                    >>           else
                     qlist:=part(qlist,h10):=
                            part(qlist,h10)+h6*h9
                   >>;
@@ -524,7 +524,7 @@ begin
               if e2 then h4:=nil;
 
               if h4 then <<
-                for each e1 in h2 do 
+                for each e1 in h2 do
                 if fargs e1 neq {} then lisp <<
                   nonconstc:=cons('list,cons(reval e1,cdr nonconstc));
                   write reval e1," = "$
@@ -559,7 +559,7 @@ begin
         on evallhseqp;
         sb:=subdif1(xlist,ulist,maxord)$
         sb:=for each e1 in sb join
-            for each e2 in e1 collect(rhs e2 = lhs e2); 
+            for each e2 in e1 collect(rhs e2 = lhs e2);
         if contrace then write"sb=",sb$
         off evallhseqp;
         cllist:=sub(sb,cllist);
@@ -583,7 +583,7 @@ begin
           if (cf0=nil) and loworderlimit then
           while (e1 neq {}) and <<
             h4:=h2;
-            while (h4 neq {}) and 
+            while (h4 neq {}) and
                   (totdeg(sqfirst h4,sqfirst e1) < densord) do h4:=sqrest h4;
             if h4={} then t else nil
           >> do e1:=sqrest e1;
@@ -592,9 +592,9 @@ begin
             write"Conservation law:";
 
             %--- conditions on parameters
-            if paralist neq {} then 
+            if paralist neq {} then
             for each e2 in sqsecond soln do
-            if not freeof(paralist,lhs e2) then 
+            if not freeof(paralist,lhs e2) then
             <<write e2;lisp(terpri());
               h2:=sub(e2,h2);
               h3:=sub(e2,h3)
@@ -621,7 +621,7 @@ begin
               h6:={};
               for each h5 in nonconstc do
               if not freeof(h3,h5) then h6:=sqcons(h5,h6);
-              if (h6 neq {}) and 
+              if (h6 neq {}) and
                  (h2 neq nondiv) then partintdf(h4,h3,h2,xlist,h6,vl,sb);
 
             >>;
@@ -630,10 +630,10 @@ begin
           pllist:=sqrest pllist;
           cllist:=sqrest cllist;
         >>$
-        if solns neq {} then nodependlist(ulist); 
+        if solns neq {} then nodependlist(ulist);
       >>;
       sbreserve:=0;
-      nodependlist(desyli); 
+      nodependlist(desyli);
       if found=nil then <<
         write"There is no conservation law of this order.";
         write"======================================================"

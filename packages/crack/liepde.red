@@ -34,15 +34,15 @@
 %******************************************************************************
 
 % $Id$
-create!-package('(liepde), nil);     
+create!-package('(liepde), nil);
 
-symbolic fluid '(print_ logoprint_ adjust_fnc proc_list_
+fluid '(print_ logoprint_ adjust_fnc proc_list_
                  prelim_ individual_ prolong_order !*batch_mode
-                 collect_sol flin_ lin_problem done_trafo 
+                 collect_sol flin_ lin_problem done_trafo
                  etamn_al max_gc_fac batch_mode_sub
                  inverse_trafo_list_incomplete)$
 
-lisp << !*batch_mode:=t$ prelim_:=nil$ 
+lisp << !*batch_mode:=t$ prelim_:=nil$
         individual_:=nil$ prolong_order:=0;etamn_al:=nil >>$
 
 %----------------------------
@@ -198,7 +198,7 @@ symbolic procedure totdf3(s,depli,x,n,sb,xlist,ordok,subordinc)$
 %   of order ordok-1-subordinc to ordok-1 are used.
 begin
   scalar tdf,el1,el2,el3,el4,el5,newdepli,
-         newdy,dy,ddy$ 
+         newdy,dy,ddy$
   newdepli:=nil;                 % the new dependence list
   newdy:=nil;                    % the new dep.list due to chain rule
   ddy:=nil;                      % ddy .. derivatives of jet-variables
@@ -210,7 +210,7 @@ begin
     depli:=copy depli;
     el2:=length depli;
     if el2<(ordok-subordinc) then depli:=nil
-                             else    
+                             else
     for el1:=1:(ordok-1-subordinc) do <<
       dy:=pnth(depli,el1);
       rplaca(dy,nil);
@@ -253,7 +253,7 @@ end$ % of totdf3
 symbolic procedure joinsublists(a)$
 % It is assumed, a is either nil or a list of lists or nils which
 % have to be joined
-if null a then nil 
+if null a then nil
           else append(car a,joinsublists(cdr a))$
 
 %---------------------
@@ -292,7 +292,7 @@ begin
 %if nil then
   if ordok=0 then <<
    h5:=u$ h2:=indxlist$
-   while h2 do <<h5:=mkid(h5,car h2); h2:=cdr h2>>; 
+   while h2 do <<h5:=mkid(h5,car h2); h2:=cdr h2>>;
    h3:=assoc(h5,etamn_al)
   >>$
   if h3 then return cdr h3$
@@ -335,7 +335,7 @@ begin
       if not sqzerop car el then <<
 
         %--- substitution of h1?
-        if h4:=subtest(h1,truesub,xlist,ordok,subordinc) 
+        if h4:=subtest(h1,truesub,xlist,ordok,subordinc)
         then <<h1:=car h4;depli:=mergedepli(depli,cdr h4)>>
         else h1:=simp!* h1;
         r:=subtrsq(r,multsq(h1,<<h2:=totdf3(car el,cadddr el,car x,
@@ -380,14 +380,14 @@ begin
   >>;
   oldbatch_mode:=!*batch_mode$
   !*batch_mode:=batch_mode_sub$
-  print_old:=print_$  
+  print_old:=print_$
   if null batch_mode_sub and null print_ then print_:=8$
 
   % lex_df=nil gives shorter computation but lex_df=t gives system
   % that is easier to integrate, eg ODEs it they are in the diff ideal
   % so computation starts as lex_df=nil and is changed to lex_df=t at
   % end if necessary
-  if freeof(proc_list_,'try_other_ordering) then 
+  if freeof(proc_list_,'try_other_ordering) then
   proc_list_:=append(proc_list_,list 'try_other_ordering)$
   h:=sq!*crack({'list . symcon,'list . inequ,'list . flist,'list . vl});
 
@@ -449,34 +449,34 @@ symbolic procedure liepde_psopfn(inp)$
            % expressions then the program will try to bring it into
            % the `solved form' ..=.. automatically.
 
-           % The solved forms (either from input or generated within 
-           % LIEPDE) will be used for substitutions, to find 
+           % The solved forms (either from input or generated within
+           % LIEPDE) will be used for substitutions, to find
            % all symmetries satisfied by solutions of the equations.
-           % Sufficient conditions for this procedure to be correct, 
+           % Sufficient conditions for this procedure to be correct,
            % i.e. to get *all* symmetries of the specified type on the
            % solution space are:
 
            % - There are equally many equations and functions.
            % - Each function is used once for a substitution and
            %   each equation is used once for a substitution.
-           % - All functions differentiated on the left hand sides 
+           % - All functions differentiated on the left hand sides
            %   (lhs) depend on all variables.
-           % - In no equation df(..,..[,..]) = .. does the right hand 
-           %   side contain the derivative on the lhs nor any 
+           % - In no equation df(..,..[,..]) = .. does the right hand
+           %   side contain the derivative on the lhs nor any
            %   derivative of it.
            % - No equation does contain a lhs or the derivative
            %   of a lhs of another equation.
-           
+
            % These conditions are checked in LIEPDE and execution
            % is stoped if they are not satisfied, i.e. if the input
            % was not correct, or if the program was not able to
-           % write the input expressions properly the solved 
+           % write the input expressions properly the solved
            % form ..=..  . One then should find for each function
            % one derivative which occurs linearly in one equation.
-           % The chosen derivatives should be as high as possible, 
-           % at least there must no derivative of them occur in any 
+           % The chosen derivatives should be as high as possible,
+           % at least there must no derivative of them occur in any
            % equation. An easy way to get the equations in the
-           % desired form is to use 
+           % desired form is to use
            % FIRST SOLVE({eq1,eq2,...},{list of derivatives})
 
            % NOTE that to improve efficiency it is advisable not to
@@ -508,13 +508,13 @@ symbolic procedure liepde_psopfn(inp)$
                               % characteristic functions depending
                               % on df(u,t,x), or df(u,x,3). THEREFORE:
                               % If you want to find all symmetries up
-                              % to a given order then 
-                              % - either avoid substituting lower 
+                              % to a given order then
+                              % - either avoid substituting lower
                               %   order derivatives by expressions
-                              %   involving higher derivatives, or, 
-                              % - go up in the order specified in 
+                              %   involving higher derivatives, or,
+                              % - go up in the order specified in
                               %   symtype.
-                              % 
+                              %
                               % Example:
                               %
                               % depend u,t,x
@@ -587,13 +587,13 @@ begin
   scalar cpu, gc, lietrace_, oldadj, eqlist, ylist, xlist, pointp,
          contactp, generalp, ansatzp, symord, e1, e2, ordr, sb,
          dylist, revdylist, xi, eta, eqordr, eqordrcop, no, eqcopy1,
-         truesub, deplist, xilist, etalist, dycopy, freelist, eqlen, 
-         dylen, truesubno, minordr, n1, n2, n3, n4, n5, n, h, jetord, 
-         allsub, subdy, lhslist, symcon, subordinc, eqn, depli, vl, occli, 
-         revdycopy, subordinclist, xicop, etacop, flcop, etapqlist, 
-         etapqcop, etapq, oldbatch_mode, allsym, symcon_s, xilist_s, 
-         etalist_s, inequ_s, flist_s, truesub_s, oldcollect_sol, 
-         oldprint_, flist_slin, flist_snli, return_list, last_call, 
+         truesub, deplist, xilist, etalist, dycopy, freelist, eqlen,
+         dylen, truesubno, minordr, n1, n2, n3, n4, n5, n, h, jetord,
+         allsub, subdy, lhslist, symcon, subordinc, eqn, depli, vl, occli,
+         revdycopy, subordinclist, xicop, etacop, flcop, etapqlist,
+         etapqcop, etapq, oldbatch_mode, allsym, symcon_s, xilist_s,
+         etalist_s, inequ_s, flist_s, truesub_s, oldcollect_sol,
+         oldprint_, flist_slin, flist_snli, return_list, last_call,
          paralist, proc_list_bak, max_gc_fac_bak, flistorg,problem,
          symtype,flist,inequ$
 
@@ -608,7 +608,7 @@ begin
   symtype:=reval cadr inp$
   flist  :=reval caddr inp$
   inequ  :=reval cadddr inp$
-  eqlist:= 
+  eqlist:=
   if atom cadr problem       then list cadr problem else
   if car  cadr problem='list then  cdr cadr problem else
                                   list cadr problem$
@@ -636,7 +636,7 @@ begin
   if atom cadr symtype then                % default case
   if cadr symtype = "point"   then <<pointp  :=t;symord:=0>> else
   if cadr symtype = "contact" then <<contactp:=t;symord:=1;
- 
+
   %  if eqlen>1 then rederr(                                        <--- taken out
   %  "Contact symmetries only in case of one equation for one function.") <--- taken out
   >>                          else
@@ -670,7 +670,7 @@ begin
     h:=nil;
     for each e1 in cdr symtype do <<
       n1:=algebraic(sub(lisp sb,lisp caddr e1))$ % substitution on the rhs of the sym.ansatz
-      if not zerop n1 and 
+      if not zerop n1 and
          (not pairp n1 or
           (pairp n1 and ((car n1 neq 'equal) or (not zerop caddr n1)))) then <<
         h:=0;
@@ -690,7 +690,7 @@ begin
     >>
   >>$
   if h then return nil$
- 
+
   problem:=0;
 
   %---- Are substitutions already given in the input?
@@ -724,7 +724,7 @@ begin
   if !*time then <<terpri()$
     terpri()$terpri()$
     write"=============== Initializations" ;
-  >>;  
+  >>;
 
   ordr:=0;
   for each e1 in eqlist do <<
@@ -1036,7 +1036,7 @@ begin
                 )$
    max_gc_fac_bak:=max_gc_fac$
    max_gc_fac:=0;
-   inverse_trafo_list_incomplete:=nil  
+   inverse_trafo_list_incomplete:=nil
   >>$
   symcon:=nil;
   n1:=0;
@@ -1075,7 +1075,7 @@ begin
               );
       for each e2 in occli do
       h:=addsq(h,
-               multsq(<<n5:=combidif(e2);     
+               multsq(<<n5:=combidif(e2);
                         n4:=car etamn(car n5,cdr n5,xilist,etalist,
                                       nth(eqordr,n1),truesub,subordinc,xlist);
                         vl:=mergedepli(vl,cdr n4);
@@ -1142,10 +1142,10 @@ begin
     for each e1 in n2 do
     for each e2 in e1 do
     h:=addsq(h,multsq(<<  %<<<<<<----- slow?
-                        n5:=combidif(e2);      
+                        n5:=combidif(e2);
                         n4:=car etamn(car n5,cdr n5,xilist,etalist,0,
                                       truesub,0,xlist);
-                        n3:=mergedepli(n3,cdr n4);      
+                        n3:=mergedepli(n3,cdr n4);
                         car n4
                       >>,
                       simpdf {eqn,e2}   %<<<<<<----- slow
@@ -1191,17 +1191,17 @@ begin
       if last_call then flist:=flistorg
                    else <<
         symcon :=car        allsym; xilist:=cadr   allsym;
-        etalist:=caddr      allsym; flist :=cadddr allsym;  
+        etalist:=caddr      allsym; flist :=cadddr allsym;
         inequ  :=cadddr cdr allsym; allsym:=nil$
       >>
     >>
   >>;
 
   eqn:=sb:=e1:=e2:=n:=h:=dylist:=deplist:=symord:=nil;%occurlist:=nil;
-  lisp 
+  lisp
   if done_trafo and cdr done_trafo then <<
    terpri()$
-   if cddr done_trafo                                               then 
+   if cddr done_trafo                                               then
    write"The following transformations reverse the transformations" else
    write"The following transformation reverses the transformation"$
    terpri()$
@@ -1233,7 +1233,7 @@ begin
     inequ_s  :=inequ;
     truesub_s:=truesub;
     paralist :=nil;
-    for each g in cdaddr car allsym do 
+    for each g in cdaddr car allsym do
     if not freeof(eqlist,cadr g) then <<
       truesub_s :=subst(caddr g, cadr g, truesub_s);
       paralist:=g . paralist
@@ -1250,7 +1250,7 @@ begin
     >>;
     flist_s:=cdr reval cadddr car allsym;
     allsym:=cdr allsym$
-    oldprint_:=print_; print_:=nil; 
+    oldprint_:=print_; print_:=nil;
     if print_ then <<terpri()$
       write"Remaining free functions after the last CRACK-run:";
       terpri()$
@@ -1261,13 +1261,13 @@ begin
     h:=append(for each el in  xilist_s collect mk!*sq car el,    %!!
               for each el in etalist_s collect mk!*sq car el );  %!!
     if symcon_s then for each el in symcon_s do h:=cons(el,h);
-    h:=cons('list,h); 
+    h:=cons('list,h);
 
     %------- droping redundant constants or functions
     flist_slin:=nil;  % flist_slin are the new lin. constants and functions
     flist_snli:=nil;  % flist_snli are the non-lin. parameters in equations
 
-    for each e1 in flist_s do 
+    for each e1 in flist_s do
     if freeof(paralist,e1) then flist_slin:=e1 . flist_slin
                            else flist_snli:=e1 . flist_snli;
 
@@ -1291,13 +1291,13 @@ begin
     >>;
 
     %------- absorbing numerical constants into free constants
-    if (not freeoflist( xilist_s,flist)) or 
+    if (not freeoflist( xilist_s,flist)) or
        (not freeoflist(etalist_s,flist)) then h:=nil else
     h:=reval absorbconst(h,'list . flist_slin);
     if h then if sb then sb:=append(sb,cdr h)
                     else sb:='list . cdr h;
 
-    %------- doing the substitutions to drop and absorb 
+    %------- doing the substitutions to drop and absorb
     if sb then <<
       if print_ then <<terpri()$
         write"Free constants and/or functions have been rescaled. ">>$
@@ -1308,7 +1308,7 @@ begin
       >>;
     >>;
 
-    symcon_s := for each e1 in symcon_s collect 
+    symcon_s := for each e1 in symcon_s collect
 		car simplifypdeSQ(simp e1,append(flist_slin,flist_snli),t,nil,nil)$
     print_:=oldprint_;
 
@@ -1347,7 +1347,7 @@ begin
     <<e1:=mkid('eta_,cadr el);
       e1:=list('equal,e1,prepsq car el); %!!
       e1>>;
-    %--- Backsubstitution of e.g. u`1`1 --> df(u,x,2) 
+    %--- Backsubstitution of e.g. u`1`1 --> df(u,x,2)
     for each e1 in ylist do depnd(e1,list(xlist));
     on evallhseqp;
     sb:=subdif1(cons('list,xlist),cons('list,ylist),jetord)$
@@ -1368,15 +1368,15 @@ begin
     % when integrating parametric functions in the equation:
     for each e1 in flist_slin do
     if not freeof(eqlist,e1) then flcop:=delete(e1,flcop);
-    for each e1 in flcop do 
-    <<% if null n2 then n2:=freeof(xicop,e1) and freeof(etacop,e1)$ 
+    for each e1 in flcop do
+    <<% if null n2 then n2:=freeof(xicop,e1) and freeof(etacop,e1)$
       if freeof(symcon_s,e1) then <<
         n1:=n1+1;
         xi:=xicop;eta:=etacop;etapq:=etapqcop;
-        for each e2 in flcop do 
-        if e2 neq e1 then 
+        for each e2 in flcop do
+        if e2 neq e1 then
         <<xi:=subst(0,e2,xi);eta:=subst(0,e2,eta);etapq:=subst(0,e2,etapq)>>
-                     else 
+                     else
         if null cdr fargs e1 then
         <<xi:=subst(1,e2,xi);eta:=subst(1,e2,eta);etapq:=subst(1,e2,etapq)>>;
         terpri()$write"-------- ",n1,". Symmetry:";terpri()$
@@ -1423,7 +1423,7 @@ begin
         write"which still ",if n then "have" else "has"," to satisfy: ";
         terpri()$
         deprint symcon_s;
-      >>        else    
+      >>        else
       <<terpri()$
         write"which ",if n then "have" else "has",
              " to satisfy conditions. To see them set ";

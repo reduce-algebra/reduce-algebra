@@ -43,8 +43,8 @@ global '(!*sstools!-loaded);
 
 !*sstools!-loaded := t;
 
-%----------------------- 
-% The following module for non-commutative differentiation and 
+%-----------------------
+% The following module for non-commutative differentiation and
 % multiplication of fermionic forms is written by Eberhard Schruefer 2007.
 
 module dop$
@@ -63,7 +63,7 @@ put('s_changes_parity,'simpfg,
 
 symbolic procedure clear_t_changes_parity()$
    begin
-     asymplis!* := clear_t_changes_power_rules asymplis!*; 
+     asymplis!* := clear_t_changes_power_rules asymplis!*;
    end$
 
 symbolic procedure clear_s_changes_parity()$
@@ -89,8 +89,8 @@ symbolic procedure fermion u$ fermion1 u$
 
 symbolic procedure fermion1 u$
    <<flag(u,'fermionic);
-     for each j in u 
-       do <<flag({j},'full); put(j,'simpfn,'simpfermion)>>; 
+     for each j in u
+       do <<flag({j},'full); put(j,'simpfn,'simpfermion)>>;
      for each j in u do noncom1 j>>$
 
 symbolic procedure simpfermion u$
@@ -100,8 +100,8 @@ symbolic procedure simpfermion u$
      y := mksq(u,1);
      if domainp numr y then return y;
      z := mvar numr y;
-     if atom z or null(car z eq car u) then return y; 
-     if null atsoc(z,asymplis!*) 
+     if atom z or null(car z eq car u) then return y;
+     if null atsoc(z,asymplis!*)
         then asymplis!* := (z . 2) . asymplis!*;
      return y
    end$
@@ -132,24 +132,24 @@ symbolic procedure simpdop u$
 
 symbolic procedure dopf(n,u)$
    if domainp u then nil ./ 1
-    else addsq(addsq(multpq(lpow u,dopf(n,if fermionicp mvar u 
+    else addsq(addsq(multpq(lpow u,dopf(n,if fermionicp mvar u
                                              then negf lc u
                                            else lc u)),
                      multsq(dopp(n, lpow u),lc u ./ 1)),dopf(n, red u))$
 
 symbolic procedure dopp(n, u)$
-   % the following test that car u is a constant wrt d should be checked if 
+   % the following test that car u is a constant wrt d should be checked if
    % it is complete.
    if atom car u or null(flagp(caar u,'fermionic) or flagp(caar u,'bosonic) or
                          (caar u eq 'd) or (caar u eq 'df))
       then nil ./ 1
-    else if cdr u > 1 
+    else if cdr u > 1
             then multsq(cdr u ./ 1,multsq(simpexpt {car u,cdr u-1},
                                           simpdop {n,car u}))
     else if caar u eq 'd
-            then if n = cadr car u 
+            then if n = cadr car u
                     then simpdf {caddr car u,'x}
-                  else if n > cadr car u 
+                  else if n > cadr car u
                     then negsq simpdop({cadr car u,{'d,n,caddr car u}})
          else mkdsq({'d,n,car u},1)
     else mkdsq({'d,n,car u},1)$
@@ -162,9 +162,9 @@ symbolic procedure mkdsq(u,n)$
      z := mvar numr x;
      if fermionicp z and null atsoc(z,asymplis!*)
         then asymplis!* := (z . 2) . asymplis!*;
-     return x 
+     return x
    end$
- 
+
 symbolic procedure dfdp(u,v,n)$
    begin scalar x;
      x := simpdf {caddr u,v,n};
@@ -184,11 +184,11 @@ symbolic procedure fermionicp u$
    null atom u and (flagp(car u,'fermionic) or
                     (car u eq 'd and null fermionicp caddr u) or
                     (car u eq 'df and fermionicp caddr u) or
-                    (car u eq 'df and 
+                    (car u eq 'df and
                      if fermionicp cadr u
                         then if memq('s,cddr u) then not s_changes_parity
                               else if memq('t,cddr u) then not t_changes_parity
-                              else t 
+                              else t
                       else if memq('s,cddr u) then s_changes_parity
                             else if memq('t,cddr u) then t_changes_parity
                             else nil))$
@@ -206,14 +206,14 @@ symbolic procedure sstools!-multfnc(u,v)$
                         else if y = 1 then lc x
                         else !*t2f(y .* lc x),
                        multf(!*p2f lpow u,red x))
-       else if noncomp mvar u 
+       else if noncomp mvar u
                then if ordop(mvar u,mvar x)
                        then x := !*t2f(lpow u .* x)
                      else if null(y := multf(!*p2f lpow u,lc x))
                              then x := multf(!*p2f lpow u,red x)
-                     else x := addf(!*t2f(lpow x .* 
-                                    if fermionicp mvar u and 
-                                       fermionicp mvar x then negf y 
+                     else x := addf(!*t2f(lpow x .*
+                                    if fermionicp mvar u and
+                                       fermionicp mvar x then negf y
                                                          else y),
                                     multf(!*p2f lpow u,red x))
        else x := multf(!*p2f lpow u,x) where !*!*processed=t;
@@ -231,10 +231,10 @@ symbolic procedure difff(u,v)$
     else addsq(addsq(multpq(lpow u,difff(if (fermionicp mvar u and
                                              (((v eq 's) and s_changes_parity) or
                                               ((v eq 't) and t_changes_parity) or
-                                              fermionicp v 
+                                              fermionicp v
                                              )
-                                            ) 
-                                            then negf lc u 
+                                            )
+                                            then negf lc u
                                             else      lc u,v)),
                         multsq(if cdr lpow u = 1 and (((v eq 's) and s_changes_parity) or
                                                       ((v eq 't) and t_changes_parity) or
@@ -248,8 +248,8 @@ symbolic procedure diffdp(u,v)$
     if null atom u and (x := get(car u,'dfform)) then return apply3(x,u,v,1);
     if null depends(u,v) then return nil ./ 1;
     if u eq v then return 1 ./ 1;
-    if eqcar(u,'df) and v eq 's 
-       and t_changes_parity and s_changes_parity 
+    if eqcar(u,'df) and v eq 's
+       and t_changes_parity and s_changes_parity
        and uneven_t_p cddr u
        then z := -1 ./ 1 else z := 1 ./ 1;
     if car u eq 'df
@@ -290,7 +290,7 @@ fermionicfp numr simp u$
 symbolic procedure fermionicfp u$
 if domainp u then nil
 %else (fermionicp mvar u and fermionicfp lc u) or fermionicfp red u;
-             else 
+             else
 if fermionicp mvar u then not fermionicfp lc u
                      else     fermionicfp lc u$
 
@@ -321,7 +321,7 @@ endmodule$
 %algebraic$
 
 fermion1 '(f th)$
-boson1 '(b)$  
+boson1 '(b)$
 
 algebraic$
 depend  {f,b},t,x$
@@ -330,7 +330,7 @@ depend  {f,b},t,x$
 set_bndstk_size 50000$
 #endif
 
-lisp <<simplimit!* := 100000$ 
+lisp <<simplimit!* := 100000$
        !*noarg := nil  % not done as 'off noarg$' to prevent compiler message
      >>$
 on dfprint$
@@ -338,7 +338,7 @@ on dfprint$
 lisp(!*allfac := nil)$ % instead of OFF ALLFAC in order to avoid difference
                        % between compiled and uncompiled version
 
-symbolic fluid '(x flist blist fblist sysfbl N_ fname_ fname_list nfct_ 
+fluid '(x flist blist fblist sysfbl N_ fname_ fname_list nfct_
                  use_new_crackout print_ print_more collect_sol sol_list
                  proc_list_ max_factor flin_ subst_1 pdelimit_1 old_history
                  homogen_ max_gc_short max_gc_red_len record_hist
@@ -369,28 +369,28 @@ freeof(a,'f) and freeof(a,'b)$
 
 symbolic operator is_fermion$
 symbolic procedure is_fermion(a)$
-if pairp a then 
+if pairp a then
 if car a = 'D  then is_boson caddr a
                else
-if car a = 'DF then if is_fermion cadr a then 
+if car a = 'DF then if is_fermion cadr a then
    if caddr a ='s then not !*s_changes_parity else
    if caddr a ='t then not !*t_changes_parity else t
-                                         else 
+                                         else
    if caddr a ='s then !*s_changes_parity else
    if caddr a ='t then !*t_changes_parity else nil
-               else 
-if car a = 'EXPT then 
-   if is_boson cadr a then nil else 
-   if (caddr a = 1) then t else 
-   if fixp caddr a then nil else 
+               else
+if car a = 'EXPT then
+   if is_boson cadr a then nil else
+   if (caddr a = 1) then t else
+   if fixp caddr a then nil else
    write"###### ERROR: UNDEFINED PARITY!! ######"
                  else
 if car a = 'TIMES then begin scalar n,h;
                         n:=0;
-                        for each h in cdr a do 
+                        for each h in cdr a do
                         if is_fermion h then n:=add1 n;
                         return not evenp n
-                       end 
+                       end
                   else
 if (car a = 'MINUS) or
    (car a = 'QUOTIENT) then is_fermion cadr a else
@@ -407,30 +407,30 @@ if not freeof(a,'f) then t else nil
 
 symbolic operator is_boson$
 symbolic procedure is_boson(a)$
-if pairp a then 
-if car a = 'D  then is_fermion caddr a 
+if pairp a then
+if car a = 'D  then is_fermion caddr a
                else
-if car a = 'DF then if is_boson cadr a then 
+if car a = 'DF then if is_boson cadr a then
    if caddr a ='s then not !*s_changes_parity else
    if caddr a ='t then not !*t_changes_parity else t
-                                       else 
+                                       else
    if caddr a ='s then !*s_changes_parity else
    if caddr a ='t then !*t_changes_parity else nil
-               else 
-if car a = 'EXPT then 
-   if is_boson cadr a then t else 
-   if (caddr a = 1) then nil else 
-   if fixp caddr a then t else 
+               else
+if car a = 'EXPT then
+   if is_boson cadr a then t else
+   if (caddr a = 1) then nil else
+   if fixp caddr a then t else
    write"###### ERROR: UNDEFINED PARITY!! ######"
                  else
 if (car a = 'MINUS) or
    (car a = 'QUOTIENT) then is_boson(cadr a) else
 if car a = 'TIMES then begin scalar n,h;
                         n:=0;
-                        for each h in cdr a do 
+                        for each h in cdr a do
                         if is_fermion h then n:=add1 n;
                         return evenp n
-                       end 
+                       end
                   else
 if (car a = 'PLUS) then begin scalar h;
                          h:=cdr a;
@@ -449,7 +449,7 @@ symbolic procedure ssini(N,nf,nb)$
 % initializes N_, fblist and selects printing routines for f(i) and b(j)
 begin scalar j;
  N_:=N;   % assigning the global number of super symm generators N_
-          % For customized printing:  
+          % For customized printing:
  if nf=1 then put('f,'prifn,'myfpri)  % to suppress (1) when printing f(1)
          else put('f,'prifn,nil)$     % to print index of all f(i)
  if nb=1 then put('b,'prifn,'myfpri)  % to suppress (1) when printing b(1)
@@ -460,7 +460,7 @@ end$
 
 %-------
 
-symbolic procedure presimplify(es,fl)$ 
+symbolic procedure presimplify(es,fl)$
 % es,fl are algebraic lists of equations and functions
 begin scalar w,ineq_bak,nopowersbak,eqns,m,k,cpu,p,len_es$
  % Simplifying equations and dropping multiple ones
@@ -482,14 +482,14 @@ begin scalar w,ineq_bak,nopowersbak,eqns,m,k,cpu,p,len_es$
    es:=algebraic(sub(lisp cons('LIST,for each k in m collect {'EQUAL,k,0}),lisp es))$
    % w:=append(m,w)$
    w:=nconc(m,w)$
-   m:=nil; 
+   m:=nil;
   >>$
   es:=cdr es$         % to get rid of the leading 'LIST
-  while es do 
+  while es do
   if zerop car es then es:=cdr es else <<
    k:=algebraic(factorize lisp car es); es:=cdr es$
    k:=cdr k;
-   p:=nil; 
+   p:=nil;
    while k do <<
     if not freeoflist(cadr car k,fl) then p:=cons(cadr car k,p);
     k:=cdr k;
@@ -502,7 +502,7 @@ begin scalar w,ineq_bak,nopowersbak,eqns,m,k,cpu,p,len_es$
    >>
   >>$
   es:=cons('LIST,eqns); eqns:=nil
- >> until null m;   
+ >> until null m;
 
  write length w," coefficients found to be zero: "$listprint w$ terpri()$
  eqns:=nconc(es,w)$
@@ -512,28 +512,28 @@ begin scalar w,ineq_bak,nopowersbak,eqns,m,k,cpu,p,len_es$
  ineq_:=ineq_bak$
  if nopowersbak then algebraic(on nopowers)$
  write(time()-cpu)/1000," s for pre-simplification"$terpri()$
-  
+
  return eqns
 end$
 
 %-------
 
 symbolic procedure input_consistency_test(afwlist,abwlist)$
-begin 
+begin
  if (length afwlist < 2) and
-    (length abwlist < 2) then 
-    rederr "flist AND blist are both not assigned."$ 
+    (length abwlist < 2) then
+    rederr "flist AND blist are both not assigned."$
 
  afwlist:=cdr afwlist;
  while afwlist and fixp car afwlist and car afwlist>=0 do afwlist:=cdr afwlist;
- if afwlist then if not fixp car afwlist then 
+ if afwlist then if not fixp car afwlist then
  rederr "The fermionic weight list contains not only numbers!" else % <0
  if not fixp reval algebraic max_deg then
  rederr "If a fermionic weight is < 0 then max_deg must be set!"$
 
  abwlist:=cdr abwlist;
  while abwlist and fixp car abwlist and car abwlist>0 do abwlist:=cdr abwlist;
- if abwlist then if not fixp car abwlist then 
+ if abwlist then if not fixp car abwlist then
  rederr "The bosonic weight list contains not only numbers!" else % <=0
  if not fixp reval algebraic max_deg then
  rederr "If a bosonic weight is < 1 then max_deg must be set!"
@@ -543,14 +543,14 @@ end$
 
 symbolic procedure crossprodu(seta,setb,wgt,endprod)$
 begin scalar g,k,setbcp;
- if setb then 
+ if setb then
  for each g in seta do <<
   setbcp:=setb;
   k:=car g + caar setbcp;
   while k<=wgt do <<
    if k=wgt then endprod:=cons(cons(k,append(cdr g,cdar setbcp)),endprod);
    setbcp:=cdr setbcp;
-   if setbcp then k:=car g + caar setbcp 
+   if setbcp then k:=car g + caar setbcp
              else k:=10000000
   >>
  >>$
@@ -565,8 +565,8 @@ symbolic procedure rhs_term_list(N,allf,allb,maxwgt,linsub,forbid,verbose)$
 begin scalar g,h,j,k,minwgt,maxdeg,maxtermwgt,allv,newv,maxpow,maxwgtm2,
              fprod,bprod,allprod,newprod,linonly,p,q,r,s$
 
- % As weights can be negative, at first we compute the most negative weight 
- % of a partial product. For that we do not need to consider derivatives as 
+ % As weights can be negative, at first we compute the most negative weight
+ % of a partial product. For that we do not need to consider derivatives as
  % these have all higher weights than the undifferentiated variables.
 
  minwgt:=0;  maxdeg:=algebraic max_deg;  allv:=append(allf,allb);
@@ -589,12 +589,12 @@ begin scalar g,h,j,k,minwgt,maxdeg,maxtermwgt,allv,newv,maxpow,maxwgtm2,
  % allv:=idx_sort append(allv,newv);
  allv:=append(allv,newv);
 
- % Add to allv for each of its elements all possible combinations 
+ % Add to allv for each of its elements all possible combinations
  % of d(i,..) derivatives
  for j:=1:N do <<
   newv:=nil;
-  for each g in allv do 
-  if car g < maxtermwgt then 
+  for each g in allv do
+  if car g < maxtermwgt then
   newv:=cons({add1 car g,{'D,j,cadr g}},newv);
   % allv:=idx_sort append(allv,newv);
   allv:=append(allv,newv);
@@ -603,25 +603,25 @@ begin scalar g,h,j,k,minwgt,maxdeg,maxtermwgt,allv,newv,maxpow,maxwgtm2,
  % generation of all possible products of elements of allv
  allprod:={{0,nil}};
  if verbose then <<
-  write"maxwgt=",maxwgt$terpri()$ 
-  q:=length allv;                 
-  p:=0;                           
-  s:=0;                           
+  write"maxwgt=",maxwgt$terpri()$
+  q:=length allv;
+  p:=0;
+  s:=0;
  >>$
  for each g in allv do <<
   if verbose then <<
-   p:=add1 p;                    
+   p:=add1 p;
    write p,"(",q,"): ",g$terpri()
   >>$
 
-  if null linsub then linonly:=nil else 
+  if null linsub then linonly:=nil else
   if smemberl(linsub,cadr g) then linonly:=t
                              else linonly:=nil;
   maxpow:=if linonly or is_fermion cadr g then 1 else
           if car g < 1 then maxdeg else 10000000;
   newprod:=nil;
-  if verbose then r:=0; 
-  for each h in allprod do 
+  if verbose then r:=0;
+  for each h in allprod do
   if null linonly or null cadr h then <<
    % i.e. either the new factor cadr g is not linonly and
    % can occur arbitrarily often in arbitrary products, or
@@ -635,25 +635,25 @@ begin scalar g,h,j,k,minwgt,maxdeg,maxtermwgt,allv,newv,maxpow,maxwgtm2,
    >>;
    if verbose then r:=r+j-1
   >>$
-  if verbose then  s:=s+r;  
+  if verbose then  s:=s+r;
   allprod:=nconc(allprod,newprod)
  >>$
-  
+
  % sorting of the products into fermionic and bosonic products
  allprod:=cdr allprod;  % drop of {{0,nil}}
- while allprod do << 
+ while allprod do <<
   g:=car allprod; allprod:=cdr allprod;
-  if (car g = maxwgt) and (null linsub or cadr g) then 
-  if is_fermion cons('TIMES,cdr g) then 
+  if (car g = maxwgt) and (null linsub or cadr g) then
+  if is_fermion cons('TIMES,cdr g) then
   fprod:=cons(if null cdddr g then caddr g
                               else cons('TIMES,cddr g),fprod)
-                                   else 
+                                   else
   bprod:=cons(if null cdddr g then caddr g
                               else cons('TIMES,cddr g),bprod)
- >>$ 
+ >>$
 
  if verbose then <<write length fprod," fermionic and ",
-                         length bprod," bosonic monomials"$terpri()>>$ 
+                         length bprod," bosonic monomials"$terpri()>>$
  return {fprod,bprod}
 
 end$
@@ -677,16 +677,16 @@ begin scalar h,w,rlcp,rhs,nf,print_bak,svar$
                     else caddar rlcp;
   % add a constant factor to each term in rhs
   print_bak:=print_; print_:=nil; % to avoid printing the new constants
-  rhs:=for each r in rhs collect <<nf   :=newfct(fname_,nil,nfct_)$ 
+  rhs:=for each r in rhs collect <<nf   :=newfct(fname_,nil,nfct_)$
                                    fl   :=cons(nf,fl);
                                    nfct_:=add1 nfct_$
                                    {'TIMES,nf,r}>>$
   print_:=print_bak;
-  rhs:=if null rhs then 0 
+  rhs:=if null rhs then 0
                    else if cdr rhs then cons('PLUS,rhs)
-                                   else car rhs;   
+                                   else car rhs;
   eqn_list:=cons({'EQUAL,{'DF,h,svar},rhs},eqn_list)
- >>$ 
+ >>$
 
  return {eqn_list,fl}
 end$
@@ -695,12 +695,12 @@ end$
 
 symbolic procedure sspol(N,sysfbl,afwlist,abwlist,difforder,tname,
                          linsub,forbid,flip_par,verbose)$
-% returns {eqn_list,fl} where 
-% eqn_list is the algebraic list of equations/symmetries and 
+% returns {eqn_list,fl} where
+% eqn_list is the algebraic list of equations/symmetries and
 % fl is the algebraic list of undetermined constants
 % tname is the lhs differentiation variable
 begin scalar g,h,i,fwlist,bwlist,allf,allb,w_list,rhs_list,eqn_list,fl,awlist$
- 
+
  fwlist:=cdr reval afwlist$
  bwlist:=cdr reval abwlist$
 
@@ -711,7 +711,7 @@ begin scalar g,h,i,fwlist,bwlist,allf,allb,w_list,rhs_list,eqn_list,fl,awlist$
  % Generation of the final form of the equations
 
  % only those weights for which there is an eqn to generate
- % making a list of all different weights 
+ % making a list of all different weights
  w_list:=union(fwlist,union(bwlist,nil))$
 
  % generating the right-hand-side term-list for the different weights
@@ -719,25 +719,25 @@ begin scalar g,h,i,fwlist,bwlist,allf,allb,w_list,rhs_list,eqn_list,fl,awlist$
  % partitioned only afterwards into fermionic and bosonic, we would not save
  % computation when generating only fermionic expressions of specific weight
  % and afterwards the bosonic expressions with specific weight
- rhs_list:=for each w in w_list collect 
-           cons(w,rhs_term_list(N,allf,allb,w+difforder,linsub,forbid,verbose))$   
+ rhs_list:=for each w in w_list collect
+           cons(w,rhs_term_list(N,allf,allb,w+difforder,linsub,forbid,verbose))$
                                    % new weight(t) based on weight(x)=2
 
  % generating all bosonic equations
- for each h in sysfbl do 
+ for each h in sysfbl do
  if car h = 'b then << g:=allb; while g and cadar g neq h do g:=cdr g$
   awlist:=cons(car g,awlist)
- >>$  
- nfct_:=1$   
+ >>$
+ nfct_:=1$
  % whether difforder is odd or even has no influence on parity (ferm/bos)
  h:=gen_eqn(awlist,rhs_list,eqn_list,fl,flip_par,tname);
 
  % generating all fermionic equations
  awlist:=nil$
- for each h in sysfbl do 
+ for each h in sysfbl do
  if car h = 'f then << g:=allf; while g and cadar g neq h do g:=cdr g$
   awlist:=cons(car g,awlist)
- >>$  
+ >>$
  % whether difforder is odd or even has no influence on parity (ferm/bos)
  h:=gen_eqn(awlist,rhs_list,car h,cadr h,not flip_par,tname);
 
@@ -752,7 +752,7 @@ begin scalar k$
   write"{"$
   while k do <<write car k$k:=cdr k$if k then write",">>$
   write"}"$terpri()$
- >>$ 
+ >>$
 end$
 
 %-------
@@ -761,7 +761,7 @@ symbolic operator listine$
 symbolic procedure listine(N,sys,sym,fl,ineql,non_lin_test,save_lists)$
 % generation of conditions for the unknown coefficients
 begin scalar eqn,ineql,cnd,h,k,fb,flcp,nfl,evolist,rs$
- fl:=cdr fl$ 
+ fl:=cdr fl$
  ineql:=for each h in cdr ineql collect cdr h$
 
  evolist:=for each h in append(cdr sys,cdr sym) collect caddr h$
@@ -792,7 +792,7 @@ begin scalar eqn,ineql,cnd,h,k,fb,flcp,nfl,evolist,rs$
  for each eqn in cdr sys do <<
   rs:=caddr eqn; % rhs of eqn
   fb:=delete(cadr cadr eqn,fblist); % one of the functions fb must occur in rs
-  if pairp rs and (car rs = '!*SQ) 
+  if pairp rs and (car rs = '!*SQ)
   then rs:={'!*SQ, subsq(cadr rs, for each h in fb collect (h . 0)), t}
   else for each h in fb do rs:=subst(0,h,rs);
   h:=setdiff(smemberl(fl,caddr eqn),smemberl(fl,reval rs));
@@ -808,14 +808,14 @@ begin scalar eqn,ineql,cnd,h,k,fb,flcp,nfl,evolist,rs$
    flcp:=smemberl(fl,eqn);
    for each h in fblist do eqn:=subst({'TIMES,k,h},h,eqn);
    h:=smemberl(flcp,coeffn(reval eqn,k,1));
-   flcp:=setdiff(flcp,h); 
+   flcp:=setdiff(flcp,h);
    nfl:=append(nfl,flcp)
   >>$
   if null nfl then nfl:={0};    % contradiction issued
   ineql:=cons(nfl,ineql);
  >>$
 
- % at least one equation should contain a fermion field or a D_i derivative 
+ % at least one equation should contain a fermion field or a D_i derivative
  if null flist then << % otherwise no chance to get a purely classical equation
   flcp:=fl;   % we drop all constants from fl which are coefficient to
               % a term without D(i,..) and without fermion
@@ -836,7 +836,7 @@ begin scalar eqn,ineql,cnd,h,k,fb,flcp,nfl,evolist,rs$
  %  N>1 makes only sense if all D_1,..,D_N occur which is required next
  if N>1 then for h:=1:N do <<
   flcp:=fl;   % we drop all constants from fl which are coefficient to
-              % a term without D(h,..) 
+              % a term without D(h,..)
   algebraic <<k:=lisp h;drop_fd_rules:={d(k,~j) => 0}; let drop_fd_rules>>;
   for each eqn in evolist do <<
    k:=smemberl(fl,reval eqn);
@@ -873,7 +873,7 @@ begin scalar eqn,ineql,cnd,h,k,fb,flcp,nfl,evolist,rs$
   shut "inelist"$
  >>$
 
- ineql:=for each cnd in ineql collect 
+ ineql:=for each cnd in ineql collect
  if null cdr cnd then car cnd
                 else cons('PLUS,for each h in cnd collect {'TIMES,h,gensym()})$
 
@@ -889,12 +889,12 @@ begin scalar w,afblist,equa,ff,ex,a,p,parti,maxpow,h$
  w:=lisp lin_test_const$
  maxpow:=0$
  h:=for each equa in eqns collect <<
-  ff:=part(equa,1);ex:=part(equa,2);  
+  ff:=part(equa,1);ex:=part(equa,2);
   for each a in afblist do ex:=sub(a=a*w,ex)$
   parti:=rest coeff(ex,w);
   if hipow!*>maxpow then maxpow:=hipow!*;
   ff=parti
- >>; 
+ >>;
 
  % Filling up each element of h with zero's so that all have same length
  if length h > 1 then
@@ -962,7 +962,7 @@ begin scalar sym,cl,sw,fli,bli,su,n,h,newsy,to_drop,sy$
  for each sy in sym do <<
   coeff(lhs sy,lin_test_const);
   n:=hipow!*+sw;
-  if n<0 then <<h:=lin_test_const**(-n)*rhs sy; 
+  if n<0 then <<h:=lin_test_const**(-n)*rhs sy;
                 newsy:=cons(coeffn(h,lin_test_const,n),newsy)>>
          else newsy:=cons(coeffn(rhs sy,lin_test_const,n),newsy);
  >>;
@@ -982,7 +982,7 @@ symbolic procedure non_t_lhs_dvs(pdes)$
 begin scalar h,forbid$
  for each h in pdes do
  if pairp h and
-    ((car h = 'EQUAL) or (car h = 'REPLACE)) and 
+    ((car h = 'EQUAL) or (car h = 'REPLACE)) and
     (pairp cadr h) and
     ((caadr h = 'DF) or (caadr h = 'D) or (caadr h = 'F) or (caadr h = 'B)) and
     freeof(cadr h,t) then <<
@@ -1002,24 +1002,24 @@ algebraic procedure ssym(N,tw,sw,afwlist,abwlist,eqnlist,fl,inelist,mode)$
 % tw      .. 2 times the differential order of the equation = weight(t)
 % sw      .. 2 times the differential order of the symmetry = weight(s)
 % afwlist .. (algebraic) list of weights of the fermion fields
-%            f(1), f(2), ... 
+%            f(1), f(2), ...
 % abwlist .. (algebraic) list of weights of the boson fields
 %            b(1), b(2), ...
 % The number of elements in the last two lists determines the
 % number of fermion and boson fields.
-% eqnlist .. in the nonlinear case a list of extra conditions on the 
-%            undetermined coefficients where conditions a3=.. are executed 
-%            instantly, these and any, expressions are added to equations 
+% eqnlist .. in the nonlinear case a list of extra conditions on the
+%            undetermined coefficients where conditions a3=.. are executed
+%            instantly, these and any, expressions are added to equations
 %            when calling crack
-%            in the linear case the system in form of replacements and the 
+%            in the linear case the system in form of replacements and the
 %            linearized system in form of equations
 % fl      .. extra unknowns in eqnlist to be determined
 % inelist .. a list, each element of it is a list with at least one of
 %            its elements being non-zero
-% mode    .. list of flags: 
+% mode    .. list of flags:
 %            init : only initialization of global data
 %            plain_com : direct computation of the commutator (for tests)
-%            power_split_com : alternative power splitting of commutator, 
+%            power_split_com : alternative power splitting of commutator,
 %                              (not if substitutions '='> are present)
 %            % const_coeff_in_eqn : have only constant coefficients in eqn.
 %            % const_coeff_in_sym : have only constant coefficients in sym.
@@ -1030,17 +1030,17 @@ algebraic procedure ssym(N,tw,sw,afwlist,abwlist,eqnlist,fl,inelist,mode)$
 %            % no_t_in_sym : no explicit t-derivatives occur in symmetries
 %            filter: extra homogeneity weights as given in the list"$
 %                    hom_wei have to be satisfied by the symmetry"$
-%            lin: find symmetry for all linear fields, 
-%                 if null spar (bosonic s) then 
+%            lin: find symmetry for all linear fields,
+%                 if null spar (bosonic s) then
 %                    bosonic   lin fields are b(nb+1)..b(2*nb)
 %                    fermionic lin fields are f(nf+1)..b(2*nf)
 %                                          else
 %                    bosonic   lin fields are b(nb+1)..b(nf+nb)
 %                    fermionic lin fields are f(nf+1)..b(nf+nb)
-%            tpar: t/nil, whether time variable t changes parity"$        
+%            tpar: t/nil, whether time variable t changes parity"$
 %            spar: t/nil, whether symmetry variable s changes parity"$
 %            log : t/nil, whether files drvlist, evolist, unolist, inelist
-%                         are generated to hold data, for example, for 
+%                         are generated to hold data, for example, for
 %                         automatic web page generation
 %
 begin scalar g,h,k,cpu,gti,fbno,psys,psym,msysp,msymp,totpow,syspow,sympow,
@@ -1062,9 +1062,9 @@ begin scalar g,h,k,cpu,gti,fbno,psys,psym,msysp,msymp,totpow,syspow,sympow,
   % if member('const_coeff_in_sym,mode) then cc_sym:=t else cc_sym:=nil;
   if member('zerocoeff,mode) then zerocoeff:=t else zerocoeff:=nil;
   if member('plain_com,mode) then plain_com:=t else plain_com:=nil;
-  if member('power_split_com,mode) then power_split_com:=t 
+  if member('power_split_com,mode) then power_split_com:=t
                                    else power_split_com:=nil;
-  % if member('term_split_com,mode) then term_split_com:=t 
+  % if member('term_split_com,mode) then term_split_com:=t
   %                                 else term_split_com:=nil;
   if member('verbose,mode) then verbose:=t else verbose:=nil;
   if member('interactive,mode) then interactive:=t else interactive:=nil;
@@ -1080,19 +1080,19 @@ begin scalar g,h,k,cpu,gti,fbno,psys,psym,msysp,msymp,totpow,syspow,sympow,
   if member('lin,mode) then << % @#@#
    nf:=length afwlist - 1;
    nb:=length abwlist - 1;
-   if member('spar,mode) then 
+   if member('spar,mode) then
    if nf neq nb then <<write"In the case of spar #(boson fields)=#(fermion fields)",
-                             " which is not the case."; forbid:=t>> 
+                             " which is not the case."; forbid:=t>>
                 else % to do more tests one would have to know/find the numbers
                      % of b/f fields before linearization
-                         else << % null member('spar,mode) 
+                         else << % null member('spar,mode)
     if null evenp nf then <<write"If no spar then #(fermion fields) needs to be even"$
                       forbid:=t>>;
     if null evenp nb then <<write"If no spar then #(boson fields) needs to be even"$
                       forbid:=t>>;
     for each g in eqnlist do if pairp g then lhslist:=cons(cadr g,lhslist);
     nf:=nf/2; nb:=nb/2;
-    for each g in lhslist do 
+    for each g in lhslist do
 
 if car g = 'df then
 if caadr g = 'f then if ((cadadr g <= nf) and not member({'df,{'f,cadadr g + nf},caddr g},lhslist)) or
@@ -1114,12 +1114,12 @@ if caaddr g = 'b then if ((car cdaddr g <= nb) and not member({'d,cadr g,{'b,car
                         write"The counterpart of ",g," is missing on a left hand side."$ forbid:=t>> else
                  else
                else
-   >>; % of null member('spar,mode)    
+   >>; % of null member('spar,mode)
    if forbid then <<forbid:=nil;rederr "">>$
   >>$
 
-  % In the linearized system not half of the equations need to 
-  % be = and half => because there may be nonlocal potential variables 
+  % In the linearized system not half of the equations need to
+  % be = and half => because there may be nonlocal potential variables
   % introduced through a => relation
   if nil then
   if member('lin,mode) then << % @#@#
@@ -1127,7 +1127,7 @@ if caaddr g = 'b then if ((car cdaddr g <= nb) and not member({'d,cadr g,{'b,car
    nfr:=0;  nbr:=0;  % number of f(i) and b(i) in replaceby
    nfe:=0;  nbe:=0;  % number of f(i) and b(i) in equal
 
-   for each g in eqnlist do 
+   for each g in eqnlist do
    if pairp g then
    if (car g='equal) then
    if not freeof(cadr g,'f) then nfe:=nfe+1 else
@@ -1145,26 +1145,26 @@ write"nfr= ",nfr," nfe=",nfe,
      "nbr= ",nbr," nbe=",nbe$
 
    if (    member('spar,mode) and (nfr=nbe) and (nbr=nfe)) or
-      (not member('spar,mode) and (nfr=nfe) and (nbr=nbe)) then 
+      (not member('spar,mode) and (nfr=nfe) and (nbr=nbe)) then
                                                            else <<
     if member('spar,mode) then <<
-     if nfr neq nbe then <<write "For spar 
-      the number of '=>' relations with a fermion on the lhs should be equal 
+     if nfr neq nbe then <<write "For spar
+      the number of '=>' relations with a fermion on the lhs should be equal
       the number of '='  relations with a boson   on the lhs."$ terpri()
      >>$
-     if nbr neq nfe then <<write "For spar 
-      the number of '=>' relations with a boson   on the lhs should be equal 
+     if nbr neq nfe then <<write "For spar
+      the number of '=>' relations with a boson   on the lhs should be equal
       the number of '='  relations with a fermion on the lhs."$ terpri()
      >>
-    >>                    else 
+    >>                    else
 
     if not member('spar,mode) then <<
-     if nfr neq nfe then <<write "For missing spar 
-      the number of '=>' relations with a fermion on the lhs should be equal 
+     if nfr neq nfe then <<write "For missing spar
+      the number of '=>' relations with a fermion on the lhs should be equal
       the number of '='  relations with a fermion on the lhs."$ terpri()
      >>$
-     if nbr neq nbe then <<write "For missing spar 
-      the number of '=>' relations with a boson   on the lhs should be equal 
+     if nbr neq nbe then <<write "For missing spar
+      the number of '=>' relations with a boson   on the lhs should be equal
       the number of '='  relations with a boson   on the lhs."$ terpri()
      >>
     >>$
@@ -1200,34 +1200,34 @@ write"nfr= ",nfr," nfe=",nfe,
   % specifying the names of constants in the equations
   if fname_list then <<fname_:=car fname_list;
                        fname_list:=cdr fname_list>>
-                else   fname_:='p$ 
+                else   fname_:='p$
 
   % generating the equations
-  % Has an ansatz for the system been made?  
-  if eqnlist                                    and 
-     (pairp car eqnlist                       ) and 
-     (((caar eqnlist='EQUAL       ) and 
+  % Has an ansatz for the system been made?
+  if eqnlist                                    and
+     (pairp car eqnlist                       ) and
+     (((caar eqnlist='EQUAL       ) and
        (pairp cadar eqnlist       ) and
-       (caadar eqnlist = 'DF      )      ) or 
+       (caadar eqnlist = 'DF      )      ) or
       ((caar eqnlist='REPLACEBY   ) and
        (pairp cadar eqnlist       ) and
-       ((caadar eqnlist = 'DF) or 
-        (caadar eqnlist = 'D )    )      )    ) then << 
+       ((caadar eqnlist = 'DF) or
+        (caadar eqnlist = 'D )    )      )    ) then <<
    g:=nil;
    for each h in eqnlist do if pairp h then
-   if pairp h and 
-      car h='EQUAL and 
-      pairp cadr h and 
+   if pairp h and
+      car h='EQUAL and
+      pairp cadr h and
       caadr h='DF and
       reval caddr cadr h ='t then <<
     sys:=cons(h,sys);
     subl2:=cons({'REPLACEBY,cadr h,caddr h},subl2) % substitutions based on sys
    >>                        else
-   if car h='REPLACEBY and 
-      pairp cadr h and 
+   if car h='REPLACEBY and
+      pairp cadr h and
       ((caadr h='DF) or
        (caadr h='D)     ) then subl:=cons(h,subl)
-                          else g:=cons(h,g)$                
+                          else g:=cons(h,g)$
    eqnlist:=g$
 
    sysfbl:=reverse for each h in sys collect cadadr h;
@@ -1252,13 +1252,13 @@ write"nfr= ",nfr," nfe=",nfe,
    if verbose then <<write"Formulating rhs's of the system"$terpri()>>$
    h:=sspol(N,sysfbl,afwlist,abwlist,tw,algebraic t,linsub,
             forbid,!*t_changes_parity,verbose)$
-   sys:=car h; 
+   sys:=car h;
    fl_e:=cadr h;
    subl:={'LIST}
   >>$
-  
+
   algebraic<<nodepend f,s; nodepend b,s>>$
-  for each h in fblist do algebraic(nodepend h,s); 
+  for each h in fblist do algebraic(nodepend h,s);
   for each h in sysfbl do algebraic(  depend h,s);
 
   % add to each substitution rule D(i,A)=>.. all differential consequences
@@ -1267,7 +1267,7 @@ write"nfr= ",nfr," nfe=",nfe,
   % specifying the names of constants in the symmetries
   if fname_list then <<fname_:=car fname_list;
                        fname_list:=cdr fname_list>>
-                else   fname_:='q$ 
+                else   fname_:='q$
   % generating the symmetry
   if verbose then <<write"Formulating rhs's of the symmetry"$terpri()>>$
   h:=sspol(N,sysfbl,afwlist,abwlist,sw,algebraic s,linsub,
@@ -1281,20 +1281,20 @@ write"nfr= ",nfr," nfe=",nfe,
    algebraic(for each g in hom_wei do h:=sieve(h,g))$
    h:={cadr h,cdaddr h} % converting to lisp list of two lisp lists
   >>$
-  sym:=car h$ 
+  sym:=car h$
   flin_:=cadr h$  h:=nil;
 
   % Extracting substitutions from eqnlist to be done instantly
   g:=eqnlist; eqnlist:=nil;
-  for each h in g do 
+  for each h in g do
   if pairp h and car h = 'EQUAL then <<
-   sublist:=cons(h,sublist)$ 
+   sublist:=cons(h,sublist)$
    eqnlist:=cons({'DIFFERENCE,cadr h,caddr h},eqnlist)
   >>                            else eqnlist:=cons(h,eqnlist)$
 
-  if zerocoeff then 
-  for each h in append(fl_e,flin_) do 
-  if freeof(inelist,h) then sublist:=cons({'EQUAL,h,0},sublist) 
+  if zerocoeff then
+  for each h in append(fl_e,flin_) do
+  if freeof(inelist,h) then sublist:=cons({'EQUAL,h,0},sublist)
                        else fl:=cons(h,fl)
                else fl:=append(fl_e,flin_);
   fl_e:=nil$
@@ -1310,8 +1310,8 @@ write"nfr= ",nfr," nfe=",nfe,
  if lisp(save_lists) then <<
   off nat$
   out  "drvlist"$
-  for each g in sys do write lhs g," := ",rhs g$ 
-  for each g in sym do write lhs g," := ",rhs g$ 
+  for each g in sys do write lhs g," := ",rhs g$
+  for each g in sym do write lhs g," := ",rhs g$
   write"end$"$
   shut "drvlist"$
  >>$
@@ -1320,11 +1320,11 @@ write"nfr= ",nfr," nfe=",nfe,
  off noarg$
  if lisp(save_lists) then <<
   out  "evolist"$
-  for each g in sys do write lhs g," := ",rhs g$ 
+  for each g in sys do write lhs g," := ",rhs g$
   lisp <<terpri()$
          write"</pre> with symmetries"$ terpri()$
          write"<pre>">>$
-  for each g in sym do write lhs g," := ",rhs g$ 
+  for each g in sym do write lhs g," := ",rhs g$
   shut "evolist"$
   out  "unolist"$
   lisp <<listprint(reverse cdr fl)$terpri()>>$
@@ -1347,24 +1347,24 @@ write"nfr= ",nfr," nfe=",nfe,
   %   to_do
   %   separation
   %   subst_level_0
-  %   subst_level_04 
-  %   alg_length_reduction 
+  %   subst_level_04
+  %   alg_length_reduction
   %   find_and_use_sub_systems22
-  %   diff_length_reduction 
+  %   diff_length_reduction
   %   factorize_to_substitute
-  %   subst_level_35 
-  %   decoupling 
-  %   factorize_any 
-  %   subst_level_4 
-  %   alg_solve_single           
+  %   subst_level_35
+  %   decoupling
+  %   factorize_any
+  %   subst_level_4
+  %   alg_solve_single
   %   stop_batch
-  %  ) 
+  %  )
   % it is done in the assignment of old_history before the call of
   % CRACK, in order to drop the separation step after its initial
   % execution
 
  >>$
- 
+
  if length sys=1 then write"The equation:" else write"The system:"$
  for each g in sys do write g$
  if subl neq {} then <<
@@ -1380,12 +1380,12 @@ write"nfr= ",nfr," nfe=",nfe,
 
  if do_ine_test then <<
   inelist:=listine(N,sys,sym,fl,inelist,non_lin_test,save_lists);
-  g:=inelist$ 
-  while g neq {} and first g neq 0 do g:=rest g$ 
+  g:=inelist$
+  while g neq {} and first g neq 0 do g:=rest g$
   if g neq {} then return <<
-   out "invalid"$  
+   out "invalid"$
    write"SYSTEM & SYMMETRY DO NOT SATISFY MINIMAL REQUIREMENTS!"$
-   shut "invalid"$ 
+   shut "invalid"$
    write"SYSTEM & SYMMETRY DO NOT SATISFY MINIMAL REQUIREMENTS!"$
   >>
  >>$
@@ -1394,19 +1394,19 @@ write"nfr= ",nfr," nfe=",nfe,
 
  if subl neq {} then let subl$% this activates the extra conditions
  fbno:=lisp length sysfbl$
- if subl neq {} then power_split_com:=nil$ % because automatic substitutions from 
+ if subl neq {} then power_split_com:=nil$ % because automatic substitutions from
                       % subs most likely change powers by introducing new factors
  if power_split_com then <<
   lisp (lin_test_const:=gensym())$
   psys:=power_parti(sys)$ msysp:=first psys; psys:=second psys;
   psym:=power_parti(sym)$ msymp:=first psym; psym:=second psym;
-  for totpow:=2:(msysp+msymp) do << % generating all terms with total 
+  for totpow:=2:(msysp+msymp) do << % generating all terms with total
                                     % power totpow of all elements of fblist
    lisp<<write"Generating all terms of total degree ",totpow$terpri()>>$
    % initialize all partial commutators to zero
    newcd:={}$ for g:=1:fbno do newcd:=cons(0,newcd)$
    % generate all pairings giving totpow
-   for syspow:=1:msysp do 
+   for syspow:=1:msysp do
    for sympow:=1:msymp do
    if (syspow+sympow)=totpow then <<
     lisp <<
@@ -1436,7 +1436,7 @@ write"nfr= ",nfr," nfe=",nfe,
  % Assign t- and s-derivatives for all members of fblist for use in crack_out.
  subl2:=append(for each g in sys collect <<ls:=lhs g;rs:=rhs g; ls => rs>>,
                for each g in sym collect <<ls:=lhs g;rs:=rhs g; ls => rs>> )$
- let subl2; % This is the ansatz for the system and symmetry to be used 
+ let subl2; % This is the ansatz for the system and symmetry to be used
             % for the commutator.
  if verbose then <<
   write"sys = ",sys$
@@ -1446,24 +1446,24 @@ write"nfr= ",nfr," nfe=",nfe,
  >>$
 
  if not power_split_com and plain_com then
- for g:=1:fbno do 
- eqnlist:=cons(df(rhs part(sys,g),s) + 
+ for g:=1:fbno do
+ eqnlist:=cons(df(rhs part(sys,g),s) +
                (if (lisp t_changes_parity) and
                    (lisp s_changes_parity) then   df(rhs part(sym,g),t)
                                            else (-df(rhs part(sym,g),t))),
                eqnlist)
-                                      else 
+                                      else
  if not power_split_com then lisp <<
 
   sym:=reval sym;
   eqnlist:=cdr eqnlist;   % to get rid of 'LIST
 
   % for each symmetry h collect the list of terms of the rhs caddr h
-  rhssyl:= for each h in cdr sym collect   
-           if pairp caddr h and caaddr h='PLUS then cdaddr h 
+  rhssyl:= for each h in cdr sym collect
+           if pairp caddr h and caaddr h='PLUS then cdaddr h
                                                else {caddr h};
   nw:=0$
-  for each w in sysfbl do << 
+  for each w in sysfbl do <<
    if verbose then write"Integrability conditions are computed for ",w," :"$ terpri()$
    % For each function w of sysfbl generate the full condition
    nw:=add1 nw$ % the index of the function w in sysfbl
@@ -1475,7 +1475,7 @@ write"nfr= ",nfr," nfe=",nfe,
    for each h in sysfbl do algebraic <<clear df(lisp h,s);df(lisp h,s):=0>>$
    !*msg:=msgbak;
    cn:=0$                                 % counter of computed partial commutators
-   lp:=for each p in rhssyl sum length p$ % counter of all partial commutators 
+   lp:=for each p in rhssyl sum length p$ % counter of all partial commutators
 
    psycon:=nil$   % a partial condition for this function
    for each p in rhssyl do << % for each rhs of a symmetry
@@ -1511,8 +1511,8 @@ write"nfr= ",nfr," nfe=",nfe,
     sycon:=num lisp cons('PLUS,psycon);
     h:=length sycon;
     if verbose then
-    if h=1 then write"The symmetry condition for ",w," has ",h," term." 
-           else write"The symmetry condition for ",w," has ",h," terms." 
+    if h=1 then write"The symmetry condition for ",w," has ",h," term."
+           else write"The symmetry condition for ",w," has ",h," terms."
    >>$
    eqnlist:=cons(sycon,eqnlist)
   >>$
@@ -1544,22 +1544,22 @@ write"nfr= ",nfr," nfe=",nfe,
 
   lisp <<
 
-   % Listing the splitting `variables' 
+   % Listing the splitting `variables'
    h:='(t s x)$
-   eqnlist:=split_simplify({eqnlist,{'LIST},fl,cons('LIST,h),t})$ 
+   eqnlist:=split_simplify({eqnlist,{'LIST},fl,cons('LIST,h),t})$
    if print_ then <<write"Now crack is called."$terpri()>>$
    old_history:='(
 
-    cp (!*comma!* 1 3 45 11 8 20 27 30 47 21 38) 
+    cp (!*comma!* 1 3 45 11 8 20 27 30 47 21 38)
            % to specify an automatic solving strategy with priorities:
            %
            %  1 : Hot list of urgent steps
            %  3 : Substitution of <=2 terms, only fcts. of less vars., no cases
-           % 45 : Substitution of <=8 terms in <=1000 terms, 
+           % 45 : Substitution of <=8 terms in <=1000 terms,
            %      alg. expressions, no cases
            % 11 : Algebraic length reduction of equations
-           % 53 : Find sub-systems with 2 flin_ functions % taken out, 
-           %                                % may generate too many equations 
+           % 53 : Find sub-systems with 2 flin_ functions % taken out,
+           %                                % may generate too many equations
            % 27 : Length reducing decoupling steps
            %  8 : Factorization to subcases leading to substitutions
            % 20 : Substitution of <=1000 terms, no cases
@@ -1593,7 +1593,7 @@ algebraic procedure samelists(a,b)$
 if a={} then if b={} then true
                      else nil
         else if b={} then nil
-                     else 
+                     else
 if first a neq first b then nil
                        else samelists(rest a,rest b)$
 
@@ -1606,7 +1606,7 @@ algebraic procedure crack_out(eqns,assigns,freef,ineq,sol_count)$
 % assumes that t- and s-derivatives for all members of fblist are assigned
 if lisp use_new_crackout then
 begin scalar g,h,tm,ratbak,allbak,eqlist,eqcp1,eqcp2,afblist,ff,symlist,frsym,
-             all,msgbak,sol_count2; 
+             all,msgbak,sol_count2;
              %,natbak
  allbak:=lisp !*allfac$    on allfac$
  ratbak:=lisp !*rational$  on rational$
@@ -1626,15 +1626,15 @@ begin scalar g,h,tm,ratbak,allbak,eqlist,eqcp1,eqcp2,afblist,ff,symlist,frsym,
  all:={}$
  sol_count2:=0;
 
- write "All symmetries of solution ",sol_count," printed separately:"$ 
- for each ff in frsym do 
+ write "All symmetries of solution ",sol_count," printed separately:"$
+ for each ff in frsym do
  if not freeof(eqlist,ff) then <<   % which really appear             %####
 
   eqcp1:=eqlist;
   for each h in frsym do if h neq ff then eqcp1:=sub(h=0,eqcp1);
 
   % For the remaining constant ff we take a value that normalizes the numerical
-  % coefficient of the first term of the first non-vanishing rhs of this 
+  % coefficient of the first term of the first non-vanishing rhs of this
   % symmetry to one.
   g:=eqcp1;
   while (g neq {}) and freeof(first g,ff) do g:=rest g;
@@ -1661,19 +1661,19 @@ begin scalar g,h,tm,ratbak,allbak,eqlist,eqcp1,eqcp2,afblist,ff,symlist,frsym,
     if length afblist=2 then write"The equation: "
                         else write"The system: "$  terpri()$
     if html_out then <<write"<pre>"$terpri()>>
- 
+
    >>$
    for each h in afblist do <<
     g:=df(h,t);
     msgbak:=!*msg; !*msg:=nil;
     clear df(h,t);
     !*msg:=msgbak;
-    write df(h,t),"=",first eqcp1;  
+    write df(h,t),"=",first eqcp1;
     df(h,t):=g;
     eqcp1:=rest eqcp1
    >>$
- 
-   % if (lisp print_more) then 
+
+   % if (lisp print_more) then
    <<
     lisp <<
      if html_out then write"</pre>"$
@@ -1686,13 +1686,13 @@ begin scalar g,h,tm,ratbak,allbak,eqlist,eqcp1,eqcp2,afblist,ff,symlist,frsym,
      msgbak:=!*msg; !*msg:=nil;
      clear df(h,s);
      !*msg:=msgbak;
-     write df(h,s),"=",first eqcp1;  
+     write df(h,s),"=",first eqcp1;
      df(h,s):=g;
      eqcp1:=rest eqcp1
     >>
    >>$
-   lisp << 
-    if html_out then write"</pre>"$ 
+   lisp <<
+    if html_out then write"</pre>"$
     terpri()$
     write"And now in machine readable form: "$ terpri()$
     if html_out then write"<p>"$
@@ -1702,29 +1702,29 @@ begin scalar g,h,tm,ratbak,allbak,eqlist,eqcp1,eqcp2,afblist,ff,symlist,frsym,
    >>$
    off nat$
    for each h in afblist do <<
-    write"df(",h,",t)=",first eqcp2;  
+    write"df(",h,",t)=",first eqcp2;
     eqcp2:=rest eqcp2
    >>$
    on nat$
-   % if (lisp print_more) then 
+   % if (lisp print_more) then
    <<
     lisp <<
-     if html_out then write"</pre>"$ 
-     terpri()$ 
-     write"The symmetry: "$terpri()$ 
+     if html_out then write"</pre>"$
+     terpri()$
+     write"The symmetry: "$terpri()$
      if html_out then write"<pre>"
     >>$
     off nat$
     for each h in afblist do <<
-     write"df(",h,",s)=",first eqcp2;  
+     write"df(",h,",s)=",first eqcp2;
      eqcp2:=rest eqcp2
     >>$
     on nat$
-   >>                                      
+   >>
   >>   % of `g neq {}'
  >>$  % of `for each ff'
 
- % If there are 2 or more symmetries then printing again the solution 
+ % If there are 2 or more symmetries then printing again the solution
  % with a linear combination of its symmetries:
 
  if length(sfrsym) > 1 then <<
@@ -1747,7 +1747,7 @@ begin scalar g,h,tm,ratbak,allbak,eqlist,eqcp1,eqcp2,afblist,ff,symlist,frsym,
    df(h,t):=g
   >>$
 
-  % if (lisp print_more) then 
+  % if (lisp print_more) then
   <<
    lisp <<
     if html_out then write"</pre>"$
@@ -1767,8 +1767,8 @@ begin scalar g,h,tm,ratbak,allbak,eqlist,eqcp1,eqcp2,afblist,ff,symlist,frsym,
 
   % And now in machine readable form:
 
-  lisp << 
-   if html_out then write"</pre>"$ 
+  lisp <<
+   if html_out then write"</pre>"$
    terpri()$
    write"And now in machine readable form: "$ terpri()$
    if html_out then write"<p>"$
@@ -1777,20 +1777,20 @@ begin scalar g,h,tm,ratbak,allbak,eqlist,eqcp1,eqcp2,afblist,ff,symlist,frsym,
    if html_out then write"<pre>"
   >>$
   off nat$
-  for each h in afblist do 
+  for each h in afblist do
   write"df(",h,",t)=",sub(assigns,df(h,t));
   on nat$
- 
-  % if (lisp print_more) then 
+
+  % if (lisp print_more) then
   <<
    lisp <<
-    if html_out then write"</pre>"$ 
-    terpri()$ 
-    write"The symmetry: "$terpri()$ 
+    if html_out then write"</pre>"$
+    terpri()$
+    write"The symmetry: "$terpri()$
     if html_out then write"<pre>"
    >>$
    off nat$
-   for each h in afblist do 
+   for each h in afblist do
    write"df(",h,",s)=",sub(assigns,df(h,s));
    on nat$
   >>$
@@ -1843,19 +1843,19 @@ if not !*nat or !*fort then 'failed
 
 %    symbolic procedure noncomp u$
 %       !*ncmp and noncomp1 u$
- 
+
 %-------
 
 %   symbolic procedure noncomp1 u$
 %      if null pairp u then nil
 %       else if pairp car u then noncomfp u
 %       else flagp(car u,'noncom) or noncomlistp cdr u$
- 
+
 %-------
 
 %    symbolic procedure noncomlistp u$
 %       pairp u and (noncomp1 car u or noncomlistp cdr u)$
- 
+
 %-------
 
 %    symbolic procedure mchcomb(u,v,op)$
@@ -1895,7 +1895,7 @@ begin scalar b,res$
   while b and null res do if car l = car b then res:=list l
                                            else b:=cdr b
  >>         else if l and member(l,carli) then res:=list l;
- if null res then 
+ if null res then
  while pairp l do <<
   if b:=search_li3(car l,carli) then res:=union(b,res);
   l:=cdr l
@@ -1913,10 +1913,10 @@ end$
 %-------
 
 symbolic procedure add_terms(h)$
-% h is a lisp list of terms that each has to get a constant coefficient 
+% h is a lisp list of terms that each has to get a constant coefficient
 % and the terms have to be added and returned
 begin scalar fl,nf$
- h:=for each r in h collect <<nf   :=newfct(fname_,nil,nfct_)$ 
+ h:=for each r in h collect <<nf   :=newfct(fname_,nil,nfct_)$
                               fl   :=cons(nf,fl);
                               nfct_:=add1 nfct_$
                               {'TIMES,nf,r}>>$
@@ -1930,9 +1930,9 @@ end$
 algebraic procedure ssconlaw(N,tw,cw,afwlist,abwlist,pdes,fermi)$
  % N       .. the number of superfields theta_i
  % tw      .. 2 times the differential order of the equation = weight(t)
- % cw      .. 2 times the differential order of the conservation law 
+ % cw      .. 2 times the differential order of the conservation law
  % afwlist .. (algebraic) list of weights of the fermion fields
- %            f(1), f(2), ... 
+ %            f(1), f(2), ...
  % abwlist .. (algebraic) list of weights of the boson fields
  %            b(1), b(2), ...
  % The number of elements in the last two lists determines the
@@ -1940,7 +1940,7 @@ algebraic procedure ssconlaw(N,tw,cw,afwlist,abwlist,pdes,fermi)$
  % pdes    .. an algebraic list of the pde(s) for which a conservation
  %            law is to be found, for example
  %            {df(f(1),t)=df(f(1),x)*b(1)*p9,
- %             df(b(1),t)=b(1)**3*p3 + d(1,f(1))**2*p2 + 
+ %             df(b(1),t)=b(1)**3*p3 + d(1,f(1))**2*p2 +
  %                        df(b(1),x)*b(1)*p9 + df(f(1),x)*f(1)*p4}$
  % fermi   .. if =t then conserved flow is fermionic, if =nil then bosonic
 begin
@@ -1949,7 +1949,7 @@ begin
         dfli,inte,delta,dlirevcp,tr_cl,pdes2,pdes3,fno,bno,syli,deno,allcl,
         nontriv,forbid,Pt1,Px1,Pdl1,verbose$
 
-% tr_cl:=t$ 
+% tr_cl:=t$
 
  backup_reduce_flags()$
 
@@ -1969,7 +1969,7 @@ begin
   fblist:=append(flist,blist)
  >>$
  afblist:=lisp(cons('LIST,fblist))$
- for each g in afblist do depend g,x,t$ 
+ for each g in afblist do depend g,x,t$
 
  lisp <<
 
@@ -1984,8 +1984,8 @@ begin
   >>$
   % pde2 is a substitution list introducing a symbol for each equation
   % pde3 is an assoc list with an entry for each equation, eg.
-  % { {symbol_for_eqn, Q(1), df(f(1),t)-...}, 
-  %   {symbol_for_eqn, Q(2), df(b(1),t)-...}, ... }   
+  % { {symbol_for_eqn, Q(1), df(f(1),t)-...},
+  %   {symbol_for_eqn, Q(2), df(b(1),t)-...}, ... }
 
   % listing lhs's of equations and substitutions which are no t-derivatives
   forbid:=non_t_lhs_dvs(cdr pdes)$
@@ -2000,7 +2000,7 @@ begin
   % specifying the names of constants in the equations
   if fname_list then <<fname_:=car fname_list;
                        fname_list:=cdr fname_list>>
-                else   fname_:='r$ 
+                else   fname_:='r$
 
   fwlist:=cdr reval afwlist$
   bwlist:=cdr reval abwlist$
@@ -2031,9 +2031,9 @@ begin
    if fermi then h:=cadr h else h:= car h;
    Pdl:=nil$
    for g:=N step -1 until 1 do << % step -1 is crucial for backintegration
-    k:=add_terms(h)$ 
-    Pdl:=cons({'LIST,g,car k},Pdl)$ 
-    fl:=append(cadr k,fl)$ 
+    k:=add_terms(h)$
+    Pdl:=cons({'LIST,g,car k},Pdl)$
+    fl:=append(cadr k,fl)$
     eqn:=cons({'D,g,car k},eqn)$
    >>
   >>$
@@ -2046,7 +2046,7 @@ begin
 
  if tr_cl then <<
   write"Ansatz for Pt: ",Pt$
-  write"Ansatz for Px: ",Px$ 
+  write"Ansatz for Px: ",Px$
   write"Ansatz for Pdl: ",Pdl$
   write"list of unknown coefficients: ",fl$
  >>$
@@ -2054,7 +2054,7 @@ begin
  if fl={} then return <<
   write "No valid ansatz in this case."$
   nil
- >>$ 
+ >>$
 
  let pdes; % initializing all substitutions based on equations to generate eqn.
  eqn:=eqn; % only now after `let pdes'
@@ -2062,7 +2062,7 @@ begin
 
  lisp << % Formulating the conservation law conditions
 
-  % Listing the splitting `variables' 
+  % Listing the splitting `variables'
   h:=search_li3(reval eqn,{'DF,'F,'B,'D,'X,'T});
   if !*time then <<terpri()$
    write "CPU time so far: ",   time() - cpu," ms  ",
@@ -2072,8 +2072,8 @@ begin
 
   % Splitting
   k:=setkorder h$
-  eqn:=cons('LIST,             
-            for each g in itercoeff(if not pairp eqn then eqn else 
+  eqn:=cons('LIST,
+            for each g in itercoeff(if not pairp eqn then eqn else
                                     if car eqn = '!*sq then reorder numr cadr eqn
                                                        else numr simp eqn,h)
             collect {'!*SQ,(g . 1),t})$
@@ -2085,7 +2085,7 @@ begin
   terpri()
 
  >>$
- 
+
  % Solving the conservation law conditions
  sol:=first solve(eqn,fl)$
 
@@ -2103,7 +2103,7 @@ begin
  nontriv:=0$
  for g:=1:lisp !!arbint do <<
   spezsol:=sub(arbcomplex(g)=1,sol);
-  for h:=1:lisp !!arbint do 
+  for h:=1:lisp !!arbint do
   if h neq g then spezsol:=sub(arbcomplex(h)=0,spezsol);
 
   Ptcp :=sub(spezsol,Pt)$
@@ -2116,11 +2116,11 @@ begin
   h:=Pdlcp$
   while h neq {} do << if second first h neq 0 then k:=k+1;
                        h:=rest h >>$
-  
+
   % Drop conservation laws with only one non-vanishing component
   if k=0 then write "We drop a conservation law with Pt, Px, Pd[i] ",
                      "all being zero"
-         else 
+         else
   if k=1 then write "We drop a conservation law with only ",
                      if Ptcp neq 0 then "Pt" else "one Pd[i]"," nonzero."
          else <<
@@ -2148,20 +2148,20 @@ begin
 
     Ql:=pdes3$
 
-    pdes2:=add_df_rules_to_D_rule pdes2$   
+    pdes2:=add_df_rules_to_D_rule pdes2$
     algebraic(let pdes2);
     eqn:=reval eqn;
     algebraic(clearrules pdes2);
 
     if tr_cl then <<write"rhs in terms of equations = "$
-     % by now eqn should not involve any lhs or derivative 
+     % by now eqn should not involve any lhs or derivative
      % of any lhs of any equation in pdes.
      prettyprint eqn;
      terpri()
-    >>$   
+    >>$
 
     % taking care of quotients
-    deno:=nil; 
+    deno:=nil;
     if pairp eqn and car eqn = 'QUOTIENT then
     if is_const caddr eqn then <<deno:=caddr eqn; eqn:=cadr eqn>>
                           else rederr" Something is wrong!! (0) *****"$
@@ -2172,9 +2172,9 @@ begin
      % taking care of the minus sign
      minu:=nil; if pairp te and car te = 'MINUS then <<minu:=t; te:=cadr te>>$
      % checking each factor of which only one should have a t-derivative
-     if not pairp te or car te neq 'TIMES then factors:={te} 
+     if not pairp te or car te neq 'TIMES then factors:={te}
                                           else factors:=cdr te;
-     prefac:=nil; 
+     prefac:=nil;
      while factors do << % search until the first factor including an
                          % element of syli is found
       fa:=car factors;  factors:=cdr factors;
@@ -2195,21 +2195,21 @@ begin
         fa:=cadr fa
        >>$
 
-       if null factors then factors:=1 else 
-       if null cdr factors then factors:=car factors 
+       if null factors then factors:=1 else
+       if null cdr factors then factors:=car factors
                            else factors:=cons('TIMES,factors);
 
-       if null prefac then prefac:=1 else 
-       if null cdr prefac then prefac:=car prefac 
+       if null prefac then prefac:=1 else
+       if null cdr prefac then prefac:=car prefac
                           else prefac:=cons('TIMES,reverse prefac);
 
-       % Merging prefac and factors, i.e. moving fa to be last factor      
+       % Merging prefac and factors, i.e. moving fa to be last factor
        if is_fermion fa and is_fermion factors then minu:=not minu;
-       prefac:={'TIMES,prefac,factors}; 
+       prefac:={'TIMES,prefac,factors};
        factors:=nil; % i.e. stop of while loop
        if minu then prefac:={'MINUS,prefac}; minu:=nil;
 
-       dli:=nil;  
+       dli:=nil;
        while pairp fa and car fa='D do <<dli:=cons(cadr fa,dli);fa:=caddr fa>>$
        dli:=reverse dli;
 
@@ -2221,7 +2221,7 @@ begin
          if fixp car dfli then for k:=2:(car dfli) do h:=cons(car h,h)
                           else h:=cons(car dfli,h);
          dfli:=cdr dfli
-        >>$      
+        >>$
         dfli:=reverse h
        >>          else <<delta:=fa;dfli:=nil>>;
        k:=assoc(delta,Ql);  % k has form: {symb for eqn, Q_f(i), df(f(i),t)-rhs}
@@ -2231,7 +2231,7 @@ begin
 
        if tr_cl then <<write"delta=",delta,"  dfli=",dfli$ terpri()>>$
 
-       % At first partial integration of the D-derivatives      
+       % At first partial integration of the D-derivatives
        while dli do <<
         h:=car dli; dli:=cdr dli; % h in index of supersym. generator
         if is_fermion prefac then prefac:={'MINUS,prefac};
@@ -2239,13 +2239,13 @@ begin
         if dfli then inte:=cons('DF,cons(inte,dfli));
 
         dlirevcp:=reverse dli;
-        while dlirevcp do << 
+        while dlirevcp do <<
          inte:={'D,car dlirevcp,inte};
          dlirevcp:=cdr dlirevcp
         >>$
         algebraic(if tr_cl then write"Pdlcp before = ",Pdlcp)$
         algebraic(Pdlcp:=(part(Pdlcp,h):={first part(Pdlcp,h),
-                                          second part(Pdlcp,h) - 
+                                          second part(Pdlcp,h) -
                                           lisp({'TIMES,prefac,inte})}))$
         algebraic(if tr_cl then write"Pdlcp after = ",Pdlcp)$
         prefac:=reval {'MINUS,{'D,h,prefac}}
@@ -2286,7 +2286,7 @@ begin
     while h and zerop cadar h do h:=cdr h;
     if tr_cl then <<
      if null h then write"CL is TRIVIAL!"
-               else write"CL is GENUINE!"$ 
+               else write"CL is GENUINE!"$
      terpri()$
     >>$
 
@@ -2307,21 +2307,21 @@ begin
 
      % Test of correctness
      lisp(h:=if length Ql=1 then {'TIMES,cadar Ql,caddar Ql}
-                            else cons('PLUS,for each h in Ql collect 
+                            else cons('PLUS,for each h in Ql collect
                                             {'TIMES,cadr h,caddr h}));
 
-     k:=df(Ptcp,t)+df(Pxcp,x) - (lisp h) + 
+     k:=df(Ptcp,t)+df(Pxcp,x) - (lisp h) +
         for g:=1:N sum <<m:=first part(Pdlcp,g);D(m,second part(Pdlcp,g))>>$
 
      % Making Ql an algebraic list
      lisp (Ql:=cons('LIST,for each h in Ql collect {'LIST,caddr h,cadr h}));
 
      % Is conservation law new? --> compare with CL in allcl.
-     % structure of allcl: {cl1,cl2,...} where each cli is a conservation law 
+     % structure of allcl: {cl1,cl2,...} where each cli is a conservation law
      % and has the form {Ql,Pdlcp,Pxcp,Ptcp,no_of_terms_in_all_P}
      %    h:=allcl$
      %    while h neq {} do <<
-     %     
+     %
      %    >>$
      %. . . . . . .
 
@@ -2373,12 +2373,12 @@ begin
      if k neq 0 then <<
       write"***** ERROR: "$
       write" 0 <> ",k$
-      rederr" A test shows a contradiction! *****"$    
+      rederr" A test shows a contradiction! *****"$
 %      write" A test shows a contradiction! *****"$    %@@@@@@@@@@@@@@@@
      >>
 
     >>   %  there is a non-zero Q after substitution of equations
-   >>   %  divergence does not vanish identically 
+   >>   %  divergence does not vanish identically
   >>   %  if k>1 then <<  (more than one non-vanishing component)
  >>$  %  for g:=1:lisp !!arbint do <<
  %#1#
@@ -2397,13 +2397,13 @@ algebraic procedure ssconl(N,tw,mincw,maxcw,afwlist,abwlist,pdes)$
  write"The ",if length pdes=1 then "equation" else "system",
       " to be investigated:"$
  for each h in pdes do write h$
- pdes:= for each h in pdes collect 
+ pdes:= for each h in pdes collect
         lisp {'REPLACEBY,cadr algebraic h,caddr algebraic h}$
  lisp <<
   terpri()$
   write"Each CL has the form:  "$terpri()$
   if N=0 then write"    Dt(Pt) + Dx(Px) = Q1*PDE1 + .."
-         else write"    Dt(Pt) + sum_i Di(Pd(i)) = Q1*PDE1 + .."$ 
+         else write"    Dt(Pt) + sum_i Di(Pd(i)) = Q1*PDE1 + .."$
   terpri()$
   write"where, e.g. PDE1 is (left hand side) - (right hand side) of PDE 1."$
   terpri()
@@ -2420,8 +2420,8 @@ algebraic procedure ssconl(N,tw,mincw,maxcw,afwlist,abwlist,pdes)$
 
 symbolic procedure lofl(n,mwt)$
 % produces lists with n elements, each having a value 0...mwt
-if n=1 then for i:=0:mwt collect {i,{i}} else 
-for each l in lofl(n-1,mwt) join 
+if n=1 then for i:=0:mwt collect {i,{i}} else
+for each l in lofl(n-1,mwt) join
 for j:=0:(mwt-car l) collect {j+car l,cons(j,cadr l)}$
 
 %-------
@@ -2452,7 +2452,7 @@ begin scalar w,wt,m$
   >>$
   {wt,ali,wl}
  >>                       else <<
-  wt:=mkid('w_,if pairp h then gensym() 
+  wt:=mkid('w_,if pairp h then gensym()
                           else h       );
   ali:=cons((h . wt), ali);
   wl:=cons(wt,wl);
@@ -2486,7 +2486,7 @@ $
  if not pairp exli or car exli neq 'LIST then return <<
   write"The input expression is not a list  {  } ."$terpri()$
   write"Try again."$terpri()
- >>$  
+ >>$
 
  % Generation of bs
  bs:={nil};
@@ -2504,10 +2504,10 @@ $
 
  % identifiers with zero weight
  for each h in cdr reval zerowei do
- ali:=cons((h . 0), ali); 
+ ali:=cons((h . 0), ali);
 
- % the weights of further differentiation variables will be 
- % added dynamically as they occur 
+ % the weights of further differentiation variables will be
+ % added dynamically as they occur
 
  % the weights of all th-variables
  for j:=1:N do ali:=cons(({'th,j} . -1), ali);
@@ -2522,9 +2522,9 @@ $
 
   % now all coefficients f(j,..), b(j,..) of all terms in the
   % th(k) power expansion of f(j):
-  for each s in bs do 
+  for each s in bs do
   ali:=cons(((if evenp car s then append({'f,j},cdr s)
-                             else append({'b,j},cdr s)) . 
+                             else append({'b,j},cdr s)) .
              (if zerop car s then w
                              else {'PLUS,w,car s})        ), ali)
  >>$
@@ -2539,16 +2539,16 @@ $
 
   % now all coefficients f(j,..), b(j,..) of all terms in the
   % th(k) power expansion of b(j):
-  for each s in bs do 
+  for each s in bs do
   ali:=cons(((if evenp car s then append({'b,j},cdr s)
-                             else append({'f,j},cdr s)) . 
+                             else append({'f,j},cdr s)) .
              (if zerop car s then w
                              else {'PLUS,w,car s})        ), ali)
  >>$
 
  for each ex in cdr exli do <<
 
-  sf:=numr (if pairp ex and (car ex = 'EQUAL) then 
+  sf:=numr (if pairp ex and (car ex = 'EQUAL) then
   subtrsq(simp cadr ex,simp caddr ex)         else simp ex);
   % sf is the numerator of the expression
 
@@ -2565,7 +2565,7 @@ $
     tf:=lc tf
    >>;
    wt:=if null wt then 0              else
-       if cdr  wt then cons('PLUS,wt) else 
+       if cdr  wt then cons('PLUS,wt) else
 		       car wt$
    wtli:=cons(reval wt,wtli)
   >>;
@@ -2581,7 +2581,7 @@ $
 
  % solving the system of conditions
  !!arbint:=0;
- if null eli then 
+ if null eli then
  if null wl then s:=nil
             else <<
   s:=nil;
@@ -2593,7 +2593,7 @@ $
  >>          else <<
   s:=solveeval {cons('LIST,eli),cons('LIST,wl)};
   if s then s:=cdr s;  % to get rid of 'LIST
-  if s then s:=car s;  % This was a linear homogeneous problem with 
+  if s then s:=car s;  % This was a linear homogeneous problem with
   % only one solution which we take (possibly with free parameters).
 
   % If there is just a single unknown then the solution will consist
@@ -2612,16 +2612,16 @@ $
   jmax:=if !!arbint=0 then 1 else !!arbint$
   for j:=1:jmax do <<
    sc:=s;
-   for k:=1:!!arbint do 
+   for k:=1:!!arbint do
    if k neq j then sc:=algebraic(sub(arbcomplex(lisp k)=0,sc));
 
-   % storing all homogeneities 
+   % storing all homogeneities
    k:=ali;
    for each h in cdr sc do
    k:=subst(caddr h,reval cadr h,k);
    allali:=cons(k,allali);
 
-   if j neq 0 then 
+   if j neq 0 then
    sc:=algebraic(sub(arbcomplex(lisp j)=1,sc));
 
    % storing the homogeneity weights of f(1),f(2),.. b(1),b(2),..
@@ -2652,20 +2652,20 @@ $
 
  % Printing all homogeneities
  if verbose then <<
-  if hlist={'LIST} then write"This system is not homogeneous." 
+  if hlist={'LIST} then write"This system is not homogeneous."
 		   else <<
-   if !!arbint=0 then 
+   if !!arbint=0 then
    write"This system has the following homogeneity:" else
    write"This system has the following homogeneities:"$
    terpri()$
    for each ali in allali do <<
-    for each w in ali do 
+    for each w in ali do
     algebraic(write"W[",lisp car w,"] = ",lisp reval cdr w)$
     write"================================="$terpri()$
    >>$
 
    write"The program returns a list of "$
-   h:=length hlist - 1; 
+   h:=length hlist - 1;
    if h=1 then <<write"one homogeneity"$terpri()$
     write"which is a list of"
    >>     else <<write h," homogeneities,"$ terpri()$
@@ -2696,12 +2696,12 @@ algebraic procedure linearize(pdes,nf,nb,tpar,spar)$
 % nf     .. number of fermion fields f(1) .. f(nf)
 % nb     .. number of boson   fields b(1) .. b(nb)
 % tpar   .. whether the variable t is parity changing
-% spar   .. whether the symmetry parameter s of the symmetry that corresponds 
+% spar   .. whether the symmetry parameter s of the symmetry that corresponds
 %           to this linearization is parity changing (t) or not (nil)
 % linearize returns
 % {list of relations that define the introduced fields like df(f(3),s)=f(6),
 %  list of linearized equations}
-% Newly introduced fields depend on x,t,s. 
+% Newly introduced fields depend on x,t,s.
 begin scalar spar_bak,tpar_bak,n,m,p,npdes,rel$
 
  spar_bak:=lisp s_changes_parity$
@@ -2760,11 +2760,11 @@ begin scalar spar_bak,tpar_bak,n,m,p,npdes,rel$
  for each p in npdes do write p$
  on  nat$
 
- if lisp(spar_bak neq s_changes_parity) then 
+ if lisp(spar_bak neq s_changes_parity) then
  if spar_bak then on  s_changes_parity
              else off s_changes_parity$
 
- if lisp(tpar_bak neq t_changes_parity) then 
+ if lisp(tpar_bak neq t_changes_parity) then
  if tpar_bak then on  t_changes_parity
              else off t_changes_parity$
 
@@ -2778,7 +2778,7 @@ end$
 
 symbolic operator  GenSSPoly$
 symbolic procedure GenSSPoly(N,wgtlist,cname,mode)$
-begin 
+begin
  scalar linsub,g,h,N,flist,blist,afblist,forbid,non0coeff,fname_bak,
         fl,allf,allb,fwlist,bwlist,nf,nb,verbose,afwlist,abwlist,pol,
         fonly,bonly,wgt,newf,newb,print_bak$
@@ -2796,21 +2796,21 @@ begin
  mode:=cdr mode;       % to drop 'LIST
  while mode do <<
   if car mode = 'lin then <<
-   if not evenp nf then 
+   if not evenp nf then
    rederr"The flag `lin' can not be run with odd many fermions"$
    linsub:=for h:=(nf/2+1):nf collect {'f,h}$
-   if not evenp nb then 
+   if not evenp nb then
    rederr"The flag `lin' can not be run with odd many bosons"$
    linsub:=cons('LIST,append(linsub,for h:=(nb/2+1):nb collect {'b,h}))
   >>                 else
-  if car mode = 'verbose then verbose:=t else 
-  if car mode = 'fonly then fonly:=t else 
-  if car mode = 'bonly then bonly:=t else 
+  if car mode = 'verbose then verbose:=t else
+  if car mode = 'fonly then fonly:=t else
+  if car mode = 'bonly then bonly:=t else
   if pairp car mode and cadar mode = 'forbid    then forbid   :=cddar mode else
   if pairp car mode and cadar mode = 'non0coeff then non0coeff:=cddar mode$
   mode:=cdr mode
  >>$
- 
+
  % Initialization of fermionic and bosonic fields + their printing
  input_consistency_test(afwlist,abwlist)$
  N_:=N;  % to avoid printing the index of D in crack_out for N=1
@@ -2860,15 +2860,15 @@ begin
    let lrule1; pol:=pol; clearrules lrule1;
    let lrule2; pol:=pol; clearrules lrule2;
 
-   newf:={}$  
+   newf:={}$
    for each h in first pol do <<
-    h:=h/lin_test_const**wgt; 
+    h:=h/lin_test_const**wgt;
     if freeof(h,lin_test_const) then newf:=cons(h,newf)
    >>$
 
    newb:={}$
    for each h in second pol do <<
-    h:=h/lin_test_const**wgt; 
+    h:=h/lin_test_const**wgt;
     if freeof(h,lin_test_const) then newb:=cons(h,newb)
    >>$
 
@@ -2879,7 +2879,7 @@ begin
  print_bak:=print_; print_:=nil;
  newf:=if bonly then 0
                 else <<
-  h:=for each g in cdadr pol collect <<h    :=newfct(fname_,nil,nfct_)$ 
+  h:=for each g in cdadr pol collect <<h    :=newfct(fname_,nil,nfct_)$
 	 			       fl   :=cons(h,fl);
 				       nfct_:=add1 nfct_$
 				       {'TIMES,h,g}>>$
@@ -2887,9 +2887,9 @@ begin
                      else car h
        else 0
  >>$
- newb:=if fonly then 0 
+ newb:=if fonly then 0
                 else <<
-  h:=for each g in cdaddr pol collect <<h    :=newfct(fname_,nil,nfct_)$ 
+  h:=for each g in cdaddr pol collect <<h    :=newfct(fname_,nil,nfct_)$
 	 		   	        fl   :=cons(h,fl);
 				        nfct_:=add1 nfct_$
 				        {'TIMES,h,g}>>$
@@ -2909,14 +2909,14 @@ end$
 algebraic procedure thgen(k)$
 % generates a list with 2^N elements, each element generating
 % a term in the th-power series and has the form:
-% {product_of_th(i), 
-%  number_of_factors_th(i), 
-%  {0's and 1's, i.e. a 1 for each th() otherwise zeros} } 
-if k=0 then {{1,0,{}}} 
-       else begin 
+% {product_of_th(i),
+%  number_of_factors_th(i),
+%  {0's and 1's, i.e. a 1 for each th() otherwise zeros} }
+if k=0 then {{1,0,{}}}
+       else begin
  scalar a,b$
  a:= thgen(k-1)$
- return for each b in a 
+ return for each b in a
         join {{first b,       second b,   append (third b,{0})},
               {th(k)*first(b),second(b)+1,append (third b,{1})} }
 end$
@@ -2928,7 +2928,7 @@ algebraic procedure tocoo(N,nf,nb,ex)$
 % nb: number of boson fields
 % ex: polynomial expression in field form to be transformed into coordinate form
 begin
- scalar thli,subfnb,i,h$ 
+ scalar thli,subfnb,i,h$
  lisp(N_:=N);
  put('f,'prifn,nil);
  put('b,'prifn,nil);
@@ -2936,19 +2936,19 @@ begin
 
  % Generate the coordinate form of f(i)
  subfnb:={};
- for i:=1:nf do 
- subfnb:=cons(f(i)=for each h in thli sum 
+ for i:=1:nf do
+ subfnb:=cons(f(i)=for each h in thli sum
    if evenp second h then lisp(cons('f,cdr algebraic cons(i,third h)))*first h
-	             else lisp(cons('b,cdr algebraic cons(i,third h)))*first h, 
+	             else lisp(cons('b,cdr algebraic cons(i,third h)))*first h,
               subfnb);
 
  % Generate the coordinate form of b(i)
  for i:=1:nb do
- subfnb:=cons(b(i)=for each h in thli sum 
+ subfnb:=cons(b(i)=for each h in thli sum
    if evenp second h then lisp(cons('b,cdr algebraic cons(i,third h)))*first h
-                     else lisp(cons('f,cdr algebraic cons(i,third h)))*first h, 
+                     else lisp(cons('f,cdr algebraic cons(i,third h)))*first h,
               subfnb);
- 
+
  % Do the substitution
  ex:=sub(subfnb,ex)$
  % Replace D(i,..) which has to be done AFTER the above substitution
@@ -2987,12 +2987,12 @@ begin scalar ssp,ans,fieldans,rlist,indepv,h,eqnli,solu,wflist,wblist,tw,
  w:=first w$ % We just use the fist homogeneity because if there are
              % several and there is one with strictly positive weights
              % then this comes first.
- 
+
  wflist:=first w;
  wblist:=second w;
  tw:=first third w;
- 
- for each h in append(wflist,wblist) do 
+
+ for each h in append(wflist,wblist) do
  if not fixp h then notnum:=t else
  if h <= 0 then notpos:=t$
 
@@ -3013,7 +3013,7 @@ begin scalar ssp,ans,fieldans,rlist,indepv,h,eqnli,solu,wflist,wblist,tw,
  >>$
 
  % generating an ansatz in field form (ssp)
- % and convert it back to coordinate form (ans) 
+ % and convert it back to coordinate form (ans)
  % Next line works so far only if not compilied.
  if is_fermionic(lisp{'!*SQ,((first_term_SF numr simp algebraic ex) . 1),t}) then <<
  % if (lisp{'!*SQ,((first_term_SF numr simp algebraic ex) . 1),t})**2=0 then <<
@@ -3027,7 +3027,7 @@ begin scalar ssp,ans,fieldans,rlist,indepv,h,eqnli,solu,wflist,wblist,tw,
  ans:=tocoo(N,nf,nb,fieldans)$
 
  %spliting the equation
- rlist:=third(ssp); % a list of undetermined coefficients r1,r2, ... 
+ rlist:=third(ssp); % a list of undetermined coefficients r1,r2, ...
  indepv:=append({x,t},for h:=1:N collect th(h))$ % all independent variables
  lisp(print_:=nil)$ % to suppress printing about the splitting
  eqnli:=split_simp({ans-ex},{},rlist,indepv,t)$
@@ -3078,7 +3078,7 @@ symbolic procedure change_prompt_to u$
 
 symbolic procedure cnt_l_$
 if lines_written geq 10 then <<
-  change_prompt_to ""$ 
+  change_prompt_to ""$
   write"                                   Press Enter to continue "$
   restore_interactive_prompt()$
   rds nil; wrs nil$         % Switch I/O to terminal
@@ -3090,44 +3090,44 @@ if lines_written geq 10 then <<
 
 %-------
 
-symbolic procedure wl1(l)$ 
+symbolic procedure wl1(l)$
 <<write l$ terpri()$ cnt_l_()$ lines_written:=lines_written+1>>$
-symbolic procedure wl2(l)$ 
+symbolic procedure wl2(l)$
 <<write l$ terpri()$ terpri()$ cnt_l_()$ lines_written:=lines_written+2>>$
 
 %-------
 
 symbolic procedure sshelp1$
-<<wl2"Purpose: "$                                                    
+<<wl2"Purpose: "$
 
- wl1"to determine evolutionary supersymmetric PDEs with higher"$    
- wl1"symmetries, to compute symmetries and conservation laws for"$  
+ wl1"to determine evolutionary supersymmetric PDEs with higher"$
+ wl1"symmetries, to compute symmetries and conservation laws for"$
  wl1"given supersymmetric PDEs, or to do any other algebra or"$
- wl2"differentiations of polynomial supersymmetric expressions."$  
+ wl2"differentiations of polynomial supersymmetric expressions."$
 >>$
 
 %-------
 
 symbolic procedure sshelp2$
-<<wl2"Notation: "$                                                   
+<<wl2"Notation: "$
 
- wl1"Fields f(1),f(2),.. are treated as fermionic, and b(1),.. are"$   
+ wl1"Fields f(1),f(2),.. are treated as fermionic, and b(1),.. are"$
  wl1"treated as bosonic. The independent variables are t, x and in"$
- wl1"symmetry computations the symmetry `time' variable is s. "$  
+ wl1"symmetry computations the symmetry `time' variable is s. "$
  wl2"Further fermionic variables can be defined, for example, theta."$
 
- wl1"The super derivatives D_i which satisfy (D_i)**2 = d/dx "$    
- wl2"are implemented as d(i, .. ) .  "$                              
+ wl1"The super derivatives D_i which satisfy (D_i)**2 = d/dx "$
+ wl2"are implemented as d(i, .. ) .  "$
 
- wl1"When refering to homogeneity weights, all weights are scaled"$ 
- wl1"such that the weight of d(i, .. ) is 1 and thus the weight"$   
+ wl1"When refering to homogeneity weights, all weights are scaled"$
+ wl1"such that the weight of d(i, .. ) is 1 and thus the weight"$
  wl2"of df( .. , x) is two, i.e. twice the usual value. "$
 >>$
 
 %-------
 
 symbolic procedure sshelp3$
-<<wl2"Initializations: "$                                            
+<<wl2"Initializations: "$
 
  wl1"Before starting super-computations the number N of superfields theta_i"$
  wl1"needs to be known. Also the number nb of boson fields and the nf of"$
@@ -3138,10 +3138,10 @@ symbolic procedure sshelp3$
  wl1"or with a call of procedure ssini. This help item describes ssini."$
  wl2"It's format is:"$
 
- wl2"  ssini(N,nf,nb)$"$          
+ wl2"  ssini(N,nf,nb)$"$
 
  wl2"where"$
- 
+
  wl1" N      .. the number of superfields theta_i"$
  wl1" nf     .. number of fermion fields f(1) .. f(nf)"$
  wl2" nb     .. number of boson   fields b(1) .. b(nb)"$
@@ -3207,14 +3207,14 @@ symbolic procedure sshelp3$
  wl2"f(1)*b(1)*d(1,b(2));"$
 
  wl1"Any initializations made by ssini are overwritten by a call to the"$
- wl2"procedures ssym or ssconl."$  
+ wl2"procedures ssym or ssconl."$
 
 >>$
 
 %-------
 
 symbolic procedure sshelp4$
-<<wl2"Coefficients: "$                                                    
+<<wl2"Coefficients: "$
 
  wl1"coeffn is a standard REDUCE command although its implementation"$
  wl1"(at least in REDUCE distributions up to version 3.8) does not work"$
@@ -3248,26 +3248,26 @@ symbolic procedure sshelp4$
 %-------
 
 symbolic procedure sshelp5$
-<<% special use comments: 
+<<% special use comments:
  % in drvlist$ % loads the ansatz of the previous ssym run
  % use_new_crackout:=t$ % needed to use the ssym specific crack_out()
 
  wl2"Computing symmetries:"$
 
- wl1"To compute PDEs together with higher symmetries, or to"$ 
- wl2"compute higher symmetries for a given PDE(-system) the call is:"$   
+ wl1"To compute PDEs together with higher symmetries, or to"$
+ wl2"compute higher symmetries for a given PDE(-system) the call is:"$
 
- wl2"  ssym(N,tw,sw,afwlist,abwlist,eqnlist,fl,inelist,mode)$"$          
+ wl2"  ssym(N,tw,sw,afwlist,abwlist,eqnlist,fl,inelist,mode)$"$
 
  wl2"where"$
 
  wl1" N       .. the number of superfields theta_i"$
- wl1" tw      .. 2 times the differential order of the equation = weight(t)"$ 
- wl1" sw      .. 2 times the differential order of the symmetry = weight(s)"$ 
- wl1" afwlist .. (algebraic mode) list of weights of the fermion fields"$     
+ wl1" tw      .. 2 times the differential order of the equation = weight(t)"$
+ wl1" sw      .. 2 times the differential order of the symmetry = weight(s)"$
+ wl1" afwlist .. (algebraic mode) list of weights of the fermion fields"$
  wl1"            f(1), f(2), ... . The number of elements of this list"$
  wl1"            determines the number of fermion fields. "$
- wl1" abwlist .. (algebraic mode) list of weights of the boson fields"$       
+ wl1" abwlist .. (algebraic mode) list of weights of the boson fields"$
  wl1"            b(1), b(2), ... . The number of elements of this list"$
  wl1"            determines the number of boson fields. "$
  wl1" eqnlist .. - in the nonlinear case a list of extra conditions on the"$
@@ -3276,27 +3276,27 @@ symbolic procedure sshelp5$
  wl1"              when calling crack"$
  wl1"            - in the linear case the system in form of replacements => and"$
  wl1"              the linearized system in form of equations = ."$
- wl1" fl      .. extra unknowns in eqnlist to be determined"$                 
- wl1" inelist .. a list, each element of it is a list with at least one of"$  
- wl1"            its elements being non-zero"$                                
- wl1" mode    .. list of flags: "$                                            
- wl1"            init: only initialization of global data"$                   
- wl1"            plain_com : direct computation of the commutator (for tests)"$ 
- wl1"            power_split_com : alternatice power splitting of commutator,"$ 
- wl1"                             (not if substitutions '=>' are present,"$ 
- wl1"                              see below)"$   
- wl1"            zerocoeff: all coefficients = 0 which do not appear in inelist"$ 
+ wl1" fl      .. extra unknowns in eqnlist to be determined"$
+ wl1" inelist .. a list, each element of it is a list with at least one of"$
+ wl1"            its elements being non-zero"$
+ wl1" mode    .. list of flags: "$
+ wl1"            init: only initialization of global data"$
+ wl1"            plain_com : direct computation of the commutator (for tests)"$
+ wl1"            power_split_com : alternatice power splitting of commutator,"$
+ wl1"                             (not if substitutions '=>' are present,"$
+ wl1"                              see below)"$
+ wl1"            zerocoeff: all coefficients = 0 which do not appear in inelist"$
  wl1"            filter: extra homogeneity weights as given in the list"$
  wl1"                    hom_wei have to be satisfied by the symmetry"$
  wl1"            lin: find symmetry that is linear homogeneous in all fields "$
  wl1"                 with (index)>(maxindex/2), i.e. if lin then the"$
- wl1"                 number of fermions and boson fields must both be even"$  
- wl1"            tpar: t/nil, whether time variable t changes parity"$        
- wl2"            spar: t/nil, whether symmetry variable s changes parity"$    
+ wl1"                 number of fermions and boson fields must both be even"$
+ wl1"            tpar: t/nil, whether time variable t changes parity"$
+ wl2"            spar: t/nil, whether symmetry variable s changes parity"$
 
  wl2"-----------------"$
 
- wl1"The question whether ssym is to be used to compute a PDE(-system) with"$ 
+ wl1"The question whether ssym is to be used to compute a PDE(-system) with"$
  wl1"symmetries, or to compute symmetries for a `given' PDE(-system) is"$
  wl1"decided based on the form of the input eqnlist. "$
  wl1"If symmetries of a specific weight for a given PDE(-system) are to"$
@@ -3304,7 +3304,7 @@ symbolic procedure sshelp5$
  wl1"{df(f(1),t)=..., df(b(1),t)=...} with as many t-derivatives"$
  wl1"of fermion fields as there are elements in afwlist and as many"$
  wl2"t-derivatives of boson fields as there are elements in abwlist."$
- 
+
  wl1"If the right hand sides of the PDE(s) in eqnlist involve any "$
  wl1"constants which are to be computed then these constants have to "$
  wl1"be listed in the input list fl, like {p1,p2,...}. If these constant "$
@@ -3346,7 +3346,7 @@ symbolic procedure sshelp5$
  wl2"ssym(1,4,5,{2},{2},{},{},{},{})$ "$
 
  wl2"Example for determining the symmetries of a given PDE-system:"$
- 
+
  wl1"ssym(1,4,5,{2},{2},"$
  wl1"     {df(f(1),t)=df(f(1),x)*b(1)*p9,"$
  wl1"      df(b(1),t)=df(b(1),x)*b(1)*p9 + df(f(1),x)*f(1)*p4},"$
@@ -3360,7 +3360,7 @@ symbolic procedure sshelp5$
  wl1"matching symmetries are to be found:"$
 
  wl1"lisp put('f,'prifn,nil)$  % from now on more than one fermion "$
- wl1"lisp put('b,'prifn,nil)$  % from now on more than one boson "$             
+ wl1"lisp put('b,'prifn,nil)$  % from now on more than one boson "$
  wl1"ssym(1,1,4,{1,1},{1,3,1,3}, "$
  wl1"     {df(f(1),t)=>-2*f(1)*b(1)*p1,  "$
  wl1"      df(b(1),t)=>b(1)**2*p1+d(1,f(1))*p2,  "$
@@ -3413,7 +3413,7 @@ symbolic procedure sshelp5$
  wl1"flag `filter' and has a global variable hom_wei which is a list of "$
  wl1"lists {sw,afwlist,abwlist} each being an additional set of homogeneity"$
  wl2"weights."$
- 
+
  wl2"Example: "$
 
  wl2"hom_wei:={{10,{3,3},{2,2}}}$"$
@@ -3450,7 +3450,7 @@ symbolic procedure sshelp5$
  wl1"  + 5/22*df(f(1),x)*f(1)*b(3)*p2**2)/(p1*p2)$  "$
  wl1" df(f(2),s):=(1/4*d(1,f(2))*d(1,f(1))*f(1)*p2**2 + 1/2*d(1,f(2))  "$
  wl1"  *f(1)*b(1)**2*p1*p2 + 3/44*d(1,f(1))**2*f(2)*p2**2 + 3/22*d(1,f(1)) "$
- wl2"  *f(2)*b(1)**2*p1*p2 + 1/44*df(f(1),x)*f(2)*f(1)*p2**2)/(p1*p2)$  "$ 
+ wl2"  *f(2)*b(1)**2*p1*p2 + 1/44*df(f(1),x)*f(2)*f(1)*p2**2)/(p1*p2)$  "$
 
  wl1" b3s:=df(b(3),s)$  "$
  wl2" f2s:=df(f(2),s)$  "$
@@ -3465,11 +3465,11 @@ symbolic procedure sshelp5$
 
 symbolic procedure sshelp6$
 <<wl2"To compute conservation laws the call is:"$
- 
+
  wl2"  ssconl(N,tw,mincw,maxcw,afwlist,abwlist,pdes)$"$
- 
+
  wl2"where"$
- 
+
  wl1" N       .. the number of superfields theta_i"$
  wl1" tw      .. weight(d_t) = 2 times the differential order of the equation"$
  wl1" mincw   .. min weight of the conservation law"$
@@ -3478,7 +3478,7 @@ symbolic procedure sshelp6$
  wl1"            f(1), f(2), ... "$
  wl1" abwlist .. (algebraic) list of weights of the boson fields"$
  wl1"            b(1), b(2), ..."$
- wl1" pdes    .. an algebraic list of the pde(s) for which a conservation"$ 
+ wl1" pdes    .. an algebraic list of the pde(s) for which a conservation"$
  wl1"            law is to be found, for example"$
  wl1"            {df(f(1),t)=df(f(1),x)*b(1)*p9,"$
  wl1"             df(b(1),t)=b(1)**3*p3 + d(1,f(1))**2*p2 + "$
@@ -3498,7 +3498,7 @@ symbolic procedure sshelp6$
  wl2"-----------------"$
 
  wl2"Example for determining conservation laws for a given PDE-system:"$
- 
+
  wl1"ssconl(1,4,10,15,{2},{2},"$
  wl1"       {df(f(1),t)=df(f(1),x)*b(1)*p9,"$
  wl1"        df(b(1),t)=b(1)**3*p3 + d(1,f(1))**2*p2 + df(b(1),x)*b(1)*p9 "$
@@ -3516,7 +3516,7 @@ symbolic procedure sshelp7$
  wl2"  FindSSWeights(N,nf,nb,exli,zerowei,verbose)$"$
 
  wl2"where"$
- 
+
  wl1" N       .. the number of superfields theta_i"$
  wl1" nf      .. number of fermion fields f(1) .. f(nf)"$
  wl1" nb      .. number of boson   fields b(1) .. b(nb)"$
@@ -3561,11 +3561,11 @@ symbolic procedure sshelp7$
 symbolic procedure sshelp8$
 <<wl1"To compute a linearization of a system of evolution equations,"$
  wl2"the call is:"$
- 
+
  wl2"  linearize(pdes,nf,nb,tpar,spar)$"$
- 
+
  wl2"where"$
- 
+
  wl1" pdes   .. list of equations with a t-derivative on left hand side"$
  wl1" nf     .. number of fermion fields f(1) .. f(nf)"$
  wl1" nb     .. number of boson   fields b(1) .. b(nb)"$
@@ -3584,7 +3584,7 @@ symbolic procedure sshelp8$
  wl2"-----------------"$
 
  wl2"An (artificial) example for a linearization:"$
- 
+
  wl1"linearize({df(f(1),t)=df(f(2),x)*b(1)**3*p1 "$
  wl1"                      + d(1,f(2))**5*df(f(1),x,2)*p2,"$
  wl1"           df(f(2),t)=2*d(1,df(b(1),x))*df(f(2),x,2)*df(f(1),x)*p3 "$
@@ -3612,17 +3612,17 @@ symbolic procedure sshelp9$
  wl1"                       boson   fields b(1), b(2), ..."$
  wl1"            wgt     .. the weight of each term in the generated"$
  wl1"                       polynomial according to afwlist and abwlist"$
- wl1"            The number of elements in afwlist, abwlist determines"$    
+ wl1"            The number of elements in afwlist, abwlist determines"$
  wl1"            the number of fermion and boson fields."$
  wl1"            If the generated polynomial should have more than one"$
  wl1"            homogeneity symmetry then each extra one is specified"$
  wl1"            by another element {afwlist,abwlist,wgt} in wgtlist."$
  wl1" cname   .. name of the coefficients which gets added an index"$
- wl1" mode    .. list of flags: "$                                            
+ wl1" mode    .. list of flags: "$
  wl1"            lin: the generated polynomial has to be linear homogeneous"$
  wl1"                 in all fields with (index)>(maxindex/2), i.e."$
  wl1"                 if lin then the number of fermions and boson fields"$
- wl1"                 must both be even"$  
+ wl1"                 must both be even"$
  wl1"            fonly: only fermionic terms are generated"$
  wl1"            bonly: only bosonic   terms are generated"$
  wl1"            {forbid,d(1,f(1)),..}: a list of fermionic and bosonic"$
@@ -3631,7 +3631,7 @@ symbolic procedure sshelp9$
 % wl2"                 that may occur"$
 
  wl2"The result is a list"$
- 
+
  wl2"{fermonic_polynomial, bosonic_polynomial, {coefficients}}."$
 
  wl2"Comments:"$
@@ -3654,7 +3654,7 @@ symbolic procedure sshelp10$
 <<wl1"The N symmetry generators theta_1,..,theta_N are called th(1),..,th(N)"$
  wl1"in SSTools. As they are of odd parity only 2^N many products of their"$
  wl1"powers exist. The name convention used in SSTools for coefficients"$
- wl1"in the Taylor expansion wrt. theta_i becomes apparent in the following"$ 
+ wl1"in the Taylor expansion wrt. theta_i becomes apparent in the following"$
  wl2"two expansions (here for N=2):"$
 
  wl1"f(i)=f(i,0,0)+b(i,1,0)*th(1)+b(i,0,1)*th(2)+f(i,1,1)*th(1)*th(2)"$
@@ -3669,9 +3669,9 @@ symbolic procedure sshelp10$
  wl2"we call `coordinate form'. The call is:"$
 
  wl2"  tocoo(N,nf,nb,ex)$"$
- 
+
  wl2"where"$
- 
+
  wl1" N      .. the number of superfields th(1) .. th(N)"$
  wl1" nf     .. number of fermion fields f(1) .. f(nf)"$
  wl1" nb     .. number of boson   fields b(1) .. b(nb)"$
@@ -3698,7 +3698,7 @@ symbolic procedure sshelp11$
  wl2"  tofield(N,nf,nb,ex,zerowei)$"$
 
  wl2"where"$
- 
+
  wl1" N       .. the number of superfields theta_i"$
  wl1" nf      .. number of fermion fields f(1) .. f(nf)"$
  wl1" nb      .. number of boson   fields b(1) .. b(nb)"$
@@ -3760,7 +3760,7 @@ begin scalar ps,s$
   s:=read()$
   if ifl!* then rds cadr ifl!*$  %  Resets I/O streams
   if ofl!* then wrs cdr ofl!*$
-  wl2"=========================================================="$   
+  wl2"=========================================================="$
   if s= 1 then sshelp1() else
   if s= 2 then sshelp2() else
   if s= 3 then sshelp3() else
@@ -3779,10 +3779,8 @@ end$
 
 %-------
 
-lisp <<write"For help type:  sshelp()$  "$terpri()>>$ 
+lisp <<write"For help type:  sshelp()$  "$terpri()>>$
 
 endmodule;
 
 end$
-
-
