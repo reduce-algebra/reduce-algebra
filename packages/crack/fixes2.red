@@ -31,7 +31,7 @@ module reduce_patches$
 % $Id$
 %% Redefinition of diffp is no longer needed
 
-%%symbolic fluid '(!*fjwflag)$ % for diffp() below
+%%fluid '(!*fjwflag)$ % for diffp() below
 %%
 %%%>>>>>>>>>>  the next fixes some noncom bug
 %%
@@ -169,7 +169,7 @@ module reduce_patches$
 %% %                         nil,nil,nil);
 %%                     nil >>
 %%                    else if x and not(v memq (x:=cdr x))
-%%                     % declared indirect dependency, 
+%%                     % declared indirect dependency,
 %%                     then << w := df!-chain!-rule(u, v, x); go to e>>
 %%                    else if y and not smember(v,y)
 %%                     % possible indirect dependency of kernel arglist on v
@@ -212,7 +212,7 @@ module reduce_patches$
 %%          % (i.e. for nested/multiple derivatives, or differentiation of integrals)
 %%          % or that may come from inconsistent dependencies, e.g. after
 %%          %  depend u(v),a;
-%%          % do not replace df(u(v),v) by df(u(v),a)*df(a,v) 
+%%          % do not replace df(u(v),v) by df(u(v),a)*df(a,v)
 %%          else if !*expanddf and not atom u and null cdddr w
 %%                  and not(car u memq '(df int)) and not smember(v,u)
 %%                  and (not (x:= atsoc(u,powlis!*)) or not depends(cadddr x,v))
@@ -246,7 +246,7 @@ module reduce_patches$
 % symbolic procedure gcdf(u,v)$
 % now in the reduce source
 
-%>>>>>>>> A fix by Winfried Neun, 20. Sep 2006 
+%>>>>>>>> A fix by Winfried Neun, 20. Sep 2006
 %>>>>>>>> to simplify df(int(f,y),x,y) --> df(f,x)
 %>>>>>>>> An alternative is
 %>>>>>>>> on allowdfint$
@@ -255,15 +255,15 @@ module reduce_patches$
 % 2013-08-11: no longer needed, as the simplication is already done in diffp
 
 % copyd('oldsimpdf,'simpdf)$
-% 
+%
 % symbolic procedure simpdf (li)$
 % begin scalar intvar,intvar2,vars,restvars;
-% 
+%
 %  if eqcar(car li, 'int)
 %    then << intvar := caddar li;
 %            vars := append(li,nil)>> % will be destroyed
 %    else return oldsimpdf(li);
-% 
+%
 %  if idp intvar and ( restvars := mymemq(intvar,vars,nil) )
 %    then
 %      if (pairp cdr restvars) and numberp (intvar2 := cadr restvars)
@@ -274,21 +274,21 @@ module reduce_patches$
 %      else  <<  vars := car vars . (intvar . append( cdr vars, cdr
 %    restvars));
 %                return oldsimpdf (vars) >>;
-% 
+%
 %  return oldsimpdf(li);
 % end$
 
 
 %>>>>>>>>>> To avoid printing warnings of the compiler that
 % PSL constants are non-local variables uncomment the following
-% procedure. This is only necessary when runing the 
+% procedure. This is only necessary when runing the
 % crossreferencing programme cref because it would generate too
 % many warnings.
 
 %symbolic procedure symbid(u,vars)$
 %   <<if fname!* and null(ftype!* memq '(macro smacro))
 %       and not(atsoc(u,vars) or fluidp u or globalp u
-%        or null u or u eq t or flagp(u,'share) or !*comp 
+%        or null u or u eq t or flagp(u,'share) or !*comp
 %        % or !*cref % <-- This line is the only difference
 %        or get(u,'constant!?))
 %       then lprim list("nonlocal use of undeclared variable",u,
@@ -376,7 +376,7 @@ symbolic procedure subeval0 u;
 load_package trigsimp$ % load_package instead of load to load recursively all
 
 %>>>>>>>> Fix of error message ".. invalid as distributive polynomial exponent"
-% 3 June 2008 by Eberhard Schruefer 
+% 3 June 2008 by Eberhard Schruefer
 
 % The extension of a2dip allows exponentials in *non*-distributive variables.
 % Remaining problem: if a variable is u^p then in the expression
@@ -387,7 +387,7 @@ endmodule$
 
 
 %>>>>>>>> Fix of error message "***** CATASTROPHIC ERROR *****
-%                               ("gcdf failed" (plus 
+%                               ("gcdf failed" (plus
 % when sqrt(3) and i are involved and ON COMBINEEXPT
 
 %>>>>>>>> Additional fix of a crash when noncom variables are involved

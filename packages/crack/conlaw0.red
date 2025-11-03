@@ -28,17 +28,17 @@
 %******************************************************************************
 
 % $Id$
-symbolic fluid '(reducefunctions_ print_)$ 
+fluid '(reducefunctions_ print_)$
 
 %-------------
 
 symbolic procedure print_dropping_notice(h)$
-% h is an algebraic list of the characteristic functions of the list of 
+% h is an algebraic list of the characteristic functions of the list of
 % input equations
 % should also print the special values of parameters for this case
 begin
  write"For this conservation law the characteristic function"$
- if cddr h then <<write"s:"$ algebraic write h>>   
+ if cddr h then <<write"s:"$ algebraic write h>>
            else <<write":"$ algebraic write first h>>$
  write"involve derivatives of functions of new variables. Currently, conserved"$
  terpri()$
@@ -77,19 +77,19 @@ symbolic procedure lhsli(eqlist)$
 %          a power of a derivative which is used to fix dependencies
 %          of q_i or p_j
 % lhslist2 will be a list of all lhs's of all equations in their
-%          order with those lhs's set to 0 which can not be used 
+%          order with those lhs's set to 0 which can not be used
 %          for substitutions
 begin scalar lhslist1,lhslist2,h1,flg1,flg2$
   for each h1 in cdr eqlist do <<
     flg1:=nil$    % no assignment to lhslist1 done yet
     if (pairp h1) and (car h1 = 'equal) then <<
       h1:=reval cadr h1;
-      if (pairp h1) and 
-         (car h1='expt) and 
+      if (pairp h1) and
+         (car h1='expt) and
          (numberp caddr h1) then <<flg2:=nil;h1:=cadr h1>>
                             else   flg2:=t;
       if (not numberp h1) and
-         ((atom h1) or ((car h1='df) and (atom cadr h1) )) then 
+         ((atom h1) or ((car h1='df) and (atom cadr h1) )) then
       <<lhslist1:=cons(h1,lhslist1)$
         if flg2 then <<lhslist2:=cons(h1,lhslist2)$
                        flg1:=t>>
@@ -109,13 +109,13 @@ symbolic procedure chksubstitution(inp)$
 %
 % This is a psopfn procedure which does not evaluate the arguments
 % automatically.
-% The input equations should be in {!*sq,..,t} form (fast) but can be 
+% The input equations should be in {!*sq,..,t} form (fast) but can be
 % in prefix form (slow).
 % inp is a lisp list of 2 algebraic mode lists: eqlist, ulist
-% the equations and functions/unknowns 
+% the equations and functions/unknowns
 %
 % eqlist is a list of equations   df(f,x,2,y) = ...
-% this procedure tests whether 
+% this procedure tests whether
 % - for any equation a derivative on the rhs is equal or a derivative of
 %   the lhs?
 % - any lhs is equal or the derivative of any other lhs
@@ -136,8 +136,8 @@ begin scalar h1,h2,deril,complaint,eqlist,ulist,ls,rs$
   rs:=simp caddr e1;
   deril:=cons(
   cons(                                         % lhs as {'!*sq,..,t}
-       append(all_deriv_search_SF(numr ls,ulist),   
-              all_deriv_search_SF(denr ls,ulist) ),   
+       append(all_deriv_search_SF(numr ls,ulist),
+              all_deriv_search_SF(denr ls,ulist) ),
                                                 % rhs as {'!*sq,..,t}
        append(all_deriv_search_SF(numr rs,ulist),
               all_deriv_search_SF(denr rs,ulist) ) ),  deril)
@@ -145,7 +145,7 @@ begin scalar h1,h2,deril,complaint,eqlist,ulist,ls,rs$
 
  %--- Is for any equation a derivative on the rhs equal to the lhs
  %--- or a derivative of the lhs?
- for each e1 in deril do 
+ for each e1 in deril do
  if car e1 then <<
   h1:=caaar e1;                  % e.g. h1 = (f x 2 y)
   for each h2 in cdr e1 do
@@ -157,7 +157,7 @@ begin scalar h1,h2,deril,complaint,eqlist,ulist,ls,rs$
    write " is not a leading derivative in its equation!"$ terpri()
   >>
  >>$
- %--- Is any lhs equal or the derivative of any other lhs? 
+ %--- Is any lhs equal or the derivative of any other lhs?
  if deril then
  while cdr deril do <<
   if caar deril then <<
@@ -213,7 +213,7 @@ end$ % of listdifdif2
 algebraic procedure simppl(pllist,ulist,tt,xx)$
 begin
  scalar pl,hh,td,xd,lulist,ltt,lxx,ltd,dv,newtd,e1,deno,ok,
-        newpllist,contrace; 
+        newpllist,contrace;
  % contrace:=t;
  lisp <<
   lulist:=cdr reval algebraic ulist;
@@ -233,13 +233,13 @@ begin
     deno:=nil;
     if (pairp ltd) and (car ltd='quotient)   and
       my_freeof(caddr ltd,ltt) and
-      my_freeof(caddr ltd,lxx) 
+      my_freeof(caddr ltd,lxx)
     then <<deno:=caddr ltd;ltd:=cadr ltd>>;
     ok:=t;
 
     if (pairp ltd) and (car ltd = 'plus) then ltd:= cdr ltd else
     if (pairp ltd) and (car ltd neq 'times) then ok:=nil
-                                            else ltd:=list ltd;   
+                                            else ltd:=list ltd;
     if contrace then <<write"ltd2=",ltd;terpri()>>$
     if ok then <<
      for each e1 in ltd do <<
@@ -302,7 +302,7 @@ begin
   >>;
   if de then sm:=list('quotient,sm,de);
   return sm
-end$ % of fdepterms             
+end$ % of fdepterms
 
 %-------------
 
@@ -315,7 +315,7 @@ symbolic procedure subtract_diff(d1,d2)$
 begin scalar d;
  return
  if car d2 > car d1 then nil else
- if null cdr d1 then {car d1 - car d2} else 
+ if null cdr d1 then {car d1 - car d2} else
  if d:=subtract_diff(cdr d1,cdr d2) then cons(car d1 - car d2,d)
                                     else nil
 end$
@@ -325,10 +325,10 @@ end$
 symbolic procedure transfer_fctrs(h,flist)$
 begin scalar fctr;
 %algebraic write"begin: caar h=",lisp caar h," cdar h =",lisp cdar h;
- if (pairp cdar h) and (cadar h='minus) then 
+ if (pairp cdar h) and (cadar h='minus) then
  rplaca(h,cons(reval {'minus,caar h},cadr cdar h));
 
- if (pairp cdar h) and (cadar h='times) then 
+ if (pairp cdar h) and (cadar h='times) then
  for each fc in cddar h do
  if freeoflist(fc,flist) then fctr:=cons(fc,fctr);
  if fctr then <<
@@ -363,7 +363,7 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
  algebraic <<
   cpy:=plist$
   for each f in flist do cpy:=sub(f=0,cpy)$
-  while (cpy neq {}) and (first cpy = 0) do cpy:=rest cpy$ 
+  while (cpy neq {}) and (first cpy = 0) do cpy:=rest cpy$
  >>$
  if cpy neq {'list} then return nil$
 
@@ -376,7 +376,7 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
 
  % 1. check that flist functions do only depend on xlist variables
  d:=t;
- for each f in flist do 
+ for each f in flist do
  if not_included(fctargs f,xlist) then d:=nil$
  if null d then return nil$
 
@@ -398,7 +398,7 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
  >>;
  lhs:=reval cons('plus,lhs)$
  subli:=cons('list,subli)$
- for each f in flist do << 
+ for each f in flist do <<
   f:=reval f$
 
   % removing f-derivatives from the lhs
@@ -451,7 +451,7 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
     su:=if lowd then {'times,cof,cons('df,cons(f,lowd))}
 		else {'times,cof,              f       }$
 
-    % plist:=cons(reval reval {'difference,car plist,{'df,su,x}},cdr plist); 
+    % plist:=cons(reval reval {'difference,car plist,{'df,su,x}},cdr plist);
     % 16 Aug 2015: one reval is dropped in the hope that either a fix
     % has been made in REDUCE so that 2 x reval is not necessary
     % anymore or that an example is found which makes 2 x reval
@@ -496,10 +496,10 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
   depl!*:=delete(assoc(f,depl!*),depl!*);
   depl!*:=cons(cons(f,xlist),depl!*);
  >>$
- % 3. compute coefficients of the conditions in the identity 
+ % 3. compute coefficients of the conditions in the identity
  idty:=algebraic(sub(subli,lhs))$
- for n:=1:vle do 
- if not zerop nth(plist,n) then 
+ for n:=1:vle do
+ if not zerop nth(plist,n) then
  idty:={'difference,idty,{'df,nth(plist,n),nth(xlist,n)}}$
  % 4. separate idty into conditions with multiplicities
  sbrev:=cons('list,for each d in cdr sb collect {'equal,caddr d,cadr d})$
@@ -516,7 +516,7 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
  su:=print_;print_:=nil;
  idtysep:=separ(reval idty,flist,jlist,nil,nil)$
  print_:=su;
- idtysep:=for each d in idtysep collect 
+ idtysep:=for each d in idtysep collect
  cons(reval algebraic(sub(sb,lisp car d)),cdr d);
 
  % 5. integrations of cdr of the elements of idty have to be done:
@@ -535,7 +535,7 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
 
   if tr_pintd then <<
    write"Separation gives:"$terpri()$
-   for each d in idtysep do 
+   for each d in idtysep do
    algebraic write "0 = (",lisp car d,") * (",lisp cdr d,")"$
   >>$
 
@@ -543,26 +543,26 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
   repeat <<  % check whether cdar h0 is a derivative of another condition
    h0_changed:=nil;
    h1:=cdar h0;
-   if tr_pintd then 
+   if tr_pintd then
    algebraic write"caar h0=",lisp caar h0," cdar h0 =",lisp cdar h0;
 
    % find a function appearing in h1 and its leading derivative
    cpy:=flist;
    while cpy and freeof(h1,car cpy) do cpy:=cdr cpy;
    % if null cpy then error!
-     
+
    ld1:=car ldiffp(h1,car cpy)$
    ldh1:=maxderivs(nil,ld1,xlist)$
    ld1:=if null ld1 then car cpy
                     else cons('df,cons(car cpy,ld1))$
-     
+
    h2:=idtysep;
-   while h2 do 
+   while h2 do
    % is h1 a derivative of car h2 or car h2 a derivative of h1?
    if (h2 eq h0) or freeof(cdar h2,car cpy) then h2:=cdr h2
                                             else <<
 
-    if tr_pintd then 
+    if tr_pintd then
     algebraic write"caar h2=",lisp caar h2," cdar h2 =",lisp cdar h2;
     ld2:=car ldiffp(cdar h2,car cpy)$
     ldh2:=maxderivs(nil,ld2,xlist)$
@@ -572,8 +572,8 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
     % is h1 a derivative of car h2?
     h3:=subtract_diff(ldh1,ldh2);
     if null h3 then h2:=cdr h2
-               else << 
-     % the leading derivative in h1 is a derivative of 
+               else <<
+     % the leading derivative in h1 is a derivative of
      % the leading derivative in cdar h2
      h4:=cdar h2;
      if pairp h4 and (car h4 = 'plus) then <<
@@ -627,7 +627,7 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
                          ld1:=if null ld1 then car cpy
                                           else cons('df,cons(car cpy,ld1))$
                          h2:=cdr h2;h0_changed:=t>>;
-      if tr_pintd then 
+      if tr_pintd then
       algebraic write"caar h0=",lisp caar h0," cdar h0 =",lisp cdar h0;
      >>
 
@@ -638,7 +638,7 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
 
   if tr_pintd then <<
    write"After correction the separation gives:"$terpri()$
-   for each d in idtysep do 
+   for each d in idtysep do
    if not zerop car d then
    algebraic write "0 = (",lisp car d,") * (",lisp cdr d,")"$
   >>
@@ -648,13 +648,13 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
  % or as low as possible
  n:=0;
  rhs:=nil;
- for each d in idtysep do 
+ for each d in idtysep do
  if not zerop car d then << % for each condition
   n:=add1 n;
   su:=print_;print_:=nil;
   x:=newfct('l_,xlist,n);
   print_:=su;
-  su:=if dno=1 then car d 
+  su:=if dno=1 then car d
                else reval {'quotient,car d,dno}$
   algebraic write x,":=",su$
   lsb:=cons({'equal,x,su},lsb);
@@ -704,7 +704,7 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
    x:=coeffn(num lhs,f,1);  y:=coeffn(num rhs,f,1);
    d:=gcd(x,y);
    algebraic write x/d/den lhs," = ",y/d/den rhs$
-  >>  
+  >>
  >>$
 
 end$
@@ -712,4 +712,3 @@ end$
 %-------------
 
 end$
-

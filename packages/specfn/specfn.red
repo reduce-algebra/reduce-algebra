@@ -81,7 +81,7 @@ switch savesfs=on;
 %symbolic inline procedure mksq!:new u;
 %  !*p2q(car fkern(u) .* 1);
 
-symbolic fluid '(bernoulli!-alist sf!-alist !*savesfs);
+fluid '(bernoulli!-alist sf!-alist !*savesfs);
 
 symbolic ( bernoulli!-alist := nil );
 symbolic ( sf!-alist        := nil );
@@ -100,7 +100,7 @@ symbolic smacro procedure c!:prec!:;
 %  switch complex was already in the correct position
 
 algebraic procedure complex!*on!*switch;
-  symbolic 
+  symbolic
     if not !*complex then <<(onoff('complex,t) where !*msg := nil); nil>>
      else t;
 
@@ -157,7 +157,3 @@ defautoload_operator(Airy_Biprime,specbess);
 endmodule;
 
 end;
-
-
-
-

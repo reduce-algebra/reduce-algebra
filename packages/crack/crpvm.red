@@ -29,7 +29,7 @@ module crackpvm$
 %******************************************************************************
 
 % $Id$
-symbolic fluid '(loaddirectories!* loadextensions!* !*lower unixargs!*
+fluid '(loaddirectories!* loadextensions!* !*lower unixargs!*
                  options!*)$                             % for crload()
 
 #if (or (not (getd 'pwd)) (flagp 'pwd 'rlisp))
@@ -40,7 +40,7 @@ flag('(pwd), 'rlisp);
 
 #endif
 
-% symbolic fluid '(lock_)$
+% fluid '(lock_)$
 % lock_ := gtwarray 4$     % see /usr/include/sys/fnctl.h
 
 % symbolic procedure mklockstruct(lock)$
@@ -87,7 +87,7 @@ symbolic procedure proczaehler(file,action)$  % Sergey's version
 begin scalar fl,fpid,!*echo,semic!*,a,save,ofl!*bak;
 
  fpid := bldmsg("%s.%w",file,getpid());
- 
+
  if action='init then backup_:=0
                  else <<
   fl:=1;
@@ -102,7 +102,7 @@ begin scalar fl,fpid,!*echo,semic!*,a,save,ofl!*bak;
   % >> until fl=0;
   %we have successfully renamed the file
   semic!*:='!$;
-  in fpid 
+  in fpid
  >>$
 
  if (action neq 'init) and (not numberp backup_) then <<
@@ -127,7 +127,7 @@ begin scalar fl,fpid,!*echo,semic!*,a,save,ofl!*bak;
  if action='minus then write "lisp (backup_ := ",backup_-1,")$ end$";
  if action='init  then write "lisp (backup_ := ",0,")$ end$";
  %shut fpid;
- wrs save$ 
+ wrs save$
  ofl!*:=ofl!*bak$
  close a;
 
@@ -148,7 +148,7 @@ end$
 
 symbolic procedure ini_check_of_parallel_crack$
 if paracrack_initialized then t else
-begin scalar os$ 
+begin scalar os$
 
  if reducerc_initialized neq 13112006 then return <<
   write"##### To run this parallelization, a certain file .reducerc has to be"$
@@ -181,16 +181,16 @@ begin scalar os$
 
  % Create file process_counter for counting processes if it does not exist yet
  % and initialize to zero in that case.
- if not filep process_counter then proczaehler(process_counter,'init)$  
+ if not filep process_counter then proczaehler(process_counter,'init)$
 
  % verify the end of each run?
- change_prompt_to ""$ 
+ change_prompt_to ""$
  write"Shall each parallel process ask for verification at the end? (y/n) "$
  repeat os:=termread() until (os='y) or (os='n)$
  verify_end_of_parallel_run:=if os='y then t else nil$
- restore_interactive_prompt()$ 
+ restore_interactive_prompt()$
 
- start_sol_list_file()$ 
+ start_sol_list_file()$
 
  return (paracrack_initialized:=t)
 end$
@@ -264,20 +264,20 @@ begin scalar h,s,found$
   write"- CRACK was not loaded with one of the files crack.b, crpsl.b, crcsl.b, crall.b ."$terpri()$
   write"To continue, please enter the loading command of CRACK, "$terpri()$
   write"for example, ""~/red/src6/crall""  : "$
-  change_prompt_to " "$  
+  change_prompt_to " "$
   h:=termread()$
-  restore_interactive_prompt()$ 
+  restore_interactive_prompt()$
   bldmsg("%w",h)
  >>
 end$
 
 #else
- 
-begin scalar h$ 
+
+begin scalar h$
  write"If this session was started by loading ""crack"" then enter  1  else "$terpri()$
  write"If this session was started by loading ""crall"" then enter  2  else "$terpri()$
  write"enter the load command in "" ""."$terpri()$
- change_prompt_to " "$  
+ change_prompt_to " "$
  h:=termread()$
  crack_load_command:=
  if h=1 then "crack" else
@@ -331,7 +331,7 @@ if null reduce_call then <<
     write"""/home/eschruefer/Reduce-Algebra/trunk/bin/redpsl -td 8000"""$terpri()$terpri()$
 
     write"CSL-REDUCE on goedel: "$terpri()$
-    write"""/home/reduce/Reduce-Algebra/trunk/bin/redcsl -w -i /home/reduce/Reduce-Algebra/trunk/cslbuild/x86_64-unknown-suse13.1/csl/reduce.img -o ~/moyo/red/src6/crgd.img"""$terpri()$terpri()$    
+    write"""/home/reduce/Reduce-Algebra/trunk/bin/redcsl -w -i /home/reduce/Reduce-Algebra/trunk/cslbuild/x86_64-unknown-suse13.1/csl/reduce.img -o ~/moyo/red/src6/crgd.img"""$terpri()$terpri()$
 
     write"PSL-REDUCE on sharc-198: "$terpri()$
     write"""/home/twolf/reduce-algebra/trunk/bin/redpsl -td 8000"""$terpri()$terpri()$
@@ -359,26 +359,26 @@ if null reduce_call then <<
 >>$
 
 symbolic procedure read_proczaehler$
-begin 
+begin
  scalar fl,fpid,!*echo,semic!*;
  fpid := bldmsg("%s.%w",process_counter,getpid());
  fl:=1;
 
- repeat << 
+ repeat <<
   fl := copy!-file(process_counter, fpid);
   if null fl then sleep 1
  >> until fl;
  % old only for unix:
- % repeat << 
+ % repeat <<
   % fl := system bldmsg ("cp %s %s",process_counter,fpid);
   % if fl neq 0 then system"sleep 1"
  % >> until fl=0;
- 
+
 % while not fd do <<
 %  fd := filestatus(process_counter,nil);
 %  if not fd then sleep 1
 %  else << fl := system bldmsg ("cp %s %s",process_counter,fpid);
-%	  fd := if fl = 0 then t else nil; 
+%	  fd := if fl = 0 then t else nil;
 %	  if fd then fd := filestatus(fpid,nil);
 %       >>
 % >>;
@@ -430,7 +430,7 @@ end$
 %end$
 
 symbolic procedure add_session(pdes,forg,para_mode)$
-% symbolic fluid variables that matter: !*iconic, inter_para_mode
+% fluid variables that matter: !*iconic, inter_para_mode
 begin scalar s,ss,h,current_dir,startup,p,id,a,save,ofl!*bak$   % ,crpath$
 
  %----- generating the file name of current data
@@ -440,18 +440,18 @@ begin scalar s,ss,h,current_dir,startup,p,id,a,save,ofl!*bak$   % ,crpath$
  h := bldmsg("%w%w%w",current_dir,ss,"tmp");
  % In the new process the input file is not opened, so eqn_input
  % should there be nil:
- s:=eqn_input$ 
- if eqn_input='done then <<equations_file:="";eqn_no:=0>>$ 
+ s:=eqn_input$
+ if eqn_input='done then <<equations_file:="";eqn_no:=0>>$
  % otherwise the new process will try to start reading the file
  % equations_file until equation eqn_no but this file should not
  % be read and does even not exist anymore
- eqn_input:=nil$  
+ eqn_input:=nil$
 
  %----- prepare crack load command (before backup_to_file()
  %      to pass on crack_load_command
  crack_load_cmd()$ % assigning crack_load_command if not already done
  if crack_load_command="not found" then return <<
-  shut startup$ 
+  shut startup$
   s:=bldmsg("rm %w",startup)$
   system s$
   write"##### This parallelization could not be started as the call of crack"$
@@ -514,7 +514,7 @@ begin scalar s,ss,h,current_dir,startup,p,id,a,save,ofl!*bak$   % ,crpath$
  if      !*gc  then <<write"on gc$"$                       terpri()>>$
  %----- load Crack
  write"load_package """,crack_load_command,""" $"$          terpri()$
-%write"load debug$"$   terpri()$ 
+%write"load debug$"$   terpri()$
  %----- read in a file setting up the problem
  if crack_ini_file then <<
   % write"err_catch_readin(""",crack_ini_file,""",algebraic)$"$terpri()$
@@ -533,11 +533,11 @@ begin scalar s,ss,h,current_dir,startup,p,id,a,save,ofl!*bak$   % ,crpath$
  write"proczaehler(""",process_counter,""",'minus)$"$       terpri()$
  if % null !*iconic
     verify_end_of_parallel_run then << % ask whether computation was ok.
-  write"write""Is the computation ok and can the input files be deleted?""$"$ 
+  write"write""Is the computation ok and can the input files be deleted?""$"$
   terpri()$
   write"terpri()$"$terpri()$
   write"write""Please input Y/N : ""$"$                     terpri()$
-  write"change_prompt_to """"$"$                            terpri()$ 
+  write"change_prompt_to """"$"$                            terpri()$
 
   write"if 'y=termread() then <<"$ terpri()$
   %----- remove the data file showing that the computation is completed
@@ -556,7 +556,7 @@ begin scalar s,ss,h,current_dir,startup,p,id,a,save,ofl!*bak$   % ,crpath$
  write"eval '(bye)$"$                                       terpri()$
  write"end$"$                                               terpri()$
  %shut startup$
- wrs save$ 
+ wrs save$
  ofl!*:=ofl!*bak$
  close a;
 
@@ -603,7 +603,7 @@ begin scalar s,ss,h,current_dir,startup,p,id,a,save,ofl!*bak$   % ,crpath$
 end$
 
 symbolic procedure add_process(processes,pdes,forg)$
-% symbolic fluid variables that matter: !*iconic
+% fluid variables that matter: !*iconic
 begin scalar s,ss,h,current_dir$
  %----- start PVM if it is not already started
  system"pvm"$
@@ -702,7 +702,7 @@ begin scalar s$
   terpri()$write"To kill ALL remote processes that have been"$
   terpri()$write"generated by this process enter -1,"$
   terpri()$write"to kill a single process enter its process id: "$
-  change_prompt_to ""$ 
+  change_prompt_to ""$
   s:=termread()$
   restore_interactive_prompt()$
   if s=-1 then <<
@@ -730,7 +730,7 @@ if collect_sol or
    write"'as {collect_sol,nil};' or disable parallelism with 'dp' ."$
    terpri()$
  >>;
- if null batch_mode_sub then !*batch_mode:=nil$ 
+ if null batch_mode_sub then !*batch_mode:=nil$
  crackmain(pdes,forg)
 >>                                      else
 begin scalar processes,s;
@@ -739,7 +739,7 @@ begin scalar processes,s;
  % in passed_back, like history_ or size_hist or sol_list
  % have a limited meaning in the mother process.
 
- if null batch_mode_sub then !*batch_mode:=nil$ 
+ if null batch_mode_sub then !*batch_mode:=nil$
  if auto_para_mode<4 then add_session(pdes,forg,auto_para_mode)        % non-PVM
                      else processes:=add_process(processes,pdes,forg)$ % PVM
  %----- changes done at the end of crackmain(), e.g. delete property lists

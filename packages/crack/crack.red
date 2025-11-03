@@ -1,4 +1,4 @@
-module crack$  
+module crack$
 
 comment
 
@@ -9,25 +9,25 @@ Authors:
 
 	Thomas Wolf
 	Department of Mathematics
-	Brock University, 
-	500 Glenridge Avenue, St.Catharines, 
+	Brock University,
+	500 Glenridge Avenue, St.Catharines,
 	Ontario, Canada L2S 3A1
 	email: twolf@brocku.ca
 
         until 1997:
 
-        Andreas Brand 
-        Institut fuer Informatik 
-        Friedrich Schiller Universitaet Jena  
-        07740 Jena,  Germany 
+        Andreas Brand
+        Institut fuer Informatik
+        Friedrich Schiller Universitaet Jena
+        07740 Jena,  Germany
         email: maa@hpux.rz.uni-jena.de
 
 Abstract:
 CRACK is a package for solving overdetermined systems of ordinary or
-partial differential equations (ODEs, PDEs). Examples of programs 
+partial differential equations (ODEs, PDEs). Examples of programs
 using CRACK are LIEPDE (for determining point and higher order
 symmetries), APPLYSYM (to compute symmetry and similarity variables
-for given point symmetries (symmetry reduction)) and CONLAW (for 
+for given point symmetries (symmetry reduction)) and CONLAW (for
 determining first integrals for ODEs or conservation laws for PDEs).
 For more details see the manual CRACK.TEX and the manuals of the
 other packages$
@@ -111,10 +111,10 @@ remprop('nxtsym!*,'vartype)$ % to avoid compiler message:
                              % *** global `nxtsym!*' cannot become fluid
 global '(!*iconic)$          % for crpvm.red
 
-% global algebraic mode variabes (used as names of LET-rules):
+% global algebraic mode variables (used as names of LET-rules):
 % abs_,explog_,trig1_,trig2_,trig3_,trig4_,trig5_,trig6_,trig7_,trig8_
 
-symbolic fluid ( global_var:='(!*allowdfint_bak !*dfprint_bak
+fluid ( global_var:='(!*allowdfint_bak !*dfprint_bak
 !*diffelimverbosity!* !*exp_bak !*ezgcd_bak !*fullroots_bak !*gcd_bak
 !*mcd_bak !*nopowers_bak !*ratarg_bak !*rational_bak !*batch_mode alg_poly
 adjust_fnc allflags_ auto_para_mode batchcount_ backup_ batch_mode_sub
@@ -169,7 +169,7 @@ packages_to_load pvm,reducepvm$
      load pipes$       % to detect the operating system for parallel runs
                        % See calls of pipe!-open() in crpvm.red and crutil.red.
                        % There is a function "pipe!-open" in CSL.
-#endif  
+#endif
 
 compiletime load_package dipoly$    %  for the procedure a2dip() in fixes.red
 

@@ -171,7 +171,7 @@ fluid '(dmode!* kord!*);
 % alg-kord* is used to record the order of creation of algebraics -
 % this is essential to correct manipulation of polynomials in
 % algebraics.
-lisp global '(alg!-kord!*);
+global '(alg!-kord!*);
 
 in algmacros$  % macro definitions
 in algsupport$  % miscellaneous functions
@@ -384,7 +384,7 @@ fluid '(dmode!* kord!*);
 % alg-kord* is used to record the order of creation of algebraics -
 % this is essential to correct manipulation of polynomials in
 % algebraics.
-lisp global '(alg!-kord!*);
+global '(alg!-kord!*);
 in algmacros$  % macro definitions
 in algsupport$  % miscellaneous functions
 in algdom$  % domain definitions
@@ -844,7 +844,7 @@ end;
 
 % Trager algorithm for factorization over algebraic number fields;
 
-lisp fluid '(!*tralg algfac!-level recursedp trivial!-factors);
+fluid '(!*tralg algfac!-level recursedp trivial!-factors);
 
 symbolic procedure my!-subf(f,x,c);
   % substitutes x + c for the kernel x in the standard form f,
@@ -935,7 +935,7 @@ symbolic procedure minimal!-ker(f,l);
        if degree!-in!-form(f,car l) < degree!-in!-form(f,mink) then
          car l else mink)(minimal!-ker(f,cdr l));
 
-% The function my!-factorfx appears not to be used anywhere... 
+% The function my!-factorfx appears not to be used anywhere...
 
 symbolic procedure my!-factorfx f;
   % f a standard form, square-free;
@@ -1202,7 +1202,7 @@ symbolic procedure contains!-algebraic f;
     car mvar numr cdr f = 'alg
   else contains!-algebraic(lc f) or contains!-algebraic(red f);
 
-lisp unfluid '(algfac!-level recursedp trivial!-factors);
+unfluid '(algfac!-level recursedp trivial!-factors);
 
 end;
 
@@ -1570,4 +1570,3 @@ symbolic procedure algrecip(f);
   end;
 
 end;
-

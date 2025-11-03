@@ -30,7 +30,7 @@ module homalgsys$
 %******************************************************************************
 
 % $Id$
-symbolic fluid '(tr_hom_alg)$
+fluid '(tr_hom_alg)$
 
 lisp(tr_hom_alg:=t)$
 

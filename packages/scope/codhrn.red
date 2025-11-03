@@ -555,7 +555,7 @@ algebraic procedure horner1(p)$
     return h$
 end$
 
-lisp global '(hvlst)$     % use for debug purposes.
+global '(hvlst)$     % use for debug purposes.
 
 algebraic procedure horner2(p)$
   %----------------------------------------------------------
@@ -771,6 +771,3 @@ put('alggkhorner,'psopfn,'alggkhornereval)$
 endmodule;
 
 end;
-
-
-

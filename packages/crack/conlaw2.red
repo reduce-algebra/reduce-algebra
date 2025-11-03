@@ -29,7 +29,7 @@
 %******************************************************************************
 
 % $Id$
-symbolic fluid '(print_ logoprint_ potint_ facint_ adjust_fnc flin_ 
+fluid '(print_ logoprint_ potint_ facint_ adjust_fnc flin_
                  done_trafo inverse_trafo_list_incomplete no_current)$
 
 %-------------
@@ -77,7 +77,7 @@ begin
     write "This is CONLAW2 - a program for calculating conservation",
     " laws of DEs"; terpri()
   >>                 else terpri());
-  if nde = 1 
+  if nde = 1
   then write "The DE under investigation is :"
   else write "The DEs under investigation are :";
   for each e1 in sqreverse eqlist do write e1;
@@ -96,11 +96,11 @@ begin
 
   %--- Checking whether an ansatz for characteristic functions
   %--- has been made, then denominator of equations is not dropped
-  for n:=1:nde do 
+  for n:=1:nde do
   if not lisp(null get(mkid('q_,n),'avalue)) then cf0:=t;
 
-  eqlist:=sqreverse for each e1 in eqlist collect 
-          if part(e1,0)=equal then lhs e1 - rhs e1 
+  eqlist:=sqreverse for each e1 in eqlist collect
+          if part(e1,0)=equal then lhs e1 - rhs e1
                               else e1;
 
   if contrace then write"ulist=",ulist,"    eqlist=",eqlist;
@@ -209,7 +209,7 @@ begin
                  else fl:=flist;
 
     %--- initializing characteristic functions cf, the list of functions fl
-    deplist:=lisp(cons('list,setdiff(cdr ulist,cdr nodep))) . 
+    deplist:=lisp(cons('list,setdiff(cdr ulist,cdr nodep))) .
              for n:=1:densord collect listdifdif2(nodep,sqpart(dulist,n+1));
     if expl then deplist:=xlist . deplist;
     deplist:=sqreverse deplist;
@@ -313,7 +313,7 @@ begin
 
     inequ:=inequ0;
     %--- inequ is to stop crack if order of cf is too low
-    if (densord neq 0) and 
+    if (densord neq 0) and
        ((cf0=nil) or (mindensord0 neq 0)) then <<
       % investigation should stop if
       % cf is independent of highest order derivatives
@@ -334,7 +334,7 @@ begin
     if contrace then write"inequ=",inequ;
 
     if (not lisp(null get('cl_condi,'avalue))) and
-       (part(cl_condi,0)=list) then 
+       (part(cl_condi,0)=list) then
     condi:=sqappend(condi,cl_condi)$
 
     %--- freeing some space
@@ -345,15 +345,15 @@ begin
     if lisp(!*time) then
     write "time to formulate condition: ", lisp time() - cpu,
           " ms    GC time : ", lisp gctime() - gc," ms"$
-    inverse_trafo_list_incomplete:=nil;  
+    inverse_trafo_list_incomplete:=nil;
     condi:=split_simp(condi,inequ,fl,vl,nil)$
     solns:=crack(condi,inequ,fl,vl);
 
     %--- postprocessing
-    lisp 
+    lisp
     if done_trafo and cdr done_trafo then <<
      terpri()$
-     if cddr done_trafo                                               then 
+     if cddr done_trafo                                               then
      write"The following transformations reverse the transformations" else
      write"The following transformation reverses the transformation"$
      terpri()$
@@ -368,7 +368,7 @@ begin
      >>$
 
      % fnc_of_new_var() uses global variables done_trafo,depl!*
-     % and determines all functions depending on (new) lhs variables 
+     % and determines all functions depending on (new) lhs variables
      % in done_trafo
      new_var_fnc:=fnc_of_new_var()$
     >>$
@@ -391,21 +391,21 @@ begin
       fl:={}; % list of functions/const. appearing in remaining equations
       h2:={};
       for each e1 in h1 do <<
-        if not freeof(condi,e1) then fl:=sqcons(e1,fl); 
+        if not freeof(condi,e1) then fl:=sqcons(e1,fl);
         % fl to output remaining conditions later
         if freeof(paralist,e1) then h2:=sqcons(e1,h2)
         % h2: list of fnc/const that are not parameters in orig equations
       >>;
 
-      h1:=parti_fn(h2,condi)$ % h1 is a list of lists of fnc/const 
-      % in h2 (i.e. unknowns that are not parameters) that depend 
+      h1:=parti_fn(h2,condi)$ % h1 is a list of lists of fnc/const
+      % in h2 (i.e. unknowns that are not parameters) that depend
       % on each other through the list of unsolved conditions condi
 
       if contrace then write"h1(partitioned)=",h1;
       extraline:=nil;
       nonconstc:={};
-      while h1 neq {} do << 
-        % i.e. for each subset of interdependent fnc/const, 
+      while h1 neq {} do <<
+        % i.e. for each subset of interdependent fnc/const,
         % each subset will give one conservation law
         e1:=sqfirst h1;h1:=sqrest h1; % e1: list of free or to be det, fnc/const
         for each h4 in e1 do
@@ -417,7 +417,7 @@ begin
             write" is not constant!";
             extraline:=t;
             terpri()
-          >> 
+          >>
         >>;
 
         dequ:=0;                                    % to compute P^i
@@ -471,14 +471,14 @@ begin
 
       %--- Dropping conservation laws of too low order
       if contrace then write"Start of dropping CLs of too low order"$
-      if (densord > 0) and 
+      if (densord > 0) and
          ((cf0=nil) or (mindensord0 neq 0)) then <<
         h1:={};
         h2:={};
         for each e1 in cllist do <<
           if contrace then <<write"----- Consideration of: "$write"e1-0=",e1>>$
           e2:={};
-          % At first we collect all independent variables of all functions 
+          % At first we collect all independent variables of all functions
           % that appear in e1 to get e2
           for each h5 in sqthird soln do
           if not freeof(e1,h5) then e2:=sqappend(fargs h5,e2);
@@ -496,7 +496,7 @@ begin
             for each h5 in lisp done_trafo do <<
               e3:=sub(h5,e3);
               e2:=sub(h5,e2);
-            >>$ 
+            >>$
             if paralist neq {} then <<
               e3:=sub(sqsecond soln,e3);
               e2:=sub(sqsecond soln,e2)
@@ -506,14 +506,14 @@ begin
 
           % Then we check the differential order of the expressions
           h5:=udens;
-          while (h5 neq {}) and 
+          while (h5 neq {}) and
                 freeof(e3,lisp reval algebraic sqfirst h5) and
                 freeof(e2,lisp reval algebraic sqfirst h5) do h5:=sqrest h5;
           if h5 neq {} then <<
             h1:=sqcons(e1,h1);
             h2:=sqcons(sqfirst divlist,h2)
-          >>           else 
-          if length e1 = 1 then 
+          >>           else
+          if length e1 = 1 then
           write "Multiplier ",first e1,
                 " is dropped because it is of too low order."
                            else
@@ -538,7 +538,7 @@ begin
        h1:=for each h3 in cdr done_trafo join
            for each h6 in cdr h3 collect cadr h6$
 
-       % h2 collects all derivatives 
+       % h2 collects all derivatives
        h2:=search_li2(cllist,'df)$
 
        % h3 all derivatives wrt. new variables
@@ -548,7 +548,7 @@ begin
         h2:=cdr h2
        >>;
 
-       % h8 are all derivatives such that there is only one derivative 
+       % h8 are all derivatives such that there is only one derivative
        % for that function
        h8:=nil;
        h9:=h3;
@@ -561,11 +561,11 @@ begin
          for each h2 in h9 do
          if freeof(h2,cadar h9) then h7:=cons(h2,h7);
          h9:=h7
-        >> 
+        >>
        >>$
 
        % All derivatives wrt new variables are temporarily renamed
-       h5:=nil; 
+       h5:=nil;
        for each h4 in h3 do <<
         h7:=gensym()$
         h5:=cons((h4 . h7),h5);
@@ -580,7 +580,7 @@ begin
        >>$
 
        % Derivatives are back-substituted
-       for each h4 in h5 do 
+       for each h4 in h5 do
        if member(car h4,h8) and
           freeof(condi,cadar h4) and
           freeof(cllist,cadar h4) and
@@ -593,7 +593,7 @@ begin
         cllist:=subst(car h4,cdr h4,cllist);
         divlist:=subst(car h4,cdr h4,divlist);
        >>$
-      >>)$      
+      >>)$
 
       % For all conservation laws which involve free functions depending
       % on new variables from done_trafo, print the characteristic functions
@@ -605,9 +605,9 @@ begin
         lisp <<
           h6:=cllist;
           h7:=divlist;
-          if h6 then 
-          while cdr h6 do 
-          if freeoflist(search_li(cdadr h6,'df),new_var_fnc) then 
+          if h6 then
+          while cdr h6 do
+          if freeoflist(search_li(cdadr h6,'df),new_var_fnc) then
           <<h6:=cdr h6;h7:=cdr h7>>                          else <<
             print_dropping_notice(cadr h6)$
             rplacd(h6,cddr h6)$
@@ -629,10 +629,10 @@ begin
           %--- Below h1 is the list of W^i in the Anco/Bluman formula
           h1:=for e1:=1:(length cllist) collect
           {intcurrent1(reval sqpart(divlist,e1),ulist,xlist,dulist,nx,
-                       eqord,densord),e1};                                   
-          % the index is attached to identify the corresponding cl in cllist 
+                       eqord,densord),e1};
+          % the index is attached to identify the corresponding cl in cllist
 
-          %--- Backsubstitution of e.g. u`1`1 --> df(u,x,2) 
+          %--- Backsubstitution of e.g. u`1`1 --> df(u,x,2)
           for each e1 in ulist do dependlist(e1,{xlist});
           on evallhseqp;
           sb:=subdif1(xlist,ulist,maxord)$
@@ -640,9 +640,9 @@ begin
               for each e2 in e1 collect(rhs e2 = lhs e2);
           off evallhseqp;
           cllist:=sub(sb,cllist);
-          h2:=sub(sb,h1);   h1:={}$   non_int:={}$                     
+          h2:=sub(sb,h1);   h1:={}$   non_int:={}$
           for each e1 in h2 do
-          if lisp(freeof(e1,'sub)) then h1:=sqcons(e1,h1)                   
+          if lisp(freeof(e1,'sub)) then h1:=sqcons(e1,h1)
                                    else non_int:=sqcons(sqsecond e1,non_int);
           h2:=0$
           if h1 neq {} then <<
@@ -656,12 +656,12 @@ begin
                                         else non_int:=sqcons(sqsecond h8,non_int)
               >>$
               h1:=h10$
-            >>$ 
+            >>$
 
-            if h1 neq {} then 
+            if h1 neq {} then
             h1:=for each e1 in h1 collect << % i.e. for each cl
               e3:=sqsecond e1$
-              h10:=sub(sb,sqpart(divlist,e3)); 
+              h10:=sub(sb,sqpart(divlist,e3));
               e1:=sqfirst e1$
 
               % at first try direct integration to compute p
@@ -676,44 +676,44 @@ begin
                   if h8 then h10:=err_catch_sub(e2,0,h10);
                   if h10 eq nil then h8:=nil
                 >>$
-                if contrace then write"h10-1=",h10$ 
+                if contrace then write"h10-1=",h10$
                 if h8 and (h10 neq 0) then <<
                   for each e2 in xlist do <<
                     if h8 then h10:=err_catch_sub(e2,h2*e2,h10);
                     if h10 eq nil then h8:=nil
                   >>$
                   if h8 then <<
-                    if contrace then write"h10-2=",h10$ 
-                    %--- the following is to catch errors in: 
+                    if contrace then write"h10-2=",h10$
+                    %--- the following is to catch errors in:
                     %--- int(h10*h2**(nx-1),h2)
-                    h10:=if not lisp freeof(h10,'sub) then nil 
+                    h10:=if not lisp freeof(h10,'sub) then nil
                          else err_catch_int(h10*h2**(nx-1),h2)$
-                    if contrace then write"h10-3=",h10$ 
+                    if contrace then write"h10-3=",h10$
                     if h10 eq nil then h6:=nil
                                   else
-                    %--- the following is to catch errors in: 
+                    %--- the following is to catch errors in:
                     %--- sub(h2=1,h10)-sub(h2=0,h10)
                     h6:=err_catch_sub(h2,1,h10);
-                    if contrace then write"h6=",h6$ 
+                    if contrace then write"h6=",h6$
                     if h6 eq nil then h7:=nil
                                  else h7:=err_catch_sub(h2,0,h10);
-                    if contrace then write"h7=",h7$ 
+                    if contrace then write"h7=",h7$
                     if h7 eq nil then h8:=nil
                                  else h10:=h6-h7
                   >>
                 >>$
-                if contrace then write"h10-4=",h10$ 
+                if contrace then write"h10-4=",h10$
                 h4:={};        % h4 becomes the inverse list of P^i
                 h11:=0;
                 while h8 and (e1 neq {}) do <<
                   h11:=h11+1;
-                  e2:=sqfirst e1; 
+                  e2:=sqfirst e1;
                   e1:=sqrest e1;
-                  if contrace then write"e2=",e2$ 
+                  if contrace then write"e2=",e2$
                   h3:=err_catch_int(e2/h2,h2)$
-                  if contrace then write"h3-1=",h3$ 
+                  if contrace then write"h3-1=",h3$
 
-                  %--- the following is to catch errors in: 
+                  %--- the following is to catch errors in:
                   %--- sub(h2=1,h3)-sub(h2=0,h3)
                   h6:=err_catch_sub(h2,1,h3);
                   if h6 eq nil then h7:=nil
@@ -736,12 +736,12 @@ begin
                  write"-----------------";terpri() >>;
 
           %--- conditions on parameters
-          if paralist neq {} then 
+          if paralist neq {} then
           for each h3 in sqsecond soln do
-          if not freeof(paralist,lhs h3) then 
+          if not freeof(paralist,lhs h3) then
           <<write h3;lisp(terpri())>>;
 
-          %--- Backsubstitution of e.g. u`1`1 --> df(u,x,2) 
+          %--- Backsubstitution of e.g. u`1`1 --> df(u,x,2)
           for each e1 in ulist do dependlist(e1,{xlist});
           on evallhseqp;
           sb:=subdif1(xlist,ulist,maxord)$
@@ -751,18 +751,18 @@ begin
           cllist:=sub(sb,cllist);
 
           %--- substitution of parameter values
-          h3:=sqpart(cllist,e2); h4:=eqlist; 
+          h3:=sqpart(cllist,e2); h4:=eqlist;
           if paralist neq {} then <<
            h4:=sub(sqsecond soln,h4);
            h3:=sub(sqsecond soln,h3);
           >>$
 
           %--- printing the conservation law
-          write  "  ( ",sqfirst h3," ) * ( ",sqfirst h4," )"$ 
+          write  "  ( ",sqfirst h3," ) * ( ",sqfirst h4," )"$
           h9:=sqfirst h3 * sqfirst h4$
           h3:=sqrest h3$ h4:=sqrest h4$
           while h3 neq {} do <<
-            write"+ ( ",sqfirst h3," ) * ( ",sqfirst h4," )"$ 
+            write"+ ( ",sqfirst h3," ) * ( ",sqfirst h4," )"$
             h9:=h9 + sqfirst h3 * sqfirst h4$
             h3:=sqrest h3$ h4:=sqrest h4$
           >>$
@@ -771,7 +771,7 @@ begin
           lisp <<
             write"should be a divergence but the program was"$
             terpri()$
-            if no_current then 
+            if no_current then
             write"not instructed to try finding the conserved current."
                           else
             write"not able to find the conserved current."$
@@ -793,9 +793,9 @@ begin
           h3:=sqpart(cllist,h9);
 
           %--- conditions on parameters
-          if paralist neq {} then 
+          if paralist neq {} then
           for each e2 in sqsecond soln do
-          if not freeof(paralist,lhs e2) then 
+          if not freeof(paralist,lhs e2) then
           <<write e2,",";lisp(terpri());
             h2:=sub(e2,h2);
             h3:=sub(e2,h3)
@@ -810,12 +810,12 @@ begin
           h4:=eqlist;
           if paralist neq {} then h4:=sub(sqsecond soln,h4);
 
-          h8:=0;                       
+          h8:=0;
           if h2 neq nondiv then <<
-            h5:=h4;                     
+            h5:=h4;
             for each e1 in h3 do <<
-              h8:=h8 + e1*(sqfirst h5)$  
-              h5:=sqrest h5 
+              h8:=h8 + e1*(sqfirst h5)$
+              h5:=sqrest h5
             >>$
             for e1:=1:nx do <<
               h8:=h8-df(sqpart(h2,e1),sqpart(xlist,e1))$ % for test purposes
@@ -830,18 +830,18 @@ begin
                    write"Conservation law:";terpri()$
                    write"-----------------";terpri() >>;
             print_claw(h4,h3,h2,xlist)$  % print_claw(eqlist,qlist,plist,xlist)$
-        
+
             %--- factoring out diff operators?
             h6:={};
             for each h5 in nonconstc do
             if not freeof(h3,h5) then h6:=sqcons(h5,h6);
-            if h6 neq {} then partintdf(h4,h3,h2,xlist,h6,vl,sb) 
+            if h6 neq {} then partintdf(h4,h3,h2,xlist,h6,vl,sb)
           >>               else <<
             write"Adjoint symmetry:";
-            write  "  ( ",sqfirst h3," ) * ( ",sqfirst h4," )"$ 
+            write  "  ( ",sqfirst h3," ) * ( ",sqfirst h4," )"$
             h3:=sqrest h3; h4:=sqrest h4$
             while h3 neq {} do <<
-              write"+ ( ",sqfirst h3," ) * ( ",sqfirst h4," )"$ 
+              write"+ ( ",sqfirst h3," ) * ( ",sqfirst h4," )"$
               h3:=sqrest h3; h4:=sqrest h4
             >>$
 
@@ -850,7 +850,7 @@ begin
               terpri()$
               write"adjoint symmetry condition and therefore represents"$
               terpri()$
-              write"an adjoint symmetry."$ terpri()$ 
+              write"an adjoint symmetry."$ terpri()$
             >>$
             if (h8 neq 0) and (condi neq {}) then <<
               write"Please check: if the remaining conditions guarantee "$
@@ -889,4 +889,3 @@ begin
 end$ % of conlaw2
 
 end$
-
