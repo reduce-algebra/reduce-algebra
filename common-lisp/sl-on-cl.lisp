@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-10-08 17:49:06 franc>
+;; Time-stamp: <2025-11-05 16:38:17 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -645,17 +645,17 @@ having properties, flags, functions and the like. U is returned."
 ;;
 ;; FLAG('(DEFLIST FLAG FLUID GLOBAL REMFLAG REMPROP UNFLUID),'EVAL);
 ;;
-;; which (I think) means that the functions listed are evaluated even
-;; after `ON DEFN', which is necessary to ensure that some source code
-;; reads correctly.  However, `REMPROP' is usually followed by `PUT'
-;; to reinstate whatever property was removed, but `PUT' is not
-;; flagged `EVAL', so this reinstatement doesn't happen because
-;; evaluating `PUT' at the wrong time can cause similar problems,
-;; e.g. with `rlisp88'.  Hence, viewing code with `ON DEFN' can break
-;; subsequent code.  For example, inputting "rlisp/module.red" with
-;; `ON DEFN' removes the `STAT' property from `LOAD_PACKAGE', which
-;; then no longer works correctly.  This is a major problem for the
-;; way I generate fasl files!
+;; which means that the functions listed are evaluated even with `ON
+;; DEFN', which is necessary to ensure that some source code reads
+;; correctly.  However, `REMPROP' is usually followed by `PUT' to
+;; reinstate whatever property was removed, but `PUT' is not flagged
+;; `EVAL', so this reinstatement doesn't happen because evaluating
+;; `PUT' at the wrong time can cause similar problems, e.g. with
+;; `rlisp88'.  Hence, viewing code with `ON DEFN' can break subsequent
+;; code.  For example, inputting "rlisp/module.red" with `ON DEFN'
+;; removes the `STAT' property from `LOAD_PACKAGE', which then no
+;; longer works correctly.  This is a major problem for the way I
+;; generate fasl files!
 ;;
 ;; I therefore provide a workaround to make the functions DEFLIST,
 ;; FLAG, REMFLAG and REMPROP save the property list of any identifier
@@ -935,59 +935,98 @@ the name may be used subsequently as a variable."
 ;;; Variables and Bindings
 ;;; ======================
 
-(defun %fluid (x)
-  "If id X is already GLOBAL then display a warning; otherwise flag X as FLUID."
-  (declare (symbol x))
-  (unless (fluidp x)
-    (if (globalp x)
-        (warn "GLOBAL ~a cannot be changed to FLUID" x)
-        (progn
-          ;; defvar is a macro, so ...
-          (cl:eval `(defvar ,x nil "Standard LISP fluid variable."))
-          (put x 'fluid t))))
+;; Note that FLUID and GLOBAL forms must be evaluated when the LISP
+;; version of a REDUCE file is generated for compilation, i.e. with ON
+;; DEFN, and they normally are because in file "rlisp/superv.red" is
+;; the statement
+;;
+;; FLAG('(DEFLIST FLAG FLUID GLOBAL REMFLAG REMPROP UNFLUID),'EVAL);
+;;
+;; However, if one of these functions is preceded by LISP or SYMBOLIC
+;; then it is not evaluated!  If LISP or SYMBOLIC is flagged EVAL then
+;; it causes havoc, so don't precede these functions by LISP or
+;; SYMBOLIC.  This is almost always redundant in REDUCE because if the
+;; first argument of a function is quoted then the function is
+;; automatically evaluated in symbolic mode.
+
+(defun %fluid (idlist)
+  "Declare each identifier X in list IDLIST to be FLUID and return nil.
+If X is already FLUID then do nothing; if X is already GLOBAL then
+display a warning and do nothing else.
+This internal function is called only by FLUID."
+  (declare (list idlist))
+  (cl:mapc
+   #'(lambda (x)
+       (unless (fluidp x)
+         (if (globalp x)
+             ;; A warning, as for PSL, is more convenient than an error!
+             (warn "GLOBAL ~a cannot be changed to FLUID" x)
+             (progn
+               ;; defvar is a macro, so ...
+               (cl:eval `(defvar ,x nil "Standard LISP fluid variable."))
+               (put x 'fluid t)))))
+   idlist)
   nil)
 
 (defmacro fluid (idlist)
+  ;; Must be a CL macro to be active at compile time!
   "FLUID(IDLIST:id-list):NIL eval, spread
 The ids in IDLIST are declared as FLUID type variables (ids not
 previously declared are initialized to NIL). Variables in IDLIST
 already declared FLUID are ignored. Changing a variable's type
 from GLOBAL to FLUID is not permissible and results in the error:
 ***** ID cannot be changed to FLUID"
-  ;; A warning, as for PSL, is more convenient than an error!
-  (declare (type (or list symbol) idlist))
-  (the list
-       (if (eqcar idlist 'quote)
-           ;; Assume a top-level call that needs to output `defvar' forms
-           ;; at compile time.
-           (cons 'prog1
-                 (cons nil
-                       (cl:mapcan
-                        #'(lambda (x) `((%fluid ',x)))
-                        (cl:eval idlist))))
-           ;; Assume a run-time call.
-           `(prog1 nil
-              (cl:mapc #'%fluid ,idlist)))))
+  ;; The single argument IDLIST must EVALUATE to an id-list before
+  ;; FLUID can be evaluated.  (Usually, it is a quoted id-list.)
+  ;; Provided IDLIST evaluates to an id-list, FLUID is probably being
+  ;; evaluated at compile or load time, and it is appropriate to use
+  ;; the id-list within the macro expansion.  Otherwise, FLUID is
+  ;; being evaluated at run time.  (NB: If progn appears as a
+  ;; top-level form, then all forms within that progn are considered
+  ;; by the compiler to be top-level forms.)
+  (handler-case
+      ;; If IDLIST fails to evaluate, do not evaluate it during macro
+      ;; expansion.
+      `(progn
+         (eval-when (:compile-toplevel)
+           (declaim (special ,@(cl:eval idlist))))
+         (eval-when (:load-toplevel :execute)
+           (%fluid ,idlist))
+         nil)
+    (cl:error ()
+      ;; Assume a run-time call, e.g. as in
+      ;; if not fluidp y and not globalp y then fluid list y;
+      ;; in procedure switch in "rlisp/switch.red".
+      `(%fluid ,idlist))))
 
 (defun fluidp (u)
   "FLUIDP(U:any):boolean eval, spread
 If U has been declared fluid then t is returned, otherwise nil is returned."
   (get u 'fluid))
 
-(defun %global (x)
-  "If id X is already FLUID then display a warning; otherwise flag X as GLOBAL."
-  (declare (symbol x))
-  (unless (globalp x)
-    (if (fluidp x)
-        (warn "FLUID ~a cannot be changed to GLOBAL" x)
-        (progn
-          ;; defvar is a macro, so ...
-          (unless (cl:constantp x)      ; nil, t, $eol$, $eof$, etc.
-            (cl:eval `(defvar ,x nil "Standard LISP global variable.")))
-          (put x 'global t))))
+(defun %global (idlist)
+  "Declare each identifier X in list IDLIST to be GLOBAL and return nil.
+If X is already GLOBAL then do nothing; if X is already FLUID then
+display a warning and do nothing else.
+This internal function is called only by GLOBAL."
+  (declare (list idlist))
+  (cl:mapc
+   #'(lambda (x)
+       (unless (globalp x)
+         (if (fluidp x)
+             ;; A warning, as for PSL, is more convenient than an error!
+             (warn "FLUID ~a cannot be changed to GLOBAL" x)
+             (progn
+               ;; Cannot proclaim a CONSTANT variable SPECIAL.
+               (unless (cl:constantp x) ; nil, t, $eol$, $eof$, etc.
+                 ;; defvar is a macro, so ...
+                 (cl:eval `(defvar ,x nil "Standard LISP global variable.")))
+               (put x 'global t)))))
+   idlist)
   nil)
 
 (defmacro global (idlist)
+  ;; Must be a CL macro to be active at compile time!
   "GLOBAL(IDLIST:id-list):NIL eval, spread
 The ids of IDLIST are declared GLOBAL type variables. If an id
 has not been declared previously it is initialized to
@@ -995,20 +1034,22 @@ NIL. Variables already declared GLOBAL are ignored. Changing a
 variables type from FLUID to GLOBAL is not permissible and
 results in the error:
 ***** ID cannot be changed to GLOBAL"
-  ;; A warning, as for PSL, is more convenient than an error!
-  (declare (type (or list symbol) idlist))
-  (the list
-       (if (eqcar idlist 'quote)
-           ;; Assume a top-level call that needs to output `defvar' forms
-           ;; at compile time.
-           (cons 'prog1
-                 (cons nil
-                       (cl:mapcan
-                        #'(lambda (x) `((%global ',x)))
-                        (cl:eval idlist))))
-           ;; Assume a run-time call.
-           `(prog1 nil
-              (cl:mapc #'%global ,idlist)))))
+  ;; See comments in FLUID.
+  (handler-case
+      ;; If IDLIST fails to evaluate, do not evaluate it during macro
+      ;; expansion.
+      `(progn
+         (eval-when (:compile-toplevel)
+           ;; Cannot proclaim a CONSTANT variable SPECIAL.
+           (declaim (special ,@(remove-if #'cl:constantp (cl:eval idlist)))))
+         (eval-when (:load-toplevel :execute)
+           (%global ,idlist))
+         nil)
+    (cl:error ()
+      ;; Assume a run-time call, e.g. as in
+      ;; global list s;
+      ;; in procedure ps!:unknown!-crule in "tps/tpscomp.red".
+      `(%global ,idlist))))
 
 (defun globalp (u)
   "GLOBALP(U:any):boolean eval, spread
@@ -2753,14 +2794,15 @@ A function hung on the garbage collection hook."
 ;; similar that use garbage collection to provide an interrupt by
 ;; assigning a function to the variable `!*gc!-hook!*`:
 
-(defvar *gc-hook*)
+(defvar *gc-hook* nil
+  "Can be assigned a REDUCE procedure to be run at GC time.")
 
 ;; For example, this works:
 ;; (setq *gc-hook* (lambda () (format *terminal-io* "Running hook!")))
 
 (defun %run-gc-hook ()
   "Run the REDUCE procedure (if any) assigned to the variable *gc-hook*."
-  (if *gc-hook* (funcall *gc-hook*))
+  (when *gc-hook* (funcall *gc-hook*))
   nil)
 
 (push #'%run-gc-hook sb-ext:*after-gc-hooks*)
@@ -3004,6 +3046,8 @@ elements (for example ids, strings, and vectors) are not.")
 (defmacro compiletime (u)               ; PSL
   "Evaluate the expression U at compile time only."
   `(eval-when (:compile-toplevel :execute) ,u))
+
+(flag '(bothtimes compiletime) 'eval)   ; eval despite "on defn"
 
 (defmacro loadtime (u)                  ; PSL
   "Evaluate the expression U at load time only."
@@ -3599,7 +3643,11 @@ When all done, execute FASLEND;~2%" name))
    (with-simple-restart
        (abort "~@<Exit debugger, returning to top level.~@:>")
      (catch 'toplevel-catcher
-       (begin)))))
+       (begin)
+       ;; This doesn't work because *int does not determine
+       ;; genuinely interactive input.
+       ;; (unless *int (sb-ext:disable-debugger))
+       ))))
 
 #+CLISP
 ;; See function `main-loop' in
@@ -3623,6 +3671,8 @@ When all done, execute FASLEND;~2%" name))
   "Save a REDUCE memory image with main filename component NAME."
   (declare (string name))
   #+SBCL
+  (sb-ext:enable-debugger)
+  #+SBCL
   (sb-ext:save-lisp-and-die (concat "fasl.sbcl/" name ".img")
                             :toplevel #'reduce-init-function)
   #+CLISP
@@ -3639,7 +3689,7 @@ When all done, execute FASLEND;~2%" name))
 
 (pushnew :standard-lisp *features*)
 
-(defparameter lispsystem* '(common-lisp)
+(defparameter lispsystem* '(common-lisp sl-on-cl)
   "Information about the Lisp system supporting REDUCE.
 A list of identifiers indicating system properties.")
 
