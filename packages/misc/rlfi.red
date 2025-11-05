@@ -189,10 +189,13 @@ symbolic procedure texaeval1 l;
    if !*latex and null eqcar(l, 'TeX) 
       then TeXaeval l else l;
 
+global '(save!*raise!*lower);
+
 symbolic procedure latexon;
 % Procedure called after ON LATEX
 <<!*!*a2sfn:='TeXaeval;
-  !*raise:=nil;
+  save!*raise!*lower := !*raise . !*lower;
+  !*raise:=!*lower:=nil;
   prin2t "\documentstyle{article}";
   prin2t "\begin{document}";
   if !*verbatim then
@@ -203,7 +206,8 @@ symbolic procedure latexon;
 symbolic procedure latexoff;
 % Procedure called after OFF LATEX
 <<!*!*a2sfn:='aeval;
-  !*raise:=t;
+  !*raise := car save!*raise!*lower;
+  !*lower := cdr save!*raise!*lower;
   remprop('TeX,'rtypefn);
   if !*verbatim then
       <<terpri();
