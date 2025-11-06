@@ -1,6 +1,6 @@
 # REDUCE on Common Lisp
 
-**[Francis Wright](https://sites.google.com/site/fjwcentaur), September 2025**
+**[Francis Wright](https://sites.google.com/site/fjwcentaur), November 2025**
 
 From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Guy L. Steele Jr.](https://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html):
 

@@ -1,12 +1,12 @@
 #!/bin/bash
 
+# Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
+# Time-stamp: <2025-10-28 18:20:20 franc>
+
 # Build REDUCE on supported implementations of Common Lisp (CL),
 # namely SBCL, CLISP and CCL.
 
 # Based on "psl/bootstrap.sh" and "psl/build.sh".
-
-# Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2025-09-25 14:54:05 franc>
 
 # This script assumes that the version of Common Lisp to be used has
 # already been built if necessary and installed in a directory on your
@@ -60,19 +60,21 @@ done
 
 case $lisp in
     'sbcl')
-        runlisp='sbcl'
-        runlispfile='sbcl --load'
-        runbootstrap='sbcl --noinform --core fasl.sbcl/bootstrap.img'
-        runreduce='sbcl --noinform --core fasl.sbcl/reduce.img'
+        runlisp='sbcl --disable-debugger'
+        runlispfile='sbcl --disable-debugger --load'
+        runbootstrap='sbcl --core fasl.sbcl/bootstrap.img --noinform --disable-debugger'
+        runreduce='sbcl --core fasl.sbcl/reduce.img --noinform --disable-debugger'
         saveext='img'
-        faslext='fasl';;
+        faslext='fasl'
+        ;;
     'clisp')
         runlisp='clisp -ansi -norc'
         runlispfile='clisp -ansi'
         runbootstrap='clisp -q -norc -M fasl.clisp/bootstrap.mem'
         runreduce='clisp -q -norc -M fasl.clisp/reduce.mem'
         saveext='mem'
-        faslext='fas';;
+        faslext='fas'
+        ;;
     'ccl')
         if [ "$(type -ft ccl64)" ]; then CCL='ccl64'; else CCL='ccl'; fi
         runlisp="$CCL"
@@ -87,9 +89,12 @@ case $lisp in
                 faslext='lx64fsl';;
             CYGWIN*)            # MS Windows
                 faslext='wx64fsl';;
-        esac;;
+        esac
+        ;;
     *)
-        echo 'Error: option "-l <lisp>" is required'; help;;
+        echo 'Error: option "-l <lisp>" is required'
+        help
+        ;;
 esac
 
 if [ $clean ]; then
@@ -131,13 +136,13 @@ mkdir -p fasl.$lisp
 if [ "sl-on-cl.lisp" -nt "fasl.$lisp/sl-on-cl.$faslext" ]
 then
     echo $'\n+++++ Compiling sl-on-cl'
-    time eval $runlisp << EOF &> log.$lisp/sl-on-cl.blg
+    time eval $runlisp << EOF &> log.$lisp/sl-on-cl.blg &&
 (or (compile-file "sl-on-cl.lisp")
     #+CCL (quit 1)
     #-CCL (exit #+SBCL :code 1))
 EOF
-    mv sl-on-cl.$faslext fasl.$lisp
-    if [ $lisp = 'clisp' ]; then mv sl-on-cl.lib fasl.clisp; fi
+    mv sl-on-cl.$faslext fasl.$lisp &&
+        if [ $lisp = 'clisp' ]; then mv sl-on-cl.lib fasl.clisp; fi
 fi || { echo '***** Compilation failed'; exit 1; }
 
 ########################################################
@@ -257,14 +262,14 @@ if [ $coreonly ]; then exit; fi
 if [ "trace.lisp" -nt "fasl.$lisp/trace.$faslext" ]
 then
     echo $'\n+++++ Compiling trace'
-    time eval $runlisp << EOF &> log.$lisp/trace.blg
+    time eval $runlisp << EOF &> log.$lisp/trace.blg &&
 (load "fasl.$lisp/sl-on-cl")
 (or (compile-file "trace.lisp")
     #+CCL (quit 1)
     #-CCL (exit #+SBCL :code 1))
 EOF
-    mv trace.$faslext fasl.$lisp
-    if [ $lisp = 'clisp' ]; then mv trace.lib fasl.clisp; fi
+    mv trace.$faslext fasl.$lisp &&
+        if [ $lisp = 'clisp' ]; then mv trace.lib fasl.clisp; fi
 fi || { echo '***** Compiling trace failed'; exit 1; }
 
 ###############################

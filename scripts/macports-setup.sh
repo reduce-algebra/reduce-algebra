@@ -162,6 +162,7 @@ for p in                      \
   xorg-libXcursor:s           \
   brotli                      \
   brotli-static               \
+  ccache                      \
   xorg-server                 \
   xorg
 
