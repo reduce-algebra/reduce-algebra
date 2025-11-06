@@ -68,8 +68,8 @@
 #include <inttypes.h>  // Make newer integer types  of known width available
 #include <unistd.h>
 
-#ifndef PAGESIZE
-#define PAGESIZE 4096
+#ifndef MY_PAGESIZE
+#define MY_PAGESIZE 16384
 #endif
 
 long long unexec();
@@ -97,6 +97,7 @@ char *  imagefile;
 char *  abs_imagefile = NULL; /* like imagefile, but as an absolute path */
 long long   max_image_size;
 long long   oldbreakvalue;
+long pagesize = -1;
 
 long long bpscontrol[2];
 
@@ -269,14 +270,16 @@ setupbpsandheap(argc,argv)
   if (imagefile == NULL)
   printf("symbol table size = %llu (%llX), symbol table address = %llu (%llX)\n"
 	 "bpssize = %llu (%llX), , bps address =  %llu (%llX)\n"
-	 "heapsize = %llu (%llX), heap address = %llu (%llX)\nTotal image size = %lld (%llX)\n",
+	 "heapsize = %llu (%llX), heap address = %llu (%llX)\n"
+	 "Total image size = %lld (%llX)\nPage size = %lld (%llX)\n",
 	 (long long unsigned) 5*(&symprp - &symval), (long long unsigned) 5*(&symprp - &symval),
 	 (long long unsigned) &symval, (long long unsigned) &symval,
 	 bpssize, bpssize,
 	 bpslowerbound, bpslowerbound,
 	 heapsize, heapsize,
 	 heaplowerbound, heaplowerbound,
-	 (unsigned long long) sbrk(0), (unsigned long long) sbrk(0));
+	 (unsigned long long) sbrk(0), (unsigned long long) sbrk(0),
+	 pagesize,pagesize);
 
    if (imagefile != NULL) {
 	ohlb = oldheaplowerbound; ohub = oldheapupperbound;
@@ -389,11 +392,17 @@ setupbps()
 
 //  nextbps = malloc (50000000);
 //  bps = nextbps;
+
+  pagesize = sysconf(_SC_PAGESIZE);
+  if (pagesize == -1) {
+    pagesize = MY_PAGESIZE;
+  }
+
   nextbps  =  ((long long)bps + 7) & ~7;        /* Up to a multiple of 8. */
   bpslowerbound = nextbps;
   lastbps  =  ((long long)bps + BPSSIZE) & ~7;    /* Down to a multiple of 8. */
-  p = (char *)(((long long) bpslowerbound  -1) & ~(PAGESIZE-1));
-  bpssize =  ((BPSSIZE + PAGESIZE-1) & ~(PAGESIZE-1));
+  p = (char *)(((long long) bpslowerbound - 1) & ~(pagesize-1));
+  bpssize =  ((BPSSIZE + pagesize-1) & ~(pagesize-1));
   if (mprotect(p, bpssize, PROT_READ | PROT_WRITE | PROT_EXEC )) {
             perror("Couldn’t mprotect");
             exit(errno);
