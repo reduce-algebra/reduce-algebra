@@ -616,13 +616,15 @@ again:
       >>
       else if s='fc then <<
         reclaim()$terpri()$            % do garbage collection
-#if (memq 'psl lispsystem!*)          % PSL:
+#if (memq 'psl lispsystem!*)           % PSL:
         write if boundp 'gcfree!* then gcfree!*
                                   else known!-free!-space(),
               " free cells"$
-#else                                 % CSL:
+#elif (memq 'csl lispsystem!*)          % CSL:
         write"Used memory: ",!*used!-space!*,"KB"$terpri()$
         write"Free memory (without requesting more): ",!*avail!-space!*,"KB"$
+#elif (memq 'common!-lisp lispsystem!*) % Common Lisp:
+        room(nil)$
 #endif
         terpri()$write countids()," identifiers in use"$;
         terpri()
@@ -1375,7 +1377,7 @@ again:
       >>
 #if (memq 'psl lispsystem!*)
       else if s='ls then mapobl function switchp
-#else                         % for CSL REDUCE
+#elif (intersection '(csl sl!-on!-cl) lispsystem!*)
       else if s='ls then for each x in oblist() do switchp x
 #endif
       else if s='lg then list_global_crack_variables()
@@ -1945,8 +1947,7 @@ symbolic procedure print_hb()$
                 '(i_tm i_tg i_ti i_td i_tl i_ts i_to i_ut i_br i_pc i_in i_cu
                   i_tr
                   i_qt i_pq i_so i_sf i_ls i_lg i_dc)
-#endif
-#if (memq 'csl lispsystem!*)
+#else
                 '(i_tm i_tg i_ti i_td i_tl i_ts i_to i_ut i_br i_pc i_in i_cu
                   i_qt i_pq i_so i_sf i_ls i_lg i_dc)
 #endif

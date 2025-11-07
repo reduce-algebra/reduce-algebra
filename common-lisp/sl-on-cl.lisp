@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-11-05 16:38:17 franc>
+;; Time-stamp: <2025-11-06 16:59:52 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -25,7 +25,7 @@
 ;; For Common Lisp documentation see
 ;; https://www.lispworks.com/documentation/HyperSpec/Front/
 
-;; (eval-when (:compile-toplevel :load-toplevel :execute) (push :debug *features*))
+(eval-when (:compile-toplevel :load-toplevel :execute) (push :debug *features*))
 
 #-DEBUG (declaim (optimize speed))
 #+DEBUG (declaim (optimize debug safety))
@@ -2750,6 +2750,23 @@ Elapsed time from some arbitrary initial point in milliseconds."
        (values (round (* (get-internal-run-time)
                          +milliseconds-per-internal-time-unit+)))))
 
+(defun oblist ()                        ; CSL
+  "Return the Standard Lisp object list.
+That is, the list of interned identifiers or the symbol table for the
+current package."
+  (let (lst)
+    (do-symbols (s) (push s lst))
+    lst))
+
+(defun reclaim ()
+  "(reclaim): nil expr
+Reclaim is the user level call to the garbage collector. Active data
+in the heap is made contiguous and all tagged pointers into the heap
+from active local stack frames, the binding stack and the symbol table
+are relocated. If *gc is t, prints some statistics. Increments gcknt*
+and updates gctime*."
+  #+SBCL (gc :full t))
+
 #+CLISP
 (defun %nth-room-value (n)
   "Return the Nth multiple value provided by CLISP `room' function.
@@ -3065,7 +3082,7 @@ Store item L as the property list of U."
 ;; CL union and intersection return different orderings that those in
 ;; the REDUCE source, which leads to different (although probably not
 ;; incorrect) results, so don't use them.  However, union is needed in
-;; the build process before it is defined in the rlisp module, so
+;; the build process before it is defined in the rlisp package, so
 ;; define an initial version here, which will be replaced when
 ;; building rlisp:
 
@@ -3730,7 +3747,7 @@ interpret otherwise.  The default is compile."
    unwind-protect evenp oddp
    force-output                         ; used in clrend
    catch throw                          ; used in corrundum (sic)
-   sleep                                ; used in crack
+   room sleep                           ; used in crack
    *print-base*                         ; used in gf2.tst
    #+SBCL sb-ext:*muffled-warnings*     ; used in build.sh
    symbol-function ; since *currently* getd always returns lambda form
