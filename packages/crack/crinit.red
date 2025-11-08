@@ -1,7 +1,7 @@
 %**********************************************************************
 module crackinit$
 %**********************************************************************
-%  Initialisation 
+%  Initialisation
 %  Author: Andreas Brand 1993 - 97
 %          Thomas Wolf since 1994
 
@@ -61,24 +61,24 @@ tr_decouple tr_genint tr_gensep tr_main tr_orderings tr_short tr_redlength
 ud_1 ud_2 ud_3 ud_4 userrules_ verify_end_of_parallel_run vl_)$
 
 % Variables in passed_back are backed up before recursive calls such that
-% their value is available when reading a backup file with the rb 
+% their value is available when reading a backup file with the rb
 % command but when merging results from a sub-case (in restore_and_merge()
 % in crutil.red) then the current value from the sub-case computation
 % overwrites the backup value.
 
-passed_back:='(done_trafo history_ limit_time level_ nfct_ size_hist 
-             sol_list stepcounter_ time_limit inverse_trafo_list_incomplete 
+passed_back:='(done_trafo history_ limit_time level_ nfct_ size_hist
+             sol_list stepcounter_ time_limit inverse_trafo_list_incomplete
              sol_list_file_created)$
 
 comment :
 
 Variables not to be changed interactively are not updated:
-   allflags_ crack_load_cmd default_proc_list_ full_proc_list_ 
+   allflags_ crack_load_cmd default_proc_list_ full_proc_list_
    lin_test_const my_gc_counter max_gc_counter max_eqn_to_conti
-   prop_list one_argument_functions_ reducefunctions_ 
-   algebraic mode: abs_ sqrt1_ sqrt2_ 
-   trig1_ trig2_ trig3_ trig4_ trig5_ trig6_ trig7_ trig8_ 
-   
+   prop_list one_argument_functions_ reducefunctions_
+   algebraic mode: abs_ sqrt1_ sqrt2_
+   trig1_ trig2_ trig3_ trig4_ trig5_ trig6_ trig7_ trig8_
+
 Variables in not_passed_back are needed in each case of a computation
 and they can be changed interactively but not to be passed back.
 Therefore they have to be backed up.
@@ -88,9 +88,9 @@ are ment to be used continuously, so they are not backed up.
 These variables are separately backed up in crutil.red in backup_to_file()
 and updated in restore_backup_from_file(), see also restore_and_merge().
 
-For example, history_ is not backed up to accumulate all input also during 
+For example, history_ is not backed up to accumulate all input also during
 subcases. Because function names and function dependencies generated
-in subcalls of crack are passed back in the solution that is passed back 
+in subcalls of crack are passed back in the solution that is passed back
 and on the other hand the backup depl!* is restored, i.e. the dependencies
 of the new functions is dropped, this has to be carried over by
 adding their dependencies to the backup depl!*.
@@ -147,12 +147,12 @@ one_argument_functions_:='(abs acos acosd acosh acot acotd acoth acsc
 			   tan tand tanh minus)$
 
 reducefunctions_:=append(one_argument_functions_,
-                         '(atan2 atan2d factorial plus difference df times 
+                         '(atan2 atan2d factorial plus difference df times
                            quotient expt int))$
 
 allflags_:='(to_eval to_fullint to_int to_sep to_casesep to_gensep
-             to_casegensep to_decoup to_diff to_under 
-             to_separant % = t if it is possible that the separant 
+             to_casegensep to_decoup to_diff to_under
+             to_separant % = t if it is possible that the separant
                % (=df(eqn,lead_deriv)) vanishes, i.e. if it is known
                % that it could vanish or if nothing is known,
                % i.e. =nil iff it is known not to vanish. One would
@@ -172,8 +172,8 @@ allflags_:='(to_eval to_fullint to_int to_sep to_casesep to_gensep
 % Most of the following properties are assigned in updateSQ() in crutil.red
 
 prop_list:='(sqval  % the value of the equation in SQ form, always assigned
-             fac    % =nil iff not yet factorized,  
-                    % =1 if tested by sffac() and no non-trivial factor 
+             fac    % =nil iff not yet factorized,
+                    % =1 if tested by sffac() and no non-trivial factor
                     % =2 if tested by err_catch_fac2() and no non-trivial factor
                     % else list of factors in SQ form, which may factorize further
              pval   % the value of the equation in prefix form, sometimes assigned
@@ -198,7 +198,7 @@ prop_list:='(sqval  % the value of the equation in SQ form, always assigned
                     % ((f) . 5)  or ((f x y 2) . 2)
                     % maybe one should store only derivatives which could be leading
                     % wrt some ordering? --> No, one would not know the intersection
-                    % of all derivatives to substitute a derivative by a function 
+                    % of all derivatives to substitute a derivative by a function
              no_derivs % the number of all different powers of all different
                        % derivatives (proper derivatives, not 0th order derivatives)
              fcteval_lin % list of substitutions (coeff_of_f . f) where coeff_of_f is
@@ -207,13 +207,13 @@ prop_list:='(sqval  % the value of the equation in SQ form, always assigned
              fcteval_nli % ... where coeff_of_f may be zero
              fcteval_n2l % =t if a function not in flin_ is to be replaced and
                          % the equation contains allvarfcts in flin_, otherwise nil
-             fct_nli_lin % subset of 'fcteval_nli where 
+             fct_nli_lin % subset of 'fcteval_nli where
                          %        coeff_of_f=0 has an 'fcteval_lin substitution
-             fct_nli_nca % subset of 'fcteval_nli where 
+             fct_nli_nca % subset of 'fcteval_nli where
                          %        coeff_of_f=0 has an 'fcteval_nca substitution
-             fct_nli_nli % subset of 'fcteval_nli where 
+             fct_nli_nli % subset of 'fcteval_nli where
                          %        coeff_of_f=0 has an 'fcteval_nli substitution
-             fct_nli_nus % subset of 'fcteval_nli where 
+             fct_nli_nus % subset of 'fcteval_nli where
                          %        coeff_of_f=0 has no substitutions
              terms       % no_of_tm_sf numr sqval
              length      % pdeweightSF numr + pdeweightSF denr
@@ -230,22 +230,22 @@ prop_list:='(sqval  % the value of the equation in SQ form, always assigned
              dec_with_rl % list of equations this equation has been paired with under 27
              rl_with     % list of equations this equation has been paired with under 11
              res_with    % list of equations this equation has been paired with under 86
-             hom_deg     % = {total degree of flin_ functions, 
+             hom_deg     % = {total degree of flin_ functions,
                          %    total degree of all other functions}
-             split_test  % =nil if not tested, =1 iff all factors=0 yield 
+             split_test  % =nil if not tested, =1 iff all factors=0 yield
                          % case-free substitutions, =0 otherwise
              linear_     % =t iff completely linear in all 'fcts (no products) else =nil
              histry_     % how this equation resulted from others, assigned in mkeqSQ()
-             not_to_eval % if not nil then a list of unknows which should not be 
+             not_to_eval % if not nil then a list of unknows which should not be
                          % eliminated and substituted using this equation
              case2sep    % either nil or a standard quotient expression which if known to
                          % be non-zero will lead to direct separation because then this
-                         % standard quotient is the only kernel depending on some 
+                         % standard quotient is the only kernel depending on some
                          % independent variable
              %orderings   % list of orderings where the equations are valid
              %            % currently = list(0),  inactive
              % degrees
-             % dec_info 
+             % dec_info
             )$
 
 % Some of the modules in the following list are still experimental.
@@ -267,7 +267,7 @@ full_proc_list_:='(to_do                      % 1
                    find_1_term_eqn            % 13
                    trian_lin_alg              % 14
                    subst_level_1              % 15
-                   subst_level_3              % 16 
+                   subst_level_3              % 16
                    subst_level_5              % 17
                    subst_level_2              % 18
                    subst_level_33             % 19
@@ -275,7 +275,7 @@ full_proc_list_:='(to_do                      % 1
                    subst_level_4              % 21
                    undetlinode                % 22
                    undetlinpde                % 23
-                   full_integration           % 24 
+                   full_integration           % 24
                    integration                % 25
                    gen_separation             % 26
                    diff_length_reduction      % 27
@@ -328,7 +328,7 @@ full_proc_list_:='(to_do                      % 1
 		   case_on_most_frequ_factors % 74
                    choose_11_30               % 75
                    try_other_ordering         % 76
-                   find_factorization         % 77 
+                   find_factorization         % 77
                    para_solve_hom_equ         % 78
                    undetalg                   % 79
                    subst_power                % 80
@@ -343,7 +343,7 @@ full_proc_list_:='(to_do                      % 1
                    quit_if_no_alg_sol         % 89
                    get_special_alg_sol1       % 90
                    get_special_alg_sol2       % 91
-                  )$ 
+                  )$
 
 for h:=1:length(full_proc_list_) do put(nth(full_proc_list_,h),'no,h)$
 
@@ -351,25 +351,25 @@ default_proc_list_:='(to_do
                      separation
                      subst_level_0
                      subst_level_03
-		     quick_integration   
-                     find_factorization        
+		     quick_integration
+                     find_factorization
 		     factorize_to_substitute
-                     factorize_any     
+                     factorize_any
 		     subst_derivative
 		     subst_level_1
-		     full_integration        
-		     subst_level_3 
-		     subst_level_2 
+		     full_integration
+		     subst_level_3
+		     subst_level_2
 		     subst_level_33
 		     subst_level_35
 		     subst_level_4
-		     gen_separation 
+		     gen_separation
                      case_separation
                      case_gen_separation
-		     integration             
+		     integration
 		     diff_length_reduction
 		     decoupling
-                     undetlinode               
+                     undetlinode
                      try_other_ordering
 		     alg_solve_single
 		     undo_subst_derivative
@@ -428,7 +428,7 @@ verify_end_of_parallel_run:=t$ put('verify_end_of_parallel_run,'description,list
 
 proc_list_:=default_proc_list_$  put('proc_list_,'description,list("priority list of procedure in use"))$
 
-#if (memq 'csl lispsystem!*) 
+#if (memq 'csl lispsystem!*)
 !*uncached:=nil$ % CSL uses a hash table and has an access time O(1)
 #else
 !*uncached:=t$   % PSL uses an association list and has an access time O(n)
@@ -710,7 +710,7 @@ crack_load_command:=nil$ put('crack_load_command,'description,list("determined t
 crack_download_add:="http://lie.math.brocku.ca/twolf/crack/"$
                          put('crack_download_add,'description,list("The web address for downloading the latest version of CRACK"))$
 
-auto_para_mode:=nil$  put('auto_para_mode,'description,list("determines whether and how to add automatically extra interactive parallel processes:  
+auto_para_mode:=nil$  put('auto_para_mode,'description,list("determines whether and how to add automatically extra interactive parallel processes:
 =nil: automatic parallel case solution either not specified yet, or not possible
 =1: as xterm, =2: as screen, =3: as sqsub job, =4: PVM "))$
 
@@ -728,7 +728,7 @@ max_term_to_pred:=10$ put('max_term_to_pred,'description,list("maximal number of
 
 form_comp:=nil$       put('form_comp,'description,list("whether the S-polynomial shall be computed by FORM in crdec.red and substitutions done by FORM could be initialized automatically if system ""which form""; finds the file, e.g. under: /usr/local/bin/form"))$
 
-form_pipe:=nil$       put('form_pipe,'description,list("whether the communication REDUCE --> FORM should go through a pipe. If nil then a file interface is used. If it goes through a pipe then FORM is started through 
+form_pipe:=nil$       put('form_pipe,'description,list("whether the communication REDUCE --> FORM should go through a pipe. If nil then a file interface is used. If it goes through a pipe then FORM is started through
 ./form_start < formin > formout &
 at the start of the sq!*crack() procedure in crmain.red"))$
 
@@ -752,7 +752,7 @@ para_case_dir:=""$    put('para_case_dir,'description,list("the directory in whi
 
 !*notseparate:=t$     put('!*notseparate,'description,list("This is a REDUCE flag which when =t prevents the simplification of x**(5/4) to x**(1/4)*x. The default value of !*notseparate in REDUCE is nil. !*notseparate=t is necessary for simplifications of, for example, (x**(5/4))**(4/5) to abs(x) {or x if let rule abs_ is active}. The disadvantage of !*notseparate:=t is that factorize (a*x**(5/4)+b*x); would not get x as a factor, but on combineexpt; does get the factorization right. !*notseparate=t has the disadvantage that together with OFF COMBINEEXPT it will not recognize u**(3/2)-u*sqrt(u) as zero which can have catastrophic consequences."))$
 
-% off combineexpt$ 
+% off combineexpt$
 %
 % lisp(!*notseparate:=nil)$
 % u**(3/2)-u*sqrt(u);     --->   0
@@ -818,7 +818,7 @@ dec_depth_first_search:=t$ put('dec_depth_first_search,'description,list("in dec
 
 real_valued:=nil$     put('real_valued,'description,list("=t iff all unknowns and paprmeters and variables are real valued. Then all terms of a polynomial are set to zero if all exponents are even and coefficients are positive."))$
 
-%--------- Adding descriptions of methods 
+%--------- Adding descriptions of methods
 
 put('to_do,'description,
     list("Hot list of urgent steps"))$
@@ -919,15 +919,15 @@ put('undetlinpde,'description,
 put('change_proc_list,'description,
     list("Changing the list of priorities"))$
 put('drop_lin_dep,'description,
-    list("Find and drop linear dependent general equations"))$ 
+    list("Find and drop linear dependent general equations"))$
 put('drop_dep_bi_lin,'description,
-    list("Find and drop linear dependent bi-linear equations"))$ 
+    list("Find and drop linear dependent bi-linear equations"))$
 put('find_factor_bi_lin,'description,
-    list("Find factorizable bi-linear equations"))$ 
+    list("Find factorizable bi-linear equations"))$
 put('find_1_term_eqn,'description,
-    list("Find a linear dependent equation with only 1 term"))$ 
+    list("Find a linear dependent equation with only 1 term"))$
 put('trian_lin_alg,'description,
-    list("Triangularize a linear algebraic system"))$ 
+    list("Triangularize a linear algebraic system"))$
 %put('general_trafo,'description,
 %    list("An interactive general transformation"))$
 put('del_redundant_fc,'description,
@@ -1017,13 +1017,13 @@ put('replace_equation,'description,
 put('do_one_resultant,'description,list("Compute a resultant"))$
 put('inhom_decoupling,'description,
     list("Decoupling of inhom. equations in otherwise homog. system"))$
-put('linearize_bi_lin,'description, 
+put('linearize_bi_lin,'description,
     list("Converting a homog. quadr. system into a lin. one of all products"))$
 put('quit_if_no_alg_sol,'description,
     list("Stop case if there is an alg. poly. eqn of degree>1 in only 1 fct."))$
-put('get_special_alg_sol1,'description, 
+put('get_special_alg_sol1,'description,
     list("Set coeff. of higher powers to zero to linearize and get spec. sol."))$
-put('get_special_alg_sol2,'description, 
+put('get_special_alg_sol2,'description,
     list("Set linear terms to zero and get spec. sol."))$
 
  % Check the installation of FORM
@@ -1036,7 +1036,7 @@ put('get_special_alg_sol2,'description,
  % if and(member('csl,lispsystem!*), member('sixty!-four,lispsystem!*)) or
  %    and(member('psl,lispsystem!*), betap lshift(1,20)) then 64 else 32$
 
-%--------- Adding descriptions of methods 
+%--------- Adding descriptions of methods
 
  put('i_hd,'description,list("Help to inspect data"))$
  put('i_hp,'description,list("Help to proceed"))$
@@ -1090,10 +1090,10 @@ put('get_special_alg_sol2,'description,
  put('i_pl,'description,list("Set maximal length of an expression to be printed"))$ % print_
  put('i_pm,'description,list("Toggle extended printing about the success of methods ON/OFF"))$ % print_more
  put('i_pa,'description,list("Toggle full printing of properties of equations with e-command ON/OFF"))$ % print_all
- put('i_cp,'description,list("Change the priorities of procedures"))$ 
+ put('i_cp,'description,list("Change the priorities of procedures"))$
  put('i_og,'description,list("Toggle decoupling priority between functions and derivativs"))$ % lex_fc
  put('i_od,'description,list("Toggle decoupling priority between total and lex. ordering of derivatives"))$ % lex_df
- put('i_oi,'description,list("Interactive change of lex. ordering on variables"))$ 
+ put('i_oi,'description,list("Interactive change of lex. ordering on variables"))$
  put('i_or,'description,list("Reverse the lex. ordering of independent variables"))$
  put('i_om,'description,list("Mix randomly lex. ordering of independent variables"))$
  put('i_of,'description,list("Interactive change of ordering on functions"))$
@@ -1194,7 +1194,7 @@ put('get_special_alg_sol2,'description,
 >>$ % end of setcrackflags
 
 algebraic procedure ini_let_rules$
-begin 
+begin
 
   lisp(userrules_:={'list})$    % LET rules defined by the user
 
@@ -1218,7 +1218,7 @@ begin
    e**(log(~y)/~x) => y**(1/x),
    e**(~x*log(~y)/~z) => y**(x/z),
    e**((~x*log(~y))/~z) => y**(x/z),
-   int(df(~y,~x)/~y,~x) => log(y) 
+   int(df(~y,~x)/~y,~x) => log(y)
   } $
 
   abs_  :={abs(~x)     => x}$
@@ -1246,9 +1246,7 @@ end$
   >>$
   if  flambdalinkp 'random_init then
 	compile '(random_init )$
-#endif
-
-#if (memq 'csl lispsystem!*)
+#elif (intersection '(csl sl!-on!-cl) lispsystem!*)
   symbolic procedure random_init()$
   random_new_seed(datestamp())$
 #endif
