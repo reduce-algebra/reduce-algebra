@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-11-06 16:59:52 franc>
+;; Time-stamp: <2025-11-10 16:21:52 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -191,11 +191,9 @@ determined by DEFINITION.  The return value is undefined."
   (setf ,@(if docstring `((documentation ,symbol 'cl:function) ,docstring))
          (symbol-function ,symbol) (symbol-function ,definition))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  ;; Needed to expand macros fluid and global when compiling.
-  (defun eqcar (u v)
-    "Return true if U is a cons cell and its car is eq to V."
-    (and (consp u) (eq (car u) v))))
+(defun eqcar (u v)
+  "Return true if U is a cons cell and its car is eq to V."
+  (and (consp u) (eq (car u) v)))
 
 (defun %character-invert-case (c)
   "Invert the case of character C (if it is a letter)."
@@ -581,10 +579,10 @@ printing (using prin1) to a list.  E.g.
               (cl:map 'list #'%intern-character-invert-case
                       (%prin-float-to-string u)))
              (t
-              ;; Assume identifier -- insert ! before an upper-case
-              ;; letter, leading digit or _, or special character
-              ;; (except _):
-              (loop with s = (cl:symbol-name u) and c
+              ;; Identifier, function-pointer, etc -- insert ! before
+              ;; an upper-case letter, leading digit or _, or special
+              ;; character (except _):
+              (loop with s = (princ-to-string u) and c
                  for i below (cl:length s)
                  do (setq c (aref s i))
                  unless (or (upper-case-p c) ; case-inverted!
@@ -836,9 +834,7 @@ FEXPR PROCEDURE DM(U);
   "GETD(FNAME:any):{NIL, dotted-pair} eval, spread
 If FNAME is not the name of a defined function, return NIL. If
 FNAME is a defined function then return the dotted-pair
-\(TYPE:ftype . DEF:{function-pointer, lambda}).
-
-*** CURRENTLY RETURNS A LAMBDA FORM EVEN FOR COMPILED FUNCTIONS! ***"
+\(TYPE:ftype . DEF:{function-pointer, lambda})."
   (the list
        (and (symbolp fname) (fboundp fname)
             ;; Assume expr unless fname was defined using SL dm macro.
@@ -854,18 +850,15 @@ FNAME is a defined function then return the dotted-pair
                      `(lambda (x)
                         (funcall ,(macro-function fname) x nil))))
               (t
-               ;; Return a lambda expression if possible, since this is
-               ;; most useful (although perhaps not most efficient in
-               ;; some cases):
-               (let (f)
-                 ;; Note that a CL function definition may contain
-                 ;; declarations and a documentation string, and the
-                 ;; body MAY BE wrapped in a block form, i.e.
-                 ;; (lambda params [decls] [doc] (block name body))
-                 ;; [A compiled CLISP function may not contain a block!]
-                 ;; Extract the function body:
-                 (when (and (functionp (setq fname (symbol-function fname)))
-                            (setq f (function-lambda-expression fname)))
+               (setq fname (symbol-function fname))
+               (when (not (compiled-function-p fname))
+                 (let ((f (function-lambda-expression fname)))
+                   ;; Note that a CL function definition may contain
+                   ;; declarations and a documentation string, and the
+                   ;; body MAY BE wrapped in a block form, i.e.
+                   ;; (lambda params [decls] [doc] (block name body))
+                   ;; [A compiled CLISP function may not contain a block!]
+                   ;; Extract the function body:
                    (setq fname (car (last f))) ; block or body form
                    (if (eqcar fname 'block) (setq fname (caddr fname)))
                    (setq fname `(lambda ,(cadr f) ,fname))))
@@ -3145,10 +3138,10 @@ lower-case letters (i.e. ASCII code U <= ASCII code V)."
   "Ask the user the question that is the value of U.
 This may be an atom or a list."
   ;; Redefine yesp and yesp1 defined in "rlisp/inter.red".
-  (prog1
-      (y-or-n-p (if (listp u) "~{~a ~}" "~a") u)
-    (setq cursym* '*semicol*
-          curescaped* nil)))
+  (let ((*print-case* :downcase))
+    (if (atom u)
+        (y-or-n-p "~a" u)
+        (y-or-n-p "~a~{ ~a~}" (car u) (cdr u)))))
 
 (flag '(yesp yesp1) 'lose)
 
@@ -3652,6 +3645,15 @@ When all done, execute FASLEND;~2%" name))
 ;; See function `toplevel-repl' in "sbcl-2.2.3/src/code/toplevel.lisp".
 (defun reduce-init-function ()
   "The function executed at startup of the saved REDUCE memory image."
+  ;; Enable the interactive debugger only if the input and output are
+  ;; both interactive:
+  (if  (and (interactive-stream-p *standard-input*)
+            (interactive-stream-p *standard-output*))
+       (sb-ext:enable-debugger)
+       (sb-ext:disable-debugger))
+  ;; Enable compilation only if *comp is true:
+  (setq sb-ext:*evaluator-mode*
+        (if *comp :compile :interpret))
   (standard-lisp)
   (loop
    ;; CLHS recommends that there should always be an
@@ -3660,11 +3662,7 @@ When all done, execute FASLEND;~2%" name))
    (with-simple-restart
        (abort "~@<Exit debugger, returning to top level.~@:>")
      (catch 'toplevel-catcher
-       (begin)
-       ;; This doesn't work because *int does not determine
-       ;; genuinely interactive input.
-       ;; (unless *int (sb-ext:disable-debugger))
-       ))))
+       (begin)))))
 
 #+CLISP
 ;; See function `main-loop' in
@@ -3687,8 +3685,6 @@ When all done, execute FASLEND;~2%" name))
 (defun save-reduce-image (name)
   "Save a REDUCE memory image with main filename component NAME."
   (declare (string name))
-  #+SBCL
-  (sb-ext:enable-debugger)
   #+SBCL
   (sb-ext:save-lisp-and-die (concat "fasl.sbcl/" name ".img")
                             :toplevel #'reduce-init-function)
@@ -3730,7 +3726,8 @@ A list of identifiers indicating system properties.")
 #+SBCL
 (defun compilation (on)
   "Set the SBCL evaluation mode to compile if ON is non-nil and to
-interpret otherwise.  The default is compile."
+interpret otherwise.  The default is compile.
+Called by ON/OFF COMP; see “clrend.red”."
   (the symbol
        (setq sb-ext:*evaluator-mode*
              (if on :compile :interpret))))

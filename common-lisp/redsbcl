@@ -10,3 +10,5 @@ sbcl --noinform --core $cl/fasl.sbcl/reduce.img $*
 #   --dynamic-space-size megabytes
 #     Size of the dynamic space reserved on startup in megabytes.
 #     Default value is platform dependent.
+#   --disable-debugger
+#     Disable interactive debugger; useful in batch mode.
