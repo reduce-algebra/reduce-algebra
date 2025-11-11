@@ -10,6 +10,7 @@
 #                      --csl=XXX --bootstrapreduce=XXX
 #                      --jlisp jlispboot
 #                      --psl --psl=XXX
+#                      --sbcl
 # See explanation in scripts/test1.sh regarding valid "XXX" but the
 # most common and general use will be if it is a directory name within
 # cslbuild or pslbuild.

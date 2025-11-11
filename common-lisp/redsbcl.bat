@@ -9,3 +9,5 @@ rem     Default value is 2
 rem   --dynamic-space-size megabytes
 rem     Size of the dynamic space reserved on startup in megabytes.
 rem     Default value is platform dependent.
+rem   --disable-debugger
+rem     Disable interactive debugger; useful in batch mode.
