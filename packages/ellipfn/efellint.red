@@ -28,21 +28,23 @@ module efellint;  % Procedures and Rules for Elliptic Integrals.
 % $Id: sfellipi.red 5874 2021-07-30 21:08:56Z arthurcnorman $
 % Renamed (was sfellipi) and moved to a new package ellipfn, December 2021
 % by Alan Barnes
+% Substantial additions by Alan Barnes, 2022 & 2025
 algebraic;
 
 algebraic procedure pi_shift(x);
+   % list of (a) x shifted so -pi/2 <= repart x <= pi/2 and
+   % (b) the number and direction of the pi/2 shifts reqd
    begin scalar n, sgn;
       sgn := 1;
       if repart x < 0 then <<
 	 x := -x;
 	 sgn := -1
       >>;
-      n := fix (repart(x)/pi);
-      x := x-n*pi;
-      if repart x > pi/2 then <<
-	 n := n+1;
-         x := x - pi;
-      >>;
+      if repart x = pi/2 then  % ensures value is returned unchanged
+	 return {sgn*x,0};
+      n := fix (2*repart(x)/pi);
+      if not evenp n then n := n+1;
+      x := x-n*pi/2;
       return {sgn*x,sgn*n};
    end;
 	 
@@ -92,14 +94,14 @@ let ellipticfrules;
 % older algorithm based on descending Landen
 % Used for real arguments |phi|<=pi/2 and |m|<1
 procedure f_function(phi,m);  % not used
-    if abs phi = pi/2 then sgn(phi)*k_function(abs m)
-    else begin scalar  bothlists, alist, plist, phi_n;
-       bothlists := landentrans(phi,asin m);
-       alist := rest second bothlists;
-       plist := first bothlists;
-       phi_n  := first reverse plist;
-       return (phi_n * for each y in alist product (1+sin y)/2);
-    end;
+   if abs phi = pi/2 then sgn(phi)*k_function(abs m)
+   else begin scalar  bothlists, alist, plist, phi_n;
+      bothlists := landentrans(phi,asin m);
+      alist := rest second bothlists;
+      plist := first bothlists;
+      phi_n  := first reverse plist;
+      return (phi_n * for each y in alist product (1+sin y)/2);
+   end;
 
 algebraic procedure num_ellf(phi,k);
    if k=0 then phi
@@ -112,8 +114,10 @@ algebraic procedure num_ellf(phi,k);
    else begin scalar l;
       l := pi_shift phi;
       if second l neq 0 then
+      % path of integration will be along real axis  0--> n*pi
+      % then n*pi --> phi
       	 return second(l)*num_ellk(k) + num_ellf(first l, k)
-      else
+      else  % path of integration will be straight line  0 --> phi
 	 return elliptic_F(phi, k);
    end;
 
@@ -126,49 +130,57 @@ begin scalar sgn;
    >>
    else sgn := 1;
    
-   if impart(phi)=0 then <<
+   if impart(phi)=0 then <<  % integration along real axis
       s := sin phi;
-      if impart(k) neq 0 or k*s<1 then
+      if impart(k) neq 0 or k*s<1 then  % no branch point encountered
     	    return sgn*ellint_1st(0,s^2, {0,1},{1,-1},{1,-k^2},{1,0})/2   
-      else return
- 	 sgn*(ellint_1st(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
-	      i*ellint_1st(1/k^2,s^2, {0,1},{1,-1},{-1,k^2},{1,0}))/2;
+      else % split range of integration at  the branch point
+     	 return
+ 	    sgn*(ellint_1st(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
+	     i*ellint_1st(1/k^2,s^2, {0,1},{1,-1},{-1,k^2},{1,0}))/2;
    >>;
   
-   if repart(phi)=pi/2 then <<
-      s := cosh impart phi;
-      if impart(k) neq 0 or k*s<1 then return
-	 sgn*(ellint_1st(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
-	      i*ellint_1st(1,s^2, {0,1},{-1,1},{1,-k^2},{1,0}))/2
-      else if k<1 then return
-	 sgn*(ellint_1st(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
-	      i*ellint_1st(1,1/k^2, {0,1},{-1,1},{1,-k^2},{1,0}) -
-  	      ellint_1st(1/k^2,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2
-      else return
-	 sgn*(ellint_1st(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
-	      i*ellint_1st(1/k^2,1, {0,1},{1,-1},{-1,k^2},{1,0}) -
-  	      ellint_1st(1,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2;
-   >>;
-   if repart(phi)=0 then <<
+%% The code below is correct, but commented out as this case is catered for
+%% by the default case which produces identical results.
+   
+%%    if repart(phi)=pi/2 then <<  % integration along real axis 0 --> pi/2
+%%                                 % then parallel to imaginary axis pi/2--> phi
+%%       s := cosh impart phi;
+%%       if impart(k) neq 0 or k*s<1 then return  % no branch point
+%% 	 sgn*(ellint_1st(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
+%% 	      i*ellint_1st(1,s^2, {0,1},{-1,1},{1,-k^2},{1,0}))/2
+%%       else if k<1 then return  % branch point between pi/2 & phi
+%% 	 sgn*(ellint_1st(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
+%% 	      i*ellint_1st(1,1/k^2, {0,1},{-1,1},{1,-k^2},{1,0}) -
+%%   	      ellint_1st(1/k^2,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2
+%%       else return  % branch point between 0 and pi/2
+%% 	 sgn*(ellint_1st(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
+%% 	      i*ellint_1st(1/k^2,1, {0,1},{1,-1},{-1,k^2},{1,0}) -
+%%   	      ellint_1st(1,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2;
+%%    >>;
+
+   if repart(phi)=0 then <<  % integration along the imaginary axis
       s := sinh impart phi;
-      if repart(k) neq 0 then return
+      if repart(k) neq 0 then return % no branch point
 	    i*sgn*ellint_1st(0,s^2, {0,1},{1,1},{1,k^2},{1,0})/2
       else <<
 	 k := impart k;
-	 if k*s <1 then return
+	 if k*s <1 then return   % no branch point
 	    i*sgn*ellint_1st(0,s^2, {0,1},{1,1},{1,-k^2},{1,0})/2
-	 else return
+	 else return  % split the range at the branch point
 	       sgn*(i*ellint_1st(0,1/k^2, {0,1},{1,1},{1,-k^2},{1,0}) +
 	       	  ellint_1st(1/k^2,s^2, {0,1},{1,1},{-1,k^2},{1,0}))/2;
 	 >>;
    >>;
    
-   % sin(phi) must be complex here
+   % sin(phi) must be complex or >1 here
+   % range of integration is straight line segement 0 --> phi
    s := sin phi;
-   if impart(k*s)=0 and (k*s)^2 > 1 then return sgn*s*
+   if impart(k*s)=0 and (k*s)^2>1 then  % split the range at the branch point
+      return sgn*s*
       	 (ellint_1st(0,1/(k*s)^2, {0,1},{1,-s^2},{1,-(k*s)^2},{1,0}) -
 	  i*ellint_1st(1/(k*s)^2,1, {0,1},{1,-s^2},{-1,(k^s)^2},{1,0}))/2
-   else return
+   else return % no branch point
           sgn*s*ellint_1st(0,1, {0,1},{1,-s^2},{1,-k^2*s^2},{1,0})/2;
 end;
 
@@ -277,8 +289,10 @@ algebraic procedure num_elle(phi,k);
    else begin scalar l;
       l := pi_shift phi;
       if second l neq 0 then
+      % path of integration will be along real axis  0--> n*pi
+      % then n*pi --> phi
 	 return second(l)*num_ellec(k) + num_elle(first l, k)
-      else
+      else % path of integration will be straight line  0 --> phi
          return elliptic_E(phi,k);
    end;
 
@@ -292,38 +306,44 @@ begin scalar sgn;
    >>
    else sgn := 1;
    
-   if impart(phi)=0 then <<
+   if impart(phi)=0 then << % integration along real axis
       s := sin phi;
-      if impart(k) neq 0 or k*s<1 then
+      if impart(k) neq 0 or k*s<1 then 
+	 % no branch point encountered
     	 return sgn*
 	    ellint_2nd(0,s^2, {1,-k^2},{1,-1},{0,1},{1,0})/2
-      else return sgn*
-	 (ellint_2nd(0,1/k^2, {1,-k^2},{1,-1},{0,1},{1,0}) +
+      else % split range of integration at  the branch point
+ 	 return
+	    sgn*(ellint_2nd(0,1/k^2, {1,-k^2},{1,-1},{0,1},{1,0}) +
 	    i*ellint_2nd(1/k^2,s^2, {-1,k^2},{1,-1},{0,1},{1,0}))/2;
    >>;
-  
-   if repart(phi)=pi/2 then <<
-      s := cosh impart phi;
-      if impart(k) neq 0 or k*s<1 then return
- 	 sgn*(ellint_2nd(0,1, {1,-k^2},{1,-1},{0,1},{1,0}) -
-              i*ellint_2nd(1,s^2, {1,-k^2},{-1,1},{0,1},{1,0}))/2
-      else if k<1 then return
-	 sgn*(ellint_2nd(0,1, {1,-k^2},{1,-1},{0,1},{1,0}) -
-              i*ellint_2nd(1,1/k^2, {1,-k^2},{-1,1},{0,1},{1,0}) +
-   	      ellint_2nd(1/k^2,s^2, {-1,k^2},{-1,1},{0,1},{1,0}))/2
-      else return
-	 sgn*(ellint_2nd(0,1/k^2, {1,-k^2},{1,-1},{0,1},{1,0}) +
-	      i*ellint_2nd(1/k^2,1, {-1,k^2},{1,-1},{0,1},{1,0}) +
-  	      ellint_2nd(1,s^2, {-1,k^2},{-1,1},{0,1},{1,0}))/2;
-   >>;
+
+%% The code below is correct, but commented out as this case is catered for
+%% by the default case which produces identical results.
+   
+%%    if repart(phi)=pi/2 then <<  % integration along real axis 0 --> pi/2
+%%                                 % then parallel to imaginary axis pi/2--> phi
+%%       s := cosh impart phi;
+%%       if impart(k) neq 0 or k*s<1 then return  % no branch point
+%%  	 sgn*(ellint_2nd(0,1, {1,-k^2},{1,-1},{0,1},{1,0}) -
+%%               i*ellint_2nd(1,s^2, {1,-k^2},{-1,1},{0,1},{1,0}))/2
+%%       else if k<1 then return  % branch point between pi/2 & phi
+%% 	 sgn*(ellint_2nd(0,1, {1,-k^2},{1,-1},{0,1},{1,0}) -
+%%               i*ellint_2nd(1,1/k^2, {1,-k^2},{-1,1},{0,1},{1,0}) +
+%%    	      ellint_2nd(1/k^2,s^2, {-1,k^2},{-1,1},{0,1},{1,0}))/2
+%%       else return % branch point between 0 and pi/2
+%% 	 sgn*(ellint_2nd(0,1/k^2, {1,-k^2},{1,-1},{0,1},{1,0}) +
+%% 	      i*ellint_2nd(1/k^2,1, {-1,k^2},{1,-1},{0,1},{1,0}) +
+%%   	      ellint_2nd(1,s^2, {-1,k^2},{-1,1},{0,1},{1,0}))/2;
+%%    >>;
    
    if repart(phi)=0 then <<
       s := sinh impart phi;
-      if repart(k) neq 0 then return
+      if repart(k) neq 0 then return    % no branch point
 	 i*sgn*ellint_2nd(0,s^2, {1,k^2},{1,1},{0,1},{1,0})/2
       else <<
 	 k := impart k;
-	 if k*s<1 then  return
+	 if k*s<1 then  return  % no branch point
 	    i*sgn*ellint_2nd(0,s^2, {1,-k^2},{1,1},{0,1},{1,0})/2
 	 else return   
 	    sgn*(i*ellint_2nd(0,1/k^2, {1,-k^2},{1,1},{0,1},{1,0}) -
@@ -331,13 +351,15 @@ begin scalar sgn;
       >>;
    >>;
    
-   % sin(phi) must be complex here
+   % sin(phi) must be complex or greater than 1 here
+   % range of integration is straight line segement 0 --> phi
    s := sin phi;
-   if impart(k*s)=0 and (k*s)^2>1 then return sgn*s*
+   if impart(k*s)=0 and (k*s)^2>1 then % split range at branch point
+      return sgn*s*
       (ellint_2nd(0,1/(k*s)^2, {1,-(k*s)^2},{1,-s^2},{0,1},{1,0}) +
        i*ellint_2nd(1/(k*s)^2,1, {-1,(k*s)^2},{1,-s^2},{0,1},{1,0}))/2
-   else return sgn*
-      s*ellint_2nd(0,1, {1,-k^2*s^2},{1,-s^2},{0,1},{1,0})/2;
+   else  % no branch point
+      return sgn*s*ellint_2nd(0,1, {1,-k^2*s^2},{1,-s^2},{0,1},{1,0})/2;
 end;
 
 % complete elliptic integral of the second kind
@@ -400,11 +422,11 @@ ellipticerules :=
 % quasi-periodicity
 
    elliptice((~~w + ~~k*pi)/~~d, ~m) =>
-      (begin scalar shift, arg;
-         shift := fix repart(k/d);
-	 arg := w/d +(k/d-shift)*pi;
-	 return elliptice(arg, m) + 2*shift*elliptice(m);
-      end)
+   (begin scalar shift, arg;
+      shift := fix repart(k/d);
+      arg := w/d +(k/d-shift)*pi;
+      return elliptice(arg, m) + 2shift*elliptice(m);
+   end)
       when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(k/d)),
 
 % ************************************************
@@ -491,8 +513,10 @@ algebraic procedure num_elld(phi,k);
    else begin scalar l;
       l := pi_shift phi;
       if second l neq 0 then
+       % path of integration is along real axis  0--> n*pi
+       % then n*pi --> phi
       	 return second(l)*num_elldc(k) + num_elld(first(l),k)
-      else
+      else  % path of integration is straight line  0 --> phi
 	 return elliptic_D(phi, k);
    end;
 
@@ -506,46 +530,54 @@ begin scalar sgn;
    >>
    else sgn := 1;
    
-   if impart(phi)=0 then <<
+   if impart(phi)=0 then << % integration along real axis
       s := sin phi;
-      if impart(k) neq 0 or k*s<1 then
-   	 return sgn*ellint_2nd(0,s^2, {0,1},{1,-1},{1,-k^2},{1,0})/2   
-      else return sgn*
-  	 (ellint_2nd(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
+      if impart(k) neq 0 or k*s<1 then  % no branch point encountered
+   	 return sgn*ellint_2nd(0,s^2, {0,1},{1,-1},{1,-k^2},{1,0})/2
+      else   % split range of integration at  the branch point
+	 return 
+  	 sgn*(ellint_2nd(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
 	   i*ellint_2nd(1/k^2,s^2, {0,1},{1,-1},{-1,k^2},{1,0}))/2;
    >>;
   
-   if repart(phi)=pi/2 then <<
-      s := cosh impart phi;
-      if impart(k) neq 0 or k*s<1 then return
-	 sgn*(ellint_2nd(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
-	      i*ellint_2nd(1,s^2, {0,1},{-1,1},{1,-k^2},{1,0}))/2
-      else if k<1 then return
-	 sgn*(ellint_2nd(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
-	      i*ellint_2nd(1,1/k^2, {0,1},{-1,1},{1,-k^2},{1,0}) -
-  	      ellint_2nd(1/k^2,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2
-      else return
-	 sgn*(ellint_2nd(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
-	      i*ellint_2nd(1/k^2,1, {0,1},{1,-1},{-1,k^2},{1,0}) -
-  	      ellint_2nd(1,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2;
-   >>;
-   if repart(phi)=0 then <<
+%% The code below is correct, but commented out as this case is catered for
+%% by the default case which produces identical results.
+
+%%    if repart(phi)=pi/2 then <<  % integration along real axis 0 --> pi/2
+%%                                 % then parallel to imaginary axis pi/2--> phi
+%%       s := cosh impart phi;
+%%       if impart(k) neq 0 or k*s<1 then return  % no branch point
+%% 	 sgn*(ellint_2nd(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
+%% 	      i*ellint_2nd(1,s^2, {0,1},{-1,1},{1,-k^2},{1,0}))/2
+%%       else if k<1 then return  % branch point between pi/2 & phi
+%% 	 sgn*(ellint_2nd(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
+%% 	      i*ellint_2nd(1,1/k^2, {0,1},{-1,1},{1,-k^2},{1,0}) -
+%%   	      ellint_2nd(1/k^2,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2
+%%       else return   % branch point between 0 and pi/2
+%% 	 sgn*(ellint_2nd(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
+%% 	      i*ellint_2nd(1/k^2,1, {0,1},{1,-1},{-1,k^2},{1,0}) -
+%%   	      ellint_2nd(1,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2;
+%%    >>;
+
+   if repart(phi)=0 then << % integration along the imaginary axis
       s := sinh impart phi;
-      if repart(k) neq 0 then return
+      if repart(k) neq 0 then return % no branch point
 	    -i*sgn*ellint_2nd(0,s^2, {0,1},{1,1},{1,k^2},{1,0})/2
       else <<
 	 k := impart k;
-	 if k*s <1 then return
+	 if k*s <1 then return  % no branch point
 	    -i*sgn*ellint_2nd(0,s^2, {0,1},{1,1},{1,-k^2},{1,0})/2
-	 else return
+	 else return  % split the range at the branch point
 	       sgn*(-i*ellint_2nd(0,1/k^2, {0,1},{1,1},{1,-k^2},{1,0}) -
 	       	  ellint_2nd(1/k^2,s^2, {0,1},{1,1},{-1,k^2},{1,0}))/2;
 	 >>;
    >>;
    
-   % sin(phi) must be complex here
+   % sin(phi) must be complex or >1  here
+   % range of integration is straight line segement 0 --> phi
    s := sin phi;
-   if impart(k*s)=0 and (k*s)^2>1 then return sgn*s^3*
+   if impart(k*s)=0 and (k*s)^2>1 then % split the range at the branch point
+      return sgn*s^3*
          (ellint_2nd(0,1/(k*s)^2, {0,1},{1,-s^2},{1,-k^2*s^2},{1,0}) -
           i*ellint_2nd(1/(k*s)^2,1, {0,1},{1,-s^2},{-1,k^2*s^2},{1,0}))/2
    else return
@@ -707,7 +739,7 @@ begin scalar sgn, s;
       >>;
    >>;
    
-   % sin(phi) must be complex here
+   % sin(phi) must be complex or >1 here
    if impart(k*s)=0 and (k*s)^2>1 then return sgn*s*
      (ellint_3rd(0,1/(k*s)^2,{1,0},{1,-s^2},{1,-(k*s)^2},{0,1},{1,-(a*s)^2})-
       i*ellint_3rd(1/(k*s)^2,1,{1,0},{1,-s^2},{-1,(k*s)^2},{0,1},{1,-(a*s)^2}))/2
