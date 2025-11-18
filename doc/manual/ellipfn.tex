@@ -482,15 +482,15 @@ evaluate. When $|\Re{\phi}| \leq \pi/2$, the change of variable $x=\sin \theta$ 
 and the value returned uses the straight line contour between $x=0$ and $x=\sin(\phi)$.
 This will  produce a different value if the loop formed by the two contours encloses a
 branch point. When $|\Re{\phi}| > \pi/2$ the contour used is the straight line segment
-along the real axis from 0 to the multiple of $\pi$ nearest to $\phi$ followed by the
-straight line segment from between $x=0$ and $x=\sin(\phi)$. When $\phi$ is real the
+along the real axis from 0 to the integer multiple ($n$ say) of $\pi$ nearest to $\phi$ followed
+by the straight line segment from between $x=\sin(n\pi)$ and $x=\sin \phi$. When $\phi$ is real the
 contours in the $\theta$ and $x$ planes coincide. Other contours between the
 two endpoints will yield different values depending on how the contour winds around the
 two branch points.
 
-Note also that if the contour contains a branch point, there is sign ambiguity as the
+Note also that if the contour contains one or more  branch points, there are sign ambiguities as a
 branch point is crossed depending on which branch of the square root in the integrand is
-chosen. It seems logical to choose the principal branch.
+chosen. It seems logical to always choose the principal branch.
 
 For example when $k>1$ \& $1/k < y <1$
 \[ \int_0^y \frac{\mathrm{d}x}{\sqrt{1-x^2}\sqrt{1-k^2x^2}}\]

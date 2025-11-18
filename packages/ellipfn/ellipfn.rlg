@@ -372,7 +372,6 @@ a4:=weierstrass(u+3v+5w,v,w);
 
 a4 := P_w(u + v + w,v,w)
 
-
 weierstrass(2v+3w,v,w);
 
 
@@ -387,6 +386,7 @@ weierstrass(3v+5w,v,w);
 
 
 e2(v,w)
+
 
 weierstrass(-2u^3,v,w);
 
@@ -970,15 +970,46 @@ elliptice(pi/4, 3);
 
 0.265596407637 + 0.529686114995*i
 
+% some of the following previously produced incorrect results
+elliptice(pi/2+0.001+i, 1/2);
+
+
+1.46809839015 + 0.80265271838*i
+
 elliptice(pi/2+i,1/2);
 
 
 1.46746220934 + 0.802652362068*i
 
+elliptice(-pi/2+i,1/2)+2*elliptice(1/2);
+
+
+1.46746220934 + 0.802652362068*i
+
+elliptice(5pi/4+i,1/2);
+
+
+3.79323110187 + 0.942079147148*i
+
+elliptice(9pi/4+i,1/2)-2*elliptice(1/2);
+
+
+3.79323110187 + 0.942079147148*i
+
 elliptice(i/2,i);
 
 
 0.47712205187*i
+
+elliptice(i/2+pi/2,i);
+
+
+1.91009889451 + 0.722295497368*i
+
+elliptice(i/2-pi/2,i)+2*elliptice(i);
+
+
+1.91009889451 + 0.722295497368*i
 
 
 % Jacobi Zeta function

@@ -214,8 +214,15 @@ elliptice(2+i);
 % some incomplete elliptic integrals
 elliptice(pi/4, 1/2);
 elliptice(pi/4, 3);
+% some of the following previously produced incorrect results
+elliptice(pi/2+0.001+i, 1/2);
 elliptice(pi/2+i,1/2);
+elliptice(-pi/2+i,1/2)+2*elliptice(1/2);
+elliptice(5pi/4+i,1/2);
+elliptice(9pi/4+i,1/2)-2*elliptice(1/2);
 elliptice(i/2,i);
+elliptice(i/2+pi/2,i);
+elliptice(i/2-pi/2,i)+2*elliptice(i);
 
 % Jacobi Zeta function
 u := 0.6;
