@@ -1,14 +1,15 @@
-from pathlib import Path
-from pytest import fixture
-from pytest_pyodide.server import spawn_web_server
-from pytest_pyodide import runner
-
 import logging
+from pathlib import Path
+
+from pytest import fixture
+from pytest_pyodide import runner
+from pytest_pyodide.server import spawn_web_server
 
 TEST_PATH = Path(__file__).parents[1].resolve()
 
 
 class BaseRunner(runner._BrowserBaseRunner):
+
     def __init__(
         self,
         *args,
@@ -50,7 +51,7 @@ def selenium_class_scope(request, web_server_main):
     server_hostname, server_port, server_log = web_server_main
     assert request.param in RUNNER_DICT
 
-    logger = logging.getLogger('selenium')
+    logger = logging.getLogger("selenium")
     logger.setLevel(logging.DEBUG)
 
     cls = RUNNER_DICT[request.param]

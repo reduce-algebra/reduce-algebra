@@ -38,12 +38,13 @@ exports.kAsmJitRoot = kAsmJitRoot;
 // ============================================================================
 
 function charTo5Bit(c) {
-  if (c >= 'a' && c <= 'z')
-    return 1 + (c.charCodeAt(0) - 'a'.charCodeAt(0));
-  else if (c >= '0' && c <= '4')
-    return 1 + 26 + (c.charCodeAt(0) - '0'.charCodeAt(0));
-  else
+  if (c >= "a" && c <= "z") {
+    return 1 + (c.charCodeAt(0) - "a".charCodeAt(0));
+  } else if (c >= "0" && c <= "4") {
+    return 1 + 26 + (c.charCodeAt(0) - "0".charCodeAt(0));
+  } else {
     FATAL(`Character '${c}' cannot be encoded into a 5-bit string`);
+  }
 }
 
 class InstructionNameData {
@@ -60,22 +61,23 @@ class InstructionNameData {
     // First try to encode the string with 5-bit characters that fit into a 32-bit int.
     if (/^[a-z0-4]{0,6}$/.test(s)) {
       let index = 0;
-      for (let i = 0; i < s.length; i++)
+      for (let i = 0; i < s.length; i++) {
         index |= charTo5Bit(s[i]) << (i * 5);
+      }
 
       this.names.push(s);
       this.primaryTable.push(index | (1 << 31));
       this.indexComment.push(`Small '${s}'.`);
-    }
-    else {
+    } else {
       // Put the string into a string table.
       this.names.push(s);
       this.primaryTable.push(-1);
-      this.indexComment.push(``);
+      this.indexComment.push("");
     }
 
-    if (this.maxNameLength < s.length)
+    if (this.maxNameLength < s.length) {
       this.maxNameLength = s.length;
+    }
   }
 
   index() {
@@ -89,12 +91,14 @@ class InstructionNameData {
       }
     }
 
-    names.sort(function(a, b) {
-      if (a.name.length > b.name.length)
+    names.sort(function (a, b) {
+      if (a.name.length > b.name.length) {
         return -1;
-      if (a.name.length < b.name.length)
+      }
+      if (a.name.length < b.name.length) {
         return 1;
-      return (a > b) ? 1 : (a < b) ? -1 : 0;
+      }
+      return a > b ? 1 : a < b ? -1 : 0;
     });
 
     for (let z = 0; z < names.length; z++) {
@@ -126,18 +130,22 @@ class InstructionNameData {
           break;
         }
 
-        if (prefixIndex !== -1 && longestPrefix === 0)
+        if (prefixIndex !== -1 && longestPrefix === 0) {
           longestPrefix = prefix.length;
+        }
 
-        if (suffixIndex !== -1 && suffix.length > longestSuffix)
+        if (suffixIndex !== -1 && suffix.length > longestSuffix) {
           longestSuffix = suffix.length;
+        }
 
-        if (suffix.length === kMaxSuffixSize)
+        if (suffix.length === kMaxSuffixSize) {
           break;
+        }
       }
 
       if (!done) {
-        let minPrefixSize = name.length >= 8 ? name.length / 2 + 1 : name.length - 2;
+        const minPrefixSize =
+          name.length >= 8 ? name.length / 2 + 1 : name.length - 2;
 
         prefix = "";
         suffix = "";
@@ -145,17 +153,14 @@ class InstructionNameData {
         if (longestPrefix >= minPrefixSize) {
           prefix = name.substring(0, longestPrefix);
           suffix = name.substring(longestPrefix);
-        }
-        else if (longestSuffix) {
+        } else if (longestSuffix) {
           const splitAt = Math.min(name.length - longestSuffix, kMaxPrefixSize);
           prefix = name.substring(0, splitAt);
           suffix = name.substring(splitAt);
-        }
-        else if (name.length > kMaxPrefixSize) {
+        } else if (name.length > kMaxPrefixSize) {
           prefix = name.substring(0, kMaxPrefixSize);
           suffix = name.substring(kMaxPrefixSize);
-        }
-        else {
+        } else {
           prefix = name;
           suffix = "";
         }
@@ -165,10 +170,13 @@ class InstructionNameData {
         const prefixIndex = this.addOrReferenceString(prefix);
         const suffixIndex = this.addOrReferenceString(suffix);
 
-        this.primaryTable[idx] = prefixIndex | (prefix.length << 12) | (suffixIndex << 16) | (suffix.length << 28);
+        this.primaryTable[idx] =
+          prefixIndex |
+          (prefix.length << 12) |
+          (suffixIndex << 16) |
+          (suffix.length << 28);
         this.indexComment[idx] = `Large '${prefix}|${suffix}'.`;
-      }
-      else {
+      } else {
         const prefixIndex = this.addOrReferenceString(prefix);
 
         this.primaryTable[idx] = prefixIndex | (prefix.length << 12);
@@ -187,8 +195,9 @@ class InstructionNameData {
   }
 
   formatIndexTable(tableName) {
-    if (this.size === -1)
-      FATAL(`IndexedString.formatIndexTable(): Not indexed yet, call index()`);
+    if (this.size === -1) {
+      FATAL("IndexedString.formatIndexTable(): Not indexed yet, call index()");
+    }
 
     let s = "";
     for (let i = 0; i < this.primaryTable.length; i++) {
@@ -201,13 +210,15 @@ class InstructionNameData {
   }
 
   formatStringTable(tableName) {
-    if (this.size === -1)
-      FATAL(`IndexedString.formatStringTable(): Not indexed yet, call index()`);
+    if (this.size === -1) {
+      FATAL("IndexedString.formatStringTable(): Not indexed yet, call index()");
+    }
 
     let s = "";
     for (let i = 0; i < this.stringTable.length; i += 80) {
-      if (s)
-        s += "\n"
+      if (s) {
+        s += "\n";
+      }
       s += '"' + this.stringTable.substring(i, i + 80) + '"';
     }
     s += ";\n";
@@ -216,18 +227,21 @@ class InstructionNameData {
   }
 
   getSize() {
-    if (this.size === -1)
-      FATAL(`IndexedString.getSize(): Not indexed yet, call index()`);
+    if (this.size === -1) {
+      FATAL("IndexedString.getSize(): Not indexed yet, call index()");
+    }
 
     return this.primaryTable.length * 4 + this.stringTable.length;
   }
 
   getIndex(k) {
-    if (this.size === -1)
-      FATAL(`IndexedString.getIndex(): Not indexed yet, call index()`);
+    if (this.size === -1) {
+      FATAL("IndexedString.getIndex(): Not indexed yet, call index()");
+    }
 
-    if (!hasOwn.call(this.map, k))
+    if (!hasOwn.call(this.map, k)) {
       FATAL(`IndexedString.getIndex(): Key '${k}' not found.`);
+    }
 
     return this.map[k];
   }
@@ -268,21 +282,21 @@ class Injector {
   }
 
   load(fileList) {
-    for (var i = 0; i < fileList.length; i++) {
+    for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       const path = kAsmJitRoot + "/" + file;
       const data = fs.readFileSync(path, "utf8").replace(/\r\n/g, "\n");
 
       this.files[file] = {
         prev: data,
-        data: data
+        data,
       };
     }
     return this;
   }
 
   save() {
-    for (var file in this.files) {
+    for (const file in this.files) {
       const obj = this.files[file];
       if (obj.data !== obj.prev) {
         const path = kAsmJitRoot + "/" + file;
@@ -296,17 +310,18 @@ class Injector {
 
   dataOfFile(file) {
     const obj = this.files[file];
-    if (!obj)
+    if (!obj) {
       FATAL(`TableGen.dataOfFile(): File '${file}' not loaded`);
+    }
     return obj.data;
   }
 
   inject(key, str, size) {
     const begin = "// ${" + key + ":Begin}\n";
-    const end   = "// ${" + key + ":End}\n";
+    const end = "// ${" + key + ":End}\n";
 
-    var done = false;
-    for (var file in this.files) {
+    let done = false;
+    for (const file in this.files) {
       const obj = this.files[file];
       const data = obj.data;
 
@@ -317,11 +332,13 @@ class Injector {
       }
     }
 
-    if (!done)
+    if (!done) {
       FATAL(`TableGen.inject(): Cannot find '${key}'`);
+    }
 
-    if (size)
+    if (size) {
       this.tableSizes[key] = size;
+    }
 
     return this;
   }
@@ -329,10 +346,10 @@ class Injector {
   dumpTableSizes() {
     const sizes = this.tableSizes;
 
-    var pad = 26;
-    var total = 0;
+    const pad = 26;
+    let total = 0;
 
-    for (var name in sizes) {
+    for (const name in sizes) {
       const size = sizes[name];
       total += size;
       console.log(("Size of " + name).padEnd(pad) + ": " + size);
@@ -346,7 +363,7 @@ exports.Injector = Injector;
 // Main context used to load, generate, and store instruction tables. The idea
 // is to be extensible, so it stores 'Task's to be executed with minimal deps
 // management.
-class TableGen extends Injector{
+class TableGen extends Injector {
   constructor(arch) {
     super();
 
@@ -367,15 +384,20 @@ class TableGen extends Injector{
   // --------------------------------------------------------------------------
 
   addTask(task) {
-    if (!task.name)
-      FATAL(`TableGen.addModule(): Module must have a name`);
+    if (!task.name) {
+      FATAL("TableGen.addModule(): Module must have a name");
+    }
 
-    if (this.taskMap[task.name])
+    if (this.taskMap[task.name]) {
       FATAL(`TableGen.addModule(): Module '${task.name}' already added`);
+    }
 
     task.deps.forEach((dependency) => {
-      if (!this.taskMap[dependency])
-        FATAL(`TableGen.addModule(): Dependency '${dependency}' of module '${task.name}' doesn't exist`);
+      if (!this.taskMap[dependency]) {
+        FATAL(
+          `TableGen.addModule(): Dependency '${dependency}' of module '${task.name}' doesn't exist`,
+        );
+      }
     });
 
     this.tasks.push(task);
@@ -389,28 +411,35 @@ class TableGen extends Injector{
     const tasks = this.tasks;
     const tasksDone = Object.create(null);
 
-    var pending = tasks.length;
+    let pending = tasks.length;
     while (pending) {
       const oldPending = pending;
       const arrPending = [];
 
-      for (var i = 0; i < tasks.length; i++) {
+      for (let i = 0; i < tasks.length; i++) {
         const task = tasks[i];
-        if (tasksDone[task.name])
+        if (tasksDone[task.name]) {
           continue;
+        }
 
-        if (task.deps.every((dependency) => { return tasksDone[dependency] === true; })) {
+        if (
+          task.deps.every((dependency) => {
+            return tasksDone[dependency] === true;
+          })
+        ) {
           task.run();
           tasksDone[task.name] = true;
           pending--;
-        }
-        else {
+        } else {
           arrPending.push(task.name);
         }
       }
 
-      if (oldPending === pending)
-        throw Error(`TableGen.runModules(): Modules '${arrPending.join("|")}' stuck (cyclic dependency?)`);
+      if (oldPending === pending) {
+        throw Error(
+          `TableGen.runModules(): Modules '${arrPending.join("|")}' stuck (cyclic dependency?)`,
+        );
+      }
     }
   }
 
@@ -419,8 +448,9 @@ class TableGen extends Injector{
   // --------------------------------------------------------------------------
 
   addInst(inst) {
-    if (this.instMap[inst.name])
+    if (this.instMap[inst.name]) {
       FATAL(`TableGen.addInst(): Instruction '${inst.name}' already added`);
+    }
 
     inst.id = this.insts.length;
     this.insts.push(inst);
@@ -471,15 +501,16 @@ class IdEnum extends Task {
   run() {
     const insts = this.ctx.insts;
 
-    var s = "";
-    for (var i = 0; i < insts.length; i++) {
+    let s = "";
+    for (let i = 0; i < insts.length; i++) {
       const inst = insts[i];
 
-      var line = "kId" + inst.enum + (i ? "" : " = 0") + ",";
-      var text = this.comment(inst);
+      let line = "kId" + inst.enum + (i ? "" : " = 0") + ",";
+      const text = this.comment(inst);
 
-      if (text)
+      if (text) {
         line = line.padEnd(37) + "//!< " + text;
+      }
 
       s += line + "\n";
     }
@@ -504,48 +535,54 @@ class Output {
     this.content[id] = content;
     this.tableSize[id] = typeof tableSize === "number" ? tableSize : 0;
   }
-};
+}
 exports.Output = Output;
 
 function generateNameData(out, instructions) {
   const none = "Inst::kIdNone";
 
   const instFirst = new Array(26);
-  const instLast  = new Array(26);
+  const instLast = new Array(26);
   const instNameData = new InstructionNameData();
 
-  for (let i = 0; i < instructions.length; i++)
+  for (let i = 0; i < instructions.length; i++) {
     instNameData.add(instructions[i].displayName);
+  }
   instNameData.index();
 
   for (let i = 0; i < instructions.length; i++) {
     const inst = instructions[i];
     const displayName = inst.displayName;
-    const alphaIndex = displayName.charCodeAt(0) - 'a'.charCodeAt(0);
+    const alphaIndex = displayName.charCodeAt(0) - "a".charCodeAt(0);
 
-    if (alphaIndex < 0 || alphaIndex >= 26)
-      FATAL(`generateNameData(): Invalid lookup character '${displayName[0]}' of '${displayName}'`);
+    if (alphaIndex < 0 || alphaIndex >= 26) {
+      FATAL(
+        `generateNameData(): Invalid lookup character '${displayName[0]}' of '${displayName}'`,
+      );
+    }
 
-    if (instFirst[alphaIndex] === undefined)
+    if (instFirst[alphaIndex] === undefined) {
       instFirst[alphaIndex] = `Inst::kId${inst.enum}`;
+    }
     instLast[alphaIndex] = `Inst::kId${inst.enum}`;
   }
 
-  var s = "";
-  s += `const InstNameIndex InstDB::instNameIndex = {{\n`;
-  for (var i = 0; i < instFirst.length; i++) {
+  let s = "";
+  s += "const InstNameIndex InstDB::instNameIndex = {{\n";
+  for (let i = 0; i < instFirst.length; i++) {
     const firstId = instFirst[i] || none;
     const lastId = instLast[i] || none;
 
     s += `  { ${String(firstId).padEnd(22)}, ${String(lastId).padEnd(22)} + 1 }`;
-    if (i !== 26 - 1)
-      s += `,`;
-    s += `\n`;
+    if (i !== 26 - 1) {
+      s += ",";
+    }
+    s += "\n";
   }
   s += `}, uint16_t(${instNameData.maxNameLength})};\n`;
-  s += `\n`;
+  s += "\n";
   s += instNameData.formatStringTable("InstDB::_instNameStringTable");
-  s += `\n`;
+  s += "\n";
   s += instNameData.formatIndexTable("InstDB::_instNameIndexTable");
 
   const dataSize = instNameData.getSize() + 26 * 4;
@@ -562,7 +599,11 @@ class NameTable extends Task {
   run() {
     const output = new Output();
     generateNameData(output, this.ctx.insts);
-    this.ctx.inject("NameData", output.content["NameData"], output.tableSize["NameData"]);
+    this.ctx.inject(
+      "NameData",
+      output.content.NameData,
+      output.tableSize.NameData,
+    );
   }
 }
 exports.NameTable = NameTable;

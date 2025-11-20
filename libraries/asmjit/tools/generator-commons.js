@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: Zlib
 
 const hasOwn = Object.prototype.hasOwnProperty;
-function nop(x) { return x; }
+function nop(x) {
+  return x;
+}
 
 // Generator - Constants
 // ---------------------
@@ -25,8 +27,9 @@ function setDebugVerbosity(value) {
 exports.setDebugVerbosity = setDebugVerbosity;
 
 function DEBUG(msg) {
-  if (VERBOSE)
+  if (VERBOSE) {
     console.log(msg);
+  }
 }
 exports.DEBUG = DEBUG;
 
@@ -50,104 +53,137 @@ class ObjectUtils {
   }
 
   static merge(a, b) {
-    if (a === b)
+    if (a === b) {
       return a;
+    }
 
-    for (let k in b) {
-      let av = a[k];
-      let bv = b[k];
+    for (const k in b) {
+      const av = a[k];
+      const bv = b[k];
 
-      if (typeof av === "object" && typeof bv === "object")
+      if (typeof av === "object" && typeof bv === "object") {
         ObjectUtils.merge(av, bv);
-      else
+      } else {
         a[k] = bv;
+      }
     }
 
     return a;
   }
 
   static equals(a, b) {
-    if (a === b)
+    if (a === b) {
       return true;
+    }
 
-    if (typeof a !== typeof b)
+    if (typeof a !== typeof b) {
       return false;
+    }
 
-    if (typeof a !== "object")
+    if (typeof a !== "object") {
       return a === b;
+    }
 
     if (Array.isArray(a) || Array.isArray(b)) {
-      if (Array.isArray(a) !== Array.isArray(b))
+      if (Array.isArray(a) !== Array.isArray(b)) {
         return false;
+      }
 
       const len = a.length;
-      if (b.length !== len)
+      if (b.length !== len) {
         return false;
+      }
 
-      for (let i = 0; i < len; i++)
-        if (!ObjectUtils.equals(a[i], b[i]))
+      for (let i = 0; i < len; i++) {
+        if (!ObjectUtils.equals(a[i], b[i])) {
           return false;
-    }
-    else {
-      if (a === null || b === null)
+        }
+      }
+    } else {
+      if (a === null || b === null) {
         return a === b;
+      }
 
-      for (let k in a)
-        if (!hasOwn.call(b, k) || !ObjectUtils.equals(a[k], b[k]))
+      for (const k in a) {
+        if (!hasOwn.call(b, k) || !ObjectUtils.equals(a[k], b[k])) {
           return false;
+        }
+      }
 
-      for (let k in b)
-        if (!hasOwn.call(a, k))
+      for (const k in b) {
+        if (!hasOwn.call(a, k)) {
           return false;
+        }
+      }
     }
 
     return true;
   }
 
   static equalsExcept(a, b, except) {
-    if (a === b)
+    if (a === b) {
       return true;
+    }
 
-    if (typeof a !== "object" || typeof b !== "object" || Array.isArray(a) || Array.isArray(b))
+    if (
+      typeof a !== "object" ||
+      typeof b !== "object" ||
+      Array.isArray(a) ||
+      Array.isArray(b)
+    ) {
       return ObjectUtils.equals(a, b);
+    }
 
-    for (let k in a)
-      if (!hasOwn.call(except, k) && (!hasOwn.call(b, k) || !ObjectUtils.equals(a[k], b[k])))
+    for (const k in a) {
+      if (
+        !hasOwn.call(except, k) &&
+        (!hasOwn.call(b, k) || !ObjectUtils.equals(a[k], b[k]))
+      ) {
         return false;
+      }
+    }
 
-    for (let k in b)
-      if (!hasOwn.call(except, k) && !hasOwn.call(a, k))
+    for (const k in b) {
+      if (!hasOwn.call(except, k) && !hasOwn.call(a, k)) {
         return false;
+      }
+    }
 
     return true;
   }
 
   static findKey(map, keys) {
-    for (let key in keys)
-      if (hasOwn.call(map, key))
+    for (const key in keys) {
+      if (hasOwn.call(map, key)) {
         return key;
+      }
+    }
     return undefined;
   }
 
   static hasAny(map, keys) {
-    for (let key in keys)
-      if (hasOwn.call(map, key))
+    for (const key in keys) {
+      if (hasOwn.call(map, key)) {
         return true;
+      }
+    }
     return false;
   }
 
   static and(a, b) {
     const out = Object.create(null);
-    for (let k in a)
-      if (hasOwn.call(b, k))
+    for (const k in a) {
+      if (hasOwn.call(b, k)) {
         out[k] = true;
+      }
+    }
     return out;
   }
 
   static xor(a, b) {
     const out = Object.create(null);
-    for (let k in a) if (!hasOwn.call(b, k)) out[k] = true;
-    for (let k in b) if (!hasOwn.call(a, k)) out[k] = true;
+    for (const k in a) if (!hasOwn.call(b, k)) out[k] = true;
+    for (const k in b) if (!hasOwn.call(a, k)) out[k] = true;
     return out;
   }
 }
@@ -158,66 +194,80 @@ exports.ObjectUtils = ObjectUtils;
 
 class ArrayUtils {
   static min(arr, fn) {
-    if (!arr.length)
+    if (!arr.length) {
       return null;
+    }
 
-    if (!fn)
+    if (!fn) {
       fn = nop;
+    }
 
     let v = fn(arr[0]);
-    for (let i = 1; i < arr.length; i++)
+    for (let i = 1; i < arr.length; i++) {
       v = Math.min(v, fn(arr[i]));
+    }
     return v;
   }
 
   static max(arr, fn) {
-    if (!arr.length)
+    if (!arr.length) {
       return null;
+    }
 
-    if (!fn)
+    if (!fn) {
       fn = nop;
+    }
 
     let v = fn(arr[0]);
-    for (let i = 1; i < arr.length; i++)
+    for (let i = 1; i < arr.length; i++) {
       v = Math.max(v, fn(arr[i]));
+    }
     return v;
   }
 
   static sorted(obj, cmp) {
-    const out = Array.isArray(obj) ? obj.slice() : Object.getOwnPropertyNames(obj);
+    const out = Array.isArray(obj)
+      ? obj.slice()
+      : Object.getOwnPropertyNames(obj);
     out.sort(cmp);
     return out;
   }
 
   static deepIndexOf(arr, what) {
-    for (let i = 0; i < arr.length; i++)
-      if (ObjectUtils.equals(arr[i], what))
+    for (let i = 0; i < arr.length; i++) {
+      if (ObjectUtils.equals(arr[i], what)) {
         return i;
+      }
+    }
     return -1;
   }
 
   static toDict(arr, value) {
-    if (value === undefined)
+    if (value === undefined) {
       value = true;
+    }
 
     const out = Object.create(null);
-    for (let i = 0; i < arr.length; i++)
+    for (let i = 0; i < arr.length; i++) {
       out[arr[i]] = value;
+    }
     return out;
   }
 }
 exports.ArrayUtils = ArrayUtils;
 
-
 // Generator - String Utilities
 // ----------------------------
 
 class StringUtils {
-  static asString(x) { return String(x); }
+  static asString(x) {
+    return String(x);
+  }
 
   static countOf(s, pattern) {
-    if (!pattern)
-      FATAL(`Pattern cannot be empty`);
+    if (!pattern) {
+      FATAL("Pattern cannot be empty");
+    }
 
     let n = 0;
     let pos = 0;
@@ -230,8 +280,13 @@ class StringUtils {
     return n;
   }
 
-  static trimLeft(s) { return s.replace(/^\s+/, ""); }
-  static trimRight(s) { return s.replace(/\s+$/, ""); }
+  static trimLeft(s) {
+    return s.replace(/^\s+/, "");
+  }
+
+  static trimRight(s) {
+    return s.replace(/\s+$/, "");
+  }
 
   static upFirst(s) {
     if (!s) return "";
@@ -240,35 +295,39 @@ class StringUtils {
 
   static decToHex(n, nPad) {
     let hex = Number(n < 0 ? 0x100000000 + n : n).toString(16);
-    while (nPad > hex.length)
+    while (nPad > hex.length) {
       hex = "0" + hex;
+    }
     return "0x" + hex.toUpperCase();
   }
 
   static format(array, indent, showIndex, mapFn) {
-    if (!mapFn)
+    if (!mapFn) {
       mapFn = StringUtils.asString;
+    }
 
     let s = "";
     let threshold = 80;
 
-    if (showIndex === -1)
+    if (showIndex === -1) {
       s += indent;
+    }
 
     for (let i = 0; i < array.length; i++) {
       const item = array[i];
       const last = i === array.length - 1;
 
-      if (showIndex !== -1)
+      if (showIndex !== -1) {
         s += indent;
+      }
 
       s += mapFn(item);
       if (showIndex > 0) {
         s += `${last ? " " : ","} // #${i}`;
-        if (typeof array.refCountOf === "function")
+        if (typeof array.refCountOf === "function") {
           s += ` [ref=${array.refCountOf(item)}x]`;
-      }
-      else if (!last) {
+        }
+      } else if (!last) {
         s += ",";
       }
 
@@ -276,12 +335,10 @@ class StringUtils {
         if (s.length >= threshold - 1 && !last) {
           s += "\n" + indent;
           threshold += 80;
-        }
-        else {
+        } else {
           if (!last) s += " ";
         }
-      }
-      else {
+      } else {
         if (!last) s += "\n";
       }
     }
@@ -290,21 +347,28 @@ class StringUtils {
   }
 
   static makeCxxArray(array, code, indent) {
-    if (typeof indent !== "string")
+    if (typeof indent !== "string") {
       indent = kIndent;
+    }
 
-    return `${code} = {\n${indent}` + array.join(`,\n${indent}`) + `\n};\n`;
+    return `${code} = {\n${indent}` + array.join(`,\n${indent}`) + "\n};\n";
   }
 
   static makeCxxArrayWithComment(array, code, indent) {
-    if (typeof indent !== "string")
+    if (typeof indent !== "string") {
       indent = kIndent;
+    }
 
     let s = "";
     for (let i = 0; i < array.length; i++) {
       const last = i === array.length - 1;
-      s += indent + array[i].data +
-           (last ? "  // " : ", // ") + (array[i].refs ? "#" + String(i) : "").padEnd(5) + array[i].comment + "\n";
+      s +=
+        indent +
+        array[i].data +
+        (last ? "  // " : ", // ") +
+        (array[i].refs ? "#" + String(i) : "").padEnd(5) +
+        array[i].comment +
+        "\n";
     }
     return `${code} = {\n${s}};\n`;
   }
@@ -314,26 +378,31 @@ class StringUtils {
   }
 
   static formatCppFlags(obj, fn, none) {
-    if (none == null)
+    if (none == null) {
       none = "0";
+    }
 
-    if (!fn)
+    if (!fn) {
       fn = nop;
+    }
 
     let out = "";
-    for (let k in obj) {
-      if (obj[k])
+    for (const k in obj) {
+      if (obj[k]) {
         out += (out ? " | " : "") + fn(k);
+      }
     }
-    return out ? out : none;
+    return out || none;
   }
 
   static formatRecords(array, indent, fn) {
-    if (typeof indent !== "string")
+    if (typeof indent !== "string") {
       indent = kIndent;
+    }
 
-    if (!fn)
+    if (!fn) {
       fn = nop;
+    }
 
     let s = "";
     let line = "";
@@ -344,8 +413,7 @@ class StringUtils {
       if (combined.length >= kLineWidth) {
         s = s ? s + ",\n" + line : line;
         line = item;
-      }
-      else {
+      } else {
         line = combined;
       }
     }
@@ -358,21 +426,25 @@ class StringUtils {
   }
 
   static disclaimer(s) {
-    return "// ------------------- Automatically generated, do not edit -------------------\n" +
-           s +
-           "// ----------------------------------------------------------------------------\n";
+    return (
+      "// ------------------- Automatically generated, do not edit -------------------\n" +
+      s +
+      "// ----------------------------------------------------------------------------\n"
+    );
   }
 
   static indent(s, indentation) {
-    if (typeof indentation === "number")
+    if (typeof indentation === "number") {
       indentation = " ".repeat(indentation);
+    }
 
-    let lines = s.split(/\r?\n/g);
+    const lines = s.split(/\r?\n/g);
     if (indentation) {
       for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
-        if (line)
+        const line = lines[i];
+        if (line) {
           lines[i] = indentation + line;
+        }
       }
     }
 
@@ -381,29 +453,33 @@ class StringUtils {
 
   static extract(s, start, end) {
     const iStart = s.indexOf(start);
-    const iEnd   = s.indexOf(end);
+    const iEnd = s.indexOf(end);
 
-    if (iStart === -1)
+    if (iStart === -1) {
       FATAL(`StringUtils.extract(): Couldn't locate start mark '${start}'`);
+    }
 
-    if (iEnd === -1)
+    if (iEnd === -1) {
       FATAL(`StringUtils.extract(): Couldn't locate end mark '${end}'`);
+    }
 
     return s.substring(iStart + start.length, iEnd).trim();
   }
 
   static inject(s, start, end, code) {
     let iStart = s.indexOf(start);
-    let iEnd   = s.indexOf(end);
+    const iEnd = s.indexOf(end);
 
-    if (iStart === -1)
+    if (iStart === -1) {
       FATAL(`StringUtils.inject(): Couldn't locate start mark '${start}'`);
+    }
 
-    if (iEnd === -1)
+    if (iEnd === -1) {
       FATAL(`StringUtils.inject(): Couldn't locate end mark '${end}'`);
+    }
 
     let nIndent = 0;
-    while (iStart > 0 && s[iStart-1] === " ") {
+    while (iStart > 0 && s[iStart - 1] === " ") {
       iStart--;
       nIndent++;
     }
@@ -418,13 +494,15 @@ class StringUtils {
 
   static makePriorityCompare(priorityArray) {
     const map = Object.create(null);
-    priorityArray.forEach((str, index) => { map[str] = index; });
+    priorityArray.forEach((str, index) => {
+      map[str] = index;
+    });
 
-    return function(a, b) {
+    return function (a, b) {
       const ax = hasOwn.call(map, a) ? map[a] : Infinity;
       const bx = hasOwn.call(map, b) ? map[b] : Infinity;
       return ax != bx ? ax - bx : a < b ? -1 : a > b ? 1 : 0;
-    }
+    };
   }
 }
 exports.StringUtils = StringUtils;
@@ -464,7 +542,7 @@ class IndexedArray extends Array {
     idx = this.length;
     this._index[key] = {
       data: idx,
-      refCount: 1
+      refCount: 1,
     };
     this.push(item);
     return idx;
@@ -510,24 +588,26 @@ class IndexedString {
     for (k in map) {
       if (!k) {
         partialMap[k] = k;
-      }
-      else {
+      } else {
         for (i = 0, len = k.length; i < len; i++) {
           kp = k.substr(i);
-          if (!hasOwn.call(partialMap, kp) || partialMap[kp].length < len)
+          if (!hasOwn.call(partialMap, kp) || partialMap[kp].length < len) {
             partialMap[kp] = k;
+          }
         }
       }
     }
 
     // Create an array that will only contain keys that are needed.
-    for (k in map)
-      if (partialMap[k] === k)
+    for (k in map) {
+      if (partialMap[k] === k) {
         array.push(k);
+      }
+    }
     array.sort();
 
     // Create valid offsets to the `array`.
-    let offMap = Object.create(null);
+    const offMap = Object.create(null);
     let offset = 0;
 
     for (i = 0, len = array.length; i < len; i++) {
@@ -546,8 +626,9 @@ class IndexedString {
   }
 
   format(indent, justify) {
-    if (this.size === -1)
-      FATAL(`IndexedString.format(): not indexed yet, call index()`);
+    if (this.size === -1) {
+      FATAL("IndexedString.format(): not indexed yet, call index()");
+    }
 
     const array = this.array;
     if (!justify) justify = 0;
@@ -557,14 +638,13 @@ class IndexedString {
     let line = "";
 
     for (i = 0; i < array.length; i++) {
-      const item = "\"" + array[i] + ((i !== array.length - 1) ? "\\0\"" : "\";");
+      const item = '"' + array[i] + (i !== array.length - 1 ? '\\0"' : '";');
       const newl = line + (line ? " " : indent) + item;
 
       if (newl.length <= justify) {
         line = newl;
         continue;
-      }
-      else {
+      } else {
         s += line + "\n";
         line = indent + item;
       }
@@ -574,17 +654,20 @@ class IndexedString {
   }
 
   getSize() {
-    if (this.size === -1)
-      FATAL(`IndexedString.getSize(): Not indexed yet, call index()`);
+    if (this.size === -1) {
+      FATAL("IndexedString.getSize(): Not indexed yet, call index()");
+    }
     return this.size;
   }
 
   getIndex(k) {
-    if (this.size === -1)
-      FATAL(`IndexedString.getIndex(): Not indexed yet, call index()`);
+    if (this.size === -1) {
+      FATAL("IndexedString.getIndex(): Not indexed yet, call index()");
+    }
 
-    if (!hasOwn.call(this.map, k))
+    if (!hasOwn.call(this.map, k)) {
       FATAL(`IndexedString.getIndex(): Key '${k}' not found.`);
+    }
 
     return this.map[k];
   }

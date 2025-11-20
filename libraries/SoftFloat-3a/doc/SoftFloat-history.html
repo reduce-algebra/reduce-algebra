@@ -1,155 +1,142 @@
+<html>
+  <head>
+    <title>Berkeley SoftFloat History</title>
+  </head>
 
-<HTML>
+  <body>
+    <h1>History of Berkeley SoftFloat, to Release 3a</h1>
 
-<HEAD>
-<TITLE>Berkeley SoftFloat History</TITLE>
-</HEAD>
+    <p>
+      John R. Hauser<br />
+      2015 October 23<br />
+    </p>
 
-<BODY>
+    <h3>Release 3a (2015 October)</h3>
 
-<H1>History of Berkeley SoftFloat, to Release 3a</H1>
+    <ul>
+      <li>
+        Replaced the license text supplied by the University of California,
+        Berkeley.
+      </li>
+    </ul>
 
-<P>
-John R. Hauser<BR>
-2015 October 23<BR>
-</P>
+    <h3>Release 3 (2015 February)</h3>
 
+    <ul>
+      <li>
+        Complete rewrite, funded by the University of California, Berkeley, and
+        consequently having a different use license than earlier releases. Major
+        changes included renaming most types and functions, upgrading some
+        algorithms, restructuring the source files, and making SoftFloat into a
+        true library.
+      </li>
 
-<H3>Release 3a (2015 October)</H3>
+      <li>
+        Added functions to convert between floating-point and unsigned integers,
+        both
+        <nobr>32-bit</nobr> and <nobr>64-bit</nobr> (<code>uint32_t</code> and
+        <code>uint64_t</code>).
+      </li>
 
-<UL>
+      <li>
+        Added functions for fused multiply-add, for all supported floating-point
+        formats except <nobr>80-bit</nobr> double-extended-precision.
+      </li>
 
-<LI>
-Replaced the license text supplied by the University of California, Berkeley.
+      <li>
+        Added support for a fifth rounding mode, <code>near_maxMag</code> (round
+        to nearest, with ties to maximum magnitude, away from zero).
+      </li>
 
-</UL>
+      <li>
+        Dropped the <code>timesoftfloat</code> program (now part of the Berkeley
+        TestFloat package).
+      </li>
+    </ul>
 
+    <h3>Release 2c (2015 January)</h3>
 
-<H3>Release 3 (2015 February)</H3>
+    <ul>
+      <li>Fixed mistakes affecting some <nobr>64-bit</nobr> processors.</li>
 
-<UL>
+      <li>
+        Further improved the documentation and the wording for the legal
+        restrictions on using SoftFloat releases <nobr>through 2c</nobr> (not
+        applicable to <nobr>Release 3</nobr> or later).
+      </li>
+    </ul>
 
-<LI>
-Complete rewrite, funded by the University of California, Berkeley, and
-consequently having a different use license than earlier releases.
-Major changes included renaming most types and functions, upgrading some
-algorithms, restructuring the source files, and making SoftFloat into a true
-library.
+    <h3>Release 2b (2002 May)</h3>
 
-<LI>
-Added functions to convert between floating-point and unsigned integers, both
-<NOBR>32-bit</NOBR> and <NOBR>64-bit</NOBR> (<CODE>uint32_t</CODE> and
-<CODE>uint64_t</CODE>).
+    <ul>
+      <li>
+        Made minor updates to the documentation, including improved wording for
+        the legal restrictions on using SoftFloat.
+      </li>
+    </ul>
 
-<LI>
-Added functions for fused multiply-add, for all supported floating-point
-formats except <NOBR>80-bit</NOBR> double-extended-precision.
+    <h3>Release 2a (1998 December)</h3>
 
-<LI>
-Added support for a fifth rounding mode, <CODE>near_maxMag</CODE> (round to
-nearest, with ties to maximum magnitude, away from zero).
+    <ul>
+      <li>
+        Added functions to convert between <nobr>64-bit</nobr> integers
+        (<code>int64</code>) and all supported floating-point formats.
+      </li>
 
-<LI>
-Dropped the <CODE>timesoftfloat</CODE> program (now part of the Berkeley
-TestFloat package).
+      <li>
+        Fixed a bug in all <nobr>64-bit</nobr>-version square root functions
+        except <code>float32_sqrt</code> that caused the result sometimes to be
+        off by <nobr>1 unit</nobr> in the last place (<nobr>1 ulp</nobr>) from
+        what it should be. (Bug discovered by Paul Donahue.)
+      </li>
 
-</UL>
+      <li>Improved the Makefiles.</li>
+    </ul>
 
+    <h3>Release 2 (1997 June)</h3>
 
-<H3>Release 2c (2015 January)</H3>
+    <ul>
+      <li>
+        Created the <nobr>64-bit</nobr> (<code>bits64</code>) version, adding
+        the <code>floatx80</code> and <code>float128</code> formats.
+      </li>
 
-<UL>
+      <li>
+        Changed the source directory structure, splitting the sources into a
+        <code>bits32</code> and a <code>bits64</code> version. Renamed
+        <code>environment.h</code> to <code>milieu.h</code> to avoid confusion
+        with environment variables.
+      </li>
 
-<LI>
-Fixed mistakes affecting some <NOBR>64-bit</NOBR> processors.
+      <li>
+        Fixed a small error that caused <code>float64_round_to_int</code> often
+        to round the wrong way in nearest/even mode when the operand was between
+        2<sup>20</sup> and 2<sup>21</sup> and halfway between two integers.
+      </li>
+    </ul>
 
-<LI>
-Further improved the documentation and the wording for the legal restrictions
-on using SoftFloat releases <NOBR>through 2c</NOBR> (not applicable to
-<NOBR>Release 3</NOBR> or later).
+    <h3>Release 1a (1996 July)</h3>
 
-</UL>
+    <ul>
+      <li>
+        Corrected a mistake that caused borderline underflow cases not to raise
+        the underflow flag when they should have. (Problem reported by Doug
+        Priest.)
+      </li>
 
+      <li>
+        Added the <code>float_detect_tininess</code> variable to control whether
+        tininess is detected before or after rounding.
+      </li>
+    </ul>
 
-<H3>Release 2b (2002 May)</H3>
+    <h3>Release 1 (1996 July)</h3>
 
-<UL>
-
-<LI>
-Made minor updates to the documentation, including improved wording for the
-legal restrictions on using SoftFloat.
-
-</UL>
-
-
-<H3>Release 2a (1998 December)</H3>
-
-<UL>
-
-<LI>
-Added functions to convert between <NOBR>64-bit</NOBR> integers
-(<CODE>int64</CODE>) and all supported floating-point formats.
-
-<LI>
-Fixed a bug in all <NOBR>64-bit</NOBR>-version square root functions except
-<CODE>float32_sqrt</CODE> that caused the result sometimes to be off by
-<NOBR>1 unit</NOBR> in the last place (<NOBR>1 ulp</NOBR>) from what it should
-be.
-(Bug discovered by Paul Donahue.)
-
-<LI>
-Improved the Makefiles.
-</UL>
-
-
-<H3>Release 2 (1997 June)</H3>
-
-<UL>
-
-<LI>
-Created the <NOBR>64-bit</NOBR> (<CODE>bits64</CODE>) version, adding the
-<CODE>floatx80</CODE> and <CODE>float128</CODE> formats.
-
-<LI>
-Changed the source directory structure, splitting the sources into a
-<CODE>bits32</CODE> and a <CODE>bits64</CODE> version.
-Renamed <CODE>environment.h</CODE> to <CODE>milieu.h</CODE> to avoid confusion
-with environment variables.
-
-<LI>
-Fixed a small error that caused <CODE>float64_round_to_int</CODE> often to
-round the wrong way in nearest/even mode when the operand was between
-2<SUP>20</SUP> and 2<SUP>21</SUP> and halfway between two integers.
-
-</UL>
-
-
-<H3>Release 1a (1996 July)</H3>
-
-<UL>
-
-<LI>
-Corrected a mistake that caused borderline underflow cases not to raise the
-underflow flag when they should have.
-(Problem reported by Doug Priest.)
-
-<LI>
-Added the <CODE>float_detect_tininess</CODE> variable to control whether
-tininess is detected before or after rounding.
-
-</UL>
-
-
-<H3>Release 1 (1996 July)</H3>
-
-<UL>
-
-<LI>
-Original release, based on work done for the International Computer Science
-Institute (ICSI) in Berkeley, California.
-
-</UL>
-
-
-</BODY>
-
+    <ul>
+      <li>
+        Original release, based on work done for the International Computer
+        Science Institute (ICSI) in Berkeley, California.
+      </li>
+    </ul>
+  </body>
+</html>

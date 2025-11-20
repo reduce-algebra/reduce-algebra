@@ -1,10 +1,7 @@
-
-libffi-3.4.5 was released on February 15, 2024.  Check the libffi web
+libffi-3.4.5 was released on February 15, 2024. Check the libffi web
 page for updates: <URL:http://sourceware.org/libffi/>.
 
-
-What is libffi?
-===============
+# What is libffi?
 
 Compilers for high level languages generate code that follow certain
 conventions. These conventions are necessary, in part, for separate
@@ -25,7 +22,7 @@ interface to various calling conventions. This allows a programmer to
 call any function specified by a call interface description at run
 time.
 
-FFI stands for Foreign Function Interface.  A foreign function
+FFI stands for Foreign Function Interface. A foreign function
 interface is the popular name for the interface that allows code
 written in one language to call code written in another language. The
 libffi library really only provides the lowest, machine dependent
@@ -33,9 +30,7 @@ layer of a fully featured foreign function interface. A layer must
 exist above libffi that handles type conversions for values passed
 between the two languages.
 
-
-Supported Platforms
-===================
+# Supported Platforms
 
 Libffi has been ported to many different platforms.
 
@@ -123,44 +118,43 @@ tested:
 Please send additional platform test results to
 libffi-discuss@sourceware.org.
 
-Installing libffi
-=================
+# Installing libffi
 
 First you must configure the distribution for your particular
 system. Go to the directory you wish to build libffi in and run the
 "configure" program found in the root directory of the libffi source
-distribution.  Note that building libffi requires a C99 compatible
+distribution. Note that building libffi requires a C99 compatible
 compiler.
 
 If you're building libffi directly from git hosted sources, configure
-won't exist yet; run ./autogen.sh first.  This will require that you
+won't exist yet; run ./autogen.sh first. This will require that you
 install autoconf, automake and libtool.
 
 You may want to tell configure where to install the libffi library and
-header files. To do that, use the ``--prefix`` configure switch.  Libffi
+header files. To do that, use the `--prefix` configure switch. Libffi
 will install under /usr/local by default.
 
 If you want to enable extra run-time debugging checks use the the
-``--enable-debug`` configure switch. This is useful when your program dies
+`--enable-debug` configure switch. This is useful when your program dies
 mysteriously while using libffi.
 
-Another useful configure switch is ``--enable-purify-safety``. Using this
+Another useful configure switch is `--enable-purify-safety`. Using this
 will add some extra code which will suppress certain warnings when you
 are using Purify with libffi. Only use this switch when using
 Purify, as it will slow down the library.
 
-If you don't want to build documentation, use the ``--disable-docs``
+If you don't want to build documentation, use the `--disable-docs`
 configure switch.
 
 It's also possible to build libffi on Windows platforms with
-Microsoft's Visual C++ compiler.  In this case, use the msvcc.sh
+Microsoft's Visual C++ compiler. In this case, use the msvcc.sh
 wrapper script during configuration like so:
 
     path/to/configure CC=path/to/msvcc.sh CXX=path/to/msvcc.sh LD=link CPP="cl -nologo -EP" CXXCPP="cl -nologo -EP" CPPFLAGS="-DFFI_BUILDING_DLL"
 
-For 64-bit Windows builds, use ``CC="path/to/msvcc.sh -m64"`` and
-``CXX="path/to/msvcc.sh -m64"``.  You may also need to specify
-``--build`` appropriately.
+For 64-bit Windows builds, use `CC="path/to/msvcc.sh -m64"` and
+`CXX="path/to/msvcc.sh -m64"`. You may also need to specify
+`--build` appropriately.
 
 It is also possible to build libffi on Windows platforms with the LLVM
 project's clang-cl compiler, like below:
@@ -169,33 +163,30 @@ project's clang-cl compiler, like below:
 
 When building with MSVC under a MingW environment, you may need to
 remove the line in configure that sets 'fix_srcfile_path' to a 'cygpath'
-command.  ('cygpath' is not present in MingW, and is not required when
+command. ('cygpath' is not present in MingW, and is not required when
 using MingW-style paths.)
 
 To build static library for ARM64 with MSVC using visual studio solution, msvc_build folder have
-   aarch64/Ffi_staticLib.sln
-   required header files in aarch64/aarch64_include/
-
+aarch64/Ffi_staticLib.sln
+required header files in aarch64/aarch64_include/
 
 SPARC Solaris builds require the use of the GNU assembler and linker.
-Point ``AS`` and ``LD`` environment variables at those tool prior to
+Point `AS` and `LD` environment variables at those tool prior to
 configuration.
 
-For iOS builds, the ``libffi.xcodeproj`` Xcode project is available.
+For iOS builds, the `libffi.xcodeproj` Xcode project is available.
 
-Configure has many other options. Use ``configure --help`` to see them all.
+Configure has many other options. Use `configure --help` to see them all.
 
 Once configure has finished, type "make". Note that you must be using
-GNU make.  You can ftp GNU make from ftp.gnu.org:/pub/gnu/make .
+GNU make. You can ftp GNU make from ftp.gnu.org:/pub/gnu/make .
 
 To ensure that libffi is working as advertised, type "make check".
 This will require that you have DejaGNU installed.
 
-To install the library and header files, type ``make install``.
+To install the library and header files, type `make install`.
 
-
-History
-=======
+# History
 
 See the git log for details at http://github.com/libffi/libffi.
 
@@ -442,13 +433,12 @@ See the git log for details at http://github.com/libffi/libffi.
     1.00 Oct-7-1996
         First release. No public announcement.
 
-Authors & Credits
-=================
+# Authors & Credits
 
 libffi was originally written by Anthony Green <green@moxielogic.com>.
 
 The developers of the GNU Compiler Collection project have made
-innumerable valuable contributions.  See the ChangeLog file for
+innumerable valuable contributions. See the ChangeLog file for
 details.
 
 Some of the ideas behind libffi were inspired by Gianni Mariani's free
@@ -513,7 +503,7 @@ Andreas Tobler has done a tremendous amount of work on the testsuite.
 
 Alex Oliva solved the executable page problem for SElinux.
 
-The list above is almost certainly incomplete and inaccurate.  I'm
+The list above is almost certainly incomplete and inaccurate. I'm
 happy to make corrections or additions upon request.
 
 If you have a problem, or have found a bug, please file an issue on

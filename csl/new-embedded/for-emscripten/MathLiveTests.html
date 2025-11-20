@@ -1,228 +1,236 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
     <title>Test of Reduce web-interface</title>
     <script src="https://unpkg.com/mathlive/dist/mathlive.min.js"></script>
     <script type="module">
-       import { MathfieldElement } from
-          'https://unpkg.com/mathlive/dist/mathlive.min.mjs';
+      import { MathfieldElement } from "https://unpkg.com/mathlive/dist/mathlive.min.mjs";
     </script>
-    
-    <style>          
-    math-field {
- //             border: 1px solid #ddd;
-                padding: 5px;
- //             margin: 10px 0 10px 0;
-                border-radius: 5px;
- //               background-color: #fff;
- //             margin: 3em;  
-                border: 1px solid rgba(0, 0, 0, .3); 
-                box-shadow: 0 0 8px rgba(0, 0, 0, .2);
-                hue: 10;
-               } 
-    </style>  
+
+    <style>
+         math-field {
+      //             border: 1px solid #ddd;
+                     padding: 5px;
+      //             margin: 10px 0 10px 0;
+                     border-radius: 5px;
+      //               background-color: #fff;
+      //             margin: 3em;
+                     border: 1px solid rgba(0, 0, 0, .3);
+                     box-shadow: 0 0 8px rgba(0, 0, 0, .2);
+                     hue: 10;
+                    }
+    </style>
     <script>
-        // add math-field + button
-        window.reduceLatch = 0;
+      // add math-field + button
+      window.reduceLatch = 0;
 
-let worker = new Worker('./reduce.web.js');
-        let mfi = mkMathInputField({smartMode: false,
-                                    smartFence: false,
-                                    ignoreSpacebarInMathMode: false});   
-                                    
-//            mfi.executeCommand(['insert',
-//                              '\\begin{MULTLINE} #0 \\end{MULTLINE}'],'after');
+      let worker = new Worker("./reduce.web.js");
+      let mfi = mkMathInputField({
+        smartMode: false,
+        smartFence: false,
+        ignoreSpacebarInMathMode: false,
+      });
 
-// mfi.value = '\\begin{equation} \\frac{\\alpha + 1}{3} \\\\ \\beta-1 \\end{equation}';
-            
-function sendToReduce(str)
-        {
-            let buf = new Uint8Array(str.length+1);
-            for (let i=0; i<str.length; i++)
-                buf[i] = str.charCodeAt(i);
-            buf[str.length] = 0; // nul-terminate for benefit of C/C++.
-            worker.postMessage({
-                funcName: 'insert_buffer',
-                callbackId: '',
-                data: buf
-            });
-        }     
-        
-        let button = document.createElement('button');
-        
-        button.appendChild(document.createTextNode('Submit'));
-        
-        button.addEventListener('click', event => {
-            console.log("Raw input:");
-            console.log(mfi.value);
-            // need to convert the string to a Uint8Array
-            let str = unescape(encodeURIComponent(mfi.value));
-            str = serializeToReduce(str);
-            // found the above snippet at https://gist.github.com/emrahgunduz/5c27ff1db650b93c7864
-            let buf = new Uint8Array(str.length+1);
-            console.log("Send to Reduce:");
-            console.log(str);
-            if (str.substr(-1) != ";") {str = str.concat(";")};
- //           console.log("***********ASCIIMath***************");
- //           console.log(mfi.getValue('ASCIIMath'));
-            sendToReduce(str);
-          });   
-                 
- //      let worker = new Worker('./reduce.web.js');
-        worker.onmessage = function(event) {
-            if (event.data.channel === 'stdout') {
-                let o = event.data.line;
-                console.log(o);
-                if (o.substring(0, 6) == "Reduce") {var h = document.createElement("h3");
-                                                    var greeting = document.createTextNode(o);
-                                                    h.appendChild(greeting);
-                                                    document.body.appendChild(h);
-                                                    document.body.appendChild(mfi);
-                                                    document.body.appendChild(button); }
-                else 
-//                if (!(o == '' || o.substring(0,3) == "off" 
-//                ||
-//                           o.substring(0,1) == "["
-//                           ))
-                {  console.log("Received from Reduce:");
-                   console.log(o);
-                   if (o == '') o = ' ';
-                   let n = o.indexOf('\002'); 
-                   console.log(n);
-                if (n != -1)
-                {
-// Here I not only strip out the material before the "\002" but also the
-// "junk" that reads "latex:\black$\displaystyle" and a final "$\005". Those
-// are fragments that the Reduce interface for TeXmacs inserts.
-                    o = o.substring(n+1+26, o.length-2)
-// Reduce puts in "\*" for multiplication. It's replaced here by \cdot.
-                o = o.replaceAll("\*","\operatorname{\\cdot}");
-                console.log("Trimmed:");
-                console.log(o);
-                var mfo = new MathfieldElement({smartMode: false,
-                                                smartFence: false,
-                                                ignoreSpacebarInMathMode: false,
-                                                inlineShortcuts:
-                                                {'\*': {mode: 'math',
-                                                value: '\\operatorname{\\cdot}'}}
-                                                });
-                o = '\\begin{equation} ' + o + ' \\end{equation}'; 
-                console.log(o);
-                mfo.value = o;
-                mfo.value += '\n';
-                document.body.appendChild(mfo);
-                mfi = mkMathInputField();
-//              mfi.executeCommand(['insert', '\\begin{multiline} #0 \\end{multiline}']);
-//              mfi.getValue('ASCIIMath');
-//              var sep=document.createElement('HR');
-//              document.body.appendChild(sep);
-                document.body.appendChild(mfi);
-                document.body.appendChild(button); }
+      //            mfi.executeCommand(['insert',
+      //                              '\\begin{MULTLINE} #0 \\end{MULTLINE}'],'after');
+
+      // mfi.value = '\\begin{equation} \\frac{\\alpha + 1}{3} \\\\ \\beta-1 \\end{equation}';
+
+      function sendToReduce(str) {
+        let buf = new Uint8Array(str.length + 1);
+        for (let i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i);
+        buf[str.length] = 0; // nul-terminate for benefit of C/C++.
+        worker.postMessage({
+          funcName: "insert_buffer",
+          callbackId: "",
+          data: buf,
+        });
+      }
+
+      let button = document.createElement("button");
+
+      button.appendChild(document.createTextNode("Submit"));
+
+      button.addEventListener("click", (event) => {
+        console.log("Raw input:");
+        console.log(mfi.value);
+        // need to convert the string to a Uint8Array
+        let str = unescape(encodeURIComponent(mfi.value));
+        str = serializeToReduce(str);
+        // found the above snippet at https://gist.github.com/emrahgunduz/5c27ff1db650b93c7864
+        let buf = new Uint8Array(str.length + 1);
+        console.log("Send to Reduce:");
+        console.log(str);
+        if (str.substr(-1) != ";") {
+          str = str.concat(";");
+        }
+        //           console.log("***********ASCIIMath***************");
+        //           console.log(mfi.getValue('ASCIIMath'));
+        sendToReduce(str);
+      });
+
+      //      let worker = new Worker('./reduce.web.js');
+      worker.onmessage = function (event) {
+        if (event.data.channel === "stdout") {
+          let o = event.data.line;
+          console.log(o);
+          if (o.substring(0, 6) == "Reduce") {
+            var h = document.createElement("h3");
+            var greeting = document.createTextNode(o);
+            h.appendChild(greeting);
+            document.body.appendChild(h);
+            document.body.appendChild(mfi);
+            document.body.appendChild(button);
+          }
+          //                if (!(o == '' || o.substring(0,3) == "off"
+          //                ||
+          //                           o.substring(0,1) == "["
+          //                           ))
+          else {
+            console.log("Received from Reduce:");
+            console.log(o);
+            if (o == "") o = " ";
+            let n = o.indexOf("\002");
+            console.log(n);
+            if (n != -1) {
+              // Here I not only strip out the material before the "\002" but also the
+              // "junk" that reads "latex:\black$\displaystyle" and a final "$\005". Those
+              // are fragments that the Reduce interface for TeXmacs inserts.
+              o = o.substring(n + 1 + 26, o.length - 2);
+              // Reduce puts in "\*" for multiplication. It's replaced here by \cdot.
+              o = o.replaceAll("\*", "\operatorname{\\cdot}");
+              console.log("Trimmed:");
+              console.log(o);
+              var mfo = new MathfieldElement({
+                smartMode: false,
+                smartFence: false,
+                ignoreSpacebarInMathMode: false,
+                inlineShortcuts: {
+                  "\*": { mode: "math", value: "\\operatorname{\\cdot}" },
+                },
+              });
+              o = "\\begin{equation} " + o + " \\end{equation}";
+              console.log(o);
+              mfo.value = o;
+              mfo.value += "\n";
+              document.body.appendChild(mfo);
+              mfi = mkMathInputField();
+              //              mfi.executeCommand(['insert', '\\begin{multiline} #0 \\end{multiline}']);
+              //              mfi.getValue('ASCIIMath');
+              //              var sep=document.createElement('HR');
+              //              document.body.appendChild(sep);
+              document.body.appendChild(mfi);
+              document.body.appendChild(button);
             }
-         }};  
+          }
+        }
+      };
 
+      function serializeToReduce(str) {
+        // very primitive serialization.
+        //         str = str.replace(/\\int\s{([^}]*)}d{([^}]*)}/gi, "int($1, $2)");
+        str = str.replaceAll("\\sqrt", "sqrt");
+        str = str.replaceAll("\\frac", "quotient");
+        str = str.replaceAll("}d{", ",");
+        str = str.replaceAll("\\int", "int");
+        str = str.replaceAll("\\sin", "sin");
+        str = str.replaceAll("\\log", "log");
+        //            str = str.replaceAll("\\cdot", "*");
+        str = str.replaceAll("\\times", "*");
+        //            str = str.replaceAll("{\\cdot}", "*");
+        ((str = str.replaceAll("\\operatorname{\\cdot}", "*")),
+          (str = str.replaceAll("\\operatorname{solve}", "solve")));
+        str = str.replaceAll("\\operatorname{sub}", "sub");
+        str = str.replaceAll("\\operatorname{df}", "df");
+        str = str.replaceAll("\\operatorname{ws}", "ws");
+        //            str = str.replaceAll("\\operatorname{operator}","operator");
+        str = str.replaceAll("\\, \\differentialD", "");
+        str = str.replaceAll("}{", ",");
+        str = str.replaceAll("}}", "}");
+        str = str.replaceAll("{", "(");
+        str = str.replaceAll("}", ")");
+        str = str.replaceAll("[]", "");
+        str = str.replaceAll("\\mleft", "");
+        str = str.replaceAll("\\mright", "");
+        //            str = str.replaceAll("\\cdot","*");
+        str = str.replaceAll("\\*", "*");
+        str = str.replaceAll("?", "");
+        str = str.replaceAll("}", "");
+        str = str.replaceAll("\\lbrace", "{");
+        str = str.replaceAll("\\rbrace", "}");
+        return str;
+      }
 
-function serializeToReduce(str)
-     {// very primitive serialization.           
- //         str = str.replace(/\\int\s{([^}]*)}d{([^}]*)}/gi, "int($1, $2)");
-            str = str.replaceAll("\\sqrt", "sqrt");
-            str = str.replaceAll("\\frac", "quotient");
-            str = str.replaceAll("}d{", ",");        
-            str = str.replaceAll("\\int", "int");
-            str = str.replaceAll("\\sin", "sin");
-            str = str.replaceAll("\\log", "log");
-//            str = str.replaceAll("\\cdot", "*");
-            str = str.replaceAll("\\times", "*");
-//            str = str.replaceAll("{\\cdot}", "*");
-            str = str.replaceAll("\\operatorname{\\cdot}","*"),
-            str = str.replaceAll("\\operatorname{solve}", "solve");
-            str = str.replaceAll("\\operatorname{sub}", "sub");
-            str = str.replaceAll("\\operatorname{df}","df");
-            str = str.replaceAll("\\operatorname{ws}","ws");
-//            str = str.replaceAll("\\operatorname{operator}","operator");
-            str = str.replaceAll("\\, \\differentialD","");
-            str = str.replaceAll("}{",",");
-            str = str.replaceAll("}}","}");
-            str = str.replaceAll("{","(");
-            str = str.replaceAll("}",")");
-            str = str.replaceAll("[]","");
-            str = str.replaceAll("\\mleft","");
-            str = str.replaceAll("\\mright","");
-//            str = str.replaceAll("\\cdot","*");
-            str = str.replaceAll("\\*","*");
-            str = str.replaceAll("?","");
-            str = str.replaceAll("}","");
-            str = str.replaceAll("\\lbrace","{");
-            str = str.replaceAll("\\rbrace","}");
-            return str;
-            }
-            
-function mkMathInputField()
-    {return new MathfieldElement(
-                  {smartMode: false,
-                   smartFence: false,
-                   ignoreSpacebarInMathMode: false,
-                   inlineShortcuts: 
-                      {// ASCIIIMath examples just for demonstration
-                       //
-                       // Binary operation symbols
- //                      '*': '\\cdot',
-                       '*': {mode: 'math', 
-//                       after: 'nothing+digit+function+binop+punctuation+frac+surd+relop+punct+text+space',
-                       value: '\\operatorname{\\cdot}'},
-                       '**': '\\ast',
-                       '***': '\\star',
-                       '@': '\\circ',
-                       'o+': '\\oplus',
-                       'ox': '\\otimes',
-                       'o.': '\\odot',
-                       '^^': '\\wedge',
-                       '^^^': '\\bigwedge',
-                       
-                       // Reduce specific examples
-                       'ws': {mode: 'math', value: '\\operatorname{ws}'},                                       
-                       'int': '\\int{#?\\,\\differentialD}{#?}',
-                       'df': '\\operatorname{df}',
-                       'sub': '\\operatorname{sub}',
-                       'solve': '\\operatorname{solve}',
-                       '£': {mode: 'math', value: '\\pounds_{#?}{#?}'},
- //                      'operator': '\\operatorname{operator}',
-                       },
-                       
-                    // Virtual keyboard example    
-                    virtualKeyboardMode: 'manual',
-                    
-                    customVirtualKeyboardLayers: {
-                        'layer-name': {
-                            styles: '',
-                            rows: [
-                                [
-                                    {
-                                        class: 'keycap',
-                                        latex: '\\int{#?\\,\\differentialD}{#?}',
-                                    },
-                                    {
-                                        class: 'keycap',
-                                        latex: '\\sqrt{#?}',
-                                    },
-                                ],
-                            ],
-                        },
-                    },
-                    customVirtualKeyboards: {
-                        'keyboard-name': {
-                            label: 'Json',
-                            tooltip: 'Json keyboard',
-                            layer: 'layer-name',
-                        },
-                    },
-                    virtualKeyboards: 'keyboard-name',
-                    })};
-                    
-sendToReduce('<<lisp (!*redefmsg := nil);load_package tmprint;lisp(!*multilines := t);on nat;on fancy;off promptnumbers;on redfront_mode>>$');
+      function mkMathInputField() {
+        return new MathfieldElement({
+          smartMode: false,
+          smartFence: false,
+          ignoreSpacebarInMathMode: false,
+          inlineShortcuts: {
+            // ASCIIIMath examples just for demonstration
+            //
+            // Binary operation symbols
+            //                      '*': '\\cdot',
+            "*": {
+              mode: "math",
+              //                       after: 'nothing+digit+function+binop+punctuation+frac+surd+relop+punct+text+space',
+              value: "\\operatorname{\\cdot}",
+            },
+            "**": "\\ast",
+            "***": "\\star",
+            "@": "\\circ",
+            "o+": "\\oplus",
+            ox: "\\otimes",
+            "o.": "\\odot",
+            "^^": "\\wedge",
+            "^^^": "\\bigwedge",
 
-    </script>    
-</head> 
+            // Reduce specific examples
+            ws: { mode: "math", value: "\\operatorname{ws}" },
+            int: "\\int{#?\\,\\differentialD}{#?}",
+            df: "\\operatorname{df}",
+            sub: "\\operatorname{sub}",
+            solve: "\\operatorname{solve}",
+            "£": { mode: "math", value: "\\pounds_{#?}{#?}" },
+            //                      'operator': '\\operatorname{operator}',
+          },
+
+          // Virtual keyboard example
+          virtualKeyboardMode: "manual",
+
+          customVirtualKeyboardLayers: {
+            "layer-name": {
+              styles: "",
+              rows: [
+                [
+                  {
+                    class: "keycap",
+                    latex: "\\int{#?\\,\\differentialD}{#?}",
+                  },
+                  {
+                    class: "keycap",
+                    latex: "\\sqrt{#?}",
+                  },
+                ],
+              ],
+            },
+          },
+          customVirtualKeyboards: {
+            "keyboard-name": {
+              label: "Json",
+              tooltip: "Json keyboard",
+              layer: "layer-name",
+            },
+          },
+          virtualKeyboards: "keyboard-name",
+        });
+      }
+
+      sendToReduce(
+        "<<lisp (!*redefmsg := nil);load_package tmprint;lisp(!*multilines := t);on nat;on fancy;off promptnumbers;on redfront_mode>>$",
+      );
+    </script>
+  </head>
 </html>

@@ -2,7 +2,7 @@
 
 ## A portable general-purpose computer algebra system
 
-----
+---
 
 ## Introduction
 
@@ -10,17 +10,17 @@
 
 It can be used interactively for simple calculations, but also provides a flexible and expressive user programming language.
 
-The development of the **REDUCE** computer algebra system was started in the 1960's by [Anthony C. Hearn](https://en.wikipedia.org/wiki/Anthony_C._Hearn) and further developed by [Arthur C. Norman](https://en.wikipedia.org/wiki/Arthur_Norman_(computer_scientist)) and others. Since then, many scientists from all over the world have contributed to its development.
+The development of the **REDUCE** computer algebra system was started in the 1960's by [Anthony C. Hearn](https://en.wikipedia.org/wiki/Anthony_C._Hearn) and further developed by [Arthur C. Norman](<https://en.wikipedia.org/wiki/Arthur_Norman_(computer_scientist)>) and others. Since then, many scientists from all over the world have contributed to its development.
 
 **REDUCE** has a long and distinguished place in the history of computer algebra systems.
 
-Other systems that address some of the same issues, but sometimes with rather different emphasis, are [Axiom](http://axiom-developer.org/), [Derive](https://www.chartwellyorke.com/derive.html), [Macsyma](http://www.symbolics-dks.com/Macsyma-1.htm)/[Maxima](https://maxima.sourceforge.io/), [Maple](https://www.maplesoft.com/), [Mathematica](https://www.wolfram.com/mathematica/), and [MuPAD](<https://en.wikipedia.org/wiki/MuPAD>).
+Other systems that address some of the same issues, but sometimes with rather different emphasis, are [Axiom](http://axiom-developer.org/), [Derive](https://www.chartwellyorke.com/derive.html), [Macsyma](http://www.symbolics-dks.com/Macsyma-1.htm)/[Maxima](https://maxima.sourceforge.io/), [Maple](https://www.maplesoft.com/), [Mathematica](https://www.wolfram.com/mathematica/), and [MuPAD](https://en.wikipedia.org/wiki/MuPAD).
 
-**REDUCE** is implemented in *Standard Lisp*. It primarily runs on either **_Portable Standard Lisp_**, which compiles to native machine code, or **_Codemist Standard Lisp_**, which compiles to optimized byte-code. It can also run on **_Visible Standard Lisp_**, an extremely minimal and highly portable *Standard Lisp* interpreter. PSL, CSL, and VSL are all included in the **REDUCE** distribution.
+**REDUCE** is implemented in _Standard Lisp_. It primarily runs on either **_Portable Standard Lisp_**, which compiles to native machine code, or **_Codemist Standard Lisp_**, which compiles to optimized byte-code. It can also run on **_Visible Standard Lisp_**, an extremely minimal and highly portable _Standard Lisp_ interpreter. PSL, CSL, and VSL are all included in the **REDUCE** distribution.
 
 By modern standards, **REDUCE** is a surprisingly small and compact application, and runs well on all major platforms and operating systems ― including [Android](https://play.google.com/store/apps/details?id=de.dieteregger.symbolic&hl=en_US&gl=US) and [iOS](https://apps.apple.com/us/app/icas/id394637176).
 
-----
+---
 
 ## Features
 
@@ -35,7 +35,7 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
 - Quantifier elimination and decision for interpreted first-order logic
 - Powerful intuitive user-level programming language
 
-----
+---
 
 ## Availability
 
@@ -44,7 +44,7 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
   - [**Sourceforge RSS Feed**](https://sourceforge.net/p/reduce-algebra/activity/feed.rss)
 - [GitHub Mirror](https://github.com/reduce-algebra/reduce-algebra/)
 
-----
+---
 
 ## News and Announcements
 
@@ -52,14 +52,14 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
   - [Atom Feed](https://sourceforge.net/p/reduce-algebra/news/feed.atom)
   - [RSS Feed](https://sourceforge.net/p/reduce-algebra/news/feed.rss)
 
-----
+---
 
 ## Issue Tracking
 
 - [**REDUCE** Bug Tracker](https://sourceforge.net/p/reduce-algebra/bugs/)
   - [Bug Tracker Statistics](https://sourceforge.net/p/reduce-algebra/bugs/stats/)
 
-----
+---
 
 ## Discussions
 
@@ -67,23 +67,23 @@ By modern standards, **REDUCE** is a surprisingly small and compact application,
   - [Discussion Forum Statistics](https://sourceforge.net/p/reduce-algebra/discussion/stats/)
 - [**REDUCE** Mailing Lists](https://sourceforge.net/p/reduce-algebra/mailman/)
 
-----
+---
 
 ## Authors and Developers
 
 - [**REDUCE** Project Members](https://sourceforge.net/p/reduce-algebra/_members/)
 
-----
+---
 
 ## Additional Packages and Related Software
 
 - [**REDUCE** External Packages](https://reduce-algebra.sourceforge.io/packages.php)
 - [GitHub **REDUCE-Algebra Organization**](https://github.com/reduce-algebra/)
 
-----
+---
 
 ## Homepage
 
 - [**REDUCE** Computer Algebra System](https://reduce-algebra.sourceforge.io/)
 
-----
+---

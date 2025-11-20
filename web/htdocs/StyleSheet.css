@@ -1,5 +1,5 @@
 ﻿body {
-    background-color: #EEF;
+  background-color: #eef;
 }
 
 /* REDUCE in header with responsive background.  For bootstrap
@@ -7,152 +7,164 @@
 */
 
 header span.mx-auto {
-    display: inline-block;
-    text-align: center;
-    font-family: Georgia, 'Times New Roman', 'Lucida Bright', serif;
-    font-size: 40px;
-    font-weight: bold;
-    color: #0F0;
-    max-width: 600px;           /* width of background image */
-    width: 60vw;                /* 60% of viewport width */
-    min-width: 200px;           /* width of text */
+  display: inline-block;
+  text-align: center;
+  font-family: Georgia, "Times New Roman", "Lucida Bright", serif;
+  font-size: 40px;
+  font-weight: bold;
+  color: #0f0;
+  max-width: 600px; /* width of background image */
+  width: 60vw; /* 60% of viewport width */
+  min-width: 200px; /* width of text */
 }
 
-@media (min-width: 500px) {     /* bootstrap breakpoint sm = 576px */
-    header span.mx-auto {
-        background-image: url(/images/header.png);
-        background-repeat: no-repeat;
-        background-position: left;
-    }
+@media (min-width: 500px) {
+  /* bootstrap breakpoint sm = 576px */
+  header span.mx-auto {
+    background-image: url(/images/header.png);
+    background-repeat: no-repeat;
+    background-position: left;
+  }
 }
 
-@media (max-width: 499.98px) {  /* as used by bootstrap */
-    header span.mx-auto {
-        background-color: #009;
-        line-height: 1.0;
-        height: 40px;
-    }
+@media (max-width: 499.98px) {
+  /* as used by bootstrap */
+  header span.mx-auto {
+    background-color: #009;
+    line-height: 1;
+    height: 40px;
+  }
 }
 
 #top-search-button {
-    background-color: #009;
-    font-size: 0px;
-    padding: 6px 27px;
-    margin-left: 16px;
+  background-color: #009;
+  font-size: 0px;
+  padding: 6px 27px;
+  margin-left: 16px;
 }
 
 #top-search-button svg {
-    fill: #FFF;
+  fill: #fff;
 }
 
 h1 {
-    text-align: center;
-    color: #009;
+  text-align: center;
+  color: #009;
 }
 
 footer {
-    text-align: center;
-    font-size: 0.8rem;
+  text-align: center;
+  font-size: 0.8rem;
 }
 
 #main img {
-    float: right;
-    margin-left: 1em;
-    margin-top: 1em;
+  float: right;
+  margin-left: 1em;
+  margin-top: 1em;
 }
 
 a img {
-    border-style: none;
-    vertical-align: middle;
-    text-decoration: none;
+  border-style: none;
+  vertical-align: middle;
+  text-decoration: none;
 }
 
 ul {
-    list-style-image: url(/images/pixbul1.gif);
+  list-style-image: url(/images/pixbul1.gif);
 }
 
 /* Navigation panel */
 
 #navmenu {
-    font-size: 0.9rem;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  font-size: 0.9rem;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 #navmenu ul {
-    margin-top: 0;
-    margin-left: 0;
-    padding-left: 0;
-    white-space: nowrap;
+  margin-top: 0;
+  margin-left: 0;
+  padding-left: 0;
+  white-space: nowrap;
 }
 
 #navmenu ul > li {
-    list-style-type: none;
-    list-style-image: none;
-    margin-bottom: 1em;
-    text-align: center;
-    background-color: #CCF;
-    background-repeat: no-repeat;
-    /* line-height = 1.5, hence scaling factor below: */
-    --line-height: 1.5;
-    background-position: calc(var(--line-height) * 0.25em);
-    background-size: calc(var(--line-height) * 0.5em) 50%;
+  list-style-type: none;
+  list-style-image: none;
+  margin-bottom: 1em;
+  text-align: center;
+  background-color: #ccf;
+  background-repeat: no-repeat;
+  /* line-height = 1.5, hence scaling factor below: */
+  --line-height: 1.5;
+  background-position: calc(var(--line-height) * 0.25em);
+  background-size: calc(var(--line-height) * 0.5em) 50%;
 }
 
 #navmenu ul > li.selected {
-    background-image: linear-gradient(#009,#009);
+  background-image: linear-gradient(#009, #009);
 }
 
-#navmenu ul > li:not(.selected):hover, #navmenu ul > li:not(.selected):focus {
-    background-image: linear-gradient(#66C,#66C);
+#navmenu ul > li:not(.selected):hover,
+#navmenu ul > li:not(.selected):focus {
+  background-image: linear-gradient(#66c, #66c);
 }
 
 /* Make the whole li element, not just the text, act as a link. */
 #navmenu ul > li > a {
-    display: block;
+  display: block;
 }
 
-#navmenu a, #navmenu a:active, #navmenu a:link, #navmenu a:visited {
-    text-decoration: none;
-    color: black;
+#navmenu a,
+#navmenu a:active,
+#navmenu a:link,
+#navmenu a:visited {
+  text-decoration: none;
+  color: black;
 }
 
 /* Download REDUCE from SourceForge */
 
 #navmenu a > p {
-    margin: 1.5rem 0;
-    border: thin solid black;
-    border-radius: 5px;
-    padding: 5px;
-    font-weight: bold;
-    text-align: center;
-    background-color: white;
+  margin: 1.5rem 0;
+  border: thin solid black;
+  border-radius: 5px;
+  padding: 5px;
+  font-weight: bold;
+  text-align: center;
+  background-color: white;
 }
 
 #google_translate_element {
-    text-align: center;
-    text-shadow: none;
+  text-align: center;
+  text-shadow: none;
 }
 
 /* TeX and LaTeX logo markup from http://tess.oconnor.cx/2007/08/tex-poshlet */
 /* <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span> */
-.tex sub, .latex sub, .latex sup {
-    position: static; /* undo a change made by Bootstrap (Reboot) */
-    text-transform: uppercase;
+.tex sub,
+.latex sub,
+.latex sup {
+  position: static; /* undo a change made by Bootstrap (Reboot) */
+  text-transform: uppercase;
 }
 
-.tex, .latex, .tex sub, .latex sub {
-    font-size: 1em;
+.tex,
+.latex,
+.tex sub,
+.latex sub {
+  font-size: 1em;
 }
 
-.tex sub, .latex sub {
-    vertical-align: -0.5ex;
-    margin-left: -0.1667em;
-    margin-right: -0.125em;
+.tex sub,
+.latex sub {
+  vertical-align: -0.5ex;
+  margin-left: -0.1667em;
+  margin-right: -0.125em;
 }
 
 .latex sup {
-    font-size: 0.85em;
-    vertical-align: 0.15em;
-    margin-left: -0.36em;
-    margin-right: -0.15em;
+  font-size: 0.85em;
+  vertical-align: 0.15em;
+  margin-left: -0.36em;
+  margin-right: -0.15em;
 }

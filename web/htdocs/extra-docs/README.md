@@ -20,11 +20,11 @@ At the top of `doc/manual/user.tex` in January 2025 was the following:
 % tri/*.tex -- too long!
 ```
 
-This directory is an attempt to remedy the omission by providing the missing documentation on the web as PDF files, but only for pre-compiled packages.  If these packages have documentation stubs in the REDUCE manual then they can link to the files here.
+This directory is an attempt to remedy the omission by providing the missing documentation on the web as PDF files, but only for pre-compiled packages. If these packages have documentation stubs in the REDUCE manual then they can link to the files here.
 
-Source files were copied from the `packages` directories.  Some documents need `reduce.sty`, which was copied from `doc/misc`.  Formatting was done with the current versions of Ghostscript and TeX Live.  Details are provided below.  All the results look at least superficially OK.
+Source files were copied from the `packages` directories. Some documents need `reduce.sty`, which was copied from `doc/misc`. Formatting was done with the current versions of Ghostscript and TeX Live. Details are provided below. All the results look at least superficially OK.
 
-As of May 2025 I have incorporated the documentation for CONLAW, CRACK, V3TOOLS, MATHML and SUSY2 into the manual.  I have therefore removed references to these packages from `index.php`, but left what are essentially the original files described below in place, for reference and to avoid breaking old links to them.
+As of May 2025 I have incorporated the documentation for CONLAW, CRACK, V3TOOLS, MATHML and SUSY2 into the manual. I have therefore removed references to these packages from `index.php`, but left what are essentially the original files described below in place, for reference and to avoid breaking old links to them.
 
 ## Atensor
 
@@ -32,19 +32,19 @@ As of May 2025 I have incorporated the documentation for CONLAW, CRACK, V3TOOLS,
 
 ## Crack/Conlaw
 
-`conlaw.tex` formatted as `conlaw.pdf` using `pdflatex conlaw` twice.  Minor update for current REDUCE.
+`conlaw.tex` formatted as `conlaw.pdf` using `pdflatex conlaw` twice. Minor update for current REDUCE.
 
 ## Crack/Crack
 
-`crack.tex` formatted as `crack.pdf` using `latex crack; latex crack; dvipdfm -p a4 crack`.  NB: using `pdflatex` doesn't work.  Minor typographical corrections and update for current REDUCE.
+`crack.tex` formatted as `crack.pdf` using `latex crack; latex crack; dvipdfm -p a4 crack`. NB: using `pdflatex` doesn't work. Minor typographical corrections and update for current REDUCE.
 
 ## Crack/V3tools
 
-`v3tools.tex` formatted as `v3tools.pdf` using `pdflatex v3tools` twice.  Minor typographical corrections and update for current REDUCE.
+`v3tools.tex` formatted as `v3tools.pdf` using `pdflatex v3tools` twice. Minor typographical corrections and update for current REDUCE.
 
 ## Gentran
 
-`gentran.tex`, `gentran.bib` and `reduce.sty` formatted as `gentran.pdf` using `pdflatex gentran; bibtex gentran; pdflatex gentran; pdflatex gentran`.  One minor typographical correction and one update for current REDUCE.
+`gentran.tex`, `gentran.bib` and `reduce.sty` formatted as `gentran.pdf` using `pdflatex gentran; bibtex gentran; pdflatex gentran; pdflatex gentran`. One minor typographical correction and one update for current REDUCE.
 
 ## Mathml/Mathml
 
@@ -56,7 +56,7 @@ As of May 2025 I have incorporated the documentation for CONLAW, CRACK, V3TOOLS,
 
 ## Scope
 
-`scope.tex`, `scope.bib` and `reduce.sty` formatted as `scope.pdf` using `pdflatex scope; bibtex scope; makeindex scope; pdflatex scope; pdflatex scope`.  A minor typographical correction.
+`scope.tex`, `scope.bib` and `reduce.sty` formatted as `scope.pdf` using `pdflatex scope; bibtex scope; makeindex scope; pdflatex scope; pdflatex scope`. A minor typographical correction.
 
 ## Susy2
 
@@ -64,7 +64,7 @@ As of May 2025 I have incorporated the documentation for CONLAW, CRACK, V3TOOLS,
 
 ## Tri
 
-`tri.tex` and `tridefs.tex` formatted as `tri.pdf` using `pdftex tri.tex`.  NB: documentation written in raw TeX, not LaTeX!
+`tri.tex` and `tridefs.tex` formatted as `tri.pdf` using `pdftex tri.tex`. NB: documentation written in raw TeX, not LaTeX!
 
 <!-- Local Variables: -->
 <!-- fill-column: 1000 -->

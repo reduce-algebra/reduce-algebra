@@ -1,5 +1,6 @@
-import subprocess
 import pathlib
+import subprocess
+
 import pytest
 
 TEST_PATH = pathlib.Path(__file__).parents[1].resolve()
@@ -10,13 +11,10 @@ xfails = {}
 def libffi_tests(self, selenium, libffi_test):
     if libffi_test in xfails:
         pytest.xfail(f'known failure with code "{xfails[libffi_test]}"')
-    res = selenium.run_js(
-        """
+    res = selenium.run_js("""
         window.TestModule = await Module();
-        """
-    )
-    selenium.run_js(
-        f"""
+        """)
+    selenium.run_js(f"""
         try {{
             TestModule._test__{libffi_test}();
         }} catch(e){{
@@ -27,8 +25,7 @@ def libffi_tests(self, selenium, libffi_test):
                 throw new Error(`Terminated with nonzero status code ${{e.status}}: ` + e.message);
             }}
         }}
-        """
-    )
+        """)
 
 
 class TestCall:
