@@ -1,5 +1,5 @@
 #!/bin/bash
-# Start the Cygwin, Linux or macOS CCL REDUCE image.
+# Start Cygwin, Linux or macOS CCL REDUCE.
 cl=$(realpath $(dirname $0)) # common-lisp directory
 if [ "$OSTYPE" == 'cygwin' ]; then cl=$(cygpath -m $cl); fi
 if [ "$(type -ft ccl64)" ]; then CCL='ccl64'; else CCL='ccl'; fi
