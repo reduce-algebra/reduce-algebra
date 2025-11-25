@@ -10,7 +10,7 @@
 #                      --csl=XXX --bootstrapreduce=XXX
 #                      --jlisp jlispboot
 #                      --psl --psl=XXX
-#                      --sbcl
+#                      --sbcl --clisp --ccl
 # See explanation in scripts/test1.sh regarding valid "XXX" but the
 # most common and general use will be if it is a directory name within
 # cslbuild or pslbuild.
@@ -77,7 +77,7 @@ do
     just_time="yes"
     shift
     ;;
-  --csl* | --bootstrapreduce* | --psl* | --jlisp | --jlispboot | --sbcl)
+  --csl* | --bootstrapreduce* | --psl* | --jlisp | --jlispboot | --sbcl | --clisp | --ccl)
     platforms="$platforms $1"
     if test "$basecase" = ""
     then

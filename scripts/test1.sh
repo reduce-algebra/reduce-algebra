@@ -20,7 +20,7 @@
 #
 #  VERSIONS TO TEST:
 # Several versions can be specified. If none are listed testing is
-# performed as of "--csl --psl" had been indicated.
+# performed as if "--csl --psl" had been indicated.
 #
 #     --csl=VARIANT
 #                 Use executable ...cslbuild/VARIANT/csl/reduce
@@ -50,9 +50,12 @@
 #     --jlisp     Run tests using Jlisp.
 #     --jlispboot Run tests using Jlisp "bootstrapreduce.jar".
 #
-# Common Lisp -- specifically Steel Bank Common Lisp (SBCL).
-# (Other Common Lisp variants might be supported later.)
+# Common Lisp, specifically Steel Bank Common Lisp (SBCL), GNU CLISP
+# or Clozure Common Lisp (CCL).  Other Common Lisp variants might be
+# supported later.
 #     --sbcl      Use SBCL REDUCE from ../common-lisp.
+#     --clisp     Use CLISP REDUCE from ../common-lisp.
+#     --ccl       Use CCL REDUCE from ../common-lisp.
 #
 #
 # PACKAGE or REGRESSION
@@ -125,7 +128,7 @@ jit="no"
 
 # I allow any number of the keyword arguments in any order. I will pick
 # off and process arguments for so long as any are available. This will
-# stop if I either utterly run put of arguments (detected when $# = 0) or
+# stop if I either utterly run out of arguments (detected when $# = 0) or
 # if $1 fails to match one of the keywords.
 
 while test "$#" != 0
@@ -626,10 +629,10 @@ XXX
 }
 
 #######################################################################
-# SBCL testing
+# Common Lisp (CL) testing
 #######################################################################
 
-sbcltest() {
+cltest() {
   cmd="$1"
   logdir="$2"
   mkdir -p "$logdir"
@@ -744,8 +747,8 @@ do
     jlisptest "jlispboot" "bootstrapreduce.jar" "$logdir"
     ;;
 
-  sbcl)
-    sbcltest "$here/common-lisp/redsbcl" "$logdir"
+  sbcl|clisp|ccl)
+    cltest "$here/common-lisp/red$pp" "$logdir"
     ;;
 
   *)

@@ -114,8 +114,8 @@ getplatform() {
   --jlispboot)
     printf "jlispboot"
     ;;
-  --sbcl)
-    printf "sbcl"
+  --sbcl | --clisp | --ccl)
+    printf "${1#--}"
     ;;
   esac
 }
