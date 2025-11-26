@@ -1,6 +1,16 @@
 # REDUCE on Common Lisp
 
-**[Francis Wright](https://sites.google.com/site/fjwcentaur), November 2025**
+**[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
+Time-stamp: <2025-11-16 18:17:00 franc>
+
+* [Building REDUCE](#building-reduce)
+* [Running REDUCE](#running-reduce)
+* [Alternative builds](#alternative-builds)
+* [Required version of `bash`](#required-version-of-bash)
+* [Implementation-specific functionality](#implementation-specific-functionality)
+* [Status](#status)
+* [Known limitations](#known-limitations)
+* [To do](#to-do)
 
 From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Guy L. Steele Jr.](https://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html):
 
@@ -8,12 +18,12 @@ From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Gu
 
 **This code is currently experimental!**
 
-The files in this directory are intended to build and run recent versions of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support [Steel Bank Common Lisp](http://www.sbcl.org/) (SBCL), [CLISP](https://clisp.sourceforge.io/) and [Clozure Common Lisp](https://ccl.clozure.com/) (CCL) on MS Windows and Linux, where Linux means recent versions of Ubuntu and Fedora.  I understand that REDUCE builds and runs on SBCL, CLISP and CCL on macOS, although I don't run macOS myself.  The support for CCL is based on code provided by Marco Ferraris.
+The files in this directory are intended to build and run recent versions of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support [Steel Bank Common Lisp](http://www.sbcl.org/) (SBCL), [CLISP](https://clisp.sourceforge.io/) and [Clozure Common Lisp](https://ccl.clozure.com/) (CCL) on MS Windows 11 and Ubuntu 24.  I understand that REDUCE builds and runs on SBCL, CLISP and CCL on macOS, although I don't run macOS myself.  The support for CCL is based on code provided by Marco Ferraris.
 
-I have built this revision using recent versions of SBCL, namely 2.5.10 on Windows 11 and 2.5.8 on Ubuntu 22.04.5 LTS (GNU/Linux 6.6.87.2-microsoft-standard-WSL2 x86_64).  It runs the standard REDUCE test files with correct output except for a few insignificant differences.  (An older version of SBCL available by default on this version of Ubuntu seems not to work at all!)
-
+I have built this revision using SBCL 2.5.10 on Windows 11 and Ubuntu 24.04.3 LTS (GNU/Linux 6.6.87.2-microsoft-standard-WSL2 x86_64).  It runs the standard REDUCE test files with correct output except for a few insignificant differences; see [Status](#status) below.
 
 I recommend SBCL because in my experience it is the fastest and it is easy to install and set up.  CLISP is slow, and CCL is tricky to set up (at least, on MS Windows).
+
 
 ## Building REDUCE
 
@@ -23,7 +33,7 @@ You need to obtain, build (if necessary) and install the version(s) of Common Li
 
 You need to use a minimal Unix-like environment including [**fairly recent** versions of `bash`](#required-version-of-bash) and `grep`; on MS Windows I use [Cygwin](https://cygwin.com/).  (The `grep` command is used only for reporting an error summary, which could be commented out without affecting the build process.)
 
-Run the build script by executing the `bash` command
+Run the build script in the `common-lisp` directory by executing the `bash` command
 
 ```sh
 ./build.sh -l <lisp>
@@ -38,6 +48,7 @@ The build script supports some optional flags: `-c` provides a clean build, by f
 ```sh
 ./build.sh -l <lisp> -c
 ```
+
 
 ## Running REDUCE
 
@@ -61,7 +72,8 @@ REDUCE should run from any directory and the command to start it can be specifie
 
 Interrupting REDUCE (with Control-C) invokes a Lisp break loop and aborting that should return you to REDUCE.  Within the break loop you can run arbitrary Lisp code, but remember that you are running Common Lisp and in particular Lisp output uses Common Lisp syntax, although you are initially in the Standard Lisp package.  However, package prefixes are recognised (which they are not from within REDUCE) so you can access most of Common Lisp, but beware that you might break REDUCE so that you cannot return to it!  Evaluating the Lisp expression `(exit)` from a Lisp break loop should completely terminate REDUCE.
 
-## Alternative Builds
+
+## Alternative builds
 
 The build directory must contain the following files from the `common-lisp` directory:
 
@@ -113,7 +125,8 @@ The order of precedence of the two mechanisms for determining the REDUCE revisio
 
 There is some preliminary support for the Java-based [Armed Bear Common Lisp (ABCL)](https://abcl.org/) thanks to Rainer Schöpf, but it is not yet possible to preserve Lisp images so the ABCL version is not yet usable, and I am working on support for [Embeddable Common Lisp (ECL)](https://ecl.common-lisp.dev/).  But these need a different build script that I do not currently distribute.  To use ABCL, you need to ensure that you have a suitable Java runtime environment installed; the build and run scripts expect to find the command `java` on your search path.  You also need to download [abcl-bin-1.8.0.zip](https://abcl.org/releases/1.8.0/abcl-bin-1.8.0.zip) and unzip it (or build and install it) so that `abcl-bin-1.8.0/abcl.jar` exists in the `common-lisp` directory.
 
-## Required Version of `bash`
+
+## Required version of `bash`
 
 If you get `bash` errors then it is probably because you are running too old a version, so I recommend that you update it.  Alternatively, if you have a recent version of `bash` available but it is not run by default, you could run any of the commands described here using
 ```sh
@@ -123,6 +136,7 @@ instead of
 ```sh
 ./command
 ```
+
 
 ## Implementation-specific functionality
 
@@ -140,42 +154,55 @@ The identifiers `common-lisp` and `sl-on-cl` are always included in the list ass
 
 For Cygwin CLISP REDUCE (on MS Windows), the REDUCE `gnuplot` package tries to run Cygwin gnuplot if it is available and if not then it tries to run native MS Windows gnuplot (which is included in REDUCE binary distributions for MS Windows).  Cygwin gnuplot produces graphical output if REDUCE is run under the X Window System and text output otherwise.  For CLISP REDUCE on Linux and SBCL REDUCE on both MS Windows and Linux, gnuplot produces graphical output.
 
-## Status (July 2019)
 
-The process described above should build all of REDUCE without any obvious errors.  So far, I have avoided the need to customise the main REDUCE source code (apart from the file `gnuintfc.red`).
+## Status
 
-All available test files produce output that agrees with CSL REDUCE apart for timings and minor numerical and/or implementation differences, except for the following:
+All testing was performed on the same Windows 11 computer and used the standard REDUCE test framework by running the command
 
-* The `reduce4` test fails in a similar way to the way it fails on CSL &ndash; excluded from regular testing.
-* The `ibalp` test fails on CLISP with a program stack overflow error; it just stops abruptly on SBCL &ndash; excluded from regular testing.
-* The `pasf` test output appears to be mathematically correct but is ordered differently on CLISP, whereas it agrees on SBCL (and appears to run twice as fast as on CSL!).
-* The `lalr` test output appears to be correct apart from two issues causing minor cosmetic differences.
-* The `rubi_red` test is very slow, generates very much output, and timeouts can't work on CLISP (see below), but otherwise the early part of the test file appears to run correctly &ndash; excluded from regular testing.  On SBCL, the first error is similar to that shown on CSL, but SBCL REDUCE does not recover after this error, probably due to the currently crude general error handling.
-* The `xcolor` test only runs to completion on SBCL with `(declaim (optimize speed))`.  I think this is because it involves a highly recursive procedure (color1), which runs out of stack on the most complicated examples at the end of the test file unless optimized for maximum speed.
+```sh
+../scripts/testall.sh --noregressions --csl --sbcl
+```
+from the directory
 
-## Timings (July 2019)
+```sh
+reduce-algebra-code/testing
+```
 
-New timing methodology uses the bash time command.  "Best" means the fastest previous time.  Numbers in parentheses are times relative to the CSL times.
+### Cygwin
 
-**Timing on Microsoft Windows** (on a fairly recent Intel Core i5 processor):
+REDUCE 7205 on native Windows SBCL 2.5.10.
 
-Operation                               | CSL Time  | Best SBCL | This SBCL       | Best CLISP | This CLISP
-----------------------------------------|-----------|-----------|-----------------|------------|-----------------
-Run (and check) all core test files     |  34 secs  |  47 secs  |  45 secs  (1.3) |  3 m 23 s  |  3 m 52 s  (6.8)
-Run (and check) most noncore test files |  4 m 39 s | 15 m 14 s | 14 m 52 s (3.2) | 67 m 27 s  | 85 m 10 s (18.3)
+No build errors.
 
-**Timing on Ubuntu Linux** (on a fairly old Intel Core Duo processor):
+Package  | Output Issues
+---------|--------------
+arith    | SBCL is numerically more accurate than CSL/PSL!
+gf2      | Missing final backtrace
+numeric  | Minor numerical differences
+(xcolor) | (Crashes with stack overflow if compiled for debugging!)
 
-Operation                               | CSL Time  | Best SBCL | This SBCL       | Best CLISP | This CLISP
-----------------------------------------|-----------|-----------|-----------------|------------|-----------------
-Run (and check) all core test files     |  23 secs  |           |  56 secs  (2.4) |            |  5 m 30 s (14.3)
-Run (and check) most noncore test files |  7 m 09 s |           | 26 m 02 s (3.6) |            |119 m 43 s (16.7)
 
-The CSL test times do not include checking, which involves running `diff`.  The times for the noncore tests do not include `reduce4`, `ibalp` or `rubi_red` as explained above. The `gnuplot` and `turtle` tests are excluded because they need to be run interactively, but they seems to work OK on both MS Windows and Linux.
+Lisp | Run Time (ms) | GC Time (ms)
+-----|---------------|-------------
+csl  |         77140 | 1493
+sbcl |        254429 | 8813
+
+### Ubuntu 24 on WSL
+
+REDUCE 7205 on SBCL 2.5.10.
+
+No build errors.  Package output issues as for Windows.
+
+Lisp | Run Time (ms) | GC Time (ms)
+-----|---------------|-------------
+csl  |        102508 | 1156
+sbcl |        192035 | 3180
+
 
 ## Known limitations
 
-I cannot see any way to support the facilities for restricting execution time on CLISP.  In more detail: the file `rlisp/inter.red` defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no garbage collection hooks exist in CLISP.  The procedures `with!-timeout` and similar just run without any restriction so don't use CLISP REDUCE is you need this facility!  This affects `carborundum` and possibly other packages.  It works on SBCL!
+I cannot see any way to support the facilities for restricting execution time on CLISP.  In more detail: the file `rlisp/inter.red` defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no garbage collection hooks exist in CLISP.  The procedures `with!-timeout` and similar just run without any restriction so don't use CLISP REDUCE is you need this facility!  It works on SBCL!
+
 
 ## To do
 
