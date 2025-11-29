@@ -540,7 +540,7 @@ static void useOneModuleT(FFTParams& d)
     dit_ft<P,cube_root2>(d.c, d.N, d.inv_omegas);
 // There is a stray factor of d.N that I must divide out... Well I
 // only really need to do this as far as lena+lenb... 
-    Digit32 R1 = recipmod<P>(d.N);
+    Digit32 R1 = recipmod<P>((Digit32)d.N);
     for (size_t i=0; i<d.N; i++)
         d.c[i] = timesmod<P>(d.c[i], R1);
 }

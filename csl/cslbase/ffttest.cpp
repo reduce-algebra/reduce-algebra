@@ -326,8 +326,8 @@ size_t slowLimit = 8192;
 void timetest(size_t N, int ntrials)
 {   uint64_t* a = new uint64_t[N];
     uint64_t* b = new uint64_t[N];
-    uint64_t* c = new uint64_t[2*N];
-    uint64_t* cslow = new uint64_t[2*N];
+    uint64_t* c = new uint64_t[2*N+1];
+    uint64_t* cslow = new uint64_t[2*N+1];
 
 // I use random data as my input.
     for (size_t i=0; i<N; i++)
