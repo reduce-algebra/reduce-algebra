@@ -145,6 +145,9 @@ inline std::string concat(std::string a, int n)
 
 } // end namespace
 
+using acnutil::microseconds;
+using acnutil::now;
+
 #endif // __header_acnutil
 
 // end of acnutil.h

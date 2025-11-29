@@ -2731,7 +2731,7 @@ static void term_transpose_chars()
 static void term_undo()
 {
 // @@@@@
-    input_line += L"<^U>";
+//    input_line += L"<^U>";
     insert_point = input_line.size();
     term_bell();
 }
@@ -2740,7 +2740,7 @@ static void term_undo()
 static void term_quoted_insert()
 {
 // @@@@@
-    input_line += L"<^V>";
+//    input_line += L"<^V>";
     insert_point = input_line.size();
     term_bell();
 }
@@ -2749,7 +2749,7 @@ static void term_quoted_insert()
 static void term_copy_previous_word()
 {
 // @@@@@
-    input_line += L"<^W>";
+//    input_line += L"<^W>";
     insert_point = input_line.size();
     term_bell();
 }
@@ -2758,7 +2758,7 @@ static void term_copy_previous_word()
 static void term_copy_region()
 {
 // @@@@@
-    input_line += L"<&W>";
+//    input_line += L"<&W>";
     insert_point = input_line.size();
     term_bell();
 }
@@ -2767,7 +2767,7 @@ static void term_copy_region()
 static void term_yank()
 {
 // @@@@@
-    input_line += L"<^Y>";
+//    input_line += L"<^Y>";
     insert_point = input_line.size();
     term_bell();
 }
@@ -2776,7 +2776,7 @@ static void term_yank()
 static void term_reinput()
 {
 // @@@@@
-    input_line += L"<^R>";
+//    input_line += L"<^R>";
     insert_point = input_line.size();
     term_bell();
 }
@@ -5120,7 +5120,7 @@ static void term_ctrl_z_command()
 {
 // It is not yet clear that I have anything much to allocate this to. In
 // emacs it would be "obey extended command".
-    input_line += L"<^X>";
+//    input_line += L"<^X>";
     insert_point = input_line.size();
     term_bell();
     term_redisplay();
@@ -5402,7 +5402,7 @@ static void term_exit_program()
 static void term_edit_menu()
 {
 // @@@@@
-    input_line += L"<&E>";
+//    input_line += L"<&E>";
     insert_point = input_line.size();
     term_redisplay();
 }
@@ -5411,7 +5411,7 @@ static void term_edit_menu()
 static void term_file_menu()
 {
 // @@@@@
-    input_line += L"<&I>";
+//    input_line += L"<&I>";
     insert_point = input_line.size();
     term_redisplay();
 }
@@ -5420,7 +5420,7 @@ static void term_file_menu()
 static void term_module_menu()
 {
 // @@@@@
-    input_line += L"<&M>";
+//    input_line += L"<&M>";
     insert_point = input_line.size();
     term_redisplay();
 }
@@ -5429,7 +5429,7 @@ static void term_module_menu()
 static void term_font_menu()
 {
 // @@@@@
-    input_line += L"<&O>";
+//    input_line += L"<&O>";
     insert_point = input_line.size();
     term_redisplay();
 }
@@ -5438,7 +5438,7 @@ static void term_font_menu()
 static void term_break_menu()
 {
 // @@@@@
-    input_line += L"<&B>";
+//    input_line += L"<&B>";
     insert_point = input_line.size();
     term_redisplay();
 }
@@ -5447,7 +5447,7 @@ static void term_break_menu()
 static void term_switch_menu()
 {
 // @@@@@
-    input_line += L"<&S>";
+//    input_line += L"<&S>";
     insert_point = input_line.size();
     term_redisplay();
 }

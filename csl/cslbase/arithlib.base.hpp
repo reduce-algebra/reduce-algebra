@@ -474,15 +474,20 @@ inline bool inChild = false;
 #include <type_traits>
 #include <algorithm>
 
+#include "bitmaps.h"
+#include "cthread.cpp"
 #include "acnutil.h"
 #include "lvector.base.h"
-#include "cthread.cpp"
 #include "fftutils.cpp"
 
 namespace arithlib_implementation
 {
 
 using namespace fftutils;
+
+// My (big) integers are represented with 64-bit digits in a 2s complement
+// notation, so the most significant digit is signed and the rest are
+// unsigned.
 
 using Digit = std::uint64_t;
 using SignedDigit = std::int64_t;
@@ -494,6 +499,21 @@ using ConstDigitPtr = vecpointer<const Digit>;
 using DigitPtr = Digit*;
 using ConstDigitPtr = const Digit*;
 #endif // DEBUG
+
+// At present Digit32 is only used in the code that performs FFTs
+// modulo 32-bit primes...
+
+using Digit32 = std::uint32_t;
+using SignedDigit32 = std::int32_t;
+
+#ifdef DEBUG
+using DigitPtr32 = vecpointer<Digit32>;
+using ConstDigitPtr32 = vecpointer<const Digit32>;
+#else // DEBUG
+using DigitPtr32 = Digit32*;
+using ConstDigitPtr32 = const Digit32*;
+#endif // DEBUG
+
 
 inline bool permitParallel = true;
 
@@ -3261,7 +3281,15 @@ inline void display2(std::string label, std::size_t a, std::size_t b)
 #ifdef _cpp_lib_bitops
 
 // C++20 provides functions for counting zeros. Unlike the GNU intrinsics
-// they have defined behaviour when presented with a zero word.
+// they have defined behaviour when presented with a zero word. I use my
+// names here because in a bad case where the official C++20 versions are
+// not flagged using _cpp_lib_bitops but are in fact provided maybe if I
+// were to define my own "countl_zero()" etc I would get a linker clash.
+//
+// It is pretty grim here really. If I have c++20 I can use its facilities.
+// If I am using g++ or clang++ I expect them to provide intrinsics.
+// In the (vanishingly improbable?) case that neither of the above hold I
+// implement things for myself.
 
 inline int nlz(uint64_t x)
 {   return countl_zero(x);
@@ -3310,39 +3338,28 @@ inline int nlz(uint64_t x)
 // values I have here. So a simple lookup in a table of size 67 does the
 // job for me. I will fill the table using code here that computes the
 // relevant values since that feels safer than having a table of "magic
-// numbers".
-    auto nlzf = [](int n)
-    {   if (n==0) return 64;
-        uint64_t v = 0;
-        int r = -1;
-        for (int k=0; k<64; k++)
-        {   v = 2*v + 1;
-            if (v%67 == n) r = 63-k;
+// numbers". I can set up the table at compile-time!
+    class nlzTable
+    {
+    public:
+        int8_t data[67];
+        nlzTable()
+        {   uint64_t v = 0;
+            for (int n=0; n<67; n++)
+            {   int r = -1;
+// For each entry in the table I search for a value that will map
+// onto that index. If I foind ona at sopme value of k then it will
+// have 63-k leading zeros.
+                for (int k=0; k<64; n++)
+                {   v = 2*v + 1; // 0b1, 0b11, 0b111, 0b1111 etc
+                    if (v%67 == n) r = 63-k;
+                }
+                data[n] = r;
+            }
         }
-        return r;
     };
-// The way this is written out is tolerable because 67 is a reasonably
-// small number, but it would have been neater if C++ provided a way to
-// initialize arrays a bit like this. It does if one uses std::vector
-// rather than a plain array. Note the use of constexpr so that the table
-// is set up during compilation.
-    constexpr static int8_t nlzTable[67] =
-    {   nlzf( 0), nlzf( 1), nlzf( 2), nlzf( 3), nlzf( 4),
-        nlzf( 5), nlzf( 6), nlzf( 7), nlzf( 8), nlzf( 9),
-        nlzf(10), nlzf(11), nlzf(12), nlzf(13), nlzf(14),
-        nlzf(15), nlzf(16), nlzf(17), nlzf(18), nlzf(19),
-        nlzf(20), nlzf(21), nlzf(22), nlzf(23), nlzf(24),
-        nlzf(25), nlzf(26), nlzf(27), nlzf(28), nlzf(29),
-        nlzf(30), nlzf(31), nlzf(32), nlzf(33), nlzf(34),
-        nlzf(35), nlzf(36), nlzf(37), nlzf(38), nlzf(39),
-        nlzf(40), nlzf(41), nlzf(42), nlzf(43), nlzf(44),
-        nlzf(45), nlzf(46), nlzf(47), nlzf(48), nlzf(49),
-        nlzf(50), nlzf(51), nlzf(52), nlzf(53), nlzf(54),
-        nlzf(55), nlzf(56), nlzf(57), nlzf(58), nlzf(59),
-        nlzf(60), nlzf(61), nlzf(62), nlzf(63), nlzf(64),
-        nlzf(65), nlzf(66)
-    };
-    return nlzTable[x % 67];
+    constexpr nlzTable tab;
+    return tab.data[x % 67];
 }
 
 // ntz find the bit-number of the least significant bit, So here are some
@@ -3410,12 +3427,12 @@ inline int countBits(Digit x)
 // binary representation of n-1.
 
 inline std::size_t next_power_of_2(std::size_t n)
-{   return (static_cast<std::size_t>(1)) << (64-nlz(
+{   return (static_cast<std::size_t>(1)) << (64-CSL_LISP::nlz(
                 static_cast<Digit>(n-1)));
 }
 
 inline unsigned int logNextPowerOf2(std::size_t n)
-{   return (64-nlz(static_cast<Digit>(n-1)));
+{   return 64-CSL_LISP::nlz(static_cast<Digit>(n-1));
 }
 
 // I am going to represent bignums as arrays of 64-bit digits.
@@ -4034,7 +4051,7 @@ inline void fudgeDistribution(const std::uint64_t* a,
             if (a[lena-1] == 0)
             {   if (lena>1) r[lena-2] = 1ULL<<63;
             }
-            else r[lena-1] = 1ULL << (63-nlz(a[lena-1]));
+            else r[lena-1] = 1ULL << (63-CSL_LISP::nlz(a[lena-1]));
             if ((n&7) == 0) // decrement it
             {   if (lena!=1 || a[0]!=0) // avoid decrementing zero.
                 {   std::uint64_t* p = r;
@@ -4526,7 +4543,7 @@ inline void doubleTo_virtualBignum(double d,
 // Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer.
     Digit lowbit = mantissa & -static_cast<Digit>
                            (mantissa);
-    int lz = 63 - nlz(lowbit); // low zero bits
+    int lz = 63 - CSL_LISP::nlz(lowbit); // low zero bits
     mantissa = ASR(mantissa, lz);
     exponent += lz;
 // Now mantissa has its least significant bit a "1".
@@ -4668,11 +4685,11 @@ inline void float128To_virtualBignum(float128_t d,
     int lz;
     if (mlo != 0)
     {   Digit lowbit = mlo & (-mlo);
-        lz = 63 - nlz(lowbit); // low zero bits
+        lz = 63 - CSL_LISP::nlz(lowbit); // low zero bits
     }
     else
     {   Digit lowbit = mhi & (-static_cast<Digit>(mhi));
-        lz = 64 + 63 - nlz(lowbit); // low zero bits
+        lz = 64 + 63 - CSL_LISP::nlz(lowbit); // low zero bits
     }
     shiftright(mhi, mlo, lz);
     exponent += lz;
@@ -4922,8 +4939,8 @@ inline float Float::op(std::uint64_t* a)
     }
     if (!carried) next |= 1;
 // Now I need to do something very much like the code for the int64_t case.
-    if (top == 0) lz = nlz(next) + 64;
-    else lz = nlz(top);
+    if (top == 0) lz = CSL_LISP::nlz(next) + 64;
+    else lz = CSL_LISP::nlz(top);
 //
 //  uint64_t top24 = {top,next} >> (128-24-lz);
     int sh = 128-24-lz;
@@ -4971,7 +4988,7 @@ inline double Frexp::op(SignedDigit a, SignedDigit &x)
 // Because top53 >= 2^53 the number of leading zeros in its representation is
 // at most 10. Ha ha. That guaranteed that the shift below will not overflow
 // and is why I chose my range as I did.
-    int lz = nlz(top53);
+    int lz = CSL_LISP::nlz(top53);
     Digit low = top53 << (lz+53);
     top53 = top53 >> (64-53-lz);
     if (low > 0x8000000000000000U) top53++;
@@ -5033,8 +5050,8 @@ inline double Frexp::op(std::uint64_t* a, SignedDigit &x)
     }
     if (!carried) next |= 1;
 // Now I need to do something very much like the code for the int64_t case.
-    if (top == 0) lz = nlz(next) + 64;
-    else lz = nlz(top);
+    if (top == 0) lz = CSL_LISP::nlz(next) + 64;
+    else lz = CSL_LISP::nlz(top);
 //
 //  uint64_t top53 = {top,next} >> (128-53-lz);
     int sh = 128-53-lz;
@@ -5125,8 +5142,8 @@ inline float128_t Frexp128::op(std::uint64_t* a, SignedDigit &x)
 // zero, but if it is then next1 will have its top bit set, and so within
 // these bits I certainly have the 113 that I need to obtain an accurate
 // floating point value.
-    if (top == 0) lz = nlz(next1) + 64;
-    else lz = nlz(top);
+    if (top == 0) lz = CSL_LISP::nlz(next1) + 64;
+    else lz = CSL_LISP::nlz((top);
 //
 //  uint64_t {top113,top112a} = {top,next1,next2} >> (128-113-lz);
     int sh = 192-113-lz;
@@ -5299,7 +5316,7 @@ inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena)
         }
         top--;
     }
-    return 64*(lena-1) + (top==0 ? 0 : 64-nlz(top));
+    return 64*(lena-1) + (top==0 ? 0 : 64-CSL_LISP::nlz(top));
 }
 
 // I want an estimate of the number of bytes that it will take to
@@ -7035,14 +7052,14 @@ inline std::size_t LowBit::op(std::uint64_t* a)
     {   std::size_t r=0, i=0;
         while (a[i++]==-1ULL) r += 64;
         Digit w = ~a[i-1];
-        return 64-nlz(w & (-w))+r;
+        return 64-CSL_LISP::nlz(w & (-w))+r;
     }
     else if (lena==1 && a[0]==0) return 0;
     else
     {   std::size_t r=0, i=0;
         while (a[i++]==0) r += 64;
         Digit w = a[i-1];
-        return 64-nlz(w & (-w))+r;
+        return 64-CSL_LISP::nlz(w & (-w))+r;
     }
 }
 
@@ -7052,7 +7069,7 @@ inline std::size_t LowBit::op(SignedDigit aa)
     else if (aa < 0) a = ~static_cast<Digit>(aa);
     else a = aa;
     a = a & (-a); // keeps only the lowest bit
-    return 64-nlz(a);
+    return 64-CSL_LISP::nlz(a);
 }
 
 inline std::size_t IntegerLength::op(std::uint64_t* a)
@@ -7064,7 +7081,7 @@ inline std::size_t IntegerLength::op(SignedDigit aa)
     if (aa == 0 || aa == -1) return 0;
     else if (aa < 0) a = -static_cast<Digit>(aa) - 1;
     else a = aa;
-    return 64-nlz(a);
+    return 64-CSL_LISP::nlz(a);
 }
 
 // This function should return the top 64-bits of an integer in the
@@ -7086,14 +7103,14 @@ inline Digit Top64Bits::op(std::uint64_t* a)
         (n == 2 && a[2] == 0))
         return Top64Bits::op(static_cast<int64_t>(a[0]));
     if (a[n-1] == 0) n--;
-    int lz = nlz(a[n-1]);
+    int lz = CSL_LISP::nlz(a[n-1]);
     if (lz == 0) return a[n-1];
     return (a[n-1] << lz) | (a[n-2] >> (64-lz));
 }
 
 inline Digit Top64Bits::op(SignedDigit a)
 {   if (a == 0) return 0;    // Only non-normalised case
-    return static_cast<uint64_t>(a) << nlz(a);
+    return static_cast<uint64_t>(a) << CSL_LISP::nlz(a);
 }
 
 inline std::size_t Logcount::op(std::uint64_t* a)
@@ -8082,7 +8099,7 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
     std::size_t lenx = (lena+1)/2;
     std::uint64_t* x = reserve(lenx);
     for (std::size_t i=0; i<lenx; i++) x[i] = 0;
-    std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - nlz(a[lena-1]);
+    std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - CSL_LISP::nlz(a[lena-1]);
     bitstop /= 2;
     if ((lena%2) == 0) bitstop += 32;
     x[lenx-1] = 1ULL << bitstop;
@@ -8125,7 +8142,7 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
 inline std::intptr_t Isqrt::op(SignedDigit aa)
 {   if (aa <= 0) return intToBignum(0);
     Digit a = static_cast<Digit>(aa);
-    std::size_t w = 64 - nlz(a);
+    std::size_t w = 64 - CSL_LISP::nlz(a);
     Digit x0 = a >> (w/2);
 // The iteration here converges to sqrt(a) from above, but I believe that
 // when the value stops changing it will be at floor(sqrt(a)). There are
@@ -8250,7 +8267,7 @@ inline std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
     else if (n == 0) return intToHandle(1);
     Digit absa = (a < 0 ? -static_cast<Digit>
                           (a) : static_cast<Digit>(a));
-    std::size_t bitsa = 64 - nlz(absa);
+    std::size_t bitsa = 64 - CSL_LISP::nlz(absa);
     Digit hi, bitsr;
     multiply64(n, bitsa, hi, bitsr);
     Digit lenr1 = 2 + bitsr/64;
@@ -8801,7 +8818,7 @@ inline void unsigned_long_division(std::uint64_t* a,
 //
 // The scaling is done here using a shift, which seems cheaper to sort out
 // then multiplication by a single-digit value.
-    int ss = nlz(b[lenb-1]);
+    int ss = CSL_LISP::nlz(b[lenb-1]);
 // When I scale the dividend expands into an extra digit but the scale
 // factor has been chosen so that the divisor does not.
     a[lena] = scale_for_division(a, lena, ss);
@@ -9397,9 +9414,9 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // to normalize that to get 128 bits to work with however the top bits
 // of a and b lie within the words.
     Digit a0=a[lena-1], a1=a[lena-2], a2=(lena>2 ? a[lena-3] : 0);
-    int lza = nlz(a0);
+    int lza = CSL_LISP::nlz(a0);
     Digit b0=b[lenb-1], b1=b[lenb-2], b2=(lenb>2 ? b[lenb-3] : 0);
-    int lzb = nlz(b0);
+    int lzb = CSL_LISP::nlz(b0);
 // I will sort out how many more bits are involved in a than in b. If
 // this number is large I will invent a number q of the form q=q0*2^q1
 // with q0 using almost all of 64 bits and go "a = a - q*b;". This
@@ -9471,8 +9488,8 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // At least I have filtered away the possibility {b0,b1}={0,0}.
 // I will grab the top 64 bits of a and the top corresponding bits of b,
 // because then I can do a (cheap) 64-by-64 division.
-            int lza1 = a0==0 ? 64+nlz(a1) : nlz(a0);
-            int lzb1 = b0==0 ? 64+nlz(b1) : nlz(b0);
+            int lza1 = a0==0 ? 64+CSL_LISP::nlz(a1) : CSL_LISP::nlz(a0);
+            int lzb1 = b0==0 ? 64+CSL_LISP::nlz(b1) : CSL_LISP::nlz(b0);
             if (lzb1 > lza1+60) break; // quotient will be too big
             Digit ahi, bhi;
             if (lza1 == 0) ahi = a0;
