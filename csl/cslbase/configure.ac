@@ -614,7 +614,8 @@ AC_CHECK_PROGS(VALGRIND,[valgrind],[x])
 # In some cases I can not use $CXX because that is a cross-compiler that
 # generates binaries that I can not run. I used to just use "g++" and hope,
 # but here I will see which of g++, clang++, c++ and CC is at least present.
-# I will then assume that that is a viable compiler to use.
+# I will then assume that that is a viable compiler to use. For these
+# utilities I will limit myself to using C++17 features.
 
 AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
 LOCALCXX="$LOCALCXX -std=gnu++17"
@@ -1001,22 +1002,15 @@ then
   AC_DEFINE(SIGNED_SHIFTS_ARE_ARITHMETIC, [1], [Not guaranteed by ANSI spec])
 fi
 
+# I am going to be increasingly keen to use C++20 features, and I will
+# now demand at least C++17
+
 AX_CXX_COMPILE_STDCXX([20], [ext], [optional])
 AC_MSG_NOTICE([HAVE_CXX20=$HAVE_CXX20])
 if test "$HAVE_CXX20" != "1"
 then
-  AX_CXX_COMPILE_STDCXX([17], [ext], [optional])
+  AX_CXX_COMPILE_STDCXX([17], [ext], [mandatory])
   AC_MSG_NOTICE([HAVE_CXX17=$HAVE_CXX17])
-  if test "$HAVE_CXX17" != "1"
-  then
-    AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
-    AC_MSG_NOTICE([HAVE_CXX14=$HAVE_CXX14])
-    if test "$HAVE_CXX14" != "1"
-    then
-      AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
-      AC_MSG_NOTICE([HAVE_CXX11=$HAVE_CXX11])
-    fi
-  fi
 fi
 
 AC_LINK_IFELSE(

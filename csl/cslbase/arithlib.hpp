@@ -474,6 +474,1017 @@ inline bool inChild = false;
 #include <type_traits>
 #include <algorithm>
 
+// bitmaps.h                                    Copyright (C) 2025 Codemist
+
+#ifndef header_bitmaps_h
+#define header_bitmaps_h 1
+
+// $Id$
+
+
+/**************************************************************************
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+// Some support for bitmaps that us uint64_t as their base. This is in
+// a separate file since it may be useful elsewhere. I also include
+// support for finding the first and last bits within a 64-bit word, since
+// those are operations used to speed up some of the searches here.
+
+// I should cross reference std::bitset which provides packed bit arrays,
+// but my version here provides setting, clearing and testing of ranges
+// of bits not just individual ones, and it gives me functions that search
+// for the previous or next set or clear bit.
+// I should possibly (probably!) bring my naming into step with std::bitset
+// for the operations that are supported there.
+
+#include <cstdint>
+#include <cstdio>
+
+#ifndef __has_include
+#define __has_include(name) 0
+#endif // __has_include
+
+#if __has_include(<bit>)
+#include <bit>
+#endif // <bit> header
+
+//#if __has_include(<bitset>)
+//#include <bitset>
+//#endif // <bitset> header
+
+using std::uint64_t;
+using std::size_t;
+
+namespace CSL_LISP
+{
+
+#ifndef  HAVE_NLZ_AND_NTZ
+
+#if defined _cpp_lib_bitops
+
+// C++20 provides functions for counting zeros. Unlike the GNU intrinsics
+// they have defined behaviour when presented with a zero word.
+
+inline int nlz(uint64_t x)
+{   return countl_zero(x);
+}
+
+inline int ntz(uint64_t x)
+{   return countr_zero(x);
+}
+
+inline int countBits(uint64_t x)
+{   return std::popcount(x);
+}
+
+#elif defined __GNUC__
+
+// Note that __GNUC__ also gets defined by clang on the Macintosh, so
+// this code is probably optimized there too. The intrinsic must never be
+// called with a zero argument, so I filter that case.
+
+// Count the leading zeros in a 64-bit word.
+
+inline int nlz(uint64_t x)
+{   return x==0 ? 64 : __builtin_clzll(x);
+}
+
+// Count the trailing zeros in a 64-bit word.
+
+inline int ntz(uint64_t x)
+{   return x==0 ? 64 : __builtin_ctzll(x);
+}
+
+inline int countBits(uint64_t x)
+{   return __builtin_popcount(x);
+}
+
+#else // __GNUC__
+
+// A generic implementation just in case that is needed!
+
+inline int nlz(uint64_t x)
+{   x |= x>>1;
+    x |= x>>2;
+    x |= x>>4;
+    x |= x>>8;
+    x |= x>>16;
+    x |= x>>32;
+// Now x is a number with all bits up as far as its highest one set, and I
+// have achieved that without performing any tests.
+// 2 is a primitive root mod 67, so all the values of 2^k (0<=k<64) are
+// distinct mod 67. So the same will apply for (2^k-1) which are the
+// values I have here. So a simple lookup in a table of size 67 does the
+// job for me. I will fill the table using code here that computes the
+// relevant values since that feels safer than having a table of "magic
+// numbers".
+    auto nlzf = [](int n)
+    {   if (n==0) return 64;
+        uint64_t v = 0;
+        int r = -1;
+        for (int k=0; k<64; k++)
+        {   v = 2*v + 1;
+            if (v%67 == n) r = 63-k;
+        }
+        return r;
+    };
+// The way this is written out is tolerable because 67 is a reasonably
+// small number, but it would have been neater if C++ provided a way to
+// initialize arrays a bit like this. It does if one uses std::vector
+// rather than a plain array.
+    constexpr static int8_t nlzTable[67] =
+    {   nlzf( 0), nlzf( 1), nlzf( 2), nlzf( 3), nlzf( 4),
+        nlzf( 5), nlzf( 6), nlzf( 7), nlzf( 8), nlzf( 9),
+        nlzf(10), nlzf(11), nlzf(12), nlzf(13), nlzf(14),
+        nlzf(15), nlzf(16), nlzf(17), nlzf(18), nlzf(19),
+        nlzf(20), nlzf(21), nlzf(22), nlzf(23), nlzf(24),
+        nlzf(25), nlzf(26), nlzf(27), nlzf(28), nlzf(29),
+        nlzf(30), nlzf(31), nlzf(32), nlzf(33), nlzf(34),
+        nlzf(35), nlzf(36), nlzf(37), nlzf(38), nlzf(39),
+        nlzf(40), nlzf(41), nlzf(42), nlzf(43), nlzf(44),
+        nlzf(45), nlzf(46), nlzf(47), nlzf(48), nlzf(49),
+        nlzf(50), nlzf(51), nlzf(52), nlzf(53), nlzf(54),
+        nlzf(55), nlzf(56), nlzf(57), nlzf(58), nlzf(59),
+        nlzf(60), nlzf(61), nlzf(62), nlzf(63), nlzf(64),
+        nlzf(65), nlzf(66)
+    };
+    return nlzTable[x % 67];
+}
+
+// This code is to identify the least significant bit in a 64-bit
+// value. The function leastBit() just removes all other bits.
+
+inline uint64_t leastBit(uint64_t n)
+{   return n & (-n);
+}
+
+// ntz find the bit-number of the least significant bit, So here are some
+// values it will return:
+//    1      0
+//    2      1
+//    4      2
+//    8      3
+//   16      4
+// etc. The name is for "Number of Trailing Zeros".
+// If the input value is zero it returns 64, but the GNU builtin does not
+// guarantee any such behaviour, so zero input should be considered illegal.
+
+// This is related to the function intlog2() in tags.h, but that function
+// is only to be applied on inputs that are a power of 2.
+
+inline int ntz(uint64_t n)
+{   auto ntzf = [](int n)
+    {   if (n==0) return 64;
+        uint64_t v=0;
+        int r = -1;
+        for (int k=0; k<64; k++)
+        {   v = 1ULL<<k;
+            if (v%67 == n) r = k;
+        }
+        return r;
+    };
+    constexpr static int8_t ntzTable[67] =
+    {   ntzf( 0), ntzf( 1), ntzf( 2), ntzf( 3), ntzf( 4),
+        ntzf( 5), ntzf( 6), ntzf( 7), ntzf( 8), ntzf( 9),
+        ntzf(10), ntzf(11), ntzf(12), ntzf(13), ntzf(14),
+        ntzf(15), ntzf(16), ntzf(17), ntzf(18), ntzf(19),
+        ntzf(20), ntzf(21), ntzf(22), ntzf(23), ntzf(24),
+        ntzf(25), ntzf(26), ntzf(27), ntzf(28), ntzf(29),
+        ntzf(30), ntzf(31), ntzf(32), ntzf(33), ntzf(34),
+        ntzf(35), ntzf(36), ntzf(37), ntzf(38), ntzf(39),
+        ntzf(40), ntzf(41), ntzf(42), ntzf(43), ntzf(44),
+        ntzf(45), ntzf(46), ntzf(47), ntzf(48), ntzf(49),
+        ntzf(50), ntzf(51), ntzf(52), ntzf(53), ntzf(54),
+        ntzf(55), ntzf(56), ntzf(57), ntzf(58), ntzf(59),
+        ntzf(60), ntzf(61), ntzf(62), ntzf(63), ntzf(64),
+        ntzf(65), ntzf(66)
+    };
+    return ntzTable[leastBit(n) % 67];
+}
+
+// The version here is expected to be a good one when the expected number
+// of set bits is small.
+
+inline int countBits(uint64_t x)
+{   int r = 0;
+    while (x != 0)
+    {   r++;
+        x -= x & (-x);
+    }
+    return r;
+}
+
+#endif // __GNUC__
+
+#define HAVE_NLZ_AND_NTZ
+#endif // HAVE_NLZ_AND_NTZ
+
+
+#define NLZ_DEFINED 1
+#define NTZ_DEFINED 1
+
+
+// These functions view map[] as an array of 64-bit values with bits counted
+// least significant first. They set, clear or test bits. The ones that work
+// on ranges handle bits from m up with a given length and the test returns
+// true if any of the bits in the range are set.
+// nextOneBit() and friends return the index of the next relevant set or
+// cleared bit at or beyond the location specified, and need to know the
+// size (measured in bits) of the map because there may not be a further
+// bit to report. In that case they return SIZE_MAX.
+
+// Everything here assumes that n is such that the nth bit is within the
+// map array. No overflow checks are made.
+
+inline void setBit(uint64_t map[], size_t n)
+{   map[n/64] |= 1ULL << (n%64);
+}
+
+inline void clearBit(uint64_t map[], size_t n)
+{   map[n/64] &= ~(1ULL << (n%64));
+}
+
+inline void flipBit(uint64_t map[], size_t n)
+{   map[n/64] ^= 1ULL << (n%64);
+}
+
+inline bool testBit(uint64_t map[], size_t n)
+{   return ((map[n/64] >> (n%64)) & 1) != 0;
+}
+
+// These work on the bits from m to m+length-1 inclusive.
+
+inline void setBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) map[word1] |= (mask1 & mask2);
+    else
+    {   map[word1] |= mask1;
+        for (size_t k=word1+1; k<word2; k++) map[k] = ones;
+        map[word2] |= mask2;
+    }
+}
+
+inline void clearBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) map[word1] &= ~(mask1 & mask2);
+    else
+    {   map[word1] &= ~mask1;
+        for (size_t k=word1+1; k<word2; k++) map[k] = 0;
+        map[word2] &= ~mask2;
+    }
+}
+
+inline void flipBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) map[word1] ^= (mask1 & mask2);
+    else
+    {   map[word1] ^= mask1;
+        for (size_t k=word1+1; k<word2; k++) map[k] ^= ones;
+        map[word2] ^= mask2;
+    }
+}
+
+// Count the number of 1 bits in the specified range.
+
+inline int countBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) return countBits(map[word1] & mask1 & mask2);
+    else
+    {   int r = countBits(map[word1] & mask1);
+        for (size_t k=word1+1; k<word2; k++)
+            r += countBits(map[k]);
+        return r + countBits(map[word2] & mask2);
+    }
+}
+
+// testBits(map, start, length) == (countBits(map, start, length) != 0)
+
+inline bool testBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) return (map[word1] & mask1 & mask2) != 0;
+    else
+    {   if ((map[word1] & mask1) != 0) return true;
+        for (size_t k=word1+1; k<word2; k++)
+            if (map[k] != 0) return true;
+        return (map[word2] & mask2) != 0;
+    }
+}
+
+// This finds the next bit at or beyond n that is set supposing there is
+// one present in the map. If not it returns SIZE_MAX. Note that the
+// mapSize is counting in bits.
+
+inline size_t nextOneBit(uint64_t map[], size_t mapSize, size_t n)
+{   if (n >= mapSize) return SIZE_MAX;
+// The first test has to allow for the possibility that it is within a
+// single word of the map.
+    size_t word = n/64;
+    size_t bitpos = n%64;
+    n -= bitpos;          // now n refers to a word boundary.
+    uint64_t bits;
+    static const uint64_t ones = static_cast<uint64_t>(-1);
+    if ((bits = map[word] & (ones<<bitpos)) != 0)
+        return n + ntz(bits);
+// Skip past any words that are all zero in the map.
+    do
+    {   word++;
+        n += 64;
+        if (n >= mapSize) return SIZE_MAX;
+    } while ((bits = map[word]) == 0);
+    n += ntz(bits);
+    if (n >= mapSize) return SIZE_MAX;
+    else return n;
+}
+
+// Note that in these search functions mapSize does not need to be
+// a multiple of 64. The size is specified in bits not bytes or words.
+
+inline size_t nextZeroBit(uint64_t map[], size_t mapSize, size_t n)
+{   if (n >= mapSize) return SIZE_MAX;
+// The first test has to allow for the possibility that it is within a
+// single word of the map.
+    size_t word = n/64;
+    size_t bitpos = n%64;
+    n -= bitpos;          // now n refers to a word boundary.
+    static const uint64_t ones = static_cast<uint64_t>(-1);
+    uint64_t bits;
+    if ((bits = ~map[word] & (ones<<bitpos)) != 0)
+        return n + ntz(bits);
+// Skip past any words that are all ones in the map.
+    do
+    {   word++;
+        n += 64;
+        if (n >= mapSize) return SIZE_MAX;
+    } while ((bits = ~map[word]) == 0);
+    n += ntz(bits);
+    if (n >= mapSize) return SIZE_MAX;
+    else return n;
+}
+
+// When I look for a previous 1 or 0 bit I will search all the way
+// to the start of the array. I could provide a further overload that
+// searched backwards down as far as a specified limit, but at present
+// I do not need that...
+
+inline size_t previousOneBit(uint64_t map[], size_t n)
+{   if (n == SIZE_MAX) return SIZE_MAX;
+    size_t word = n/64;
+    size_t bitpos = n%64;
+    n -= bitpos;
+    static const uint64_t ones = static_cast<uint64_t>(-1);
+    uint64_t bits;
+    if ((bits = map[word] & (ones >> (63-bitpos))) != 0)
+        return n + 63 - nlz(bits);
+    do
+    {   if (word == 0) return SIZE_MAX;
+        word--;
+        n -= 64;
+    } while ((bits = map[word]) == 0);
+    return n + 63 - nlz(bits);
+}
+
+inline size_t previousZeroBit(uint64_t map[], size_t n)
+{   if (n == SIZE_MAX) return SIZE_MAX;
+    size_t word = n/64;
+    size_t bitpos = n%64;
+    n -= bitpos;
+    static const uint64_t ones = static_cast<uint64_t>(-1);
+    uint64_t bits;
+    if ((bits = ~map[word] & (ones >> (63-bitpos))) != 0)
+        return n + 63 - nlz(bits);
+    do
+    {   if (word == 0) return SIZE_MAX;
+        word--;
+        n -= 64;
+    } while ((bits = ~map[word]) == 0);
+    return n + 63 - nlz(bits);
+}
+
+} // end namespace
+
+using CSL_LISP::nlz;
+using CSL_LISP::ntz;
+using CSL_LISP::countBits;
+
+#endif // header_bitmaps_h
+
+// end of bitmaps.h
+
+// $Id$
+
+
+/**************************************************************************
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+// Here I provide an abstraction for running several tasks in
+// parallel. The first argument v is a std::vector<T> and the second
+// is a function that accepts a T as its argument. So
+//    runInThreads(v, fn)
+// will obey fn(v[0]), fn(v[1]), ..., fn(v[last]) in separate threads (one of
+// those will be the thread of the caller. If this call is made and there
+// are not enough available threads to service all N tasks then it may
+// drop back to executing things sequentially.
+
+// For debugging purposes I find that sometimes having parallel threaded
+// execution makes tracing (much) harder. To support a scheme that drops back
+// to merely running the tasks one at a time I make the function templated
+// where the parameter determines whether concurrency will be used. When
+// run sequentially the caller ought not to rely on the order in which
+// the various tasks happan to be activated.
+
+// If USE_EXECUTION is defined this uses some C++17 functionality that
+// makes this rather easy to express. However in late 2025 my measurements
+// show that it is heavy-duty enough that for small tasks it imposes costs
+// that I would like to avoid. To cope with this I also my own
+// implementation that allows for a somewhat limited number of worker
+// tasks but which may be lighter weight.
+
+// With some older releases of g++ and its libraries it may be necessary
+// to link in "-ltbb".
+
+#ifndef cthread_cpp_loaded
+#define cthread_cpp_loaded
+
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <vector>
+#include <algorithm>
+
+#ifdef USE_EXECUTION
+
+#include <execution>
+
+template <typename T, bool parallel=true>
+inline void runInThreads(std::vector<T> v, void (*fn)(T))
+{   std::for_each(parallel ? std::execution::par : std::execution::seq,
+                  std::begin(v),
+                  std::end(v),
+                  fn);
+}
+
+#else // USE_EXECUTION
+
+// I specify the size of the thread-pool that gets set up, and have a
+// bitmap that records which of those are in use.
+
+inline const size_t POOLSIZE = 16;
+inline std::atomic<uint32_t> activeThreads(0);
+
+// There are 4 mutexes for each worker thread, but each synchronization step
+// just involves a single mutex, transferring ownership between main and worker
+// thread. Here is the patter of transfer and subsequent ownership, with "?"
+// marking a muxex that has been waiting and the ">n" or <n" in the middle
+// also showing which muxex has just been activated:
+//       X  X  .  .         ?  .  X  X    Idle state. Worker waiting on mutex 0
+// To start a transaction the main thread sets up data and unlocks mutex 0.
+// That allows the worker to proceed and pick up the data.
+//       .  X  .  .   >0    ?X .  X  X    first transaction
+// The main thread must not alter data until the worker is finished. It waits
+// on mutex 1 until the worker tells it that a result is available.
+//       .  X ?X  .   <2    X  .  .  X
+// The main thread is now entitles to start using the results of the activity
+// just completed and setting up data for the next one. It can not release
+// mutex 0 to restart the worker because the worker alread owns that. And even
+// though it owns mutex 2 it had better not release that, because for that
+// to make sense the worker would need to be waiting on it, and that would mean
+// the worker had just done m3.unlock(); m3.lock() in quick succesion, which
+// might have led it to grab m3 rather than the main program managing to. So
+// use the third mutex, which the worker must be waiting on.
+//       .  .  X  .   >1    X ?X  .  X    second transaction
+// When it has finished its task the worker now unlocks mutex 3. This leaves
+// a situation symmetric with the initial one
+//       .  .  X ?X   <3    X  X  .  .
+//       .  .  .  X   >2    X  X  ?X .    third transaction
+//       ?X .  .  X   <0    .  X  X  .
+//       X  .  .  .   >3    .  X  X ?X    fourth transaction
+//       X ?X  .  .   <1    .  .  X  X    back in initial configuration!
+//
+// The pattern is thus that the master goes
+//  [initially lock 0 and 1]
+//  unlock 0  wait 2
+//  unlock 1  wait 3
+//  unlock 2  wait 0
+//  unlock 3  wait 1
+// while the worker goes
+//  [initially lock 2 and 3]
+//  wait 0    unlock 2
+//  wait 1    unlock 3
+//  wait 2    unlock 0
+//  wait 3    unlock 1
+// Observe that I can use (n^2) [note that ^ here is an exclusive OR and
+// not exponentiation, because I am in C++) to map between the mutex number
+// in the first and second columns here. That counting is what sendCount and
+// receiveCount are doing.
+
+// In a nice world I would use just the C++ std::mutex scheme for
+// synchronization, however here I am performance critical and to save
+// a bit when performing medium-sized multiplications I will use the
+// Microsoft version of mutexes directly on that platform. Worse then that
+// there is a Microsoft option known as "SRW" (Slim Reader/Writer locks)
+// that may be good to use.
+
+#if defined __CYGWIN__ || defined __MINGW32__
+
+// It is possible that SRW locks have lower overhead than Mutex. So I will
+// use them, but have an "#ifdef" so I can revert if needbe.
+
+#define USE_MICROSOFT_SRW 1
+
+#ifndef USE_MICROSOFT_SRW
+#define USE_MICROSOFT_MUTEX 1
+#endif // USE_MICROSOFT_SRW
+
+// Going "#include <windows.h>" pollutes the name-space rather heavily
+// and so despite it being somewhat despicable I declare the rather small
+// number of things I need by hand. Note that some of the issues are
+// macros rather than extern definitions, so it is not obvious that
+// C++ "namespace" treatment can make things nice for me.
+
+extern "C"
+{
+struct SecApp
+{   std::uintptr_t nLength;
+    void* lpSecurityDescriptor;
+    int bInheritHandle;
+};
+
+typedef struct _RTL_SRWLOCK { void* Ptr; } RTL_SRWLOCK,*PRTL_SRWLOCK;
+#define RTL_SRWLOCK_INIT {0}
+#define SRWLOCK_INIT RTL_SRWLOCK_INIT
+typedef RTL_SRWLOCK SRWLOCK, *PSRWLOCK;
+
+extern __declspec(dllimport) void InitializeSRWLock (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void ReleaseSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void ReleaseSRWLockShared (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void AcquireSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void AcquireSRWLockShared (PSRWLOCK SRWLock);
+extern __declspec(dllimport) bool TryAcquireSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) bool TryAcquireSRWLockShared (PSRWLOCK SRWLock);
+
+extern __declspec(dllimport)  void* 
+    CreateMutexA(SecApp* , std::uintptr_t, const char* );
+extern __declspec(dllimport) int CloseHandle(void* h);
+extern __declspec(dllimport) int ReleaseMutex(void* m);
+extern __declspec(dllimport) void* 
+    WaitForSingleObject(void* , std::uintptr_t);
+inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
+
+};   // end of extern "C" scope.
+
+#endif // __CYGWIN__ or __MINGW32__
+
+// I cope with the need to support tasks over different types of data
+// by having a base class that specifies an apply() method and then
+// deriving versions for each type that is used.
+
+class WorkerTaskBase
+{
+public:
+    WorkerTaskBase()
+    {}
+    virtual ~WorkerTaskBase()
+    {}
+    virtual void apply()
+    {}
+};
+
+template <typename T>
+class WorkerTask : public virtual WorkerTaskBase
+{
+public:
+    void (*func)(T);
+    T argument;
+    WorkerTask(void (*f)(T), T a)
+    {   func = f;
+        argument = a;
+    } 
+    void apply() override
+    {   (*func)(argument);
+    } 
+};
+
+class WorkerTaskData
+{
+public:
+// The task to be performed has to have a polymorphic type.
+    WorkerTaskBase* workerTask;
+
+    std::atomic<bool> ready;
+    bool quit_flag;
+
+#if defined USE_MICROSOFT_SRW
+    SRWLOCK mutex[4];
+#elif defined USE_MICROSOFT_MUTEX
+    void* mutex[4];
+#else // The final case is C++ std::mutex
+    std::mutex mutex[4];
+#endif // end of mutex selection
+    int sendCount;
+
+// When I construct an instance of Worker data I set its quit_flag to
+// false and lock two of the mutexes. That sets things up so that when
+// it is passed to a new worker thread that thread behaves in the way I
+// want it to.
+    WorkerTaskData()
+    {   ready = false;
+        quit_flag = false;
+        workerTask = nullptr;
+#if defined USE_MICROSOFT_SRW
+        InitializeSRWLock(&mutex[0]);
+        InitializeSRWLock(&mutex[1]);
+        AcquireSRWLockExclusive(&mutex[0]);
+        AcquireSRWLockExclusive(&mutex[1]);
+        InitializeSRWLock(&mutex[2]);
+        InitializeSRWLock(&mutex[3]);
+#elif defined USE_MICROSOFT_MUTEX
+        mutex[0] = CreateMutexA(NULL, 1, NULL);
+        mutex[1] = CreateMutexA(NULL, 1, NULL);
+        mutex[2] = CreateMutexA(NULL, 0, NULL);
+        mutex[3] = CreateMutexA(NULL, 0, NULL);
+#else // use C++ std::mutex
+// The next two must be locked by the main thread.
+        mutex[0].lock();
+        mutex[1].lock();
+#endif // Mutexes now initialized and locked as needed
+        sendCount = 0;
+    }
+#ifdef USE_MICROSOFT_MUTEX
+    ~WorkerTaskData()
+    {   CloseHandle(mutex[0]);
+        CloseHandle(mutex[1]);
+        CloseHandle(mutex[2]);
+        CloseHandle(mutex[3]);
+        delete workerTask;
+    }
+#endif // USE_MICROSOFT_MUTEX
+};
+
+// The main thread will have a structure that encapsulates the
+// worker threads that it ends up with and the data it sets up for
+// them and that they then access. When this structures is created it will
+// cause the worker threads and the data block they need to be constructed.
+
+inline void workerThreadFunction(WorkerTaskData* wd);
+
+class ThreadDriverData
+{
+public:
+    WorkerTaskData wd[POOLSIZE];
+// When the instance of ThreadDriverData is created the WorkerTaskData instances
+// get constructed with two of their mutexes locked. This will mean that when
+// worker threads are created and start running they will politely wait for
+// things to do.
+    std::thread w[POOLSIZE];
+
+    ThreadDriverData()
+    {   for (size_t i=0; i<POOLSIZE; i++)
+            w[i] = std::thread(workerThreadFunction, &wd[i]);
+// I busy-wait until all the threads have both claimed the mutexes that they
+// need to own at the start! Without this the main thread may post a
+// multiplication, so its part of the work and try to check that the worker
+// has finished (by claiming one of these mutexes) before the worker thread
+// has got started up and has claimed them. This feels clumsy, but it only
+// happens at system-startup.
+        for (size_t i=0; i<POOLSIZE; i++)
+        {   if (!wd[i].ready.load())
+            {   std::this_thread::sleep_for(std::chrono::microseconds(1));
+                i--;  // I only proceed once the thread is ready.
+            }
+        }
+    }
+
+// When the ThreadDriverData object is to be destroyed it must arrange to
+// stop and then join all the threads that it set up. This code that sends
+// a "quit" message to each thread will be executed before the thread object
+// is deleted, and the destructor of the thread object should be activated
+// before that of the WorkerTaskData and the mutexes within that.
+
+// The expectation here is that this termination will happen at a time
+// when none of the worker threads are doing anything, and thus they are
+// all sitting ready to accept this request. Abrupt (ie error) termination
+// of the program might not manage that!
+    ~ThreadDriverData()
+    {   for (size_t i=0; i<POOLSIZE; i++)
+        {   wd[i].quit_flag = true;
+            releaseWorker(i);
+            w[i].join();
+        }
+    }
+
+// Using the worker threads is then rather easy: one sets up data in
+// the WorkerTaskData structures and then call releaseWorker() for each
+// one that must start. Then the driver program can do whatever it
+// wishes to while the workers just started do what they are set up for.
+// When you are ready you call waitForWorker() on each sub-process,
+// which does what one might imagine.
+
+    void releaseWorker(int i)
+    {
+#if defined USE_MICROSOFT_SRW
+        ReleaseSRWLockExclusive(&wd[i].mutex[wd[i].sendCount]);
+#elif defined USE_MICROSOFT_MUTEX
+        ReleaseMutex(wd[i].mutex[wd[i].sendCount]);
+#else // use std::mutex
+        wd[i].mutex[wd[i].sendCount].unlock();
+#endif // mutexed unlocked
+    }
+
+    void waitForWorker(int i)
+    {
+#if defined USE_MICROSOFT_SRW
+        AcquireSRWLockExclusive(&wd[i].mutex[wd[i].sendCount^2]);
+#elif defined USE_MICROSOFT_MUTEX
+        WaitForSingleObject(wd[i].mutex[wd[i].sendCount^2], MICROSOFT_INFINITE);
+#else // use std::mutex
+        wd[i].mutex[wd[i].sendCount^2].lock();
+#endif // synchronized
+        wd[i].sendCount = (wd[i].sendCount+1)&3;
+    }
+};
+
+inline ThreadDriverData threadDriverData;
+
+#if defined USE_MICROSOFT_SRW
+
+inline void workerThreadFunction(WorkerTaskData* wd)
+{   ThreadLocal::initialize();
+    AcquireSRWLockExclusive(&wd->mutex[2]);
+    AcquireSRWLockExclusive(&wd->mutex[3]);
+    wd->ready = true;
+    int receiveCount = 0;
+    for (;;)
+    {   AcquireSRWLockExclusive(&wd->mutex[receiveCount]);
+        if (wd->quit_flag) return;
+        wd->workerTask->apply();
+        ReleaseSRWLockExclusive(&wd->mutex[receiveCount^2]);
+        receiveCount = (receiveCount + 1) & 3;
+    }
+}
+
+#elif defined USE_MICROSOFT_MUTEX
+
+inline void workerThreadFunction(WorkerTaskData* wd)
+{   WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
+    WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
+    wd->ready = true;
+    int receiveCount = 0;
+    for (;;)
+    {
+// This WaitFor could wait for the entire Reduce run any only be signalled
+// during close-down, so putting a timeout on it would nor make sense.
+        WaitForSingleObject(wd->mutex[receiveCount], MICROSOFT_INFINITE);
+        if (wd->quit_flag) return;
+        wd->workerTask->apply();
+        ReleaseMutex(wd->mutex[receiveCount^2]);
+        receiveCount = (receiveCount + 1) & 3;
+    }
+}
+
+#else // Here I use C++ std::mutex
+
+inline void workerThreadFunction(WorkerTaskData* wd)
+{   wd->mutex[2].lock();
+    wd->mutex[3].lock();
+    wd->ready = true;
+    int receiveCount = 0;
+    for (;;)
+    {   wd->mutex[receiveCount].lock();
+        if (wd->quit_flag) return;
+        wd->workerTask->apply();
+        wd->mutex[receiveCount^2].unlock();
+        receiveCount = (receiveCount + 1) & 3;
+    }
+}
+
+#endif // definition of workerThreadFunction
+
+template <typename T, bool parallel=true>
+inline void runInThreads(std::vector<T> v, void (*fn)(T))
+{   int n = v.size();
+// Here I want to see if there are any worker threads available to
+// dedicate to this task.
+    uint32_t active = activeThreads.exchange((1<<POOLSIZE)-1);
+// Now I have set things as if all the threads are active. If I find
+// that all were active when I first look I will just run my tasks
+// sequentially and there is no need to change the activity map. This
+// simple scheme means that if two threads each call runInThreads at
+// almost the same time then the second one may end up dropping back to
+// sequential work even though the first was not going to use up many
+// workers. That issue could be avoided by wrapping some mutexes around
+// all of the decision-making steps here, but I prefer to make what I expect
+// to be the common case (of no contention) as fast as possible.
+// So the next line detects and responds either to the case that others
+// are all making active use of ALL available workers or the awkward case
+// that I am part way through the few lines of code that temporarily
+// pretend that while working out what can be done. And conveniently it
+// provides for the case where I do not want concurrency at all.
+    if (!parallel || active == ((1<<POOLSIZE)-1))
+    {   std::for_each(std::begin(v),    // Sequential mode here.
+                      std::end(v),
+                      fn);
+        return;
+    }
+// See if I can find n-1 threads that are not in use at present. I look for
+// just n-1 because the current thread will participate in the work too and
+// thereby make up the total of n.
+    int threadIds[POOLSIZE];
+    int w = 0;
+    uint32_t claimed = 0;
+    for (size_t i=0; i<POOLSIZE && w<n-1; i++)
+    {   if ((active & (1<<i)) == 0)
+        {   threadIds[w++] = i;
+            claimed |= 1<<i;
+        }
+    }
+    if (w < n-1)
+    {
+// If there are not enough threads to satisfy this request I will
+// reset the map to the state it had been when I started. Note that
+// nobody can have started more threads since the exchange() that I did
+// earlier so this should alwaye be proper. Then I work sequentially.
+        activeThreads = active;   
+        std::for_each(std::begin(v),   // Sequential mode here.
+                      std::end(v),
+                      fn);
+        return;
+    }
+// Now there are enough threads left, and threadIds[] tabulates the
+// identifiers that they have and claimed is a bitmap. I can reset
+// activeThreads allowing for what I am now grabbing.
+    activeThreads.store(active | claimed);
+// From now anybody else can start trying to grab workers and be in with
+// a chance.
+// 
+// Release (ie start up) all the worker threads I have picked.
+    for (int i=0; i<n-1; i++)
+    {   threadDriverData.wd[threadIds[i]].workerTask = new WorkerTask<T>(fn, v[i+1]);
+        threadDriverData.releaseWorker(threadIds[i]);
+    }
+// Use this main thread to do work on the first item in the vector.
+    (*fn)(v[0]);
+// Wait until everybody has completed their job.
+    for (int i=0; i<n-1; i++)
+        threadDriverData.waitForWorker(threadIds[i]);
+// Tell the system that the threads I had just been using are now free for
+// others to use.
+    activeThreads &= ~claimed;
+}
+
+#endif // USE_EXECUTION
+
+template <bool parallel, typename T>
+inline void runInThreads(std::vector<T> v, void (*fn)(T))
+{   runInThreads<T, parallel>(v, fn);
+}
+
+//*************************************************************************
+//*************************************************************************
+//*************************************************************************
+//*************************************************************************
+
+#ifdef TEST_CODE
+
+#include <string>
+#include <unordered_map>
+
+std::mutex g;
+
+std::hash<std::string> hashfn;
+
+void task(int n)
+{   {   std::lock_guard<std::mutex> guard(g);
+        std::cout << "Running with n = " << n << "\n";
+    }
+
+    {   std::lock_guard<std::mutex> guard(g);
+        uint64_t w = 1;
+        for (std::uint64_t i=0; i<1000000*((123456*n)%97); i++)
+            w = 139*w + 11213;
+        std::cout << "End task " << n << " with value " << (w%1000) << "\n";
+    }
+}
+
+void task(std::string n)
+{   {   std::lock_guard<std::mutex> guard(g);
+        std::cout << "Running with n = " << n << "\n";
+    }
+
+    {   std::lock_guard<std::mutex> guard(g);
+        uint64_t w = 1;
+        for (std::uint64_t i=0; i<1000000*(hashfn(n)%97); i++)
+            w = 139*w + 11213;
+        std::cout << "End task " << n << " with value " << (w%1000) << "\n";
+    }
+}
+
+int main()
+{
+    std::vector<int> v1 = {2,4,6,8,10,12,14};
+    runInThreads<int>(v1, task);
+
+    std::vector<std::string> v2 = {"two", "four", "six", "eight", "ten"};
+    runInThreads<std::string>(v2, task);
+
+    std::cout << "finished\n";
+    return 0;
+}
+
+#endif // TEST_CODE
+
+#endif // cthread_cpp_loaded
+
+
+// end of cthread.cpp
+
 // acnutil.h                               Copyright (C) 2025 Arthur Norman
 
 /**************************************************************************
@@ -620,6 +1631,9 @@ inline std::string concat(std::string a, int n)
 }
 
 } // end namespace
+
+using acnutil::microseconds;
+using acnutil::now;
 
 #endif // __header_acnutil
 
@@ -1976,550 +2990,6 @@ public:
 #endif // __header_lvector_h
 
 // end of lvector.h
-// cthread.cpp                                  Copyright (C) 2025 Codemist
-
-// $Id$
-
-
-/**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
- *                                                                        *
- * Redistribution and use in source and binary forms, with or without     *
- * modification, are permitted provided that the following conditions are *
- * met:                                                                   *
- *                                                                        *
- *     * Redistributions of source code must retain the relevant          *
- *       copyright notice, this list of conditions and the following      *
- *       disclaimer.                                                      *
- *     * Redistributions in binary form must reproduce the above          *
- *       copyright notice, this list of conditions and the following      *
- *       disclaimer in the documentation and/or other materials provided  *
- *       with the distribution.                                           *
- *                                                                        *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
- * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
- * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
- * DAMAGE.                                                                *
- *************************************************************************/
-
-// Here I provide an abstraction for running several tasks in
-// parallel. The first argument v is a std::vector<T> and the second
-// is a function that accepts a T as its argument. So
-//    runInThreads(v, fn)
-// will obey fn(v[0]), fn(v[1]), ..., fn(v[last]) in separate threads (one of
-// those will be the thread of the caller. If this call is made and there
-// are not enough available threads to service all N tasks then it may
-// drop back to executing things sequentially.
-
-// If USE_EXECUTION is defined this uses some C++17 functionality that
-// makes this rather easy to express. However in late 2025 my measurements
-// show that it is heavy-duty enough that for small tasks it imposes costs
-// that I would like to avoid. To cope with this I also my own
-// implementation that allows for a somewhat limited number of worker
-// tasks but which may be lighter weight.
-
-// With some older releases of g++ and its libraries it may be necessary
-// to link in "-ltbb".
-
-#ifndef cthread_cpp_loaded
-#define cthread_cpp_loaded
-
-#include <iostream>
-#include <thread>
-#include <mutex>
-#include <atomic>
-#include <vector>
-#include <algorithm>
-
-#ifdef USE_EXECUTION
-//@#pragma message "You may need to link in libtbb"
-
-#include <execution>
-
-template <typename T>
-inline void runInThreads(std::vector<T> v, void (*fn)(T))
-{   std::for_each(std::execution::par,
-                  std::begin(v),
-                  std::end(v),
-                  fn);
-}
-
-#else // USE_EXECUTION
-
-// I specify the size of the thread-pool that gets set up, and have a
-// bitmap that records which of those are in use.
-
-inline const size_t POOLSIZE = 16;
-inline std::atomic<uint32_t> activeThreads(0);
-
-// There are 4 mutexes for each worker thread, but each synchronization step
-// just involves a single mutex, transferring ownership between main and worker
-// thread. Here is the patter of transfer and subsequent ownership, with "?"
-// marking a muxex that has been waiting and the ">n" or <n" in the middle
-// also showing which muxex has just been activated:
-//       X  X  .  .         ?  .  X  X    Idle state. Worker waiting on mutex 0
-// To start a transaction the main thread sets up data and unlocks mutex 0.
-// That allows the worker to proceed and pick up the data.
-//       .  X  .  .   >0    ?X .  X  X    first transaction
-// The main thread must not alter data until the worker is finished. It waits
-// on mutex 1 until the worker tells it that a result is available.
-//       .  X ?X  .   <2    X  .  .  X
-// The main thread is now entitles to start using the results of the activity
-// just completed and setting up data for the next one. It can not release
-// mutex 0 to restart the worker because the worker alread owns that. And even
-// though it owns mutex 2 it had better not release that, because for that
-// to make sense the worker would need to be waiting on it, and that would mean
-// the worker had just done m3.unlock(); m3.lock() in quick succesion, which
-// might have led it to grab m3 rather than the main program managing to. So
-// use the third mutex, which the worker must be waiting on.
-//       .  .  X  .   >1    X ?X  .  X    second transaction
-// When it has finished its task the worker now unlocks mutex 3. This leaves
-// a situation symmetric with the initial one
-//       .  .  X ?X   <3    X  X  .  .
-//       .  .  .  X   >2    X  X  ?X .    third transaction
-//       ?X .  .  X   <0    .  X  X  .
-//       X  .  .  .   >3    .  X  X ?X    fourth transaction
-//       X ?X  .  .   <1    .  .  X  X    back in initial configuration!
-//
-// The pattern is thus that the master goes
-//  [initially lock 0 and 1]
-//  unlock 0  wait 2
-//  unlock 1  wait 3
-//  unlock 2  wait 0
-//  unlock 3  wait 1
-// while the worker goes
-//  [initially lock 2 and 3]
-//  wait 0    unlock 2
-//  wait 1    unlock 3
-//  wait 2    unlock 0
-//  wait 3    unlock 1
-// Observe that I can use (n^2) [note that ^ here is an exclusive OR and
-// not exponentiation, because I am in C++) to map between the mutex number
-// in the first and second columns here. That counting is what sendCount and
-// receiveCount are doing.
-
-// In a nice world I would use just the C++ std::mutex scheme for
-// synchronization, however here I am performance critical and to save
-// a bit when performing medium-sized multiplications I will use the
-// Microsoft version of mutexes directly on that platform. Worse then that
-// there is a Microsoft option known as "SRW" (Slim Reader/Writer locks)
-// that may be good to use.
-
-#if defined __CYGWIN__ || defined __MINGW32__
-
-// It is possible that SRW locks have lower overhead than Mutex. So I will
-// use them, but have an "#ifdef" so I can revert if needbe.
-
-#define USE_MICROSOFT_SRW 1
-
-#ifndef USE_MICROSOFT_SRW
-#define USE_MICROSOFT_MUTEX 1
-#endif // USE_MICROSOFT_SRW
-
-// Going "#include <windows.h>" pollutes the name-space rather heavily
-// and so despite it being somewhat despicable I declare the rather small
-// number of things I need by hand. Note that some of the issues are
-// macros rather than extern definitions, so it is not obvious that
-// C++ "namespace" treatment can make things nice for me.
-
-extern "C"
-{
-struct SecApp
-{   std::uintptr_t nLength;
-    void* lpSecurityDescriptor;
-    int bInheritHandle;
-};
-
-typedef struct _RTL_SRWLOCK { void* Ptr; } RTL_SRWLOCK,*PRTL_SRWLOCK;
-#define RTL_SRWLOCK_INIT {0}
-#define SRWLOCK_INIT RTL_SRWLOCK_INIT
-typedef RTL_SRWLOCK SRWLOCK, *PSRWLOCK;
-
-extern __declspec(dllimport) void InitializeSRWLock (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void ReleaseSRWLockExclusive (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void ReleaseSRWLockShared (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void AcquireSRWLockExclusive (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void AcquireSRWLockShared (PSRWLOCK SRWLock);
-extern __declspec(dllimport) bool TryAcquireSRWLockExclusive (PSRWLOCK SRWLock);
-extern __declspec(dllimport) bool TryAcquireSRWLockShared (PSRWLOCK SRWLock);
-
-extern __declspec(dllimport)  void* 
-    CreateMutexA(SecApp* , std::uintptr_t, const char* );
-extern __declspec(dllimport) int CloseHandle(void* h);
-extern __declspec(dllimport) int ReleaseMutex(void* m);
-extern __declspec(dllimport) void* 
-    WaitForSingleObject(void* , std::uintptr_t);
-inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
-
-};   // end of extern "C" scope.
-
-#endif // __CYGWIN__ or __MINGW32__
-
-// I cope with the need to support tasks over different types of data
-// by having a base class that specifies an apply() method and then
-// deriving versions for each type that is used.
-
-class WorkerTaskBase
-{
-public:
-    WorkerTaskBase()
-    {}
-    virtual ~WorkerTaskBase()
-    {}
-    virtual void apply()
-    {}
-};
-
-template <typename T>
-class WorkerTask : public virtual WorkerTaskBase
-{
-public:
-    void (*func)(T);
-    T argument;
-    WorkerTask(void (*f)(T), T a)
-    {   func = f;
-        argument = a;
-    } 
-    void apply() override
-    {   (*func)(argument);
-    } 
-};
-
-class WorkerTaskData
-{
-public:
-// The task to be performed has to have a polymorphic type.
-    WorkerTaskBase* workerTask;
-
-    std::atomic<bool> ready;
-    bool quit_flag;
-
-#if defined USE_MICROSOFT_SRW
-    SRWLOCK mutex[4];
-#elif defined USE_MICROSOFT_MUTEX
-    void* mutex[4];
-#else // The final case is C++ std::mutex
-    std::mutex mutex[4];
-#endif // end of mutex selection
-    int sendCount;
-
-// When I construct an instance of Worker data I set its quit_flag to
-// false and lock two of the mutexes. That sets things up so that when
-// it is passed to a new worker thread that thread behaves in the way I
-// want it to.
-    WorkerTaskData()
-    {   ready = false;
-        quit_flag = false;
-        workerTask = nullptr;
-#if defined USE_MICROSOFT_SRW
-        InitializeSRWLock(&mutex[0]);
-        InitializeSRWLock(&mutex[1]);
-        AcquireSRWLockExclusive(&mutex[0]);
-        AcquireSRWLockExclusive(&mutex[1]);
-        InitializeSRWLock(&mutex[2]);
-        InitializeSRWLock(&mutex[3]);
-#elif defined USE_MICROSOFT_MUTEX
-        mutex[0] = CreateMutexA(NULL, 1, NULL);
-        mutex[1] = CreateMutexA(NULL, 1, NULL);
-        mutex[2] = CreateMutexA(NULL, 0, NULL);
-        mutex[3] = CreateMutexA(NULL, 0, NULL);
-#else // use C++ std::mutex
-// The next two must be locked by the main thread.
-        mutex[0].lock();
-        mutex[1].lock();
-#endif // Mutexes now initialized and locked as needed
-        sendCount = 0;
-    }
-#ifdef USE_MICROSOFT_MUTEX
-    ~WorkerTaskData()
-    {   CloseHandle(mutex[0]);
-        CloseHandle(mutex[1]);
-        CloseHandle(mutex[2]);
-        CloseHandle(mutex[3]);
-        delete workerTask;
-    }
-#endif // USE_MICROSOFT_MUTEX
-};
-
-// The main thread will have a structure that encapsulates the
-// worker threads that it ends up with and the data it sets up for
-// them and that they then access. When this structures is created it will
-// cause the worker threads and the data block they need to be constructed.
-
-inline void workerThreadFunction(WorkerTaskData* wd);
-
-class ThreadDriverData
-{
-public:
-    WorkerTaskData wd[POOLSIZE];
-// When the instance of ThreadDriverData is created the WorkerTaskData instances
-// get constructed with two of their mutexes locked. This will mean that when
-// worker threads are created and start running they will politely wait for
-// things to do.
-    std::thread w[POOLSIZE];
-
-    ThreadDriverData()
-    {   for (size_t i=0; i<POOLSIZE; i++)
-            w[i] = std::thread(workerThreadFunction, &wd[i]);
-// I busy-wait until all the threads have both claimed the mutexes that they
-// need to own at the start! Without this the main thread may post a
-// multiplication, so its part of the work and try to check that the worker
-// has finished (by claiming one of these mutexes) before the worker thread
-// has got started up and has claimed them. This feels clumsy, but it only
-// happens at system-startup.
-        for (size_t i=0; i<POOLSIZE; i++)
-        {   if (!wd[i].ready.load())
-            {   std::this_thread::sleep_for(std::chrono::microseconds(1));
-                i--;  // I only proceed once the thread is ready.
-            }
-        }
-    }
-
-// When the ThreadDriverData object is to be destroyed it must arrange to
-// stop and then join all the threads that it set up. This code that sends
-// a "quit" message to each thread will be executed before the thread object
-// is deleted, and the destructor of the thread object should be activated
-// before that of the WorkerTaskData and the mutexes within that.
-
-// The expectation here is that this termination will happen at a time
-// when none of the worker threads are doing anything, and thus they are
-// all sitting ready to accept this request. Abrupt (ie error) termination
-// of the program might not manage that!
-    ~ThreadDriverData()
-    {   for (size_t i=0; i<POOLSIZE; i++)
-        {   wd[i].quit_flag = true;
-            releaseWorker(i);
-            w[i].join();
-        }
-    }
-
-// Using the worker threads is then rather easy: one sets up data in
-// the WorkerTaskData structures and then call releaseWorker() for each
-// one that must start. Then the driver program can do whatever it
-// wishes to while the workers just started do what they are set up for.
-// When you are ready you call waitForWorker() on each sub-process,
-// which does what one might imagine.
-
-    void releaseWorker(int i)
-    {
-#if defined USE_MICROSOFT_SRW
-        ReleaseSRWLockExclusive(&wd[i].mutex[wd[i].sendCount]);
-#elif defined USE_MICROSOFT_MUTEX
-        ReleaseMutex(wd[i].mutex[wd[i].sendCount]);
-#else // use std::mutex
-        wd[i].mutex[wd[i].sendCount].unlock();
-#endif // mutexed unlocked
-    }
-
-    void waitForWorker(int i)
-    {
-#if defined USE_MICROSOFT_SRW
-        AcquireSRWLockExclusive(&wd[i].mutex[wd[i].sendCount^2]);
-#elif defined USE_MICROSOFT_MUTEX
-        WaitForSingleObject(wd[i].mutex[wd[i].sendCount^2], MICROSOFT_INFINITE);
-#else // use std::mutex
-        wd[i].mutex[wd[i].sendCount^2].lock();
-#endif // synchronized
-        wd[i].sendCount = (wd[i].sendCount+1)&3;
-    }
-};
-
-inline ThreadDriverData threadDriverData;
-
-#if defined USE_MICROSOFT_SRW
-
-inline void workerThreadFunction(WorkerTaskData* wd)
-{   ThreadLocal::initialize();
-    AcquireSRWLockExclusive(&wd->mutex[2]);
-    AcquireSRWLockExclusive(&wd->mutex[3]);
-    wd->ready = true;
-    int receiveCount = 0;
-    for (;;)
-    {   AcquireSRWLockExclusive(&wd->mutex[receiveCount]);
-        if (wd->quit_flag) return;
-        wd->workerTask->apply();
-        ReleaseSRWLockExclusive(&wd->mutex[receiveCount^2]);
-        receiveCount = (receiveCount + 1) & 3;
-    }
-}
-
-#elif defined USE_MICROSOFT_MUTEX
-
-inline void workerThreadFunction(WorkerTaskData* wd)
-{   WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
-    WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
-    wd->ready = true;
-    int receiveCount = 0;
-    for (;;)
-    {
-// This WaitFor could wait for the entire Reduce run any only be signalled
-// during close-down, so putting a timeout on it would nor make sense.
-        WaitForSingleObject(wd->mutex[receiveCount], MICROSOFT_INFINITE);
-        if (wd->quit_flag) return;
-        wd->workerTask->apply();
-        ReleaseMutex(wd->mutex[receiveCount^2]);
-        receiveCount = (receiveCount + 1) & 3;
-    }
-}
-
-#else // Here I use C++ std::mutex
-
-inline void workerThreadFunction(WorkerTaskData* wd)
-{   wd->mutex[2].lock();
-    wd->mutex[3].lock();
-    wd->ready = true;
-    int receiveCount = 0;
-    for (;;)
-    {   wd->mutex[receiveCount].lock();
-        if (wd->quit_flag) return;
-        wd->workerTask->apply();
-        wd->mutex[receiveCount^2].unlock();
-        receiveCount = (receiveCount + 1) & 3;
-    }
-}
-
-#endif // definition of workerThreadFunction
-
-template <typename T>
-inline void runInThreads(std::vector<T> v, void (*fn)(T))
-{   int n = v.size();
-// Here I want to see if there are any worker threads available to
-// dedicate to this task.
-    uint32_t active = activeThreads.exchange((1<<POOLSIZE)-1);
-// Now I have set things as if all the threads are active. If I find
-// that all were active when I first look I will just run my tasks
-// sequentially and there is no need to change the activity map. This
-// simple scheme means that if two threads each call runInThreads at
-// almost the same time then the second one may end up dropping back to
-// sequential work even though the first was not going to use up many
-// workers. That issue could be avoided by wrapping some mutexes around
-// all of the decision-making steps here, but I prefer to make what I expect
-// to be the common case (of no contention) as fast as possible.
-// So the next line detects and responds either to the case that others
-// are all making active use of ALL available workers or the awkward case
-// that I am part way through the few lines of code that temporarily
-// pretend that while working out what can be done.
-    if (active == ((1<<POOLSIZE)-1))
-    {   std::for_each(std::begin(v),    // Sequential mode here.
-                      std::end(v),
-                      fn);
-        return;
-    }
-// See if I can find n-1 threads that are not in use at present. I look for
-// just n-1 because the current thread will participate in the work too and
-// thereby make up the total of n.
-    int threadIds[POOLSIZE];
-    int w = 0;
-    uint32_t claimed = 0;
-    for (size_t i=0; i<POOLSIZE && w<n-1; i++)
-    {   if ((active & (1<<i)) == 0)
-        {   threadIds[w++] = i;
-            claimed |= 1<<i;
-        }
-    }
-    if (w < n-1)
-    {
-// If there are not enough threads to satisfy this request I will
-// reset the map to the state it had been when I started. Note that
-// nobody can have started more threads since the exchange() that I did
-// earlier so this should alwaye be proper. Then I work sequentially.
-        activeThreads = active;   
-        std::for_each(std::begin(v),   // Sequential mode here.
-                      std::end(v),
-                      fn);
-        return;
-    }
-// Now there are enough threads left, and threadIds[] tabulates the
-// identifiers that they have and claimed is a bitmap. I can reset
-// activeThreads allowing for what I am now grabbing.
-    activeThreads.store(active | claimed);
-// From now anybody else can start trying to grab workers and be in with
-// a chance.
-// 
-// Release (ie start up) all the worker threads I have picked.
-    for (int i=0; i<n-1; i++)
-    {   threadDriverData.wd[threadIds[i]].workerTask = new WorkerTask<T>(fn, v[i+1]);
-        threadDriverData.releaseWorker(threadIds[i]);
-    }
-// Use this main thread to do work on the first item in the vector.
-    (*fn)(v[0]);
-// Wait until everybody has completed their job.
-    for (int i=0; i<n-1; i++)
-        threadDriverData.waitForWorker(threadIds[i]);
-// Tell the system that the threads I had just been using are now free for
-// others to use.
-    activeThreads &= ~claimed;
-}
-
-#endif // USE_EXECUTION
-
-//*************************************************************************
-//*************************************************************************
-//*************************************************************************
-//*************************************************************************
-
-#ifdef TEST_CODE
-
-#include <string>
-#include <unordered_map>
-
-std::mutex g;
-
-std::hash<std::string> hashfn;
-
-void task(int n)
-{   {   std::lock_guard<std::mutex> guard(g);
-        std::cout << "Running with n = " << n << "\n";
-    }
-
-    {   std::lock_guard<std::mutex> guard(g);
-        uint64_t w = 1;
-        for (std::uint64_t i=0; i<1000000*((123456*n)%97); i++)
-            w = 139*w + 11213;
-        std::cout << "End task " << n << " with value " << (w%1000) << "\n";
-    }
-}
-
-void task(std::string n)
-{   {   std::lock_guard<std::mutex> guard(g);
-        std::cout << "Running with n = " << n << "\n";
-    }
-
-    {   std::lock_guard<std::mutex> guard(g);
-        uint64_t w = 1;
-        for (std::uint64_t i=0; i<1000000*(hashfn(n)%97); i++)
-            w = 139*w + 11213;
-        std::cout << "End task " << n << " with value " << (w%1000) << "\n";
-    }
-}
-
-int main()
-{
-    std::vector<int> v1 = {2,4,6,8,10,12,14};
-    runInThreads<int>(v1, task);
-
-    std::vector<std::string> v2 = {"two", "four", "six", "eight", "ten"};
-    runInThreads<std::string>(v2, task);
-
-    std::cout << "finished\n";
-    return 0;
-}
-
-#endif // TEST_CODE
-
-#endif // cthread_cpp_loaded
-
-
-// end of cthread.cpp
-
 // fftutils.cpp                                   Copyright 2025 A C Norman
 
 // $Id$
@@ -2555,6 +3025,7 @@ int main()
 
 
 #include <cstdint>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <bit>
@@ -4500,6 +4971,12 @@ inline int128_t int128(int64_t v)
 
 // end of int128_t.h
 
+// I want to be able to find the number of leading zeros in an integer.
+// In bitmaps.h I set up a function "nlz()" for this that maps onto
+// intrinsics where it can. Well actually what I want is the position of the
+// top 1 bit in a number so I can round up to a power of 2.
+
+
 // C++20 introduces "consteval" which is like "constexpr" save that it
 // INSISTS that evaluation happens at compile time. I will use it it
 // it is available.
@@ -4512,6 +4989,42 @@ inline int128_t int128(int64_t v)
 
 namespace fftutils
 {
+
+using Digit = std::uint64_t;
+using SignedDigit = std::int64_t;
+
+#ifdef DEBUG
+using DigitPtr = vecpointer<Digit>;
+using ConstDigitPtr = vecpointer<const Digit>;
+#else // DEBUG
+using DigitPtr = Digit*;
+using ConstDigitPtr = const Digit*;
+#endif // DEBUG
+
+
+using Digit32 = std::uint32_t;
+using SignedDigit32 = std::int32_t;
+
+#ifdef DEBUG
+using DigitPtr32 = vecpointer<Digit32>;
+using ConstDigitPtr32 = vecpointer<const Digit32>;
+#else // DEBUG
+using DigitPtr32 = Digit32*;
+using ConstDigitPtr32 = const Digit32*;
+#endif // DEBUG
+
+// A utility to round up to the next size that is either 2^n or 3*2^(n-2)
+
+inline size_t roundUp23(size_t N)
+{
+#ifdef __cpp_lib_int_pow2
+    size_t r = std::bit_ceil(N);
+#else
+    size_t r = 1LLU<<(64-nlz((uint64_t)(N-1)));
+#endif
+    size_t r1 = 3*(r/4);
+    return N<=r1 ? r1 : r;
+}
 
 inline char* hex128(uint128_t a)
 {   static char str[40];
@@ -4540,23 +5053,61 @@ inline char* dec128(uint128_t a)
 // in the vectors are so large that trace output becomes unduly bulky. For
 // some level of checking it will be OK if I just display the low 4 digits.
 
+#ifdef SYMMETRIC
+
 inline int64_t Sig(uint64_t a, uint64_t P)
-{   return a>(P/2) ? a-P : a;
+{
+    return a>(P/2) ? a-P : a;
 }
 
-inline void prinvec(const char* s, uint64_t* v, size_t n, uint64_t P)
+#else
+
+inline uint64_t Sig(uint64_t a, uint64_t P)
+{   return a;
+}
+
+#endif
+
+inline void prinvec(const char* s, const uint64_t* v, size_t n, uint64_t P)
 {   std::cout << s;
-    if (n > 10u) n = 10; // to limit printout!
     for (size_t i=0; i<n; i++)
-        std::cout << " " << Sig(v[i], P)%10000;
+        std::cout << " " << Sig(v[i], P);
     std::cout << "\n";
 }
 
-inline void prinvec(const char* s, uint64_t w, uint64_t* v, size_t n, uint64_t P)
+inline void prinvec(const char* s, uint64_t w, const uint64_t* v, size_t n, uint64_t P)
 {   std::cout << s << " " << w << ":";
-    if (n > 10u) n = 10; // to limit printout!
     for (size_t i=0; i<n; i++)
-        std::cout << " " << Sig(v[i], P)%10000;
+        std::cout << " " << Sig(v[i], P);
+    std::cout << "\n";
+}
+
+#ifdef SYMMETRIC
+
+inline int32_t Sig(uint32_t a, uint32_t P)
+{   return a>(P/2) ? a-P : a;
+}
+
+#else
+
+inline uint32_t Sig(uint32_t a, uint32_t P)
+{   return a;
+}
+
+#endif
+
+inline void prinvec(const char* s, const uint32_t* v, uint32_t n, uint32_t P)
+{   std::cout << s;
+    for (uint32_t i=0; i<n; i++)
+        std::cout << " " << Sig(v[i], P);
+    std::cout << "\n";
+}
+
+inline void prinvec(const char* s, uint32_t w,
+                    const uint32_t* v, uint32_t n, uint32_t P)
+{   std::cout << s << " " << w << ":";
+    for (uint32_t i=0; i<n; i++)
+        std::cout << " " << Sig(v[i], P);
     std::cout << "\n";
 }
 
@@ -4569,78 +5120,36 @@ inline void prinvec(const char* s, uint64_t w, uint64_t* v, size_t n, uint64_t P
 // code ends up as class member-functions and what I do here must be
 // compiled as top-level code.
 //
-// The first part find three suitable primes and sets up roots of unity
+// The first part find five suitable primes and sets up roots of unity
 // modulo each of them.
 //*************************************************************************
 //*************************************************************************
 
-// In the future I may wish to decimate radix 3 or 5 as well as 2, and
-// so I choose my primes so that that will be possible if I end up
-// going there.
-//
-// Note that 3*3*3*3*5*5*5 = 10125. What I have here are three primes
-// each less than 2^64 and each one greater than a multiple of
-// 2^44*3^4*5*3. A consequence of this is that if I choose vector
-// sizes that are of the form N=2^a*3^b*5^c with a<=44, b<=4 and c<=3
-// then then there will always be a principle Nth root of unity modulo
-// each of them. If I round every vector that I use up to a size that is
-// of the form N as above the worst padding will involve growth by
-// 12.5% and it is reasonable to expect "average" growth by just 4%.
-// These numbers are to be compared against the style of FFT work that
-// can need to (almost) double the size of vectors to get a power of 2
-// as the working vector size.
-// The effect is that I can take FFTs on vectors of length up to 2^44.
-// That is of course a limit way larger than anything that is feasible
-// in 2025.
-// If I worked with numbers represented as 2^44 digits with each digit
-// being 64-bits, the convolution that emerges as the product could have
-// 2*64+44 bits which is 172 bits. Happily the product of the three primes
-// is a number with 180 bits - ie slightly beyond that - so I can recover
-// the correct value using the Chinese Reaminder Theorem and these
-// three primes.
-//
-// There are then two bits of extended precision arithmetic needed:
-// (1)    Form the product (u*v) mod P
-// (2)    Chinese Remainder mod P1, P2 and P2 to get a 172 bit result
-//        expressed in 64-bit segments.
-//
-// Pretty much the standard scheme for performing modular multiplication
-// when the remaindering operation could be expensive but the modulus is
-// a known value goes along the lines:
-//       w = u*v     as a result of width 128. I note that the computers
-//                   I am most interested in support forming a product
-//                   in this form.
-//       w' = top bits of w, such that it can be a full 64-bit value.
-//            Since u and v are each only 63 bits their product is
-//            at most 126 so the top 64 bits that I collect contain
-//            more than half the information.
-//       q = top half of w'*(2^M/P) where the power of 2 is chosen
-//            to leave q using all the 64-bits of a register. I am going to
-//            argue that q will be a really good approximation to w/P
-//       r = w - q*P
-//            If I am really lucky here I will be able to be confident that
-//            the high part of this will all cancel out and so I only
-//            compute its low 64-bits.
-// If r is not the perfect remainder I expect it to be out by at most 1,
-// and so if what I compute has r>=P I know I need to do a correction
-// step - but that is a cheap test. The fact that I can set this up with
-// a known set of shifts and of 2^126/P comes down to me being able to use
-// a single set of primes for all vector-lengths, and that is why I make
-// the primes each one greater than the LCM of all lengths I will support,
-// with that being reasonable given the constraints I apply the the
-// vector-length N.
-//
-// HOWEVER I find that with g++ and clang++ the code (u*v)%P gets compiled
-// into something very much like the above when P is know, so for reduction
-// modulo a 64-bit prime I do not need to write all this out! But later on
-// I will want to perform a multiplication modulo a value that is 128-bits
-// wide, and there I will need to code up a version of it.
+// The product of my 5 primes is about 0x272cf66*2^128. If you have
+// a convolution of a pair of vectors of 64-bit integers each of length N
+// then the largest integer in the output can be around N*2^128. So here
+// the limit I have on N means that a value computed modulo the product
+// of my five primes allows the true4 result to be extracted.
 
-// First I will have a pile of compile-time-executed code that selects
-// primes and yields associated constants.
+// All the FFT work will now be done modulo my primes, so the key
+// modular product step (u*v)%P just involves a 64-bit intermediate
+// result. The final Chinese Remainder step has to deliver a value with
+// over 150 bits so involves some multi-precision work.
+
+// Because the FFT work is time critical I use template expansion to
+// express separate variants for each prime, since I expect that to allow
+// modern C++ compilers to generate specialised code for the remainder
+// operations. Tor that to be possible I set up a pile of compile-time
+// executed code that selects primes and yields associated constants. This
+// has the beneficial (I hope) side effect of avoiding the inclusion of
+// a bunch of "magic numbers" in the code.
 
 // Form (a+b) % N where all three inputs are 64-bit unsigned integers
 // and a and b are both less than N. Annd then for (a-b) % N.
+
+// I have both 64 and 32-bit basic modular arithmetic here in because
+// although the main FFT will use just 32-but the Chinese Remainder
+// support code may need more.
 
 inline constexpr uint64_t plusmod(uint64_t a, uint64_t b, uint64_t N)
 {   uint64_t c = a + b;
@@ -4653,6 +5162,17 @@ inline constexpr uint64_t plusmod(uint64_t a, uint64_t b)
     return c >= P ? c-P : c;
 }
 
+inline constexpr uint32_t plusmod(uint32_t a, uint32_t b, uint32_t N)
+{   uint32_t c = a + b;
+    return c >= N ? c-N : c;
+}
+
+template <uint32_t P>
+inline constexpr uint32_t plusmod(uint32_t a, uint32_t b)
+{   uint32_t c = a + b;
+    return c >= P ? c-P : c;
+}
+
 inline constexpr uint64_t differencemod(uint64_t a, uint64_t b, uint64_t N)
 {   if (a >= b) return a-b;
     else return (a+N)-b;
@@ -4660,6 +5180,17 @@ inline constexpr uint64_t differencemod(uint64_t a, uint64_t b, uint64_t N)
 
 template <uint64_t P>
 inline constexpr uint64_t differencemod(uint64_t a, uint64_t b)
+{   if (a >= b) return a-b;
+    else return (a+P)-b;
+}
+
+inline constexpr uint32_t differencemod(uint32_t a, uint32_t b, uint32_t N)
+{   if (a >= b) return a-b;
+    else return (a+N)-b;
+}
+
+template <uint32_t P>
+inline constexpr uint32_t differencemod(uint32_t a, uint32_t b)
 {   if (a >= b) return a-b;
     else return (a+P)-b;
 }
@@ -4676,11 +5207,38 @@ inline constexpr uint64_t timesmod(uint64_t a, uint64_t b)
 {   return (uint64_t)(((uint128_t)a * b) % P);
 }
 
-// Compute x^n mod N where all values are 64 bits.
+// Form (a*b) % N where all three inputs are 32-bit unsigned integers
+// and a and b are both less than N.
+
+inline constexpr uint32_t timesmod(uint32_t a, uint32_t b, uint32_t N)
+{   return (uint32_t)(((uint64_t)a * b) % N);
+}
+
+template <uint32_t P>
+inline constexpr uint32_t timesmod(uint32_t a, uint32_t b)
+{   return (uint32_t)(((uint64_t)a * b) % P);
+}
+
+inline constexpr uint64_t times64(uint32_t a, uint32_t b)
+{    return a*(uint64_t)b;
+}
+
+/// Compute x^n mod N where all values are 64 bits.
 
 inline constexpr uint64_t exptmod(uint64_t x, uint64_t n, uint64_t N)
 {   if (n == 0) return 1;
     uint64_t y = 1;
+    while (n > 1)
+    {   if (n%2 != 0) y = timesmod(x, y, N);
+        x = timesmod(x, x, N);
+        n = n / 2;
+    }
+    return timesmod(x, y, N);
+}
+
+inline constexpr uint32_t exptmod(uint32_t x, uint32_t n, uint32_t N)
+{   if (n == 0) return 1;
+    uint32_t y = 1;
     while (n > 1)
     {   if (n%2 != 0) y = timesmod(x, y, N);
         x = timesmod(x, x, N);
@@ -4704,8 +5262,23 @@ inline constexpr uint64_t recipmod(uint64_t a)
     return x;
 }
 
+template <uint32_t P>
+inline constexpr uint32_t recipmod(uint32_t a)
+{   int32_t y = 0, x = 1;
+    uint32_t m = P;
+    while (a > 1)
+    {   uint32_t q = a / m;
+        uint32_t t = m; m = a - q*m; a = t;
+        int32_t t1 = y; y = x - q*y; x = t1;
+    }
+    if (x < 0) x += P;
+    return x;
+}
+
 // Use Miller-Rabin with base a to see if it can show that N is
-// composite. 
+// composite. I am happy to leave this as 64-bit code since it is only
+// execured at compile time so any excess there has no impact on eventual
+// runtime cost.
 
 inline CONSTEVAL bool miller_rabin_probably_prime(uint64_t a, uint64_t N)
 {   uint64_t d = N-1;
@@ -4727,7 +5300,8 @@ inline CONSTEVAL bool miller_rabin_probably_prime(uint64_t a, uint64_t N)
 
 // For numbers up to 2^64 use of the following 12 bases will filter
 // out all composite numbers so this is a fully reliable check for
-// primality in that range.
+// primality in that range. Again I will now only be checking values up
+// to 2^31 so the support for 64-bit values is not really necessary!
 
 inline CONSTEVAL bool isprime64(uint64_t N)
 {   const uint64_t witnesses[] =
@@ -4737,16 +5311,56 @@ inline CONSTEVAL bool isprime64(uint64_t N)
     return true;   
 }
 
-// Now for FFT purposes I will need primes that have a primitive
-// Nth root, and here I am interested in that being the case when
-// N is a factor of 2^44*3^4*5^3. For that to work out I just need
-// a prime that is 1 greater than some multiple of that magic number.
-// Here I search down from the value "start" by first rounding it to
-// be a suitable value and then stepping down until I find a prime.
-// The density of primes (in arithmetic progressions) tells me that
-// I will not have a totally unreasonable search to perform.
+// I will be prepared to perform FFTs on vecvtors whose length is a power
+// or two or three times a power of two. This restriction is based on my
+// investigation of the costs of performing the transform as balanced againt
+// the need to pad vectors up to a size I will cope with. So suppose N
+// is a vectore length of that form. To do the FFT using modular arithmetic
+// I will want a prime P of the form k*N+1 because in that case I will be
+// able to find a suitable primitive Nth root of unity.
 
-inline constexpr uint64_t LCMlengths = (3*3*3*3*5*5*5LU) << 44;
+// In the FFT code I have some lines of the form
+//    A = u+v;
+// to be processed mod P, and I can render that as
+//    A = u+v; if (A>=P) A-=P;
+// provided P<0x80000000. 
+// There are also lines such as
+//    A = u-v-w1*w2+x1*x2
+// and with P as above I can render this as
+//    A = (u-v-w1*w1+x1*x2+P^2)%P
+// and because all inputs are in the range 0..P-1 the bracket will end
+// up positive and I do just one remaindering operation. I expect that to
+// be a good thing to do even though processing u and v involves widening
+// them from 32 to 64-bits and adding in P^2 is an extra addition.
+
+// There are two things that limit the size of the largest number I can
+// handle. I want to have a single primitive root associated with each prime,
+// and foe that the primes must each be one greater than a multiple of the
+// LCM of all possible lengths. And then the power of 2 that is a factor of
+// that LCM sets a limit on the length of vectors. This limit means that
+// I will not be able to handle numbers with over about 2^31.5 bits (remember
+// each of those 3*2^24 digits is 64 bits) and that is almost 10^0 decimal
+// digits.
+
+// The second thing that limits the largest numbers that can be handles is
+// the use of just 5 prime moduli. If the convolution of two N digit
+// numbers is formed accurately some of the values may be the result of
+// adding N products of pairs. So the modular work and reconstruction here
+// bust be able to handle 128+log(N) bits. Happily here it turns out that
+// the product of the five primes I end up with will be just over 0x28f3d31
+// times 2^128, giving 25 bits there. This is remarkably close to the first
+// limit I had! And in any of my uses I will not approach either.
+
+inline constexpr uint32_t LCMlengths = 0x06000000U;
+
+// Here I will be able to cope with vectors of length up to 3*2^24. A
+// vector just longer than that would round up in size to 2^26 which does
+// not divide into my LCM nicely. So I should view that as the limit to
+// vector length. The value is 50_331_648 and that is a count of 64-bit words
+// so it represents 3_221_225_472 bits. That is 969_685_489 decimal digits
+// so just short of a billion decimal digits. To cope with more I would
+// want to move to use of 64-bit primes for my modular arithmetic.
+
 
 inline CONSTEVAL uint64_t findP(uint64_t start)
 {   uint64_t p = LCMlengths*(start/LCMlengths) + 1;
@@ -4754,30 +5368,41 @@ inline CONSTEVAL uint64_t findP(uint64_t start)
     return p;
 }
 
-// I start with P1 the first prime below 2^63, then P2 and P3 are the
-// next viable ones down from there. Note that P3 is just 1 greater
-// than 2^44*3^4*5^3. 
-// The primes here are uniquely defined by the constraints
-// I have shown above - and so I could write their values out as
-// simple literals. But by using constexpr compile-time calculation I
-// "show my working" and protect against typos.
+// I need primes each of which is 1 larger than a multiple of LCMlengths.
+// I start with Q1 the first such prime such that 2*Q1^2-Q1 will fit in
+// a 64-bit integer. Of course each prime does not fully fill the 32-bits
+// so the actual width of a value reconstructed modulo their product will
+// be log2(Q1*Q2*Q3*Q4*Q5) = 153.36. That is to say 128+25 bits. A result
+// of this is that such a reconstruction can cope with convolutions involving
+// vectors of length up to 2^25. Well look harder at this. If I have a pair
+// of numbers such that their product will use at most 1.5*2^25 digits
+// then the sum of the (non-zero) lengths in the two numbers will be
+// at most that. The convolution with largest values in it will be one
+// where the two inputs are the same length and then the middle term of
+// it will be the sum of 1.5*2^24 64-bit numbers. That will not overflow
+// the 153 bits I can cope with here. So the constraint on the biggest
+// multiplications I can perform is JUST 1.5*2^25. I think I am both
+// astonished and rather pleased that two constraints end up so close
+// to setting consistent limits.
 
-inline constexpr uint64_t P1 = findP(1LU<<63);   // 0x6a4af00000000001
-inline constexpr uint64_t P2 = findP(P1-2);      // 0x2022900000000001
-inline constexpr uint64_t P3 = findP(P2-2);      // 0x0278d00000000001
 
-// For each prime I want a value (omega1,...) that is a primitive
-// LCMlength root of unity.
+inline constexpr uint32_t Q1 = findP(0x80000000U);  // 0x7e000001
+inline constexpr uint32_t Q2 = findP(Q1-2);         // 0x78000001
+inline constexpr uint32_t Q3 = findP(Q2-2);         // 0x6c000001
+inline constexpr uint32_t Q4 = findP(Q3-2);         // 0x66000001
+inline constexpr uint32_t Q5 = findP(Q4-2);         // 0x42000001
+
+// For each prime I want a value (omega1,omega2,...) that is a primitive
+// LCMlength root of unity modulo that prime.
 
 template <uint64_t P>
 inline CONSTEVAL uint64_t rootofunity()
 {   for (uint64_t k=2;;k++)
-    {   if (exptmod(k, P-1, P) != 1) continue; // should never happen!
-// The next 3 lines verify that no lower power of k will be 1. Ie that
+    {   if (exptmod(k, (P-1), P) != 1) continue; // redundant: P prime
+// The next 2 lines verify that no lower power of k will be 1. Ie that
 // 1, k, k^2, ... k^LCMlengths is a full length cycle of distinct values.
         if (exptmod(k, (P-1)/2, P) == 1) continue;
         if (exptmod(k, (P-1)/3, P) == 1) continue;
-        if (exptmod(k, (P-1)/5, P) == 1) continue;
 // The result will be such that whem raised to the power LCMlengths it
 // yields 1. This means that for any length L that is a factor of LCMlengths
 // then this value r raised to the power (LCMlengths/L) will be a primitive
@@ -4786,17 +5411,25 @@ inline CONSTEVAL uint64_t rootofunity()
     }
 }
 
-inline constexpr uint64_t omega1 = rootofunity<P1>();   // 0x546e6cc8bf755453
-inline constexpr uint64_t omega2 = rootofunity<P2>();   // 0x168f08f8e7
-inline constexpr uint64_t omega3 = rootofunity<P3>();   // 0xe
+inline constexpr uint32_t omega1 = rootofunity<Q1>();   // 0x0f6abdd4
+inline constexpr uint32_t omega2 = rootofunity<Q2>();   // 0x54c52df8
+inline constexpr uint32_t omega3 = rootofunity<Q3>();   // 0x58232605
+inline constexpr uint32_t omega4 = rootofunity<Q4>();   // 0x0cb719df
+inline constexpr uint32_t omega5 = rootofunity<Q5>();   // 0x1476e7a6
 
 //*************************************************************************
 //*************************************************************************
 // Next comes support for Chinese Remainder code. This involves using
-// and extended GCD algorithm first on (P1,P2) and then on (P1*P2,P3)
-// to find key constants needed when the final calculation is to be made.
+// and extended GCD algorithm first on (Q1,Q2) and (Q3,Q4) to get results
+// modulo P1=Q1*Q2 ands P2=Q3*Q4. Then I merge them to get a result
+// modulo P1*P2 (=Q1*Q2*Q3*Q4) and finally deal with Q5 - which for some
+// level of tidiness I call P3 too.
 //*************************************************************************
 //*************************************************************************
+
+inline constexpr uint64_t P1 = Q1*(uint64_t)Q2;
+inline constexpr uint64_t P2 = Q3*(uint64_t)Q4;
+inline constexpr uint32_t P3 = (uint32_t)Q5;
 
 // Given a and b I want to find x and y such that
 //     a*x - b*y = 1  (x_negated=false)
@@ -4828,6 +5461,12 @@ struct XGCD64
     }
 };
 
+// These first two are used to find results mod P1 and P2, and then
+// the third helps with P1*P2 - otherwise Q1*Q2*Q3*Q4.
+
+inline constexpr XGCD64 Q1_Q2(Q1, Q2);
+inline constexpr XGCD64 Q3_Q4(Q3, Q4);
+
 inline constexpr XGCD64 P1_P2(P1, P2);
 
 // now suppose X = a mod P1 and b mod P2 then
@@ -4855,8 +5494,15 @@ struct XGCD128
 };
 
 inline constexpr uint128_t P1xP2 = (uint128_t)P1*P2;
-
 inline constexpr XGCD128 P1_P2_P3(P1xP2, P3);
+
+uint64_t Hi(uint128_t n)
+{   return n>>64;
+}
+
+uint64_t Lo(uint128_t n)
+{   return n;
+}
 
 // I observe that in the two cases I am using here neither ends up
 // with x negated. However the code above shows awareness that that
@@ -4874,9 +5520,9 @@ inline constexpr void times_64_128(uint64_t a, uint128_t b,
                                    uint64_t& hi, uint64_t& mid, uint64_t& lo)
 {   uint64_t bhi = static_cast<uint64_t>(b>>64);
     uint64_t blo = static_cast<uint64_t>(b);
-    uint128_t w1 = (uint128_t)a*blo;
+    uint128_t w1 = a*(uint128_t)blo;
     lo = static_cast<uint64_t>(w1);
-    uint128_t w2 = (uint128_t)a*bhi + (w1>>64);
+    uint128_t w2 = a*(uint128_t)bhi + (w1>>64);
     mid = static_cast<uint64_t>(w2);
     hi = static_cast<uint64_t>(w2>>64);
 }
@@ -4889,7 +5535,7 @@ struct P1xP2xP3_t
     uint64_t mid = 0;
     uint64_t lo = 0;
     CONSTEVAL P1xP2xP3_t()
-    {   times_64_128(P1, (uint128_t)P2*P3, hi, mid, lo);
+    {   times_64_128(P1, P2*(uint128_t)P3, hi, mid, lo);
     }
 };
 
@@ -4935,14 +5581,15 @@ inline constexpr uint128_t invP1xP2 = inverse<P1xP2>();
 
 // Multiply a pair of 128-bit values to get a 256 bit result.
 
-inline void times_128(uint128_t a, uint128_t b, uint128_t& chi, uint128_t& clo)
+inline void times_128(uint128_t a, uint128_t b,
+                      uint128_t& chi, uint128_t& clo)
 {
     uint64_t ahi = a>>64, alo = a;
     uint64_t bhi = b>>64, blo = b;
-    uint128_t hh = (uint128_t)ahi*bhi;
-    uint128_t hl = (uint128_t)ahi*blo;
-    uint128_t lh = (uint128_t)alo*bhi;
-    uint128_t ll = (uint128_t)alo*blo;
+    uint128_t hh = ahi*(uint128_t)bhi;
+    uint128_t hl = ahi*(uint128_t)blo;
+    uint128_t lh = alo*(uint128_t)bhi;
+    uint128_t ll = alo*(uint128_t)blo;
     chi = hh + (hl>>64) + (lh>>64);
     hl <<= 64;
     lh <<= 64;
@@ -4961,9 +5608,9 @@ inline void times_128(uint128_t a, uint128_t b, uint128_t& chi, uint128_t& clo)
 inline constexpr uint128_t times_hi_128(uint128_t a, uint128_t b)
 {   uint64_t ahi = a>>64, alo = a;
     uint64_t bhi = b>>64, blo = b;
-    uint128_t hi = (uint128_t)ahi*bhi;
-    uint128_t mid1 = ((uint128_t)ahi*blo)>>64;
-    uint128_t mid2 = ((uint128_t)bhi*alo)>>64;
+    uint128_t hi = ahi*(uint128_t)bhi;
+    uint128_t mid1 = (ahi*(uint128_t)blo)>>64;
+    uint128_t mid2 = (bhi*(uint128_t)alo)>>64;
     return hi + mid1 + mid2;
 } 
 
@@ -4979,8 +5626,8 @@ inline constexpr uint128_t timesmod(uint128_t a, uint128_t b)
 // their product has at least 2*leadingzeros<P>(). So if I shift the 256-bit
 // version of the product right by 128-2*leadingzeros<P>() I should get a
 // value that fits into 128 bits and that has as much accuracy as I can. 
-    uint128_t ptop = phi<<(2*leadingzeros<P>()) |
-                    (plo>>(128-2*leadingzeros<P>()));
+    uint128_t ptop = (phi<<(2*leadingzeros<P>())) |
+                     (plo>>(128-2*leadingzeros<P>()));
     uint128_t quot = times_hi_128(ptop, invP1xP2);
 // I now want to set rem = a*b - quot*P1xP2
 // Well quot needs shifting to allow for that fact that invP1xP2 had
@@ -5028,49 +5675,73 @@ inline constexpr uint128_t timesmod(uint128_t a, uint128_t b)
 // (but now having to use larger numbers) to merge in the the effect
 // of P3. The result will be returned as three 64-bit digits.
 
-inline void chinese_remainder(uint64_t a1, uint64_t a2, uint64_t a3,
+uint32_t modulo(uint64_t hi, uint64_t mid, uint64_t lo, uint32_t P)
+{   uint32_t r = ((((uint128_t)hi)<<64) + mid)%P;
+    r = ((((uint128_t)r)<<64) + lo)%P;
+    return r;
+}
+
+// This reconstructs modulo P1 and P2 (each of which are 64 bits wide) and
+// P3 which is only 32-bits wide. This gives a result that fits within
+// 64+64+32 bits (ie 160 bits). 
+
+inline void chinese_remainder(Digit a1, Digit a2, Digit32 a3,
                               uint64_t& hi, uint64_t& mid, uint64_t& lo)
 {
 // First find a1a2 which will be a1 mod P1 and a2 mod P2
-    uint128_t a1a2A = (((uint128_t)a2*P1_P2.x)%P2)*P1;
-    uint128_t a1a2B = (((uint128_t)a1*P1_P2.y)%P1)*P2;
+    uint128_t a1a2A = ((a2*(uint128_t)P1_P2.x)%P2)*P1;
+    uint128_t a1a2B = ((a1*(uint128_t)P1_P2.y)%P1)*P2;
     uint128_t a1a2;
-// In fact I because I am using a fixed set of primes I happen to know
-// that x_negated will NOT be set here, but I expect that a good compiler
-// will understand that and the redundant code here will not hurt - and
-// having it here makes what I write "more honest".
-    if (P1_P2.x_negated)
+    if constexpr (P1_P2.x_negated)
         a1a2 = a1a2B >= a1a2A ? a1a2B - a1a2A
                               : a1a2B + (uint128_t)P1xP2 - a1a2A;
     else
         a1a2 = a1a2A >= a1a2B ? a1a2A - a1a2B
                               : a1a2A + (uint128_t)P1xP2 - a1a2B;
+// here a1a2 should be a1 mod P1 (== Q1*Q2) and a2 mod P2 (== Q3*Q4)
+    assert(a1a2%P1 == a1);
+    assert(a1a2%P2 == a2);
+//
 // Now the next step is logically the same but looks messier
-// because I need to go to 192 bits. Well more pedantically around 170
-// would suffice, but that still means I will yse three 64-bit digits.
+// because I need to go to 192 bits. Well more pedantically around 150
+// would suffice, but that still means I will use three 64-bit digits.
 //
 // The logic is
 //    p = ((a3*P1_P2_P3.x)%P3)        * (P1*P2); a3 & p1_p2_p3.x both 64 bits
 //    q = ((a1a2*P1_P2_P3.y)%(P1*P2)) * P3;   a1a2 & p1_p2_p3.y both 128 bits
-//    (p - q) % (P1*P2*P3);
-
-    uint128_t temp = a3*P1_P2_P3.x;   // will not overflow because .x is 64-bits
-    uint64_t phi, pmid, plo;
+//    (p - q) % (P1*P2*P3);     [ or potentially q-p ]
+// and note here that which of p and q is larger is a separate matter
+// from which way the subtraction goes, but that each of p and q are in
+// the range 0 .. P1*P2*P3-1.
+    Digit temp = a3*(Digit)P1_P2_P3.x; // will not overflow inputs are 32-bit
+    Digit phi, pmid, plo;
     times_64_128(temp%P3, P1xP2, phi, pmid, plo);
 // Now for the messier one: I need (a1a2*P1_P2_P3.y) % (P1*P2)
 // and all three values involved are 128-bits wide.
     uint128_t q1 = timesmod<P1xP2>(a1a2, P1_P2_P3.y);
-    uint64_t qhi, qmid, qlo;
+    Digit qhi, qmid, qlo;
     times_64_128(P3, q1, qhi, qmid, qlo);
 // Now I need to return p-q  mod P1xP2xP3. Note that both p and q are
 // less than P1xP2xP3 so the only correction I can need would be if the
 // naive subtraction leaves a negative value.
-    hi = phi-qhi;
-    mid = pmid-qmid;
-    lo = plo-qlo;
-    if (mid > pmid) hi--;
-    if (lo > plo)
-    {   if (mid-- == 0) hi--;
+// The x_negated flag is a constant!
+    if constexpr (P1_P2_P3.x_negated)   
+    {   hi = qhi-phi;
+        mid = qmid-pmid;
+        lo = qlo-plo;
+        if (mid > qmid) hi--;
+        if (lo > qlo)
+        {   if (mid-- == 0) hi--;
+        }
+    }
+    else
+    {   hi = phi-qhi;
+        mid = pmid-qmid;
+        lo = plo-qlo;
+        if (mid > pmid) hi--;
+        if (lo > plo)
+        {   if (mid-- == 0) hi--;
+        }
     }
 // This could have left a negative result - if it did I must add in P1*P2*P3
     if ((hi>>63) != 0)
@@ -5084,15 +5755,85 @@ inline void chinese_remainder(uint64_t a1, uint64_t a2, uint64_t a3,
     }
 }
 
+// Here I have 32-bit values a, b, q1, q2, x and y and I require
+//   R = a mod q1
+//   R = b mod q2
+//   x*q1 - y*q2 = 1 or -x*q1 + y*q2 = 1 depending on x_negated.
+// Return the 64-bit value of R
+
+template <Digit32 q1, Digit32 q2, Digit32 x, Digit32 y, bool x_negated>
+inline Digit chinese_remainder_32(Digit32 a, Digit32 b)
+{
+// First find a1a2 which will be a1 mod q1 and a2 mod q2
+    Digit RA = ((b*(Digit)x)%q2)*q1;
+    Digit RB = ((a*(Digit)y)%q1)*q2;
+    Digit P = q1*(Digit)q2;
+    Digit r;
+
+// 4 lines just for debugging
+    if constexpr (x_negated) r = RB >= RA ? RB - RA : RB + P - RA;
+    else r = RA >= RB ? RA - RB : RA + P - RB;
+    assert(r%q1 == a);
+    assert(r%q2 == b);
+
+    if constexpr (x_negated) return RB >= RA ? RB - RA : RB + P - RA;
+    else return RA >= RB ? RA - RB : RA + P - RB;
+}
+
+inline void chinese_remainder(Digit32 a1, Digit32 a2,
+                              Digit32 a3, Digit32 a4, Digit32 a5,
+                              uint64_t& hi, uint64_t& mid, uint64_t& lo)
+{   uint64_t b1 = chinese_remainder_32<
+                  Q1,Q2,Q1_Q2.x,Q1_Q2.y,Q1_Q2.x_negated>(a1, a2),
+             b2 = chinese_remainder_32<
+                  Q3,Q4,Q3_Q4.x,Q3_Q4.y,Q3_Q4.x_negated>(a3, a4);
+    assert(a1 == b1%Q1);
+    assert(a2 == b1%Q2);
+    assert(a3 == b2%Q3);
+    assert(a4 == b2%Q4);
+    chinese_remainder(b1, b2, a5, hi, mid, lo);
+}
+
+#ifdef TESTUTILS
+
+extern "C"
+{
+
+int main()
+{
+     std::cout << std::hex;
+     std::cout << Q1 << "  " << omega1 << "  " << (2*Q1*(uint64_t)Q1) << "\n";
+     std::cout << Q2 << "  " << omega2 << "  " << (2*Q2*(uint64_t)Q2) << "\n";
+     std::cout << Q3 << "  " << omega3 << "  " << (2*Q3*(uint64_t)Q3) << "\n";
+     std::cout << Q4 << "  " << omega4 << "  " << (2*Q4*(uint64_t)Q4) << "\n";
+     std::cout << Q5 << "  " << omega5 << "  " << (2*Q5*(uint64_t)Q5) << "\n";
+
+     uint64_t hi, mid, lo;
+     chinese_remainder(7,7,7,7,7, hi,mid,lo);
+     std:: cout << hi << " " << mid << " " << lo << "\n";
+
+     std::cout << "finishing\n";
+     return 0;
+}
+
+}
+
+#endif // TESTUTILS
 
 } // end of namespace
 
 // end of fftutils.cpp
 
+
+
 namespace arithlib_implementation
 {
 
 using namespace fftutils;
+
+// My (big) integers are represented with 64-bit digits in a 2s complement
+// notation, so the most significant digit is signed and the rest are
+// unsigned.
 
 using Digit = std::uint64_t;
 using SignedDigit = std::int64_t;
@@ -5104,6 +5845,21 @@ using ConstDigitPtr = vecpointer<const Digit>;
 using DigitPtr = Digit*;
 using ConstDigitPtr = const Digit*;
 #endif // DEBUG
+
+// At present Digit32 is only used in the code that performs FFTs
+// modulo 32-bit primes...
+
+using Digit32 = std::uint32_t;
+using SignedDigit32 = std::int32_t;
+
+#ifdef DEBUG
+using DigitPtr32 = vecpointer<Digit32>;
+using ConstDigitPtr32 = vecpointer<const Digit32>;
+#else // DEBUG
+using DigitPtr32 = Digit32*;
+using ConstDigitPtr32 = const Digit32*;
+#endif // DEBUG
+
 
 inline bool permitParallel = true;
 
@@ -7871,7 +8627,15 @@ inline void display2(std::string label, std::size_t a, std::size_t b)
 #ifdef _cpp_lib_bitops
 
 // C++20 provides functions for counting zeros. Unlike the GNU intrinsics
-// they have defined behaviour when presented with a zero word.
+// they have defined behaviour when presented with a zero word. I use my
+// names here because in a bad case where the official C++20 versions are
+// not flagged using _cpp_lib_bitops but are in fact provided maybe if I
+// were to define my own "countl_zero()" etc I would get a linker clash.
+//
+// It is pretty grim here really. If I have c++20 I can use its facilities.
+// If I am using g++ or clang++ I expect them to provide intrinsics.
+// In the (vanishingly improbable?) case that neither of the above hold I
+// implement things for myself.
 
 inline int nlz(uint64_t x)
 {   return countl_zero(x);
@@ -7920,39 +8684,28 @@ inline int nlz(uint64_t x)
 // values I have here. So a simple lookup in a table of size 67 does the
 // job for me. I will fill the table using code here that computes the
 // relevant values since that feels safer than having a table of "magic
-// numbers".
-    auto nlzf = [](int n)
-    {   if (n==0) return 64;
-        uint64_t v = 0;
-        int r = -1;
-        for (int k=0; k<64; k++)
-        {   v = 2*v + 1;
-            if (v%67 == n) r = 63-k;
+// numbers". I can set up the table at compile-time!
+    class nlzTable
+    {
+    public:
+        int8_t data[67];
+        nlzTable()
+        {   uint64_t v = 0;
+            for (int n=0; n<67; n++)
+            {   int r = -1;
+// For each entry in the table I search for a value that will map
+// onto that index. If I foind ona at sopme value of k then it will
+// have 63-k leading zeros.
+                for (int k=0; k<64; n++)
+                {   v = 2*v + 1; // 0b1, 0b11, 0b111, 0b1111 etc
+                    if (v%67 == n) r = 63-k;
+                }
+                data[n] = r;
+            }
         }
-        return r;
     };
-// The way this is written out is tolerable because 67 is a reasonably
-// small number, but it would have been neater if C++ provided a way to
-// initialize arrays a bit like this. It does if one uses std::vector
-// rather than a plain array. Note the use of constexpr so that the table
-// is set up during compilation.
-    constexpr static int8_t nlzTable[67] =
-    {   nlzf( 0), nlzf( 1), nlzf( 2), nlzf( 3), nlzf( 4),
-        nlzf( 5), nlzf( 6), nlzf( 7), nlzf( 8), nlzf( 9),
-        nlzf(10), nlzf(11), nlzf(12), nlzf(13), nlzf(14),
-        nlzf(15), nlzf(16), nlzf(17), nlzf(18), nlzf(19),
-        nlzf(20), nlzf(21), nlzf(22), nlzf(23), nlzf(24),
-        nlzf(25), nlzf(26), nlzf(27), nlzf(28), nlzf(29),
-        nlzf(30), nlzf(31), nlzf(32), nlzf(33), nlzf(34),
-        nlzf(35), nlzf(36), nlzf(37), nlzf(38), nlzf(39),
-        nlzf(40), nlzf(41), nlzf(42), nlzf(43), nlzf(44),
-        nlzf(45), nlzf(46), nlzf(47), nlzf(48), nlzf(49),
-        nlzf(50), nlzf(51), nlzf(52), nlzf(53), nlzf(54),
-        nlzf(55), nlzf(56), nlzf(57), nlzf(58), nlzf(59),
-        nlzf(60), nlzf(61), nlzf(62), nlzf(63), nlzf(64),
-        nlzf(65), nlzf(66)
-    };
-    return nlzTable[x % 67];
+    constexpr nlzTable tab;
+    return tab.data[x % 67];
 }
 
 // ntz find the bit-number of the least significant bit, So here are some
@@ -8020,12 +8773,12 @@ inline int countBits(Digit x)
 // binary representation of n-1.
 
 inline std::size_t next_power_of_2(std::size_t n)
-{   return (static_cast<std::size_t>(1)) << (64-nlz(
+{   return (static_cast<std::size_t>(1)) << (64-CSL_LISP::nlz(
                 static_cast<Digit>(n-1)));
 }
 
 inline unsigned int logNextPowerOf2(std::size_t n)
-{   return (64-nlz(static_cast<Digit>(n-1)));
+{   return 64-CSL_LISP::nlz(static_cast<Digit>(n-1));
 }
 
 // I am going to represent bignums as arrays of 64-bit digits.
@@ -8644,7 +9397,7 @@ inline void fudgeDistribution(const std::uint64_t* a,
             if (a[lena-1] == 0)
             {   if (lena>1) r[lena-2] = 1ULL<<63;
             }
-            else r[lena-1] = 1ULL << (63-nlz(a[lena-1]));
+            else r[lena-1] = 1ULL << (63-CSL_LISP::nlz(a[lena-1]));
             if ((n&7) == 0) // decrement it
             {   if (lena!=1 || a[0]!=0) // avoid decrementing zero.
                 {   std::uint64_t* p = r;
@@ -9136,7 +9889,7 @@ inline void doubleTo_virtualBignum(double d,
 // Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer.
     Digit lowbit = mantissa & -static_cast<Digit>
                            (mantissa);
-    int lz = 63 - nlz(lowbit); // low zero bits
+    int lz = 63 - CSL_LISP::nlz(lowbit); // low zero bits
     mantissa = ASR(mantissa, lz);
     exponent += lz;
 // Now mantissa has its least significant bit a "1".
@@ -9278,11 +10031,11 @@ inline void float128To_virtualBignum(float128_t d,
     int lz;
     if (mlo != 0)
     {   Digit lowbit = mlo & (-mlo);
-        lz = 63 - nlz(lowbit); // low zero bits
+        lz = 63 - CSL_LISP::nlz(lowbit); // low zero bits
     }
     else
     {   Digit lowbit = mhi & (-static_cast<Digit>(mhi));
-        lz = 64 + 63 - nlz(lowbit); // low zero bits
+        lz = 64 + 63 - CSL_LISP::nlz(lowbit); // low zero bits
     }
     shiftright(mhi, mlo, lz);
     exponent += lz;
@@ -9532,8 +10285,8 @@ inline float Float::op(std::uint64_t* a)
     }
     if (!carried) next |= 1;
 // Now I need to do something very much like the code for the int64_t case.
-    if (top == 0) lz = nlz(next) + 64;
-    else lz = nlz(top);
+    if (top == 0) lz = CSL_LISP::nlz(next) + 64;
+    else lz = CSL_LISP::nlz(top);
 //
 //  uint64_t top24 = {top,next} >> (128-24-lz);
     int sh = 128-24-lz;
@@ -9581,7 +10334,7 @@ inline double Frexp::op(SignedDigit a, SignedDigit &x)
 // Because top53 >= 2^53 the number of leading zeros in its representation is
 // at most 10. Ha ha. That guaranteed that the shift below will not overflow
 // and is why I chose my range as I did.
-    int lz = nlz(top53);
+    int lz = CSL_LISP::nlz(top53);
     Digit low = top53 << (lz+53);
     top53 = top53 >> (64-53-lz);
     if (low > 0x8000000000000000U) top53++;
@@ -9643,8 +10396,8 @@ inline double Frexp::op(std::uint64_t* a, SignedDigit &x)
     }
     if (!carried) next |= 1;
 // Now I need to do something very much like the code for the int64_t case.
-    if (top == 0) lz = nlz(next) + 64;
-    else lz = nlz(top);
+    if (top == 0) lz = CSL_LISP::nlz(next) + 64;
+    else lz = CSL_LISP::nlz(top);
 //
 //  uint64_t top53 = {top,next} >> (128-53-lz);
     int sh = 128-53-lz;
@@ -9735,8 +10488,8 @@ inline float128_t Frexp128::op(std::uint64_t* a, SignedDigit &x)
 // zero, but if it is then next1 will have its top bit set, and so within
 // these bits I certainly have the 113 that I need to obtain an accurate
 // floating point value.
-    if (top == 0) lz = nlz(next1) + 64;
-    else lz = nlz(top);
+    if (top == 0) lz = CSL_LISP::nlz(next1) + 64;
+    else lz = CSL_LISP::nlz((top);
 //
 //  uint64_t {top113,top112a} = {top,next1,next2} >> (128-113-lz);
     int sh = 192-113-lz;
@@ -9909,7 +10662,7 @@ inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena)
         }
         top--;
     }
-    return 64*(lena-1) + (top==0 ? 0 : 64-nlz(top));
+    return 64*(lena-1) + (top==0 ? 0 : 64-CSL_LISP::nlz(top));
 }
 
 // I want an estimate of the number of bytes that it will take to
@@ -11645,14 +12398,14 @@ inline std::size_t LowBit::op(std::uint64_t* a)
     {   std::size_t r=0, i=0;
         while (a[i++]==-1ULL) r += 64;
         Digit w = ~a[i-1];
-        return 64-nlz(w & (-w))+r;
+        return 64-CSL_LISP::nlz(w & (-w))+r;
     }
     else if (lena==1 && a[0]==0) return 0;
     else
     {   std::size_t r=0, i=0;
         while (a[i++]==0) r += 64;
         Digit w = a[i-1];
-        return 64-nlz(w & (-w))+r;
+        return 64-CSL_LISP::nlz(w & (-w))+r;
     }
 }
 
@@ -11662,7 +12415,7 @@ inline std::size_t LowBit::op(SignedDigit aa)
     else if (aa < 0) a = ~static_cast<Digit>(aa);
     else a = aa;
     a = a & (-a); // keeps only the lowest bit
-    return 64-nlz(a);
+    return 64-CSL_LISP::nlz(a);
 }
 
 inline std::size_t IntegerLength::op(std::uint64_t* a)
@@ -11674,7 +12427,7 @@ inline std::size_t IntegerLength::op(SignedDigit aa)
     if (aa == 0 || aa == -1) return 0;
     else if (aa < 0) a = -static_cast<Digit>(aa) - 1;
     else a = aa;
-    return 64-nlz(a);
+    return 64-CSL_LISP::nlz(a);
 }
 
 // This function should return the top 64-bits of an integer in the
@@ -11696,14 +12449,14 @@ inline Digit Top64Bits::op(std::uint64_t* a)
         (n == 2 && a[2] == 0))
         return Top64Bits::op(static_cast<int64_t>(a[0]));
     if (a[n-1] == 0) n--;
-    int lz = nlz(a[n-1]);
+    int lz = CSL_LISP::nlz(a[n-1]);
     if (lz == 0) return a[n-1];
     return (a[n-1] << lz) | (a[n-2] >> (64-lz));
 }
 
 inline Digit Top64Bits::op(SignedDigit a)
 {   if (a == 0) return 0;    // Only non-normalised case
-    return static_cast<uint64_t>(a) << nlz(a);
+    return static_cast<uint64_t>(a) << CSL_LISP::nlz(a);
 }
 
 inline std::size_t Logcount::op(std::uint64_t* a)
@@ -18651,6 +19404,12 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
 
 private:
 
+// Above this length (measured in 64-bit digits) I will use fast
+// multiplication based on FFT. The threshold here is about correct
+// under WSL with Linux running on my Windows 11 machine.
+
+static const std::size_t FFT_THRESHOLD = 65000;
+
 // When thread is false this is being used when Kara or Toom32
 // recurses and so most of the time we will have M==N>KARASTART/2. With
 // thread true it is from the top-level and may fire up some workers.
@@ -18694,12 +19453,12 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
 #endif // TRACE_TIMES
 // Here I will call Kara if N <= 1.25*M.
     if (4*N <= 5*M)
-    {   if (N > 100000) fftmul(a, N, b, M, result);
+    {   if (N > FFT_THRESHOLD) fftmul(a, N, b, M, result);
         else kara<thread>(a, N, b, M, result, workspace);
     }
 // If N <= 1.85*M I will use toom32.
     else if (20*N <= 37*M)
-    {   if (N > 100000) fftmul(a, N, b, M, result);
+    {   if (N > FFT_THRESHOLD) fftmul(a, N, b, M, result);
         else toom32<thread>(a, N, b, M, result, workspace);
     }
 // If M and N are significantly different I will split the product
@@ -19370,61 +20129,52 @@ static void workerThread(WorkerData* wd)
 // The code here uses Fourier Transfroms, or perehaps more pedantically
 // the Number Theoretical Transfrom, to multiply large integers. Those
 // integers have 64-bit digits.
-// Initial results suggest that it will match or improve on simple
-// schoolbook long multiplication for results that are 256 digits long,
-// It will be some way beyond that before it matches Karatsuba and Toom,
-// but that threshold will be assessed later on. But there seems a chance
-// that it will leave my version of Karatsuba that uses three threads
-// at the top level with at best a rather narrow band of applicability.
-
 
 // To form a*b let N be length(A)+length(B) rounded up. For many presentations
-// of FFT multiplication one rounds up to a power of 2.
-// I *may* at a later stage allow for multiples of 3 or 5 to be used
-// in the size so as to reduce the amount of paddiing needed.
-// I pad each of a and b to length N with zeros. I have three primes P1,
-// P2 and P3 such that each fits in 64-bits and eachg is a multiple of
+// of FFT multiplication one rounds up to a power of 2. However I will
+// handle lengths that are either of the form 2^n or 3*2^n. This reduces
+// the amount of padding that can be called for so that in the worst case
+// vectors only expand to 1.5 times their original size rather than by a
+// full factor of 2.
+// I pad each of a and b to length N with zeros. I have five primes Q1-Q5,
+// such that each fits in 31-bits and each is a multiple of
 // every possible length that I will be using. This limits the length
-// of inputs to around 2^44 digits which is a constraint that I am not
-// especially worried about.
-// If P is a prime I form the FFT of a and of b, do pairwise multiplication
+// of inputs to around 2^19 digits which is a constraint that I am not
+// especially worried about given that CSL has a limit at that level.
+//
+// When P is a prime I form the FFT of a and of b, do pairwise multiplication
 // and an inverse FFT all mod P. The result will be an image of my product
 // modulo P. Using the Chinese Remainder Theorem I can then re-create
-// digits modulo P1*P2*P3. That is big enough for everything to be correct
-// in Z. Because those reconstructions and 3 digits long I have some carry
-// operations before I end up with what should be the true product in a
-// natural form.
+// digits modulo the product of the Qi. That is big enough for everything
+// to be correct in Z. Because those reconstructions are about 150 bits long
+// I have some carry operations before I end up with what should be the true
+// product in a natural form.
 //
-// I do the multiplication modulo three primes P1, P2 and P3 and I do those
-// steps in parallel. That increases overhead for shortish numbers but
-// really pays of for large enough ones.
+// I do the multiplication modulo my primes in parallel. That increases
+// overhead for shortish numbers but really pays of for large enough ones.
+// And I expect the cross over point to be broadly in line with where
+// FFT-based methods become viable anyway.
+//
+// Hmmm could I use SIMD for the parallelism? One wants to run 5 tasks
+// and parallel and the key challenge will be steps that go (u*v)%P where
+// each of those values are 32-bits but the intermediate product is 64-bits
+// wide.
 
-// I have three multiplication schemes here while I test. One is simple
+// I implement three multiplication schemes here while I test. One is simple
 // classical O(N^2) and that can provide a baseline for comparing both
 // results and timings. The next uses Fourier Transforms over the prime
 // fields but computes them using simple multiplication by matrix with
 // elements omega^(i*j). That provides no speed advantage but will show
 // the values that should emerge from transforms - and that version
 // appears to work (thereby validating both the structure of the code and
-// details of the modular arithmetic).
+// details of the modular arithmetic). Such a method will work with
+// any size vector where I can provide a suitable root of unity, not just
+// powers of 2 and 3.
 // The final one is the "fast" version which should run in time proportional
 // to N*logN.
 
-// I might comments on some of the decisions embedded here and some
-// alternatives that I have not followed up on.
-// I might have used 32-bit primes so that (a*b)%P all worked directly in
-// properly portable C++ with the product a 64-bit integer. But for a vector
-// length N I need a prime of the form k*N+1 so I can find a primitive root/
-// Suppose for a moment that I just use power of 2 lengths up to 2^L and I
-// keep using 64-bit digits, then I will need 5 32-bit primes each of the
-// for k*2^L+1 and that will restrict L unduly. If I use 32-bit digits by
-// splitting my input ones into low and high halves I only need 3 such primes.
-// But I still restrict L, and I would prefer a scheme that could extent to
-// multiply numbers to unreasonably long lengths. Experiments suggest that
-// I could have L up to 2^27 and have 5 primes, but no better than that.
-//
-//            Arthur Norman
-
+// Well: the slow versions will only be included if you compile with
+// "-DTESTFFT".
 
 
 #include <cstdint>
@@ -19463,9 +20213,12 @@ using namespace fftutils;
 //*************************************************************************
 //*************************************************************************
 
+
 // For validation I will code up classical O(N^2) multiplication so I
 // can try random cases and compare fast and slow versions for both
-// results and timings.
+// results and timings. The classical multiplication I have in arithlin is
+// distinctly faster than this, but has much longer code with loops
+// unrolled etc.
 
 static void slowmul(ConstDigitPtr a, size_t lena,
                     ConstDigitPtr b, size_t lenb,
@@ -19488,48 +20241,49 @@ static void slowmul(ConstDigitPtr a, size_t lena,
     }
 }
 
-// Fourier Transform done in N^2 steps, not used except possibly while
-// debugging but still posisbly useful as documentation/reference.
+#ifdef TESTFFT
 
-template <uint64_t P, uint64_t omega>
-static void slow_ft(DigitPtr a, size_t N)
-{   uint64_t root = exptmod(omega, LCMlengths/N, P);
+// The Fourier transforms here will work on 32-bit values...
+
 // Here I have a really simple Fourier Transform (and its inverse)
 // coded as simply multiplication of the input vector by a matrix
 // whose elements are omega^(i*j). This has to put the transformed
 // data in a new vector. This code would work for arbitrary length vectors
 // not just powers of 2 so it may be a useful basis for checking when
 // I code up more complicated versions.
-    stkvector<Digit> temp(N);
+
+template <Digit32 P, Digit32 omega>
+static void slow_ft(DigitPtr32 a, size_t N)
+{   Digit32 root = exptmod(omega, (int32_t)(LCMlengths/N), P);
+    stkvector<Digit32> temp(N);
     for (size_t i=0; i<N; i++)
-    {   uint64_t w = 0;
+    {   Digit32 w = 0;
         for (size_t j=0; j<N; j++)
-            w = plusmod<P>(w, timesmod<P>(a[j], exptmod(root, i*j, P)));
+            w = plusmod<P>(w, timesmod<P>(a[j], exptmod(root, (int32_t)((i*j)%N), P)));
         temp[i] = w;
     }
     for (size_t i=0; i<N; i++)
         a[i] = temp[i];
 }
 
-template <uint64_t P, uint64_t omega>
-static void inverse_slow_ft(DigitPtr a, size_t N)
-{   uint64_t root = exptmod(omega, LCMlengths-LCMlengths/N, P);
-// Here I have a really simple Fourier Transform (and its inverse)
-// coded as simply multiplication of the input vector by a matrix
-// whose elements are omega^(i*j). This has to put the transformed
-// data in a new vector. This code would work for arbitrary length vectors
-// not just powers of 2 so it may be a useful basis for checking other
-// (faster) versions.
-    stkvector<Digit> temp(N);
-    for (size_t i=0; i<N; i++)
-    {   uint64_t w = 0;
+// Inverse of the above. This is just the same code save it uses
+// the reciprocal of the root of unity used in the first version.
+
+template <Digit32 P, Digit32 omega>
+static void inverse_slow_ft(DigitPtr32 a, size_t N)
+{   Digit32 root = exptmod(omega, (int32_t)(LCMlengths-LCMlengths/N), P);
+    stkvector<Digit32> temp(N);
+    for (Digit32 i=0; i<N; i++)
+    {   Digit32 w = 0;
         for (size_t j=0; j<N; j++)
-            w = plusmod<P>(w, timesmod<P>(a[j], exptmod(root, i*j, P)));
+            w = plusmod<P>(w, timesmod<P>(a[j], exptmod(root, (int32_t)((i*j)%N), P)));
         temp[i] = w;
     }
     for (size_t i=0; i<N; i++)
         a[i] = temp[i];
 }
+
+#endif // TESTFFT
 
 //*************************************************************************
 //*************************************************************************
@@ -19538,92 +20292,281 @@ static void inverse_slow_ft(DigitPtr a, size_t N)
 //*************************************************************************
 
 
+// First I have Decimation in Frequency where the vector length can
+// be a power of 2 or three times a power of 2. I am taking the view that
+// taking remainder operations by the prime P will be espensive so I try
+// to reduce the number of them - first by separating out places where I
+// would be multiplying by a twiddle factor of 1, and then by exploiting
+// the fact that my prime is a bit less than 2^32 so I can combine two
+// products before needing to take a remainder. Ie I go (u*v+w*x)%P rather
+// than (u*v)%P + (w*x)%P followed by a test to see if the addition led
+// to a vale >=P. 
+
+template <uint32_t P, uint32_t cube_root>
+static void dif_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
+{   size_t M, co_M;
+    if (N%3 == 0)
+    {   M = N/3;
+        Digit temp1 = times64(cube_root, x[M]);
+        Digit temp2 = times64(cube_root, x[2*M]);
+        Digit32 s = plusmod<P>(plusmod<P>(x[0], x[M]), x[2*M]);
+        Digit32 t = (times64(P,P) + x[0] + temp1 - x[2*M] - temp2)%P;
+        Digit32 u = (times64(P,P) + x[0] - x[M]  - temp1  + temp2)%P;
+        x[0]   = s;
+        x[M]   = t;
+        x[2*M] = u;
+        for (size_t n = 1; n<M; n++)
+        {   temp1 = times64(cube_root, x[n+M]);
+            temp2 = times64(cube_root, x[n+2*M]);
+            s = plusmod<P>(plusmod<P>(x[n], x[n+M]), x[n+2*M]);
+            t = (times64(P,P) + x[n] + temp1  - x[n+2*M] - temp2)%P;
+            u = (times64(P,P) + x[n] - x[n+M] - temp1    + temp2)%P;
+            x[n]     = s;
+            x[n+M]   = timesmod<P>(t, omegas[n]);
+            x[n+2*M] = timesmod<P>(u, omegas[2*n]);
+        }
+        co_M = 3;
+    }
+    else
+    {   M = N;
+        co_M = 1;
+    }
+    while (M != 1)
+    {   M = M/2;
+        for (size_t k = 0; k<N; k+=2*M)
+        {   Digit32 s = plusmod<P>(x[k], x[k+M]);
+            Digit32 t = differencemod<P>(x[k], x[k+M]);
+            x[k]   = s;
+            x[M+k] = t;
+            for (size_t n = 1; n<M; n++)
+            {   s = plusmod<P>(x[n+k], x[n+k+M]);
+                t = differencemod<P>(x[n+k], x[n+k+M]);
+                x[n+k]   = s;
+                x[n+M+k] = timesmod<P>(t, omegas[n*co_M]);
+            }
+        }
+        co_M = 2*co_M;
+    }
+}
+
+// Decimation in Frequency here uses the inverse of the root of unity
+// used above (and the other complex cube root of unity) amd so provides
+// an inverse transform.
+
+template <uint32_t P, uint32_t cube_root>
+static void dit_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
+{   size_t M = 1;
+    size_t co_M = N;
+    while (co_M%2 == 0)
+    {   co_M = co_M/2;
+        for (size_t k = 0; k<N; k+=2*M)
+        {   Digit32 s = x[k];
+            Digit32 t = x[k+M];
+            x[k] = plusmod<P>(s, t);
+            x[k+M] = differencemod<P>(s, t);
+            for (size_t n = 1; n<M; n++)
+            {   s = x[k+n];
+                t = timesmod<P>(x[k+n+M], omegas[n*co_M]);
+                x[k+n] = plusmod<P>(s, t);
+                x[k+n+M] = differencemod<P>(s, t);
+            }
+        }
+        M = 2*M;
+    }
+    if (co_M == 3)
+    {   Digit32 s = x[0];
+        Digit32 t = x[M];
+        Digit32 u = x[2*M];
+        Digit temp1 = times64(cube_root, t);
+        Digit temp2 = times64(cube_root, u);
+        x[0]   = plusmod<P>(plusmod<P>(s, t), u);
+        x[M]   = (times64(P,P) + s + temp1 - u     - temp2)%P;
+        x[2*M] = (times64(P,P) + s - t     - temp1 + temp2)%P;
+        for (size_t n = 1; n<M; n++)
+        {   s = x[n];
+            t = timesmod<P>(x[n+M], omegas[n]);
+            u = timesmod<P>(x[n+2*M], omegas[2*n]);
+            temp1 = times64(cube_root, t);
+            temp2 = times64(cube_root, u);
+            x[n]     = plusmod<P>(plusmod<P>(s, t), u);
+            x[n+M]   = (times64(P,P) + s + temp1 - u     - temp2)%P;
+            x[n+2*M] = (times64(P,P) + s - t     - temp1 + temp2)%P;
+        }
+    }
+}
+
+#ifdef TESTFFT
+
+// This supposes that you will be doing an FFT on a vector of length N,
+// and that decimation will be by 3 and 2 as necessary. It adjusts
+// an index n in a way that if N is a power of 2 it just bit-reverses it
+// and if there us a factor of 3 that is handled that way that is necessary.
+// It is coded so it would handle an arbitrary power of 3 even though that
+// is more than is required here.
+
+int32_t radix_reverse(uint32_t n, uint32_t N)
+{   uint32_t r = 0;
+    while (N != 1)
+    {   if (N%2 == 0)
+        {   r = 2*r + n%2;
+            N /= 2;
+            n /= 2;
+        }
+        else if (N%3 == 0)
+        {   r = 3*r + n%3;
+            N /= 3;
+            n /= 3;
+        }
+        else abort();  // Bad length!
+    }
+    return r;
+}
+
+int32_t radix_reverse2(uint32_t n, uint32_t N)
+{   uint32_t r = 0;
+    while (N != 1)
+    {   if (N%3 == 0)
+        {   r = 3*r + n%3;
+            N /= 3;
+            n /= 3;
+        }
+        else if (N%2 == 0)
+        {   r = 2*r + n%2;
+            N /= 2;
+            n /= 2;
+        }
+        else abort();  // Bad length!
+    }
+    return r;
+}
+
+// Reorder the entries in the vector a using radix_reverse()l.
+
+void reverse_vec(DigitPtr32 a, uint32_t N)
+{   stkvector<Digit> newer(N);
+    for (uint32_t i=0; i<N; i++)
+        newer[i] = a[radix_reverse2(i, N)];
+    for (uint64_t i=0; i<N; i++)
+        a[i] = newer[i];
+}
+
+// For debugging purposes I would like code that checks if one vector
+// holds values that are a permutation of the ones in a second.
+
+const size_t maxN = 512;
+uint32_t shuffle[maxN];
+
+void findperm(uint32_t* a, uint32_t* b, uint32_t N, uint32_t P)
+{   for (uint32_t i=0; i<N; i++) shuffle[i] = 0x999999;
+    for (uint32_t i=0; i<N; i++)
+    {   for (uint32_t j=0; j<N; j++)
+            if (a[i] == b[j]) shuffle[i] = j;
+    }
+}
+
+// std::random_device does not provide as much randomness as one might
+// ideally like - and it is not even guaranteed to deliver any. However
+// its use should mean that successive tests runs here vary.
+
+std::mt19937_64 twister(std::random_device{}());
+
+inline bool valid(size_t N)
+{   while (N%2 == 0) N /= 2;
+    return N==1 || N==3;
+}
+
+int main()
+{   Digit32 afft[maxN], aref[maxN], asave[maxN],
+            omegas[maxN], inv_omegas[maxN];
+
+
+    for (size_t N=2; N<=maxN; N++) if (valid(N))
+    {   std::cout << "\n\nStart on " << N << "\n";
+        uint32_t y = exptmod(omega1, (int32_t)(LCMlengths/N), Q1);
+        uint32_t z = 1;
+        inv_omegas[0] = omegas[0] = 1;
+        for (int i=1; i<N; i++)
+        {   z = timesmod<Q1>(z, y);
+            inv_omegas[N-i] = z;
+            omegas[i] = z;
+        }
+        assert(timesmod<Q1>(z, y) == 1);
+
+        for (int i=0; i<N; i++)
+            asave[i] = aref[i] = afft[i] = twister()%Q1;
+
+// here asave[], aref[] and afft[] are three copies of the input. aref[] and
+// afft[] will become a referennce Fourier Transform and the output from
+// my fast code (initially at least in scrambled order). asave[] will remain
+// as the original input. In due course when I have the inverse transform
+// implemented I compare whether a round trip return to those values.
+
+        inverse_slow_ft<Q1,omega1>(aref, N);
+        constexpr uint32_t cube_root1b = exptmod(omega1, 2*LCMlengths/3, Q1);
+        dif_ft<Q1,cube_root1b>(afft, (uint32_t)N, inv_omegas);
+        findperm(afft, aref, N, Q1);
+        reverse_vec(afft, N);
+        for (size_t i=0; i<N; i++)
+        {   if (aref[i] == afft[i]) continue;
+            std::cout << "Oops at " << i << " with N=" << N << "\n";
+            std::exit(1);
+        }
+// This first check has compared the values computed using my "fast"
+// "dif_ft()" code with ones prepared using a slow and simple matrix
+// multiplication. This is intended to check that what I have is actually
+// a fourier transform.
+        std::cout << "OK on vector of length " << N << "\n";
+// I will try the classical inverse to check things...
+// Put back at start posn,
+        for (int i=0; i<N; i++)
+            afft[i] = asave[i];
+// Repear dif_ft()
+        dif_ft<Q1,cube_root1b>(afft, (uint32_t)N, inv_omegas);
+// now do classical inverse...
+        reverse_vec(afft, N);
+        slow_ft<Q1,omega1>(afft, N);
+        for (int i=0; i<N; i++)
+        {   if (timesmod<Q1>((Digit32)N, asave[i]) != afft[i])
+            {   std::cout << "After classical, oops at " << i << "\n";
+                for (size_t j=0; j<N; j++)
+                    afft[j] = timesmod<Q1>((Digit32)N, afft[j]);
+                prinvec("Input        ", afft, N, Q1);
+                prinvec("Expected     ", asave, N, Q1);
+                std::exit(1);
+            }
+        }
+
+
+// Now I will use "dit_ft()" to convert back and see if I get to where I
+// started.
+        for (size_t i=0; i<N; i++)
+            afft[i] = asave[i];
+// Repeat the dif_ft() step
+        dif_ft<Q1,cube_root1b>(afft, (uint32_t)N, omegas);
+        constexpr uint32_t cube_root1a = exptmod(omega1, LCMlengths/3, Q1);
+        dit_ft<Q1,cube_root1a>(afft, (uint32_t)N, inv_omegas);
+        std::cout << "Checking for N=" << N << "\n";
+        for (int i=0; i<N; i++)
+        {   if (timesmod<Q1>((Digit32)N, asave[i]) != afft[i])
+            {   std::cout << "Oops at " << i << "\n";
+                for (size_t j=0; j<N; j++)
+                    asave[j] = timesmod<Q1>((Digit32)N, asave[j]);
+                prinvec("Input        ", aref, N, Q1);
+                prinvec("Expected     ", asave, N, Q1);
+                prinvec("My result    ", afft, N, Q1);
+
+                std::exit(1);
+            }
+        }
+
+    }
+
+    return 0;
+}
+
+#endif
+
 // Fourier Transforms done in NlogN steps
-
-// A "fast" Fourier Transform.
-//
-// In what follows P is the prime I am working modulo and
-// baseomega = 1^(1/LCMlengths) is a primitive root of unity such
-// that if I want to make a Fourier Transform on a vector of length M
-// then the "omega" that I use can be baseomega^(LCMlengths/M).
-
-// Decimation in time.
-
-template <uint64_t P>
-static void butterfly2A(uint64_t& a, uint64_t& b, uint64_t w)
-{    uint64_t u = a;
-     uint64_t v = timesmod<P>(b, w);
-     a = plusmod<P>(u, v);
-     b = differencemod<P>(u, v);
-}
-
-// A special version for when the root of unity is 1.
-template <uint64_t P>
-static void butterfly2A(uint64_t& a, uint64_t& b)
-{    uint64_t u = a;
-     uint64_t v = b;
-     a = plusmod<P>(u, v);
-     b = differencemod<P>(u, v);
-}
-
-// Here the input vector should be in bit-reverse-counting order
-// but the output appears in natural order.
-
-template <uint64_t P>
-static void dit_ft(DigitPtr x, size_t N, DigitPtr roots)
-{   for (size_t m=2; m<=N; m=2*m)
-    {   for (size_t k=0; k<N; k+=m)
-        {
-// The first butterfly uses 1 as the power of omega, and so avoids
-// a multiplication, so I do it as a separate stage.
-            butterfly2A<P>(x[k], x[k+m/2]);
-            size_t w = N/m;
-            for (size_t j = 1; j<m/2; j++, w+=N/m)
-            {   butterfly2A<P>(x[k+j], x[k+m/2+j], roots[w]);
-            }
-        }
-    }
-}
-
-// Decimation in Frequency.
-
-// This performs the steps from the above but in reverse
-// and in such a manner that it provides an inverse transformation.
-
-// The input vector is presented in natural order but the output
-// is generated in bit-reverse-counting order.
-
-template <uint64_t P>
-static void butterfly2B(uint64_t& a, uint64_t& b, uint64_t w)
-{   uint64_t u = plusmod<P>(a, b);
-    uint64_t v = timesmod<P>(differencemod<P>(a, b), w);
-    a = u;
-    b = v;
-}
-
-template <uint64_t P>
-static void butterfly2B(uint64_t& a, uint64_t& b)
-{   uint64_t u = plusmod<P>(a, b);
-    uint64_t v = differencemod<P>(a, b);
-    a = u;
-    b = v;
-}
-
-template <uint64_t P>
-static void dif_ft(DigitPtr x, size_t N, DigitPtr roots)
-{   for (size_t m=N; m>=2; m=m/2)
-    {   for (size_t k=0; k<N; k+=m)
-        {   size_t w = N/2;
-            for (size_t j = m/2-1; j>=1; j--)
-            {   w += N/m;
-                butterfly2B<P>(x[k+j], x[k+j+m/2], roots[w]);
-            }
-// Here the very last step would involve 1 as the power of omega, so I
-// separate it off.
-            butterfly2B<P>(x[k], x[k+m/2]);
-        }
-    }
-}
 
 //*************************************************************************
 //*************************************************************************
@@ -19635,28 +20578,31 @@ static void dif_ft(DigitPtr x, size_t N, DigitPtr roots)
 class FFTParams
 {
 public:
-    int which;        // Index of the prime to be used.
-    size_t N;         // Length of all vectors.
+    int which;       // Index of the prime to be used.
+    size_t N;        // Length of all vectors.
 // Note that at this level the inputs to the multiplication process
 // get trashed. THis is OK because they are copies of the original input
 // padded to length N.
-    DigitPtr a;       // First input vector .
-    DigitPtr b;       // Second input vector.
-    DigitPtr c;       // Result is places here.
-    DigitPtr w;       // Table of powers of omega, the root of unity to be used.
+    DigitPtr32 a;      // First input vector .
+    DigitPtr32 b;      // Second input vector.
+    DigitPtr32 c;      // Result is placed here.
+    DigitPtr32 omegas; // Table of powers of omega, the root of unity to be used.
+    DigitPtr32 inv_omegas; // Table of powers of omega but in the other order
     FFTParams()
     {   which = -1;
-        a = b = c = w = nullptr;
+        a = b = c = omegas = nullptr;
         N = 0;
     }
-    FFTParams(int xwhich, size_t xN, DigitPtr xa, DigitPtr xb,
-                                     DigitPtr xc, DigitPtr xw)
-    {   which = xwhich;
-        N = xN;
-        a = xa;
-        b = xb;
-        c = xc;
-        w = xw;
+    FFTParams(int which, size_t N,
+              DigitPtr32 a, DigitPtr32 b, DigitPtr32 c,
+              DigitPtr32 omegas, DigitPtr32 inv_omegas)
+    {   this->which = which;
+        this->N = N;
+        this->a = a;
+        this->b = b;
+        this->c = c;
+        this->omegas = omegas;
+        this->inv_omegas = inv_omegas;
     }
 };
 
@@ -19666,114 +20612,148 @@ public:
 // for performance I want to have the prime used in each task passed
 // as a template parameter. So I pass in information field called which and
 // dispatch on that to code using each value for the template parameters.
+// This is liable to lead to 5 copies of the FFT code getting created by
+// template expansion with each of the 5 primes I use. 
 
-template <uint64_t P, uint64_t omega>
-static void useOneModuleT(FFTParams d)
-{   uint64_t R = 1, ww = exptmod(omega, LCMlengths/d.N, P);
-    d.w[0] = R;
+template <Digit32 P, Digit32 omega>
+static void useOneModuleT(FFTParams& d)
+{   Digit32 R = 1, ww = exptmod(omega, (int32_t)(LCMlengths/d.N), P);
+    d.inv_omegas[0] = d.omegas[0] = R;
     for (size_t i=1; i<d.N; i++)
-        d.w[i] = (R = timesmod<P>(ww, R));
-    dif_ft<P>(d.a, d.N, d.w);
-    dif_ft<P>(d.b, d.N, d.w);
+        d.inv_omegas[d.N-i] = d.omegas[i] = (R = timesmod<P>(ww, R));
+    constexpr Digit32 cube_root1 = exptmod(omega, LCMlengths/3, P);
+    constexpr Digit32 cube_root2 = exptmod(omega, 2*LCMlengths/3, P);
+    dif_ft<P, cube_root1>(d.a, d.N, d.omegas);
+    dif_ft<P, cube_root1>(d.b, d.N, d.omegas);
 // Pointwise multiplication
     for (size_t i=0; i<d.N; i++)
         d.c[i] = timesmod<P>(d.a[i], d.b[i]);
-    dit_ft<P>(d.c, d.N, d.w);
-// There is a stray factor of d.N that I must divide out...
-    {   uint64_t R1 = recipmod<P>(d.N);
-        for (size_t i=0; i<d.N; i++)
-            d.c[i] = timesmod<P>(d.c[i], R1);
-    }
+    dit_ft<P,cube_root2>(d.c, d.N, d.inv_omegas);
+// There is a stray factor of d.N that I must divide out... Well I
+// only really need to do this as far as lena+lenb... 
+    Digit32 R1 = recipmod<P>((Digit32)d.N);
+    for (size_t i=0; i<d.N; i++)
+        d.c[i] = timesmod<P>(d.c[i], R1);
 }
 
 static void useOneModulus(FFTParams d)
 {   switch (d.which)
     {
     case 1:
-        useOneModuleT<P1,omega1>(d);
+        useOneModuleT<Q1,omega1>(d);
         break;
     case 2:
-        useOneModuleT<P2,omega2>(d);
+        useOneModuleT<Q2,omega2>(d);
         break;
     case 3:
-        useOneModuleT<P3,omega3>(d);
+        useOneModuleT<Q3,omega3>(d);
+        break;
+    case 4:
+        useOneModuleT<Q4,omega4>(d);
+        break;
+    case 5:
+        useOneModuleT<Q5,omega5>(d);
         break;
     }
 }
 
+template <bool parallel=true>
 static void fftmul(ConstDigitPtr a, size_t lena,
                    ConstDigitPtr b, size_t lenb,
                    DigitPtr c)
-{   size_t N = lena+lenb;
-    while ((N & -N) != N) N++;
-// Here I round up to a power of 2 in a rather simplistic way. The
-// following line may suggest something better.
-//      N = static_cast<uint64_t>(1)<<(64-nlz(N-1);
-    stkvector<Digit> workspace(12*N);
-    DigitPtr a1 = workspace;
-    DigitPtr a2 = workspace+N;
-    DigitPtr a3 = workspace+2*N;
-    DigitPtr b1 = workspace+3*N;
-    DigitPtr b2 = workspace+4*N;
-    DigitPtr b3 = workspace+5*N;
-    DigitPtr c1 = workspace+6*N;
-    DigitPtr c2 = workspace+7*N;
-    DigitPtr c3 = workspace+8*N;
-    DigitPtr w1 = workspace+9*N;
-    DigitPtr w2 = workspace+10*N;
-    DigitPtr w3 = workspace+11*N;
-// First collect images of a and b modulo each of P1, P2 and P3 and pad
+{
+    size_t N = roundUp23(lena+lenb);
+// Grab all the workspace I need. It looks like a lot! But note that
+// these are vectors of 32-bit numbers (modulo one of my primes) rather than
+// 64-bits, so it is not quite as bad as it looks! I need all this because
+// I will work on 5 modular images in parallel and each will need their own
+// data.
+    stkvector<Digit32> workspace(25*N);
+    DigitPtr32 a1 = workspace+0*N;
+    DigitPtr32 a2 = workspace+1*N;
+    DigitPtr32 a3 = workspace+2*N;
+    DigitPtr32 a4 = workspace+3*N;
+    DigitPtr32 a5 = workspace+4*N;
+    DigitPtr32 b1 = workspace+5*N;
+    DigitPtr32 b2 = workspace+6*N;
+    DigitPtr32 b3 = workspace+7*N;
+    DigitPtr32 b4 = workspace+8*N;
+    DigitPtr32 b5 = workspace+9*N;
+    DigitPtr32 c1 = workspace+10*N;
+    DigitPtr32 c2 = workspace+11*N;
+    DigitPtr32 c3 = workspace+12*N;
+    DigitPtr32 c4 = workspace+13*N;
+    DigitPtr32 c5 = workspace+14*N;
+    DigitPtr32 w1 = workspace+15*N;
+    DigitPtr32 w2 = workspace+16*N;
+    DigitPtr32 w3 = workspace+17*N;
+    DigitPtr32 w4 = workspace+18*N;
+    DigitPtr32 w5 = workspace+19*N;
+    DigitPtr32 invw1 = workspace+20*N;
+    DigitPtr32 invw2 = workspace+21*N;
+    DigitPtr32 invw3 = workspace+22*N;
+    DigitPtr32 invw4 = workspace+23*N;
+    DigitPtr32 invw5 = workspace+24*N;
+// First collect images of a and b modulo each of Q1 .. Q5 and pad
 // each out to length N with zeros.
     size_t i;
-// The remaindering here might well not be needed because in effect it will
-// happen as modular arithmetic on the vector is performed???
+// The remaindering here reduced 64-bit digits in the input to 32- bit
+// modular images.
     for (i=0; i<lena; i++)
-    {   a1[i] = a[i] % P1;
-        a2[i] = a[i] % P2;
-        a3[i] = a[i] % P3;
+    {   a1[i] = a[i] % Q1;
+        a2[i] = a[i] % Q2;
+        a3[i] = a[i] % Q3;
+        a4[i] = a[i] % Q4;
+        a5[i] = a[i] % Q5;
     }
     while (i < N)
-    {   a1[i] = a2[i] = a3[i] = 0;
+    {   a1[i] = a2[i] = a3[i] = a4[i] = a5[i] = 0;
         i++;
     }
     for (i=0; i<lenb; i++)
-    {   b1[i] = b[i] % P1;
-        b2[i] = b[i] % P2;
-        b3[i] = b[i] % P3;
+    {   b1[i] = b[i] % Q1;
+        b2[i] = b[i] % Q2;
+        b3[i] = b[i] % Q3;
+        b4[i] = b[i] % Q4;
+        b5[i] = b[i] % Q5;
     }
     while (i < N)
-    {   b1[i] = b2[i] = b3[i] = 0;
+    {   b1[i] = b2[i] = b3[i] = b4[i] = b5[i] = 0;
         i++;
     }
 
-// There are three little blocks of code here and they could be
-// run in parallel. I would expect that doing so would speed the
-// whole multiplication up be a factor of almost 3 once absolute costs
+// There are five little blocks of code here and they will be
+// run in parallel. I would expect that doing so will speed the
+// whole multiplication up be a factor of almost 5 once absolute costs
 // were high enough that synchronization overheads ceased dominating.
 
     std::vector<FFTParams> subtasks =
-    {   FFTParams(1, N, a1, b1, c1, w1),
-        FFTParams(2, N, a2, b2, c2, w2),
-        FFTParams(3, N, a3, b3, c3, w3)
+    {   FFTParams(1, N, a1, b1, c1, w1, invw1),
+        FFTParams(2, N, a2, b2, c2, w2, invw2),
+        FFTParams(3, N, a3, b3, c3, w3, invw3),
+        FFTParams(4, N, a4, b4, c4, w4, invw4),
+        FFTParams(5, N, a5, b5, c5, w5, invw5)
     };
-    runInThreads(subtasks, useOneModulus);
-
+    runInThreads<parallel>(subtasks, useOneModulus);
 
 // Use the Chinese Remainder Theorem to turn the modular results back
 // into a proper set of values for the convolution, and do some carrying
 // operations to turn all that back into the final product.
     uint64_t carry=0, carry1=0, carry2;
-// Each component on the convolution will be returned as 3 digits {hi,med,lo}
-// So I need to combine these as in
+// Each component on the convolution will be reconstructed as a value with
+// up to 150 bits represented as 3 digits {hi,med,lo} so to form a proper
+// final result I will need to combine these as in
 //                        hi0 med0  lo0
 //                   hi1 med1  lo1
 //              hi2 med2  lo2
 // ...
 // but the "hi" values are in effect carried from adding up many partial
-// products, and the final "hi" is certain to be zero.
+// products, and the final "hi" is certain to be zero. Note that I only
+// need to do this for a number of places set by the original input numbers,
+// not all the way out to the padded value N.
     for (i=0; i<lena+lenb; i++)
     {   uint64_t hi, mid, lo;
-        chinese_remainder(c1[i], c2[i], c3[i], hi, mid, lo);
+        chinese_remainder(c1[i], c2[i], c3[i], c4[i], c5[i], hi, mid, lo);
         c[i] = lo+carry;
         carry1 += mid;
         carry2 = hi + (carry1<mid);
@@ -19784,7 +20764,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
         carry1 = carry2;
     }
     c[i++] = carry;
-    assert(carry1 == 0);
+    if (carry1 != 0) std::cout << "Bad carry = " << carry1 << "\n";;
 }
 
 // end of fftmod.cpp
@@ -20442,7 +21422,7 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
     std::size_t lenx = (lena+1)/2;
     std::uint64_t* x = reserve(lenx);
     for (std::size_t i=0; i<lenx; i++) x[i] = 0;
-    std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - nlz(a[lena-1]);
+    std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - CSL_LISP::nlz(a[lena-1]);
     bitstop /= 2;
     if ((lena%2) == 0) bitstop += 32;
     x[lenx-1] = 1ULL << bitstop;
@@ -20485,7 +21465,7 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
 inline std::intptr_t Isqrt::op(SignedDigit aa)
 {   if (aa <= 0) return intToBignum(0);
     Digit a = static_cast<Digit>(aa);
-    std::size_t w = 64 - nlz(a);
+    std::size_t w = 64 - CSL_LISP::nlz(a);
     Digit x0 = a >> (w/2);
 // The iteration here converges to sqrt(a) from above, but I believe that
 // when the value stops changing it will be at floor(sqrt(a)). There are
@@ -20610,7 +21590,7 @@ inline std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
     else if (n == 0) return intToHandle(1);
     Digit absa = (a < 0 ? -static_cast<Digit>
                           (a) : static_cast<Digit>(a));
-    std::size_t bitsa = 64 - nlz(absa);
+    std::size_t bitsa = 64 - CSL_LISP::nlz(absa);
     Digit hi, bitsr;
     multiply64(n, bitsa, hi, bitsr);
     Digit lenr1 = 2 + bitsr/64;
@@ -21161,7 +22141,7 @@ inline void unsigned_long_division(std::uint64_t* a,
 //
 // The scaling is done here using a shift, which seems cheaper to sort out
 // then multiplication by a single-digit value.
-    int ss = nlz(b[lenb-1]);
+    int ss = CSL_LISP::nlz(b[lenb-1]);
 // When I scale the dividend expands into an extra digit but the scale
 // factor has been chosen so that the divisor does not.
     a[lena] = scale_for_division(a, lena, ss);
@@ -21757,9 +22737,9 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // to normalize that to get 128 bits to work with however the top bits
 // of a and b lie within the words.
     Digit a0=a[lena-1], a1=a[lena-2], a2=(lena>2 ? a[lena-3] : 0);
-    int lza = nlz(a0);
+    int lza = CSL_LISP::nlz(a0);
     Digit b0=b[lenb-1], b1=b[lenb-2], b2=(lenb>2 ? b[lenb-3] : 0);
-    int lzb = nlz(b0);
+    int lzb = CSL_LISP::nlz(b0);
 // I will sort out how many more bits are involved in a than in b. If
 // this number is large I will invent a number q of the form q=q0*2^q1
 // with q0 using almost all of 64 bits and go "a = a - q*b;". This
@@ -21831,8 +22811,8 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // At least I have filtered away the possibility {b0,b1}={0,0}.
 // I will grab the top 64 bits of a and the top corresponding bits of b,
 // because then I can do a (cheap) 64-by-64 division.
-            int lza1 = a0==0 ? 64+nlz(a1) : nlz(a0);
-            int lzb1 = b0==0 ? 64+nlz(b1) : nlz(b0);
+            int lza1 = a0==0 ? 64+CSL_LISP::nlz(a1) : CSL_LISP::nlz(a0);
+            int lzb1 = b0==0 ? 64+CSL_LISP::nlz(b1) : CSL_LISP::nlz(b0);
             if (lzb1 > lza1+60) break; // quotient will be too big
             Digit ahi, bhi;
             if (lza1 == 0) ahi = a0;

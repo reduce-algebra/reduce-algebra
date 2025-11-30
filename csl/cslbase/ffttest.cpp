@@ -73,8 +73,11 @@ using DigitPtr = Digit*;
 using ConstDigitPtr = const Digit*;
 #endif // DEBUG
 
-
+#ifdef NEW
+#include "fftmod1.cpp"
+#else
 #include "fftmod.cpp"
+#endif
 
 // C++20 introduces "consteval" which is like "constexpr" save that it
 // INSISTS that evaluation happens at compile time. I will use it it
@@ -323,8 +326,8 @@ size_t slowLimit = 8192;
 void timetest(size_t N, int ntrials)
 {   uint64_t* a = new uint64_t[N];
     uint64_t* b = new uint64_t[N];
-    uint64_t* c = new uint64_t[2*N];
-    uint64_t* cslow = new uint64_t[2*N];
+    uint64_t* c = new uint64_t[2*N+1];
+    uint64_t* cslow = new uint64_t[2*N+1];
 
 // I use random data as my input.
     for (size_t i=0; i<N; i++)
@@ -360,6 +363,7 @@ void timetest(size_t N, int ntrials)
     else std::cout << std::setw(19) << " ";
     std::cout << std::setw(12) << tfast
          << " (" << ((double)tfast/(N*log(N))) << ")";
+    std::cout << "  " << tfast;
     if (tslow != 0) std::cout << "  ratio = " << (tfast/(double)tslow);
     std::cout << "\n";
 
@@ -378,6 +382,11 @@ void timetest(size_t N, int ntrials)
     delete [] cslow;
 }
 
+inline bool valid(size_t N)
+{   while (N%2 == 0) N /= 2;
+    return N==1 || N==3;
+}
+
 int main(int argc, char* argv[])
 {
     size_t N = -1;
@@ -391,9 +400,8 @@ int main(int argc, char* argv[])
     std::cout << std::fixed << std::setprecision(2);
     if (N != -1LU) timetest(N, ntrials);
     else
-    {   for (N=4; N<2*slowLimit; N=2*N)
-        {   timetest(N, ntrials);
-        }
+    {   for (N=32; N<2*slowLimit; N++)
+            if (valid(N)) timetest(N, ntrials);
     }
     return 0;
 }

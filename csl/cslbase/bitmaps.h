@@ -447,6 +447,10 @@ inline size_t previousZeroBit(uint64_t map[], size_t n)
 
 } // end namespace
 
+using CSL_LISP::nlz;
+using CSL_LISP::ntz;
+using CSL_LISP::countBits;
+
 #endif // header_bitmaps_h
 
 // end of bitmaps.h

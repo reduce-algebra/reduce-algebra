@@ -1,5 +1,3 @@
-// cthread.cpp                                  Copyright (C) 2025 Codemist
-
 // $Id$
 
 
@@ -41,6 +39,13 @@
 // are not enough available threads to service all N tasks then it may
 // drop back to executing things sequentially.
 
+// For debugging purposes I find that sometimes having parallel threaded
+// execution makes tracing (much) harder. To support a scheme that drops back
+// to merely running the tasks one at a time I make the function templated
+// where the parameter determines whether concurrency will be used. When
+// run sequentially the caller ought not to rely on the order in which
+// the various tasks happan to be activated.
+
 // If USE_EXECUTION is defined this uses some C++17 functionality that
 // makes this rather easy to express. However in late 2025 my measurements
 // show that it is heavy-duty enough that for small tasks it imposes costs
@@ -62,13 +67,12 @@
 #include <algorithm>
 
 #ifdef USE_EXECUTION
-//@#pragma message "You may need to link in libtbb"
 
 #include <execution>
 
-template <typename T>
+template <typename T, bool parallel=true>
 inline void runInThreads(std::vector<T> v, void (*fn)(T))
-{   std::for_each(std::execution::par,
+{   std::for_each(parallel ? std::execution::par : std::execution::seq,
                   std::begin(v),
                   std::end(v),
                   fn);
@@ -410,7 +414,7 @@ inline void workerThreadFunction(WorkerTaskData* wd)
 
 #endif // definition of workerThreadFunction
 
-template <typename T>
+template <typename T, bool parallel=true>
 inline void runInThreads(std::vector<T> v, void (*fn)(T))
 {   int n = v.size();
 // Here I want to see if there are any worker threads available to
@@ -428,8 +432,9 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
 // So the next line detects and responds either to the case that others
 // are all making active use of ALL available workers or the awkward case
 // that I am part way through the few lines of code that temporarily
-// pretend that while working out what can be done.
-    if (active == ((1<<POOLSIZE)-1))
+// pretend that while working out what can be done. And conveniently it
+// provides for the case where I do not want concurrency at all.
+    if (!parallel || active == ((1<<POOLSIZE)-1))
     {   std::for_each(std::begin(v),    // Sequential mode here.
                       std::end(v),
                       fn);
@@ -482,6 +487,11 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
 }
 
 #endif // USE_EXECUTION
+
+template <bool parallel, typename T>
+inline void runInThreads(std::vector<T> v, void (*fn)(T))
+{   runInThreads<T, parallel>(v, fn);
+}
 
 //*************************************************************************
 //*************************************************************************

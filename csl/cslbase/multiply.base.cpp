@@ -1010,6 +1010,12 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
 
 private:
 
+// Above this length (measured in 64-bit digits) I will use fast
+// multiplication based on FFT. The threshold here is about correct
+// under WSL with Linux running on my Windows 11 machine.
+
+static const std::size_t FFT_THRESHOLD = 65000;
+
 // When thread is false this is being used when Kara or Toom32
 // recurses and so most of the time we will have M==N>KARASTART/2. With
 // thread true it is from the top-level and may fire up some workers.
@@ -1053,12 +1059,12 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
 #endif // TRACE_TIMES
 // Here I will call Kara if N <= 1.25*M.
     if (4*N <= 5*M)
-    {   if (N > 100000) fftmul(a, N, b, M, result);
+    {   if (N > FFT_THRESHOLD) fftmul(a, N, b, M, result);
         else kara<thread>(a, N, b, M, result, workspace);
     }
 // If N <= 1.85*M I will use toom32.
     else if (20*N <= 37*M)
-    {   if (N > 100000) fftmul(a, N, b, M, result);
+    {   if (N > FFT_THRESHOLD) fftmul(a, N, b, M, result);
         else toom32<thread>(a, N, b, M, result, workspace);
     }
 // If M and N are significantly different I will split the product
