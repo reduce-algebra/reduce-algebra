@@ -1,0 +1,3 @@
+#define cr_function_under_test cr_powf16
+#define ref_function_under_test ref_pow
+#define mpfr_function_under_test mpfr_pow

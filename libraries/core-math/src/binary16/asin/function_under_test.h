@@ -1,0 +1,3 @@
+#define cr_function_under_test cr_asinf16
+#define ref_function_under_test ref_asin
+#define mpfr_function_under_test mpfr_asin

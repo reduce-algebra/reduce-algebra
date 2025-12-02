@@ -1,0 +1,5 @@
+#define cr_function_under_test cr_atan2pi_bf16
+#define ref_function_under_test ref_atan2pi
+#define mpfr_function_under_test mpfr_atan2pi
+
+#define EXCHANGE_X_Y

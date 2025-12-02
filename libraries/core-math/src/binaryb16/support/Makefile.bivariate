@@ -1,0 +1,23 @@
+# -*- makefile -*-
+
+include ../../generic/support/Makefile.checkstd
+
+CFLAGS += -W -Wall $(ROUNDING_MATH)
+
+TYPE_UNDER_TEST := __bf16
+
+all:: check_exhaustive
+
+check_exhaustive: check_exhaustive.o $(CORE_MATH_OBJS) $(FUNCTION_UNDER_TEST)_mpfr.o
+	$(CC) $(LDFLAGS) $(OPENMP) -o $@ $^ -lmpfr -lm
+
+%.o: %.c
+	$(CC) $(CFLAGS) -I ../support -c -o $@ $<
+
+check_exhaustive.o: ../support/check_exhaustive.c
+	$(CC) $(CFLAGS) $(CORE_MATH_DEFINES) -I . -c $(OPENMP) -o $@ $<
+
+clean::
+	rm -f *.o check_exhaustive
+
+include ../../generic/support/Makefile.bivariate

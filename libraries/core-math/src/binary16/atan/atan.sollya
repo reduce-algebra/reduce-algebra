@@ -1,0 +1,50 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+ 
+d=[0,0.25];
+n=[|1,3,5,7|];
+f = 1;
+w = 1/atan(x);
+p = remez(f, n, d, w);
+pf = fpminimax(f, n, [|1,24...|], d, relative, floating, 0, p);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print (pf);
+display = decimal;
+print (pretty(err_p));
+
+d=[0.25,0.5];
+n=[|0,1,2,3,4|];
+f = 1;
+w = 1/atan(x);
+p = remez(f, n, d, w);
+pf = fpminimax(f, n, [|24...|], d, relative, floating, 0, p);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print (pf);
+display = decimal;
+print (pretty(err_p));
+
+d=[0.5,0.75];
+n=[|0,1,2,3,4|];
+f = 1;
+w = 1/atan(x);
+p = remez(f, n, d, w);
+pf = fpminimax(f, n, [|24...|], d, relative, floating, 0, p);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print (pf);
+display = decimal;
+print (pretty(err_p));
+
+d=[0.75,1];
+n=[|0,1,2,3,4|];
+f = 1;
+w = 1/atan(x);
+p = remez(f, n, d, w);
+pf = fpminimax(f, n, [|24...|], d, relative, floating, 0, p);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print (pf);
+display = decimal;
+print (pretty(err_p));
+
+
+

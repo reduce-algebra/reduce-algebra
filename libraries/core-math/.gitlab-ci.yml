@@ -1,0 +1,144 @@
+stages:
+  - test
+
+check:
+  stage: test
+  image: debian:latest
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git libmpfr-dev
+    # x86-64-v2 is needed for rsqrtq
+    - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH EXTRA_CFLAGS="-march=x86-64-v2 -I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./ci.sh
+
+check_errno:
+  stage: test
+  image: debian:latest
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git libmpfr-dev
+    # x86-64-v2 is needed for rsqrtq
+    - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH EXTRA_CFLAGS="-DCORE_MATH_SUPPORT_ERRNO -march=x86-64-v2 -I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./ci.sh
+
+check_inexact:
+  stage: test
+  image: debian:latest
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git libmpfr-dev
+    # x86-64-v2 is needed for rsqrtq
+    - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH EXTRA_CFLAGS="-DCORE_MATH_CHECK_INEXACT -march=x86-64-v2 -I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./ci.sh
+
+check_sanitize:
+  stage: test
+  image: debian:latest
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git libmpfr-dev
+    - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH CFLAGS="-fsanitize=undefined -fsanitize=address -I/usr/local/include" LDFLAGS="-fsanitize=undefined -fsanitize=address -L/usr/local/lib" ./ci.sh
+
+check_sanitize_clang:
+  stage: test
+  image: silkeh/clang:latest
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git libmpfr-dev
+    # clang 19 does not properly handle __bf16
+    - SKIPBF16=1 LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH CC=clang CORE_MATH_NO_OPENMP=1 CFLAGS="-fsanitize=undefined -I/usr/local/include" LDFLAGS="-fsanitize=undefined -L/usr/local/lib" ./ci.sh
+
+check_without_fma:
+  stage: test
+  image: debian:latest
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git
+    - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH EXTRA_CFLAGS="-march=x86-64 -Werror -I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./ci.sh
+
+check_core2:
+  stage: test
+  image: debian:latest
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git
+    - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH EXTRA_CFLAGS="-O3 -march=core2 -Werror -I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./ci.sh
+
+check_dry:
+  stage: test
+  image: debian:testing
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git
+    - FORCE=true DRY=--dry LDFLAGS="-L /usr/local/lib" EXTRA_CFLAGS="-I /usr/local/include -Wdouble-promotion -Werror" ./ci.sh
+
+check_dry_with_O3:
+  stage: test
+  image: debian:testing
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git
+    - FORCE=true DRY=--dry CFLAGS=-O3 LDFLAGS="-L /usr/local/lib" EXTRA_CFLAGS="-I /usr/local/include" ./ci.sh
+
+check_dry_inexact_errno:
+  stage: test
+  image: debian:testing
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git
+    - FORCE=true DRY=--dry LDFLAGS="-L /usr/local/lib" EXTRA_CFLAGS="-I /usr/local/include" CFLAGS="-DCORE_MATH_CHECK_INEXACT -DCORE_MATH_SUPPORT_ERRNO" ./ci.sh
+
+check_dry_inexact:
+  stage: test
+  image: debian:testing
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git
+    - FORCE=true DRY=--dry CFLAGS="-DCORE_MATH_CHECK_INEXACT" LDFLAGS="-L /usr/local/lib" EXTRA_CFLAGS="-I /usr/local/include" ./ci.sh
+
+check_dry_errno:
+  stage: test
+  image: debian:testing
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git
+    - FORCE=true DRY=--dry CFLAGS="-DCORE_MATH_SUPPORT_ERRNO" LDFLAGS="-L /usr/local/lib" EXTRA_CFLAGS="-I /usr/local/include" ./ci.sh
+
+check_dry_clang:
+  stage: test
+  image: silkeh/clang:latest
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git
+    # clang has -Wshift-sign-overflow
+    - SKIPBF16=1 CORE_MATH_NO_OPENMP=1 FORCE=true DRY=--dry CC=clang LDFLAGS="-L /usr/local/lib" EXTRA_CFLAGS="-I /usr/local/include -Wshift-sign-overflow" ./ci.sh
+
+check_dry_icx:
+  stage: test
+  image: intel/oneapi-hpckit:latest
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git
+    # MPFR-dev is installed in /usr/local
+    # clang 19 does not properly handle __bf16
+    - SKIPBF16=1 FORCE=true DRY=--dry CC=icx LDFLAGS="-L /usr/local/lib" EXTRA_CFLAGS="-I /usr/local/include" ./ci.sh
+
+perf_test:
+  stage: test
+  image: debian:testing
+  before_script:
+    - ci/00-prepare-docker.sh
+  script:
+    - apt-get update -qq && apt-get install -qq build-essential git libmpfr-dev
+    - ci/perf_test.sh

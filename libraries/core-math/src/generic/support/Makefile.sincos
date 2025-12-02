@@ -1,0 +1,22 @@
+# -*- makefile -*-
+# for sincos-like functions (one input, two outputs)
+
+PERF_DEFINES := \
+  -DTYPE_UNDER_TEST=$(TYPE_UNDER_TEST) \
+  -Dcr_function_under_test=cr_$(FUNCTION_UNDER_TEST) \
+  -Dfunction_under_test=$(FUNCTION_UNDER_TEST)
+
+# add -lm even if LIBM is defined, since some libraries do not define
+# fesetround
+LIBM += -lm
+
+all:: perf
+
+perf: perf.o $(FUNCTION_UNDER_TEST).o
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBM)
+
+perf.o: ../../generic/support/perf_sincos.c
+	$(CC) $(CFLAGS) $(PERF_DEFINES) -I ../../generic/$(notdir $(CURDIR)) -c -o $@ $<
+
+clean::
+	rm -f perf

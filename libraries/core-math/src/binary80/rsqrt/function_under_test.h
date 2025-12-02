@@ -1,0 +1,3 @@
+#define cr_function_under_test cr_rsqrtl
+#define ref_function_under_test ref_rsqrtl
+#define mpfr_function_under_test mpfr_rec_sqrt

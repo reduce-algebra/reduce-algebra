@@ -1,0 +1,25 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+x0=0x1.d12ed0af1a27fp-27;
+ 
+d=[x0,1/4];
+f = 1;
+w = 1/atanh(x);
+
+c0=0x1.999999999999ap-3;
+c1=0x1.2492492492244p-3;
+c2=0x1.c71c71c79715fp-4;
+c3=0x1.745d16f777723p-4;
+c4=0x1.3b13ca4174634p-4;
+c5=0x1.110c9724989bdp-4;
+c6=0x1.e2d17608a5b2ep-5;
+c7=0x1.a0b56308cba0bp-5;
+c8=0x1.fb6341208ad2ep-5;
+h=0x1.5555555555555p-2;
+l=0x1.5555555555555p-56;
+p=x+(h+l)*x^3+c0*x^5+c1*x^7+c2*x^9+c3*x^11+c4*x^13+c5*x^15+c6*x^17+c7*x^19+c8*x^21;
+err_p = -log2(dirtyinfnorm(p*w-f, d));
+display = decimal;
+print (pretty(err_p)); // 64.377

@@ -1,0 +1,12 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+prec=1024;
+R = 1/2^20 + 1/2^103;
+d = [-R,R];
+f = 2^x;
+p = fpminimax(f, 10, [|256,256,256,256,256,256,256,128,128,128,64|], d);
+err_p = -log2(dirtyinfnorm(p/f - 1, d));
+print( pretty(err_p));
+print(p);

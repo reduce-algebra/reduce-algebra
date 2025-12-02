@@ -1,0 +1,16 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+d = [-0.000244140625,0.00024402141571];
+f = log(1+x)/log(2);
+w = 1;
+n = [|1,2,3,4,5,6,7,8|];
+p =  remez(f, n, d, w);
+pf = fpminimax(f, n, [|107,53...|], d, absolute, floating, 0, p);
+display = hexadecimal;
+print (pf);
+display = decimal;
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print (pretty(err_p));
+

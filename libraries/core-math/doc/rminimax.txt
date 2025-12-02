@@ -1,0 +1,40 @@
+rminimax (https://gitlab.inria.fr/sfilip/rminimax) is a tool to generate
+minimax rational approximants with some constraints.
+
+To install it, it needs several dependencies (see README.md file).
+
+Once one has built rminimax, one can do for example (check with revision
+c9c30b0 of rminimax):
+
+$ ./ratapprox --function="erf(x)" --dom=[0.5,1.769] --num=[x,x^3] --den=[1,x^2] --weight=1 --output=x1p.sollya --log
+
+and one gets in the x1p.sollya file:
+
+$ cat x1p.sollya
+Numerator = [|
+0x1.22d187c88a59fp+0,
+0x7.bb56e81b5014p-8|];
+Denominator = [|
+0x1p+0,
+0x6.2af020486fb6p-4|];
+
+Useful tips for CORE-MATH:
+* with --weight=1 one minimizes the absolute error, without any --weight option
+  the default is to take the inverse of the function, which minimizes the
+  relative error.
+* with --dispCoeff=[bin|dec|hex] one controls the output of coefficients
+* use --numF=[DD,D] --denF=[DD,D] to have a double-double for the degree-0
+  coefficient (by default coefficients are double)
+
+A more complex example, where we search a rational approximation of
+erfc(x)*exp(x^2):
+
+$ ./ratapprox --function="erfc(x)*exp(x^2)" --dom=[0x1.7afb48dc96626p+2,0x1.b39dc41e48bfdp+4] --num=[x,x^3,x^5,x^7,x^9,x^11,x^13,x^15] --den=[1,x^2,x^4,x^6,x^8,x^10,x^12,x^14,x^16] --output=x1p.sollya --log --numF=[DD] --denF=[DD]
+
+
+Another example, where we search a rational approximation of atan(x) on
+[0.000425,1.0], with numerator and denominator having degree 29:
+
+$ ./ratapprox --function="atan(x)" --dom=[0.000425,1.0] --type=[29,29] --output=x1p.sollya --log --numF=[192] --denF=[192] --prec=1024
+...
+fpminimax approximation error                    = 2.1867e-58

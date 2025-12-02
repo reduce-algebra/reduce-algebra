@@ -1,0 +1,17 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+prec = 256;
+
+d = [0x1.38p-2,0x1.63p-2];
+f = 1;
+w = 1/(erfc(1/x)*exp(1/x^2));
+p = remez(f, [|1,3,5,7,9,11,13,15,17,19,21,23|], d, w);
+pf = fpminimax(f, [|1,3,5,7,9,11,13,15,17,19,21,23|], [|107,53...|], d, relative, floating, 0, p);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print (pf);
+print (pretty(err_p)); // 71.841
+
+// rminimax: 2^-71.4
+// ./ratapprox --prec=512 --function="erfc(x)*exp(x^2)" --dom=[2.88450704225352,3.28205128205128] --num=[x,x^3,x^5,x^7,x^9] --den=[1,x^2,x^4,x^6,x^8,x^10] --output=x1p.sollya --log --numF=[DD] --denF=[DD]

@@ -1,0 +1,3 @@
+#define cr_function_under_test cr_atanf
+#define ref_function_under_test ref_atan
+#define mpfr_function_under_test mpfr_atan

@@ -1,0 +1,3 @@
+#define cr_function_under_test cr_acoshf16
+#define ref_function_under_test ref_acosh
+#define mpfr_function_under_test mpfr_acosh

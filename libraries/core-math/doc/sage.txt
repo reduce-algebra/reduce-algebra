@@ -1,0 +1,5 @@
+Some Sage scripts are included to help prove the various properties
+of the implemented functions. Most of these need the definitions found
+under src/generic/support/common.sage. It is recommended to source
+this file into your init.sage. A line loading them from the current directory
+is included in all scripts, initially commented out.

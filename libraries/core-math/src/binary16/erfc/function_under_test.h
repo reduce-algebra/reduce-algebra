@@ -1,0 +1,3 @@
+#define cr_function_under_test cr_erfcf16
+#define ref_function_under_test ref_erfc
+#define mpfr_function_under_test mpfr_erfc

@@ -1,0 +1,113 @@
+/* Correctly-rounded arc-cosine for bfloat16 value.
+
+Copyright (c) 2025 Paul Zimmermann
+
+This file is part of the CORE-MATH project
+(https://core-math.gitlabpages.inria.fr/).
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+#include <stdint.h>
+#include <errno.h>
+#include <math.h> // for sqrtf
+
+// Warning: clang also defines __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#endif
+
+#pragma STDC FENV_ACCESS ON
+
+typedef union {float f; uint32_t u;} b32u32_u;
+
+// the following polynomials were generated using Sollya (cf acos.sollya)
+
+/* degree-4 minimax polynomial for acos(x) over [0,0.25], with relative error
+   bounded by 2^-22.943, manually optimized to reduce the number of exceptions
+*/
+static const float p0[] = {0x1.921fb4p0f, -0x1.fffb44p-1f, -0x1.25e6b8p-10f,
+                           -0x1.3cc114p-3f, -0x1.a85b22p-5f};
+
+/* degree-4 minimax polynomial for acos(x) over [0.25,0.5], with relative error
+   bounded by 2^-20.789, manually optimized to reduce the number of exceptions
+*/
+static const float p1[] = {0x1.91b678p0f, -0x1.f515cap-1f, -0x1.bd043ap-4f,
+                           0x1.7e2d5ap-4f, -0x1.190806p-2f};
+
+/* degree-4 minimax polynomial for acos(x)/sqrt(1-x) over [0.5,1],
+   with relative error bounded by 2^-23.583 */
+static const float p2[] = {0x1.91fa1cp0f, -0x1.ae5c5ep-3f, 0x1.31640cp-4f,
+                           -0x1.98038p-6f, 0x1.251b5p-8f};
+
+__bf16 cr_acos_bf16 (__bf16 x)
+{
+  b32u32_u v = {.f = x};
+  uint32_t u = v.u;
+  uint32_t au = u & 0x7fffffffu;
+
+  if (au >= 0x3f800000u) { // NaN, Inf, or |x| >= 1
+    if (au == 0x3f800000u)
+      return (u == 0x3f800000u) ? 0.0f : 0x1.921fb6p+1f;
+#ifdef CORE_MATH_SUPPORT_ERRNO
+    errno = EDOM;
+#endif
+    if ((au >> 23) == 0x3ff && ((au & 0x7fffff) != 0)) // qNaN or sNaN
+      return x;
+    return 0.0f / 0.0f; // will signal invalid and return sNaN
+  }
+
+  float t = v.f, c1, c3, y;
+
+  if (u >> 31) // x < 0
+    t = -t;
+
+  if (au < 0x3e800000u) { // |x| < 0.25
+    /* avoid a spurious underflow for tiny x:
+       for |x| <= 0x1.fap-12, and for all rounding modes,
+       acos(x) rounds to the same value as 0x1.921fb6p+0
+       (see check_small() in acos.sage) */
+    if (au <= 0x39fd0000u) return 0x1.921fb6p+0; // pi/2
+    c1 = __builtin_fmaf (p0[2], t, p0[1]);
+    c3 = __builtin_fmaf (p0[4], t, p0[3]);
+    y = __builtin_fmaf (c3, t * t, c1);
+    y = __builtin_fmaf (y, t, p0[0]);
+  }
+  else if (au < 0x3f000000u) { // 0.25 <= |x| < 0.5
+    c1 = __builtin_fmaf (p1[2], t, p1[1]);
+    c3 = __builtin_fmaf (p1[4], t, p1[3]);
+    y = __builtin_fmaf (c3, t * t, c1);
+    y = __builtin_fmaf (y, t, p1[0]);
+  }
+  else { // 0.5 <= |x| <= 1
+    c1 = __builtin_fmaf (p2[2], t, p2[1]);
+    c3 = __builtin_fmaf (p2[4], t, p2[3]);
+    y = __builtin_fmaf (c3, t * t, c1);
+    y = __builtin_fmaf (y, t, p2[0]);
+    y = sqrtf (1.0f - t) * y;
+  }
+
+  // acos(-x) = pi-x
+  return (u >> 31) ? 0x1.921fb6p+1f - y : y;
+}
+
+// dummy function since GNU libc does not provide it
+__bf16 acos_bf16 (__bf16 x) {
+  return (__bf16) acosf ((float) x);
+}

@@ -1,0 +1,37 @@
+pretty = proc(u) {
+  return ~(floor(u*10000)/10000);
+};
+
+// display = hexadecimal;
+prec = 512;
+
+n = 18;
+P = 256;
+N = 1;
+
+d = [-1/2^13,1/2^13];
+f = 1;
+w = 1/log(1+x);
+p = remez(f, n, d, w);
+Q = fpminimax(log(1+x), [|1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18|], [|1,P,P,P,P,P,P,P,P,P,128,128,128,128,128,128,128,64|], d, relative, floating, 0, p);
+print ("log(1 + x) :\n  P(x) =", Q);
+
+f = log(1+x);
+w = 1;
+e = -log2(dirtyinfnorm(Q * w - f, d));
+print ("absolute precision:", pretty(e));
+f = 1;
+w = 1/log(1+x);
+e = -log2(dirtyinfnorm(Q * w - f, d));
+print ("relative precision:", pretty(e), "\n");
+
+n = 14;
+d = [-0.00016923;0.00016923];
+f = exp(x);
+w = 1;
+p = remez(f-1, n, d, w);
+Q = 1+fpminimax(exp(x)-1, [|1,2,3,4,5,6,7,8,9,10,11,12,13,14|], [|P,P,P,P,P,P,P,128,128,128,128,128,64...|], d, absolute, floating, 0, p);
+e = -log2(dirtyinfnorm(Q * w - f, d));
+print ("exp(x) :\n  Q(x) =", Q);
+
+print ("  precision:", pretty(e));

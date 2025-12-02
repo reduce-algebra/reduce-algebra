@@ -1,0 +1,13 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+d = [-H,H];
+x0 = X0;
+f = erf(x0+x);
+w = 1;
+p = remez(f, DEGREE, d, w);
+pf = fpminimax(f, DEGREE, [|LP|], d, absolute, floating, 0, p);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print (pf);
+print (pretty(err_p));
