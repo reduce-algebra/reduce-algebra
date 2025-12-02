@@ -3,7 +3,7 @@
 ;; Copyright (C) 2019, 2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-10-04 12:10:16 franc>
+;; Time-stamp: <2025-11-29 16:41:38 franc>
 ;; Created: 20 February 2019
 
 ;; Based on, and hopefully consistent with, the portable REDUCE
@@ -78,8 +78,10 @@ If no functions are specified then list all traced functions."
       (setq file (pathname-name (symbol-name file))) ; e.g. "mod"
       (setq file (merge-pathnames file %fasl.lisp-pathname-template%))
       ;; e.g. "/.../fasl.which/mod.lisp"
-      (when (setq stream (open file :external-format
-                               #+SBCL :UTF-8 #+CLISP charset:UTF-8))
+      (when (setq stream (open file
+                               #-CCL :external-format
+                               #+CLISP charset:UTF-8
+                               #-(or CLISP CCL) :UTF-8))
         (loop
            do
              (setq form (read stream nil sl::$eof$))
