@@ -7,7 +7,6 @@ Newlib, OpenLibm, Musl, Apple Libm, llvm-libc, CUDA libm, ROCm).
 
 Homepage: https://core-math.gitlabpages.inria.fr/
 
-
 ## Quick guide
 
 ### Exhaustive checks
@@ -18,12 +17,14 @@ function, run:
     ./check.sh --exhaustive [rounding_modes] $FUN
 
 where:
+
 - `$FUN` can be `acosf`, `asinf`, etc.
 - `[rounding_modes]` can be a selection of `--rndn` (round to
   nearest), `--rndz` (toward zero), `--rndu` (upwards), `--rndd`
   (downwards). The default is all four.
 
 This command is sensitive to the following environment variables:
+
 - `CC`
 - `CFLAGS`
 - OpenMP variables such as `OMP_NUM_THREADS`
@@ -74,12 +75,12 @@ to get latency instead of reciprocal throughput.
 
 When you run ./perf.sh acosf, it does the following:
 
-   $ export OPENMP=-fopenmp
-   $ cd src/binary32/acos
-   $ make clean
-   $ make CFLAGS="-O3 -march=native"
-   $ ./perf --file /tmp/randoms.dat --reference --count 1000000
-   $ perf stat ./perf --file /tmp/randoms.dat --count 1000000 --repeat 1000
+$ export OPENMP=-fopenmp
+$ cd src/binary32/acos
+$ make clean
+$ make CFLAGS="-O3 -march=native"
+$ ./perf --file /tmp/randoms.dat --reference --count 1000000
+$ perf stat ./perf --file /tmp/randoms.dat --count 1000000 --repeat 1000
 
 and it reports the number of cycles given by perf (divided by 10^9).
 
@@ -89,9 +90,9 @@ Each function `$NAME` has a dedicated directory
 `src/$TYPE/$SHORT_NAME`, where `$TYPE` can be `binary{32,64,80,128}`
 and `$SHORT_NAME` is the function name without its type suffix
 (`acos`, `asin`, etc.). This directory contains the following files:
+
 - `$NAME.c`: a standalone implementation of function `cr_$NAME`
 - other support files
-
 
 ## How to add support for a new function?
 
@@ -101,6 +102,7 @@ and/or arity.
 For example, suppose you want to add support for a binary64 bivariate
 function `foo`. In `src/binary64/foo`, you will need the following
 files:
+
 - `foo.c`: defining `cr_foo`
 - `foo.wc`: the worst cases to be tested
 - `foo_mpfr.c`: defining `ref_foo`, using MPFR
@@ -108,6 +110,7 @@ files:
 - `function_under_test.h`: defining `{cr,ref}_function_under_test`
 
 In addition, in `src/generic/foo`, you will need the following file:
+
 - `random_under_test.h`: defining a function `random_under_test`,
   which samples suitable inputs for `foo`
 
