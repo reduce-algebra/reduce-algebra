@@ -1,0 +1,3 @@
+#define cr_function_under_test cr_exp2
+#define ref_function_under_test ref_exp2
+#define mpfr_function_under_test mpfr_exp2

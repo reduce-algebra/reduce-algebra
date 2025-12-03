@@ -1,0 +1,35 @@
+How to generate hard-to-round cases with BaCSeL?
+================================================
+
+1) first download BaCSeL from https://gitlab.inria.fr/zimmerma/bacsel
+
+2) then compile it for your target function (see README), for example for exp2:
+
+$ make DEFSAL="-DTWOTOX -DAUTOMATIC -DBASIS=2"
+
+   If your target function is not already known to BaCSeL, follow
+   "How to add a new function" in README.
+
+3) then run it on each interval, where both the input and output should be
+   in the same binade, for example:
+
+$ ./bacsel -rnd_mode all -prec 128 -n 53 -nn 53 -m 45 -t 20 -t0 4503599627370496 -t1 9007199254740992 -d 2 -alpha 2 -v -e_in 0 -nthreads 64
+...
+*** x=4549788078159242*2^-53, distance is: 1.138341287e-14
+*** x=4504746622776930*2^-53, distance is: 1.171239464e-14
+*** x=4552036900583860*2^-53, distance is: 1.836769942e-14
+...
+
+Here we check for worst cases for all rounding modes (-rnd_mode all), with
+input of 53 bits (-n 53), output of 53 bits (-nn 53), in the range
+[1/2,1): t0 and t1 should be divided by 2^n, and multiplied by 2^e_in.
+
+The parameter -m 45 says that we are looking for worst cases at distance
+less than 2^-45 ulp from a floating point number or the middle of two
+floating point numbers.
+
+The parameters -t 20 and -d 2 -alpha 2 are internal parameters of the algorithm
+(SLZ) implemented in BaCSeL. Usually -d 2 -alpha 2 is a good choice, and
+taking -t near 0.4*n is near from optimal (it is tuned with -DAUTOMATIC).
+
+The parameter -nthreads 64 controls the number of threads used by the program.

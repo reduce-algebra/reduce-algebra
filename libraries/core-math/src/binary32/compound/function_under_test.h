@@ -1,0 +1,3 @@
+#define cr_function_under_test cr_compoundf
+#define ref_function_under_test ref_compound
+#define mpfr_function_under_test mpfr_compound

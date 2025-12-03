@@ -1,0 +1,2 @@
+#define cr_function_under_test cr_hypotq
+#define ref_function_under_test ref_hypotq

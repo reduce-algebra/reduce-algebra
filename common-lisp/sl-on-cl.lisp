@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-11-25 12:52:54 franc>
+;; Time-stamp: <2025-12-01 17:35:47 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -38,16 +38,16 @@
 
 #+CLISP (eval-when (:compile-toplevel :load-toplevel :execute)
           (setq custom:*suppress-check-redefinition* t
-                custom:*compile-warnings* nil))
-
-#+ABCL (eval-when (:compile-toplevel :load-toplevel :execute)
-         (require :abcl-contrib)
-         (require :asdf-jar))
+                #-DEBUG custom:*compile-warnings* #-DEBUG nil))
 
 #+CCL (eval-when (:compile-toplevel :load-toplevel :execute)
         (require :asdf)             ; used for various OS interactions
         (setq ccl:*warn-if-redefine* nil
-              ccl::*suppress-compiler-warnings* t))
+              #-DEBUG ccl::*suppress-compiler-warnings* #-DEBUG t))
+
+#+ABCL (eval-when (:compile-toplevel :load-toplevel :execute)
+         (require :abcl-contrib)
+         (require :asdf-jar))
 
 (defpackage :standard-lisp
   (:nicknames :sl)
@@ -3256,7 +3256,7 @@ already exists, it is removed before the new entry is added."
 ;;                     :search t :output t :escape-arguments nil)))
 
 #+(or SBCL CLISP CCL)      ; to avoid a syntax error with other Lisps!
-(defun system (command)                 ; PSL
+(defun system (command)    ; PSL
   "(system COMMAND:string):undefined expr
 Run a (system specific) command interpreter synchronously, pass
 COMMAND to the interpreter and return the process exit code."
@@ -3278,7 +3278,18 @@ COMMAND to the interpreter and return the process exit code."
         1
         (ccl:external-process-status    ; returns status, exit code
          #+WINDOWS
-         (ccl:run-program "cmd" (list "/c" command) :output *standard-output*)
+         (progn
+           ;; Split off the arguments:
+           (setq command
+                 (loop with beg and end = 0
+                       while end
+                       do (setq beg (position-if #'(lambda (x) (char/= x #\Space))
+                                                 command :start end))
+                       (unless beg (loop-finish))
+                       (setq end (position #\Space command :start beg))
+                       ;; Quoted args seem to fail, so...
+                       collect (string-trim "\"" (subseq command beg end))))
+           (ccl:run-program "cmd" (cons "/c" command) :output t))
          #-WINDOWS
          (ccl:run-program "sh" (list "-c" command) :output t)))
        ))
@@ -3388,6 +3399,15 @@ in file name."
 
 #+SBCL (import 'sb-posix:getpid)
 #+CLISP (defalias getpid os:process-id)
+;; #+CCL (defalias getpid #_getpid)        ; ???
+#+CCL
+(defun getpid ()
+  "Return the process ID of the calling process."
+  ;; According to the CCL manual (#_getpid) should work, but on
+  ;; Windows it doesn't, so for now fudge it by just returning an
+  ;; arbitrary fixed number.
+  #-WINDOWS (#_getpid)
+  #+WINDOWS 1234)
 
 #+(or SBCL CLISP)               ; to avoid a warning with other Lisps!
 (defun setenv (name value)
@@ -3399,8 +3419,8 @@ in file name."
 (defun exit (&optional code)
   #+SBCL (sb-ext:exit :code code)
   #+CLISP (ext:exit code)
-  #+ABCL (ext:exit :status code)
   #+CCL (ccl:quit code)
+  #+ABCL (ext:exit :status code)
   #+ECL (ext:quit code t)               ; kill-all-threads
   )
 
@@ -3410,7 +3430,7 @@ in file name."
 ;;; Compile and load
 ;;; ================
 
-(defconstant %fasl-directory-pathname   ; MUST be absolute
+(defparameter %fasl-directory-pathname   ; MUST be absolute
   (let* ((dir (pathname-directory
                (or *load-truename* *default-pathname-defaults*)))
          ;; Should be a list ending with either "fasl.*" or "common-lisp".
@@ -3448,7 +3468,6 @@ These are files referenced by symbols rather than strings.")
 ;; file with filetype ".fasl" [also, apparently, ".fas"], then tries
 ;; to load the source file with filetype ".lsp" [also, apparently,
 ;; ".lisp"], and then tries to load the source file with no filetype.
-;; ***** CCL may do something similar - CHECK! *****
 
 #-ECLP
 (defalias %load-extensions cl:load)
@@ -3518,7 +3537,7 @@ Load a \".sl\" file using Standard Lisp read syntax."
   #+ECLP ".fasc" #+ECLN ".fas"
   "Standard Lisp fasl filename extension beginning with \".\", used by \"remake.red\".")
 
-(defconstant fasl-dir*
+(defparameter fasl-dir*
   (namestring %fasl-directory-pathname)
   "Standard Lisp fasl directory name ending with \"/\", used by \"remake.red\".")
 
@@ -3694,11 +3713,20 @@ When all done, execute FASLEND;~2%" name))
 (defun reduce-init-function ()
   "The function executed at startup of the saved REDUCE memory image."
   (standard-lisp)
-  (system::driver       ; build driver-frame; do #'lambda "infinitely"
-   #'(lambda ()
-       (system::with-abort-restart (:report (system::text "Abort main loop"))
-         ;; ANSI CL wants an ABORT restart to be available.
-         (begin))))
+  ;; (if  (and (interactive-stream-p *standard-input*)
+  ;;           (interactive-stream-p *standard-output*))
+  ;;      (system::driver       ; build driver-frame; do #'lambda "infinitely"
+  ;;       #'(lambda ()
+  ;;           (system::with-abort-restart (:report (system::text "Abort main loop"))
+  ;;             ;; ANSI CL wants an ABORT restart to be available.
+  ;;             (begin))))
+  ;;      ;; Non-interactively, when an ERROR occurs, or when a
+  ;;      ;; Control+C interrupt occurs, the error message is
+  ;;      ;; printed and CLISP terminates with an error status.
+  ;;      (progn
+  ;;        #+DEBUG (setq custom:*report-error-print-backtrace* t)
+  ;;        (system::driver #'(lambda () (ext:exit-on-error (begin))))))
+  (ext:exit-on-error (begin))
   (ext:exit))
 
 #+(or CCL ECL)
@@ -3713,16 +3741,15 @@ When all done, execute FASLEND;~2%" name))
   (sb-ext:save-lisp-and-die (concat "fasl.sbcl/" name ".img")
                             :toplevel #'reduce-init-function)
   #+CLISP
-  (ext:saveinitmem (concat "fasl.clisp/" name ".mem")
-                   :init-function #'reduce-init-function
-                   :quiet t :norc t)
-  #+ABCL
-  (asdf-jar:package name :verbose t)
+  (ext:saveinitmem
+   (concat "fasl.clisp/" name ".mem")
+   :init-function #'reduce-init-function :quiet t :norc t
+   :documentation "REDUCE Computer Algebra System")
   #+CCL
   (ccl:save-application (concat "fasl.ccl/" name ".image")
                         :toplevel-function #'reduce-init-function)
   #+ECL (reduce-init-function)
-  )
+  #+ABCL (asdf-jar:package name :verbose t))
 
 (pushnew :standard-lisp *features*)
 
@@ -3762,6 +3789,8 @@ Called by ON/OFF COMP; see 'clrend.red'."
 
 #+ABCL (setq *autoload-verbose* t)
 
+(setf (macro-function 'cltrace) (macro-function 'trace)) ; for debugging
+
 ;; Common Lisp symbols used in REDUCE source code:
 (import
  '(lambda warning
@@ -3771,7 +3800,6 @@ Called by ON/OFF COMP; see 'clrend.red'."
    room sleep                           ; used in crack
    *print-base*                         ; used in gf2.tst
    #+SBCL sb-ext:*muffled-warnings*     ; used in build.sh
-   symbol-function ; since *currently* getd always returns lambda form
    ))
 
 ;; Cease inheriting the external symbols of :common-lisp except for

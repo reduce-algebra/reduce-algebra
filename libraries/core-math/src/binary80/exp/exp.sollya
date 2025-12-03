@@ -1,0 +1,16 @@
+// display = hexadecimal;
+n = 3; /* polynomial degree */
+
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+d = [-2^-19.999,2^-19.999];
+f = 2^x;
+w = 1;
+p =  remez(f, n, d, w);
+pf = fpminimax(2^x, n, [|1,107,53...|], d, absolute, floating, 0, p);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print(pretty(err_p));
+display = hexadecimal;
+print (pf);

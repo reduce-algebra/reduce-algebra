@@ -1,0 +1,9 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+d = [L,H];
+f = acos(X0+x);
+pf = sqrt(1-(X0+x))*((P0)+(P1)*x+(P2)*x^2+(P3)*x^3+(P4)*x^4+(P5)*x^5);
+err_p = -log2(dirtyinfnorm(pf-f, d));
+print (pretty(err_p));

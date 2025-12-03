@@ -1,0 +1,3 @@
+display = hexadecimal;
+P = fpminimax(exp(x)-1, 4, [|53, 53, 53, 53, 53|], [-2^-18, 2^-18], relative);
+print(P);

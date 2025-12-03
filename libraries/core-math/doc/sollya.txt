@@ -1,0 +1,51 @@
+Sollya (https://www.sollya.org/) is used within CORE-MATH to generate minimax
+polynomial approximating a given function on a given interval. In addition,
+with Sollya one can give constraints on the coefficients.
+
+Here is a very simple example, to generate a minimax polynomial of degree 7
+for expm1(x)/x over [-1/16,1/16], with double-precision coefficients:
+
+$ cat expm1.sollya 
+display = hexadecimal;
+P = fpminimax(expm1(x)/x, 7, [|D...|], [-2^-4, 2^-4]);
+print (P);
+
+$ sollya expm1.sollya 
+Display mode is hexadecimal numbers.
+0x1.a01dc40888fcdp-16 * x^0x1.cp2 + 0x1.a02526febbea6p-13 * x^0x1.8p2 + 0x1.6c16c17639e82p-10 * x^0x1.4p2 + 0x1.111110f70f2a4p-7 * x^0x1p2 + 0x1.55555555551a7p-5 * x^0x1.8p1 + 0x1.55555555559abp-3 * x^0x1p1 + 0x1p-1 * x + 0x1p0
+
+Here is a more complex example, where one approximates the function 2^x on
+[0.21, 1] with a degree-10 polynomial with 53-bit coefficients, and one
+wants to minimize the relative error. In addition, the program outputs an
+estimation of the absolute value of the base-2 logarithm of the relative error,
+i.e., the approximate number of correct bits:
+
+$ cat exp2.sollya
+n = 10; /* polynomial degree */
+P = 53; /* precision of the coefficients */
+
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+d = [0.21, 1];
+f = 1;
+w = 1/2^x;
+p =  remez(f, n, d, w);
+pf = fpminimax(2^x, n, [|P...|], d, relative, floating, 0, p);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print (pf, pretty(err_p));
+
+$ sollya exp2.sollya
+1.07136731625179674535926799034020462375593751858105e-8 * x^10 + 9.027825787808079634246265395003394615969227743335e-8 * x^9 + 1.342026520491424676303116210462906821021533687599e-6 * x^8 + 1.52293442284803193052930211925932724170706933364272e-5 * x^7 + 1.54053396854341080081385317868125639506615698337555e-4 * x^6 + 1.3333461287165469799642636417047469876706600189209e-3 * x^5 + 9.6181326964588521183374680845190596301108598709106e-3 * x^4 + 5.550410776326538536684651603536622133105993270874e-2 * x^3 + 0.24022650710527010398109837296942714601755142211914 * x^2 + 0.69314718054618496001495486780186183750629425048828 * x + 1.00000000000056976645623763033654540777206420898437 55.808
+
+Useful things in the CORE-MATH context:
+
+* if one wants only coefficients of specified degrees, you can replace the
+  2nd argument 7 in the expm1.sollya file by say [|0,1,2,4,6|], which will
+  generate non-zero coefficients only for degrees 0, 1, 2, 4, and 6.
+* if the interval is say [0,1] and one wants to minimize the relative error
+  for a function which is c0*x + O(x^2) at x=0, you get an error. One
+  workaround is to slightly modify the interval, say [0.000001,1].
+
+

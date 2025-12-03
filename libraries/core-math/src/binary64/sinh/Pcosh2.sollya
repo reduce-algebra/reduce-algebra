@@ -1,0 +1,22 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+n = 8;
+d = [-0.00543,0.00543];
+f = cosh(x);
+w = 1;
+p = remez(f, n, d, w);
+pf = fpminimax(f, [|0,2,4,6,8|], [|1,107,107,53...|], d, relative, floating, 0, p);
+f = 1;
+w = 1/cosh(x);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+display = hexadecimal;
+print (pf);
+display = decimal;
+print ("relative error:", pretty(err_p));
+f = cosh(x);
+w = 1;
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print ("absolute error:", pretty(err_p));
+  

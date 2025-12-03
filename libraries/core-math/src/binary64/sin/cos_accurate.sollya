@@ -1,0 +1,14 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+prec = 512;
+
+d = [0,1/2^11];
+f = 1;
+w = 1/cos(2*pi*x);
+p = remez(f, [|0,2,4,6,8,10|], d, w);
+pf = fpminimax(f, [|0,2,4,6,8,10|], [|128...|], d, relative, floating, 0, p);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print (pf);
+print (pretty(err_p));

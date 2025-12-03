@@ -1,0 +1,17 @@
+# -*- makefile -*-
+
+# if CORE_MATH_CHECK_STD is defined, check the given standard library
+# instead of CORE-MATH
+ifeq (,$(CORE_MATH_CHECK_STD))
+  CORE_MATH_OBJS := $(FUNCTION_UNDER_TEST).o
+else
+  CORE_MATH_OBJS := $(LIBM)
+  # use CORE_MATH_STD_NAME=... when the function name in the standard library
+  # differs from that in CORE-MATH, for example:
+  # CORE_MATH_CHECK_STD=true CORE_MATH_STD_NAME=hypotf128 ./check.sh hypotq
+  ifeq (,$(CORE_MATH_STD_NAME))
+     CORE_MATH_DEFINES := -Dcr_$(FUNCTION_UNDER_TEST)=$(FUNCTION_UNDER_TEST)
+  else
+     CORE_MATH_DEFINES := -Dcr_$(FUNCTION_UNDER_TEST)=$(CORE_MATH_STD_NAME)
+  endif
+endif

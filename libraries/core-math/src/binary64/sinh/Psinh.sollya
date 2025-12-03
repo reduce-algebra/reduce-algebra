@@ -1,0 +1,22 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+n = 7;
+d = [-0.00543,0.00543];
+f = sinh(x);
+w = 1;
+p = remez(f, n, d, w);
+pf = fpminimax(f, [|1,3,5,7|], [|1,53...|], d, absolute, floating, 0, p);
+f = 1;
+w = 1/sinh(x);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+display = hexadecimal;
+print (pf);
+display = decimal;
+print ("relative error:", pretty(err_p));
+f = sinh(x);
+w = 1;
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print ("absolute error:", pretty(err_p));
+  

@@ -1,0 +1,14 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+ 
+d=[0.0000001,2^-10];
+n=[|1,2|];
+f = 1;
+w = pi/atan(x);
+p = remez(f, n, d, w);
+pf = fpminimax(f, n, [|24...|], d, relative, floating, 0, p);
+err_p = -log2(dirtyinfnorm(pf*w-f, d));
+print (pf);
+display = decimal;
+print (pretty(err_p));

@@ -1,0 +1,23 @@
+pretty = proc(u) {
+  return ~(floor(u*1000)/1000);
+};
+
+p1 = 0x1p0;
+p2 = -0x1.ffffffffffffap-2;
+p3 = 0x1.555555554f4d8p-2;
+p4 = -0x1.0000000537df6p-2;
+p5 = 0x1.999a14758b084p-3;
+p6 = -0x1.55362255e0f63p-3;
+
+p = p1*x+p2*x^2+p3*x^3+p4*x^4+p5*x^5+p6*x^6;
+
+d = [-0.00202941894531250,0.00212097167968735];
+f = log(1+x);
+w = 1;
+err_p = -log2(dirtyinfnorm(p*w-f, d));
+print ("absolute error:", pretty(err_p));
+
+f = 1;
+w = 1/log(1+x);
+err_p = -log2(dirtyinfnorm(p*w-f, d));
+print ("relative error:", pretty(err_p));

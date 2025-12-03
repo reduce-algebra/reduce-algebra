@@ -1,0 +1,3 @@
+#define cr_function_under_test cr_hypotf16
+#define ref_function_under_test ref_hypot
+#define mpfr_function_under_test mpfr_hypot
