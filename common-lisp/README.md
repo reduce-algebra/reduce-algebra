@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2025-12-02 15:18:10 franc>
+Time-stamp: <2025-12-04 10:45:06 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -119,7 +119,7 @@ If you used Subversion to download or update a copy of the REDUCE distribution f
 
 The order of precedence of the two mechanisms for determining the REDUCE revision is first the `-r` option, then `svnversion`.  **Note that the file `packages/support/revision.red` is no longer used.**
 
-### Using Unsupported Versions of Common Lisp
+### Using unsupported versions of Common Lisp
 
 There is some preliminary support for the Java-based [Armed Bear Common Lisp (ABCL)](https://abcl.org/) thanks to Rainer Schöpf, but it is not yet possible to preserve Lisp images so the ABCL version is not yet usable, and I am working on support for [Embeddable Common Lisp (ECL)](https://ecl.common-lisp.dev/).  But these need a different build script that I do not currently distribute.  To use ABCL, you need to ensure that you have a suitable Java runtime environment installed; the build and run scripts expect to find the command `java` on your search path.  You also need to download [abcl-bin-1.8.0.zip](https://abcl.org/releases/1.8.0/abcl-bin-1.8.0.zip) and unzip it (or build and install it) so that `abcl-bin-1.8.0/abcl.jar` exists in the `common-lisp` directory.
 
@@ -155,7 +155,7 @@ For Cygwin CLISP REDUCE (on MS Windows), the REDUCE `gnuplot` package tries to r
 
 ## Status
 
-I performed all testing on the same computer using Windows 11, a recent version of Cygwin and Ubuntu 24.04.3 LTS (GNU/Linux 6.6.87.2-microsoft-standard-WSL2 x86_64).  I used the standard REDUCE test framework by running commands of the form
+I performed all testing on the same computer using Windows 11, a recent version of Cygwin and Ubuntu 24.04.3 LTS (GNU/Linux 6.6.87.2-microsoft-standard-WSL2 x86_64).  I tested production (i.e. non-debugging) builds using the standard REDUCE test framework by running commands of the form
 
 ```sh
 ../scripts/testall.sh --noregressions --csl --<lisp>
@@ -165,6 +165,11 @@ from the directory
 ```sh
 reduce-algebra-code/testing
 ```
+
+NB: Testing on Cygwin cannot time out (it may hang), whereas on Linux it can time out (and does, especially for CLISP).
+
+The test output differences for the `arith` and `numeric` package are identical for SBCL, CLISP and CCL on both Windows and Ubuntu, so this appears to be a generic numerical difference between Common Lisp and CSL/PSL!
+
 
 ### Steel Bank Common Lisp (SBCL)
 
@@ -179,7 +184,6 @@ Package  | Output Issues
 arith    | SBCL is numerically more accurate than CSL/PSL!
 gf2      | Missing final backtrace
 numeric  | Minor numerical differences
-(xcolor) | (Crashes with stack overflow if compiled for debugging!)
 
 Lisp | Run Time (ms) | GC Time (ms)
 -----|---------------|-------------
@@ -190,7 +194,7 @@ sbcl |        254429 | 8813
 
 REDUCE 7205 on SBCL 2.5.10.
 
-No build errors.  Package output issues as for Windows.
+No build errors.  Package test issues as for Windows.
 
 Lisp | Run Time (ms) | GC Time (ms)
 -----|---------------|-------------
@@ -201,7 +205,7 @@ sbcl |        192035 | 3180
 
 #### Windows
 
-REDUCE 7206 on Cygwin CLISP 2.49+
+REDUCE 7206 on Cygwin CLISP 2.49
 
 No build errors.
 
@@ -211,7 +215,26 @@ arith    | CLISP is numerically more accurate than CSL/PSL!
 gf2      | Hangs in an infinite loop!
 ibalp    | Stack overflow.
 numeric  | Minor numerical differences
-(xcolor) | (Crashes with stack overflow if compiled for debugging!) MAYBE
+
+#### Ubuntu 24 (on WSL)
+
+REDUCE 7211 on CLISP 2.49
+
+No build errors.
+
+Package  | Output Issues
+---------|--------------
+arith    | CLISP is numerically more accurate than CSL/PSL!
+conlaw   | TIMED OUT
+economise| TIMED OUT
+eds      | Lots of issues (probably from excalc)
+excalc   | Lots of issues
+gf2      | Segmentation fault
+ibalp    | Stack overflow
+numeric  | Minor numerical differences
+sstools  | TIMED OUT
+susy2    | TIMED OUT
+xideal   | Lots of issues (probably from excalc)
 
 ### Clozure Common Lisp (CCL)
 
@@ -233,7 +256,11 @@ ofsf     | Hangs in ccl::lock-free-puthash! [EXCLUDE]
 solve    | Error in check!-solns2, possibly in substitution (3)
 taylor   | `***** Invalid substitution`
 
-The test output differences for the `arith` and `numeric` package are identical for SBCL, CLISP and CCL, so this appears to be a generic numerical difference between Common Lisp and CSL/PSL!  However, CCL uses CRLF line endings, which is a bit annoying!
+#### Ubuntu 24 (on WSL)
+
+REDUCE 7211 on CCL 1.13
+
+No build errors.  Package test issues as for Windows, except that ofsf was killed by the timeout.  (The gf2 test hangs on Ubuntu exactly as on Windows!)
 
 
 ## Known limitations

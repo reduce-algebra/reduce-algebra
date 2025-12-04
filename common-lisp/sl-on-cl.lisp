@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-12-01 17:35:47 franc>
+;; Time-stamp: <2025-12-02 16:50:12 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -3399,6 +3399,11 @@ in file name."
 
 #+SBCL (import 'sb-posix:getpid)
 #+CLISP (defalias getpid os:process-id)
+;; Only CCL understands the reader macro #_, so...
+#-CCL
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (set-dispatch-macro-character
+   #\# #\_ #'(lambda (&rest args) (declare (ignore args)))))
 ;; #+CCL (defalias getpid #_getpid)        ; ???
 #+CCL
 (defun getpid ()
