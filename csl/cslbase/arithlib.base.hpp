@@ -388,7 +388,7 @@
 // too bad, but in many places I will in fact write the rather wordy but very
 // explicit (1ULL<<n).
 
-#define ARITHLIB_VERSION 1000
+#define ARITHLIB_VERSION 1001
 
 // If I am in a process created using fork() this variable must be set
 // and doing that will disable use of threads here!
@@ -475,6 +475,7 @@ inline bool inChild = false;
 #include <algorithm>
 
 #include "bitmaps.h"
+#include "threadloc.h"
 #include "cthread.cpp"
 #include "acnutil.h"
 #include "lvector.base.h"

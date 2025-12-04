@@ -98,7 +98,20 @@ void timetest(size_t N, int ntrials)
 }
 
 int main(int argc, char* argv[])
-{
+{   std::cout << "Test starting" << std::endl;
+#ifdef __CYGWIN__
+    __builtin_cpu_init();
+    if (__builtin_cpu_supports("sse4.2")) std::cout << "Has SSE 4.2\n";
+    else
+    {   std::cout << "No SSE 4.2\n";
+        return 1;
+    }
+    if (__builtin_cpu_supports("avx")) std::cout << "Has AVX\n";
+    else
+    {   std::cout << "No AVX\n";
+        return 1;
+    }
+
     size_t N = -1;
     if (argc > 1) N = atoi(argv[1]);
 
@@ -114,6 +127,7 @@ int main(int argc, char* argv[])
             if (N>1) timetest((3*N)/2, ntrials);
         }
     }
+#endif
     return 0;
 }
 

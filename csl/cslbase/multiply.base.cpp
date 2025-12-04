@@ -168,6 +168,9 @@ inline double worstRatio = 0.0;
 
 extern "C"
 {
+#ifndef MSDECLS
+#define MSDECLS
+
 struct SecApp
 {   std::uintptr_t nLength;
     void* lpSecurityDescriptor;
@@ -195,6 +198,7 @@ extern __declspec(dllimport) void*
     WaitForSingleObject(void* , std::uintptr_t);
 inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
 
+#endif // MSDECLS
 };   // end of extern "C" scope.
 
 #endif // __CYGWIN__ or __MINGW32__

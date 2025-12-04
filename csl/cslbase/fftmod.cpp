@@ -82,7 +82,7 @@
 // Well: the slow versions will only be included if you compile with
 // "-DTESTFFT".
 
-
+#ifndef ARITHLIB_VERSION
 #include <cstdint>
 #include <iostream>
 #include <iomanip>
@@ -108,8 +108,6 @@
 #include <thread>
 #include <atomic>
 #include <cassert>
-
-#ifndef ARITHLIB_VERSION
 #include "fftutils.cpp"
 using namespace fftutils;
 #endif // ARITHLIB_VERSION

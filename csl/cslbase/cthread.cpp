@@ -70,6 +70,8 @@
 
 #include <execution>
 
+#include "threadloc.h"
+
 template <typename T, bool parallel=true>
 inline void runInThreads(std::vector<T> v, void (*fn)(T))
 {   std::for_each(parallel ? std::execution::par : std::execution::seq,
@@ -158,6 +160,9 @@ inline std::atomic<uint32_t> activeThreads(0);
 
 extern "C"
 {
+#ifndef MSDECLS
+#define MSDECLS
+
 struct SecApp
 {   std::uintptr_t nLength;
     void* lpSecurityDescriptor;
@@ -184,6 +189,8 @@ extern __declspec(dllimport) int ReleaseMutex(void* m);
 extern __declspec(dllimport) void* 
     WaitForSingleObject(void* , std::uintptr_t);
 inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
+
+#endif // MSDECLS
 
 };   // end of extern "C" scope.
 
