@@ -73,12 +73,12 @@ lvector.h:	flatten lvector.base.h threadloc.h
 	./flatten lvector.base.h lvector.h
 
 multiply.cpp:	flatten multiply.base.cpp inlinemul.cpp lvector.h \
-		cthread.cpp fftmod.cpp
+		cthread.cpp fftmod.cpp fftkernel.cpp
 	./flatten multiply.base.cpp multiply.cpp
 
 arithlib.hpp:	flatten arithlib.base.hpp lvector.h \
 		acnutil.h multiply.base.cpp inlinemul.cpp \
-		fftutils.cpp fftmod.cpp bitmaps.h cthread.cpp
+		fftutils.cpp fftmod.cpp fftkernel.cpp bitmaps.h cthread.cpp
 	./flatten arithlib.base.hpp arithlib.hpp
 
 geninline:	geninline.cpp
