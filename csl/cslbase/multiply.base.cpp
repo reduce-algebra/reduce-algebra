@@ -1015,10 +1015,11 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
 private:
 
 // Above this length (measured in 64-bit digits) I will use fast
-// multiplication based on FFT. The threshold here is about correct
-// under WSL with Linux running on my Windows 11 machine.
+// multiplication based on FFT.
+// The threshold here will depend on the machine you are running on,
+// but this ia probably close enough across the platforms that I care about.
 
-static const std::size_t FFT_THRESHOLD = 65000;
+static const std::size_t FFT_THRESHOLD = 10000;
 
 // When thread is false this is being used when Kara or Toom32
 // recurses and so most of the time we will have M==N>KARASTART/2. With

@@ -238,6 +238,37 @@ static void dif_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
     {   M = N;
         co_M = 1;
     }
+    while (M%8 == 0)
+    {   M = M/2;
+// Here M = 4, 8, 16 etc so I can unroll the following loop by 4 and
+// when I do that there is an enhanced prospect of the C++ compiler
+// using 128-bit vectors and SIMD instructions to do the work.
+        for (size_t k = 0; k<N; k+=2*M)
+        {   for (size_t n = 0; n<M; n+=4)
+            {   uint32_t u0 = x[n+0+k];
+                uint32_t u1 = x[n+1+k];
+                uint32_t u2 = x[n+2+k];
+                uint32_t u3 = x[n+3+k];
+                uint32_t v0 = x[n+0+k+M];
+                uint32_t v1 = x[n+1+k+M];
+                uint32_t v2 = x[n+2+k+M];
+                uint32_t v3 = x[n+3+k+M];
+                x[n+0+k]    = plusmod<P>(u0, v0);
+                x[n+1+k]    = plusmod<P>(u1, v1);
+                x[n+2+k]    = plusmod<P>(u2, v2);
+                x[n+3+k]    = plusmod<P>(u3, v3);
+                uint32_t t0 = u0 + P - v0;
+                uint32_t t1 = u1 + P - v1;
+                uint32_t t2 = u2 + P - v2;
+                uint32_t t3 = u3 + P - v3;
+                x[n+0+M+k] = timesmod<P>(t0, omegas[(n+0)*co_M]);
+                x[n+1+M+k] = timesmod<P>(t1, omegas[(n+1)*co_M]);
+                x[n+2+M+k] = timesmod<P>(t2, omegas[(n+2)*co_M]);
+                x[n+3+M+k] = timesmod<P>(t3, omegas[(n+3)*co_M]);
+            }
+        }
+        co_M = 2*co_M;
+    }
     while (M != 1)
     {   M = M/2;
         for (size_t k = 0; k<N; k+=2*M)
@@ -247,13 +278,16 @@ static void dif_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
             x[M+k] = t;
             for (size_t n = 1; n<M; n++)
             {   s = plusmod<P>(x[n+k], x[n+k+M]);
-                t = differencemod<P>(x[n+k], x[n+k+M]);
+                t = x[n+k] + P - x[n+k+M];
                 x[n+k]   = s;
                 x[n+M+k] = timesmod<P>(t, omegas[n*co_M]);
             }
         }
         co_M = 2*co_M;
     }
+#ifdef PRINT
+    prinvec("dif_ft", x, N);
+#endif
 }
 
 // Decimation in Frequency here uses the inverse of the root of unity
@@ -264,7 +298,7 @@ template <uint32_t P, uint32_t cube_root>
 static void dit_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 {   size_t M = 1;
     size_t co_M = N;
-    while (co_M%2 == 0)
+    while (co_M%2 == 0 && M<4)
     {   co_M = co_M/2;
         for (size_t k = 0; k<N; k+=2*M)
         {   Digit32 s = x[k];
@@ -276,6 +310,34 @@ static void dit_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
                 t = timesmod<P>(x[k+n+M], omegas[n*co_M]);
                 x[k+n] = plusmod<P>(s, t);
                 x[k+n+M] = differencemod<P>(s, t);
+            }
+        }
+        M = 2*M;
+    }
+    while (co_M%2 == 0)
+    {   co_M = co_M/2;
+// M is at least 4 and has been got to that state by being doubled. So
+// here I can unroll the inner loop by a factor of 4. As before this may
+// help a C++ compiler use SIMD operations.
+        for (size_t k = 0; k<N; k+=2*M)
+        {   assert(M%4 == 0);
+            for (size_t n = 0; n<M; n+=4)
+            {   Digit32 s0 = x[k+n+0];
+                Digit32 s1 = x[k+n+1];
+                Digit32 s2 = x[k+n+2];
+                Digit32 s3 = x[k+n+3];
+                Digit32 t0 = timesmod<P>(x[k+n+0+M], omegas[(n+0)*co_M]);
+                Digit32 t1 = timesmod<P>(x[k+n+1+M], omegas[(n+1)*co_M]);
+                Digit32 t2 = timesmod<P>(x[k+n+2+M], omegas[(n+2)*co_M]);
+                Digit32 t3 = timesmod<P>(x[k+n+3+M], omegas[(n+3)*co_M]);
+                x[k+n+0] = plusmod<P>(s0, t0);
+                x[k+n+1] = plusmod<P>(s1, t1);
+                x[k+n+2] = plusmod<P>(s2, t2);
+                x[k+n+3] = plusmod<P>(s3, t3);
+                x[k+n+0+M] = differencemod<P>(s0, t0);
+                x[k+n+1+M] = differencemod<P>(s1, t1);
+                x[k+n+2+M] = differencemod<P>(s2, t2);
+                x[k+n+3+M] = differencemod<P>(s3, t3);
             }
         }
         M = 2*M;
@@ -487,29 +549,29 @@ class FFTParams
 public:
     int which;       // Index of the prime to be used.
     size_t N;        // Length of all vectors.
-// Note that at this level the inputs to the multiplication process
-// get trashed. THis is OK because they are copies of the original input
-// padded to length N.
-    DigitPtr32 a;      // First input vector .
-    DigitPtr32 b;      // Second input vector.
-    DigitPtr32 c;      // Result is placed here.
-    DigitPtr32 omegas; // Table of powers of omega, the root of unity to be used.
-    DigitPtr32 inv_omegas; // Table of powers of omega but in the other order
+    ConstDigitPtr a;        // First input vector .
+    ConstDigitPtr b;        // Second input vector.
+    size_t lena;
+    size_t lenb;
+    DigitPtr32 ws;     // workspace and result.
     FFTParams()
     {   which = -1;
-        a = b = c = omegas = nullptr;
+        a = b = nullptr;
+        lena = lenb = 0;
+        ws = nullptr;
         N = 0;
     }
     FFTParams(int which, size_t N,
-              DigitPtr32 a, DigitPtr32 b, DigitPtr32 c,
-              DigitPtr32 omegas, DigitPtr32 inv_omegas)
+              ConstDigitPtr a, ConstDigitPtr b,
+              size_t lena, size_t lenb,
+              DigitPtr32 ws)
     {   this->which = which;
         this->N = N;
         this->a = a;
         this->b = b;
-        this->c = c;
-        this->omegas = omegas;
-        this->inv_omegas = inv_omegas;
+        this->lena = lena;
+        this->lenb = lenb;
+        this->ws = ws;
     }
 };
 
@@ -524,23 +586,48 @@ public:
 
 template <Digit32 P, Digit32 omega>
 static void useOneModuleT(FFTParams& d)
-{   Digit32 R = 1, ww = exptmod(omega, (int32_t)(LCMlengths/d.N), P);
-    d.inv_omegas[0] = d.omegas[0] = R;
-    for (size_t i=1; i<d.N; i++)
-        d.inv_omegas[d.N-i] = d.omegas[i] = (R = timesmod<P>(ww, R));
+{   size_t N = d.N;
+    DigitPtr32 a = d.ws;
+    DigitPtr32 b = d.ws+N;
+    DigitPtr32 omegas = d.ws+2*N;
+    DigitPtr32 inv_omegas = d.ws+3*N;
+    size_t i;
+// The remaindering here reduced 64-bit digits in the input to 32- bit
+// modular images.
+    for (i=0; i<d.lena; i++) a[i] = d.a[i] % P;
+    while (i < N) a[i++] = 0;
+    for (i=0; i<d.lenb; i++)b[i] = d.b[i] % P;
+    while (i < N) b[i++] = 0;
+#ifdef PRINT
+    prinvec("a32", a, N);
+    prinvec("b32", b, N);
+#endif
+    Digit32 R = 1, ww = exptmod(omega, (int32_t)(LCMlengths/d.N), P);
+    inv_omegas[0] = omegas[0] = 1;
+    for (size_t i=1; i<N; i++)
+        inv_omegas[d.N-i] = omegas[i] = (R = timesmod<P>(ww, R));
     constexpr Digit32 cube_root1 = exptmod(omega, LCMlengths/3, P);
     constexpr Digit32 cube_root2 = exptmod(omega, 2*LCMlengths/3, P);
-    dif_ft<P, cube_root1>(d.a, d.N, d.omegas);
-    dif_ft<P, cube_root1>(d.b, d.N, d.omegas);
+    dif_ft<P, cube_root1>(a, N, omegas);
+    dif_ft<P, cube_root1>(b, N, omegas);
 // Pointwise multiplication
-    for (size_t i=0; i<d.N; i++)
-        d.c[i] = timesmod<P>(d.a[i], d.b[i]);
-    dit_ft<P,cube_root2>(d.c, d.N, d.inv_omegas);
-// There is a stray factor of d.N that I must divide out... Well I
+    for (size_t i=0; i<N; i++)
+        a[i] = timesmod<P>(a[i], b[i]);
+#ifdef PRINT
+    prinvec("pairwise", a, N);
+#endif
+    dit_ft<P,cube_root2>(a, N, inv_omegas);
+#ifdef PRINT
+    prinvec("dit_ft", a, N);
+#endif
+// There is a stray factor of N that I must divide out... Well I
 // only really need to do this as far as lena+lenb... 
-    Digit32 R1 = recipmod<P>((Digit32)d.N);
-    for (size_t i=0; i<d.N; i++)
-        d.c[i] = timesmod<P>(d.c[i], R1);
+    Digit32 R1 = recipmod<P>((Digit32)N);
+    for (size_t i=0; i<N; i++)
+        a[i] = timesmod<P>(a[i], R1);
+#ifdef PRINT
+    prinvec("r32", a, N);
+#endif
 }
 
 static void useOneModulus(FFTParams d)
@@ -574,74 +661,26 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // these are vectors of 32-bit numbers (modulo one of my primes) rather than
 // 64-bits, so it is not quite as bad as it looks! I need all this because
 // I will work on 5 modular images in parallel and each will need their own
-// data.
-    stkvector<Digit32> workspace(25*N);
-    DigitPtr32 a1 = workspace+0*N;
-    DigitPtr32 a2 = workspace+1*N;
-    DigitPtr32 a3 = workspace+2*N;
-    DigitPtr32 a4 = workspace+3*N;
-    DigitPtr32 a5 = workspace+4*N;
-    DigitPtr32 b1 = workspace+5*N;
-    DigitPtr32 b2 = workspace+6*N;
-    DigitPtr32 b3 = workspace+7*N;
-    DigitPtr32 b4 = workspace+8*N;
-    DigitPtr32 b5 = workspace+9*N;
-    DigitPtr32 c1 = workspace+10*N;
-    DigitPtr32 c2 = workspace+11*N;
-    DigitPtr32 c3 = workspace+12*N;
-    DigitPtr32 c4 = workspace+13*N;
-    DigitPtr32 c5 = workspace+14*N;
-    DigitPtr32 w1 = workspace+15*N;
-    DigitPtr32 w2 = workspace+16*N;
-    DigitPtr32 w3 = workspace+17*N;
-    DigitPtr32 w4 = workspace+18*N;
-    DigitPtr32 w5 = workspace+19*N;
-    DigitPtr32 invw1 = workspace+20*N;
-    DigitPtr32 invw2 = workspace+21*N;
-    DigitPtr32 invw3 = workspace+22*N;
-    DigitPtr32 invw4 = workspace+23*N;
-    DigitPtr32 invw5 = workspace+24*N;
-// First collect images of a and b modulo each of Q1 .. Q5 and pad
-// each out to length N with zeros.
-    size_t i;
-// The remaindering here reduced 64-bit digits in the input to 32- bit
-// modular images.
-    for (i=0; i<lena; i++)
-    {   a1[i] = a[i] % Q1;
-        a2[i] = a[i] % Q2;
-        a3[i] = a[i] % Q3;
-        a4[i] = a[i] % Q4;
-        a5[i] = a[i] % Q5;
-    }
-    while (i < N)
-    {   a1[i] = a2[i] = a3[i] = a4[i] = a5[i] = 0;
-        i++;
-    }
-    for (i=0; i<lenb; i++)
-    {   b1[i] = b[i] % Q1;
-        b2[i] = b[i] % Q2;
-        b3[i] = b[i] % Q3;
-        b4[i] = b[i] % Q4;
-        b5[i] = b[i] % Q5;
-    }
-    while (i < N)
-    {   b1[i] = b2[i] = b3[i] = b4[i] = b5[i] = 0;
-        i++;
-    }
-
-// There are five little blocks of code here and they will be
-// run in parallel. I would expect that doing so will speed the
-// whole multiplication up be a factor of almost 5 once absolute costs
-// were high enough that synchronization overheads ceased dominating.
-
+// data and workspace.
+    stkvector<Digit32> workspace(20*N);
+    DigitPtr32 ws1 = workspace+0*N;
+    DigitPtr32 ws2 = workspace+4*N;
+    DigitPtr32 ws3 = workspace+8*N;
+    DigitPtr32 ws4 = workspace+12*N;
+    DigitPtr32 ws5 = workspace+16*N;
     std::vector<FFTParams> subtasks =
-    {   FFTParams(1, N, a1, b1, c1, w1, invw1),
-        FFTParams(2, N, a2, b2, c2, w2, invw2),
-        FFTParams(3, N, a3, b3, c3, w3, invw3),
-        FFTParams(4, N, a4, b4, c4, w4, invw4),
-        FFTParams(5, N, a5, b5, c5, w5, invw5)
+    {   FFTParams(1, N, a, b, lena, lenb, ws1),
+        FFTParams(2, N, a, b, lena, lenb, ws2),
+        FFTParams(3, N, a, b, lena, lenb, ws3),
+        FFTParams(4, N, a, b, lena, lenb, ws4),
+        FFTParams(5, N, a, b, lena, lenb, ws5),
     };
+#ifdef PRINT
+    prinvec("a", a, lena);
+    prinvec("b", b, lenb);
+#endif
     runInThreads<parallel>(subtasks, useOneModulus);
+// The product mod Q1 is left on ws1 etc.
 
 // Use the Chinese Remainder Theorem to turn the modular results back
 // into a proper set of values for the convolution, and do some carrying
@@ -658,9 +697,17 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // products, and the final "hi" is certain to be zero. Note that I only
 // need to do this for a number of places set by the original input numbers,
 // not all the way out to the padded value N.
+    size_t i;
     for (i=0; i<lena+lenb; i++)
     {   uint64_t hi, mid, lo;
-        chinese_remainder(c1[i], c2[i], c3[i], c4[i], c5[i], hi, mid, lo);
+#ifdef PRINT
+        prinvec("ws1", ws1, N);
+        prinvec("ws2", ws2, N);
+        prinvec("ws3", ws3, N);
+        prinvec("ws4", ws4, N);
+        prinvec("ws5", ws5, N);
+#endif
+        chinese_remainder(ws1[i], ws2[i], ws3[i], ws4[i], ws5[i], hi, mid, lo);
         c[i] = lo+carry;
         carry1 += mid;
         carry2 = hi + (carry1<mid);
@@ -671,7 +718,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
         carry1 = carry2;
     }
     c[i++] = carry;
-    if (carry1 != 0) std::cout << "Bad carry = " << carry1 << "\n";;
+    if (carry1 != 0)
+        std::cout << "Bad carry = " << carry1 << "\n";;
 }
 
 // end of fftmod.cpp

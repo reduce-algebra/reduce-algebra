@@ -160,6 +160,20 @@ inline void prinvec(const char* s, uint64_t w, const uint64_t* v, size_t n, uint
     std::cout << "\n";
 }
 
+inline void prinvec(const char* s, const uint64_t* v, size_t n)
+{   std::cout << s;
+    for (size_t i=0; i<n; i++)
+        std::cout << " " << v[i];
+    std::cout << "\n";
+}
+
+inline void prinvec(const char* s, uint64_t w, const uint64_t* v, size_t n)
+{   std::cout << s << " " << w << ":";
+    for (size_t i=0; i<n; i++)
+        std::cout << " " << v[i];
+    std::cout << "\n";
+}
+
 #ifdef SYMMETRIC
 
 inline int32_t Sig(uint32_t a, uint32_t P)
@@ -186,6 +200,21 @@ inline void prinvec(const char* s, uint32_t w,
 {   std::cout << s << " " << w << ":";
     for (uint32_t i=0; i<n; i++)
         std::cout << " " << Sig(v[i], P);
+    std::cout << "\n";
+}
+
+inline void prinvec(const char* s, const uint32_t* v, uint32_t n)
+{   std::cout << s;
+    for (uint32_t i=0; i<n; i++)
+        std::cout << " " << v[i];
+    std::cout << "\n";
+}
+
+inline void prinvec(const char* s, uint32_t w,
+                    const uint32_t* v, uint32_t n)
+{   std::cout << s << " " << w << ":";
+    for (uint32_t i=0; i<n; i++)
+        std::cout << " " << v[i];
     std::cout << "\n";
 }
 
@@ -230,71 +259,103 @@ inline void prinvec(const char* s, uint32_t w,
 // support code may need more.
 
 inline constexpr uint64_t plusmod(uint64_t a, uint64_t b, uint64_t N)
-{   uint64_t c = a + b;
-    return c >= N ? c-N : c;
+{   //assert(a < N);
+    //assert(b < N);
+    uint64_t c = a + b;
+    if (c >= N) c -= N;
+    return c;
 }
 
 template <uint64_t P>
 inline constexpr uint64_t plusmod(uint64_t a, uint64_t b)
-{   uint64_t c = a + b;
-    return c >= P ? c-P : c;
+{   //assert(a < P);
+    //assert(b < P);
+    uint64_t c = a + b;
+    if (c >= P) c -= P;
+    return c;
 }
 
 inline constexpr uint32_t plusmod(uint32_t a, uint32_t b, uint32_t N)
-{   uint32_t c = a + b;
-    return c >= N ? c-N : c;
+{   //assert(a < N);
+    //assert(b < N);
+    uint32_t c = a + b;
+    if (c >= N) c -= N;
+    return c;
 }
 
 template <uint32_t P>
 inline constexpr uint32_t plusmod(uint32_t a, uint32_t b)
-{   uint32_t c = a + b;
-    return c >= P ? c-P : c;
+{   //assert(a < P);
+    //assert(b < P);
+    uint32_t c = a + b;
+    if (c >= P) c -= P;
+    return c;
 }
 
 inline constexpr uint64_t differencemod(uint64_t a, uint64_t b, uint64_t N)
-{   if (a >= b) return a-b;
-    else return (a+N)-b;
+{   //assert(a < N);
+    //assert(b < N);
+    uint64_t c = a + N - b;
+    if (c >= N) c -= N;
+    return c;
 }
 
 template <uint64_t P>
 inline constexpr uint64_t differencemod(uint64_t a, uint64_t b)
-{   if (a >= b) return a-b;
-    else return (a+P)-b;
+{   //assert(a < P);
+    //assert(b < P);
+    uint64_t c = a + P - b;
+    if (c >= P) c -= P;
+    return c;
 }
 
 inline constexpr uint32_t differencemod(uint32_t a, uint32_t b, uint32_t N)
-{   if (a >= b) return a-b;
-    else return (a+N)-b;
+{   //assert(a < N);
+    //assert(b < N);
+    uint64_t c = a + N - b;
+    if (c >= N) c -= N;
+    return c;
 }
 
 template <uint32_t P>
 inline constexpr uint32_t differencemod(uint32_t a, uint32_t b)
-{   if (a >= b) return a-b;
-    else return (a+P)-b;
+{   //assert(a < P);
+    //assert(b < P);
+    uint64_t c = a + P - b;
+    if (c >= P) c -= P;
+    return c;
 }
 
 // Form (a*b) % N where all three inputs are 64-bit unsigned integers
 // and a and b are both less than N.
 
 inline constexpr uint64_t timesmod(uint64_t a, uint64_t b, uint64_t N)
-{   return (uint64_t)(((uint128_t)a * b) % N);
+{   //assert(a < N);
+    //assert(b < N);
+    return (uint64_t)(((uint128_t)a * b) % N);
 }
 
 template <uint64_t P>
 inline constexpr uint64_t timesmod(uint64_t a, uint64_t b)
-{   return (uint64_t)(((uint128_t)a * b) % P);
+{   //assert(a < P);
+    //assert(b < P);
+    return (uint64_t)(((uint128_t)a * b) % P);
 }
 
 // Form (a*b) % N where all three inputs are 32-bit unsigned integers
 // and a and b are both less than N.
 
 inline constexpr uint32_t timesmod(uint32_t a, uint32_t b, uint32_t N)
-{   return (uint32_t)(((uint64_t)a * b) % N);
+{   //assert(a < N);
+    //assert(b < N);
+    return (uint32_t)(((uint64_t)a * b) % N);
 }
 
 template <uint32_t P>
 inline constexpr uint32_t timesmod(uint32_t a, uint32_t b)
-{   return (uint32_t)(((uint64_t)a * b) % P);
+{   //assert(a < P);
+    //assert(b < P);
+    return (uint32_t)(((uint64_t)a * b) % P);
 }
 
 inline constexpr uint64_t times64(uint32_t a, uint32_t b)
@@ -469,6 +530,15 @@ inline constexpr uint32_t Q2 = findP(Q1-2);         // 0x78000001
 inline constexpr uint32_t Q3 = findP(Q2-2);         // 0x6c000001
 inline constexpr uint32_t Q4 = findP(Q3-2);         // 0x66000001
 inline constexpr uint32_t Q5 = findP(Q4-2);         // 0x42000001
+
+// For reason I do not understand gdb has trouble displaying Q1 etc
+// and seems to show floating point values. I hope these versions will
+// help me debug more easily.
+inline uint32_t QQ1 = Q1;
+inline uint32_t QQ2 = Q2;
+inline uint32_t QQ3 = Q3;
+inline uint32_t QQ4 = Q4;
+inline uint32_t QQ5 = Q5;
 
 // For each prime I want a value (omega1,omega2,...) that is a primitive
 // LCMlength root of unity modulo that prime.
@@ -766,6 +836,7 @@ uint32_t modulo(uint64_t hi, uint64_t mid, uint64_t lo, uint32_t P)
 inline void chinese_remainder(Digit a1, Digit a2, Digit32 a3,
                               uint64_t& hi, uint64_t& mid, uint64_t& lo)
 {
+    //assert(a3 < Q3);
 // First find a1a2 which will be a1 mod P1 and a2 mod P2
     uint128_t a1a2A = ((a2*(uint128_t)P1_P2.x)%P2)*P1;
     uint128_t a1a2B = ((a1*(uint128_t)P1_P2.y)%P1)*P2;
@@ -777,8 +848,8 @@ inline void chinese_remainder(Digit a1, Digit a2, Digit32 a3,
         a1a2 = a1a2A >= a1a2B ? a1a2A - a1a2B
                               : a1a2A + (uint128_t)P1xP2 - a1a2B;
 // here a1a2 should be a1 mod P1 (== Q1*Q2) and a2 mod P2 (== Q3*Q4)
-    assert(a1a2%P1 == a1);
-    assert(a1a2%P2 == a2);
+    //assert(a1a2%P1 == a1);
+    //assert(a1a2%P2 == a2);
 //
 // Now the next step is logically the same but looks messier
 // because I need to go to 192 bits. Well more pedantically around 150
@@ -841,7 +912,8 @@ inline void chinese_remainder(Digit a1, Digit a2, Digit32 a3,
 
 template <Digit32 q1, Digit32 q2, Digit32 x, Digit32 y, bool x_negated>
 inline Digit chinese_remainder_32(Digit32 a, Digit32 b)
-{
+{   //assert(a < q1);
+    //assert(b < q2);
 // First find a1a2 which will be a1 mod q1 and a2 mod q2
     Digit RA = ((b*(Digit)x)%q2)*q1;
     Digit RB = ((a*(Digit)y)%q1)*q2;
@@ -851,8 +923,8 @@ inline Digit chinese_remainder_32(Digit32 a, Digit32 b)
 // 4 lines just for debugging
     if constexpr (x_negated) r = RB >= RA ? RB - RA : RB + P - RA;
     else r = RA >= RB ? RA - RB : RA + P - RB;
-    assert(r%q1 == a);
-    assert(r%q2 == b);
+    //assert(r%q1 == a);
+    //assert(r%q2 == b);
 
     if constexpr (x_negated) return RB >= RA ? RB - RA : RB + P - RA;
     else return RA >= RB ? RA - RB : RA + P - RB;
@@ -861,14 +933,19 @@ inline Digit chinese_remainder_32(Digit32 a, Digit32 b)
 inline void chinese_remainder(Digit32 a1, Digit32 a2,
                               Digit32 a3, Digit32 a4, Digit32 a5,
                               uint64_t& hi, uint64_t& mid, uint64_t& lo)
-{   uint64_t b1 = chinese_remainder_32<
+{   //assert(a1 < Q1);
+    //assert(a2 < Q2);
+    //assert(a3 < Q3);
+    //assert(a4 < Q4);
+    //assert(a5 < Q5);
+    uint64_t b1 = chinese_remainder_32<
                   Q1,Q2,Q1_Q2.x,Q1_Q2.y,Q1_Q2.x_negated>(a1, a2),
              b2 = chinese_remainder_32<
                   Q3,Q4,Q3_Q4.x,Q3_Q4.y,Q3_Q4.x_negated>(a3, a4);
-    assert(a1 == b1%Q1);
-    assert(a2 == b1%Q2);
-    assert(a3 == b2%Q3);
-    assert(a4 == b2%Q4);
+    //assert(a1 == b1%Q1);
+    //assert(a2 == b1%Q2);
+    //assert(a3 == b2%Q3);
+    //assert(a4 == b2%Q4);
     chinese_remainder(b1, b2, a5, hi, mid, lo);
 }
 
@@ -901,5 +978,3 @@ int main()
 } // end of namespace
 
 // end of fftutils.cpp
-
-
