@@ -47,6 +47,8 @@
 // These tests see whether SSE4.2 or AVX are available and will be done
 // during startup.
 
+#if defined __x86_64__ && defined __GNUC__
+
 const inline bool avx_available =
    ([]()->bool
     {  __builtin_cpu_init();
@@ -56,6 +58,8 @@ const inline bool sse4_available =
    ([]()->bool
     {  return __builtin_cpu_supports("sse4.2");
     })();
+
+#endif // __x86_64__
 
 // For parts of the code that multiplies "medium size" numbers I want
 // to expand out some loops into inline code. I had started by doing that

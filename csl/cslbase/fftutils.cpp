@@ -768,7 +768,7 @@ inline constexpr uint128_t times_hi_128(uint128_t a, uint128_t b)
 
 template <uint128_t P>
 inline constexpr uint128_t timesmod(uint128_t a, uint128_t b)
-{   uint128_t phi, plo;
+{   uint128_t phi=0, plo=0;
     times_128(a, b, phi, plo);
 // Here a and b each have (at least) leadingzeros<P>() leading zeros and so
 // their product has at least 2*leadingzeros<P>(). So if I shift the 256-bit
@@ -781,7 +781,7 @@ inline constexpr uint128_t timesmod(uint128_t a, uint128_t b)
 // Well quot needs shifting to allow for that fact that invP1xP2 had
 // been shifted up to get extra precision.
     quot >>= (leadingzeros<P>()-1);
-    uint128_t qhi, qlo;
+    uint128_t qhi=0, qlo=0;
     times_128(quot, P1xP2, qhi, qlo);
     phi -= qhi;
     uint128_t r = plo - qlo;

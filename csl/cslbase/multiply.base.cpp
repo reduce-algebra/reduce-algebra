@@ -1019,7 +1019,11 @@ private:
 // The threshold here will depend on the machine you are running on,
 // but this ia probably close enough across the platforms that I care about.
 
+#ifdef __arm64__
+static const std::size_t FFT_THRESHOLD = 5000;
+#else
 static const std::size_t FFT_THRESHOLD = 10000;
+#endif
 
 // When thread is false this is being used when Kara or Toom32
 // recurses and so most of the time we will have M==N>KARASTART/2. With
