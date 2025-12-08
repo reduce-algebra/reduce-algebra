@@ -47,6 +47,8 @@ std::mt19937_64 twister(std::random_device{}());
 
 #include <iostream>
 
+bool first = false;
+
 void timetest(size_t N, int ntrials)
 {
     stkvector<Digit> a(N);
@@ -62,15 +64,22 @@ void timetest(size_t N, int ntrials)
         cslow[i] = cslow[i+N] = 0;
     }
 
+    if (N >= 16) BigMultiplication::biggerMul(a, N, b, N, cslow);
     auto tt0 = microseconds();
+#ifndef QUICK_TEST
     for (int trial=0; trial<ntrials; trial++)
     {   if (N >= 16) BigMultiplication::biggerMul(a, N, b, N, cslow);
     }
+#endif
     auto tt1 = microseconds();
+// I will do a non-parallel multiplication first for potential debugging.
+    BigMultiplication::fftmul(a, N, b, N, c);
     auto tt2 = microseconds();
+#ifndef QUICK_TEST
     for (int trial=0; trial<ntrials; trial++)
-    {   BigMultiplication::fftmul<true>(a, N, b, N, c);
+    {   BigMultiplication::fftmul(a, N, b, N, c);
     }
+#endif
     auto tt3 = microseconds();
 
     auto tslow = tt1-tt0,
@@ -81,6 +90,10 @@ void timetest(size_t N, int ntrials)
     std::cout << std::setw(12) << tfast
          << " (" << ((double)tfast/(N*log(N))) << ")";
     if (tslow != 0) std::cout << "  ratio = " << (tfast/(double)tslow);
+    if (!first && tfast < tslow)
+    {   first = true;
+        std::cout << " ******";
+    }
     std::cout << "\n";
 
     if (N < 16) return; // because reference result not calculated.
@@ -98,8 +111,11 @@ void timetest(size_t N, int ntrials)
 }
 
 int main(int argc, char* argv[])
-{   std::cout << "Test starting" << std::endl;
-#ifdef __CYGWIN__
+{
+    std::cout << "Test starting" << std::endl;
+#if defined __LINUX__ && __x86_64__
+// I make the report here because I am investigating whether use of
+// SSE or AVX could speed things up.
     __builtin_cpu_init();
     if (__builtin_cpu_supports("sse4.2")) std::cout << "Has SSE 4.2\n";
     else
@@ -111,6 +127,7 @@ int main(int argc, char* argv[])
     {   std::cout << "No AVX\n";
         return 1;
     }
+#endif // __LINUX__ && __x86_64
 
     size_t N = -1;
     if (argc > 1) N = atoi(argv[1]);
@@ -127,7 +144,6 @@ int main(int argc, char* argv[])
             if (N>1) timetest((3*N)/2, ntrials);
         }
     }
-#endif
     return 0;
 }
 

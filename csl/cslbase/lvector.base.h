@@ -684,7 +684,7 @@ public:
 // swamp this overhead or if I am in a debugging context where absolute
 // performance does not matter much.
 
-#define ABANDON_THREAD_SAFETY 1
+//@@@@#define ABANDON_THREAD_SAFETY 1
 
 #ifndef ABANDON_THREAD_SAFETY
 constexpr inline int TL_allocationInfoPtr=63;
@@ -713,7 +713,7 @@ public:
 #endif // DEBUG
     }
 
-// Create an stkvector of size n.
+// Create an stkvector of size n. Needs to be thread-safe.
     stkvector(std::size_t n)
     {
 #ifdef DEBUG

@@ -83,7 +83,8 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
 #else // USE_EXECUTION
 
 // I specify the size of the thread-pool that gets set up, and have a
-// bitmap that records which of those are in use.
+// bitmap that records which of those are in use. At present I limit the
+// pool size to 16.
 
 inline const size_t POOLSIZE = 16;
 inline std::atomic<uint32_t> activeThreads(0);
@@ -480,12 +481,13 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
 // 
 // Release (ie start up) all the worker threads I have picked.
     for (int i=0; i<n-1; i++)
-    {   threadDriverData.wd[threadIds[i]].workerTask = new WorkerTask<T>(fn, v[i+1]);
+    {   threadDriverData.wd[threadIds[i]].workerTask =
+            new WorkerTask<T>(fn, v[i+1]);
         threadDriverData.releaseWorker(threadIds[i]);
     }
 // Use this main thread to do work on the first item in the vector.
     (*fn)(v[0]);
-// Wait until everybody has completed their job.
+// Wait until everybody else has completed their job.
     for (int i=0; i<n-1; i++)
         threadDriverData.waitForWorker(threadIds[i]);
 // Tell the system that the threads I had just been using are now free for

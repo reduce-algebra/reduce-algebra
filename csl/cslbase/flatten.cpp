@@ -95,7 +95,8 @@ void process(FILE* from)
         }
         string s(fname);
         if (included.count(s) != 0) continue;
-        included.insert(s);
+// fftkernel.cpp is very special and needs to be included several times!
+        if (s.compare("fftkernel.cpp") != 0) included.insert(s);
         FILE* incFile = fopen(fname, "r");
         if (incFile == nullptr)
         {   fprintf(destination, "%s\n", lineBuffer);

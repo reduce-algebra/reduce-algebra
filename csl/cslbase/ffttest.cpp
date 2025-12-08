@@ -324,15 +324,22 @@ static void simpleMul(ConstDigitPtr a, std::size_t N,
 size_t slowLimit = 8192;
 
 void timetest(size_t N, int ntrials)
-{   uint64_t* a = new uint64_t[N];
+{   //std::cout << "Starting test with length " << N << "\n";
+    uint64_t* a = new uint64_t[N];
     uint64_t* b = new uint64_t[N];
     uint64_t* c = new uint64_t[2*N+1];
     uint64_t* cslow = new uint64_t[2*N+1];
 
 // I use random data as my input.
     for (size_t i=0; i<N; i++)
-    {   a[i] = twister();
+    {
+#ifdef RANDOM
+        a[i] = twister();
         b[i] = twister();
+#else
+        a[i] = i+1;
+        b[i] = i+1;
+#endif
         c[i] = c[i+N] = 0;
         cslow[i] = cslow[i+N] = 0;
     }
@@ -349,7 +356,7 @@ void timetest(size_t N, int ntrials)
     }
     auto tt2 = microseconds();
     for (int trial=0; trial<ntrials; trial++)
-    {   fftmul(a, N, b, N, c);
+    {   fftmul<false>(a, N, b, N, c);
     }
     auto tt3 = microseconds();
 
@@ -372,6 +379,10 @@ void timetest(size_t N, int ntrials)
         for (int i=2*N-1; i>=0; i--)
     {   if (c[i] != cslow[i])
         {   std::cout << "\n**FAIL** at " << i << "\n";
+            prinvec("a", a, N);
+            prinvec("b", b, N);
+            prinvec("c    ", c, 2*N);
+            prinvec("cslow", cslow, 2*N);
             abort();
         }
     }
@@ -392,7 +403,8 @@ int main(int argc, char* argv[])
     size_t N = -1;
     if (argc > 1) N = atoi(argv[1]);
 
-    int ntrials = 50;
+    int ntrials = 1;
+//    int ntrials = 50;
     if (argc > 2) ntrials = atoi(argv[1]);
 
     std::cout << " digits       slow (tt/N*N)      fast (tt/NlogN)\n";
@@ -400,7 +412,7 @@ int main(int argc, char* argv[])
     std::cout << std::fixed << std::setprecision(2);
     if (N != -1LU) timetest(N, ntrials);
     else
-    {   for (N=32; N<2*slowLimit; N++)
+    {   for (N=8; N<2*slowLimit; N++)
             if (valid(N)) timetest(N, ntrials);
     }
     return 0;
