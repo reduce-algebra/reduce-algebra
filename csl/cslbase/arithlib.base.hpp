@@ -10,8 +10,8 @@
 //     commentary included as comments here, and a file arithtest.cpp that
 //     can accompany it and illustrate its use]
 //    Re-work long division to approximate Karatsuba complexity.
-//    Mend toom3 multiplication.
-//    Optimise fft multiplication.
+//    Check and mend toom3 multiplication as necessary.
+//    Split into header file and implementation file(s).
 
 /**************************************************************************
  * Copyright (C) 2019-2025, Codemist.                    A C Norman       *
@@ -2968,7 +2968,7 @@ public:
 // I use a suffix "_Z" for bignums, with Z chosen to reminding me that this
 // gives me an Integer, the "Z" (typically written in a blackboard font)
 // standing for the ring of integers.
-inline Bignum operator "" _Z(const char* s)
+inline Bignum operator ""_Z(const char* s)
 {   return Bignum(s);
 }
 
@@ -10314,7 +10314,7 @@ inline std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
 
 namespace arithlib
 {
-using arithlib_implementation::operator"" _Z;
+using arithlib_implementation::operator""_Z;
 using arithlib_implementation::Bignum;
 
 using arithlib_implementation::version_string;

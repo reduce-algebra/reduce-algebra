@@ -644,11 +644,11 @@ struct XGCD128
 inline constexpr uint128_t P1xP2 = (uint128_t)P1*P2;
 inline constexpr XGCD128 P1_P2_P3(P1xP2, P3);
 
-uint64_t Hi(uint128_t n)
+inline uint64_t Hi(uint128_t n)
 {   return n>>64;
 }
 
-uint64_t Lo(uint128_t n)
+inline uint64_t Lo(uint128_t n)
 {   return n;
 }
 
@@ -823,7 +823,7 @@ inline constexpr uint128_t timesmod(uint128_t a, uint128_t b)
 // (but now having to use larger numbers) to merge in the the effect
 // of P3. The result will be returned as three 64-bit digits.
 
-uint32_t modulo(uint64_t hi, uint64_t mid, uint64_t lo, uint32_t P)
+inline uint32_t modulo(uint64_t hi, uint64_t mid, uint64_t lo, uint32_t P)
 {   uint32_t r = ((((uint128_t)hi)<<64) + mid)%P;
     r = ((((uint128_t)r)<<64) + lo)%P;
     return r;

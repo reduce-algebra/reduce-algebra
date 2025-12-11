@@ -475,7 +475,7 @@ public:
 // template expansion with each of the 5 primes I use. 
 
 template <Digit32 P, Digit32 omega>
-static void useOneModuleT(FFTParams& d)
+static void useOneModulus1(FFTParams& d)
 {   size_t N = d.N;
     DigitPtr32 a = d.ws;
     DigitPtr32 b = d.ws+N;
@@ -524,19 +524,19 @@ static void useOneModulus(FFTParams d)
 {   switch (d.which)
     {
     case 1:
-        useOneModuleT<Q1,omega1>(d);
+        useOneModulus1<Q1,omega1>(d);
         break;
     case 2:
-        useOneModuleT<Q2,omega2>(d);
+        useOneModulus1<Q2,omega2>(d);
         break;
     case 3:
-        useOneModuleT<Q3,omega3>(d);
+        useOneModulus1<Q3,omega3>(d);
         break;
     case 4:
-        useOneModuleT<Q4,omega4>(d);
+        useOneModulus1<Q4,omega4>(d);
         break;
     case 5:
-        useOneModuleT<Q5,omega5>(d);
+        useOneModulus1<Q5,omega5>(d);
         break;
     }
 }
@@ -563,7 +563,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
         FFTParams(2, N, a, b, lena, lenb, ws2),
         FFTParams(3, N, a, b, lena, lenb, ws3),
         FFTParams(4, N, a, b, lena, lenb, ws4),
-        FFTParams(5, N, a, b, lena, lenb, ws5),
+        FFTParams(5, N, a, b, lena, lenb, ws5)
     };
 #ifdef PRINT
     prinvec("a", a, lena);

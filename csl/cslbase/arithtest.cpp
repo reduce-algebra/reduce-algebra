@@ -33,16 +33,7 @@
 
 // $Id$
 
-// My bignum package is a header-only library, so to use it you arrange
-// that the c++ compiler has a directive such as "-Idirectory_for_arithlib"
-// so that it can be found and you then just include the one file that
-// contains everything.
-
-#ifdef OLDVERSION
-#include "arithlib.old.hpp"
-#else
-#include "arithlib.hpp"
-#endif
+#include "arithlib.h"
 
 #include <cstdlib>
 #include <cmath>
@@ -52,6 +43,7 @@
 #include <cassert>
 
 using namespace arithlib;
+//using namespace arithlib_implementation::BigMultiplication;
 
 // The tests come in sections, and these preprocessor symbols can be used
 // to select which sections get run. If you compile this code simply then
@@ -188,6 +180,14 @@ inline void referenceunsignedmultiply(
 
 static volatile std::uint64_t vol;
 
+#ifndef KARASTART
+#define KARASTART arithlib_implementation::BigMultiplication::KARASTART
+#endif
+
+#ifndef KARABIG
+#define KARABIG arithlib_implementation::BigMultiplication::KARABIG
+#endif
+
 int main(int argc, char *argv[])
 {
 // If I invoke this without command line arguments it will run with
@@ -201,8 +201,8 @@ int main(int argc, char *argv[])
         seed = mersenne_twister() & 0xffff;
     std::cout << "seed = " << seed << "\n";
     reseed(seed);
-    std::cout << "KARASTART = " << arithlib_implementation::BigMultiplication::KARASTART
-              << "  KARABIG = " << arithlib_implementation::BigMultiplication::KARABIG << "\n";
+    std::cout << "KARASTART = " << KARASTART
+              << "  KARABIG = " << KARABIG << "\n";
 
     int maxbits, ntries;
     std::chrono::steady_clock::time_point clk, clk2;
@@ -219,13 +219,14 @@ int main(int argc, char *argv[])
     const std::uint64_t MULT = 6364136223846793005U;
     const std::uint64_t ADD  = 1442695040888963407U;
 
-// I will start with a quickish validation of multilication since that
+#ifdef SIMPLE_TEST
+// I will start with a quickish validation of multiplication since that
 // underpins so much else.
     {   std::uint64_t a[2000], b[2000], c[5000], c1[5000];
         int yy=0;
         for (int zz=0; zz<2; zz++)
-        for (size_t K=10; K<500; K++)
-        for (size_t N=1; N<K; N++)
+        for (size_t K=10; K<500; K+=2)
+        for (size_t N=1; N<K; N+=2)
         {   size_t M=K-N;
             for (size_t i=0; i<N; i++)
             {   a[i] = 1LL<<(mersenne_twister()%64);
@@ -258,6 +259,7 @@ int main(int argc, char *argv[])
         }
     }
     std::cout << "simple tests of multiplication complete\n";
+#endif
 
 #ifdef COMPARE_GMP
 
@@ -270,9 +272,9 @@ int main(int argc, char *argv[])
 // instance the levels of interior carry may vary). However the inner
 // loop that I have is run REPEATS time and so I expect the cost of the
 // activity within there to dominate.
-        const int REPEATS = 1000;
+        const int REPEATS = 200;
 
-        std::uint64_t a[2000], b[2000], c[5000], c1[5000], c2[5000];
+        static std::uint64_t a[200000], b[200000], c[500000], c1[500000], c2[500000];
         std::size_t lena, lenb, lenc, lenc1, lenc2;
 
         std::size_t size[table_size];

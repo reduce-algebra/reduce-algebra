@@ -53,9 +53,6 @@
 // implementation that allows for a somewhat limited number of worker
 // tasks but which may be lighter weight.
 
-// With some older releases of g++ and its libraries it may be necessary
-// to link in "-ltbb".
-
 #ifndef cthread_cpp_loaded
 #define cthread_cpp_loaded
 
@@ -349,7 +346,11 @@ public:
 #elif defined USE_MICROSOFT_MUTEX
         ReleaseMutex(wd[i].mutex[wd[i].sendCount]);
 #else // use std::mutex
+#ifdef __LINUX
+        pthread_mutex_unlock(wd[i].mutex[wd[i].sendCount].native_handle());
+#else
         wd[i].mutex[wd[i].sendCount].unlock();
+#endif
 #endif // mutexed unlocked
     }
 
@@ -360,7 +361,11 @@ public:
 #elif defined USE_MICROSOFT_MUTEX
         WaitForSingleObject(wd[i].mutex[wd[i].sendCount^2], MICROSOFT_INFINITE);
 #else // use std::mutex
+#ifdef __LINUX
+        pthread_mutex_lock(wd[i].mutex[wd[i].sendCount].native_handle());
+#else
         wd[i].mutex[wd[i].sendCount^2].lock();
+#endif
 #endif // synchronized
         wd[i].sendCount = (wd[i].sendCount+1)&3;
     }
