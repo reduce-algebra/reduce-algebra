@@ -46,15 +46,9 @@
 // run sequentially the caller ought not to rely on the order in which
 // the various tasks happan to be activated.
 
-// If USE_EXECUTION is defined this uses some C++17 functionality that
-// makes this rather easy to express. However in late 2025 my measurements
-// show that it is heavy-duty enough that for small tasks it imposes costs
-// that I would like to avoid. To cope with this I also my own
-// implementation that allows for a somewhat limited number of worker
-// tasks but which may be lighter weight.
-
-// With some older releases of g++ and its libraries it may be necessary
-// to link in "-ltbb".
+// Unless DO_NOT_USE_EXECUTION is defined this uses some C++17
+// functionality that makes this rather easy to express. It may well be
+// that almost all of this file should now be discarded!
 
 #ifndef cthread_cpp_loaded
 #define cthread_cpp_loaded
@@ -66,7 +60,7 @@
 #include <vector>
 #include <algorithm>
 
-#ifdef USE_EXECUTION
+#ifndef DO_NOT_USE_EXECUTION
 
 #include <execution>
 
@@ -74,13 +68,18 @@
 
 template <typename T, bool parallel=true>
 inline void runInThreads(std::vector<T> v, void (*fn)(T))
-{   std::for_each(parallel ? std::execution::par : std::execution::seq,
-                  std::begin(v),
-                  std::end(v),
-                  fn);
+{   if (parallel)
+        std::for_each(std::execution::par,
+            std::begin(v),
+            std::end(v),
+            fn);
+    else std::for_each(std::execution::seq,
+            std::begin(v),
+            std::end(v),
+            fn);
 }
 
-#else // USE_EXECUTION
+#else // DO_NOT_USE_EXECUTION
 
 // I specify the size of the thread-pool that gets set up, and have a
 // bitmap that records which of those are in use. At present I limit the
@@ -349,7 +348,11 @@ public:
 #elif defined USE_MICROSOFT_MUTEX
         ReleaseMutex(wd[i].mutex[wd[i].sendCount]);
 #else // use std::mutex
+#ifdef __LINUX
+        pthread_mutex_unlock(wd[i].mutex[wd[i].sendCount].native_handle());
+#else
         wd[i].mutex[wd[i].sendCount].unlock();
+#endif
 #endif // mutexed unlocked
     }
 
@@ -360,7 +363,11 @@ public:
 #elif defined USE_MICROSOFT_MUTEX
         WaitForSingleObject(wd[i].mutex[wd[i].sendCount^2], MICROSOFT_INFINITE);
 #else // use std::mutex
+#ifdef __LINUX
+        pthread_mutex_lock(wd[i].mutex[wd[i].sendCount].native_handle());
+#else
         wd[i].mutex[wd[i].sendCount^2].lock();
+#endif
 #endif // synchronized
         wd[i].sendCount = (wd[i].sendCount+1)&3;
     }
@@ -495,7 +502,7 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
     activeThreads &= ~claimed;
 }
 
-#endif // USE_EXECUTION
+#endif // DO_NOT_USE_EXECUTION
 
 template <bool parallel, typename T>
 inline void runInThreads(std::vector<T> v, void (*fn)(T))

@@ -10,8 +10,8 @@
 //     commentary included as comments here, and a file arithtest.cpp that
 //     can accompany it and illustrate its use]
 //    Re-work long division to approximate Karatsuba complexity.
-//    Mend toom3 multiplication.
-//    Optimise fft multiplication.
+//    Check and mend toom3 multiplication as necessary.
+//    Split into header file and implementation file(s).
 
 /**************************************************************************
  * Copyright (C) 2019-2025, Codemist.                    A C Norman       *
@@ -473,6 +473,7 @@ inline bool inChild = false;
 #include <unordered_map>
 #include <type_traits>
 #include <algorithm>
+#include <filesystem>
 
 // bitmaps.h                                    Copyright (C) 2025 Codemist
 
@@ -1469,15 +1470,9 @@ inline void initialize()
 // run sequentially the caller ought not to rely on the order in which
 // the various tasks happan to be activated.
 
-// If USE_EXECUTION is defined this uses some C++17 functionality that
-// makes this rather easy to express. However in late 2025 my measurements
-// show that it is heavy-duty enough that for small tasks it imposes costs
-// that I would like to avoid. To cope with this I also my own
-// implementation that allows for a somewhat limited number of worker
-// tasks but which may be lighter weight.
-
-// With some older releases of g++ and its libraries it may be necessary
-// to link in "-ltbb".
+// Unless DO_NOT_USE_EXECUTION is defined this uses some C++17
+// functionality that makes this rather easy to express. It may well be
+// that almost all of this file should now be discarded!
 
 #ifndef cthread_cpp_loaded
 #define cthread_cpp_loaded
@@ -1489,20 +1484,25 @@ inline void initialize()
 #include <vector>
 #include <algorithm>
 
-#ifdef USE_EXECUTION
+#ifndef DO_NOT_USE_EXECUTION
 
 #include <execution>
 
 
 template <typename T, bool parallel=true>
 inline void runInThreads(std::vector<T> v, void (*fn)(T))
-{   std::for_each(parallel ? std::execution::par : std::execution::seq,
-                  std::begin(v),
-                  std::end(v),
-                  fn);
+{   if (parallel)
+        std::for_each(std::execution::par,
+            std::begin(v),
+            std::end(v),
+            fn);
+    else std::for_each(std::execution::seq,
+            std::begin(v),
+            std::end(v),
+            fn);
 }
 
-#else // USE_EXECUTION
+#else // DO_NOT_USE_EXECUTION
 
 // I specify the size of the thread-pool that gets set up, and have a
 // bitmap that records which of those are in use. At present I limit the
@@ -1771,7 +1771,11 @@ public:
 #elif defined USE_MICROSOFT_MUTEX
         ReleaseMutex(wd[i].mutex[wd[i].sendCount]);
 #else // use std::mutex
+#ifdef __LINUX
+        pthread_mutex_unlock(wd[i].mutex[wd[i].sendCount].native_handle());
+#else
         wd[i].mutex[wd[i].sendCount].unlock();
+#endif
 #endif // mutexed unlocked
     }
 
@@ -1782,7 +1786,11 @@ public:
 #elif defined USE_MICROSOFT_MUTEX
         WaitForSingleObject(wd[i].mutex[wd[i].sendCount^2], MICROSOFT_INFINITE);
 #else // use std::mutex
+#ifdef __LINUX
+        pthread_mutex_lock(wd[i].mutex[wd[i].sendCount].native_handle());
+#else
         wd[i].mutex[wd[i].sendCount^2].lock();
+#endif
 #endif // synchronized
         wd[i].sendCount = (wd[i].sendCount+1)&3;
     }
@@ -1917,7 +1925,7 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
     activeThreads &= ~claimed;
 }
 
-#endif // USE_EXECUTION
+#endif // DO_NOT_USE_EXECUTION
 
 template <bool parallel, typename T>
 inline void runInThreads(std::vector<T> v, void (*fn)(T))
@@ -2032,6 +2040,8 @@ int main()
 // These tests see whether SSE4.2 or AVX are available and will be done
 // during startup.
 
+#if defined __x86_64__ && defined __GNUC__
+
 const inline bool avx_available =
    ([]()->bool
     {  __builtin_cpu_init();
@@ -2041,6 +2051,8 @@ const inline bool sse4_available =
    ([]()->bool
     {  return __builtin_cpu_supports("sse4.2");
     })();
+
+#endif // __x86_64__
 
 // For parts of the code that multiplies "medium size" numbers I want
 // to expand out some loops into inline code. I had started by doing that
@@ -5587,11 +5599,11 @@ struct XGCD128
 inline constexpr uint128_t P1xP2 = (uint128_t)P1*P2;
 inline constexpr XGCD128 P1_P2_P3(P1xP2, P3);
 
-uint64_t Hi(uint128_t n)
+inline uint64_t Hi(uint128_t n)
 {   return n>>64;
 }
 
-uint64_t Lo(uint128_t n)
+inline uint64_t Lo(uint128_t n)
 {   return n;
 }
 
@@ -5711,7 +5723,7 @@ inline constexpr uint128_t times_hi_128(uint128_t a, uint128_t b)
 
 template <uint128_t P>
 inline constexpr uint128_t timesmod(uint128_t a, uint128_t b)
-{   uint128_t phi, plo;
+{   uint128_t phi=0, plo=0;
     times_128(a, b, phi, plo);
 // Here a and b each have (at least) leadingzeros<P>() leading zeros and so
 // their product has at least 2*leadingzeros<P>(). So if I shift the 256-bit
@@ -5724,7 +5736,7 @@ inline constexpr uint128_t timesmod(uint128_t a, uint128_t b)
 // Well quot needs shifting to allow for that fact that invP1xP2 had
 // been shifted up to get extra precision.
     quot >>= (leadingzeros<P>()-1);
-    uint128_t qhi, qlo;
+    uint128_t qhi=0, qlo=0;
     times_128(quot, P1xP2, qhi, qlo);
     phi -= qhi;
     uint128_t r = plo - qlo;
@@ -5766,7 +5778,7 @@ inline constexpr uint128_t timesmod(uint128_t a, uint128_t b)
 // (but now having to use larger numbers) to merge in the the effect
 // of P3. The result will be returned as three 64-bit digits.
 
-uint32_t modulo(uint64_t hi, uint64_t mid, uint64_t lo, uint32_t P)
+inline uint32_t modulo(uint64_t hi, uint64_t mid, uint64_t lo, uint32_t P)
 {   uint32_t r = ((((uint128_t)hi)<<64) + mid)%P;
     r = ((((uint128_t)r)<<64) + lo)%P;
     return r;
@@ -8409,7 +8421,7 @@ public:
 // I use a suffix "_Z" for bignums, with Z chosen to reminding me that this
 // gives me an Integer, the "Z" (typically written in a blackboard font)
 // standing for the ring of integers.
-inline Bignum operator "" _Z(const char* s)
+inline Bignum operator ""_Z(const char* s)
 {   return Bignum(s);
 }
 
@@ -13000,349 +13012,88 @@ inline double worstRatio = 0.0;
 
 // When I get to big-integer multiplication I will use two or three
 // worker threads so that elapsed times for really large multiplications
-// are reduced somewhat. Well ideally by a factor approaching 3. I set up
-// a framework of support for the threads here. A main program thread will
-// want its own worker threads here. Each worker thread gets passed a
-// nice object called "worker_data" that encapsulates the way it receives
-// data from the caller and passes results back.
+// are reduced somewhat. Well ideally by a factor approaching 3. I have
+// a framework of support for the threads called runInThreads.
 
 // Each worker thread needs some data that it shares with the main thread.
 // this structure encapsulates that.
 
-// Probably the most "official" way to coordinate threads would be to use
-// condition variables, but doing so involves several synchronization
-// primitives for each step of the transaction. For the simple level of
-// coordination I need here it would be more costly that necessary. I can
-// manage here with a scheme that when thread A want to allow thread B to
-// proceed it unlocks a mutex that thread B was waiting on. There is some
-// mess associated with ensuring that the main thread waits for results and
-// that there are no race situations where all threads compete for a single
-// mutex.
-//
-// There are 4 mutexes for each worker thread, but each synchronization step
-// just involves a single mutex, transferring ownership between main and worker
-// thread. Here is the patter of transfer and subsequent ownership, with "?"
-// marking a muxex that has been waiting and the ">n" or <n" in the middle
-// also showing which muxex has just been activated:
-//       X  X  .  .         ?  .  X  X    Idle state. Worker waiting on mutex 0
-// To start a transaction the main thread sets up data and unlocks mutex 0.
-// That allows the worker to proceed and pick up the data.
-//       .  X  .  .   >0    ?X .  X  X    first transaction
-// The main thread must not alter data until the worker is finished. It waits
-// on mutex 1 until the worker tells it that a result is available.
-//       .  X ?X  .   <2    X  .  .  X
-// The main thread is now entitles to start using the results of the activity
-// just completed and setting up data for the next one. It can not release
-// mutex 0 to restart the worker because the worker alread owns that. And even
-// though it owns mutex 2 it had better not release that, because for that
-// to make sense the worker would need to be waiting on it, and that would mean
-// the worker had just done m3.unlock(); m3.lock() in quick succesion, which
-// might have led it to grab m3 rather than the main program managing to. So
-// use the third mutex, which the worker must be waiting on.
-//       .  .  X  .   >1    X ?X  .  X    second transaction
-// When it has finished its task the worker now unlocks mutex 3. This leaves
-// a situation symmetric with the initial one
-//       .  .  X ?X   <3    X  X  .  .
-//       .  .  .  X   >2    X  X  ?X .    third transaction
-//       ?X .  .  X   <0    .  X  X  .
-//       X  .  .  .   >3    .  X  X ?X    fourth transaction
-//       X ?X  .  .   <1    .  .  X  X    back in initial configuration!
-//
-// The pattern is thus that the master goes
-//  [initially lock 0 and 1]
-//  unlock 0  wait 2
-//  unlock 1  wait 3
-//  unlock 2  wait 0
-//  unlock 3  wait 1
-// while the worker goes
-//  [initially lock 2 and 3]
-//  wait 0    unlock 2
-//  wait 1    unlock 3
-//  wait 2    unlock 0
-//  wait 3    unlock 1
-// Observe that I can use (n^2) to map between the mutex number in the first
-// and second columns here. That counting is what send_count and
-// receive_count are doing.
+// Above this length (measured in 64-bit digits) I will use fast
+// multiplication based on FFT.
+// The threshold here will depend on the machine you are running on,
+// but this is probably close enough across the platforms that I care about.
 
-// In a nice world I would use just the C++ std::mutex scheme for
-// synchronization, however here I am performance critical and to save
-// a bit when performing medium-sized multiplications I will use the
-// Microsoft version of mutexes directly on that platform.
 
-#if defined __CYGWIN__ || defined __MINGW32__
+#ifndef FFT_THRESHOLD
+#ifdef __arm64__
+static const std::size_t FFT_THRESHOLD = 5000;
+#else // __arm64__
+// The next value might plausibly need to depend on whether you are running
+// under WSL.
+static const std::size_t FFT_THRESHOLD = 10000;
+#endif // __arm64__
+#endif // FFT_THRESHOLD
 
-// It is possible that SRW locks have lower overhead than Mutex. So I will
-// use them, but have an "#ifdef" so I can revert if needbe.
+static constexpr std::size_t workspaceSize(std::size_t M)
+{   return 6*M;
+}
 
-#define USE_MICROSOFT_SRW 1
+// At the top level toom32<true>() can use a little over 7*L workspace for
+// itself, where L=max(N/3,M/2). But N<=1.85*M and M is large enough that
+// I will ignore rounding. Then plus the need for four parallel
+// sub-multiplications. I will use a rounded up 2M/3 as my bound on L.
 
-#ifndef USE_MICROSOFT_SRW
-#define USE_MICROSOFT_MUTEX 1
-#endif // USE_MICROSOFT_SRW
+static constexpr std::size_t topWorkspaceSize(std::size_t M)
+{   size_t toomLen = (2*M+2)/3;
+    return 7*toomLen + 4*workspaceSize(toomLen);
+}
 
-// Going "#include <windows.h>" pollutes the name-space rather heavily
-// and so despite it being somewhat despicable I declare the rather small
-// number of things I need by hand. Note that some of the issues are
-// macros rather than extern definitions, so it is not obvious that
-// C++ "namespace" treatment can make things nice for me.
+// Unless I make this thread local the code as a whole is not thread safe.
+// However if I were to make it thread local I would be liable to end up
+// with (unused) versions of it associated with all worker threads and
+// possibly all GUI threads etc in a way that would be really clumsy.
+// So if I ever move to making this thread local I will have the repeated
+// object a mere pointer to the workspace and arrange that when user-level
+// threads that may need it are created that they allocate the memory
+// that is required.
 
-extern "C"
-{
-#ifndef MSDECLS
-#define MSDECLS
+static thread_local Digit* TLworkspace = nullptr;
 
-struct SecApp
-{   std::uintptr_t nLength;
-    void* lpSecurityDescriptor;
-    int bInheritHandle;
-};
-
-typedef struct _RTL_SRWLOCK { void* Ptr; } RTL_SRWLOCK,*PRTL_SRWLOCK;
-#define RTL_SRWLOCK_INIT {0}
-#define SRWLOCK_INIT RTL_SRWLOCK_INIT
-typedef RTL_SRWLOCK SRWLOCK, *PSRWLOCK;
-
-extern __declspec(dllimport) void InitializeSRWLock (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void ReleaseSRWLockExclusive (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void ReleaseSRWLockShared (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void AcquireSRWLockExclusive (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void AcquireSRWLockShared (PSRWLOCK SRWLock);
-extern __declspec(dllimport) bool TryAcquireSRWLockExclusive (PSRWLOCK SRWLock);
-extern __declspec(dllimport) bool TryAcquireSRWLockShared (PSRWLOCK SRWLock);
-
-extern __declspec(dllimport)  void* 
-    CreateMutexA(SecApp* , std::uintptr_t, const char* );
-extern __declspec(dllimport) int CloseHandle(void* h);
-extern __declspec(dllimport) int ReleaseMutex(void* m);
-extern __declspec(dllimport) void* 
-    WaitForSingleObject(void* , std::uintptr_t);
-inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
-
-#endif // MSDECLS
-};   // end of extern "C" scope.
-
-#endif // __CYGWIN__ or __MINGW32__
-
-class WorkerData
+class MultiplicationTask
 {
 public:
-    int which;
-    std::atomic<bool> ready;
-#if defined USE_MICROSOFT_SRW
-    SRWLOCK mutex[4];
-#elif defined USE_MICROSOFT_MUTEX
-    void* mutex[4];
-#else // The final case is C++ std::mutex
-    std::mutex mutex[4];
-#endif // end of mutex selection
-    bool quit_flag;
-
-    ConstDigitPtr a;   std::size_t lena;
-    ConstDigitPtr b;   std::size_t lenb;
+    ConstDigitPtr a;
+    size_t lena;
+    ConstDigitPtr b;
+    size_t lenb;
     DigitPtr c;
-    DigitPtr w;
-
-// When I construct an instance of Worker data I set its quit_flag to
-// false and lock two of the mutexes. That sets things up so that when
-// it is passed to a new worker thread that thread behaves in the way I
-// want it to.
-    WorkerData()
-    {   ready = false;
-        quit_flag = false;
-#if defined USE_MICROSOFT_SRW
-        InitializeSRWLock(&mutex[0]);
-        InitializeSRWLock(&mutex[1]);
-        AcquireSRWLockExclusive(&mutex[0]);
-        AcquireSRWLockExclusive(&mutex[1]);
-        InitializeSRWLock(&mutex[2]);
-        InitializeSRWLock(&mutex[3]);
-#elif defined USE_MICROSOFT_MUTEX
-        mutex[0] = CreateMutexA(NULL, 1, NULL);
-        mutex[1] = CreateMutexA(NULL, 1, NULL);
-        mutex[2] = CreateMutexA(NULL, 0, NULL);
-        mutex[3] = CreateMutexA(NULL, 0, NULL);
-#else // use C++ std::mutex
-// The next two must be locked by the main thread.
-        mutex[0].lock();
-        mutex[1].lock();
-#endif // Mutexes now initialized and locked as needed
-    }
-    void setWhich(int n)
-    {   which = n;
-    }
-#ifdef USE_MICROSOFT_MUTEX
-    ~WorkerData()
-    {   CloseHandle(mutex[0]);
-        CloseHandle(mutex[1]);
-        CloseHandle(mutex[2]);
-        CloseHandle(mutex[3]);
-    }
-#endif // USE_MICROSOFT_MUTEX
-};
-
-// Then each main thread will have a structure that encapsulated the
-// worker threads that it ends up with and the data it sets up for
-// them and that they then access. When this structures is created it will
-// cause the worker threads and the data block they need to be constructed.
-
-inline void workerThread(WorkerData* wd);
-
-class DriverData
-{
-public:
-    int        send_count = 0;
-    int        send_count2 = 0;
-    WorkerData wd_0,
-               wd_1,
-               wd_2;
-// When the instance of DriverData is created the three sets of WorkerData
-// get constructed with two of their mutexes locked. This will mean that when
-// worker threads are created and start running they will politely wait for
-// work.
-
-    std::thread w_0, w_1, w_2;
-    DriverData()
-    {   wd_0.setWhich(0);
-        wd_1.setWhich(1);
-        wd_2.setWhich(2);
-        w_0 = std::thread(workerThread, &wd_0),
-        w_1 = std::thread(workerThread, &wd_1);
-        w_2 = std::thread(workerThread, &wd_2);
-// I busy-wait until all the threads have both claimed the mutexes that they
-// need to own at the start! Without this the main thread may post a
-// multiplication, so its part of the work and try to check that the worker
-// has finished (by claiming one of these mutexes) before the worker thread
-// has got started up and has claimed them. This feels clumsy, but it only
-// happens at system-startup.
-        while (!wd_0.ready.load() &&
-               !wd_1.ready.load() &&
-               !wd_2.ready.load())
-            std::this_thread::sleep_for(std::chrono::microseconds(1));
-    }
-
-// When the DriverData object is to be destroyed it must arrange to
-// stop and then join the two threads that it set up. This code that sends
-// a "quit" message to each thread will be executed before the thread object
-// is deleted, and the destructor of the thread object should be activated
-// before that of the WorkerData and the mutexes within that.
-
-    ~DriverData()
-    {   wd_0.quit_flag = wd_1.quit_flag = wd_2.quit_flag = true;
-        releaseWorkers(true);
-        w_0.join();
-        w_1.join(); // Wait for the threads to shut down.
-        w_2.join();
-    }
-
-// Using the worker threads is then rather easy: one sets up data in
-// the WorkerData structures and then call releaseWorkers(). Then
-// you can do your own thing in parallel with the two workers picking up
-// the tasks that they had been given. When you are ready you call
-// wait_for_workers() which does what one might imagine, and the workers
-// are expected to have left their results in the WorkerData object so
-// you can find it.
-
-    void releaseWorkers(bool third)
-    {
-#if defined USE_MICROSOFT_SRW
-        ReleaseSRWLockExclusive(&wd_0.mutex[send_count]);
-        ReleaseSRWLockExclusive(&wd_1.mutex[send_count]);
-        if (third) ReleaseSRWLockExclusive(&wd_2.mutex[send_count2]);
-#elif defined USE_MICROSOFT_MUTEX
-        ReleaseMutex(wd_0.mutex[send_count]);
-        ReleaseMutex(wd_1.mutex[send_count]);
-        if (third) ReleaseMutex(wd_2.mutex[send_count2]);
-#else // use std::mutex
-        wd_0.mutex[send_count].unlock();
-        wd_1.mutex[send_count].unlock();
-        if (third) wd_2.mutex[send_count2].unlock();
-#endif // mutexed unlocked
-    }
-
-    void wait_for_workers(bool third)
-    {
-#if defined USE_MICROSOFT_SRW
-        AcquireSRWLockExclusive(&wd_0.mutex[send_count^2]);
-        AcquireSRWLockExclusive(&wd_1.mutex[send_count^2]);
-        if (third) AcquireSRWLockExclusive(&wd_2.mutex[send_count2^2]);
-#elif defined USE_MICROSOFT_MUTEX
-// WaitForSingleObject takes a timeout limit measured in milliseconds as
-// its second argument. I will allow waits of up to 2 seconds. There
-// should be a response by then since the workere are just performing a
-// multiplication and at all plausible number-sizes 2 seconds is plenty
-// even on slow computers. The main case where there could be
-// failure here would be when running under a debugger and with one
-// of the worker threads being subject to breaks or single stepping.
-        WaitForSingleObject(wd_0.mutex[send_count^2], MICROSOFT_INFINITE);
-        WaitForSingleObject(wd_1.mutex[send_count^2], MICROSOFT_INFINITE);
-        if (third) WaitForSingleObject(wd_2.mutex[send_count2^2], MICROSOFT_INFINITE);
-#else // use std::mutex
-        wd_0.mutex[send_count^2].lock();
-        wd_1.mutex[send_count^2].lock();
-        if (third) wd_2.mutex[send_count2^2].lock();
-#endif // synchronized
-        send_count = (send_count+1)&3;
-        if (third) send_count2 = (send_count2+1)&3;
+    DigitPtr ws;
+    MultiplicationTask()
+    {}
+    MultiplicationTask(ConstDigitPtr a, size_t lena,
+             ConstDigitPtr b, size_t lenb,
+             DigitPtr c, DigitPtr ws)
+    {   this->a = a;
+        this->lena = lena;
+        this->b = b;
+        this->lenb = lenb;
+        this->c = c;
+        this->ws = ws;
     }
 };
 
-// Even if there are multiple user threads I will only have a single
-// instance of DriverData and hence I will always have just three
-// worker threads. If multiple threads all call generalMul at (almost) the
-// same time a compare-and-exchange operation arranges that only one of
-// them gets to offload parts of the multiplication work to those worker
-// threads and the others work sequentially. This allows me to have a fixed
-// number of worker threads.
+// Ha ha - I use this startup-time to determine whether I seem to be
+// running under the Windows Subbsystem for Linux. I want to know this
+// because at least at present it seems that it might impact break-even
+// points between various schemes for multiplication.
 
-static DriverData driverData;
-
-class ManageWorkers
-{
-public:
-    static std::atomic<bool> threadsInUse;
-    bool mayUseThreads;
-    [[gnu::always_inline]]
-    ManageWorkers(bool threaded)
-    {   bool expected = false;
-        if (threaded)
-            mayUseThreads = threadsInUse.compare_exchange_weak(expected, true);
-        else mayUseThreads = false;
-    }
-    [[gnu::always_inline]]
-    ~ManageWorkers()
-    {   if (mayUseThreads) threadsInUse.store(false);
-    }
-};
+static bool const underWSL =
+   ([](){
+     return std::filesystem::exists("/usr/bin/wslinfo");
+   })();
 
 class BigMultiplication
 {
-
-// I need some commentary about this! I have three worker threads
-// available and a multiplication can decompose either a 2N by 2N
-// multiplication into 3 tasks or a 3N by 2N one into 4 tasks.
-// If the caller is a multi-threaded program then several of those
-// threads might each start to perform a multiplication, but I need to
-// ensure that only one of them gets to use the worker threads.
-// To achieve this I have an atomic variable threadsInUse and I
-// use a compare_exchange operation that will always end up with it
-// having the value true, but that leaves mayUseThreads true if it had
-// initially been false. The class destructor for ManageWorkers ensures
-// that when a scope where use of the worker threads exits the access
-// control flag is reset. Using compare_exchange_weak means that requests
-// for access to the workers may spuriously fail (!) but the _strong
-// version may have higher overheads. On architectures where there is
-// a genuine compare-exchange function the spurious failure will not arise,
-// but on machines where atomic access is supported using load-locked
-// and store-conditional combinations (eg arm processors, including code
-// compiled for aarch64 before version 8.1) the store conditional can be
-// rejected because some other activity has touched the memory - even if
-// the value in the memory is the "expected" one. This can lead the
-// compare_exchange to report failure even in a case that could have been
-// deemed a success. With low contention this will hardly ever happen!
-// But here the worst possible consquence is that the code will drop back
-// to do sub-multiplcations sequentially and quite possibly one of those
-// will succeed in the compare_exchange and use concurrency only starting
-// at its level.
 
 public:
 
@@ -13350,12 +13101,13 @@ public:
 // are done by unrolled and inlined special code.
 // From when the larger is at least KARASTART I will use Karatsuba,
 // and from KARABIG on it will not be just Karatsuba but the top
-// level decomosition will be run using multiple threads. Also up as
-// far as KARABIG I will use some stack allocated space while from
-// there up I will use my "stkvector" scheme so that there is no
-// serious limit to the amount that can be used.
+// level decomosition will be run using multiple threads.
+// Beyond FFT_THRESHOLD I will use an FFT-based scheme. That means that
+// Karatsuba and Toom only ever run on smaller cases than that and so
+// the amount of workspace they need is bounded and I can allocate it
+// statically.
 
-static const std::size_t MUL_INLINE_LIMIT = 7;
+static constexpr std::size_t MUL_INLINE_LIMIT = 7;
 
 // The thresholds at which I transition from classical multiplication
 // to use of Karatsuba (and Toom-3-2) and the one where I activate
@@ -13418,24 +13170,6 @@ static const std::size_t KARABIG = 144;
 #endif
 
 #endif // KARABIG
-
-private:
-
-[[gnu::always_inline]]
-static std::size_t workspaceSize(std::size_t M)
-{   return 6*M;
-}
-
-// At the top level toom32<true>() can use a little over 7*L workspace for
-// itself, where L=max(N/3,M/2). But N<=1.85*M and M is large enough that
-// I will ignore rounding. Then plus the need for four parallel
-// sub-multiplications. I will use a rounded up 2M/3 as my bound on L.
-
-[[gnu::always_inline]]
-static std::size_t topWorkspaceSize(std::size_t M)
-{   size_t toomLen = (2*M+2)/3;
-    return 7*toomLen + 4*workspaceSize(toomLen);
-}
 
 public:
 
@@ -19463,39 +19197,37 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
                       ConstDigitPtr b, std::size_t M,
                       DigitPtr result)
 {
-// Now manager.mayUseThreads will be true if I am allowed to use the
-// worker threads.
-//
-// Now look at out-of balance cases. Here I take the view that if N>1.5M
+// Look at out-of balance cases. Here I take the view that if N>1.5M
 // I will hive off toom32 multiplications as much as I can. They will each
-// be (3*M)/2xM and I need M space to keep some digits already computed that I
-// will need to combine with the output from the next square multiply.
+// be (3*M)/2 by M and I need M space to keep some digits already computed
+// that I will need to combine with the output from the next square multiply.
 #ifdef TRACE_TIMES
     display("a", a, N);
     display("b", b, M);
 #endif // TRACE_TIMES
-    size_t w = topWorkspaceSize(M);
-    stkvector<Digit> workspace(w);
-    ManageWorkers manager(permitParallel);
+#ifndef NO_THREADS
+// The variable TLworkspace starts off with a null pointer, but the first
+// time I do a biggerMul() in a thread that thread is given a vector
+// of digits big enough for it and any sunsequent use there. On all but the
+// first big multiplication this costs just one read from a thread local
+// variable, which is about as modest an overhead as I can imagine.
+    Digit* workspace = TLworkspace;
+    if (workspace == nullptr)
+        TLworkspace = workspace = new Digit[topWorkspaceSize(FFT_THRESHOLD)];
+#endif
     if (4*N <= 5*M)
-    {
-        if (N < KARABIG || !manager.mayUseThreads)
-            kara(a, N, b, M, result, workspace);
+    {   if (N < KARABIG) kara(a, N, b, M, result, workspace);
         else kara<true>(a, N, b, M, result, workspace);
     }
     else if (20*N <= 37*M)
-    {
-        if (N < KARABIG || !manager.mayUseThreads)
-            toom32(a, N, b, M, result, workspace);
+    {   if (N < KARABIG) toom32(a, N, b, M, result, workspace);
         else toom32<true>(a, N, b, M, result, workspace);
 #ifdef TRACE_TIMES
         display("toom32res", result, N+M);
 #endif // TRACE_TIMES
     }
     else 
-    {   if (manager.mayUseThreads)
-            innerGeneralMul<true>(a, N, b, M, result, workspace);
-        else innerGeneralMul(a, N, b, M, result, workspace);
+    {   innerGeneralMul<true>(a, N, b, M, result, workspace);
 #ifdef TRACE_TIMES
         display("unbalancedres", result, N+M);
 #endif // TRACE_TIMES
@@ -19504,19 +19236,11 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
 
 private:
 
-// Above this length (measured in 64-bit digits) I will use fast
-// multiplication based on FFT.
-// The threshold here will depend on the machine you are running on,
-// but this ia probably close enough across the platforms that I care about.
-
-static const std::size_t FFT_THRESHOLD = 10000;
-
 // When thread is false this is being used when Kara or Toom32
 // recurses and so most of the time we will have M==N>KARASTART/2. With
 // thread true it is from the top-level and may fire up some workers.
 
 template <bool thread=false>
-[[gnu::always_inline]]
 static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
                             ConstDigitPtr b, std::size_t M,
                             DigitPtr result,
@@ -19571,7 +19295,6 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
 // This version is just for N*N products - a case which arises in recursive
 // calls from Karatsuba and Toom32. These are never top level!
 
-[[gnu::always_inline]]
 static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
                             ConstDigitPtr b,
                             DigitPtr result,
@@ -19703,6 +19426,10 @@ static void innerBigMul(ConstDigitPtr a, std::size_t N,
 //
 // merge d1, d2 in accounting for how they overlap each other and d0, d3.
 
+static void useMultiplicationTask(MultiplicationTask d)
+{   innerGeneralMul(d.a, d.lena, d.b, d.lenb, d.c, d.ws);
+}
+
 template <bool thread=false>
 static void toom32(ConstDigitPtr a, std::size_t N,
                    ConstDigitPtr b, std::size_t M,
@@ -19788,16 +19515,17 @@ static void toom32(ConstDigitPtr a, std::size_t N,
 #endif // TRACE_TIMES
     if constexpr (thread)
     {   std::size_t wsize = workspaceSize(toomLen);
-        setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, D0,
-                                   setSize(workspace, wsize));
-        setupKara(driverData.wd_0, aSum, toomLen, bSum, toomLen, D1,
-                                   setSize(workspace+wsize, wsize));
-        setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, D2,
-                                   setSize(workspace+2*wsize, wsize));
-        driverData.releaseWorkers(true);
-        innerGeneralMul(aHigh, aHighLen, bHigh, bHighLen, D3,
-                        setSize(workspace+3*wsize, wsize));
-        driverData.wait_for_workers(true);
+        std::vector<MultiplicationTask> subtasks =
+        {   MultiplicationTask(aLow, toomLen, bLow, toomLen,
+                     D0, workspace),
+            MultiplicationTask(aHigh, aHighLen, bHigh, bHighLen,
+                     D3, workspace+3*wsize),
+            MultiplicationTask(aSum, toomLen, bSum, toomLen,
+                     D1, workspace+wsize),
+            MultiplicationTask(aDiff, toomLen, bDiff, toomLen,
+                     D2, workspace+2*wsize)
+        };
+        runInThreads(subtasks, useMultiplicationTask);
 #ifdef CHECK_TIMES
 // Here I will repeat each of the thread-run multiplications to check them.
         stkvector<Digit> TD0(2*toomLen);
@@ -19966,20 +19694,6 @@ static void toom32(ConstDigitPtr a, std::size_t N,
 #endif // TRACE_TIMES
 }
 
-[[gnu::always_inline]]
-static void setupKara(arithlib_implementation::WorkerData& wd,
-                      ConstDigitPtr a, std::size_t lena,
-                      ConstDigitPtr b, std::size_t lenb,
-                      DigitPtr result,
-                      DigitPtr workspace)
-{   wd.a = a;
-    wd.lena = lena;
-    wd.b = b;
-    wd.lenb = lenb;
-    wd.c = result;
-    wd.w = workspace;
-}
-
 // This is the entrypoint for Karatsuba multiplication, and it
 // will be called with N>=M amd with a workspace vector big enough for
 // its needs.
@@ -20050,22 +19764,15 @@ static void kara(ConstDigitPtr a, std::size_t N,
     std::cout << "% sign = " << sign << "\n";
 #endif // TRACE_TIMES
     if constexpr (thread)
-    {   setupKara(driverData.wd_0, aDiff, lowSize,
-                                   bDiff, lowSize, workspace,
-                                   setSize(ws, wsize));
-        setupKara(driverData.wd_1, a, lowSize,
-                                   b, lowSize, result,
-                                   setSize(ws+wsize, wsize));
-// Let the thread run while I do aHigh*bHigh. I expect that I will only
-// launch threads when the inputs are rather large, and in particular large
-// enough that the half-sized multiplications triggered here will be
-// Karatsuba rather than classical.
-        driverData.releaseWorkers(false);
-        // Do this while worker threads do their stuff.
-        innerGeneralMul(aHigh, aHighLen,
-                        bHigh, bHighLen, result+2*lowSize,
-                        setSize(ws+2*wsize, wsize));
-        driverData.wait_for_workers(false);
+    {   std::vector<MultiplicationTask> subtasks =
+        {   MultiplicationTask(aDiff, lowSize, bDiff, lowSize,
+                     workspace, ws),
+            MultiplicationTask(aHigh, aHighLen, bHigh, bHighLen,
+                     result+2*lowSize, ws+2*wsize),
+            MultiplicationTask(a, lowSize, b, lowSize,
+                     result, ws+wsize)
+        };
+        runInThreads(subtasks, useMultiplicationTask);
     }
     else
     {   innerGeneralMul(aDiff, lowSize,
@@ -20120,78 +19827,6 @@ static void kara(ConstDigitPtr a, std::size_t N,
 }  
 
 public:
-
-#if defined USE_MICROSOFT_SRW
-
-static void workerThread(WorkerData* wd)
-{   ThreadLocal::initialize();
-    AcquireSRWLockExclusive(&wd->mutex[2]);
-    AcquireSRWLockExclusive(&wd->mutex[3]);
-    wd->ready = true;
-    int receive_count = 0;
-    for (;;)
-    {   AcquireSRWLockExclusive(&wd->mutex[receive_count]);
-        if (wd->quit_flag) return;
-// This is where I do some work! I think it would in general have been
-// silly to launch a thread if the sub-multiplication was small enough to
-// call for classical multiplication... so I always use Karatsuba here.
-        BigMultiplication::kara(wd->a, wd->lena,
-                                wd->b, wd->lenb,
-                                wd->c,
-                                wd->w);
-        ReleaseSRWLockExclusive(&wd->mutex[receive_count^2]);
-        receive_count = (receive_count + 1) & 3;
-    }
-}
-
-#elif defined USE_MICROSOFT_MUTEX
-
-static void workerThread(WorkerData* wd)
-{   WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
-    WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
-    wd->ready = true;
-    int receive_count = 0;
-    for (;;)
-    {
-// This WaitFor could wait for the entire Reduce run any only be signalled
-// during close-down, so putting a timeout on it would nor make sense.
-        WaitForSingleObject(wd->mutex[receive_count], MICROSOFT_INFINITE);
-        if (wd->quit_flag) return;
-// This is where I do some work! I think it would in general have been
-// silly to launch a thread if the sub-multiplication was small enough to
-// call for classical multiplication... so I always use Karatsuba here.
-        BigMultiplication::kara(wd->a, wd->lena,
-                                wd->b, wd->lenb,
-                                wd->c,
-                                wd->w);
-        ReleaseMutex(wd->mutex[receive_count^2]);
-        receive_count = (receive_count + 1) & 3;
-    }
-}
-
-#else // Here I use C++ std::mutex
-
-static void workerThread(WorkerData* wd)
-{   wd->mutex[2].lock();
-    wd->mutex[3].lock();
-    wd->ready = true;
-    int receive_count = 0;
-    for (;;)
-    {   wd->mutex[receive_count].lock();
-        if (wd->quit_flag) return;
-// This is where I do some work! I think it would in general have been
-// silly to launch a thread if the sub-multiplication was small enough to
-// call for classical multiplication... so I always use Karatsuba here.
-        BigMultiplication::kara(wd->a, wd->lena,
-                                wd->b, wd->lenb,
-                                wd->c,
-                                wd->w);
-        wd->mutex[receive_count^2].unlock();
-        receive_count = (receive_count + 1) & 3;
-    }
-}
-
-#endif // definition of workerThread
 
 // fftmod.cpp                                     Copyright 2025 A C Norman
 
@@ -21491,7 +21126,7 @@ public:
 // template expansion with each of the 5 primes I use. 
 
 template <Digit32 P, Digit32 omega>
-static void useOneModuleT(FFTParams& d)
+static void useOneModulus1(FFTParams& d)
 {   size_t N = d.N;
     DigitPtr32 a = d.ws;
     DigitPtr32 b = d.ws+N;
@@ -21540,19 +21175,19 @@ static void useOneModulus(FFTParams d)
 {   switch (d.which)
     {
     case 1:
-        useOneModuleT<Q1,omega1>(d);
+        useOneModulus1<Q1,omega1>(d);
         break;
     case 2:
-        useOneModuleT<Q2,omega2>(d);
+        useOneModulus1<Q2,omega2>(d);
         break;
     case 3:
-        useOneModuleT<Q3,omega3>(d);
+        useOneModulus1<Q3,omega3>(d);
         break;
     case 4:
-        useOneModuleT<Q4,omega4>(d);
+        useOneModulus1<Q4,omega4>(d);
         break;
     case 5:
-        useOneModuleT<Q5,omega5>(d);
+        useOneModulus1<Q5,omega5>(d);
         break;
     }
 }
@@ -21579,7 +21214,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
         FFTParams(2, N, a, b, lena, lenb, ws2),
         FFTParams(3, N, a, b, lena, lenb, ws3),
         FFTParams(4, N, a, b, lena, lenb, ws4),
-        FFTParams(5, N, a, b, lena, lenb, ws5),
+        FFTParams(5, N, a, b, lena, lenb, ws5)
     };
 #ifdef PRINT
     prinvec("a", a, lena);
@@ -21631,12 +21266,6 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // end of fftmod.cpp
 
 }; // end of BigMultiplication class
-
-inline void workerThread(WorkerData* wd)
-{   BigMultiplication::workerThread(wd);
-}
-
-inline std::atomic<bool> ManageWorkers::threadsInUse(false);
 
 // Now the external world needs access to the entrypoint "generalMul"
 // so I provide a shim that calls it so that others do not need to
@@ -24497,7 +24126,7 @@ inline std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
 
 namespace arithlib
 {
-using arithlib_implementation::operator"" _Z;
+using arithlib_implementation::operator""_Z;
 using arithlib_implementation::Bignum;
 
 using arithlib_implementation::version_string;
