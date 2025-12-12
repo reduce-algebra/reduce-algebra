@@ -473,6 +473,7 @@ inline bool inChild = false;
 #include <unordered_map>
 #include <type_traits>
 #include <algorithm>
+#include <filesystem>
 
 // bitmaps.h                                    Copyright (C) 2025 Codemist
 
@@ -1469,12 +1470,9 @@ inline void initialize()
 // run sequentially the caller ought not to rely on the order in which
 // the various tasks happan to be activated.
 
-// If USE_EXECUTION is defined this uses some C++17 functionality that
-// makes this rather easy to express. However in late 2025 my measurements
-// show that it is heavy-duty enough that for small tasks it imposes costs
-// that I would like to avoid. To cope with this I also my own
-// implementation that allows for a somewhat limited number of worker
-// tasks but which may be lighter weight.
+// Unless DO_NOT_USE_EXECUTION is defined this uses some C++17
+// functionality that makes this rather easy to express. It may well be
+// that almost all of this file should now be discarded!
 
 #ifndef cthread_cpp_loaded
 #define cthread_cpp_loaded
@@ -1486,20 +1484,25 @@ inline void initialize()
 #include <vector>
 #include <algorithm>
 
-#ifdef USE_EXECUTION
+#ifndef DO_NOT_USE_EXECUTION
 
 #include <execution>
 
 
 template <typename T, bool parallel=true>
 inline void runInThreads(std::vector<T> v, void (*fn)(T))
-{   std::for_each(parallel ? std::execution::par : std::execution::seq,
-                  std::begin(v),
-                  std::end(v),
-                  fn);
+{   if (parallel)
+        std::for_each(std::execution::par,
+            std::begin(v),
+            std::end(v),
+            fn);
+    else std::for_each(std::execution::seq,
+            std::begin(v),
+            std::end(v),
+            fn);
 }
 
-#else // USE_EXECUTION
+#else // DO_NOT_USE_EXECUTION
 
 // I specify the size of the thread-pool that gets set up, and have a
 // bitmap that records which of those are in use. At present I limit the
@@ -1922,7 +1925,7 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
     activeThreads &= ~claimed;
 }
 
-#endif // USE_EXECUTION
+#endif // DO_NOT_USE_EXECUTION
 
 template <bool parallel, typename T>
 inline void runInThreads(std::vector<T> v, void (*fn)(T))
@@ -13018,13 +13021,18 @@ inline double worstRatio = 0.0;
 // Above this length (measured in 64-bit digits) I will use fast
 // multiplication based on FFT.
 // The threshold here will depend on the machine you are running on,
-// but this ia probably close enough across the platforms that I care about.
+// but this is probably close enough across the platforms that I care about.
 
+
+#ifndef FFT_THRESHOLD
 #ifdef __arm64__
-static const constexpr std::size_t FFT_THRESHOLD = 5000;
-#else
-static const constexpr std::size_t FFT_THRESHOLD = 10000;
-#endif
+static const std::size_t FFT_THRESHOLD = 5000;
+#else // __arm64__
+// The next value might plausibly need to depend on whether you are running
+// under WSL.
+static const std::size_t FFT_THRESHOLD = 10000;
+#endif // __arm64__
+#endif // FFT_THRESHOLD
 
 static constexpr std::size_t workspaceSize(std::size_t M)
 {   return 6*M;
@@ -13049,7 +13057,7 @@ static constexpr std::size_t topWorkspaceSize(std::size_t M)
 // threads that may need it are created that they allocate the memory
 // that is required.
 
-static Digit workspace[topWorkspaceSize(FFT_THRESHOLD)];
+static thread_local Digit* TLworkspace = nullptr;
 
 class MultiplicationTask
 {
@@ -13073,6 +13081,16 @@ public:
         this->ws = ws;
     }
 };
+
+// Ha ha - I use this startup-time to determine whether I seem to be
+// running under the Windows Subbsystem for Linux. I want to know this
+// because at least at present it seems that it might impact break-even
+// points between various schemes for multiplication.
+
+static bool const underWSL =
+   ([](){
+     return std::filesystem::exists("/usr/bin/wslinfo");
+   })();
 
 class BigMultiplication
 {
@@ -19187,6 +19205,16 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
     display("a", a, N);
     display("b", b, M);
 #endif // TRACE_TIMES
+#ifndef NO_THREADS
+// The variable TLworkspace starts off with a null pointer, but the first
+// time I do a biggerMul() in a thread that thread is given a vector
+// of digits big enough for it and any sunsequent use there. On all but the
+// first big multiplication this costs just one read from a thread local
+// variable, which is about as modest an overhead as I can imagine.
+    Digit* workspace = TLworkspace;
+    if (workspace == nullptr)
+        TLworkspace = workspace = new Digit[topWorkspaceSize(FFT_THRESHOLD)];
+#endif
     if (4*N <= 5*M)
     {   if (N < KARABIG) kara(a, N, b, M, result, workspace);
         else kara<true>(a, N, b, M, result, workspace);
@@ -19490,12 +19518,12 @@ static void toom32(ConstDigitPtr a, std::size_t N,
         std::vector<MultiplicationTask> subtasks =
         {   MultiplicationTask(aLow, toomLen, bLow, toomLen,
                      D0, workspace),
+            MultiplicationTask(aHigh, aHighLen, bHigh, bHighLen,
+                     D3, workspace+3*wsize),
             MultiplicationTask(aSum, toomLen, bSum, toomLen,
                      D1, workspace+wsize),
             MultiplicationTask(aDiff, toomLen, bDiff, toomLen,
-                     D2, workspace+2*wsize),
-            MultiplicationTask(aHigh, aHighLen, bHigh, bHighLen,
-                     D3, workspace+3*wsize)
+                     D2, workspace+2*wsize)
         };
         runInThreads(subtasks, useMultiplicationTask);
 #ifdef CHECK_TIMES
@@ -19739,10 +19767,10 @@ static void kara(ConstDigitPtr a, std::size_t N,
     {   std::vector<MultiplicationTask> subtasks =
         {   MultiplicationTask(aDiff, lowSize, bDiff, lowSize,
                      workspace, ws),
-            MultiplicationTask(a, lowSize, b, lowSize,
-                     result, ws+wsize),
             MultiplicationTask(aHigh, aHighLen, bHigh, bHighLen,
-                     result+2*lowSize, ws+2*wsize)
+                     result+2*lowSize, ws+2*wsize),
+            MultiplicationTask(a, lowSize, b, lowSize,
+                     result, ws+wsize)
         };
         runInThreads(subtasks, useMultiplicationTask);
     }

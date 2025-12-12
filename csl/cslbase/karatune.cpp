@@ -46,8 +46,6 @@
 #define KARASTART     start
 #define KARABIG       start_parallel
 
-using namespace CSL_LISP;
-
 size_t start, start_parallel;
 
 // This program is intended to help select good values for the above
@@ -66,6 +64,8 @@ size_t start, start_parallel;
 // case try with or without Karatsuba activated. When I find several in a
 // row all declare Karatsuba faster I will view that is having found a
 // proper transition point.
+
+#define FFT_THRESHOLD 1000000
 
 #include "arithlib.hpp"
 
@@ -168,13 +168,18 @@ int main(int argc, char *argv[])
 #else
         size_t ntries = 75000000/N;
 #endif
+#ifdef NOISY
         cout << "\n" << N  << " words\n";
+#endif
         double bestSoFar = 1.0e6;
         size_t bestStart = 0;
         for (start_parallel=N; start_parallel<=N+1 ; start_parallel++)
-        {   cout <<   "start = " << setw(3) << start
+        {
+#ifdef NOISY
+            cout <<   "start = " << setw(3) << start
                  << "  start_parallel = " << setw(3) << start_parallel
                  << "     ";
+#endif
             clk = chrono::steady_clock::now();
             for (size_t i=1; i<=ntries; i++)
             {   size_t lenc;
@@ -188,7 +193,9 @@ int main(int argc, char *argv[])
             timing =
                 chrono::duration_cast<chrono::nanoseconds>(elapsed);
             double tt = timing.count()/1.0e9;
+#ifdef NOISY
             cout << setprecision(3) << tt << " sec\n";
+#endif
             if (tt < bestSoFar)
             {   bestSoFar = tt;
                 bestStart = start_parallel;

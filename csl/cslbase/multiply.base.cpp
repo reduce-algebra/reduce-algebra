@@ -89,13 +89,18 @@ inline double worstRatio = 0.0;
 // Above this length (measured in 64-bit digits) I will use fast
 // multiplication based on FFT.
 // The threshold here will depend on the machine you are running on,
-// but this ia probably close enough across the platforms that I care about.
+// but this is probably close enough across the platforms that I care about.
 
+
+#ifndef FFT_THRESHOLD
 #ifdef __arm64__
-static const constexpr std::size_t FFT_THRESHOLD = 5000;
-#else
-static const constexpr std::size_t FFT_THRESHOLD = 10000;
-#endif
+static const std::size_t FFT_THRESHOLD = 5000;
+#else // __arm64__
+// The next value might plausibly need to depend on whether you are running
+// under WSL.
+static const std::size_t FFT_THRESHOLD = 10000;
+#endif // __arm64__
+#endif // FFT_THRESHOLD
 
 static constexpr std::size_t workspaceSize(std::size_t M)
 {   return 6*M;
@@ -120,7 +125,7 @@ static constexpr std::size_t topWorkspaceSize(std::size_t M)
 // threads that may need it are created that they allocate the memory
 // that is required.
 
-static Digit workspace[topWorkspaceSize(FFT_THRESHOLD)];
+static thread_local Digit* TLworkspace = nullptr;
 
 class MultiplicationTask
 {
@@ -144,6 +149,16 @@ public:
         this->ws = ws;
     }
 };
+
+// Ha ha - I use this startup-time to determine whether I seem to be
+// running under the Windows Subbsystem for Linux. I want to know this
+// because at least at present it seems that it might impact break-even
+// points between various schemes for multiplication.
+
+static bool const underWSL =
+   ([](){
+     return std::filesystem::exists("/usr/bin/wslinfo");
+   })();
 
 class BigMultiplication
 {
@@ -688,6 +703,16 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
     display("a", a, N);
     display("b", b, M);
 #endif // TRACE_TIMES
+#ifndef NO_THREADS
+// The variable TLworkspace starts off with a null pointer, but the first
+// time I do a biggerMul() in a thread that thread is given a vector
+// of digits big enough for it and any sunsequent use there. On all but the
+// first big multiplication this costs just one read from a thread local
+// variable, which is about as modest an overhead as I can imagine.
+    Digit* workspace = TLworkspace;
+    if (workspace == nullptr)
+        TLworkspace = workspace = new Digit[topWorkspaceSize(FFT_THRESHOLD)];
+#endif
     if (4*N <= 5*M)
     {   if (N < KARABIG) kara(a, N, b, M, result, workspace);
         else kara<true>(a, N, b, M, result, workspace);
@@ -991,12 +1016,12 @@ static void toom32(ConstDigitPtr a, std::size_t N,
         std::vector<MultiplicationTask> subtasks =
         {   MultiplicationTask(aLow, toomLen, bLow, toomLen,
                      D0, workspace),
+            MultiplicationTask(aHigh, aHighLen, bHigh, bHighLen,
+                     D3, workspace+3*wsize),
             MultiplicationTask(aSum, toomLen, bSum, toomLen,
                      D1, workspace+wsize),
             MultiplicationTask(aDiff, toomLen, bDiff, toomLen,
-                     D2, workspace+2*wsize),
-            MultiplicationTask(aHigh, aHighLen, bHigh, bHighLen,
-                     D3, workspace+3*wsize)
+                     D2, workspace+2*wsize)
         };
         runInThreads(subtasks, useMultiplicationTask);
 #ifdef CHECK_TIMES
@@ -1240,10 +1265,10 @@ static void kara(ConstDigitPtr a, std::size_t N,
     {   std::vector<MultiplicationTask> subtasks =
         {   MultiplicationTask(aDiff, lowSize, bDiff, lowSize,
                      workspace, ws),
-            MultiplicationTask(a, lowSize, b, lowSize,
-                     result, ws+wsize),
             MultiplicationTask(aHigh, aHighLen, bHigh, bHighLen,
-                     result+2*lowSize, ws+2*wsize)
+                     result+2*lowSize, ws+2*wsize),
+            MultiplicationTask(a, lowSize, b, lowSize,
+                     result, ws+wsize)
         };
         runInThreads(subtasks, useMultiplicationTask);
     }

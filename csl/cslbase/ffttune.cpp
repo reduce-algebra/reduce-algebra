@@ -31,6 +31,8 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+#define FFT_THRESHOLD 1000000
+
 #include "arithlib.hpp"
 
 using namespace std;
@@ -40,10 +42,23 @@ using namespace arithlib;
 using namespace arithlib_lowlevel;
 using namespace arithlib_implementation;
 
-// There are people who believe that the next line can fail to provide
-// really proper "random" sequences, but for now it suffices.
-
-std::mt19937_64 twister(std::random_device{}());
+// The mess here is actually rather over the top. But it seeds the random
+// number generator with 128 bits from rge random_device() and also uses
+// a clock that should be reporting nanoseconds since the year 1970 (this
+// being protection against the hideous possibility that the C++ standard
+// permits of random_device actually being deterministic.
+std::random_device randomDevice;
+auto timeNow =
+    std::chrono::time_point_cast<std::chrono::nanoseconds>(
+        std::chrono::system_clock::now());
+std::uint64_t ticksNow = timeNow.time_since_epoch().count(); 
+std::seed_seq seed{randomDevice(),
+                   randomDevice(),
+                   randomDevice(),
+                   randomDevice(),
+                   static_cast<uint32_t>(ticksNow>>32),
+                   static_cast<uint32_t>(ticksNow)};
+std::mt19937_64 twister(seed);
 
 #include <iostream>
 
@@ -72,7 +87,6 @@ void timetest(size_t N, int ntrials)
     }
 #endif
     auto tt1 = microseconds();
-// I will do a non-parallel multiplication first for potential debugging.
     BigMultiplication::fftmul(a, N, b, N, c);
     auto tt2 = microseconds();
 #ifndef QUICK_TEST

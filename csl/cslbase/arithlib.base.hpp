@@ -473,6 +473,7 @@ inline bool inChild = false;
 #include <unordered_map>
 #include <type_traits>
 #include <algorithm>
+#include <filesystem>
 
 #include "bitmaps.h"
 #include "threadloc.h"
