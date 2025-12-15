@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-12-02 16:50:12 franc>
+;; Time-stamp: <2025-12-14 17:10:23 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -1173,10 +1173,22 @@ in interpreted functions are automatically considered fluid."
 ;;; Error Handling
 ;;; ==============
 
-(define-condition sl-error (cl:error)
-  ((errno :initarg :errno)
-   (errmsg :initarg :errmsg))
-  (:documentation "Standard Lisp error including an error number and message")
+(define-condition sl-error-no-message (cl:error)
+  ()
+  (:documentation "Standard Lisp error without error number or message")
+  (:report (lambda (condition stream)
+             (declare (ignore condition stream)))))
+
+(defun error1 ()
+  "This is the simplest error return, without a message printed.
+It can be defined as ERROR(99,NIL) if necessary.
+In PSL it is throw('!$error!$,99)."
+  ;; This error is called by rederr.
+  (cl:error 'sl-error-no-message))
+
+(define-condition sl-error (sl-error-no-message)
+  ((errno :initarg :errno) (errmsg :initarg :errmsg))
+  (:documentation "Standard Lisp error with an error number and message")
   (:report (lambda (condition stream)
              (with-slots (errno errmsg) condition
                (format stream "Standard Lisp error ~a: ~a." errno errmsg)))))
@@ -1192,25 +1204,12 @@ variables are not affected by the process."
   (setq emsg* message)
   (cl:error 'sl-error :errno number :errmsg message))
 
-(define-condition sl-error-internal (sl-error)
+(define-condition sl-error-internal (sl-error-no-message)
   ((errmsg :initarg :errmsg))
-  (:documentation "Standard Lisp internal error including an error message")
+  (:documentation "Standard Lisp internal error with an error message")
   (:report (lambda (condition stream)
              (with-slots (errmsg) condition
                (format stream "Standard Lisp error: ~a." errmsg)))))
-
-(define-condition sl-error-no-message (sl-error-internal)
-  ()
-  (:documentation "Standard Lisp error without error number or message")
-  (:report (lambda (condition stream)
-             (declare (ignore condition))
-             (format stream "Standard Lisp error without error number or message"))))
-
-(defun error1 ()
-  "This is the simplest error return, without a message printed.
-It can be defined as ERROR(99,NIL) if necessary.
-In PSL it is throw('!$error!$,99)."
-  (cl:error 'sl-error-no-message))
 
 (defvar *backtrace nil
   "When true display `errorset' backtrace or message in some REDUCE code.
@@ -3278,17 +3277,16 @@ COMMAND to the interpreter and return the process exit code."
         1
         (ccl:external-process-status    ; returns status, exit code
          #+WINDOWS
-         (progn
-           ;; Split off the arguments:
-           (setq command
-                 (loop with beg and end = 0
-                       while end
-                       do (setq beg (position-if #'(lambda (x) (char/= x #\Space))
-                                                 command :start end))
-                       (unless beg (loop-finish))
-                       (setq end (position #\Space command :start beg))
-                       ;; Quoted args seem to fail, so...
-                       collect (string-trim "\"" (subseq command beg end))))
+         (let ((command
+                ;; Split off the arguments:
+                (loop with beg and end = 0
+                      while end
+                      do (setq beg (position-if #'(lambda (x) (char/= x #\Space))
+                                                command :start end))
+                      (unless beg (loop-finish))
+                      (setq end (position #\Space command :start beg))
+                      ;; Quoted args seem to fail, so...
+                      collect (string-trim "\"" (subseq command beg end)))))
            (ccl:run-program "cmd" (cons "/c" command) :output t))
          #-WINDOWS
          (ccl:run-program "sh" (list "-c" command) :output t)))
@@ -3399,20 +3397,7 @@ in file name."
 
 #+SBCL (import 'sb-posix:getpid)
 #+CLISP (defalias getpid os:process-id)
-;; Only CCL understands the reader macro #_, so...
-#-CCL
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (set-dispatch-macro-character
-   #\# #\_ #'(lambda (&rest args) (declare (ignore args)))))
-;; #+CCL (defalias getpid #_getpid)        ; ???
-#+CCL
-(defun getpid ()
-  "Return the process ID of the calling process."
-  ;; According to the CCL manual (#_getpid) should work, but on
-  ;; Windows it doesn't, so for now fudge it by just returning an
-  ;; arbitrary fixed number.
-  #-WINDOWS (#_getpid)
-  #+WINDOWS 1234)
+#+CCL (import 'ccl::getpid)
 
 #+(or SBCL CLISP)               ; to avoid a warning with other Lisps!
 (defun setenv (name value)
@@ -3694,11 +3679,16 @@ When all done, execute FASLEND;~2%" name))
 (defun reduce-init-function ()
   "The function executed at startup of the saved REDUCE memory image."
   ;; Enable the interactive debugger only if the input and output are
-  ;; both interactive:
-  (if  (and (interactive-stream-p *standard-input*)
-            (interactive-stream-p *standard-output*))
-       (sb-ext:enable-debugger)
-       (sb-ext:disable-debugger))
+  ;; both interactive: ***** DOESN'T DETECT INTERACTIVE RUN *****
+  ;; (if  (and (interactive-stream-p *standard-input*)
+  ;;           (interactive-stream-p *standard-output*))
+  ;;      (progn
+  ;;        #+DEBUG (format t "Interactive mode -- debugger enabled")
+  ;;        (sb-ext:enable-debugger))
+  ;;      (progn
+  ;;        #+DEBUG (format t "Batch mode -- debugger disabled")
+  ;;        (sb-ext:disable-debugger)))
+  (sb-ext:enable-debugger)
   ;; Enable compilation only if *comp is true:
   (setq sb-ext:*evaluator-mode*
         (if *comp :compile :interpret))
@@ -3734,10 +3724,30 @@ When all done, execute FASLEND;~2%" name))
   (ext:exit-on-error (begin))
   (ext:exit))
 
+;; From: Common Lisp the Language, 2nd Edition
+;; https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node341.html
+
+;; Implementation note: Implementors are encouraged to make sure that
+;; there is always a restart named abort around any user code so that
+;; user code can call abort at any time and expect something
+;; reasonable to happen; exactly what the reasonable thing is may vary
+;; somewhat. Typically, in an interactive program, invoking abort
+;; should return the user to top level, though in some batch or
+;; multi-processing situations killing the running process might be
+;; more appropriate.
+
+;; The initialisation code below is based on the REPL example on the
+;; web page cited above.
+
 #+(or CCL ECL)
 (defun reduce-init-function ()
   #+CCL (standard-lisp)
-  (begin))
+  (with-simple-restart
+      (abort "Exit REDUCE.")
+    (loop
+     (with-simple-restart
+         (abort "Return to REDUCE.")
+       (begin)))))
 
 (defun save-reduce-image (name)
   "Save a REDUCE memory image with main filename component NAME."
@@ -3795,6 +3805,7 @@ Called by ON/OFF COMP; see 'clrend.red'."
 #+ABCL (setq *autoload-verbose* t)
 
 (setf (macro-function 'cltrace) (macro-function 'trace)) ; for debugging
+(setf (macro-function 'cluntrace) (macro-function 'untrace))
 
 ;; Common Lisp symbols used in REDUCE source code:
 (import
@@ -3827,3 +3838,6 @@ Called by ON/OFF COMP; see 'clrend.red'."
 
 ;; Move implementation into a separate package and only export
 ;; required symbols.  This should make profiling easier!
+
+;; Implement compd (see rsupport.red) as compile, so that inlines,
+;; etc, get compiled?
