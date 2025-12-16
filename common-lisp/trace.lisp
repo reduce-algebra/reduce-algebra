@@ -3,14 +3,17 @@
 ;; Copyright (C) 2019, 2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-11-29 16:41:38 franc>
+;; Time-stamp: <2025-12-13 16:36:16 franc>
 ;; Created: 20 February 2019
 
 ;; Based on, and hopefully consistent with, the portable REDUCE
-;; tracing code in "package/rtrace/rtrace.red".  But this is a
+;; tracing code in "packages/rtrace/rtrace.red".  But this is a
 ;; completely independent Common Lisp implementation.
 
-;; Must load "sl-on-cl" before loading or compiling this file.
+;; Trace a REDUCE function or algebraic operator implemented as a
+;; psopfn or simpfn by tracing the underlying Lisp function.
+
+;; ***** Must load "sl-on-cl" before loading or compiling this file. *****
 
 ;; ****************************
 ;; Can be loaded into REDUCE by
@@ -20,7 +23,7 @@
 ;; etc.
 ;; ****************************
 
-(declaim (optimize debug))
+(declaim (optimize #-DEBUG speed #+DEBUG debug #+DEBUG safety))
 
 (defpackage :standard-lisp-trace
   (:nicknames :sl-trace)
@@ -43,35 +46,34 @@
 
 (defmacro tr (&rest fns)
   "Trace the functions specified.
-If no functions are specified then list all traced functions."
-  (if fns
+List all traced functions if no functions or nil are specified."
+  (if (and fns (not (equal fns '(nil))))
       `(cl:mapcar #'trace1 ',fns)
       '*traced-functions*))
 
 (defmacro untr (&rest fns)
   "Untrace(set) the functions specified.
-Untrace(set) all traced functions if no functions are specified."
-  `(cl:mapcar #'untrace1 ',(or fns *traced-functions*)))
-
-(defvar *trace-setq* nil)
+Untrace(set) all traced functions if no functions or nil are specified."
+  `(cl:mapcar #'untrace1
+              ',(or (and (not (equal fns '(nil))) fns) *traced-functions*)))
 
 (defmacro trst (&rest fns)
   "Traceset the functions specified.
-If no functions are specified then list all traced functions."
-  (if fns
-      `(let ((*trace-setq* t))
-         (cl:mapcar #'trace1 ',fns))
+List all traced functions if no functions or nil are specified."
+  (if (and fns (not (equal fns '(nil))))
+      `(cl:mapcar #'(lambda (name) (trace1 name t)) ',fns)
       '*traced-functions*))
 
 (setf (macro-function 'untrst) (macro-function 'untr))
 
 (defparameter %fasl.lisp-pathname-template%
-  (make-pathname :directory (pathname-directory *load-truename*)
-                 :type "lisp")
-  "Absolute pathname of the form \"/.../fasl.which/???.lisp\".")
+  (merge-pathnames
+   (make-pathname :type "lisp")
+   sl::%fasl-directory-pathname) ; defined in sl-on-cl.lisp
+  "Absolute pathname of the form \"/.../fasl.<lisp>/???.lisp\".")
 
 (defun get-fasl-source (name)
-  "Get DE form for function NAME from file \"/.../fasl.which/modulename.lisp\"."
+  "Get DE form for function NAME from file \"/.../fasl.<lisp>/modulename.lisp\"."
   (let ((*readtable* (copy-readtable nil)) ; read CL syntax
         file stream form)
     (when (setq file (get name 'sl::defined-in-file)) ; e.g. |pgk/mod.red|
@@ -91,11 +93,11 @@ If no functions are specified then list all traced functions."
         (close stream)
         (unless (eq form sl::$eof$) form)))))
 
-(defun re-trace1 (name)
+(defun re-trace1 (name trace-setq)
   "Toggle trace/traceset for function NAME.
 NAME must be quoted when called!"
   (let ((defn (get name 'traced-function)))
-    (if *trace-setq*
+    (if trace-setq
         (if (consp defn)
             (progn
               (setq defn (subst 'traced-setq 'setq defn))
@@ -113,17 +115,34 @@ NAME must be quoted when called!"
     (format *trace-output* "*** Trace mode of ~a changed.~%" name)
     name))
 
-(defun trace1 (name)
-  "Trace or traceset function NAME.
+(defun trace1 (name &optional trace-setq)
+  "Trace or traceset function or algebraic operator NAME.
 NAME must be quoted when called!"
-  (let* ((defn (and (symbolp name) (fboundp name) (symbol-function name)))
-         (olddefn defn)                 ; saved for reliable untracing
-         params)
-    ;; Check function is defined:
+  (unless  (symbolp name)
+    (format *trace-output*
+            "~&***** ~a must be a symbol.~%" name)
+    (return-from trace1))
+  (let (defn olddefn params)
+    ;; Check how NAME is implemented; get definition and update NAME
+    ;; if necessary:
+    (cond ((fboundp name)
+           (setq defn (symbol-function name)))
+          ((setq defn (get name 'sl::psopfn))
+           (format *trace-output*
+                   "~&*** ~a implemented as psopfn ~a.~%" name defn)
+           (setq name defn
+                 defn (and (fboundp defn) (symbol-function defn))))
+          ((setq defn (get name 'sl::simpfn))
+           (format *trace-output*
+                   "~&*** ~a implemented as simpfn ~a.~%" name defn)
+           (setq name defn
+                 defn (and (fboundp defn) (symbol-function defn)))))
+    ;; Check function to be traced is defined:
     (unless defn
       (format *trace-output*
-              "***** ~a not yet defined.~%" name)
+              "~&***** ~a is not defined.~%" name)
       (return-from trace1))
+    (setq olddefn defn)                 ; saved for reliable untracing
     ;;
     ;; (when sl::*comp
     ;;   (format *trace-output*
@@ -143,6 +162,7 @@ NAME must be quoted when called!"
         (let ((b (car (last defn))))
           (setq defn (list 'lambda (cadr defn)
                            (if (eqcar b 'block) (caddr b) b))))
+        ;; Read Lisp source file in fasl directory:
         (if (setq defn (get-fasl-source name))
             ;; defn = (de name arglist body)
             (setq defn (cons 'lambda (cddr defn)))))
@@ -151,44 +171,39 @@ NAME must be quoted when called!"
         (progn                          ; defn = (lambda params body)
           (if (eqcar (caddr defn) 'run-traced-function)
               (return-from trace1
-                (if (eq (get name 'traced-setq) *trace-setq*)
+                (if (eq (get name 'traced-setq) trace-setq)
                     ;; i.e. both true or both false
                     (format *trace-output*
-                            "*** ~a already traced.~%" name)
-                    (re-trace1 name)))
+                            "~&*** ~a already traced.~%" name)
+                    (re-trace1 name trace-setq)))
               ;; wrap params in a list in case params = () = nil!
               (setq params (list (cadr defn)))))
-        (progn                          ; defn = compiled form
-          (setq defn olddefn)
-          (if *trace-setq*
+        (progn
+          (setq defn olddefn)           ; defn = compiled form
+          (if trace-setq
               (progn
                 (format *trace-output*
-                        "*** ~a ~a~%~a~%"
-                        name
-                        "must be interpreted for portable assignment tracing."
-                        "*** Tracing arguments and return value only.")
-                (setq *trace-setq* nil)))))
+                        "~&*** ~a ~
+must be interpreted for assignment tracing.
+    Tracing arguments and return value only."
+                        name)
+                (setq trace-setq nil)))))
     ;;
     (if params
         (setq params (car params))      ; unwrap params
-        (if (setq params (get name 'sl::number-of-args))
-            (progn
-              (setq params
-                    (loop
-                       for i from 1 upto params collect
-                         (intern (format nil "Arg~d" i))))
-              (format *trace-output*
-                      "*** ~a is compiled: ~a~%"
-                      name
-                      "portable tracing may not show recursive calls."))
-            (progn
-              (format *trace-output*
-                      "***** parameters for ~a unavailable so cannot apply portable tracing.~%"
-                      name)
-              (return-from trace1))))
+        (progn
+          (format *trace-output*
+                  "~&*** ~a source unavailable.
+    Recursive calls may not be traced.
+    Using generic parameter names.~%"
+                  name)
+          (when (setq params (get name 'sl::number-of-args))
+            (setq params
+                  (loop for i from 1 upto params collect
+                        (format nil "Arg~d" i))))))
     ;;
     (pushnew name *traced-functions*)
-    (if *trace-setq*
+    (if trace-setq
         (progn
           (setq defn (subst 'traced-setq 'setq defn))
           (put name 'traced-setq t))
@@ -196,19 +211,38 @@ NAME must be quoted when called!"
         (remprop name 'traced-setq))
     (put name 'untraced-function olddefn)
     (put name 'traced-function defn)
-    (eval `(defun ,name ,params
-             (run-traced-function ',name ',params (list . ,params))))))
+    (eval `(defun ,name (&rest args)
+             (run-traced-function ',name ',params args)))))
 
 (defun untrace1 (name)
-  "Remove all tracing for function NAME.
+  "Remove all tracing for function or algebraic operator NAME.
 NAME must be quoted when called!"
+  (unless  (symbolp name)
+    (format *trace-output*
+            "~&***** ~a must be a symbol.~%" name)
+    (return-from untrace1))
+  ;; Check how NAME is implemented; update NAME if necessary:
+  (let (defn)
+    (cond ((fboundp name))              ; name OK
+          ((setq defn (get name 'sl::psopfn))
+           (setq name defn))
+          ((setq defn (get name 'sl::simpfn))
+           (setq name defn))
+          (t
+           (format *trace-output*
+                   "~&***** ~a is not defined.~%" name)
+           (return-from untrace1))))
   (let ((olddefn (get name 'untraced-function)))
-    (if olddefn (setf (symbol-function name) olddefn))
-    (remprop name 'untraced-function)
-    (remprop name 'traced-function)
-    (remprop name 'traced-setq)
-    (setq *traced-functions* (remove name *traced-functions*))
-    name))
+    (if olddefn
+        (progn
+          (setf (symbol-function name) olddefn)
+          (remprop name 'untraced-function)
+          (remprop name 'traced-function)
+          (remprop name 'traced-setq)
+          (setq *traced-functions* (remove name *traced-functions*))
+          name)
+        (format *trace-output*
+                "~&***** ~a was not traced.~%" name))))
 
 (defvar trace-depth 0)
 
@@ -219,19 +253,20 @@ Abort with an error if the answer is no.")
 (defun run-traced-function (name params args)
   (let ((trace-depth (1+ trace-depth))
         (result (get name 'traced-function)))
-    (format *trace-output* "~&Enter (~a) ~a~%" trace-depth name)
-    (loop for param in params for arg in args do
-         (format *trace-output* "   ~a:  ~s~%" param arg))
-
+    (format *trace-output* "~&Enter (~d) ~a~%" trace-depth name)
+    (if params
+        (loop for param in params for arg in args do
+              (format *trace-output* "   ~a:  ~s~%" param arg))
+        (loop for i from 1 for arg in args do
+              (format *trace-output* "   Arg~d:  ~s~%" i arg)))
     (if (and *trpause (not (y-or-n-p "Continue?")))
         (error "Tracing aborted!"))
-
     (setq result
           (sl::errorset `(apply ,(eval result) ',args) nil nil))
     (if (or (atom result) (cdr result)) ; errorp result
         (sl::error 0 sl::emsg*)
         (setq result (car result)))
-    (format *trace-output* "~&Leave (~a) ~a = ~s~%" trace-depth name result)
+    (format *trace-output* "~&Leave (~d) ~a = ~s~%" trace-depth name result)
     result))
 
 (defmacro traced-setq (left right)

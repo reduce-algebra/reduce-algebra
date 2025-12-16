@@ -3,4 +3,5 @@
 cl=$(realpath $(dirname $0)) # common-lisp directory
 if [ "$OSTYPE" == 'cygwin' ]; then cl=$(cygpath -m $cl); fi
 if [ "$(type -ft ccl64)" ]; then CCL='ccl64'; else CCL='ccl'; fi
-$CCL -I $cl/fasl.ccl/reduce.image
+if [ ! -t 0 ]; then batch='--batch'; fi
+$CCL -I $cl/fasl.ccl/reduce.image $batch
