@@ -60,7 +60,7 @@
 // (.) If I have a statically allocated (class) object then any fields
 //     within it would not show up in the scheme charted above. Objects
 //     allocated on the stack are OK since I will scan all of that anyway.
-//     But this means I need to be careful e.g. with arithlib.hpp. That has
+//     But this means I need to be careful e.g. with arithlib.cpp. That has
 //     some persistent state (eg the corrent modulus for mod-P arithmetic)
 //     so it has to be coded for safety there.
 //

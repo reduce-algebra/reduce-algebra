@@ -31,7 +31,7 @@
 
 // $Id$
 
-// arithlib.hpp is to be a header-only library and because of that
+// arithlib.cpp is to be a header-only library and because of that
 // I want it to be a single file that can be #included. However
 // for development purposes I want to keep some sections of code that
 // it must incorporate in separate files. This will sometimes be just
@@ -40,8 +40,8 @@
 // not just within arithlib. So I have a file called arithlib.base.hpp that
 // uses "#include" directives to incorporate those sub-libraries. This
 // tool merges things to make the single-file version. Its use is:
-//    flatten arithlib.base.hpp  arithlib.hpp
-// The reads arithlib.base.hpp and if it finds a line of the form
+//    flatten arithlib.base.cpp  arithlib.cpp
+// The reads arithlib.base.cpp and if it finds a line of the form
 //    #include "filename"
 // and the named file is present in the current directory then the
 // contents of the file are inserted in place of the #include directive.

@@ -659,7 +659,7 @@ public:
     std::size_t fringe;
     std::vector<char*> listOfPointers;
     void discard(char* v) { listOfPointers.push_back(v); }
-    allocationInfoStruct()
+    [[gnu::used]] allocationInfoStruct()
     {   currentChunkSize = 65536;
         chunk = new char[currentChunkSize];
         fringe = 0;

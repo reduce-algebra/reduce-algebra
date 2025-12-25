@@ -31,9 +31,6 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-
-
-
 #include <cstdint>
 #include <iostream>
 #include <iomanip>

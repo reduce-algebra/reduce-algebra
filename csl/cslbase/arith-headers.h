@@ -35,7 +35,7 @@
 // $Id$
 
 //
-// The header-only library "arithlib.hpp" is a bulky file and it does
+// The library "arithlib.cpp" is a bulky file and it does
 // not make sense to include it when compiling parts of CSL that do not
 // need it. So those files that do need it will #include "arith-headers.h"
 // rather than merely #include "headers.h".
@@ -50,7 +50,7 @@
 
 #include "headers.h"
 
-#include "arithlib.hpp"
+#include "arithlib.h"
 #include "dispatch.h"
 
 #endif // header_arith_headers_h

@@ -780,7 +780,7 @@ LispObject Nmodular_expt(LispObject env, LispObject a, LispObject n)
     size_t len = int_of_fixnum(IntegerLength::op(n));
     uint64_t i;
     uint64_t* nn;
-// I do a deep dive into arithlib.hpp to exploit data respresentation.
+// I do a deep dive into arithlib.cpp to exploit data respresentation.
 // This code should probably migrate to be within arithlib.
     if (arithlib_implementation::stored_as_fixnum(n))
     {   i = arithlib_implementation::int_of_handle(n);

@@ -511,7 +511,7 @@ bool CLEqn::op(Cpx a, uint64_t *b)
 {   return false;
 }
 // short float CL== bignum
-// arithlib.hpp has somewhat contorted code so that it can perform
+// arithlib.cpp has somewhat contorted code so that it can perform
 // reliable comparisons between floats and bignums.
 
 bool CLEqn::op(SFlt a, uint64_t *b)
@@ -1188,7 +1188,7 @@ bool Greaterp::op(Cpx a, Fixnum b)
 // floats only hold 53 bits of precision, so I can not compare by
 // just converting the fixnum to a double. If I tried going the other
 // way I could run into issues with floating values that had fractional
-// parts or that had values well beyond 2^60. But arithlib.hpp deals
+// parts or that had values well beyond 2^60. But arithlib.cpp deals
 // with all that - including the cases of NaNs and infinities.
 
 bool Greaterp::op(SFlt a, Fixnum b)

@@ -33,7 +33,7 @@
 
 #define FFT_THRESHOLD 1000000
 
-#include "arithlib.hpp"
+#include "arithlib.cpp"
 
 using namespace std;
 using namespace CSL_LISP;

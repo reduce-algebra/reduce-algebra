@@ -1,7 +1,7 @@
 // arith-elem.cpp                               Copyright (C) 2025 Codemist
 
 //
-// Support for elementary functions with the arithlib.hpp package.
+// Support for elementary functions with the arithlib.cpp package.
 //
 
 /**************************************************************************

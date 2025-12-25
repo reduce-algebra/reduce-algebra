@@ -358,8 +358,8 @@ if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
-		arith-elem.cpp arith-misc.cpp qdouble.cpp
-ARITHDEP=arithlib.hpp qdouble.h
+		arith-elem.cpp arith-misc.cpp qdouble.cpp arithlib.cpp
+ARITHDEP=arithlib.h qdouble.h
 else !arithlib
 arith_sources =
 ARITHDEP=
@@ -961,6 +961,7 @@ $(SOFTFLOATDEPS):
 # taken as specifing conflicting actions.
 
 if arithlib
+csl-arithlib.$(OBJEXT):		$(HDRS)
 csl-arith-setup.$(OBJEXT):	$(HDRS)
 csl-arith-plus.$(OBJEXT):	$(HDRS)
 csl-arith-times.$(OBJEXT):	$(HDRS)
@@ -973,6 +974,7 @@ csl-arith-modular.$(OBJEXT):	$(HDRS)
 csl-arith-elem.$(OBJEXT):	$(HDRS)
 csl-arith-misc.$(OBJEXT):	$(HDRS)
 
+bootstrapreduce-arithlib.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-setup.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-plus.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-times.$(OBJEXT):	$(HDRS)
@@ -985,6 +987,7 @@ bootstrapreduce-arith-modular.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-elem.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-misc.$(OBJEXT):	$(HDRS)
 
+reduce-arithlib.$(OBJEXT):	$(HDRS)
 reduce-arith-setup.$(OBJEXT):	$(HDRS)
 reduce-arith-plus.$(OBJEXT):	$(HDRS)
 reduce-arith-times.$(OBJEXT):	$(HDRS)
@@ -997,6 +1000,7 @@ reduce-arith-modular.$(OBJEXT):	$(HDRS)
 reduce-arith-elem.$(OBJEXT):	$(HDRS)
 reduce-arith-misc.$(OBJEXT):	$(HDRS)
 
+reduce-web-arithlib.$(OBJEXT):		$(HDRS)
 reduce_web-arith-setup.$(OBJEXT):	$(HDRS)
 reduce_web-arith-plus.$(OBJEXT):	$(HDRS)
 reduce_web-arith-times.$(OBJEXT):	$(HDRS)
@@ -1437,8 +1441,8 @@ else !wx
 WXDEPS=
 endif !wx
 
-# The file arithlib.hpp is maintained in the form of a top level file
-# arithlib.base.hpp and a collection of files that it uses "#include" to
+# The file arithlib.cpp is maintained in the form of a top level file
+# arithlib.base.cpp and a collection of files that it uses "#include" to
 # get merged in. The utility flatten performs the expansion for me. The
 # consequence of this is that arithlib.hpp is a single free-standing
 # header-only library, but if you also #include one of the things it
@@ -1462,6 +1466,8 @@ $(cslbase)/arithlib.hpp:	$(cslbase)/flatten \
 		$(cslbase)/acnutil.h $(cslbase)/multiply.base.cpp \
 		$(cslbase)/fftutils.cpp $(cslbase)/fftmod.cpp
 	cd $(cslbase) && ./flatten arithlib.base.hpp arithlib.hpp
+
+$(cslbase)/arithlib.h:	$(cslbase)/arithlib.cpp
 
 $(cslbase)/geninline:	$(cslbase)/geninline.cpp
 	g++ $(CXXFLAGS) $(cslbase)/geninline.cpp -o $(cslbase)/geninline

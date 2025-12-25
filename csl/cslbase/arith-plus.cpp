@@ -41,7 +41,7 @@ namespace CSL_LISP
 // Each generic arithmetic operation will involve a class styled rather
 // along the lines of this one. It will use mechanisms from the header
 // file dispatch.h to go from tagged LispObjects to the data for each
-// combination of operand types, and will then use code from arithlib.hpp
+// combination of operand types, and will then use code from arithlib.cpp
 // to implement the big-number operations involved.
 
 // Ugh 64 overloads! Well because addition is commutative I can make

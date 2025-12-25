@@ -46,9 +46,12 @@
 // run sequentially the caller ought not to rely on the order in which
 // the various tasks happan to be activated.
 
-// Unless DO_NOT_USE_EXECUTION is defined this uses some C++17
-// functionality that makes this rather easy to express. It may well be
-// that almost all of this file should now be discarded!
+// If USE_EXECUTION is defined this uses some C++17 functionality that
+// makes this rather easy to express. If that worked well it would render
+// most of this file obsolete. However when I test on quite a few platforms
+// the times I get when using it are consistent with it not in fact using
+// multiple threads even with std::execution::par_unseq. So maybe at some
+// stage in the future this will be good. 
 
 #ifndef cthread_cpp_loaded
 #define cthread_cpp_loaded
@@ -60,16 +63,16 @@
 #include <vector>
 #include <algorithm>
 
-#ifndef DO_NOT_USE_EXECUTION
+#ifdef USE_EXECUTION
 
 #include <execution>
 
 #include "threadloc.h"
 
 template <typename T, bool parallel=true>
-inline void runInThreads(std::vector<T> v, void (*fn)(T))
-{   if (parallel)
-        std::for_each(std::execution::par,
+[[gnu::used]] inline void runInThreads(std::vector<T> v, void (*fn)(T))
+{   if constexpr (parallel)
+        std::for_each(std::execution::par_unseq,
             std::begin(v),
             std::end(v),
             fn);
@@ -79,14 +82,11 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
             fn);
 }
 
-#else // DO_NOT_USE_EXECUTION
+#else // USE_EXECUTION
 
 // I specify the size of the thread-pool that gets set up, and have a
 // bitmap that records which of those are in use. At present I limit the
 // pool size to 16.
-
-inline const size_t POOLSIZE = 16;
-inline std::atomic<uint32_t> activeThreads(0);
 
 // There are 4 mutexes for each worker thread, but each synchronization step
 // just involves a single mutex, transferring ownership between main and worker
@@ -188,7 +188,7 @@ extern __declspec(dllimport) int CloseHandle(void* h);
 extern __declspec(dllimport) int ReleaseMutex(void* m);
 extern __declspec(dllimport) void* 
     WaitForSingleObject(void* , std::uintptr_t);
-inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
+[[gnu::used]] inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
 
 #endif // MSDECLS
 
@@ -287,7 +287,10 @@ public:
 // them and that they then access. When this structures is created it will
 // cause the worker threads and the data block they need to be constructed.
 
-inline void workerThreadFunction(WorkerTaskData* wd);
+[[gnu::used]] inline void workerThreadFunction(WorkerTaskData* wd);
+
+inline const size_t POOLSIZE = 4;
+inline std::atomic<uint32_t> activeThreads(0);
 
 class ThreadDriverData
 {
@@ -299,7 +302,7 @@ public:
 // things to do.
     std::thread w[POOLSIZE];
 
-    ThreadDriverData()
+    [[gnu::used]] ThreadDriverData()
     {   for (size_t i=0; i<POOLSIZE; i++)
             w[i] = std::thread(workerThreadFunction, &wd[i]);
 // I busy-wait until all the threads have both claimed the mutexes that they
@@ -326,7 +329,7 @@ public:
 // when none of the worker threads are doing anything, and thus they are
 // all sitting ready to accept this request. Abrupt (ie error) termination
 // of the program might not manage that!
-    ~ThreadDriverData()
+    [[gnu::used]] ~ThreadDriverData()
     {   for (size_t i=0; i<POOLSIZE; i++)
         {   wd[i].quit_flag = true;
             releaseWorker(i);
@@ -373,11 +376,14 @@ public:
     }
 };
 
-inline ThreadDriverData threadDriverData;
+// Creating this object should set up POOLSIZE threads.
+
+
+[[gnu::used]] inline ThreadDriverData threadDriverData;
 
 #if defined USE_MICROSOFT_SRW
 
-inline void workerThreadFunction(WorkerTaskData* wd)
+[[gnu::used]] inline void workerThreadFunction(WorkerTaskData* wd)
 {   ThreadLocal::initialize();
     AcquireSRWLockExclusive(&wd->mutex[2]);
     AcquireSRWLockExclusive(&wd->mutex[3]);
@@ -394,7 +400,7 @@ inline void workerThreadFunction(WorkerTaskData* wd)
 
 #elif defined USE_MICROSOFT_MUTEX
 
-inline void workerThreadFunction(WorkerTaskData* wd)
+[[gnu::used]] inline void workerThreadFunction(WorkerTaskData* wd)
 {   WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
     WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
     wd->ready = true;
@@ -413,7 +419,7 @@ inline void workerThreadFunction(WorkerTaskData* wd)
 
 #else // Here I use C++ std::mutex
 
-inline void workerThreadFunction(WorkerTaskData* wd)
+[[gnu::used]] inline void workerThreadFunction(WorkerTaskData* wd)
 {   wd->mutex[2].lock();
     wd->mutex[3].lock();
     wd->ready = true;
@@ -430,7 +436,7 @@ inline void workerThreadFunction(WorkerTaskData* wd)
 #endif // definition of workerThreadFunction
 
 template <typename T, bool parallel=true>
-inline void runInThreads(std::vector<T> v, void (*fn)(T))
+[[gnu::used]] inline void runInThreads(std::vector<T> v, void (*fn)(T))
 {   int n = v.size();
 // Here I want to see if there are any worker threads available to
 // dedicate to this task.
@@ -496,16 +502,18 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
     (*fn)(v[0]);
 // Wait until everybody else has completed their job.
     for (int i=0; i<n-1; i++)
-        threadDriverData.waitForWorker(threadIds[i]);
+    {   threadDriverData.waitForWorker(threadIds[i]);
+        delete threadDriverData.wd[threadIds[i]].workerTask;
+    }
 // Tell the system that the threads I had just been using are now free for
 // others to use.
     activeThreads &= ~claimed;
 }
 
-#endif // DO_NOT_USE_EXECUTION
+#endif // USE_EXECUTION
 
 template <bool parallel, typename T>
-inline void runInThreads(std::vector<T> v, void (*fn)(T))
+[[gnu::used]] inline void runInThreads(std::vector<T> v, void (*fn)(T))
 {   runInThreads<T, parallel>(v, fn);
 }
 
@@ -518,46 +526,49 @@ inline void runInThreads(std::vector<T> v, void (*fn)(T))
 
 #include <string>
 #include <unordered_map>
+using namespace std;
 
-std::mutex g;
+mutex g;
 
-std::hash<std::string> hashfn;
+hash<string> hashfn;
 
 void task(int n)
-{   {   std::lock_guard<std::mutex> guard(g);
-        std::cout << "Running with n = " << n << "\n";
+{   {   lock_guard<mutex> guard(g);
+        cout << "Running with n = " << n << "\n";
     }
 
-    {   std::lock_guard<std::mutex> guard(g);
+    {   lock_guard<mutex> guard(g);
         uint64_t w = 1;
-        for (std::uint64_t i=0; i<1000000*((123456*n)%97); i++)
+        for (uint64_t i=0; i<1000000*((123456*n)%97); i++)
             w = 139*w + 11213;
-        std::cout << "End task " << n << " with value " << (w%1000) << "\n";
+        cout << "End task " << n << " with value " << (w%1000) << "\n";
     }
 }
 
-void task(std::string n)
-{   {   std::lock_guard<std::mutex> guard(g);
-        std::cout << "Running with n = " << n << "\n";
+void task(string n)
+{   {   lock_guard<mutex> guard(g);
+        cout << "Running with n = " << n << "\n";
     }
 
-    {   std::lock_guard<std::mutex> guard(g);
+    {   lock_guard<mutex> guard(g);
         uint64_t w = 1;
-        for (std::uint64_t i=0; i<1000000*(hashfn(n)%97); i++)
+        for (uint64_t i=0; i<2000000ULL*(hashfn(n)%97); i++)
             w = 139*w + 11213;
-        std::cout << "End task " << n << " with value " << (w%1000) << "\n";
+        cout << "End task " << n << " with value " << (w%1000) << "\n";
     }
 }
 
 int main()
 {
-    std::vector<int> v1 = {2,4,6,8,10,12,14};
+    vector<int> v1 = {1,2,3,4,5,6,7};
     runInThreads<int>(v1, task);
 
-    std::vector<std::string> v2 = {"two", "four", "six", "eight", "ten"};
-    runInThreads<std::string>(v2, task);
+    std::cout << "Now the second test";
 
-    std::cout << "finished\n";
+    vector<string> v2 = {"two", "four", "six", "eight", "ten"};
+    runInThreads<string>(v2, task);
+
+    cout << "finished\n";
     return 0;
 }
 
@@ -567,4 +578,3 @@ int main()
 
 
 // end of cthread.cpp
-

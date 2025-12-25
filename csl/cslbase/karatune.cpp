@@ -49,7 +49,7 @@
 size_t start, start_parallel;
 
 // This program is intended to help select good values for the above
-// parameters in arithlib.hpp.
+// parameters in arithlib.cpp.
 // When performing a multiplication on a pair of N digit numbers (where each
 // digit is 64 bits) the code uses classical long multiplication for
 // small N. From N=KARASTART upwards it uses Karatsuba. At what will typically
@@ -67,7 +67,7 @@ size_t start, start_parallel;
 
 #define FFT_THRESHOLD 1000000
 
-#include "arithlib.hpp"
+#include "arithlib.cpp"
 
 using namespace arithlib;
 using namespace arithlib_implementation;
@@ -84,21 +84,21 @@ int main(int argc, char *argv[])
 // error is detected. The randomization provides some point for running this
 // code multiple times - even though the exact nature of the numbers
 // being multiplied is not expected to impact costs.
-    size_t klimit;
     uint64_t seed;
+    mt19937_64 twister(random_device{}());
     if (argc > 1) seed = atoi(argv[1]);
-    else seed = mersenne_twister() & 0xffff;
+    else seed = twister()%10000;
     cout << "seed = " << seed << "\n";
 
     chrono::steady_clock::time_point clk, clk2;
     chrono::duration<double, micro> elapsed;
     chrono::nanoseconds timing;
 
-    uint64_t a[1000], b[1000], c[2000];
+    uint64_t a[8000], b[8000], c[16000];
 
-    for (size_t i=0; i<1000; i++)
-    {   a[i] = mersenne_twister();
-        b[i] = mersenne_twister();
+    for (size_t i=0; i<8000; i++)
+    {   a[i] = twister();
+        b[i] = twister();
     }
 
     size_t overallBest = 999;
@@ -163,16 +163,19 @@ int main(int argc, char *argv[])
     cout << "\n*** Check when parallel Karatsuba beats sequential\n\n";
     for (size_t N = 50; farEnough<5 && N<=400; N+=3)
     {
+        if (N == 50) N = 6000; // special first case
 #ifdef DEBUG
         size_t ntries = 200/N;
+        if (N==0) N = 1;
 #else
-        size_t ntries = 75000000/N;
+        size_t ntries = 50000000/N;
 #endif
 #ifdef NOISY
         cout << "\n" << N  << " words\n";
 #endif
         double bestSoFar = 1.0e6;
         size_t bestStart = 0;
+        double seq=1.0, par=1.0;
         for (start_parallel=N; start_parallel<=N+1 ; start_parallel++)
         {
 #ifdef NOISY
@@ -193,6 +196,7 @@ int main(int argc, char *argv[])
             timing =
                 chrono::duration_cast<chrono::nanoseconds>(elapsed);
             double tt = timing.count()/1.0e9;
+            if (start_parallel == N) par = tt; else seq = tt;
 #ifdef NOISY
             cout << setprecision(3) << tt << " sec\n";
 #endif
@@ -202,15 +206,20 @@ int main(int argc, char *argv[])
             }
         }
         if (bestStart == N)
-        {   cout << "Test on " << N << " digit numbers faster with threads\n";
+        {   cout << "Test on " << N
+                 << " digit numbers faster with threads:      "
+                 << (100.0*par/seq) <<"%\n";
             farEnough++;
         }
         else
-        {   cout << "Test on " << N << " digit numbers faster WITHOUT threads\n";
+        {   cout << "Test on " << N
+                 << " digit numbers faster WITHOUT threads:   "
+                 << (100.0*par/seq) << "%\n";
             farEnough = 0;
             overallBestParallel = N+1;
         }
         overallBestParallel = std::min(bestStart, overallBestParallel);
+        if (N == 6000) N = 50; // special first case
     }
 
     cout << "\nPropose KARASTART = " << overallBest << "\n";
@@ -233,3 +242,4 @@ int main(int argc, char *argv[])
 }
 
 // end of karatune.cpp
+#include "arithlib.cpp"

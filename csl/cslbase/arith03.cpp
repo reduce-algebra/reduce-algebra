@@ -1,4 +1,4 @@
-//  arith03.cpp                           Copyright (C) 1990-2025 Codemist
+// arith03.cpp                             Copyright (C) 1990-2025 Codemist
 
 //
 // Arithmetic functions.

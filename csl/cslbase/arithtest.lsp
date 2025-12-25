@@ -1,7 +1,7 @@
 % arithtest.lsp                                   Copyright A C Norman 2025
 
 % This is intended to help me to test (and hence debug) my new
-% arithlib.hpp based arithmetic code in CSL. It runs a numeber of
+% arithlib.cpp based arithmetic code in CSL. It runs a numeber of
 % calculations in old existing and prospective arithmetic and compares
 % results. Values in the two bignum representations can be compared by
 % looking at their printed representations.
