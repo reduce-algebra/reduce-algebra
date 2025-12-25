@@ -44,7 +44,7 @@
 
 #include <cstdio>
 
-#define VERSION_ID "$Id: version.h 7221 2025-12-24 09:34:50Z reduce $"
+#define VERSION_ID "$Id: version.h 7221 2025-12-25 09:36:57Z reduce $"
 
 namespace CSL_LISP
 {
