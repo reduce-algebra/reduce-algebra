@@ -33,7 +33,7 @@
 
 // $Id$
 
-#include "arithlib.h"
+#include "arithlib.cpp"
 
 #include <cstdlib>
 #include <cmath>
@@ -104,15 +104,15 @@ bool evenfloat(double d)
     return (i&1) == 0;
 }
 
-// This is extracted from a slightly old arithlib.hpp and is a direct
+// This is extracted from a slightly old arithlib.cpp and is a direct
 // classical implementation of multiplication that I have tested reasonably
 // thoroughly. It is used so that its results can be compared against the
 // ones that my more complicated code produce. Note that this does signed
 // multiplication and it trims its output to "proper" length.
 
-inline void referencemultiply(const std::uint64_t *a, std::size_t lena,
-                              const std::uint64_t *b, std::size_t lenb,
-                              std::uint64_t *c, std::size_t &lenc)
+void referencemultiply(const std::uint64_t *a, std::size_t lena,
+                       const std::uint64_t *b, std::size_t lenb,
+                       std::uint64_t *c, std::size_t &lenc)
 {   for (std::size_t i=0; i<lena+lenb; i++) c[i] = 0;
 // If a and/or be are negative then I can treat their true values as
 //    a = sa + va      b = sb + vb
@@ -160,10 +160,10 @@ inline void referencemultiply(const std::uint64_t *a, std::size_t lena,
     arithlib_implementation::truncateNegative(c, lenc);
 }
 
-inline void referenceunsignedmultiply(
-                              const std::uint64_t *a, std::size_t lena,
-                              const std::uint64_t *b, std::size_t lenb,
-                              std::uint64_t *c, std::size_t &lenc)
+void referenceunsignedmultiply(
+        const std::uint64_t *a, std::size_t lena,
+        const std::uint64_t *b, std::size_t lenb,
+        std::uint64_t *c, std::size_t &lenc)
 {   for (std::size_t i=0; i<lena+lenb; i++) c[i] = 0;
     for (std::size_t i=0; i<lena; i++)
     {   std::uint64_t hi = 0;
@@ -181,11 +181,11 @@ inline void referenceunsignedmultiply(
 static volatile std::uint64_t vol;
 
 #ifndef KARASTART
-#define KARASTART arithlib_implementation::BigMultiplication::KARASTART
+#define KARASTART arithlib_implementation::KARASTART
 #endif
 
 #ifndef KARABIG
-#define KARABIG arithlib_implementation::BigMultiplication::KARABIG
+#define KARABIG arithlib_implementation::KARABIG
 #endif
 
 int main(int argc, char *argv[])

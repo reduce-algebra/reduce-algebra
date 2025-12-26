@@ -328,8 +328,7 @@ void findperm(uint32_t* a, uint32_t* b, uint32_t N, uint32_t P)
 // its use should mean that successive tests runs here vary.
 
 std::mt19937_64 twister(std::random_device{}());
-
-inline bool valid(size_t N)
+[[gnu::used]] inline bool valid(size_t N)
 {   while (N%2 == 0) N /= 2;
     return N==1 || N==3;
 }

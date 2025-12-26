@@ -2,6 +2,6 @@
 
 #define MEASURE_WORKSPACE 1
 
-#include "arithlib.hpp"
+#include "arithlib.cpp"
 
 // end of measureworkspace.cpp

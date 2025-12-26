@@ -70,12 +70,6 @@
 // calculation will not be a sharp bound and will be very fragile against
 // small changes in the code.
 
-inline std::size_t worstN = 0;
-inline std::size_t worstM = 0;
-inline std::size_t thisN = 0;
-inline std::size_t thisM = 0;
-inline double worstRatio = 0.0;
-
 #include <atomic>
 
 // When I get to big-integer multiplication I will use two or three
@@ -91,79 +85,15 @@ inline double worstRatio = 0.0;
 // The threshold here will depend on the machine you are running on,
 // but this is probably close enough across the platforms that I care about.
 
-
-#ifndef FFT_THRESHOLD
-#ifdef __arm64__
-static const std::size_t FFT_THRESHOLD = 5000;
-#else // __arm64__
-// The next value might plausibly need to depend on whether you are running
-// under WSL.
-static const std::size_t FFT_THRESHOLD = 10000;
-#endif // __arm64__
-#endif // FFT_THRESHOLD
-
-static constexpr std::size_t workspaceSize(std::size_t M)
-{   return 6*M;
-}
-
-// At the top level toom32<true>() can use a little over 7*L workspace for
-// itself, where L=max(N/3,M/2). But N<=1.85*M and M is large enough that
-// I will ignore rounding. Then plus the need for four parallel
-// sub-multiplications. I will use a rounded up 2M/3 as my bound on L.
-
-static constexpr std::size_t topWorkspaceSize(std::size_t M)
-{   size_t toomLen = (2*M+2)/3;
-    return 7*toomLen + 4*workspaceSize(toomLen);
-}
-
-// Unless I make this thread local the code as a whole is not thread safe.
-// However if I were to make it thread local I would be liable to end up
-// with (unused) versions of it associated with all worker threads and
-// possibly all GUI threads etc in a way that would be really clumsy.
-// So if I ever move to making this thread local I will have the repeated
-// object a mere pointer to the workspace and arrange that when user-level
-// threads that may need it are created that they allocate the memory
-// that is required.
-
-static thread_local Digit* TLworkspace = nullptr;
-
-class MultiplicationTask
-{
-public:
-    ConstDigitPtr a;
-    size_t lena;
-    ConstDigitPtr b;
-    size_t lenb;
-    DigitPtr c;
-    DigitPtr ws;
-    MultiplicationTask()
-    {}
-    MultiplicationTask(ConstDigitPtr a, size_t lena,
-             ConstDigitPtr b, size_t lenb,
-             DigitPtr c, DigitPtr ws)
-    {   this->a = a;
-        this->lena = lena;
-        this->b = b;
-        this->lenb = lenb;
-        this->c = c;
-        this->ws = ws;
-    }
-};
-
 // Ha ha - I use this startup-time to determine whether I seem to be
 // running under the Windows Subbsystem for Linux. I want to know this
 // because at least at present it seems that it might impact break-even
 // points between various schemes for multiplication.
 
-static bool const underWSL =
+static bool const under_WSL =
    ([](){
      return std::filesystem::exists("/usr/bin/wslinfo");
    })();
-
-class BigMultiplication
-{
-
-public:
 
 // Multiplications where M and N are both no more than than 7
 // are done by unrolled and inlined special code.
@@ -206,10 +136,10 @@ static const std::size_t KARASTART = 25;
 static const std::size_t KARASTART = 16;
 
 #elif defined __ARM_ARCH                      // Other Raspberry Pi etc
-// Measured on a Raspberry Pi 5 with its 64-but CPU but using 32-bit
-// userland. The use of Karatsuba at 22+ words is not really clear-cut
-// but at least it is competitive by then.
-static const std::size_t KARASTART = 22;
+// Measured on a Raspberry Pi 5.
+// If a 32-bit operating system is in use probably 22 would be a better
+// number, but by now I will expect "everybody" to be running 64-bit.
+static const std::size_t KARASTART = 16;
 
 #else                                         // other (eg generic Linux)
 // Figure rather guessed from all the above, but applicable in a Linux
@@ -219,14 +149,20 @@ static const std::size_t KARASTART = 16;
 
 #endif // KARASTART
 
-static bool permitParallel;
-
 #ifndef KARABIG
 
+// Measurements in December 2025 on a Windows 11 machine, with Cygwin and
+// under WSL show a need for very high values here - and I do not understand
+// what has changed. But eg when I use the same computer and run Linux
+// directly I see a much lower cut-off as against running using WSL2.
+// Hmmmmmm.
+
 #if defined WIN32                             // Windows (x86_64)
-static const std::size_t KARABIG = 60;
+//static const std::size_t KARABIG = 60;
+static const std::size_t KARABIG = 400;
 #elif defined __CYGWIN__                      // Cygwin/Windows (x86_64)
-static const std::size_t KARABIG = 65;
+//static const std::size_t KARABIG = 65;
+static const std::size_t KARABIG = 400;
 #elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
 static const std::size_t KARABIG = 352;
 #elif defined __ARM_ARCH_8A                   // Raspberry p 5
@@ -234,10 +170,75 @@ static const std::size_t KARABIG = 72;
 #elif defined __ARM_ARCH                      // Other Raspberry pi etc
 static const std::size_t KARABIG = 50;
 #else                                         // other (eg generic Linux)
-static const std::size_t KARABIG = 144;
+static std::size_t KARABIG = ([](){ return under_WSL ? 400 : 144;})();
 #endif
 
 #endif // KARABIG
+
+
+#ifndef FFT_THRESHOLD
+#ifdef __arm64__
+static const std::size_t FFT_THRESHOLD = 5000;
+#else // __arm64__
+// The next value might plausibly need to depend on whether you are running
+// under WSL.
+static const std::size_t FFT_THRESHOLD = 10000;
+#endif // __arm64__
+#endif // FFT_THRESHOLD
+
+// I am trying to round lengths up to multiples of 16 to gete my data
+// really well aligned...
+
+static constexpr std::size_t workspaceSize(std::size_t M)
+{   return (6*M+15)&(-16);
+}
+
+// At the top level toom32<true>() can use a little over 7*L workspace for
+// itself, where L=max(N/3,M/2). But N<=1.85*M and M is large enough that
+// I will ignore rounding. Then plus the need for four parallel
+// sub-multiplications. I will use a rounded up 2M/3 as my bound on L.
+
+static constexpr std::size_t topWorkspaceSize(std::size_t M)
+{   size_t toomLen = ((2*M+2)/3 + 15)&(-16);
+    return 7*toomLen + 4*workspaceSize(toomLen);
+}
+
+// Unless I make this thread local the code as a whole is not thread safe.
+// However if I were to make it thread local I would be liable to end up
+// with (unused) versions of it associated with all worker threads and
+// possibly all GUI threads etc in a way that would be really clumsy.
+// So if I ever move to making this thread local I will have the repeated
+// object a mere pointer to the workspace and arrange that when user-level
+// threads that may need it are created that they allocate the memory
+// that is required.
+
+static thread_local Digit* TLworkspace = nullptr;
+
+class MultiplicationTask
+{
+public:
+    ConstDigitPtr a;
+    size_t lena;
+    ConstDigitPtr b;
+    size_t lenb;
+    DigitPtr c;
+    DigitPtr ws;
+    MultiplicationTask()
+    {}
+    MultiplicationTask(ConstDigitPtr a, size_t lena,
+             ConstDigitPtr b, size_t lenb,
+             DigitPtr c, DigitPtr ws)
+    {   this->a = a;
+        this->lena = lena;
+        this->b = b;
+        this->lenb = lenb;
+        this->c = c;
+        this->ws = ws;
+    }
+};
+
+class BigMultiplication
+{
 
 public:
 
@@ -382,6 +383,7 @@ private:
 // critical parts of the base for multiplication.
 
 #include "inlinemul.cpp"
+
 
 // The vector a has M digits and result has N (with N>=M). Add the
 // value in a into result and return any carry.
@@ -1335,7 +1337,7 @@ public:
 // fuss about the class name.
 
 [[gnu::always_inline]]
-inline void generalMul(ConstDigitPtr a, std::size_t N,
+[[gnu::used]] inline void generalMul(ConstDigitPtr a, std::size_t N,
                        ConstDigitPtr b, std::size_t M,
                        DigitPtr result)
 {   BigMultiplication::generalMul(a, N, b, M, result);
@@ -1345,7 +1347,7 @@ inline void generalMul(ConstDigitPtr a, std::size_t N,
 // but using clear (if less efficient code) so it can be use as a
 // reference implementation during testing.
 
-inline void verySimpleMul(ConstDigitPtr a, std::size_t N,
+[[gnu::used]] inline void verySimpleMul(ConstDigitPtr a, std::size_t N,
                           ConstDigitPtr b, std::size_t M,
                           DigitPtr result)
 {   BigMultiplication::verySimpleMul(a, N, b, M, result);

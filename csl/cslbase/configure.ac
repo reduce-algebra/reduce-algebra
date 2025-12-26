@@ -803,7 +803,7 @@ AC_MSG_RESULT([$enable_test])
 
 AC_ARG_WITH(arithlib,
   AS_HELP_STRING([--with-arithlib],
-                 [arithlib.hpp version]),
+                 [arithlib.cpp version]),
   [],
   [with_arithlib="no"])
 AC_MSG_RESULT([$with_arithlib])
@@ -811,7 +811,7 @@ AC_MSG_RESULT([$with_arithlib])
 if test "$with_arithlib" = "yes"
 then
   CPPFLAGS="$CPPFLAGS -DARITHLIB=1"
-  AC_DEFINE(ARITHLIB, [1], [Work on a transition to use of arithlib.hpp for bignums])
+  AC_DEFINE(ARITHLIB, [1], [Work on a transition to use of arithlib.cpp for bignums])
 fi
 
 AC_ARG_WITH(throw,

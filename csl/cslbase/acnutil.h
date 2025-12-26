@@ -49,12 +49,12 @@
 
 #if defined __x86_64__ && defined __GNUC__
 
-const inline bool avx_available =
+[[gnu::used]] const inline bool avx_available =
    ([]()->bool
     {  __builtin_cpu_init();
        return __builtin_cpu_supports("avx");
     })();
-const inline bool sse4_available =
+[[gnu::used]] const inline bool sse4_available =
    ([]()->bool
     {  return __builtin_cpu_supports("sse4.2");
     })();
@@ -134,16 +134,16 @@ template<std::size_t start, std::size_t count, class F>
 
 inline auto basetime = std::chrono::steady_clock::now();
 
-inline auto microseconds()
+[[gnu::used]] inline auto microseconds()
 {   auto tt = std::chrono::steady_clock::now() - basetime;
     return std::chrono::duration_cast<std::chrono::microseconds>(tt).count();
 }
 
-inline auto now()
+[[gnu::used]] inline auto now()
 {   return std::chrono::steady_clock::now();
 }
 
-inline std::uint64_t microseconds(
+[[gnu::used]] inline std::uint64_t microseconds(
     std::chrono::time_point<std::chrono::steady_clock> t1,
     std::chrono::time_point<std::chrono::steady_clock> t0)
 {   return
@@ -154,7 +154,7 @@ inline std::uint64_t microseconds(
 // Given a string and an integer make a string that concatenates them,
 // so that e.g. concat("sss", 123) will yield "sss123".
 
-inline std::string concat(std::string a, int n)
+[[gnu::used]] inline std::string concat(std::string a, int n)
 {   std::stringstream ss;
     ss << a << n;
     return ss.str();

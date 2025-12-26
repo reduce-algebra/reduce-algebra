@@ -1,17 +1,17 @@
 #! /bin/bash
 
 # The object of this scripts is to give me some idea of the relative speeds
-# of existing CSL arithmetic and the version using arithlib.hpp that is
+# of existing CSL arithmetic and the version using arithlib.cpp that is
 # in prospect.
 
 # On my Windows/Cygwin64 system the huge multiplications done here show up
-# with the new arithlib.hpp code being distinctly faster than the older
+# with the new arithlib.cpp code being distinctly faster than the older
 # code in CSL, and with both taking much less elapsed time than CPU time
 # because they use threads to cope with the top-level of Karatsuba
 # multiplication. One might worry that the speed difference was because
 # the Reduce version had more overheads getting to where arithmetic started,
 # but I can validate the comparison as between C++ code and Lisp code by
-# running the Reduce-based test under VSL (which uses arithlib.hpp).
+# running the Reduce-based test under VSL (which uses arithlib.cpp).
 # That confirms my results.
 #
 # The test here ONLY looks at the relative speed of huge multiplications, and
@@ -29,7 +29,7 @@ g++ -xc++ -O3 - $LIBS -o time-arith <<XXX
 #include <iostream>
 #include <ctime>
 
-#include "arithlib.hpp"
+#include "arithlib.h"
 
 using namespace arithlib;
 

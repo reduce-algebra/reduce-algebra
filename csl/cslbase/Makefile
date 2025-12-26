@@ -57,17 +57,24 @@ c2cpp:	c2cpp.cpp
 #	./c2cpp $< $@
 #	astyle $@
 
-# Tests and demonstrations of arithlib.hpp
+# Tests and demonstrations of arithlib.cpp
 
-# The file arithlib.hpp is maintained in the form of a top level file
-# arithlib.base.hpp and a collection of files that it uses "#include" to
+# The file arithlib.cpp is maintained in the form of a top level file
+# arithlib.base.cpp and a collection of files that it uses "#include" to
 # get merged in. The utility flatten performs the expansion for me. The
-# consequence of this is that arithlib.hpp is a single free-standing
+# consequence of this is that arithlib.cpp is a single free-standing
 # header-only library, but if you also #include one of the things it
 # incorporates (eg threadloc.h or lvector.h) then there will be no clash.
+#
+# I also create aritrhlib.h by scanning arithlin.cpp and extracting the
+# declarations in it.
 
 flatten:	flatten.cpp
 	g++ $(CXXFLAGS) flatten.cpp -o flatten
+
+makeheader:	makeheader.cpp makeheader.lex
+	flex  -o lexheader.cpp makeheader.lex
+	g++ $(CXXFLAGS) makeheader.cpp -o makeheader
 
 lvector.h:	flatten lvector.base.h threadloc.h
 	./flatten lvector.base.h lvector.h
@@ -76,10 +83,13 @@ multiply.cpp:	flatten multiply.base.cpp inlinemul.cpp lvector.h \
 		cthread.cpp fftmod.cpp fftkernel.cpp
 	./flatten multiply.base.cpp multiply.cpp
 
-arithlib.hpp:	flatten arithlib.base.hpp lvector.h \
+arithlib.cpp:	flatten makeheader arithlib.base.cpp lvector.h \
 		acnutil.h multiply.base.cpp inlinemul.cpp \
 		fftutils.cpp fftmod.cpp fftkernel.cpp bitmaps.h cthread.cpp
-	./flatten arithlib.base.hpp arithlib.hpp
+	./flatten arithlib.base.cpp arithlib.cpp
+	./makeheader arithlib.cpp arithlib.h
+
+arithlib.h:	arithlib.cpp
 
 geninline:	geninline.cpp
 	g++ $(CXXFLAGS) geninline.cpp -o geninline
@@ -95,7 +105,7 @@ else
 LIBS=-lgmp -lpthread
 endif
 
-# "arithtest" tries to do fairly full testing of arithlib.hpp for correctness
+# "arithtest" tries to do fairly full testing of arithlib.cpp for correctness
 # while running it in the mode where it is accessed via C++. Towards the top
 # of arithtest.cpp there are a sequence of #define statements that enable
 # various parts of the testing. The complete set of tests runs for a time
@@ -107,15 +117,15 @@ endif
 
 .PHONY:	arithtest
 
-arithtest:	arithtest.cpp arithlib.hpp
-	time g++ -O3 -std=gnu++17 $(MACFLAGS) arithtest.cpp $(LIBS) -o arithtest
+arithtest:	arithtest.cpp arithlib.cpp
+	time g++ -O3 -std=gnu++17 $(MACFLAGS) arithtest.cpp arithlib.cpp $(LIBS) -o arithtest
 # If one runs arithtest without a command line paramater it should seed
 # its random number generator in an unpredictable way. Specifing an integer
 # uses that as the seed for repeatable behaviour.
 	-time ./arithtest 1
 
 .PRECIOUS:	arithtestg
-arithtestg:	arithtest.cpp arithlib.hpp
+arithtestg:	arithtest.cpp arithlib.cpp
 	time g++ -O0 -g -std=gnu++17 $(MACFLAGS) arithtest.cpp \
 		-DDEBUG=1 $(LIBS) \
 		-o arithtestg
@@ -126,7 +136,7 @@ arithtestg:	arithtest.cpp arithlib.hpp
 # At present this DOES NOT BUILD AND RUN for me because of some
 # linking issues against gmp... I hope to sort those out later.
 
-arithtestwin:	arithtest.cpp arithlib.hpp
+arithtestwin:	arithtest.cpp arithlib.cpp
 	time x86_64-w64-mingw32-g++ -O3 -std=gnu++17 --static \
 		arithtest.cpp -Wl,--subsystem,console \
 		-lgmp -o arithtestwin
@@ -143,8 +153,9 @@ else
 KLIBS=-lpthread
 endif
 
-karatune:	karatune.cpp arithlib.hpp
-	g++ $(MACFLAGS) -std=gnu++17 -O3 karatune.cpp $(KLIBS) -o karatune
+karatune:	karatune.cpp arithlib.cpp
+	g++ $(MACFLAGS) -std=gnu++17 -O3 karatune.cpp arithlib.cpp \
+		$(KLIBS) -o karatune
 	time ./karatune
 
 
@@ -154,12 +165,16 @@ karatune:	karatune.cpp arithlib.hpp
 
 .PHONY:	karatunewin
 
-karatunewin:	karatune.cpp arithlib.hpp
+karatunewin:	karatune.cpp arithlib.cpp
 	x86_64-w64-mingw32-g++ \
-		-std=gnu++17 -O3 karatune.cpp --static \
+		-std=gnu++17 -O3 karatune.cpp arithlib.cpp --static \
 		-Wl,--subsystem,console -o karatunewin
 	time ./karatunewin
 
-# end of Makefile in cslbase
+ffttune:	ffttune.cpp arithlib.cpp
+	g++ $(MACFLAGS) -std=gnu++17 -O3 ffttune.cpp arithlib.cpp \
+		$(KLIBS) -o ffttune
+	time ./ffttune
 
+# end of Makefile in cslbase
 

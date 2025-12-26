@@ -1315,7 +1315,7 @@ extern size_t fullest_hash_table;
 // The list here is a first draft!
 
 // There is a worry about any "system variables" declared in other headers,
-// and in particular any persistent values living in arithlib.hpp.
+// and in particular any persistent values living in arithlib.h.
 
 #define SYSTEM_VARIABLES            \
    X(C_stackLimit),                 \

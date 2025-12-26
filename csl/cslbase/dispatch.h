@@ -87,7 +87,7 @@
 #include "softfloat.h"
 #define softfloat_h 1
 
-// arithlib.hpp needs to know that it will be being used in a way that
+// arithlib.cpp needs to know that it will be being used in a way that
 // interfaces with a Lisp system rather than being used as a free-standing
 // C++ library.
 
@@ -97,7 +97,7 @@
 #define CSL 1
 #endif // CSL
 
-#include "arithlib.hpp"
+#include "arithlib.h"
 
 namespace CSL_LISP
 {
