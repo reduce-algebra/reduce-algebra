@@ -100,12 +100,12 @@ header-only library.
 #include <type_traits>
 
 // The following works with both gcc and clang++ on the platforms that
-// support 128-bit integers that I have tried. Note that for the unsigned
-// case I use type_traits to obtain the desired type because the names
-// used by the raw C++ compilers differ.
+// ith older versions of the compilers "__uint128_t" needed to be
+// replaced by "unsigned __int128_t" but as of December 2025 I find
+// the following works on the platforms that I have tried...
 
 using int128_t = __int128_t;
-using uint128_t = std::make_unsigned<__int128_t>::type;
+using uint128_t = __uint128_t;
 
 namespace INT128names
 {
