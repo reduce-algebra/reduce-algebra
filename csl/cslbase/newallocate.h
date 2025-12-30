@@ -363,7 +363,7 @@ public:
     enum
     {   consSize = offsetof(Page, consData) + sizeof(Page::consData),
         value = FindConsN<(consSize <= pageSize ? lo+span/2 : lo),
-                          span/2>::value
+                          (span+1)/2>::value
     };
 };
 
@@ -383,7 +383,7 @@ public:
     enum
     {   chunkSize = offsetof(Page, chunks) + sizeof(Page::chunks),
         value = FindChunkN<(chunkSize <= pageSize ? lo+span/2 : lo),
-                           span/2>::value
+                           (span+1)/2>::value
     };
 };
 

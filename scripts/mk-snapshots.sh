@@ -781,8 +781,8 @@ start_remote_host() {
     while :
     do
       sleep 10
-      printf "ssh -p $PORT $SSHOPTS $USER@localhost printf \"hello\"\n"
-      hello=`timeout 20 ssh -p $PORT $SSHOPTS $USER@localhost printf "hello"`
+      printf "ssh -v -p $PORT $SSHOPTS $USER@localhost printf \"hello\"\n"
+      hello=`timeout 20 ssh -v -p $PORT $SSHOPTS $USER@localhost printf "hello"`
       if test "x$hello" = "xhello"
       then
         break

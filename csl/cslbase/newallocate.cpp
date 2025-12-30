@@ -40,6 +40,7 @@
 */
 
 #include "headers.h"
+#include <memory> // for std::align
 
 namespace CSL_LISP
 {

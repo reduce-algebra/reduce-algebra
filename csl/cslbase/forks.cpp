@@ -168,7 +168,7 @@
 namespace CSL_LISP
 {
 
-#if defined WIN32 || !defined ENABLE_FORKS
+#if defined WIN32 || !defined ENABLE_FORKS || !defined HAVE_FORK
 
 LispObject Lopen_fork(LispObject env)
 {   SingleValued fn;
