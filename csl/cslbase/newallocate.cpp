@@ -44,6 +44,28 @@
 namespace CSL_LISP
 {
 
+//@@@ While implementing my template-metaprogramming scheme that lays
+//@@@ out data with a Page I wanted to display the parameters that were
+//@@@ in use. The fragment here does that at initialization time.
+//@@@
+//@@@ int blot = ([](){
+//@@@    std::cout << hex << sizeof(Page) << "\n";
+//@@@    std::cout << ConsN << " " << ChunkN << " "
+//@@@              << offsetof(Page, consData) << " "
+//@@@              << offsetof(Page, chunks) << "\n";
+//@@@    std::cout << "cons gap " << (offsetof(Page, consData) -
+//@@@                                 offsetof(Page, newConsPins) -
+//@@@                                 sizeof(Page::newConsPins)) << "\n";
+//@@@    std::cout << "chunk gap " << (offsetof(Page, chunks) -
+//@@@                                  offsetof(Page, newVecPins) -
+//@@@                                  sizeof(Page::newVecPins)) << "\n";
+//@@@    std::cout << "end cons " << (offsetof(Page, consData) +
+//@@@                                 sizeof(Page::consData)) << "\n";
+//@@@    std::cout << "end chunks " << (offsetof(Page, chunks) +
+//@@@                                 sizeof(Page::chunks)) << "\n";
+//@@@    return 1; })();
+
+
 Page* consCurrent;
 Page* vecCurrent;
 Page* borrowCurrent;
@@ -212,26 +234,21 @@ bool allocateSegment(size_t n)
 // page size, ie of 8 Mbytes.
     n = (n+pageSize-1) & -pageSize;
     Page* r;
-// If I have C++17 I can rely on alignment constraints and just allocate
-// using new[]. And for this CONSERVATIVE version I will insist on C++17,
-// at least until it is all working at which stage I can check how much pain
-// there would be in using older compilers.
-#ifdef MACINTOSH
-// I would like to use aligned allocation via "new" in the C++17 style, but
-// on the Macintosh that is only supported if your operating system is at
-// least 10.14. That is your operating system not a constraint on the release
-// of the C++ compiler and library! For backwards compatibility at present I
-// set a deployment target of 10.13 so I have to do something different here!
-    {   size_t sz = n+pageSize-1;
-        char* tr = new (std::nothrow) char[sz];
-        heapSegmentBase[heapSegmentCount] = tr;
-        void* trv = reinterpret_cast<void*>(tr);
-        std::align(pageSize, n*pageSize, trv, sz);
-        r = reinterpret_cast<Page*>(trv);
-    }
-#else // MACINTOSH
-    r = new (std::nothrow) Page[n/pageSize];
-#endif // MACINTOSH
+// If I have C++17 I thought I could rely on alignment constraints and
+// just allocate using new[]. However on several platforms/compilers there
+// are limits to the granularity of alignment that is supported. In particular
+// I see cases where 8192 is the strictest alignment supported. So I can not
+// merely define my class with "alignas(0x800000)" and let "new" take the
+// strain. I have to overallocate and then align within the large block.
+// This obviously wastes memory - 8 Mbytes at a time. But the allocation is
+// grabbing a segment that I expect to be gigabytes in size and so the loss
+// is not too grievous.
+    size_t sz = n+pageSize-1;
+    char* tr = new (std::nothrow) char[sz];
+    heapSegmentBase[heapSegmentCount] = tr;
+    void* trv = reinterpret_cast<void*>(tr);
+    std::align(pageSize, n, trv, sz);
+    r = reinterpret_cast<Page*>(trv);
     totalAllocatedMemory += n/pageSize;    // counting in units of Page. 
     if (r == nullptr) return false;
 #ifdef DEBUG
@@ -244,7 +261,8 @@ bool allocateSegment(size_t n)
 // that record them.
     for (size_t i=heapSegmentCount-1; i!=0; i--)
     {   int j = i-1;
-        void* h1 = heapSegment[i],* h2 = heapSegment[j];
+        void* h1 = heapSegment[i];
+        void* h2 = heapSegment[j];
         if (reinterpret_cast<uintptr_t>(h2) < reinterpret_cast<uintptr_t>(h1))
             break; // Ordering is OK
 // The segment must sink a place in the tables.
@@ -747,13 +765,7 @@ LispObject Lgc(LispObject env, LispObject a)
 void dropHeapSegments()
 {
     for (size_t i=0; i<heapSegmentCount; i++)
-    {
-#ifdef MACINTOSH
         delete [] heapSegmentBase[i];
-#else // MACINTOSH
-        delete [] static_cast<Page*>(heapSegment[i]);
-#endif // MACINTOSH
-    }
     delete [] reinterpret_cast<Align8*>(stackSegment);
 }
 

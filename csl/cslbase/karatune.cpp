@@ -67,7 +67,7 @@ size_t start, start_parallel;
 
 #define FFT_THRESHOLD 1000000
 
-#include "arithlib.cpp"
+#include "arithlib.h"
 
 using namespace arithlib;
 using namespace arithlib_implementation;
@@ -75,20 +75,45 @@ using namespace std;
 
 volatile uint64_t q = 0;
 
+double measure(size_t N, size_t limit)
+{
+    uint64_t a[8000], b[8000], c[16000];
+
+    mt19937_64 twister(random_device{}());
+    for (size_t i=0; i<8000; i++)
+    {   a[i] = twister();
+        b[i] = twister();
+    }
+
+    size_t lenc;
+
+#ifdef DEBUG
+    size_t ntries = 200/N;
+    if (N==0) N = 1;
+#else
+    size_t ntries = 50000000/N;
+#endif
+    start_parallel = limit;
+    auto clk = chrono::steady_clock::now();
+    for (size_t i=1; i<=ntries; i++)
+    {   size_t lenc;
+        arithlib_implementation::bigmultiply(a, N, b, N, c, lenc);
+        q += c[0] + c[lenc-1];
+    }
+    auto clk2 = chrono::steady_clock::now();
+    auto elapsed = clk2 - clk;
+    auto timing =
+        chrono::duration_cast<chrono::nanoseconds>(elapsed);
+    return timing.count()/1.0e9;
+}
+
+double speedratio(size_t N)
+{   return measure(N, N)/measure(N, N+1);
+}
+
 int main(int argc, char *argv[])
 {
-// If I invoke this without command line arguments it will run with
-// a decent randomized sequence. If I give it a command line argument
-// that is an integer it will use that to see its random number generator
-// and so it will behave deterministically. This is really useful if an
-// error is detected. The randomization provides some point for running this
-// code multiple times - even though the exact nature of the numbers
-// being multiplied is not expected to impact costs.
-    uint64_t seed;
     mt19937_64 twister(random_device{}());
-    if (argc > 1) seed = atoi(argv[1]);
-    else seed = twister()%10000;
-    cout << "seed = " << seed << "\n";
 
     chrono::steady_clock::time_point clk, clk2;
     chrono::duration<double, micro> elapsed;
@@ -103,6 +128,7 @@ int main(int argc, char *argv[])
 
     size_t overallBest = 999;
     int farEnough = 0;
+#ifndef NOSMALL
     cout << "\n*** Check when Karatsuba beats classical\n\n";
     for (size_t N = 15; farEnough<5 && N<=40; N++)
     {
@@ -157,73 +183,52 @@ int main(int argc, char *argv[])
 
     cout << "\nPropose KARASTART = " << overallBest << "\n\n";
     start = overallBest;
+#else
+    KARASTART = overallBest = 16;
+#endif // NOSMALL
 
     size_t overallBestParallel = 999;
     farEnough = 0;
     cout << "\n*** Check when parallel Karatsuba beats sequential\n\n";
-    for (size_t N = 50; farEnough<5 && N<=400; N+=3)
-    {
-        if (N == 50) N = 6000; // special first case
-#ifdef DEBUG
-        size_t ntries = 200/N;
-        if (N==0) N = 1;
-#else
-        size_t ntries = 50000000/N;
-#endif
-#ifdef NOISY
-        cout << "\n" << N  << " words\n";
-#endif
-        double bestSoFar = 1.0e6;
-        size_t bestStart = 0;
-        double seq=1.0, par=1.0;
-        for (start_parallel=N; start_parallel<=N+1 ; start_parallel++)
-        {
-#ifdef NOISY
-            cout <<   "start = " << setw(3) << start
-                 << "  start_parallel = " << setw(3) << start_parallel
-                 << "     ";
-#endif
-            clk = chrono::steady_clock::now();
-            for (size_t i=1; i<=ntries; i++)
-            {   size_t lenc;
-                arithlib_implementation::bigmultiply(a, N, b, N, c, lenc);
-// The next line is intended to defeat any super-clever optimisation that
-// omits most of the work.
-                q += c[0] + c[lenc-1];
-            }
-            clk2 = chrono::steady_clock::now();
-            elapsed = clk2 - clk;
-            timing =
-                chrono::duration_cast<chrono::nanoseconds>(elapsed);
-            double tt = timing.count()/1.0e9;
-            if (start_parallel == N) par = tt; else seq = tt;
-#ifdef NOISY
-            cout << setprecision(3) << tt << " sec\n";
-#endif
-            if (tt < bestSoFar)
-            {   bestSoFar = tt;
-                bestStart = start_parallel;
-            }
-        }
-        if (bestStart == N)
-        {   cout << "Test on " << N
-                 << " digit numbers faster with threads:      "
-                 << (100.0*par/seq) <<"%\n";
-            farEnough++;
-        }
-        else
-        {   cout << "Test on " << N
-                 << " digit numbers faster WITHOUT threads:   "
-                 << (100.0*par/seq) << "%\n";
-            farEnough = 0;
-            overallBestParallel = N+1;
-        }
-        overallBestParallel = std::min(bestStart, overallBestParallel);
-        if (N == 6000) N = 50; // special first case
+
+    double r = speedratio(6000);
+    cout << "Ratio at length 6000 = " << r << "\n";
+    if (r >= 0.5)
+    {   cout << "Concurrency support on this machine seems very poor\n";
+        return 1;
     }
 
+    size_t low, high;
+    low = 32;
+    int count = 0;
+    while (speedratio(low) < 0.8 && count++ < 5) low = low/2;
+    high = 2*low;
+    while (speedratio(high) > 1.2 && count++ < 10) high = 2*high;
+    if (count > 9)
+    {   cout << "Unable to identify limits\n";
+        return 1;
+    }
+
+    cout << low << " <= KARABIG <= " << high << "\n";
+
+    size_t mid;
+    while ((mid = (low+high)/2) != low)
+    {   r = speedratio(mid);
+        cout << "Size=" << mid << " speed ratio=" << r << "\n";
+        if (r > 1.0) low = mid;
+        else high = mid;
+    }
+    overallBestParallel = high;
+
     cout << "\nPropose KARASTART = " << overallBest << "\n";
-    cout << "\nPropose KARABIG = " << overallBestParallel << "\n\n";
+    cout << "Propose KARABIG = " << overallBestParallel << "\n\n";
+
+    for (size_t k=high-2; k<=high+2; k++)
+    {   r = speedratio(k);
+        cout << "Size=" << k << " speed ratio=" << r << "\n";
+    }
+
+    cout << "\nTested on ";
 #if defined WIN32
     cout << "Windows (x86_64-w64-mingw32-g++)\n";
 #elif defined __CYGWIN__
@@ -242,4 +247,3 @@ int main(int argc, char *argv[])
 }
 
 // end of karatune.cpp
-#include "arithlib.cpp"

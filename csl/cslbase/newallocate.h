@@ -247,7 +247,12 @@ struct alignas(2*sizeof(LispObject)) ConsCell
     LispObject cdr;
 };
 
-struct alignas(chunkSize) Chunk
+// Note that with some C++ compiler 8192 is the strictest supported
+// alignment. I will in fact go to some trouble to enforce 16K alignment
+// because every Chunk lies withing a Page and the Page is 1M-aligned...
+// "struct alignas(chunkSize) Chunk" is what I wanted!
+
+struct alignas(8192) Chunk
 {   uintptr_t data[chunkSize/sizeof(uintptr_t)];
 };
 
@@ -267,10 +272,24 @@ enum PinStatus
 // I use some "jolly" C++ metaprogramming to derive suitable sized for the
 // bitmaps and main array.
 
-template <int ConsN, int ChunkN>
-class alignas(pageSize) PageTemplate
+// I had wanted to use "alignas(pageSize)" here but at least on some
+// platforms clang then moans:
+//     error: requested alignment must be 8192 bytes or smaller
+// and I believe that Microsoft C++ will be similarly fussy. So the neat
+// scheme I have been using with gcc on Windows and Linux is not really
+// quite safe enough. So here I will align Page to merely 8192 (which
+// empirically is safer, but not really guaranteed by the standard!) and
+// when I come to allocate things I will do my alignment to pageSize.
+//
+// This is not the limit to my pain! I want "Chunk" to be aligned to
+// a 16384 boundary. Well what I will arrange is to put in a padder
+// of size padChunk so that the Chunk array runs right up to pageSize.
+
+
+template <size_t ConsN, size_t ChunkN, size_t padChunk>
+class alignas(8192) PageTemplate
 {
-    using Page = PageTemplate<ConsN,ChunkN>;
+    using Page = PageTemplate<ConsN,ChunkN,padChunk>;
 
 public:
 // Cons cells are either 8 or 16 bytes and I have one bit in the pin bitmap
@@ -291,63 +310,29 @@ public:
     static const size_t vecPinWords = (chunkSize*ChunkN+8*64-1)/(vecAlign*64);
     static const size_t chunkBitmapWords = (chunkDataCount+63)/64;
 
-    union
-    {
 // A Page can be either a Cons page or a Vector page. The initial components
 // are the same in each case
-        struct
-        {   PageType type;            // empty, cons or vector.
-            Page* chain;              // general purpose chaining.
-            Page* original;           // Used for sandbox
-            Page* saveChain;          // used for sandbox
-            size_t hasPinned;         // count of pinned locations/chunks
-            Page* pinnedPages;        // chain used during GC
-            Page* pendingPages;       // chain used during GC
-            LispObject pinnedObjects; // chain used during GC
-            uintptr_t scanPoint;      // for when GC has parly evacuated page
-            uintptr_t dataEnd;        // end of data in this page
-            PinStatus borrowStatus;   // used when borrowed page is discarded
-            bool liveData;            // is there valid data here?
-            bool liveBeforeSandbox;   // used for sandbox
-        };
-// Because I am using anonymous structs here I make the names of all the
-// initial fields that are expected to be present in every case different
-// in each branch of the union.
-        struct
-        {   PageType Ctype;
-            Page* Cchain;
-            Page* Coriginal;          // Used for sandbox
-            Page* CsaveChain;         // used for sandbox
-            size_t ChasPinned;
-            Page* CpinnedPages;
-            Page* CpendingPages;
-            LispObject CpinnedObjects;
-            uintptr_t CscanPoint;
-            uintptr_t CdataEnd;
-            PinStatus CborrowStatus;
-            bool CliveData;
-            bool CliveBeforeSandbox;   // used for sandbox
-// The above are the common fields...
-            uint64_t consPins[consPinWords];
+    PageType type;            // empty, cons or vector.
+    Page* chain;              // general purpose chaining.
+    Page* original;           // Used for sandbox
+    Page* saveChain;          // used for sandbox
+    size_t hasPinned;         // count of pinned locations/chunks
+    Page* pinnedPages;        // chain used during GC
+    Page* pendingPages;       // chain used during GC
+    LispObject pinnedObjects; // chain used during GC
+    uintptr_t scanPoint;      // for when GC has parly evacuated page
+    uintptr_t dataEnd;        // end of data in this page
+    PinStatus borrowStatus;   // used when borrowed page is discarded
+    bool liveData;            // is there valid data here?
+    bool liveBeforeSandbox;   // used for sandbox
+    union
+    {   struct                // a CONS Page.
+        {   uint64_t consPins[consPinWords];
             uint64_t newConsPins[consPinWords];
             ConsCell consData[consDataCount];
         };
-        struct
-        {   PageType Vtype;
-            Page* Vchain;
-            Page* Voriginal;          // Used for sandbox
-            Page* VsaveChain;         // used for sandbox
-            size_t VhasPinned;
-            Page* VpinnedPages;
-            Page* VpendingPages;
-            LispObject VpinnedObjects;
-            uintptr_t VscanPoint;
-            uintptr_t VdataEnd;
-            PinStatus VborrowStatus;
-            bool VliveData;
-            bool VliveBeforeSandbox;   // used for sandbox
-// The above are the common fields.
-            bool potentiallyPinnedFlag;
+        struct                // a VECTOR Page.
+        {   bool potentiallyPinnedFlag;
             Page* potentiallyPinnedChain;
             uint64_t newChunkBitmap[chunkBitmapWords];
             uint64_t chunkBitmap[chunkBitmapWords];
@@ -355,118 +340,71 @@ public:
             uint32_t chunkSeqNo[chunkInfoSize];
             uint64_t vecPins[vecPinWords];
             uint64_t newVecPins[vecPinWords];
+// I will arrange that the size of this padder is such that the array
+// of Chunks runs neatly right up to the end of the Page. Because the
+// Page is well aligned this ensures that the Chunks are too.
+            char padder[padChunk];
             Chunk chunks[chunkDataCount];
         };
     };
 };
 
-// I now want to find values for ConsN and ChunkN that lead to the
+// I now want to find values for ConsN, padChunk  and ChunkN that lead to the
 // data in the Page being such that both consData[] and chunks[] run
-// right up to the end of a pageSize object. There is no certainty in
-// advance that this will be possible. For instance for consData
-// most times that ConsN is incremented that adds sizeof(ConsCell) to
-// the space used, but one time in 64 it adds an extra 8 bytes. What that
-// happens that could skip past the target size. In such a case in order
-// to fill right up to pageSize I would need to insert an item somewhere
-// to pad the previous case up to the right size. And whether or not that
-// was needed can depend on just how much space is used by the common
-// header fields and also whether I am on a 32 or 64-bit system. Well
-// I am going to argue that this would only arise about 1 time in 64 for
-// each for each word-length considered. Similar issues arise in the
-// ChunkN case but the fact that the array of Chunks will end up aligned
-// on 16Kbyte boundaries means that the chances of difficulty are very
-// low.
+// as close up to the end of a pageSize object as I can with chunks[]
+// properly aligned at a multiple of 16K. I do this with a bit of
+// template metaprogramming that implements binary searches for the
+// sizes that I need.
 
-// I use template meta-programming to find the values I need.
-
-// With meta-programming one NEEDS some debugging tools!
-// I want to see the value of (eg) sizeof(Page) at compile-time. C++ does
-// not (yet?) have a built-in static_print function to help me, but
-// https://stackoverflow.com/questions/28852574/
-//         how-to-print-result-of-a-compile-time-calculation-in-c
-// contained a suggestion that works with g++ and clang++ by putting the
-// value of interest into a part of a warning about an unused variable.
-// There are other suggestions that use errors rather than warnings,
-// but this seems gentler to me.
-
-// I find that if I have two uses of static_print both of which happen to
-// want to display the same value that the template expansions match well
-// enough that only one survives. The result is that one of the messages
-// is omitted. To make me feel happier about things I have two copies
-// called static_print and static_print1 which use different names
-// internally and so avoid this effect.
-
-#define CONCAT(a, b) CONCAT_INNER(a, b)
-#define CONCAT_INNER(a, b) a ## b
-#define UNIQUE(base) CONCAT(base, __LINE__)
-template <size_t val> constexpr void s_p_f()
-{
-#ifndef __clang__
-// clang does not support this trick nicely!
-    int unused = 0;
-#endif // !__clang__
-};
-#define static_print(v) \
-  UNUSED_NAME static void UNIQUE(s_p_)() { s_p_f<v>(); }
-template <size_t val1> constexpr void s_q_f()
-{
-#ifndef __clang__
-    int unused1 = 0;
-#endif // !__clang__
-};
-#define static_print1(v) \
-  UNUSED_NAME static void UNIQUE(s_q_)() { s_q_f<v>(); }
-
-// This next template finds a value of ConsN that will fill up the
-// Page nicely.
-
-template <size_t ConsN, size_t TargetSize, size_t Gap>
+template <size_t lo, size_t span>
 class FindConsN
-{   using Page = PageTemplate<ConsN, 1>;
-    enum { W = TargetSize -
-               offsetof(Page,consData) -
-               sizeof(Page::consData) };
+{   using Page = PageTemplate<lo+(span/2), 1, 1>;
 public:
-    enum { value = FindConsN<W==0  ? ConsN :
-                            ((size_t)W>16) ? ConsN + W/(sizeof(ConsCell)+2) :
-                                     ConsN + 1,
-                            TargetSize, W>::value };
+    enum
+    {   consSize = offsetof(Page, consData) + sizeof(Page::consData),
+        value = FindConsN<(consSize <= pageSize ? lo+span/2 : lo),
+                          span/2>::value
+    };
 };
 
-template <size_t ConsN, size_t TargetSize>
-class FindConsN<ConsN,TargetSize,0>
+template <size_t lo>
+class FindConsN<lo, 1>
 {
 public:
-    enum { value = ConsN };
+    enum { value = lo };
 };
 
-inline const size_t ConsN = FindConsN<1,pageSize,1>::value;
-//static_print(ConsN);
+inline const size_t ConsN = FindConsN<1,pageSize/sizeof(ConsCell)>::value;
 
-template <size_t ChunkN, size_t TargetSize, size_t Gap>
+template <size_t lo, size_t span>
 class FindChunkN
-{   using Page = PageTemplate<1,ChunkN>;
-    enum { W = TargetSize -
-               offsetof(Page,chunks) -
-               sizeof(Page::chunks) };
+{   using Page = PageTemplate<1, lo+(span/2), 1>;
 public:
-    enum { value = FindChunkN<W==0 ? ChunkN :
-          ((size_t)W>10*chunkSize) ? ChunkN + W/(chunkSize+2000) :
-                                     ChunkN + 1,
-                              TargetSize, W>::value };
+    enum
+    {   chunkSize = offsetof(Page, chunks) + sizeof(Page::chunks),
+        value = FindChunkN<(chunkSize <= pageSize ? lo+span/2 : lo),
+                           span/2>::value
+    };
 };
 
-template <size_t ChunkN, size_t TargetSize>
-class FindChunkN<ChunkN,TargetSize,0>
+template <size_t lo>
+class FindChunkN<lo, 1>
 {
 public:
-    enum { value = ChunkN };
+    enum { value = lo };
 };
 
-inline const size_t ChunkN = FindChunkN<1,pageSize,1>::value;
-//static_print(ChunkN);
+inline const size_t ChunkN = FindChunkN<1,pageSize/sizeof(Chunk)>::value;
 
-typedef PageTemplate<ConsN,ChunkN> Page;
+inline const size_t padChunk = ([](){
+    using Page = PageTemplate<1, ChunkN, 1>;
+    return pageSize -
+           sizeof(Page::chunks) -
+           offsetof(Page, padder);
+    })();
+
+
+typedef PageTemplate<ConsN,ChunkN,padChunk> Page;
 
 inline const size_t consPinBits     = Page::consDataCount;
 inline const size_t consPinBytes    = Page::consPinWords*8;
@@ -1804,3 +1742,4 @@ inline Page* findPage(uintptr_t p)
 #endif // header_newallocate_h
 
 // end of newallocate.h
+
