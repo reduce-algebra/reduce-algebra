@@ -51,7 +51,9 @@
 // The aim here is to avoid use of the Microsoft versions of printf and
 // friends and (hence) allow g++ to parse and check format strings reliably.
 
+#ifndef __USE_MINGW_ANSI_STDIO
 #define __USE_MINGW_ANSI_STDIO 1
+#endif
 
 #include <windows.h>
 #include <winsock.h>

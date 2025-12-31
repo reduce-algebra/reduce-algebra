@@ -266,6 +266,8 @@ extern int float128_to_binary(const float128_t d, int64_t &mhi, uint64_t &mlo);
 extern intptr_t float128_to_5_digits(float128_t d,
                                      int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0);
 
+#ifdef FLOAT256
+
 struct float256_t
 {
 #ifdef LITTLEENDIAN
@@ -292,6 +294,8 @@ extern void f256M_div(
     const float256_t *x, const float256_t *y, float256_t *z);
 
 extern void f256M_pow(const float256_t *x, unsigned int y, float256_t *z);
+
+#endif // FLOAT256
 
 // These print 128-bit floats in the various standard styles, returning the
 // number of characters used. The "sprint" versions put their result in
@@ -944,6 +948,8 @@ inline float128_t f128_negmin       = {fpOrder(1, 0x8000000000000000ULL)};
 inline float128_t f128_normmin      = 3.36210314311209350626267781732175260e-4932_Q . v; 
 inline float128_t f128_negnormmin   = (-3.36210314311209350626267781732175260e-4932_Q) . v;
 
+#ifdef FLOAT256
+
 // Now some limited support for 256-bit floats, implemented as pairs
 // of 128-bit numbers using the strategy sometimes known as double-double.
 // But here it should be quad-quad.
@@ -1013,7 +1019,8 @@ public:
     {   v = rhs.v;
     }
     OctFloat(int n):v()
-    {   v.hi = i32_to_f128(n);
+    {   QuadFloat w(n);
+        v.hi = w.v;
         v.lo = f128_0;
     }
     OctFloat(int64_t n):v()
@@ -1136,6 +1143,8 @@ constexpr inline OctFloat operator ""_QQX (const char* s)
     r.lo.v[low] = data[3];
     return OctFloat(r);
 }
+
+#endif // FLOAT256
 
 } // end namespace
 

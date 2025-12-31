@@ -87,9 +87,9 @@ arithlib.cpp:	flatten makeheader arithlib.base.cpp lvector.h \
 		acnutil.h multiply.base.cpp inlinemul.cpp \
 		fftutils.cpp fftmod.cpp fftkernel.cpp bitmaps.h cthread.cpp
 	./flatten arithlib.base.cpp arithlib.cpp
-	./makeheader arithlib.cpp arithlib.h
+	./makeheader arithlib.cpp arithlib.hh
 
-arithlib.h:	arithlib.cpp
+arithlib.hh:	arithlib.cpp
 
 geninline:	geninline.cpp
 	g++ $(CXXFLAGS) geninline.cpp -o geninline
@@ -118,7 +118,9 @@ endif
 .PHONY:	arithtest
 
 arithtest:	arithtest.cpp arithlib.cpp
-	time g++ -O3 -std=gnu++17 $(MACFLAGS) arithtest.cpp arithlib.cpp $(LIBS) -o arithtest
+	time g++ -O3 -std=gnu++17 \
+		-fmessage-length=79 -fno-diagnostics-color -fmax-errors=4 \
+		$(MACFLAGS) arithtest.cpp arithlib.cpp $(LIBS) -o arithtest
 # If one runs arithtest without a command line paramater it should seed
 # its random number generator in an unpredictable way. Specifing an integer
 # uses that as the seed for repeatable behaviour.
@@ -126,7 +128,9 @@ arithtest:	arithtest.cpp arithlib.cpp
 
 .PRECIOUS:	arithtestg
 arithtestg:	arithtest.cpp arithlib.cpp
-	time g++ -O0 -g -std=gnu++17 $(MACFLAGS) arithtest.cpp \
+	time g++ -O0 -g -std=gnu++17 \
+		-fmessage-length=79 -fno-diagnostics-color -fmax-errors=4 \
+		$(MACFLAGS) arithtest.cpp \
 		-DDEBUG=1 $(LIBS) \
 		-o arithtestg
 	-time ./arithtestg 1
@@ -138,12 +142,16 @@ arithtestg:	arithtest.cpp arithlib.cpp
 
 arithtestwin:	arithtest.cpp arithlib.cpp
 	time x86_64-w64-mingw32-g++ -O3 -std=gnu++17 --static \
+		-fmessage-length=79 -fno-diagnostics-color -fmax-errors=4 \
 		arithtest.cpp -Wl,--subsystem,console \
 		-lgmp -o arithtestwin
 	-time ./arithtestwin 1
 
 
 # "karatune" attepts to judge a proper value for KARATSUBA_CUTOFF
+
+arithlib.o:	arithlib.cpp
+	g++ -O3 -c arithlib.cpp -o arithlib.o
 
 .PHONY:	karatune
 
@@ -153,8 +161,9 @@ else
 KLIBS=-lpthread
 endif
 
-karatune:	karatune.cpp arithlib.cpp
-	g++ $(MACFLAGS) -std=gnu++17 -O3 karatune.cpp arithlib.cpp \
+karatune:	karatune.cpp arithlib.o
+	g++ $(MACFLAGS) -std=gnu++17 -O3 karatune.cpp arithlib.o \
+		-fmessage-length=79 -fno-diagnostics-color -fmax-errors=4 \
 		$(KLIBS) -o karatune
 	time ./karatune
 
@@ -167,12 +176,14 @@ karatune:	karatune.cpp arithlib.cpp
 
 karatunewin:	karatune.cpp arithlib.cpp
 	x86_64-w64-mingw32-g++ \
+		-fmessage-length=79 -fno-diagnostics-color -fmax-errors=4 \
 		-std=gnu++17 -O3 karatune.cpp arithlib.cpp --static \
 		-Wl,--subsystem,console -o karatunewin
 	time ./karatunewin
 
 ffttune:	ffttune.cpp arithlib.cpp
 	g++ $(MACFLAGS) -std=gnu++17 -O3 ffttune.cpp arithlib.cpp \
+		-fmessage-length=79 -fno-diagnostics-color -fmax-errors=4 \
 		$(KLIBS) -o ffttune
 	time ./ffttune
 

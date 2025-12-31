@@ -142,6 +142,7 @@ const char *WSAErrName(int i)
 
 int windowsPrepareSockets()
 {
+#ifdef SOCKETS
 // Under Windows the socket stuff is not automatically active, so some
 // system calls have to be made at the start of a run. I demand a
 // Winsock 1.1, and fail if that is not available.
@@ -153,6 +154,7 @@ int windowsPrepareSockets()
     {   WSACleanup();
         return 1;      // Version 1.1 of winsock needed
     }
+#endif
     return 0;
 }
 
@@ -323,7 +325,9 @@ size_t windowsGetTempPath(size_t n, char *s)
 
 // The aim here is to avoid use of the Microsoft versions of printf and
 // friends and (hence) allow g++ to parse and check format strings reliably.
+#ifndef __USE_MINGW_ANSI_STDIO
 #define __USE_MINGW_ANSI_STDIO 1
+#endif
 
 #include <winsock.h>
 #include <process.h>

@@ -1,0 +1,139 @@
+# Makefile for building reduce.img suitable for embedded use.
+
+# I *HOPE* that with the following conditions and provided you yse GNU make
+# that this will build on 64-bit Linux, 64-bit Cygwin and on a Macintosh
+# that has macports installed and libffi fetched via macports.
+# I expect that other platforms might not be too hard... but some
+# will need the include/config.h file adjusted.
+
+# This is now being worked on in the hope it can support initial building
+# on windows-for-arm using mingw64 and clang.
+
+ifeq ($(shell uname),Darwin)
+CC=g++
+#CC=clang++
+XCFLAGS= -I/opt/local/lib/libffi-3.2.1/include
+XLIBS=-lm
+else
+ifeq ($(shell uname -o),Cygwin)
+CC=x86_64-w64-mingw32-clang++
+XLIBS=-lm -lpthread
+else
+#CC=g++
+CC=CLANG++
+XLIBS=-lm -lpthread
+endif
+endif
+
+OPT=-O0 -g
+#OPT=-O3
+
+CPPFLAGS=$(CFLAGS) -std=gnu++17 $(OPT) -I. -I$(S) -I../include \
+    -DWIN32=1 -DHAVE_CONFIG_H=1 $(XCFLAGS)
+LIBS=$(XLIBS) -lz -lffi
+
+S=../../cslbase
+R=../../..
+
+VPATH=$(S)
+
+all:	reduce reduce.img image.cpp
+
+reduce:		newallocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
+		arith06.o arith07.o arith08.o arith09.o arith10.o \
+		arith11.o arith12.o arith13.o arith14.o bytes1.o char.o \
+		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o showhdr.o \
+		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o newcslgc.o lisphash.o \
+		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
+		inthash.o serialize.o stubs.o forks.o jit.o qsieve.o \
+		winsupport.o gc-check.o
+	$(CC) newallocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
+		arith06.o arith07.o arith08.o arith09.o arith10.o \
+		arith11.o arith12.o arith13.o arith14.o bytes1.o char.o \
+		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o showhdr.o \
+		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o newcslgc.o lisphash.o \
+		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
+		inthash.o serialize.o stubs.o forks.o jit.o qsieve.o \
+		winsupport.o gc-check.o \
+		$(LIBS) -static -o reduce
+
+.cpp.o:
+	$(CC) $(CPPFLAGS) -DNO_BYTECOUNTS=1 -c -o $@ $<
+
+# Create the reduce.img file
+
+reduce.img:	reduce
+	-rm -f reduce.img
+	./reduce -z -Dno_init_file $(S)/buildreduce.lsp \
+		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -- image.log
+
+make-image:	../make-image.cpp
+	$(CC) $(CPPFLAGS) ../make-image.cpp -o make-image
+
+image.cpp:	make-image reduce.img
+	./make-image
+	cp image.cpp ../reduce-image.cpp
+	cp reduce.img ..
+
+clean:
+	-rm -f *.o reduce hello reduce.img image.log make-image image.cpp
+
+
+HEADERS = ../include/config.h \
+	$(S)/md5.h       $(S)/termed.h    $(S)/arith.h       $(S)/openmath.h \
+	$(S)/int128_t.h  $(S)/bigvector.h $(S)/entries.h     $(S)/proc.h     \
+	$(S)/uninames.h  $(S)/bytes.h     $(S)/externs.h     $(S)/int128_t.h \
+	$(S)/sockhdr.h   $(S)/version.h   $(S)/charmetrics.h $(S)/fwin.h     \
+	$(S)/inthash.h   $(S)/stream.h    $(S)/cslerror.h    $(S)/headers.h  \
+	$(S)/lispthrow.h $(S)/syscsl.h    $(S)/cslread.h     $(S)/machine.h  \
+	$(S)/tags.h
+
+newallocate.o:	$(S)/newallocate.cpp $(HEADERS)
+arith01.o:	$(S)/arith01.cpp $(HEADERS)
+arith02.o:	$(S)/arith02.cpp $(HEADERS)
+arith03.o:	$(S)/arith03.cpp $(HEADERS)
+arith04.o:	$(S)/arith04.cpp $(HEADERS)
+arith05.o:	$(S)/arith05.cpp $(HEADERS)
+arith06.o:	$(S)/arith06.cpp $(HEADERS)
+arith07.o:	$(S)/arith07.cpp $(HEADERS)
+arith08.o:	$(S)/arith08.cpp $(HEADERS)
+arith09.o:	$(S)/arith09.cpp $(HEADERS)
+arith10.o:	$(S)/arith10.cpp $(HEADERS)
+arith11.o:	$(S)/arith11.cpp $(HEADERS)
+arith12.o:	$(S)/arith12.cpp $(HEADERS)
+arith13.o:	$(S)/arith13.cpp $(HEADERS)
+arith14.o:	$(S)/arith14.cpp $(HEADERS)
+bytes1.o:	$(S)/bytes1.cpp $(HEADERS)
+showhdr.o:	$(S)/showhdr.cpp $(HEADERS)
+char.o:		$(S)/char.cpp $(HEADERS)
+csl.o:		$(S)/csl.cpp $(HEADERS)
+cslmpi.o:	$(S)/cslmpi.cpp $(S)/mpipack.cpp $(HEADERS)
+cslread.o:	$(S)/cslread.cpp $(HEADERS)
+driver.o:	$(S)/driver.cpp $(HEADERS)
+embedcsl.o:	$(S)/embedcsl.cpp $(S)/csl.cpp $(HEADERS)
+eval1.o:	$(S)/eval1.cpp $(HEADERS)
+eval2.o:	$(S)/eval2.cpp $(HEADERS)
+eval3.o:	$(S)/eval3.cpp $(HEADERS)
+eval4.o:	$(S)/eval4.cpp $(HEADERS)
+fasl.o:		$(S)/fasl.cpp $(HEADERS)
+fns1.o:		$(S)/fns1.cpp $(HEADERS)
+fns2.o:		$(S)/fns2.cpp $(HEADERS)
+fns3.o:		$(S)/fns3.cpp $(HEADERS)
+forks.o:	$(S)/forks.cpp $(HEADERS)
+fwin.o:		$(S)/fwin.cpp $(HEADERS)
+gc-check.o:	$(S)/gc-check.cpp $(HEADERS)
+inthash.o:	$(S)/inthash.cpp $(HEADERS)
+jit.o:		$(S)/jit.cpp $(HEADERS)
+lisphash.o:	$(S)/lisphash.cpp $(HEADERS)
+isprime.o:	$(S)/isprime.cpp $(HEADERS)
+newcslgc.o:	$(S)/newcslgc.cpp $(HEADERS)
+preserve.o:	$(S)/preserve.cpp $(HEADERS)
+print.o:	$(S)/print.cpp $(HEADERS)
+qsieve.o:	$(S)/qsieve.cpp $(HEADERS)
+restart.o:	$(S)/restart.cpp machineid.cpp $(HEADERS)
+serialize.o:	$(S)/serialize.cpp $(HEADERS)
+sysfwin.o:	$(S)/sysfwin.cpp $(HEADERS)
+termed.o:	$(S)/termed.cpp $(HEADERS)
+winsupport.o:	$(S)/winsupport.cpp $(HEADERS)
+
+# end of Makefile

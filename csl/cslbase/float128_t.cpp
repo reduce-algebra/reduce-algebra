@@ -139,6 +139,11 @@ float128_t f128_modf(float128_t p, float128_t& intpart)
     return f128_sub(p, i);
 }
 
+#ifdef FLOAT256
+// I think this is probably silly! It was a path I was exploring some
+// while ago but now I am commenting it out (OK #ifdef-ing it out).
+
+
 // I will want working precision even higher than 128-bits. I will
 // arrange that using pairs of 128-bit floats such that the value
 // I am representing is their sum. The code I have here will not be
@@ -305,6 +310,8 @@ void f256M_pow(const float256_t *x, unsigned int n, float256_t *y)
     else f256M_mul(&w2, x, y);
 }
 
+#endif // FLOAT256
+
 bool f128_gt(float128_t a, float128_t b)
 {   return f128_lt(b, a);
 }
@@ -312,6 +319,8 @@ bool f128_gt(float128_t a, float128_t b)
 bool f128_ge(float128_t a, float128_t b)
 {   return f128_le(b, a);
 }
+
+#ifdef FLOAT256
 
 bool f256M_eq(const float256_t *x, const float256_t *y)
 {   return f128_eq(x->hi, y->hi) && f128_eq(x->lo, y->lo);
@@ -471,6 +480,8 @@ constexpr int OctFloat::exponent()
     return ((top>>48) & 0x7fff) - 0x3fff;
 }
 #endif
+
+#endif // FLOAT128
 
 // 10^9 is  0.ee6b2800'00000000'00000000'00000000'00000000 * 2^30
 

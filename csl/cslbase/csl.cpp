@@ -4137,13 +4137,13 @@ PROC_handle PROC_rest(PROC_handle p)
 
 #if !defined NO_STARTUP_CODE
 
-extern "C"
-{
+//extern "C"
+//{
 int main(int argc, const char* argv[])
 {
     CSL_LISP::main(argc, argv);
 }
-}
+//}
 
 #endif // EMBEDDED, ENABLE_WEBGUI, NO_STARTUP_CODE
 

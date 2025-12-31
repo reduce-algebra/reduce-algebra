@@ -382,7 +382,12 @@ extern "C"
 //
 //
 #if !defined EMBEDDED
-#if ((defined HAVE_SOCKET && defined HAVE_SYS_SOCKET_H) || defined WIN32)
+
+// The next line is maybe questionable, but for now if I am building for
+// Windows using clang++ I will avoid support for sockets.
+
+#if ((defined HAVE_SOCKET && defined HAVE_SYS_SOCKET_H) || \
+     (defined WIN32 && !defined __clang__))
 #define SOCKETS                  1
 #endif // sockets available
 #endif // !EMBEDDED

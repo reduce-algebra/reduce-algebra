@@ -3189,13 +3189,8 @@ LispObject Lread(LispObject env)
 }
 
 class save_stream
-#ifndef XXX
 {   LispObject save;
     int savechar;
-#else /* XXX */
-{   LispObject *save;
-    int cursave;
-#endif /* XXX */
 public:
     save_stream(LispObject oldstream, int curchar)
     {   save = oldstream;

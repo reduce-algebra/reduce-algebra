@@ -41,6 +41,8 @@
 #include <cstring>
 #include <cerrno>
 #include <cmath>
+#include <new>
+
 
 #ifdef WIN32
 #include <windows.h>
@@ -96,6 +98,8 @@ static HANDLE thread[MAX_CPU_COUNT];
     CloseHandle(thread[i]) == 0
 
 #else // Now for the pthreads version for Linux, Unix, BSD, OS/X etc.
+
+#pragma message "Using pthread mutex"
 
 static pthread_mutex_t mutex;
 #define CREATEMUTEX_FAILED pthread_mutex_init(&mutex, nullptr)

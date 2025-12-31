@@ -1678,7 +1678,7 @@ void process_file_name(char *filename, const char *old, size_t n)
 // like "\" and "a:\".
         j = std::strlen(filename);
         if (j > 0 && j != 1 && !(j == 3 && *(filename+1) == ':'))
-        {   if ( (*(tail - 1) == '\\')) *(tail - 1) = 0;
+        {   if (*(tail-1) == '\\') *(tail-1) = 0;
         }
     }
 #else // WIN32

@@ -18719,7 +18719,7 @@ static void inlineMul_7(ConstDigitPtr a, std::size_t N,
     result[N+6] = lo;
 }
 
-[[gnu::always_inline]] static void smallCaseMul(ConstDigitPtr a, std::size_t N,
+static void smallCaseMul(ConstDigitPtr a, std::size_t N,
                          ConstDigitPtr b, std::size_t M,
                          DigitPtr result)
 {
@@ -18855,7 +18855,7 @@ static void inlineMul_7(ConstDigitPtr a, std::size_t N,
     }
 }
 
-[[gnu::always_inline]] static void bigBySmallMul(ConstDigitPtr a, std::size_t N,
+static void bigBySmallMul(ConstDigitPtr a, std::size_t N,
                           ConstDigitPtr b, std::size_t M,
                           DigitPtr result)
 {   switch (M)
@@ -18878,7 +18878,7 @@ static void inlineMul_7(ConstDigitPtr a, std::size_t N,
     }
 }
 
-[[gnu::always_inline]] static void balancedMul(ConstDigitPtr a, ConstDigitPtr b, std::size_t N,
+static void balancedMul(ConstDigitPtr a, ConstDigitPtr b, std::size_t N,
                        DigitPtr result)
 {   switch (N)
     {   default: simpleMul(a, N, b, N, result); return;
@@ -18943,8 +18943,8 @@ static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
     {   carry = addWithCarry(a[i], b[i], carry, result[i]);
         i++;
     }
-    for (; i<lenA; i++)
-        carry = addWithCarry(a[i], carry, result[i]);
+    for (size_t j=i; j<lenA; j++)
+        carry = addWithCarry(a[j], carry, result[j]);
     return carry;
 }
 
@@ -18976,8 +18976,10 @@ static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
     {   borrow = subtractWithBorrow(a[i], b[i], borrow, result[i]);
         i++;
     }
-    for (; i<lenA; i++)
-        borrow = subtractWithBorrow(a[i], 0, borrow, result[i]);
+    while (i<lenA)
+    {   borrow = subtractWithBorrow(a[i], 0, borrow, result[i]);
+        i++;
+    }
     return borrow;
 }
 

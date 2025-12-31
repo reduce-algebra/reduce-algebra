@@ -1513,7 +1513,7 @@ void term_close()
     termEnabled = false;
     return;
 #else // AVOID_TERMINAL_THREADS
-#ifdef WIN32
+#if defined WIN32 && !defined EMBEDDED
     resetCP();
 #endif
     if (keyboardThreadActive) quitKeyboardThread();
