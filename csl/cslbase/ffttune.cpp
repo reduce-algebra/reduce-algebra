@@ -3,7 +3,7 @@
 // $Id: ffttune.cpp 7191 2025-10-09 11:50:48Z arthurcnorman $
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

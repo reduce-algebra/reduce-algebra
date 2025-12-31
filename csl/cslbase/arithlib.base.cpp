@@ -1,4 +1,4 @@
-// Big Number arithmetic.                             A C Norman, 2019-2025
+// Big Number arithmetic.                             A C Norman, 2019-2026
 
 // To use this, go "#include "arithlib.h" and link against "arithlib.cpp"
 // or as an alternatice #include "arithlib.cpp" as a header-only library.
@@ -15,7 +15,7 @@
 //    Split into header file and implementation file(s).
 
 /**************************************************************************
- * Copyright (C) 2019-2025, Codemist.                    A C Norman       *
+ * Copyright (C) 2019-2026, Codemist.                    A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

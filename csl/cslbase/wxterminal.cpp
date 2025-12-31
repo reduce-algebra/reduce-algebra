@@ -1,7 +1,7 @@
 #error "This file is not maintained and will need serious review for revival.
 
 
-// wxterminal.cpp                        Copyright (C) A C Norman 2012-2025
+// wxterminal.cpp                        Copyright (C) A C Norman 2012-2026
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -11,7 +11,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

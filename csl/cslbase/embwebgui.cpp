@@ -1,4 +1,4 @@
-// embwebgui.cpp                       Copyright (C) 2022-2025 E. Schruefer
+// embwebgui.cpp                       Copyright (C) 2022-2026 E. Schruefer
 
 /**************************************************************************
  * Copyright (C) 2022,                                   E. Schruefer     *

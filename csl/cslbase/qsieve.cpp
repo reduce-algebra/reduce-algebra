@@ -1,4 +1,4 @@
-// qsieve.cpp                  Copyright (C) 2025 Michel Leonard & Codemist
+// qsieve.cpp                  Copyright (C) 2026 Michel Leonard & Codemist
 
 // $Id: version.h 7107 2025-05-05 20:57:42Z arthurcnorman $
 
@@ -48,7 +48,7 @@
 /**************************************************************************
  * DUAL LICENSE...                                                        *
  *                                                                        *
- * Copyright (C) 2025                                 Michel Leonard      *
+ * Copyright (C) 2026                                 Michel Leonard      *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

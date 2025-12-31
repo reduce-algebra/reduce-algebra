@@ -1,11 +1,11 @@
-// eval2.cpp                               Copyright (C) 1989-2025 Codemist
+// eval2.cpp                               Copyright (C) 1989-2026 Codemist
 
 //
 // Interpreter (part 2).  apply & some special forms
 //
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
