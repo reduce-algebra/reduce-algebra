@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2025-12-15 10:55:23 franc>
+Time-stamp: <2025-12-31 11:28:20 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -175,7 +175,7 @@ The test output differences for the `arith` and `numeric` package are identical 
 
 #### Windows
 
-REDUCE 7214 on native Windows SBCL 2.5.11.
+REDUCE 7220 on native Windows SBCL 2.5.11.
 
 No build errors.
 
@@ -187,14 +187,16 @@ numeric  | Minor numerical differences
 
 Lisp | Run Time (ms) | GC Time (ms)
 -----|---------------|-------------
-csl  |         77140 | 1493
-sbcl |        254429 | 8813
+csl  |         78820 | 1599
+sbcl |        219443 | 7749
 
 #### Ubuntu 24 (on WSL)
 
-REDUCE 7205 on SBCL 2.5.10.
+REDUCE 7220 on SBCL 2.5.11.
 
 No build errors.  Package test issues as for Windows.
+
+Old timing data:
 
 Lisp | Run Time (ms) | GC Time (ms)
 -----|---------------|-------------
@@ -205,63 +207,69 @@ sbcl |        192035 | 3180
 
 #### Windows
 
-REDUCE 7214 on Cygwin CLISP 2.49
+REDUCE 7220 on Cygwin CLISP 2.49
 
 No build errors.
 
 Package  | Output Issues
 ---------|--------------
 arith    | CLISP is numerically more accurate than CSL/PSL!
-gf2      | Crashes - break loop - Lisp
+gf2      | Different backtrace
 ibalp    | Stack overflow. `reset() found no driver frame`
 numeric  | Minor numerical differences
 
 #### Ubuntu 24 (on WSL)
 
-REDUCE 7211 on CLISP 2.49
+REDUCE 7220 on CLISP 2.49
 
 No build errors.
 
 Package  | Output Issues
 ---------|--------------
 arith    | CLISP is numerically more accurate than CSL/PSL!
-conlaw   | TIMED OUT
-economise| TIMED OUT
-eds      | Lots of issues (probably from excalc)
-excalc   | Lots of issues
+conlaw   | Timed out; OK with --no-timeout
+economise| Timed out; OK with --no-timeout
+eds      | Lots of issues (probably from excalc) [1]
+excalc   | Lots of issues [1]
 gf2      | Segmentation fault
-ibalp    | Stack overflow
+ibalp    | Stack overflow. `reset() found no driver frame (core dumped)`
 numeric  | Minor numerical differences
-sstools  | TIMED OUT
-susy2    | TIMED OUT
-xideal   | Lots of issues (probably from excalc)
+sstools  | Timed out; OK with --no-timeout
+susy2    | Timed out; OK with --no-timeout
+xideal   | Lots of issues (probably from excalc) [1]
+
+1. When run interactively, the errors related to excalc do not arise; they seem to be caused by the test1.sh script.
 
 ### Clozure Common Lisp (CCL)
 
 #### Windows
 
-REDUCE 7214 on native Windows CCL 1.13
+REDUCE 7220 on native Windows CCL 1.13
 
 No build errors.
 
 Package  | Output Issues
 ---------|--------------
-arith    | SBCL is numerically more accurate than CSL/PSL!
-gf2      | Hangs in interactive debugger! [EXCLUDE]
-lalr     | compiled functions instead of lambdas (because CCL always compiles)
+arith    | CCL is numerically more accurate than CSL/PSL!
+cantens  | `***** numeric indices out of range`
+gf2      | Different backtrace
+lalr     | Compiled functions instead of lambdas (because CCL always compiles)
+laplace  | `***** Factorizer error: Term content division failed` (8)
 numeric  | Minor numerical differences
-ofsf     | Hangs in interactive debugger! [EXCLUDE]
+ofsf     | Incredibly slow!
+solve    | `***** check-solns` (3)
+taylor   | `***** Invalid substitution in Taylor kernel: dependent variables y y`
 
 #### Ubuntu 24 (on WSL)
 
-REDUCE 7211 on CCL 1.13
+REDUCE 7220 on CCL 1.13
 
-No build errors.  Package test issues as for Windows, except that ofsf was killed by the timeout.  (The gf2 test hangs on Ubuntu exactly as on Windows!)
+No build errors.  Package test issues as for Windows, except that ofsf was killed by the timeout.
 
 
 ## Known limitations
 
-I cannot see any way to support the facilities for restricting execution time on CLISP.  In more detail: the file `rlisp/inter.red` defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no garbage collection hooks exist in CLISP.  The procedures `with!-timeout` and similar just run without any restriction so don't use CLISP REDUCE is you need this facility!  It works on SBCL!
+I cannot see any way to support the facilities for restricting execution time on CLISP or CCL.  In more detail: the file `rlisp/inter.red` defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no garbage collection hooks exist in CLISP or CCL.  The procedures `with!-timeout` and similar just run without any restriction so don't use CLISP or CCL REDUCE is you need this facility!  It works on SBCL!
 
 
 ## To do
