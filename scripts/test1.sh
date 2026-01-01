@@ -260,7 +260,7 @@ else
 fi
 
 # If I can I will limit the time that each test script can possibly use,
-# except when the --notimeout switch is set.
+# except when the --no-timeout switch is set.
 # I would like to make the limit such that everything has a decent chance of
 # running to completion but that tests that get stuck do not delay me
 # unduly. The most extreme test at the time of writing this is stools which
@@ -278,7 +278,7 @@ limittime() {
 # unexpectedly 'limittime "time ./expensiveCommand"' does not manage
 # to time-out even if 'limittime ./expensiveCommand' might.
 
-if test "$notimeout" = "yes"
+if test "$no_timeout" = "yes"
 then
   $timecmd $*
   exit $?
