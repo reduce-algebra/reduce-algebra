@@ -1,4 +1,4 @@
-// embwebgui.h                         Copyright (C) 2022-2025 E. Schruefer
+// embwebgui.h                         Copyright (C) 2022-2026 E. Schruefer
 
 #ifndef EMBWEBGUI
 #define EMBWEBGUI
@@ -6,7 +6,7 @@
 // $Id$
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         E. Schruefer     *
+ * Copyright (C) 2026, Codemist.                         E. Schruefer     *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

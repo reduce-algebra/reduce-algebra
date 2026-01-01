@@ -1,11 +1,11 @@
-// openmath.h                                   Copyright (C) -2025 NAG Ltd
+// openmath.h                                   Copyright (C) -2026 NAG Ltd
 
 #ifndef header_openmath_h
 #define header_openmath_h
 
 
 /**************************************************************************
- * Copyright (C) -2025, Codemist and NAG Ltd.            A C Norman       *
+ * Copyright (C) -2026, Codemist and NAG Ltd.            A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

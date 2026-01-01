@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2025-11-25 12:44:19 franc>
+# Time-stamp: <2025-12-30 15:13:21 franc>
 
 # Build REDUCE on supported implementations of Common Lisp (CL),
 # namely SBCL, CLISP and CCL.
@@ -58,29 +58,32 @@ do
     esac
 done
 
+# The following commands to run Lisp all suppress the user
+# initialisation file.
+
 case $lisp in
     'sbcl')
-        runlisp='sbcl --disable-debugger'
-        runlispfile='sbcl --disable-debugger --load'
-        runbootstrap='sbcl --core fasl.sbcl/bootstrap.img --noinform --disable-debugger'
-        runreduce='sbcl --core fasl.sbcl/reduce.img --noinform --disable-debugger'
+        runlisp='sbcl --no-userinit --disable-debugger'
+        runlispfile='sbcl --no-userinit --disable-debugger --load'
+        runbootstrap='sbcl --core fasl.sbcl/bootstrap.img --noinform --no-userinit --disable-debugger'
+        runreduce='sbcl --core fasl.sbcl/reduce.img --noinform --no-userinit --disable-debugger'
         saveext='img'
         faslext='fasl'
         ;;
     'clisp')
         runlisp='clisp -ansi -norc -E utf-8'
-        runlispfile='clisp -ansi'
-        runbootstrap='clisp -q -norc -M fasl.clisp/bootstrap.mem'
-        runreduce='clisp -q -norc -M fasl.clisp/reduce.mem'
+        runlispfile='clisp -ansi -norc'
+        runbootstrap='clisp -q -ansi -norc -M fasl.clisp/bootstrap.mem'
+        runreduce='clisp -q -ansi -norc -M fasl.clisp/reduce.mem'
         saveext='mem'
         faslext='fas'
         ;;
     'ccl')
         if [ "$(type -ft ccl64)" ]; then CCL='ccl64'; else CCL='ccl'; fi
-        runlisp="$CCL"
-        runlispfile="$CCL -l"
-	runbootstrap="$CCL -I fasl.ccl/bootstrap.image"
-        runreduce="$CCL -I fasl.ccl/reduce.image"
+        runlisp="$CCL -n"
+        runlispfile="$CCL -n -l"
+	runbootstrap="$CCL -n -I fasl.ccl/bootstrap.image"
+        runreduce="$CCL -n -I fasl.ccl/reduce.image"
         saveext='image'
         case $(uname -s) in     # see CCL64 shell script in Clozure distribution
             Darwin)             # macOS
@@ -142,7 +145,7 @@ then
     #-CCL (exit #+SBCL :code 1))
 EOF
     mv sl-on-cl.$faslext fasl.$lisp &&
-        if [ $lisp = 'clisp' ]; then mv sl-on-cl.lib fasl.clisp; fi
+        if [ $lisp = 'clisp' ]; then rm sl-on-cl.lib; fi
 fi || { echo '***** Compilation failed'; exit 1; }
 
 ########################################################
@@ -269,7 +272,7 @@ then
     #-CCL (exit #+SBCL :code 1))
 EOF
     mv trace.$faslext fasl.$lisp &&
-        if [ $lisp = 'clisp' ]; then mv trace.lib fasl.clisp; fi
+        if [ $lisp = 'clisp' ]; then rm trace.lib; fi
 fi || { echo '***** Compiling trace failed'; exit 1; }
 
 ###############################
@@ -283,7 +286,8 @@ echo $'\n+++++ Building the REDUCE image file...'
 # compile the non-core modules.
 
 time eval $runlisp << EOF &> log.$lisp/reduce.blg
-(load "sl-on-cl") (load "trace") ; temporary -- until I can arrange autoloading!
+(load "fasl.$lisp/sl-on-cl")
+(load "fasl.$lisp/trace") ; temporary -- until I can arrange autoloading!
 (standard-lisp)
 
 (cl:defparameter !*init!-stats!* (list (time) (gtheap)))

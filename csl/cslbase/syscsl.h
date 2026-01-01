@@ -1,4 +1,4 @@
-//  syscsl.h                               Copyright (C) 1992-2025 Codemist
+//  syscsl.h                               Copyright (C) 1992-2026 Codemist
 
 //
 // This file should contain a list of all the functions in CSL that have
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

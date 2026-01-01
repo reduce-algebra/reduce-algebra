@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2025 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-12-14 17:10:23 franc>
+;; Time-stamp: <2025-12-30 15:23:57 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -460,10 +460,7 @@ an out of range error occurs.
 (defmacro error-internal (message &rest args)
   "Report an error detected internally in sl-on-cl with message
 MESSAGE possibly followed by arguments ARGS as for `format'."
-  `(cl:error 'sl-error-internal :errmsg
-             ,(if args
-                  `(format nil ,message ,@args)
-                  message)))
+  `(cl:error ,message ,@args))
 
 (defun %id-to-char-invert-case (c)
   "As `character', but case-inverted."
@@ -890,6 +887,7 @@ already exists a warning message will appear:
 *** FNAME redefined
 The function defined by PUTD will be compiled before definition if
 the !*COMP global variable is non-NIL."
+  ;; NB: Compilation is done by de and dm.
   (declare (symbol fname type) (type function body))
   (if (or (cl:get fname 'global)        ; only if explicitly declared
           (fluidp fname))
@@ -938,6 +936,12 @@ the name may be used subsequently as a variable."
            (fmakunbound fname)
            (cl:remprop fname '%ftype))
          def)))
+
+(defun compd (name type body)
+  "(compd NAME:id TYPE:ftype BODY:lambda): NAME:id expr
+This is a compiling analogue of the function putd.
+It is used in \"rsupport.red\" to compile inlines, etc."
+  (let ((*comp t)) (putd name type body)))
 
 
 ;;; Variables and Bindings
@@ -1204,19 +1208,8 @@ variables are not affected by the process."
   (setq emsg* message)
   (cl:error 'sl-error :errno number :errmsg message))
 
-(define-condition sl-error-internal (sl-error-no-message)
-  ((errmsg :initarg :errmsg))
-  (:documentation "Standard Lisp internal error with an error message")
-  (:report (lambda (condition stream)
-             (with-slots (errmsg) condition
-               (format stream "Standard Lisp error: ~a." errmsg)))))
-
-(defvar *backtrace nil
-  "When true display `errorset' backtrace or message in some REDUCE code.
-Defaults to nil.")
-
 (defvar *debug nil
-  "If non-nil then `errorset' always enters the debugger on errors
+  "If non-nil then `errorset' always prints a backtrace for errors
 as if its argument `tr' were true.")
 
 (defun errorset (u msgp tr)
@@ -1238,18 +1231,14 @@ If no error occurs during the evaluation of U, the value of
   (LIST (EVAL U)) is returned.
 If an error has been signaled and the value of TR is non-NIL a
 trace-back sequence will be initiated on the selected output
-device. The traceback will display information such as unbindings
-of FLUID variables, argument lists and so on in an implementation
+device. The trace-back will display information such as unbindings of
+FLUID variables, argument lists and so on in an implementation
 dependent format."
   ;; TO DO: output to both stdout and currently selected output
   ;; device
   (handler-case (list (eval u))         ; protected form
-    (sl-error-no-message (condition)
-      (if (or tr *debug) (invoke-debugger condition))
-      nil)
-    (sl-error-internal (condition)
-      (if msgp (format t "~&***** ~a~%" condition))
-      (if (or tr *debug) (invoke-debugger condition))
+    (sl-error-no-message ()
+      (%print-backtrace-maybe tr)
       nil)
     (sl-error (condition)
       (if msgp
@@ -1257,12 +1246,31 @@ dependent format."
             ;; If MESSAGE is a list then it is displayed without top
             ;; level parentheses:
             (format t "~&***** ~:[~a~;~{~a~^ ~}~]~%" (listp msg) msg)))
-      (if (or tr *debug) (invoke-debugger condition))
+      (%print-backtrace-maybe tr)
       (slot-value condition 'errno))
-    (cl:error (condition)
+    (cl:error (condition)               ; Should this be caught here?
       (if msgp (format t "~&***** ~a~%" condition))
-      (if (or tr *debug) (invoke-debugger condition))
+      (%print-backtrace-maybe tr)
       nil)))
+
+;; The backtrace code below is mostly undocumented and dug out of the
+;; source code for the various Lisp systems.  It is therefore
+;; unreliable!
+
+(defun %print-backtrace-maybe (tr)
+  "Optionally, print backtrace to default output stream.
+Do so if TR or global *DEBUG is true."
+  (when (or tr *debug)
+    #+SBCL (sb-debug:print-backtrace)
+    #+CLISP (system::print-backtrace)   ; See clisp/src/reploop.lisp
+    #+CCL (format t "~&~{~s~%~}" (ccl:backtrace-as-list))
+    ))
+
+;; Limit length of backtrace:
+#+SBCL (setq sb-debug:*backtrace-frame-count* 20) ; default 1000
+#+CLISP
+(ext:without-package-lock ("SYSTEM")
+  (setq system::*debug-print-frame-limit* 20)) ; default unlimited
 
 
 ;;; Vectors
@@ -2778,7 +2786,10 @@ in the heap is made contiguous and all tagged pointers into the heap
 from active local stack frames, the binding stack and the symbol table
 are relocated. If *gc is t, prints some statistics. Increments gcknt*
 and updates gctime*."
-  #+SBCL (gc :full t))
+  #+SBCL (sb-ext:gc :full t)
+  #+CLISP (ext:gc)
+  #+CCL (ccl:gc)
+  )
 
 #+CLISP
 (defun %nth-room-value (n)
@@ -2838,6 +2849,15 @@ A function hung on the garbage collection hook."
 (push #'%run-gc-hook sb-ext:*after-gc-hooks*)
 
 )                                     ; </use sb-ext:*after-gc-hooks*>
+
+;; The code below doesn't seem to work!  Needs further investigation.
+;; #+CLISP
+;; (progn                         ; prototype to create *gc-hook*
+;;   (defconstant %old-gc% (symbol-function 'ext:gc))
+;;   (ext:without-package-lock ("EXT")
+;;     (defun gc ()
+;;       (funcall %old-gc%)
+;;       (format t "Garbage collection called."))))
 
 (defun gtheap ()
   "Size of the free dynamic space in bytes."
@@ -3164,11 +3184,14 @@ This may be an atom or a list."
 
 (defun resource-limit (exprn time_limit)
   "Evaluate EXPRN until TIME_LIMIT seconds have expired.
-But Lisps other than SBCL currently ignore the timeout!
+*** But Lisps other than SBCL currently ignore the timeout! ***
 Return (list (eval exprn)) or atomic if there is a timeout,
 rather like errorset."
-  ;; ***** NEEDS MORE WORK. *****
-  ;; ***** SEEMS TO IGNORE THE TIMEOUT EVEN ON SBCL! *****
+  ;; Tests from REDUCE -- same results using CSL & SBCL:
+  ;; resource!-limit("foo", 1); => ("foo")
+  ;; resource!-limit(''foo, 0.1); => (foo)
+  ;; resource!-limit('(prog () (return 'foo)), 1); => (foo)
+  ;; resource!-limit('(prog () a (go a)), 0.1); => nil
   #+SBCL (handler-case
              (sb-ext:with-timeout time_limit (list (eval exprn)))
            (t () nil))
@@ -3549,6 +3572,7 @@ or nil, meaning no header.")
 (defvar *int)
 
 (defvar %faslout-name.lisp)
+#+CLISP (defvar %faslout-name.lib)
 (defvar %faslout-stream)
 
 (defun prettyprint (u)
@@ -3592,6 +3616,7 @@ When all done, execute FASLEND;~2%" name))
         (symbol-function 'prettyprint) (symbol-function '%faslout-prettyprint))
   (setq *defn t
         *writingfaslfile t)
+  #+CLISP (setq %faslout-name.lib (concat2 name ".lib"))
   nil)
 
 (flag '(faslout) 'opfn)
@@ -3620,6 +3645,7 @@ When all done, execute FASLEND;~2%" name))
                   #-CCL :external-format
                   #+CLISP charset:UTF-8
                   #-(or CLISP CCL) :UTF-8))
+  #+CLISP (delete-file %faslout-name.lib)
   ;;      ;; (progn
   ;;      ;; (delete-file %faslout-name.lisp) ; keep to aid debugging ???
   ;;      (format t "Compiling ~a...done" %faslout-name.lisp)
@@ -3674,32 +3700,53 @@ When all done, execute FASLEND;~2%" name))
 
 (defun begin ())
 
+;; From: Common Lisp the Language, 2nd Edition
+;; https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node341.html
+
+;; Implementation note: Implementors are encouraged to make sure that
+;; there is always a restart named abort around any user code so that
+;; user code can call abort at any time and expect something
+;; reasonable to happen; exactly what the reasonable thing is may vary
+;; somewhat. Typically, in an interactive program, invoking abort
+;; should return the user to top level, though in some batch or
+;; multi-processing situations killing the running process might be
+;; more appropriate.
+
+;; The initialisation code below is based on the REPL example on the
+;; web page cited above.
+
 #+SBCL
 ;; See function `toplevel-repl' in "sbcl-2.2.3/src/code/toplevel.lisp".
 (defun reduce-init-function ()
   "The function executed at startup of the saved REDUCE memory image."
   ;; Enable the interactive debugger only if the input and output are
-  ;; both interactive: ***** DOESN'T DETECT INTERACTIVE RUN *****
-  ;; (if  (and (interactive-stream-p *standard-input*)
-  ;;           (interactive-stream-p *standard-output*))
-  ;;      (progn
-  ;;        #+DEBUG (format t "Interactive mode -- debugger enabled")
-  ;;        (sb-ext:enable-debugger))
-  ;;      (progn
-  ;;        #+DEBUG (format t "Batch mode -- debugger disabled")
-  ;;        (sb-ext:disable-debugger)))
-  (sb-ext:enable-debugger)
+  ;; both interactive, or we are running in Emacs (REDUCE IDE):
+  (if  (or (and (interactive-stream-p *standard-input*)
+                (interactive-stream-p *standard-output*))
+           (getenv "INSIDE_EMACS"))
+       (progn
+         #+DEBUG (format t "~&Interactive mode -- debugger enabled~%")
+         (sb-ext:enable-debugger))
+       (progn
+         #+DEBUG (format t "~&Batch mode -- debugger disabled~%")
+         (sb-ext:disable-debugger)))
   ;; Enable compilation only if *comp is true:
   (setq sb-ext:*evaluator-mode*
         (if *comp :compile :interpret))
   (standard-lisp)
-  (loop
-   ;; CLHS recommends that there should always be an
-   ;; ABORT restart; we have this one here, and one per
-   ;; debugger level.
-   (with-simple-restart
-       (abort "~@<Exit debugger, returning to top level.~@:>")
-     (catch 'toplevel-catcher
+  ;; (loop
+  ;;  ;; CLHS recommends that there should always be an
+  ;;  ;; ABORT restart; we have this one here, and one per
+  ;;  ;; debugger level.
+  ;;  (with-simple-restart
+  ;;      (abort "~@<Exit debugger, returning to top level.~@:>")
+  ;;    (catch 'toplevel-catcher
+  ;;      (begin))))
+  (with-simple-restart
+      (abort "Exit REDUCE.")
+    (loop
+     (with-simple-restart
+         (abort "Return to REDUCE.")
        (begin)))))
 
 #+CLISP
@@ -3721,23 +3768,22 @@ When all done, execute FASLEND;~2%" name))
   ;;      (progn
   ;;        #+DEBUG (setq custom:*report-error-print-backtrace* t)
   ;;        (system::driver #'(lambda () (ext:exit-on-error (begin))))))
-  (ext:exit-on-error (begin))
+  (if  (or (interactive-stream-p *standard-output*)
+           (getenv "INSIDE_EMACS"))
+       (progn
+         #+DEBUG (format t "~&Interactive mode -- debugger enabled~%")
+         (with-simple-restart
+             (abort "Exit REDUCE.")
+           (loop
+            (with-simple-restart
+                (abort "Return to REDUCE.")
+              (begin)))))
+       (progn
+         #+DEBUG (format t "~&Batch mode -- debugger disabled~%")
+         (ext:exit-on-error (begin))))
   (ext:exit))
 
-;; From: Common Lisp the Language, 2nd Edition
-;; https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node341.html
-
-;; Implementation note: Implementors are encouraged to make sure that
-;; there is always a restart named abort around any user code so that
-;; user code can call abort at any time and expect something
-;; reasonable to happen; exactly what the reasonable thing is may vary
-;; somewhat. Typically, in an interactive program, invoking abort
-;; should return the user to top level, though in some batch or
-;; multi-processing situations killing the running process might be
-;; more appropriate.
-
-;; The initialisation code below is based on the REPL example on the
-;; web page cited above.
+#+CLISP (setq custom:*report-error-print-backtrace* t)
 
 #+(or CCL ECL)
 (defun reduce-init-function ()
@@ -3838,6 +3884,3 @@ Called by ON/OFF COMP; see 'clrend.red'."
 
 ;; Move implementation into a separate package and only export
 ;; required symbols.  This should make profiling easier!
-
-;; Implement compd (see rsupport.red) as compile, so that inlines,
-;; etc, get compiled?

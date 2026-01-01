@@ -5,7 +5,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1829,7 +1829,7 @@ inline constexpr size_t VECTOR_CHUNK_BYTES =
 // machine will have around 0.5 million sub-vectors, each of size a megabyte.
 // that is 2^39 bytes, and so if this is used to store LispObjects there can
 // be up to 2^36 of them. That is 64G cells, consuming 512GBytes of memory.
-// At present (2019-2025) that seems an acceptable limit. If at some stage (!) it
+// At present (2019-2026) that seems an acceptable limit. If at some stage (!) it
 // became essential to go yet further the natural thing would be to increase
 // the basic memory allocation block size from 4 Mbytes upwards, and each
 // doubling of that could allow me to increase the largest vector size by

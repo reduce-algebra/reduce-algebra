@@ -1,9 +1,9 @@
-// lispthrow.h                                 Copyright Codemist 2020-2025
+// lispthrow.h                                 Copyright Codemist 2020-2026
 
 // Some exception processing stuff for CSL
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

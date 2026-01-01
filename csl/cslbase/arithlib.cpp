@@ -1,4 +1,4 @@
-// Big Number arithmetic.                             A C Norman, 2019-2025
+// Big Number arithmetic.                             A C Norman, 2019-2026
 
 // To use this, go "#include "arithlib.h" and link against "arithlib.cpp"
 // or as an alternatice #include "arithlib.cpp" as a header-only library.
@@ -15,7 +15,7 @@
 //    Split into header file and implementation file(s).
 
 /**************************************************************************
- * Copyright (C) 2019-2025, Codemist.                    A C Norman       *
+ * Copyright (C) 2019-2026, Codemist.                    A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -497,7 +497,7 @@ static constexpr bool isHeader = ([](){
 #include <algorithm>
 #include <filesystem>
 
-// bitmaps.h                                    Copyright (C) 2025 Codemist
+// bitmaps.h                                    Copyright (C) 2026 Codemist
 
 #ifndef header_bitmaps_h
 #define header_bitmaps_h 1
@@ -506,7 +506,7 @@ static constexpr bool isHeader = ([](){
 
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -954,13 +954,13 @@ using CSL_LISP::countBits;
 
 // end of bitmaps.h
 
-// threadloc.h                                  Copyright (C) 2025 Codemist
+// threadloc.h                                  Copyright (C) 2026 Codemist
 
 #ifndef header_threadloc_h
 #define header_threadloc_h 1
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1448,7 +1448,7 @@ inline void initialize()
 
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2023,10 +2023,10 @@ int main()
 
 
 // end of cthread.cpp
-// acnutil.h                               Copyright (C) 2025 Arthur Norman
+// acnutil.h                               Copyright (C) 2026 Arthur Norman
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2199,7 +2199,7 @@ using acnutil::now;
 // performs bound checking if DEBUG is defined at compile-time.
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -3060,7 +3060,7 @@ public:
 // $Id$
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -3104,7 +3104,7 @@ public:
 // not be available on all computers.
 
 // "int128_t.h":  128 bit integer types for C++
-//                             Copyright Jason Lee, Arthur Norman 2013-2025
+//                             Copyright Jason Lee, Arthur Norman 2013-2026
 
 // $Id$
   
@@ -19851,7 +19851,7 @@ public:
 // $Id$
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -20054,7 +20054,7 @@ static void inverse_slow_ft(DigitPtr32 a, size_t N)
 // $Id$
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -20267,7 +20267,7 @@ static void DIT_FT(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 // $Id$
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -20480,7 +20480,7 @@ static void DIT_FT(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 // $Id$
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -20716,7 +20716,7 @@ static void dit_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 // $Id$
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

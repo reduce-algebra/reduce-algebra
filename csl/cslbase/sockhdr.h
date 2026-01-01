@@ -1,4 +1,4 @@
-// sockhdr.h                               Copyright (C) 1997-2025 Codemist
+// sockhdr.h                               Copyright (C) 1997-2026 Codemist
 
 //
 // pull in headers suitable for socket-related code.
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

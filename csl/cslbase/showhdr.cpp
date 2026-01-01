@@ -1,11 +1,11 @@
-// showhdr.cpp                             Copyright (C) Codemist 2022-2025
+// showhdr.cpp                             Copyright (C) Codemist 2022-2026
 
 //
 // Decode a LispObject, in particular in the case it is actually
 // a Header.
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
