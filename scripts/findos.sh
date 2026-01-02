@@ -245,6 +245,9 @@ else
         *ProductVersion*\<string\>15.*)
           os="mac_15_sequoia"
           ;;
+        *ProductVersion*\<string\>26.*)
+          os="mac_15_tahoe"
+          ;;
         *)
           os="mac_unknown_version"
           ;;
