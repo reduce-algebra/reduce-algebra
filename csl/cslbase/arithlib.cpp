@@ -2193,7 +2193,7 @@ using acnutil::now;
 #endif // __header_acnutil
 
 // end of acnutil.h
-// lvector.h                                  Copyright (C) A C Norman 2025
+// lvector.h                                  Copyright (C) A C Norman 2026
 
 // This is intended to behave much as a C++ "T*" pointer except that it
 // performs bound checking if DEBUG is defined at compile-time.
@@ -3055,7 +3055,7 @@ public:
 #endif // __header_lvector_h
 
 // end of lvector.h
-// fftutils.cpp                                   Copyright 2025 A C Norman
+// fftutils.cpp                                   Copyright 2026 A C Norman
 
 // $Id$
 
@@ -3151,7 +3151,7 @@ support my current usage. Others who pick this up might want to review
 and extent that!
 
 Copyright (c) 2013 - 2017 Jason Lee @ calccrypto at gmail.com
-              2020 - 2025 Arthur Norman
+              2020 - 2026 Arthur Norman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19846,7 +19846,7 @@ static void kara(ConstDigitPtr a, std::size_t N,
 
 public:
 
-// fftmod.cpp                                     Copyright 2025 A C Norman
+// fftmod.cpp                                     Copyright 2026 A C Norman
 
 // $Id$
 
@@ -20049,7 +20049,7 @@ static void inverse_slow_ft(DigitPtr32 a, size_t N)
 #define DIF_FT generic_dif_ft
 #define DIT_FT generic_dit_ft
 
-// fftkernel.cpp                                           Copyright 2025 A C Norman
+// fftkernel.cpp                                  Copyright 2026 A C Norman
 
 // $Id$
 
@@ -20262,7 +20262,7 @@ static void DIT_FT(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 #define DIT_FT sse4_dit_ft
 #pragma GCC target ("sse4.2")
 
-// fftkernel.cpp                                           Copyright 2025 A C Norman
+// fftkernel.cpp                                  Copyright 2026 A C Norman
 
 // $Id$
 
@@ -20475,7 +20475,7 @@ static void DIT_FT(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 #define DIT_FT avx_dit_ft
 #pragma GCC target ("avx")
 
-// fftkernel.cpp                                           Copyright 2025 A C Norman
+// fftkernel.cpp                                  Copyright 2026 A C Norman
 
 // $Id$
 
@@ -20711,7 +20711,7 @@ static void dit_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 #define DIF_FT dif_ft
 #define DIT_FT dit_ft
 
-// fftkernel.cpp                                           Copyright 2025 A C Norman
+// fftkernel.cpp                                  Copyright 2026 A C Norman
 
 // $Id$
 

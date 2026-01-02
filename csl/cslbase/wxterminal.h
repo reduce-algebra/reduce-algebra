@@ -1,4 +1,4 @@
-// wxterminal.h                               Copyright (C) A C Norman 2025
+// wxterminal.h                               Copyright (C) A C Norman 2026
 
 // header file to go with wxterminal.cpp
 
