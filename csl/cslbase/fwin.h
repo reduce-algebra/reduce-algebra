@@ -118,7 +118,7 @@ extern const char* fullProgramName;
 // Note that I impose an arbitrary limit on the length of the name of the
 // executable.
 //
-extern const char* programName;
+extern "C" const char* programName;
 
 //
 // programDir gives the directory from which this application was launched.
@@ -485,7 +485,7 @@ extern int windowed_worker(int argc, const char* argv[],
 
 extern bool fwin_use_xft;
 
-extern bool directoryp(char* f, const char* o, size_t n);
+extern "C" bool directoryp(char* f, const char* o, size_t n);
 
 extern bool using_termed;
 
@@ -503,17 +503,16 @@ extern int plain_worker(int argc, const char* argv[],
                         fwin_entrypoint *fwin_main);
 extern std::string fwin_prompt_string;
 
-extern int get_current_directory(char* s, size_t n);
-extern bool file_readable(char* filename, const char* old, size_t n);
-extern bool file_writeable(char* filename, const char* old, size_t n);
-extern bool file_executable(char* filename, const char* old,
-                            size_t n);
-extern int rename_file(char* from_name, const char* from_old,
-                       size_t from_size,
-                       char* to_name, const char* to_old, size_t to_size);
-extern int get_home_directory(char* b, size_t len);
-extern int get_users_home_directory(char* b, size_t len);
-extern int my_system(const char* s);
+extern "C" int get_current_directory(char* s, size_t n);
+extern "C" bool file_readable(char* filename, const char* old, size_t n);
+extern "C" bool file_writeable(char* filename, const char* old, size_t n);
+extern "C" bool file_executable(char* filename, const char* old, size_t n);
+extern "C" int rename_file(char* from_name, const char* from_old,
+                           size_t from_size,
+                           char* to_name, const char* to_old, size_t to_size);
+extern "C" int get_home_directory(char* b, size_t len);
+extern "C" int get_users_home_directory(char* b, size_t len);
+extern "C" int my_system(const char* s);
 extern int truncate_file(std::FILE *f, long int where);
 
 } // end namespace

@@ -92,7 +92,7 @@ extern void enable_keyboard(bool terminalUsed);
 // On any normal exit the destructor is invoked, however if std::quick_exit
 // is activated the at_quick_exit does the job for me.
 
-extern void term_close(void);
+extern "C" void term_close();
 
 class TermSetup
 {
