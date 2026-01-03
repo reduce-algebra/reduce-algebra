@@ -210,10 +210,10 @@ uxwritefloat(char *buf, double *flt, char *convstr)
 	      strcat(temps, ".0");     /* Add .0 ono original string */
 	      strcat(temps, tempbuf);  /* add the exponent part onto the end */
 	    }
-	}
-      else
-	{
-	  strcat(temps, ".0");
+	  else
+	    {
+	      strcat(temps, ".0");
+	    }
 	}
     }
   /* Install the length of the string into the Lisp header word
