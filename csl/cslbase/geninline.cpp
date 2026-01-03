@@ -1,4 +1,4 @@
-// geninline.cpp                           Copyright (C) Arthur Norman 2025
+// geninline.cpp                           Copyright (C) Arthur Norman 2026
 
 
 /**************************************************************************

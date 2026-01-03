@@ -1,4 +1,4 @@
-// inthash.h                                      Copyright A C Norman 2025
+// inthash.h                                      Copyright A C Norman 2026
 
 // The code here provides an implementation of hash tables that use
 // integer keys (uintptr_t) and can optionally associate similar width

@@ -64,10 +64,7 @@
 #include <thread>
 #include <chrono>
 
-namespace FX
-{
-extern void term_close();
-}
+extern "C" void term_close();
 
 namespace CSL_LISP
 {
@@ -82,6 +79,8 @@ extern std::FILE *spool_file;
 extern void displayAllPages(const char*);
 #endif // EXTREME_DEBUG
 
+extern "C"
+{
 [[noreturn]] inline void my_abort()
 {   std::fprintf(stdout, "\n!!! Aborting\n\n");
 #if defined EXTREME_DEBUG
@@ -98,7 +97,7 @@ extern void displayAllPages(const char*);
         std::fclose(spool_file);
         spool_file = nullptr;
     }
-    FX::term_close();
+    term_close();
     std::exit(999);
 #endif
 #ifdef HAVE_QUICK_EXIT
@@ -106,6 +105,8 @@ extern void displayAllPages(const char*);
 #else // HAVE_QUICK_EXIT
     std::exit(EXIT_FAILURE);
 #endif // HAVE_QUICK_EXIT
+}
+
 }
 
 [[noreturn]] inline void my_abort(const char* msg)
@@ -124,7 +125,7 @@ extern void displayAllPages(const char*);
         std::fclose(spool_file);
         spool_file = nullptr;
     }
-    FX::term_close();
+    term_close();
 #endif
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #ifdef HAVE_QUICK_EXIT
@@ -193,7 +194,7 @@ inline void my_assert1(unsigned int line, const char* file,
         std::fclose(spool_file);
         spool_file = nullptr;
     }
-    FX::term_close();
+    term_close();
 #endif
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #ifdef HAVE_QUICK_EXIT

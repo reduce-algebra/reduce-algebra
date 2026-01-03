@@ -94,8 +94,8 @@ extern void process_file_name(char *filename, const char *old,
 // create any necessary directories on the way to it...
 //
 
-extern std::FILE *open_file(char *filename, const char *old, size_t n,
-                            const char *mode, std::FILE *old_file);
+extern "C" std::FILE *open_file(char *filename, const char *old, size_t n,
+                                const char *mode, std::FILE *old_file);
 
 //
 // find if a file exists, and if it does return (as 24 chars) the
@@ -118,15 +118,18 @@ extern bool file_exists(char *filename, const char *old, size_t n,
 // such as "tempfile*.log" should be safe!
 //
 
-extern int create_directory(char *filename, const char *old, size_t n);
+// I make various things 'extern "C"' to avoid me getting muddled as between
+// the CSL_LISP and FX namespaces. This is perhaps lazy but simple!
 
-extern int delete_file(char *filename, const char *old, size_t n);
+extern "C" int create_directory(char *filename, const char *old, size_t n);
 
-extern int delete_wildcard(char *filename, const char *old, size_t n);
+extern "C" int delete_file(char *filename, const char *old, size_t n);
 
-extern int rename_file(char *from_name, const char *from_old,
-                       size_t from_size,
-                       char *to_name, const char *to_old, size_t to_size);
+extern "C" int delete_wildcard(char *filename, const char *old, size_t n);
+
+extern "C" int rename_file(char *from_name, const char *from_old,
+                           size_t from_size,
+                           char *to_name, const char *to_old, size_t to_size);
 
 //
 // The interfaces to file_readable and file_writable are also similar
@@ -137,33 +140,33 @@ extern int rename_file(char *from_name, const char *from_old,
 // directoryp tests whether its argument is a directory.
 //
 
-extern bool file_readable(char *filename, const char *old, size_t n);
+extern "C" bool file_readable(char *filename, const char *old, size_t n);
 
-extern bool file_writeable(char *filename, const char *old, size_t n);
+extern "C" bool file_writeable(char *filename, const char *old, size_t n);
 
-extern bool file_executable(char *filename, const char *old, size_t n);
+extern "C" bool file_executable(char *filename, const char *old, size_t n);
 
-extern bool directoryp(char *filename, const char *old, size_t n);
+extern "C" bool directoryp(char *filename, const char *old, size_t n);
 
 //
 // file_length returns the length of its argument (a file) in bytes.
 //
-extern int64_t file_length(char *filename, const char *old, size_t n);
+extern "C" int64_t file_length(char *filename, const char *old, size_t n);
 
 //
 // current_directory() places the name of the current directory in the buffer
 // which has the indicated size, and returns 0 for failure or otherwise
 // the length of data written.
 //
-extern int current_directory(char *name, int len);
+extern "C" int current_directory(char *name, int len);
 
 //
 // The next three are much-like the same... On some operating systems
 // they will be pretty meaningless!
 //
-extern int get_current_directory(char *name, size_t len);
-extern int get_home_directory(char *name, size_t len);
-extern int get_users_home_directory(char *name, size_t len);
+extern "C" int get_current_directory(char *name, size_t len);
+extern "C" int get_home_directory(char *name, size_t len);
+extern "C" int get_users_home_directory(char *name, size_t len);
 
 //
 // Just for Reduce, find_gnuplot fills in the command to launch gnuplot
@@ -174,8 +177,7 @@ extern int get_users_home_directory(char *name, size_t len);
 extern int find_gnuplot(char *name);
 
 // returns nullptr for OK or an error string
-extern char *change_directory(char *filename, const char *old,
-                              size_t n);
+extern "C" char *change_directory(char *filename, const char *old, size_t n);
 
 //
 // get_truename attempts to get a canonical name for a file or directory.
@@ -193,7 +195,7 @@ extern char *change_directory(char *filename, const char *old,
 // It normally returns the "true name" but return nullptr in error cases
 // and in that case leave filename an error string.
 //
-extern char *get_truename(char *filename, const char *old, size_t n);
+extern "C" char *get_truename(char *filename, const char *old, size_t n);
 
 // list_directory_members calls the given callback function handing it
 // the name of each file in given directory.
@@ -255,7 +257,7 @@ extern unsigned long int pack_date(int year, int mon, int day,
 // it may be useful to perform mappings on the character string given
 // (e.g. to fold case) before calling the built-in getenv().
 //
-extern const char *my_getenv(const char *s);
+extern "C" const char *my_getenv(const char *s);
 
 //
 // my_system is just like the ANSI function system() - done this way to
@@ -263,7 +265,7 @@ extern const char *my_getenv(const char *s);
 // needed.
 //
 
-extern int my_system(const char *s);
+extern "C" int my_system(const char *s);
 
 //
 // my_popen() and my_pclose() are intended to be just like the Unix

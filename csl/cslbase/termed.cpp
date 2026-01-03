@@ -1503,7 +1503,7 @@ void enable_keyboard(bool terminalUsed)
 #endif // AVOID_TERMINAL_THREADS
 }
 
-void term_close()
+extern "C" void term_close()
 {   if (!termEnabled) return;
 // Note here and elsewhere in this file that I go "fflush(stdout)" before
 // doing anything that may change styles or options for stream handling.

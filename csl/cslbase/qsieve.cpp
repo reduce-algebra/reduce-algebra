@@ -105,6 +105,8 @@
 #include <sys/time.h>
 #include <string.h>
 
+#include <iostream>
+
 namespace CSL_LISP
 {
 
@@ -1892,7 +1894,14 @@ void generate_input_file(state *state)
         cint nums[3];
         for (i = 0; i < 3; ++i)
             cint_init(nums + i, max << 1, 1);
-        const int max_len = cint_approx_digits_from_bits(max, 10);
+// max_len here is not constexpr so buff is being set up as a dynamically
+// sized array!
+        const int their_max_len = cint_approx_digits_from_bits(max, 10);
+        constexpr int max_len = 4096;
+        if (their_max_len > max_len)
+        {   std::cout << "\n+++ Attempt to use qsieve on overlarge number\n";
+            std::abort();
+        } 
         char buf[max_len + 255], *title = buf + max_len,
                                   *comment = title + 127, *str = title ;
         str += sprintf(str, "Generated %d sample number%s ", (int) count,
@@ -4670,7 +4679,7 @@ int Xmain(int argc, const char *argv[])
 {
 
     // Default state (the integer factorization software don't use global variables).
-    state state = {0};
+    state state = {{0}};
 
     // Random number generator consistent across platforms.
     state.params.rand.seed = 0x2236b69a7d223bd;

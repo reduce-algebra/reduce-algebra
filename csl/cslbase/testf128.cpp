@@ -1,4 +1,4 @@
-// testf128.cpp                                Copyright Arthur Norman 2025
+// testf128.cpp                                Copyright Arthur Norman 2026
 
 // $Id$
 

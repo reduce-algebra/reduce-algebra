@@ -1,5 +1,4 @@
-
-// fftkernel.cpp                                           Copyright 2025 A C Norman
+// fftkernel.cpp                                  Copyright 2026 A C Norman
 
 // $Id$
 

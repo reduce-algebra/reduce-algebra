@@ -1,4 +1,4 @@
-// float128_t.h                                Copyright Arthur Norman 2025
+// float128_t.h                                Copyright Arthur Norman 2026
 
 // $Id$
 

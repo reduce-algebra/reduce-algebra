@@ -106,7 +106,7 @@ extern int windowsFindGnuplot2(char *name);
 
 extern uintptr_t C_stackBase;
 extern const char *fullProgramName;
-extern const char *programName;
+extern "C" const char *programName;
 extern bool programNameDotCom;
 extern const char *programDir;
 

@@ -1,4 +1,4 @@
-// flatten.cpp                                Copyright (C) A C Norman 2025
+// flatten.cpp                                Copyright (C) A C Norman 2026
 
 /**************************************************************************
  * Copyright (C) 2026, Codemist.                         A C Norman       *

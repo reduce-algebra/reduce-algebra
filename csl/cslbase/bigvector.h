@@ -1,4 +1,4 @@
-// bigvector.h                                    Copyright A C Norman 2025
+// bigvector.h                                    Copyright A C Norman 2026
 
 
 /**************************************************************************
