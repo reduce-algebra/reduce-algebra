@@ -221,15 +221,17 @@ else
 #       *Mac*OS*X*ProductVersion*\<string\>10.12*)
 #         os="mac_10.12_sierra"
 #         ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.13*)
-          os="mac_10.13_highsierra"
-          ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.14*)
-          os="mac_10.14_mojave"
-          ;;
-        *ProductVersion*\<string\>10.15*)
-          os="mac_10.15_catalina"
-          ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.13*)
+#         os="mac_10.13_highsierra"
+#         ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.14*)
+#         os="mac_10.14_mojave"
+#         ;;
+#       *ProductVersion*\<string\>10.15*)
+#         os="mac_10.15_catalina"
+#         ;;
+# I now view Big Sur as the oldest release that there is even a pretence of
+# support for here.
         *ProductVersion*\<string\>11.*)
           os="mac_11_big_sur"
           ;;
@@ -246,7 +248,7 @@ else
           os="mac_15_sequoia"
           ;;
         *ProductVersion*\<string\>26.*)
-          os="mac_15_tahoe"
+          os="mac_26_tahoe"
           ;;
         *)
           os="mac_unknown_version"
