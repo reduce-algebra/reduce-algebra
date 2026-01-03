@@ -62,9 +62,7 @@ static stack_t stackinfo = { (void *) alternate_signalstack, 0, sizeof(alternate
 static stack_t *stackinfo_ptr = NULL;
 
 void
-sun3_sigset( sig, action )
-void (*action)();
-int sig;
+sun3_sigset(int sig,void (*action)() )
 {
    struct sigaction act = {0};
    
@@ -97,9 +95,7 @@ int sig;
 }
 
 void
-sun3_sigrelse(sig, action)
-void (*action)();
-int sig;
+sun3_sigrelse(int sig, void (*action)())
 {
 
 #ifndef LINUX
@@ -115,16 +111,16 @@ int sig;
  
 
 int
-ieee_handler(x,y)
-char * x; int y;
+ieee_handler(char *x,int y)
 {
-  mkfifo(x,y);
+  return mkfifo(x,y);
 }
 
 int
 ieee_flags(long long x1,long long x2,long long x3,long long x4)
 {
   if(x1 == 10)  forminit((FILE **)x2,(FILE **)x3);
+  return 0;
 }
 
 /*

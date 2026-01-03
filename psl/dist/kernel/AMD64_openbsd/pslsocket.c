@@ -60,9 +60,7 @@ unixsocketopen(char* name, int number)
    struct sockaddr_in mail_addr;   /* Address structure */ 
    int mail_len = sizeof(struct sockaddr_in); 
    int port_fd, conn_fd; 
-   int mail_fd, temp;
-   int continue1;
-   char message[80]; 
+   int mail_fd;
    char *getlogin();
  
   if (name == (char *) 0)

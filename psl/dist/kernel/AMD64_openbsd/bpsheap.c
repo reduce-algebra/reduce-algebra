@@ -154,7 +154,7 @@ void read_error(char *,long long,long long);
 
 int
 setupbpsandheap(int argc,char *argv[])
-{ long long ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,diff;
+{ long long ohl,ohtb,ohub,hl,htb,hlb,hub,diff;
   int memset = 0;
   FILE * imago;
   long long headerword [8];
@@ -162,7 +162,6 @@ setupbpsandheap(int argc,char *argv[])
   long long current_size_in_bytes, heapsize_in_bytes;
   double bpspercent, heappercent;
   char   *argp, *scanptr, *scanformat;
-  int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
   long hugo;
 
   total        = MINSIZE;
@@ -490,11 +489,11 @@ alterheapsize(int increment)
   NOTE: only implemented for the one heap version on the 68000.
 */
 
-  int heapsize;
   int current_size_in_bytes;
   long long diff;
 
 #if (NUMBEROFHEAPS == 1)
+  int heapsize;
   int gcarraysize, newbreakvalue;
  
   printf("***** cannot extend heap on this machine\n");

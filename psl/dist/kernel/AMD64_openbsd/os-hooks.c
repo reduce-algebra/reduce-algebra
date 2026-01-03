@@ -148,7 +148,7 @@ extern char *end;
 void
 clear_dtabsize()
 {
- int i;
+  // int i;
  }
  
 #ifndef LINUX

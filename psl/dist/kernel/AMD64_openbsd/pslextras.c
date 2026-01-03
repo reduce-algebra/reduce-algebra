@@ -162,7 +162,7 @@ int external_setenv (char *var, char *val, int ov)
  
   bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
   environ = envnew;
-  strncpy(var_plus_equal_sign, var, 99);
+  strncpy(var_plus_equal_sign, var, 98);
   strncat(var_plus_equal_sign, "=", 1);
   return(setenv (var_plus_equal_sign, val,ov));
 }
