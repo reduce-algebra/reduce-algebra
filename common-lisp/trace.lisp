@@ -1,9 +1,9 @@
 ;;; trace.lisp --- Standard Lisp on Common Lisp trace facilities
 
-;; Copyright (C) 2019, 2025 Francis J. Wright
+;; Copyright (C) 2019, 2025, 2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2025-12-13 16:36:16 franc>
+;; Time-stamp: <2026-01-03 10:00:55 franc>
 ;; Created: 20 February 2019
 
 ;; Based on, and hopefully consistent with, the portable REDUCE
@@ -76,14 +76,16 @@ List all traced functions if no functions or nil are specified."
   "Get DE form for function NAME from file \"/.../fasl.<lisp>/modulename.lisp\"."
   (let ((*readtable* (copy-readtable nil)) ; read CL syntax
         file stream form)
-    (when (setq file (get name 'sl::defined-in-file)) ; e.g. |pgk/mod.red|
-      (setq file (pathname-name (symbol-name file))) ; e.g. "mod"
+    (when (setq file (get name 'sl::defined-in-file)) ; e.g. |PGK/MOD.RED|
+      (setq file (pathname-name
+                  (sl::%string-invert-case (symbol-name file)))) ; e.g. "mod"
       (setq file (merge-pathnames file %fasl.lisp-pathname-template%))
       ;; e.g. "/.../fasl.which/mod.lisp"
       (when (setq stream (open file
                                #-CCL :external-format
                                #+CLISP charset:UTF-8
-                               #-(or CLISP CCL) :UTF-8))
+                               #-(or CLISP CCL) :UTF-8
+                               :if-does-not-exist nil))
         (loop
            do
              (setq form (read stream nil sl::$eof$))
