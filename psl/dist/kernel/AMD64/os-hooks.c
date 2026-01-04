@@ -75,14 +75,12 @@ void clear_iob(), clear_dtabsize();
 
 void psl_main(int argc, char *argv[]);
 
-char ** copy_argv();
+char ** copy_argv(int argc, char *argv[]);
 
 int Debug = 0;
 
 int
-main(argc,argv)
-int argc;
-char *argv[];
+main(int argc,char *argv[])
 {
   int val;
  
@@ -111,9 +109,7 @@ exit(0);
 int setupbpsandheap(int argc, char *argv[]);
 
 void
-os_startup_hook(argc, argv)
-     int argc;
-     char *argv[];
+os_startup_hook(int argc, char *argv[])
 {
   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
@@ -150,7 +146,7 @@ extern char *end;
 void
 clear_dtabsize()
 {
- int i;
+  // int i;
  }
  
 #ifndef LINUX

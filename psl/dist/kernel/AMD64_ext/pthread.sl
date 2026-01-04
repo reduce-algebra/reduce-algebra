@@ -105,9 +105,10 @@
 
 (external-function pthread_setschedprio (target_thread prio))
 
-(external-function pthread_getconcurrency (void))
+(external-function pthread_getconcurrency ())
 
-(external-function pthread_yield (void))
+(external-function sched_yield ())
+(de pthread_yield () (sched_yield))
 
 (external-function pthread_setaffinity_np (th cpusetsize cpuset))
 
@@ -121,7 +122,7 @@
 
 (external-function pthread_cancel (th))
 
-(external-function pthread_testcancel (void))
+(external-function pthread_testcancel ())
 
 % /* Mutex handling.  */
 

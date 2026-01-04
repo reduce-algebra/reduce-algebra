@@ -126,10 +126,10 @@ l0011:
  call *2552(%r14)
  call *2560(%r14)
  call *2568(%r14)
- mov l0007,%rax
+ mov 8(%R9),%rax
  call *2576(%r14)
  call *2584(%r14)
- mov l0008,%rax
+ mov 0(%R9),%rax
  call *2592(%r14)
  jmp *2600(%r14)
  .quad 1
@@ -6100,8 +6100,8 @@ l0323:
  mov %rbx,2496(%r13)
  add $24,%rsp
  ret
- .quad 1
-/ (*entry pthread_getconcurrency expr 1)
+ .quad 0
+/ (*entry pthread_getconcurrency expr 0)
  .globl l0324
 l0324:
  push %rax
@@ -6131,8 +6131,8 @@ l0324:
  mov %rbx,2496(%r13)
  add $8,%rsp
  ret
- .quad 1
-/ (*entry pthread_yield expr 1)
+ .quad 0
+/ (*entry pthread_yield expr 0)
  .globl l0325
 l0325:
  push %rax
@@ -6150,7 +6150,7 @@ l0325:
  shr $5,%rsp
  shl $5,%rsp
  mov %rax,40(%rsp)
- call pthread_yield
+ call sched_yield
  mov 40(%rsp),%rsp
  pop %r9
  pop %r14
@@ -6292,8 +6292,8 @@ l0329:
  mov %rbx,2496(%r13)
  add $8,%rsp
  ret
- .quad 1
-/ (*entry pthread_testcancel expr 1)
+ .quad 0
+/ (*entry pthread_testcancel expr 0)
  .globl l0330
 l0330:
  push %rax

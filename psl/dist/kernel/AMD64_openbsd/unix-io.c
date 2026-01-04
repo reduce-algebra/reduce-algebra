@@ -164,7 +164,8 @@ unixcleario()
 #include <pwd.h>
 struct passwd *getpwuid(uid_t);
 struct passwd *getpwnam(const char *);
-char *getenv( const char*);
+char *getenv(const char*);
+
 char collect[255], copy[255];  /* Made global so it won't be overwritten
                   Used to be local to expand_file_name */
  
@@ -185,37 +186,43 @@ char *expand_file_name(char *fname)
     {
       if ((tilde = (*s == '~')) || (*s == '$'))
         {
-      for (e = ++s; (*e != '/' && *e != '\0' && *e != '$'); e++)
-        ;
+	  for (e = ++s; (*e != '/' && *e != '\0' && *e != '$'); e++)
+	    ;
           t = 0;                        /* default initialization */
           if (e == s)
             {
-          if (tilde) t = ((getpwuid(getuid())) -> pw_dir);
-        }
+	      if (tilde) t = ((getpwuid(getuid())) -> pw_dir);
+	    }
           else
             {
-          save = *e;
+	      save = *e;
               *e = '\0';
               if (tilde)
                 {
 		  if ((p = getpwnam(s)))  t = (p -> pw_dir);
-        }
+		}
               else
-                t = getenv(s);
+		{
+		  t = getenv(s);
+		}
               *e = save;
               s = e;
             }
           if (t)
-        while ((*c++ = *t++))
-          ;
+	    {
+	      while ((*c++ = *t++))
+		;
+	    }
           else
-        return(fname);   /* name not found, just return original fname */
-          c--;
+	    {
+	      return(fname);   /* name not found, just return original fname */
+	    }
+	  c--;
         }
-    for (; (*s != '\0' && *s != '$'); *c++ = *s++)
-      ;
+      for (; (*s != '\0' && *s != '$'); *c++ = *s++)
+	;
       *c = '\0';
-  }
+    }
   return (collect);
 }
  

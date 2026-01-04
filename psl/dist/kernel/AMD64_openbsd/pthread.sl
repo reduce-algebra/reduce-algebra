@@ -103,9 +103,10 @@
 
 (external-function pthread_getschedparam (target_thread policy param))
 
-(external-function pthread_getconcurrency (void))
+(external-function pthread_getconcurrency ())
 
-(external-function pthread_yield (void))
+(external-function sched_yield ())
+(de pthread_yield () (sched_yield))
 
 (external-function pthread_once (once_control init_routine))
 
@@ -115,7 +116,7 @@
 
 (external-function pthread_cancel (th))
 
-(external-function pthread_testcancel (void))
+(external-function pthread_testcancel ())
 
 % /* Mutex handling.  */
 

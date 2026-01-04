@@ -872,8 +872,8 @@ int n=0;
    return n;
 }/*errmessage*/
 
-static char asciitype[256];
-static char buf[1028];
+//static char asciitype[256];
+//static char buf[1028];
 
 /*The function just (re)starts FORM:*/
 int

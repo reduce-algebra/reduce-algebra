@@ -70,17 +70,14 @@
 /* Tag( uxfloat )
  */
 void
-uxfloat(f,i)
-     double *f;
-     long long i;
+uxfloat(double *f,long long i)
 {
   *f = i;
 }
 
 /* Tag( uxfix )
  */
-long long uxfix(f)
-     double *f;
+long long uxfix(double *f)
 {
   return *f;
 }
@@ -88,8 +85,7 @@ long long uxfix(f)
 /* Tag( uxassign )
  */
 void
-uxassign(f1,f2)
-     double *f1, *f2;
+uxassign(double *f1, double*f2)
 {
   *f1 = *f2;
 }
@@ -98,8 +94,7 @@ uxassign(f1,f2)
 fexcept_t flagp;
 
 int
-uxminus(f1,f2)
-     double *f1, *f2;
+uxminus(double *f1,double *f2)
 {
   *f1 = -*f2;
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -110,8 +105,7 @@ uxminus(f1,f2)
 /* Tag( uxplus2 )
  */
 int
-uxplus2(f1,f2,f3)
-     double *f1, *f2, *f3;
+uxplus2(double *f1,double *f2,double *f3)
 {
   *f1 = *f2 + *f3;
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -122,8 +116,7 @@ uxplus2(f1,f2,f3)
 /* Tag( uxdifference )
  */
 int
-uxdifference(f1,f2,f3)
-     double *f1, *f2, *f3;
+uxdifference(double *f1,double *f2,double *f3)
 {
   *f1 = *f2 - *f3;
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -134,8 +127,7 @@ uxdifference(f1,f2,f3)
 /* Tag( uxtimes2 )
  */
 int
-uxtimes2(f1,f2,f3)
-     double *f1, *f2, *f3;
+uxtimes2(double *f1,double *f2,double *f3)
 {
   *f1 = *f2 * *f3;
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -146,8 +138,7 @@ uxtimes2(f1,f2,f3)
 /* Tag( uxquotient )
  */
 int
-uxquotient(f1,f2,f3)
-     double *f1, *f2, *f3;
+uxquotient(double *f1,double *f2,double *f3)
 {
   *f1 = *f2 / *f3;
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
@@ -157,9 +148,7 @@ uxquotient(f1,f2,f3)
 
 /* Tag( uxequal )
  */
-long long uxequal(f1,f2,val1,val2)
-     double *f1, *f2;
-     long long val1, val2;
+long long uxequal(double *f1,double *f2,long long val1,long long val2)
 {
   if (*f1 == *f2)
     return val1;
@@ -169,9 +158,7 @@ long long uxequal(f1,f2,val1,val2)
 
 /* Tag( uxgreaterp )
  */
-long long uxgreaterp(f1,f2,val1,val2)
-     double *f1, *f2;
-     long long val1, val2;
+long long uxgreaterp(double *f1,double *f2,long long val1,long long val2)
 {
   if (*f1 > *f2)
     return val1;
@@ -181,9 +168,7 @@ long long uxgreaterp(f1,f2,val1,val2)
 
 /* Tag( uxlessp )
  */
-long long uxlessp(f1,f2,val1,val2)
-     double *f1, *f2;
-     long long val1, val2;
+long long uxlessp(double *f1,double *f2,long long val1,long long val2)
 {
   if (*f1 < *f2)
     return val1;
@@ -194,14 +179,13 @@ long long uxlessp(f1,f2,val1,val2)
 /* Tag( uxwritefloat )
  */
 void
-uxwritefloat(buf, flt, convstr)
-     char *buf;          /* String buffer to return float int */
-     double *flt;        /* Pointer to the float */
-     char *convstr;      /* String containing conversion field for sprintf */
+uxwritefloat(char *buf, double *flt, char *convstr)
+//     char *buf;          /* String buffer to return float int */
+//     double *flt;        /* Pointer to the float */
+//     char *convstr;      /* String containing conversion field for sprintf */
 {
   char *temps, *dot, *e;
   char tempbuf [100]; /* reasonable size limit */
-  float  tempf;
 
   temps = buf + 8;       /* Skip over lisp string length to write data */
 
@@ -210,24 +194,27 @@ uxwritefloat(buf, flt, convstr)
   if (finite(*flt)) 
     {
 
-    /* Make sure that there is a trailing .0
-     */
-    dot = strrchr(temps, '.');
-    if (dot == NULL)
-      /* Check to see if the number is in scientific notation. If so, we need
-       *  add the .0 into the middle of the string, just before the e.
+      /* Make sure that there is a trailing .0
        */
-      if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
-        {
-	  strcpy(tempbuf, e);       /* save exponent part */
-	  *e = '\0'; 
-	  strcat(temps, ".0");     /* Add .0 ono original string */
-	  strcat(temps, tempbuf);  /* add the exponent part onto the end */
-        }
-    else
-      {
-        strcat(temps, ".0");
-      }
+      dot = strrchr(temps, '.');
+      if (dot == NULL)
+	{
+	  /* Check to see if the number is in scientific notation. If so, we need
+	   *  add the .0 into the middle of the string, just before the e.
+	   */
+	  if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
+	    {
+	      strncpy(tempbuf, e, 100); /* save exponent part */
+	      // Now add ".0" and exponent part
+	      *e = '\0'; 
+	      strcat(temps, ".0");     /* Add .0 ono original string */
+	      strcat(temps, tempbuf);  /* add the exponent part onto the end */
+	    }
+	  else
+	    {
+	      strcat(temps, ".0");
+	    }
+	}
     }
   /* Install the length of the string into the Lisp header word
    */
@@ -246,25 +233,20 @@ uxwritefloat8(buf, flt, convstr,dummy)
 /* Tag( uxdoubletofloat )
  */
 void
-uxdoubletofloat (dbl,flt)
-     double *dbl;
-     float  *flt;
+uxdoubletofloat (double *dbl,float *flt)
 {
   *flt = (float) *dbl;
 }
 
 void
-uxfloattodouble (flt,dbl)
-     float  *flt;             
-     double *dbl;             
+uxfloattodouble (float *flt, double *dbl)
 {
   *dbl = (double) *flt;
 }
 
 /* Functions for fast-math.sl (Unix C replacement for mathlib.) */
 int
-uxsin (r, x)
-     double *r, *x;
+uxsin (double *r, double *x)
 {
     *r = sin( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -273,8 +255,7 @@ uxsin (r, x)
 }
 
 int
-uxcos (r, x)
-     double *r, *x;
+uxcos (double *r, double *x)
 {
     *r = cos( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -283,8 +264,7 @@ uxcos (r, x)
 }
 
 int
-uxtan (r, x)
-     double *r, *x;
+uxtan (double *r, double *x)
 {
     *r = tan( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -294,8 +274,7 @@ uxtan (r, x)
 }
 
 int
-uxasin (r, x)
-     double *r, *x;
+uxasin (double *r, double *x)
 {
     *r = asin( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -304,8 +283,7 @@ uxasin (r, x)
 }
 
 int
-uxacos (r, x)
-     double *r, *x;
+uxacos (double *r, double *x)
 {
     *r = acos( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -314,8 +292,7 @@ uxacos (r, x)
 }
 
 int
-uxatan (r, x)
-     double *r, *x;
+uxatan (double *r, double *x)
 {
     *r = atan( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -324,8 +301,7 @@ uxatan (r, x)
 }
 
 int
-uxsqrt (r, x)
-     double *r, *x;
+uxsqrt (double *r, double *x)
 {
     *r = sqrt( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -334,8 +310,7 @@ uxsqrt (r, x)
 }
 
 int
-uxexp (r, x)
-     double *r, *x;
+uxexp (double *r, double *x)
 {
     *r = exp( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -344,8 +319,7 @@ uxexp (r, x)
 }
 
 int
-uxlog (r, x)
-     double *r, *x;
+uxlog (double *r, double *x)
 {
     *r = log( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
@@ -357,8 +331,7 @@ uxlog (r, x)
 #define _half_pi  ((12868.0 - 0.036490896206895257)/8192.0)
 
 int
-uxatan2 (res, y, x)
-     double *res, *y, *x;
+uxatan2 (double *res, double *y, double *x)
 {
 #if 0
 
