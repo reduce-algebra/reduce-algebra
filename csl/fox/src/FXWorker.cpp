@@ -77,6 +77,10 @@
 
 #include "fwin.h"
 
+namespace CSL_LISP
+{
+}
+
 namespace FX
 {
 
