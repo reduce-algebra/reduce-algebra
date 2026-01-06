@@ -128,6 +128,12 @@ foreach ($primary_books as $book): ?>
 
 <?php $secondary_books = array(
 
+    array('url' => 'https://www.lulu.com/shop/michael-reed/principal-differential-geometric-algebra/paperback/product-yvk7zqr.html',
+          'img' => '<img src="images/Reed.jpg" width="153" height="232" alt="" />',
+          'ttl' => '<span class="title">Principal Differential Geometric Algebra:<br />compute using Grassmann.jl, Cartan.jl</span>',
+          'dsc' => '<span class="authors">by Michael Reed</span>
+<span class="biblio">545 pages, Lulu, ISBN 9798994367216, 2025</span>'),
+
     array('url' => 'http://www.springer.com/la/book/9783319716541',
           'img' => '<img src="images/Krasilshchik-Verbovetsky-Vitolo.jpg" width="153" height="232" alt="" />',
           'ttl' => '<span class="title">The Symbolic Computation of Integrability Structures<br />for Partial Differential Equations</span>',

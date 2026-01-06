@@ -64,6 +64,8 @@
 #define atan	atan_rn
 #define exp	exp_rn
 #define log	log_rn
+#define sinh	sinh_rn
+#define cosh	cosh_rn
 
 #endif
 
@@ -248,7 +250,7 @@ uxfloattodouble (float *flt, double *dbl)
 int
 uxsin (double *r, double *x)
 {
-    *r = sin( *x );
+  *r = sin( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
@@ -257,7 +259,7 @@ uxsin (double *r, double *x)
 int
 uxcos (double *r, double *x)
 {
-    *r = cos( *x );
+  *r = cos( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
@@ -266,7 +268,7 @@ uxcos (double *r, double *x)
 int
 uxtan (double *r, double *x)
 {
-    *r = tan( *x );
+  *r = tan( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
@@ -276,7 +278,7 @@ uxtan (double *r, double *x)
 int
 uxasin (double *r, double *x)
 {
-    *r = asin( *x );
+  *r = asin( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
@@ -285,7 +287,7 @@ uxasin (double *r, double *x)
 int
 uxacos (double *r, double *x)
 {
-    *r = acos( *x );
+  *r = acos( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
@@ -294,7 +296,7 @@ uxacos (double *r, double *x)
 int
 uxatan (double *r, double *x)
 {
-    *r = atan( *x );
+  *r = atan( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
@@ -303,7 +305,7 @@ uxatan (double *r, double *x)
 int
 uxsqrt (double *r, double *x)
 {
-    *r = sqrt( *x );
+  *r = sqrt( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
@@ -312,7 +314,7 @@ uxsqrt (double *r, double *x)
 int
 uxexp (double *r, double *x)
 {
-    *r = exp( *x );
+  *r = exp( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
@@ -321,7 +323,7 @@ uxexp (double *r, double *x)
 int
 uxlog (double *r, double *x)
 {
-    *r = log( *x );
+  *r = log( *x );
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
@@ -375,4 +377,43 @@ uxatan2 (double *res, double *y, double *x)
     *res = r;
 #endif
   return (1);
+}
+
+int
+uxsinh (double *r, double *x)
+{
+  *r = sinh( *x );
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  return (1);
+}
+
+int
+uxcosh (double *r, double *x)
+{
+  *r = cosh( *x );
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  return (1);
+}
+
+#if 0
+// currently not used because it is not defined in crlibm
+int
+uxtanh (double *r, double *x)
+{
+  *r = tanh( *x );
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  return (1);
+}
+#endif
+
+int
+uxhypot (double *res, double *x, double *y)
+{
+    *res = hypot( *x, *y );
+    fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+    if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+    return 1;
 }
