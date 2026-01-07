@@ -411,7 +411,7 @@ stacklowerbound:
  .long ((29*0x8000000)+335)
  .long ((29*0x8000000)+336)
  .long ((29*0x8000000)+337)
- .long 500
+ .long 503
  .long symnam
  .long ((29*0x8000000)+340)
  .long ((30*0x8000000)+128)
@@ -573,7 +573,10 @@ stacklowerbound:
  .long ((29*0x8000000)+497)
  .long ((29*0x8000000)+498)
  .long ((29*0x8000000)+499)
-  .space 258004
+ .long ((29*0x8000000)+500)
+ .long ((29*0x8000000)+501)
+ .long ((29*0x8000000)+502)
+  .space 257992
  .globl symprp
 symprp:
  .long ((30*0x8000000)+128)
@@ -1076,15 +1079,12 @@ symprp:
  .long ((30*0x8000000)+128)
  .long ((30*0x8000000)+128)
  .long ((30*0x8000000)+128)
-  .space 258004
+ .long ((30*0x8000000)+128)
+ .long ((30*0x8000000)+128)
+ .long ((30*0x8000000)+128)
+  .space 257992
  .globl symnam
 symnam:
- .globl l0263
- .long ((3*0x8000000)+l0263)
- .globl l0264
- .long ((3*0x8000000)+l0264)
- .globl l0265
- .long ((3*0x8000000)+l0265)
  .globl l0266
  .long ((3*0x8000000)+l0266)
  .globl l0267
@@ -2079,7 +2079,19 @@ symnam:
  .long ((3*0x8000000)+l0761)
  .globl l0762
  .long ((3*0x8000000)+l0762)
-  .space 258004
+ .globl l0763
+ .long ((3*0x8000000)+l0763)
+ .globl l0764
+ .long ((3*0x8000000)+l0764)
+ .globl l0765
+ .long ((3*0x8000000)+l0765)
+ .globl l0766
+ .long ((3*0x8000000)+l0766)
+ .globl l0767
+ .long ((3*0x8000000)+l0767)
+ .globl l0768
+ .long ((3*0x8000000)+l0768)
+  .space 257992
  .globl symfnc
 symfnc:
  .long undefinedfunction
@@ -2400,8 +2412,8 @@ symfnc:
  .long l0004
  .globl l0167
  .long l0167
- .globl l0219
- .long l0219
+ .globl l0222
+ .long l0222
  .globl _reduceup
  .long _reduceup
  .globl reduceup
@@ -2412,8 +2424,8 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
- .globl l0212
- .long l0212
+ .globl l0215
+ .long l0215
  .globl l0015
  .long l0015
  .globl initcode
@@ -2425,32 +2437,32 @@ symfnc:
  .globl faslin
  .long faslin
  .long undefinedfunction
- .globl l0210
- .long l0210
+ .globl l0213
+ .long l0213
  .globl l0010
  .long l0010
- .globl l0211
- .long l0211
- .globl l0209
- .long l0209
- .globl binaryopenread
- .long binaryopenread
  .globl l0214
  .long l0214
+ .globl l0212
+ .long l0212
+ .globl binaryopenread
+ .long binaryopenread
+ .globl l0217
+ .long l0217
  .globl l0155
  .long l0155
  .globl binaryread
  .long binaryread
- .globl l0230
- .long l0230
+ .globl l0233
+ .long l0233
  .globl binaryreadblock
  .long binaryreadblock
- .globl l0222
- .long l0222
+ .globl l0225
+ .long l0225
  .globl binaryclose
  .long binaryclose
- .globl l0221
- .long l0221
+ .globl l0224
+ .long l0224
  .long undefinedfunction
  .long undefinedfunction
  .globl l0037
@@ -2670,30 +2682,30 @@ symfnc:
  .long l0205
  .globl l0206
  .long l0206
- .globl sigrelse
- .long sigrelse
  .globl l0207
  .long l0207
  .globl l0208
  .long l0208
- .globl l0213
- .long l0213
- .globl l0215
- .long l0215
+ .globl l0209
+ .long l0209
+ .globl sigrelse
+ .long sigrelse
+ .globl l0210
+ .long l0210
+ .globl l0211
+ .long l0211
  .globl l0216
  .long l0216
- .globl l0217
- .long l0217
  .globl l0218
  .long l0218
+ .globl l0219
+ .long l0219
  .globl l0220
  .long l0220
+ .globl l0221
+ .long l0221
  .globl l0223
  .long l0223
- .globl l0224
- .long l0224
- .globl l0225
- .long l0225
  .globl l0226
  .long l0226
  .globl l0227
@@ -2702,12 +2714,12 @@ symfnc:
  .long l0228
  .globl l0229
  .long l0229
+ .globl l0230
+ .long l0230
  .globl l0231
  .long l0231
  .globl l0232
  .long l0232
- .globl l0233
- .long l0233
  .globl l0234
  .long l0234
  .globl l0235
@@ -2750,12 +2762,18 @@ symfnc:
  .long l0253
  .globl l0254
  .long l0254
+ .globl l0255
+ .long l0255
+ .globl l0256
+ .long l0256
+ .globl l0257
+ .long l0257
  .globl lastkernel
  .long lastkernel
  .globl codeaddressp
  .long codeaddressp
  .long undefinedfunction
-  .space 258004
+  .space 257992
  .globl symget
 symget:
  .long ((30*0x8000000)+128)
@@ -3258,4 +3276,7 @@ symget:
  .long ((30*0x8000000)+128)
  .long ((30*0x8000000)+128)
  .long ((30*0x8000000)+128)
-  .space 258004
+ .long ((30*0x8000000)+128)
+ .long ((30*0x8000000)+128)
+ .long ((30*0x8000000)+128)
+  .space 257992

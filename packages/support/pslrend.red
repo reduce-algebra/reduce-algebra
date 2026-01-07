@@ -756,6 +756,22 @@ symbolic procedure gensymp u;
 symbolic procedure ttab n;
   tab n;
 
+symbolic procedure symbol!-argcount fn;
+  begin
+    scalar n := getd fn;
+    if not eqcar(n, 'expr) then return nil;
+    n := cdr n;
+    if codep n then return code!-number!-of!-arguments n
+    else if eqcar(n, 'lambda) then return length cadr n
+    else return nil;
+  end;
+
+symbolic procedure prinhex a;
+  begin
+    scalar outputbase!* := 16;
+    prin1 a;
+  end;
+
 load gsort; % Not loaded by default and not autoloaded on demand.
 
 symbolic procedure sort(ll, ff);

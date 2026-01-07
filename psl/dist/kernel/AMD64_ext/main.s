@@ -3520,7 +3520,7 @@ l0236:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry hypot expr 2)
+/ (*entry uxhypot expr 2)
  .globl l0237
 l0237:
  push %rbx
@@ -3539,7 +3539,7 @@ l0237:
  shr $5,%rsp
  shl $5,%rsp
  mov %rax,40(%rsp)
- call hypot
+ call uxhypot
  mov 40(%rsp),%rsp
  pop %r13
  pop %r14
@@ -9439,8 +9439,8 @@ l0833:
  .byte 117,120,99,111,115,104,0,0
  .globl l0834
 l0834:
- .quad 4
- .byte 104,121,112,111,116,0
+ .quad 6
+ .byte 117,120,104,121,112,111,116,0
  .globl l0835
 l0835:
  .quad 11

@@ -45,7 +45,7 @@
 %
 %  $Id$
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
 #include <stdio.h>
@@ -195,7 +195,6 @@ uxwritefloat(char *buf, double *flt, char *convstr)
 
   if (finite(*flt)) 
     {
-
       /* Make sure that there is a trailing .0
        */
       dot = strrchr(temps, '.');

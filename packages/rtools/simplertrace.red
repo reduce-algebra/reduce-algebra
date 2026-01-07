@@ -60,22 +60,6 @@ copyd('!~!~saved_putd, 'putd);
 % with CSL I will not manage to extract that information in the case of
 % some built-in functions that take 4 or more arguments.
 
-#if (memq 'psl lispsystem!*)
-
-symbolic procedure s!:argcount fn;
-  begin
-    scalar n;
-    if fixp (n := get(fn, 'number!-of!-args)) then return n;
-    n := getd fn;
-    if not eqcar(n, 'expr) then return nil;
-    n := cdr n;
-    if codep n then return code!-number!-of!-arguments n
-    else if eqcar(n, 'lambda) then return length cadr n
-    else return nil
-  end;
-
-#else
-
 symbolic procedure s!:argcount fn;
   begin
     scalar n;
@@ -83,8 +67,6 @@ symbolic procedure s!:argcount fn;
     else if (n := symbol!-argcount fn) then return n
     else return nil
   end;
-
-#endif
 
 symbolic procedure s!:traced!-version(fn, nargs, newfn);
   begin

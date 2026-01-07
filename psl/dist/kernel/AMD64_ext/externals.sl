@@ -170,7 +170,7 @@
 (external-function uxsinh              (r x))
 (external-function uxcosh              (r x))
 %(external-function uxtanh              (r x))
-(external-function hypot               (r x))
+(external-function uxhypot             (r x))
 
  
 % Defined in pwd-fn.c

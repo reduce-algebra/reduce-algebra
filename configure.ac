@@ -57,6 +57,8 @@ AC_CONFIG_AUX_DIR([.])
 
 AC_CANONICAL_HOST()
 
+echo "HOST=$host  $host_cpu   $host_vendor   $host_os @@@@"
+
 abssrcdir=`"$srcdir/scripts/here.sh"`
 
 if which cygpath 2> /dev/null
@@ -227,25 +229,6 @@ then
     ;;
   esac
 fi
-
-# On a Raspberry Pi that is running a 64-bit kernel but 32-bit userland
-# I need to make it clear that I want a build for 32-bit Linix, because
-# config.guess reports a 64-bit world based on the kernel. This situation
-# might apply on other systems, so I check in general for uname -m reporting
-# aarch64, uname -s confirming that I am on Linux and getconf LONG_BIT
-# telling me that I have a 32-bit userland.
-
-case `uname -sm 2>/dev/null` in
-*Linux*aarch64*)
-  if test `getconf LONG_BIT` = "32"
-  then
-    exec $SHELL -c \
-      "$abssrcdir/configure --without-autogen $ac_configure_args --host=arm-linux-gnueabihf"
-  fi
-  ;;
-*)
-  ;;
-esac
 
 AC_ARG_ENABLE(universal,
   AS_HELP_STRING([--enable-universal],

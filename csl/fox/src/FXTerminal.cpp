@@ -162,6 +162,10 @@
 
 #include <windows.h>
 
+namespace CSL_LISP
+{
+}
+
 using namespace CSL_LISP;
 
 namespace FX {
