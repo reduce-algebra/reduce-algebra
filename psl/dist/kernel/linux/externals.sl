@@ -165,6 +165,10 @@
 (external-function uuxexp              (r x))
 (external-function uuxlog              (r x))
 (external-function uuxatan2            (r y x))
+(external-function uuxsinh             (r x))
+(external-function uuxcosh             (r x))
+%(external-function uuxtanh             (r x))
+(external-function uuxhypot            (r x))
  
  
 % Defined in pwd-fn.c
@@ -178,7 +182,7 @@
 (external-function sun3_sigrelse       (signame handler))
 (de sigrelse(a b)(sun3_sigrelse a b))
 (external-function mask_signal         (signo block))
- 
+
  
 % Defined In unexec.c
 %

@@ -137,8 +137,8 @@
 (external-function external_timc       (buffer))
 (external-function external_stat       (path buf))
 (external-function external_link       (path1 path2))
-(external-function external_strlen     (strptr))
 (external-function external_unlink     (path))
+(external-function external_strlen     (strptr))
 (external-function external_setenv     (varstring valstring))
 (external-function external_rmdir      (path))
 (external-function external_mkdir      (path mode))
@@ -166,6 +166,10 @@
 (external-function uuxexp              (r x))
 (external-function uuxlog              (r x))
 (external-function uuxatan2            (r y x))
+(external-function uuxsinh             (r x))
+(external-function uuxcosh             (r x))
+%(external-function uuxtanh             (r x))
+(external-function uuxhypot            (r x))
  
  
 % Defined in pwd-fn.c
@@ -175,8 +179,8 @@
  
 % Defined in sigs.c
 %
-(external-function sun3_sigset               (signame handler))
-(external-function sun3_sigrelse             (signame handler))
+(external-function sun3_sigset         (signame handler))
+(external-function sun3_sigrelse       (signame handler))
 (de sigrelse(a b)(sun3_sigrelse a b))
 (external-function mask_signal         (signo block))
 
