@@ -1,6 +1,6 @@
 ;; Lisp code to build a REDUCE image for bootstrapping on Common Lisp
 
-;; FJW -- Time-stamp: <2025-08-10 11:22:45 franc>
+;; FJW -- Time-stamp: <2026-01-03 16:42:37 franc>
 
 (load (concatenate 'string "fasl."
                    #+SBCL "sbcl"
@@ -49,6 +49,7 @@
 
 (cl:defparameter !*init!-time!* (time))
 
+(cl:defvar !*backtrace nil) % used in "boot.sl"
 (cl:defvar !*argnochk t)
 (cl:defvar !*int nil)  % Prevents input buffer being saved.
 (cl:defvar !*msg nil)
