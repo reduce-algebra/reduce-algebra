@@ -77,8 +77,7 @@ echoon()
  *  Return number of characters in input buffer.
  */
 void
-external_charsininputbuffer( fp )
-FILE * fp;		/* Ptr to stdio file structure for terminal. */
+external_charsininputbuffer(FILE *fp)
 {
 }
     
@@ -92,7 +91,7 @@ flushstdoutputbuffer()
 }
 
 int             getuid();
-struct passwd   *getpwuid(), *getpwnam();
+struct passwd   *getpwuid(uid_t), *getpwnam(const char *);
 
 char *external_user_homedir_string()
 {
@@ -106,8 +105,7 @@ char *external_user_homedir_string()
   }
 }
 
-char *external_anyuser_homedir_string(username)
-char *username;
+char *external_anyuser_homedir_string(char *username)
 {
   struct passwd *ptr;
   if ((ptr = getpwnam(username)))
@@ -116,6 +114,5 @@ char *username;
     return "";
 }
 
-void profil(u)
-int u;
+void pppprofil(int u)
 {}

@@ -12,6 +12,7 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 %
@@ -140,7 +141,7 @@
 (external-function external_getenv     (envstring))
 (external-function uxfloat             (buffer integer))
 (external-function uxfix               (buffer))
-(external-function uxassign            (arg1-buffer arg2-buffere))
+(external-function uxassign            (arg1-buffer arg2-buffer))
 (external-function uxplus2             (result-buffer arg1-buffer arg2-buffer))
 (external-function uxdifference        (result-buffer arg1-buffer arg2-buffer))
 (external-function uxtimes2            (result-buffer arg1-buffer arg2-buffer))

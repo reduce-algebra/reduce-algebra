@@ -85,7 +85,7 @@
 %
 % $Id$
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (compiletime
  (setf *foreign-functions* nil)
@@ -171,7 +171,11 @@
 (external-function uxexp               (r x))
 (external-function uxlog               (r x))
 (external-function uxatan2             (r y x))
- 
+(external-function uxsinh              (r x))
+(external-function uxcosh              (r x))
+(external-function uxtanh              (r x))
+(external-function uxhypot             (r x))
+
  
 % Defined in pwd-fn.c
 %

@@ -426,7 +426,7 @@ stacklowerbound:
  .quad [[253<<56]+339]
  .quad [[253<<56]+340]
  .quad [[253<<56]+341]
- .quad 509
+ .quad 513
  .quad symnam
  .quad [[253<<56]+344]
  .quad [[254<<56]+256]
@@ -593,7 +593,11 @@ stacklowerbound:
  .quad [[253<<56]+506]
  .quad [[253<<56]+507]
  .quad [[253<<56]+508]
-  .space 2395936
+ .quad [[253<<56]+509]
+ .quad [[253<<56]+510]
+ .quad [[253<<56]+511]
+ .quad [[253<<56]+512]
+  .space 2395904
  .globl symprp
 symprp:
  .quad [[254<<56]+256]
@@ -1105,17 +1109,13 @@ symprp:
  .quad [[254<<56]+256]
  .quad [[254<<56]+256]
  .quad [[254<<56]+256]
-  .space 2395936
+ .quad [[254<<56]+256]
+ .quad [[254<<56]+256]
+ .quad [[254<<56]+256]
+ .quad [[254<<56]+256]
+  .space 2395904
  .globl symnam
 symnam:
- .globl l0479
- .quad [[4<<56]+l0479]
- .globl l0480
- .quad [[4<<56]+l0480]
- .globl l0481
- .quad [[4<<56]+l0481]
- .globl l0482
- .quad [[4<<56]+l0482]
  .globl l0483
  .quad [[4<<56]+l0483]
  .globl l0484
@@ -2126,7 +2126,23 @@ symnam:
  .quad [[4<<56]+l0986]
  .globl l0987
  .quad [[4<<56]+l0987]
-  .space 2395936
+ .globl l0988
+ .quad [[4<<56]+l0988]
+ .globl l0989
+ .quad [[4<<56]+l0989]
+ .globl l0990
+ .quad [[4<<56]+l0990]
+ .globl l0991
+ .quad [[4<<56]+l0991]
+ .globl l0992
+ .quad [[4<<56]+l0992]
+ .globl l0993
+ .quad [[4<<56]+l0993]
+ .globl l0994
+ .quad [[4<<56]+l0994]
+ .globl l0995
+ .quad [[4<<56]+l0995]
+  .space 2395904
  .globl symfnc
 symfnc:
  .quad undefinedfunction
@@ -2450,8 +2466,8 @@ symfnc:
  .quad l0062
  .globl l0371
  .quad l0371
- .globl l0425
- .quad l0425
+ .globl l0429
+ .quad l0429
  .globl _psl_main
  .quad _psl_main
  .globl reduceup
@@ -2464,8 +2480,8 @@ symfnc:
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
- .globl l0418
- .quad l0418
+ .globl l0422
+ .quad l0422
  .globl l0104
  .quad l0104
  .globl initcode
@@ -2477,30 +2493,30 @@ symfnc:
  .globl faslin
  .quad faslin
  .quad undefinedfunction
- .globl l0416
- .quad l0416
- .globl l0417
- .quad l0417
- .globl l0085
- .quad l0085
- .globl l0415
- .quad l0415
  .globl l0420
  .quad l0420
+ .globl l0421
+ .quad l0421
+ .globl l0085
+ .quad l0085
+ .globl l0419
+ .quad l0419
+ .globl l0424
+ .quad l0424
  .globl l0359
  .quad l0359
  .globl binaryopenread
  .quad binaryopenread
- .globl l0436
- .quad l0436
+ .globl l0440
+ .quad l0440
  .globl binaryread
  .quad binaryread
- .globl l0428
- .quad l0428
+ .globl l0432
+ .quad l0432
  .globl binaryreadblock
  .quad binaryreadblock
- .globl l0427
- .quad l0427
+ .globl l0431
+ .quad l0431
  .globl binaryclose
  .quad binaryclose
  .quad undefinedfunction
@@ -2725,46 +2741,46 @@ symfnc:
  .quad l0411
  .globl l0412
  .quad l0412
- .globl sigrelse
- .quad sigrelse
  .globl l0413
  .quad l0413
  .globl l0414
  .quad l0414
- .globl l0419
- .quad l0419
- .globl l0421
- .quad l0421
- .globl l0422
- .quad l0422
+ .globl l0415
+ .quad l0415
+ .globl l0416
+ .quad l0416
+ .globl sigrelse
+ .quad sigrelse
+ .globl l0417
+ .quad l0417
+ .globl l0418
+ .quad l0418
  .globl l0423
  .quad l0423
- .globl l0424
- .quad l0424
+ .globl l0425
+ .quad l0425
  .globl l0426
  .quad l0426
- .globl l0429
- .quad l0429
+ .globl l0427
+ .quad l0427
+ .globl l0428
+ .quad l0428
  .globl l0430
  .quad l0430
- .globl l0431
- .quad l0431
- .globl l0432
- .quad l0432
  .globl l0433
  .quad l0433
  .globl l0434
  .quad l0434
  .globl l0435
  .quad l0435
+ .globl l0436
+ .quad l0436
  .globl l0437
  .quad l0437
  .globl l0438
  .quad l0438
  .globl l0439
  .quad l0439
- .globl l0440
- .quad l0440
  .globl l0441
  .quad l0441
  .globl l0442
@@ -2813,12 +2829,20 @@ symfnc:
  .quad l0463
  .globl l0464
  .quad l0464
+ .globl l0465
+ .quad l0465
+ .globl l0466
+ .quad l0466
+ .globl l0467
+ .quad l0467
+ .globl l0468
+ .quad l0468
  .quad undefinedfunction
  .globl codeaddressp
  .quad codeaddressp
  .globl lastkernel
  .quad lastkernel
-  .space 2395936
+  .space 2395904
  .globl symget
 symget:
  .quad [[254<<56]+256]
@@ -3330,4 +3354,8 @@ symget:
  .quad [[254<<56]+256]
  .quad [[254<<56]+256]
  .quad [[254<<56]+256]
-  .space 2395936
+ .quad [[254<<56]+256]
+ .quad [[254<<56]+256]
+ .quad [[254<<56]+256]
+ .quad [[254<<56]+256]
+  .space 2395904

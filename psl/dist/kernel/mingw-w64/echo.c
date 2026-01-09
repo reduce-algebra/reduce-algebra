@@ -73,9 +73,8 @@ echoon()
 /* TAG( External_CharsInInputBuffer )
  *  Return number of characters in input buffer.
  */
-int
-external_charsininputbuffer( fp )
-FILE * fp;		/* Ptr to stdio file structure for terminal. */
+void
+external_charsininputbuffer(FILE *fp)
 {
 }
     
@@ -93,12 +92,10 @@ char *external_user_homedir_string()
   return ("");
 }
 
-char *external_anyuser_homedir_string(username)
-char *username;
+char *external_anyuser_homedir_string(char *username)
 {
   return "";
 }
 
-void profil(u)
-int u;
+void profil(int u)
 {}

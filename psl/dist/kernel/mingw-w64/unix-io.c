@@ -121,27 +121,24 @@ unixinitio()
 /* Tag( unixputc )
  * Used by kernel routines that write to the console
  */
-int
-unixputc(c)
-char c;
+void
+unixputc(char c)
 {
     fputc(c, stdout);
 }
  
 /* Tag( unixputs )
  */
-int
-unixputs(str)
-char *str;
+void
+unixputs(char *str)
 {
     fputs(str, stdout);
 }
  
 /* Tag( unixputn )
  */
-int
-unixputn(n)
-long long n;
+void
+unixputn(long long n)
 {
     fprintf(stdout, "%llx", n);
 }
@@ -174,8 +171,7 @@ char collect[255], copy[255];  /* Made global so it won't be overwritten
  
 /* Tag( expand_file_name )
  */
-char *expand_file_name(fname)
-char *fname;
+char *expand_file_name(char *fname)
 {
   char *c, *t, *e, *s, save;
   /* check CYGDRIVE_PREFIX and strip trailing slashes */
@@ -185,7 +181,7 @@ char *fname;
   }
   c = copy;
   s = fname;
-  while (*c++ = *s++);
+  while ((*c++ = *s++));
   s = copy;
   c = collect;
   *c = '\0';
@@ -194,21 +190,25 @@ char *fname;
       if (*s == '$')
 	{
 	  for (e = ++s; (*e != '/' && *e != '\\'  && *e != '.'
-			  && *e != '\0' && *e != '$'); e++)
+			 && *e != '\0' && *e != '$'); e++)
 	    ;
 	  t = 0;                        /* default initialization */
-	    {
-	      save = *e;
-	      *e = '\0';
-	      t = getenv(s);
-	      *e = save;
-	      s = e;
-	    }
+	  {
+	    save = *e;
+	    *e = '\0';
+	    t = getenv(s);
+	    *e = save;
+	    s = e;
+	  }
 	  if (t)
-	    while (*c++ = *t++)
-	      ;
+	    {
+	      while ((*c++ = *t++))
+		;
+	    }
 	  else
-	    return(fname);   /* name not found, just return original fname */
+	    {
+	      return(fname);   /* name not found, just return original fname */
+	    }
 	  c--;
 	}
     for (; (*s != '\0' && *s != '$'); *c++ = *s++)
@@ -218,8 +218,7 @@ char *fname;
   return (cygpath2winpath(collect));
 }
 
-FILE* unixopen(filename, type)
-     char *filename, *type;
+FILE* unixopen(char *filename, char *type)
 {
   FILE* fptr;
  
@@ -227,18 +226,16 @@ FILE* unixopen(filename, type)
   return(fptr);
 }
 
-int
-unixcd(filename)
-     char *filename;
+void
+unixcd(char *filename)
 {
   _chdir(expand_file_name(filename));
 }
 
 int
-unixfclose (ix)
-FILE* ix;
+unixfclose (FILE *ix)
 
-{ fclose (ix); }
+{ return fclose (ix); }
 
 int
 unixfflush (FILE *stream)
@@ -301,8 +298,7 @@ unixputw(int binint, FILE *stream)
 }
 
 int
-external_system(command)
-     char *command;
+external_system(char *command)
 {
   int value;
   value = system(command);
@@ -313,17 +309,14 @@ external_system(command)
  */
 
 void
-external_exit(status)
-     int status;
+external_exit(int status)
 {
   exit(status);
 }
  
 char *static_argv[20];  /* static place to hold argv so it doesn't get gc'd */
  
-char **copy_argv(argc,argv)    /* copy argv into static space. */
-int argc;
-char *argv[];
+char **copy_argv(int argc,char *argv[])    /* copy argv into static space. */
 {
   int i;
  
@@ -335,14 +328,12 @@ char *argv[];
 
 /* convert a pathname to canonical form */
 char *
-external_fullpath(relpath)
-     char * relpath;
+external_fullpath(char *relpath)
 {
   return _fullpath(NULL,expand_file_name(relpath),_MAX_PATH);
 }
 
-long long xgetw (f)
-FILE* f;
+long long xgetw (FILE *f)
 { long long a1,a2;
 
   a1 = (long long) getw(f);

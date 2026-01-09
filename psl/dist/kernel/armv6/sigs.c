@@ -122,12 +122,12 @@ int sig;
 }
  
 
-int
+void
 ieee_handler()
 {
 }
 
-int
+void
 ieee_flags()
 {
 }

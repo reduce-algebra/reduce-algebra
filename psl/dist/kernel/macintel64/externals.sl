@@ -167,11 +167,15 @@
 (external-function uxexp               (r x))
 (external-function uxlog               (r x))
 (external-function uxatan2             (r y x))
+(external-function uxsinh              (r x))
+(external-function uxcosh              (r x))
+(external-function uxtanh              (r x))
+(external-function uxhypot             (r x))
 
  
 % Defined in pwd-fn.c
 %
-(external-function external_pwd         ())
+(external-function external_pwd        ())
  
  
 % Defined in sigs.c
@@ -198,8 +202,8 @@
 (external-function ctime                (buffer))
 (external-function external_system      (command))
 (external-function external_fullpath    (relpath))
- 
- 
+
+
 % Defined In the C Library
 %
 (external-function external_exit        (status))
@@ -275,10 +279,11 @@
       (do (remflag1 name 'foreignfunction))
       ))
 
-(compiletime (flag '(profil) 'foreignfunction))
+%%%(compiletime (flag '(profil) 'foreignfunction))
 
 (de unix-profile (a b c d)
-   (profil a b c d))
+    (stderror "profil function no longer supported on MacOS"))
+%%%   (profil a b c d))
 
-(compiletime (remflag '(profil) 'foreignfunction)) 
+%%%(compiletime (remflag '(profil) 'foreignfunction)) 
 

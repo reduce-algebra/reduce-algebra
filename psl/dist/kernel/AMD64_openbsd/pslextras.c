@@ -107,7 +107,7 @@ int external_stat(char *path, struct stat *buf)
 {
     return stat(expand_file_name(path), buf);
 }
- 
+
 
 int external_mkdir (char *name, int mode)
  { return mkdir (name, mode); }

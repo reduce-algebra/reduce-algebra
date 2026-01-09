@@ -133,8 +133,7 @@ void getheap();
 void read_error();
 
 /* Write this ourselves to keep from including half the math library */
-static int power(x, n)
-int x, n;
+static int power(int x, int n)
 {
 int i, p;
 
@@ -148,19 +147,16 @@ int creloc (long long array[], long len, long long diff, long long lowb);
 char * cygpath2winpath(char * cygpath);
 
 int
-setupbpsandheap(argc,argv)
-int argc;
-char *argv[];
+setupbpsandheap(int argc,char *argv[])
 {
-  long long ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,diff;
+  long long ohl,ohtb,ohub,hl,htb,hlb,hub,diff;
   int memset = 1;
   FILE * imago;
   long long headerword [8];
   long long i, total, bpssize, heapsize, mallocsize;
-  long long current_size_in_bytes, heapsize_in_bytes;
+  long long current_size_in_bytes = 0, heapsize_in_bytes;
   double bpspercent, heappercent;
   char   *argp, *scanptr, *scanformat;
-  int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
   long hugo;
 
   char *prog;
@@ -295,13 +291,13 @@ if (imagefile != NULL) {
   unexec();      /* set control vector */
   if (bpscontrol[0] != headerword[0] || bpscontrol[1] != headerword[1])
     { printf(" Cannot start the image with this bpsl \n");
-      printf(" %lx != %llx, %lx != %llx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
+      printf(" %lld != %llx, %lld != %llx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
       exit (-19);
     }
   fread (headerword,8,4,imago);
   hugo = fread (&symval,1,headerword[0],imago);
   if (Debug > 0) {
-    printf("neu: %lx => %lx\n",hlb, heaplowerbound);
+    printf("neu: %lld => %lld\n",hlb, heaplowerbound);
   }
   diff = hlb-heaplowerbound;
   //       if (hlb < heaplowerbound)
@@ -339,7 +335,7 @@ return (0);
 void
 read_error(char * what,long long bytesread,long long byteswanted)
 {
-  printf("File too short while reading %s: bytes read = %ld (%lx), bytes expected = %ld (%lx)\n",
+  printf("File too short while reading %s: bytes read = %lld (%llx), bytes expected = %lld (%llx)\n",
 	 what,bytesread,bytesread,byteswanted,byteswanted);
   exit(-1);
 }
@@ -356,7 +352,6 @@ setupbps ()
 {
   char *p = (char *) bps;
   long long bpssize;
-  char c;
 
   nextbps  =  ((long long)bps + 7) & ~7;        /* Up to a multiple of 8. */
   bpslowerbound = nextbps;
@@ -412,11 +407,10 @@ allocatemorebps()
 }
 
 void
-getheap(heapsize)
-long long heapsize;
+getheap(long long heapsize)
 {
 
-  long long lastheapaddress;
+  //  long long lastheapaddress;
   long long heapsize_in_bytes;
 
   oldheaplowerbound     = -1;
@@ -424,7 +418,7 @@ long long heapsize;
   heapHandle = GetProcessHeap();
 
   if (heapHandle == NULL) {
-    fprintf(stderr,"getheap: GetProcessHeap failed: %d\n",GetLastError());
+    fprintf(stderr,"getheap: GetProcessHeap failed: %lu\n",GetLastError());
     exit(-1);
   }
 
@@ -481,8 +475,7 @@ long long heapsize;
 /* Tag( alterheapsize )
  */
 int
-alterheapsize(increment)
-int increment;
+alterheapsize(int increment)
 {
 /*
   alters the size of the heap by the specified increment.  Returns
@@ -499,8 +492,8 @@ int increment;
   NOTE: only implemented for the one heap version on the 68000.
 */
 
-  int heapsize;
-  int current_size_in_bytes;
+  //  int heapsize;
+  //  int current_size_in_bytes;
 
 
 #if (NUMBEROFHEAPS == 1)

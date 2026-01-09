@@ -217,7 +217,7 @@ char *expand_file_name(char *fname)
 	    {
 	      return(fname);   /* name not found, just return original fname */
 	    }
-	  c--;
+          c--;
         }
       for (; (*s != '\0' && *s != '$'); *c++ = *s++)
 	;

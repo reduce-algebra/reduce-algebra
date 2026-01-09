@@ -424,7 +424,7 @@ stacklowerbound:
  .long [[29*0x8000000]+339]
  .long [[29*0x8000000]+340]
  .long [[29*0x8000000]+341]
- .long 512
+ .long 516
  .long symnam
  .long [[29*0x8000000]+344]
  .long [[30*0x8000000]+256]
@@ -594,7 +594,11 @@ stacklowerbound:
  .long [[29*0x8000000]+509]
  .long [[29*0x8000000]+510]
  .long [[29*0x8000000]+511]
-  .space 1197956
+ .long [[29*0x8000000]+512]
+ .long [[29*0x8000000]+513]
+ .long [[29*0x8000000]+514]
+ .long [[29*0x8000000]+515]
+  .space 1197940
  .globl symprp
 symprp:
  .long [[30*0x8000000]+256]
@@ -1109,17 +1113,13 @@ symprp:
  .long [[30*0x8000000]+256]
  .long [[30*0x8000000]+256]
  .long [[30*0x8000000]+256]
-  .space 1197956
+ .long [[30*0x8000000]+256]
+ .long [[30*0x8000000]+256]
+ .long [[30*0x8000000]+256]
+ .long [[30*0x8000000]+256]
+  .space 1197940
  .globl symnam
 symnam:
- .globl l0495
- .long [[4*0x8000000]+l0495]
- .globl l0496
- .long [[4*0x8000000]+l0496]
- .globl l0497
- .long [[4*0x8000000]+l0497]
- .globl l0498
- .long [[4*0x8000000]+l0498]
  .globl l0499
  .long [[4*0x8000000]+l0499]
  .globl l0500
@@ -2136,7 +2136,23 @@ symnam:
  .long [[4*0x8000000]+l1005]
  .globl l1006
  .long [[4*0x8000000]+l1006]
-  .space 1197956
+ .globl l1007
+ .long [[4*0x8000000]+l1007]
+ .globl l1008
+ .long [[4*0x8000000]+l1008]
+ .globl l1009
+ .long [[4*0x8000000]+l1009]
+ .globl l1010
+ .long [[4*0x8000000]+l1010]
+ .globl l1011
+ .long [[4*0x8000000]+l1011]
+ .globl l1012
+ .long [[4*0x8000000]+l1012]
+ .globl l1013
+ .long [[4*0x8000000]+l1013]
+ .globl l1014
+ .long [[4*0x8000000]+l1014]
+  .space 1197940
  .globl symfnc
 symfnc:
  .long undefinedfunction
@@ -2460,8 +2476,8 @@ symfnc:
  .long l0056
  .globl l0383
  .long l0383
- .globl l0441
- .long l0441
+ .globl l0445
+ .long l0445
  .globl _psl_main
  .long _psl_main
  .globl reduceup
@@ -2474,8 +2490,8 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
- .globl l0434
- .long l0434
+ .globl l0438
+ .long l0438
  .globl l0102
  .long l0102
  .globl initcode
@@ -2487,30 +2503,30 @@ symfnc:
  .globl faslin
  .long faslin
  .long undefinedfunction
- .globl l0432
- .long l0432
- .globl l0433
- .long l0433
- .globl l0081
- .long l0081
- .globl l0431
- .long l0431
  .globl l0436
  .long l0436
+ .globl l0437
+ .long l0437
+ .globl l0081
+ .long l0081
+ .globl l0435
+ .long l0435
+ .globl l0440
+ .long l0440
  .globl l0371
  .long l0371
  .globl binaryopenread
  .long binaryopenread
- .globl l0452
- .long l0452
+ .globl l0456
+ .long l0456
  .globl binaryread
  .long binaryread
- .globl l0444
- .long l0444
+ .globl l0448
+ .long l0448
  .globl binaryreadblock
  .long binaryreadblock
- .globl l0443
- .long l0443
+ .globl l0447
+ .long l0447
  .globl binaryclose
  .long binaryclose
  .long undefinedfunction
@@ -2742,46 +2758,46 @@ symfnc:
  .long l0427
  .globl l0428
  .long l0428
- .globl sigrelse
- .long sigrelse
  .globl l0429
  .long l0429
  .globl l0430
  .long l0430
- .globl l0435
- .long l0435
- .globl l0437
- .long l0437
- .globl l0438
- .long l0438
+ .globl l0431
+ .long l0431
+ .globl l0432
+ .long l0432
+ .globl sigrelse
+ .long sigrelse
+ .globl l0433
+ .long l0433
+ .globl l0434
+ .long l0434
  .globl l0439
  .long l0439
- .globl l0440
- .long l0440
+ .globl l0441
+ .long l0441
  .globl l0442
  .long l0442
- .globl l0445
- .long l0445
+ .globl l0443
+ .long l0443
+ .globl l0444
+ .long l0444
  .globl l0446
  .long l0446
- .globl l0447
- .long l0447
- .globl l0448
- .long l0448
  .globl l0449
  .long l0449
  .globl l0450
  .long l0450
  .globl l0451
  .long l0451
+ .globl l0452
+ .long l0452
  .globl l0453
  .long l0453
  .globl l0454
  .long l0454
  .globl l0455
  .long l0455
- .globl l0456
- .long l0456
  .globl l0457
  .long l0457
  .globl l0458
@@ -2830,12 +2846,20 @@ symfnc:
  .long l0479
  .globl l0480
  .long l0480
+ .globl l0481
+ .long l0481
+ .globl l0482
+ .long l0482
+ .globl l0483
+ .long l0483
+ .globl l0484
+ .long l0484
  .long undefinedfunction
  .globl codeaddressp
  .long codeaddressp
  .globl lastkernel
  .long lastkernel
-  .space 1197956
+  .space 1197940
  .globl symget
 symget:
  .long [[30*0x8000000]+256]
@@ -3350,4 +3374,8 @@ symget:
  .long [[30*0x8000000]+256]
  .long [[30*0x8000000]+256]
  .long [[30*0x8000000]+256]
-  .space 1197956
+ .long [[30*0x8000000]+256]
+ .long [[30*0x8000000]+256]
+ .long [[30*0x8000000]+256]
+ .long [[30*0x8000000]+256]
+  .space 1197940

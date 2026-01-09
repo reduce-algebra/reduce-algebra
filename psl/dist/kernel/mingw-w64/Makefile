@@ -175,7 +175,7 @@ bfiles: $(BFILES)
 
 $(USERDIR)/bpsl.exe: $(CFILES)  \
 		$(USERDIR)/main.o $(USERDIR)/dmain.o
-	$(USERDIR)/cclnk
+	$(USERDIR)/cclnk-crlibm
 
 $(USERDIR)/dmain.o: $(USERDIR)/dmain.s 
 #	cp $(USERDIR)/dmain.s $(USERDIR)/dmain.s.orig
@@ -193,7 +193,7 @@ $(USERDIR)/main.s: $(BFILES) $(SLFILES) $(PXK)/main.sed \
 	cp $(PC)/bare-psl.sym $(USERDIR)/$(MACHINE).sym
 	(cd $(USERDIR)/; \
 	 echo $(SLFILES) | awk -f $(PXK)/main.awk > tmp.sl; \
-	$(PXK)/$(MACHINE)-cross tmp.sl)
+	$(PXK)/$(MACHINE)-native tmp.sl)
 
 $(PL)/fasl-decls.b: $(PXK)/fasl-decls.sl
 	$(PDIST)/make-lap $(PXK) fasl-decls

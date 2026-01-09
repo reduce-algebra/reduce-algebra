@@ -75,13 +75,13 @@
 int external_alarm(sec)
 unsigned long sec;
 {
-  alarm(sec);
+  return alarm(sec);
 }
  
 int external_ualarm(usec,repeat)
 unsigned long usec,repeat;
 {
-  ualarm(usec,repeat);
+  return ualarm(usec,repeat);
 }
  
 char *expand_file_name();    /* from unix-io.c */
@@ -210,6 +210,7 @@ setenv (var, value, ov)
     strcpy (environ [index], var);
     strcat (environ [index], value);
     environ [++index] = NULL;
+    return 0;
 }
  
 void
@@ -243,7 +244,7 @@ int unixreadrecord(fp, buf)
  
 /* Tag( unixwriterecord )
  */
-int unixwriterecord(fp, buf, count)
+void unixwriterecord(fp, buf, count)
      FILE *fp;
      char *buf;
 int  count;

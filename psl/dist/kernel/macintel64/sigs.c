@@ -34,12 +34,20 @@
  *           Modified by Chris Burdorf (2/17/89)
  *           renamed sigset to sun3_sigset for sun os 4.
  *
+******************************************************************************
+ *
  * $Id$
  *
- */
- 
+******************************************************************************
+*/
+
 #include <unistd.h>
 #include <signal.h>
+#include <sys/file.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 #ifndef LINUX
 #include <ieeefp.h>
@@ -57,9 +65,7 @@ static stack_t stackinfo = { (void *) alternate_signalstack, sizeof(alternate_si
 static stack_t *stackinfo_ptr = NULL;
 
 void
-sun3_sigset( sig, action )
-void (*action)();
-int sig;
+sun3_sigset(int sig,void (*action)() )
 {
    struct sigaction act = {0};
    
@@ -93,9 +99,7 @@ int sig;
 }
 
 void
-sun3_sigrelse(sig, action)
-void (*action)();
-int sig;
+sun3_sigrelse(int sig, void (*action)())
 {
 
 #ifndef LINUX
@@ -116,14 +120,12 @@ setlinebuf()
 {
 }
  
-void
-ieee_handler()
+int
+ieee_handler(char *x,mode_t y)
 {
+  return mkfifo(x,y);
 }
 
-
-#include <sys/file.h>
-#include <fcntl.h>
 
 
 int ieee_flags(a1, a2, a3, a4)

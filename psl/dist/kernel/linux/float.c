@@ -335,8 +335,6 @@ uuxcosh (double *r, double *x)
   return (1);
 }
 
-#if 0
-// currently not used because it is not defined in crlibm
 int
 uuxtanh (double *r, double *x)
 {
@@ -345,7 +343,6 @@ uuxtanh (double *r, double *x)
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
-#endif
 
 int
 uuxhypot (double *res, double *x, double *y)

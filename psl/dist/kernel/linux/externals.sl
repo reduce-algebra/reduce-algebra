@@ -167,7 +167,7 @@
 (external-function uuxatan2            (r y x))
 (external-function uuxsinh             (r x))
 (external-function uuxcosh             (r x))
-%(external-function uuxtanh             (r x))
+(external-function uuxtanh             (r x))
 (external-function uuxhypot            (r x))
  
  

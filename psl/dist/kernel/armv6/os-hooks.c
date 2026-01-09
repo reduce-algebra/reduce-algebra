@@ -90,7 +90,7 @@ char *argv[];
   clear_iob();             /* clear garbage pointer in _iob[]    */
   clear_dtabsize();
   /* fpsetround(FP_RZ);  */
-/*  init_malloc_param();        /* reset malloc parameters.        */
+//  init_malloc_param();        /* reset malloc parameters.        */
     setvbuf(stdout,NULL,_IOLBF,BUFSIZ);
    /* Record path to exec file */
   if (argc > 0)
@@ -159,8 +159,8 @@ extern char *end;
 void
 clear_dtabsize()
 {
- int i;
- }
+  // int i;
+}
  
 #ifndef LINUX
 
