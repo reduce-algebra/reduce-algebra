@@ -13,7 +13,7 @@
 */
 
 #define BSIZE 8192
-#ifdef hpux
+#if defined(hpux) || defined (linux)
 #include <fcntl.h>
 /* This will give us O_RDONLY and friends on HPUX */
 #include <utime.h>
@@ -25,6 +25,7 @@ struct utimbuf hpux_utime;
 #include <sys/file.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 long lseek();
 void *malloc();
 /* Really should look it up: could be something different, but it
@@ -114,7 +115,7 @@ char **argv;
 	tidyup(oname);
       }
   }
-#ifdef hpux
+#if defined(hpux) || defined (linux)
   /* So it's hpux  */
   hpux_utime.actime=statbuf.st_atime;
   hpux_utime.modtime=statbuf.st_mtime;
