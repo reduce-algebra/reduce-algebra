@@ -148,7 +148,7 @@ int
 setupbpsandheap(argc,argv)
      int argc;
      char *argv[];
-{ int ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub;
+{ int ohl,ohtb,ohub,hl,htb,hlb,hub;
   int diff;
   int memset = 0;
   FILE * imago;
@@ -231,8 +231,8 @@ setupbpsandheap(argc,argv)
 
   if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
     if (Debug > 0) {
-      printf("Size requested (%ld,%lx) will result in pointer values larger than\n",(heapsize_in_bytes + current_size_in_bytes),(heapsize_in_bytes + current_size_in_bytes));
-      printf(" PSL items can handle (%ld,%lx). Will allocate maximum size instead.\n\n",max_image_size,max_image_size);
+      printf("Size requested (%u,%x) will result in pointer values larger than\n",(heapsize_in_bytes + current_size_in_bytes),(heapsize_in_bytes + current_size_in_bytes));
+      printf(" PSL items can handle (%u,%x). Will allocate maximum size instead.\n\n",max_image_size,max_image_size);
     }
     heapsize_in_bytes = max_image_size - current_size_in_bytes - sizeof(void*);
     total = heapsize_in_bytes + bpssize;
@@ -266,7 +266,7 @@ setupbpsandheap(argc,argv)
 	 "bpssize = %u (%X), , bps address =  %u (%X)\n"
 	 "heapsize = %u (%X), heap address = %u (%X)\nTotal image size = %d (%X)\n",
 	 5*(&symprp - &symval), 5*(&symprp - &symval),
-	 &symval, &symval,
+	 (unsigned int) &symval, (unsigned int) &symval,
 	 bpssize, bpssize,
 	 bpslowerbound, bpslowerbound,
 	 heapsize, heapsize,
@@ -284,7 +284,7 @@ setupbpsandheap(argc,argv)
 		 "bpssize = %u (%X), bps address =  %u (%X)\n"
 		 "heapsize = %u (%X), heap address = %u (%X)\nTotal image size = %d (%X)\n",
 		 5*(&symprp - &symval), 5*(&symprp - &symval),
-		 &symval, &symval,
+		 (unsigned int) &symval, (unsigned int) &symval,
 		 bpssize, bpssize,
 		 bpslowerbound, bpslowerbound,
 		 heapsize, heapsize,
@@ -302,7 +302,7 @@ setupbpsandheap(argc,argv)
 	if ((int) bpscontrol[0] != headerword[0] 
 	    || bpscontrol[1] != headerword[1])
 	  { printf(" Cannot start the image with this bpsl \n");
-	    printf(" %x != %x, %x != %x\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
+	    printf(" %lx != %x, %lx != %x\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
 	    exit (-19);
 	  }
 	fread (headerword,4,4,imago);
@@ -317,7 +317,7 @@ setupbpsandheap(argc,argv)
 	diff = hlb-heaplowerbound;
 
 	if (Debug > 0) {
-	printf("Relocate heap: %lx => %lx: shift by %d\n", heaplowerbound, hlb, diff);
+	printf("Relocate heap: %x => %x: shift by %d\n", heaplowerbound, hlb, diff);
 	}
 
 	if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
@@ -376,7 +376,6 @@ void
 setupbps()
 { char *p = (char *) bps;
   int bpssize;
-  char c;
 
 //  nextbps = malloc (50000000);
 //  bps = nextbps;

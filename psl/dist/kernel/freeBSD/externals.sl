@@ -126,7 +126,7 @@
 %
 (external-function os_startup_hook      (pargc pargv))
 (external-function os_cleanup_hook      (x))
-(external-function get_execfilepath	())
+(external-function get_execfilepath     ())
 
  
 % Defined in pslextras.c
@@ -168,7 +168,7 @@
 (external-function uuxatan2            (r y x))
 (external-function uuxsinh             (r x))
 (external-function uuxcosh             (r x))
-%(external-function uuxtanh             (r x))
+(external-function uuxtanh             (r x))
 (external-function uuxhypot            (r x))
  
  

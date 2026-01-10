@@ -141,6 +141,22 @@
   (when (and (eq(uuxatan2 (mkitem fixnum-tag r) (mkitem fixnum-tag y)(mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in atan2")))
 
+(de uxsinh (r x)
+  (when (and (eq (uuxsinh (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in sin")))
+
+(de uxcosh (r x)
+  (when (and (eq (uuxcosh (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in cos")))
+
+(de uxtanh (r x)
+  (when (and (eq (uuxtanh (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in tan")))
+
+(de uxhypot (r x)
+  (when (and (eq (uuxhypot (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in asin")))
+
 
 % These statements must be at the end of the file because times2 and quotient,
 % and thus *ftimes2 and *fquotient, must be defined before it is used.

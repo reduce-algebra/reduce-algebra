@@ -167,6 +167,10 @@
 (external-function uxexp               (r x))
 (external-function uxlog               (r x))
 (external-function uxatan2             (r y x))
+(external-function uxsinh              (r x))
+(external-function uxcosh              (r x))
+(external-function uxtanh              (r x))
+(external-function uxhypot             (r x))
 
 (external-function get_registry_value  (key subkey name infobuffer))
  
@@ -199,8 +203,8 @@
 (external-function ctime                (buffer))
 (external-function external_system      (command))
 (external-function external_fullpath    (relpath))
- 
- 
+
+
 % Defined In the C Library
 %
 (external-function external_exit        (status))

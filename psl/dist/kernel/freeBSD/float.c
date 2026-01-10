@@ -176,13 +176,13 @@ uxwritefloat(char *buf, double *flt, char *convstr)
 //     char *convstr;      /* String containing conversion field for sprintf */
 {
   char *temps, *dot, *e;
-  char tempbuf[100]; /* reasonable size limit */
+  char tempbuf[102]; /* reasonable size limit */
 
   temps = buf + 4;       /* Skip over lisp string length to write data */
 
-  sprintf(temps, convstr, *flt);
+  snprintf(temps, 99, convstr, *flt);
 
-  if (finite(*flt)) 
+  if (finite(*flt))
     {
       /* Make sure that there is a trailing .0
        */
@@ -197,7 +197,7 @@ uxwritefloat(char *buf, double *flt, char *convstr)
 	      strncpy(tempbuf, e, 100); /* save exponent part */
 	      // Now add ".0" and exponent part
 	      *e = '\0'; 
-	      strcat(temps, ".0");     /* Add .0 ono original string */
+	      strcat(temps, ".0");     /* Add .0 onto original string */
 	      strcat(temps, tempbuf);  /* add the exponent part onto the end */
 	    }
 	  else
@@ -335,8 +335,6 @@ uuxcosh (double *r, double *x)
   return (1);
 }
 
-#if 0
-// currently not used because it is not defined in crlibm
 int
 uuxtanh (double *r, double *x)
 {
@@ -345,7 +343,6 @@ uuxtanh (double *r, double *x)
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
-#endif
 
 int
 uuxhypot (double *res, double *x, double *y)

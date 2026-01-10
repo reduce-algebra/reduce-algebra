@@ -176,7 +176,7 @@ char *fname;
   register int tilde;
   c = copy;
   s = fname;
-  while (*c++ = *s++);
+  while ((*c++ = *s++));
   s = copy;
   c = collect;
   *c = '\0';
@@ -197,15 +197,15 @@ char *fname;
               *e = '\0';
               if (tilde)
                 {
-          if (p = getpwnam(s))  t = (p -> pw_dir);
-        }
+		  if ((p = getpwnam(s)))  t = (p -> pw_dir);
+		}
               else
                 t = getenv(s);
               *e = save;
               s = e;
             }
           if (t)
-        while (*c++ = *t++)
+	    while ((*c++ = *t++))
           ;
           else
         return(fname);   /* name not found, just return original fname */
@@ -271,7 +271,7 @@ int
 unixfclose (ix)
 FILE* ix;
 
-{ fclose (ix); }
+{ return fclose (ix); }
 
 int
 external_system(command)

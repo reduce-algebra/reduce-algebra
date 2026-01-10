@@ -7,20 +7,27 @@
    modification times, permission status etc. 
    Modification: JHD 16.10.89: fix a SUNos 4 feature for files whose
    last block is precisely null
+
+   Minor modifications by Winfried Neun:
+   some more include files and   void * malloc instead of char * malloc
 */
 
 #define BSIZE 8192
-#ifdef hpux
+#if defined(hpux) || defined (linux)
 #include <fcntl.h>
 /* This will give us O_RDONLY and friends on HPUX */
 #include <utime.h>
 struct utimbuf hpux_utime;
 #endif
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/file.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 long lseek();
-char *malloc();
+void *malloc();
 /* Really should look it up: could be something different, but it
    doesn't really matter */
 int buf[BSIZE/4]; /* So can use word operations */
@@ -30,7 +37,7 @@ char **argv;
 { int ifile,ofile,ilen,ans,seeking;
   long lans;
   char *oname;
-  struct stat statbuf;
+  struct stat    statbuf;
   if (argc != 2)
     { printf("Usage: sparsify filename\n");
       exit(-1);
@@ -54,38 +61,38 @@ char **argv;
   while ((ilen=read(ifile,(char *)buf,BSIZE))==BSIZE)
     if (allzeros())
       { lans=lseek(ofile,(long)BSIZE,L_INCR);
-        if(lans<0)
-          { perror("Lseek failed\n");
-            tidyup(oname);
-          }
-        seeking=1;
+	if(lans<0)
+	  { perror("Lseek failed\n");
+	    tidyup(oname);
+	  }
+	seeking=1;
       }
     else
       { ans=write(ofile,(char *)buf,BSIZE);
-        if (ans != BSIZE)
-          { perror("Write failed\n");
-            tidyup(oname);
-          }
-        seeking=0;
+	if (ans != BSIZE)
+	  { perror("Write failed\n");
+	    tidyup(oname);
+	  }
+	seeking=0;
       }
   if (ilen > 0)
     { ans=write(ofile,(char *)buf,ilen);
       if (ans != ilen)
-        { perror("Write failed\n");
-          tidyup(oname);
-        }
+	{ perror("Write failed\n");
+	  tidyup(oname);
+	}
     }
   else if (seeking)
     { lans=lseek(ofile,-(long)BSIZE,L_INCR);
       if(lans<0)
-        { perror("Lseek failed\n");
-                      tidyup(oname);
-        }
+	{ perror("Lseek failed\n");
+	              tidyup(oname);
+	}
       ans=write(ofile,(char *)buf,BSIZE);
       if (ans != BSIZE)
-        { perror("Write failed\n");
-          tidyup(oname);
-          }
+	{ perror("Write failed\n");
+	  tidyup(oname);
+	  }
     }
   ilen=fstat(ifile,&statbuf);
   if (ilen < 0)
@@ -105,10 +112,10 @@ char **argv;
     ilen=fchown(ofile,statbuf.st_uid,statbuf.st_gid);
     if (ilen < 0)
       { perror("Chown failed\n");
-        tidyup(oname);
+	tidyup(oname);
       }
   }
-#ifdef hpux
+#if defined(hpux) || defined (linux)
   /* So it's hpux  */
   hpux_utime.actime=statbuf.st_atime;
   hpux_utime.modtime=statbuf.st_mtime;

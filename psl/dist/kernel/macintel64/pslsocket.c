@@ -36,9 +36,10 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-*
-* $Id$
-*
+%
+% $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
 #include <stdio.h> 
@@ -54,18 +55,12 @@
 //                               Must be the same as in client!!!! */ 
 
 int
-unixsocketopen(name , number)
-
-char * name;
-int number;
-
+unixsocketopen(char* name, int number)
 {  struct hostent *host_info;
    struct sockaddr_in mail_addr;   /* Address structure */ 
    unsigned int mail_len = sizeof(struct sockaddr_in); 
    int port_fd, conn_fd; 
-   int mail_fd, temp;
-   int continue1;
-   char message[80]; 
+   int mail_fd;
  
   if (name == (char *) 0)
   {
@@ -86,7 +81,7 @@ int number;
  *   Open up a socket for us to accept connections on and
  *   bind an address to it which other systems can see.
  */
-   if (bind (port_fd, (struct sockaddr *)&mail_addr, mail_len) != 0) 
+   if (bind (port_fd, (struct sockaddr *) &mail_addr, mail_len) != 0) 
    { perror ("bind"); close (port_fd); return(-1); } 
 /* 
  *   Allow for up to 5 connection requests to be pending at one time. 
@@ -94,7 +89,7 @@ int number;
    if (listen (port_fd, 5) != 0) 
    { perror ("listen"); close (port_fd); return(-1); } 
  
-  conn_fd = accept (port_fd, (struct sockaddr *)&mail_addr, &mail_len);
+  conn_fd = accept (port_fd, (struct sockaddr *) &mail_addr, &mail_len);
   return(conn_fd);
   }
   else
@@ -112,18 +107,14 @@ int number;
    mail_addr.sin_family = AF_INET;
    mail_addr.sin_port = number;
    bcopy (host_info->h_addr, (char *) &mail_addr.sin_addr, host_info->h_length); 
-   if (connect (mail_fd, (struct sockaddr *)&mail_addr, sizeof (mail_addr)) != 0)
+   if (connect (mail_fd, (struct sockaddr *) &mail_addr, sizeof (mail_addr)) != 0)
    { perror ("connect"); return(-1); }
    return (mail_fd);   
   }
 }
 
 int
-getsocket (mail_fd , string , length)
-
-int mail_fd,length;
-char * string;
-
+getsocket (int mail_fd , char* string , int length)
 { int len;
   while(1)
   {
@@ -132,16 +123,10 @@ char * string;
          return(len);}}}
 
 ssize_t
-writesocket (mail_fd , string , length) 
-
-int mail_fd,length; 
-char * string; 
- 
+writesocket (int mail_fd, char *string, int length) 
 { return send (mail_fd, string, length, 0); }
 
 int
-unixclosesocket (conn_fd)
-int conn_fd;
-
+unixclosesocket (int conn_fd)
 { return close (conn_fd); }
 

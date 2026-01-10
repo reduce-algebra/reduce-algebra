@@ -212,6 +212,7 @@ setenv (var, value, ov)
     strcpy (environ [index], var);
     strcat (environ [index], value);
     environ [++index] = NULL;
+    return 0;
 }
 
 void

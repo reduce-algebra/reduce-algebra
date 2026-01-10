@@ -123,8 +123,7 @@ extern long long  oldheaptrapbound;
 
 /* Write this ourselves to keep from including half the math library */
 /*
-static int power(x, n)
-     int x, n;
+static int power(int x, int n)
 {
   int i, p;
 
@@ -144,10 +143,8 @@ void getheap(long long);
 void read_error(char *,long long,long long);
 
 int
-setupbpsandheap(argc,argv)
-     int argc;
-     char *argv[];
-{ long long ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,diff;
+setupbpsandheap(int argc,char *argv[])
+{ long long ohl,ohtb,ohub,hl,htb,hlb,hub,diff;
   int memset = 0;
   FILE * imago;
   long long headerword [8];
@@ -155,7 +152,6 @@ setupbpsandheap(argc,argv)
   long long current_size_in_bytes, heapsize_in_bytes;
   double bpspercent, heappercent;
   char   *argp, *scanptr, *scanformat;
-  int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
   long hugo;
 
   total        = MINSIZE;
@@ -248,7 +244,7 @@ printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
   getheap(heapsize);
 
   if (imagefile == NULL)
-  printf("bpssize = %llu (%llX), heapsize = %llu (%llX)\nTotal image size = %llu (%llX)\n",
+  printf("bpssize = %lld (%llX), heapsize = %lld (%llX)\nTotal image size = %llu (%llX)\n",
           bpssize, bpssize,
           heapsize, heapsize,
           (unsigned long long) sbrk(0), (unsigned long long) sbrk(0));
@@ -341,7 +337,6 @@ void
 setupbps()
 { char *p = (char *) bps;
   int bpssize;
-  char c;
 
   nextbps  =  ((long long)bps + 7) & ~7;        /* Up to a multiple of 8. */
   bpslowerbound = nextbps;
@@ -384,8 +379,7 @@ allocatemorebps()
 }
 
 void
-getheap(heapsize)
-     long long heapsize;
+getheap(long long heapsize)
 {
 
 #if (NUMBEROFHEAPS == 1)
@@ -409,14 +403,13 @@ getheap(heapsize)
   oldheaplast           = oldheaplowerbound;
   oldheaptrapbound      = oldheapupperbound -120;
 #endif
-  oldbreakvalue = (long long )sbrk(0);
+  oldbreakvalue = (long long) sbrk(0);
 }
 
 /* Tag( alterheapsize )
  */
 long long
-alterheapsize(increment)
-int increment;
+alterheapsize(int increment)
 {
 /*
   alters the size of the heap by the specified increment.  Returns
@@ -433,11 +426,11 @@ int increment;
   NOTE: only implemented for the one heap version on the 68000.
 */
 
-  int heapsize;
   int current_size_in_bytes;
   long long diff;
 
 #if (NUMBEROFHEAPS == 1)
+  int heapsize;
   int gcarraysize, newbreakvalue;
  
   printf("***** cannot extend heap on this machine\n");

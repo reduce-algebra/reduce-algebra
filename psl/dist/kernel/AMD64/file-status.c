@@ -51,14 +51,14 @@ typedef struct{
 /* Tag( get_file_status )
  */
 int                     /* Returns "stat" value, 0 == success. */
-get_file_status( file_name_string, info_block, do_strings )
-char * file_name_string;        /* File to stat. */
-stat_info info_block[7];        /* Space to return values. */
-int do_strings;                /* Whether to interpret numbers. */
+get_file_status(char *file_name_string, stat_info info_block[7], int do_strings)
+//char * file_name_string;        /* File to stat. */
+//stat_info info_block[7];        /* Space to return values. */
+//int do_strings;                /* Whether to interpret numbers. */
 {
     /* Strings to be imported into the PSL. */
     static char write_str[25], access_str[25], change_str[25];
-    char *get_mode_string(), *ctime();
+    char *get_mode_string(unsigned short mode), *ctime(const time_t *);
 #   define RET_INFO(slot,number,string) \
       ( info_block[slot].numeric_value = (number), \
     info_block[slot].string_value = (do_strings? (string) : (char *)NULL) )
@@ -68,8 +68,8 @@ int do_strings;                /* Whether to interpret numbers. */
     struct stat stat_buff;
     int stat_ret;
  
-    struct passwd *uidpasswd, *getpwuid();
-    struct group  *gidgroup, *getgrgid();
+    struct passwd *uidpasswd, *getpwuid(uid_t);
+    struct group  *gidgroup, *getgrgid(gid_t);
  
     stat_ret = stat( file_name_string, &stat_buff );
     if ( stat_ret == 0 )
@@ -105,9 +105,7 @@ internal int    *m[] = { m1, m2, m3, m4, m5, m6, m7, m8, m9};
  */
 internal
 char *
-fmtmode(lp, flags)
-    char *lp;
-    int flags;
+fmtmode(char *lp, int flags)
 {
     int **mp;
  
@@ -126,8 +124,7 @@ fmtmode(lp, flags)
  * Parse the mode value into a string.  Based on /usr/src/bin/ls.c .
  */
 char *
-get_mode_string( mode )
-unsigned short mode;
+get_mode_string(unsigned short mode)
 {
     static char mode_string[11] = "drwxrwxrwx";
  

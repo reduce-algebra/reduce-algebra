@@ -107,8 +107,7 @@ unixinitio()
  * Used by kernel routines that write to the console
  */
 void
-unixputc(c)
-char c;
+unixputc(char c)
 {
     fputc(c, stdout);
 }
@@ -116,8 +115,7 @@ char c;
 /* Tag( unixputs )
  */
 void
-unixputs(str)
-char *str;
+unixputs(char *str)
 {
     fputs(str, stdout);
 }
@@ -125,8 +123,7 @@ char *str;
 /* Tag( unixputn )
  */
 void
-unixputn(n)
-long long n;
+unixputn(long long n)
 {
     fprintf(stdout, "%llx", n);
 }
@@ -159,16 +156,16 @@ unixcleario()
 */
  
 #include <pwd.h>
-struct passwd *getpwuid();
-struct passwd *getpwnam();
-char *getenv();
+struct passwd *getpwuid(uid_t);
+struct passwd *getpwnam(const char *);
+char *getenv(const char*);
+
 char collect[255], copy[255];  /* Made global so it won't be overwritten
                   Used to be local to expand_file_name */
  
 /* Tag( expand_file_name )
  */
-char *expand_file_name(fname)
-char *fname;
+char *expand_file_name(char *fname)
 {
   register char *c, *t, *e, *s, save;
   struct passwd *p;
@@ -183,44 +180,49 @@ char *fname;
     {
       if ((tilde = (*s == '~')) || (*s == '$'))
         {
-      for (e = ++s; (*e != '/' && *e != '\0' && *e != '$'); e++)
-        ;
+	  for (e = ++s; (*e != '/' && *e != '\0' && *e != '$'); e++)
+	    ;
           t = 0;                        /* default initialization */
           if (e == s)
             {
-          if (tilde) t = ((getpwuid(getuid())) -> pw_dir);
-        }
+	      if (tilde) t = ((getpwuid(getuid())) -> pw_dir);
+	    }
           else
             {
-          save = *e;
+	      save = *e;
               *e = '\0';
               if (tilde)
                 {
-          if ((p = getpwnam(s)))  t = (p -> pw_dir);
-        }
+		  if ((p = getpwnam(s)))  t = (p -> pw_dir);
+		}
               else
-                t = getenv(s);
+		{
+		  t = getenv(s);
+		}
               *e = save;
               s = e;
             }
           if (t)
-        while ((*c++ = *t++))
-          ;
+	    {
+	      while ((*c++ = *t++))
+		;
+	    }
           else
-        return(fname);   /* name not found, just return original fname */
+	    {
+	      return(fname);   /* name not found, just return original fname */
+	    }
           c--;
         }
-    for (; (*s != '\0' && *s != '$'); *c++ = *s++)
-      ;
+      for (; (*s != '\0' && *s != '$'); *c++ = *s++)
+	;
       *c = '\0';
-  }
+    }
   return (collect);
 }
  
 extern int errno;
  
-FILE* unixopen(filename, type)
-     char *filename, *type;
+FILE* unixopen(char *filename, char *type)
 {
   FILE* fptr;
  
@@ -229,21 +231,18 @@ FILE* unixopen(filename, type)
 }
 
 void
-unixcd(filename)
-     char *filename;
+unixcd(char *filename)
 {
   chdir(expand_file_name(filename));
 }
 
 int
-unixfclose (ix)
-FILE* ix;
+unixfclose (FILE *ix)
 
 { return fclose (ix); }
 
 int
-external_system(command)
-     char *command;
+external_system(char *command)
 {
   int value;
   value = system(command);
@@ -253,8 +252,7 @@ external_system(command)
 /* Tag( external_exit )
  */
 int
-external_exit(status)
-     int status;
+external_exit(int status)
 {
   exit(status);
 }
@@ -262,9 +260,7 @@ external_exit(status)
 char *static_argv[20];  /* static place to hold argv so it doesn't get gc'd */
 
 char **
-copy_argv(argc,argv)    /* copy argv into static space. */
-int argc;
-char *argv[];
+copy_argv(int argc,char *argv[])    /* copy argv into static space. */
 {
   int i;
  
@@ -276,14 +272,12 @@ char *argv[];
 
 /* convert a pathname to canonical form */
 char *
-external_fullpath(relpath)
-     char * relpath;
+external_fullpath(char *relpath)
 {
   return realpath(relpath,NULL);
 }
 
-long long xgetw (f)
-FILE* f;
+long long xgetw (FILE *f)
 { long long a1,a2;
 
   a1 = (long long) getw(f);

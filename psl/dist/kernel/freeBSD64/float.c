@@ -193,7 +193,7 @@ uxwritefloat(char *buf, double *flt, char *convstr)
 
   sprintf(temps,convstr, *flt);
 
-  if (finite(*flt)) 
+  if (finite(*flt))
     {
       /* Make sure that there is a trailing .0
        */
@@ -208,7 +208,7 @@ uxwritefloat(char *buf, double *flt, char *convstr)
 	      strncpy(tempbuf, e, 100); /* save exponent part */
 	      // Now add ".0" and exponent part
 	      *e = '\0'; 
-	      strcat(temps, ".0");     /* Add .0 ono original string */
+	      strcat(temps, ".0");     /* Add .0 onto original string */
 	      strcat(temps, tempbuf);  /* add the exponent part onto the end */
 	    }
 	  else
@@ -271,7 +271,6 @@ uxtan (double *r, double *x)
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
-
 }
 
 int
@@ -355,8 +354,6 @@ uxcosh (double *r, double *x)
   return (1);
 }
 
-#if 0
-// currently not used because it is not defined in crlibm
 int
 uxtanh (double *r, double *x)
 {
@@ -365,7 +362,6 @@ uxtanh (double *r, double *x)
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
-#endif
 
 int
 uxhypot (double *res, double *x, double *y)

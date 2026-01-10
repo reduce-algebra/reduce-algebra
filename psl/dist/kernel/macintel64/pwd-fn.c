@@ -48,6 +48,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef USE_GETWD
 #define MAXPATHLEN 255
@@ -78,7 +79,7 @@ char Name[BUFSIZ];
 char *
 external_pwd()
 {
-    FILE *popen();		       /* May not be in some stdio.h files. */
+    FILE *popen(const char *, const char *);		       /* May not be in some stdio.h files. */
     FILE * PwdStream;
     char * Where, *index();
 
@@ -91,7 +92,7 @@ external_pwd()
     /* Trash the newline at the end of the string and follow the PSL
      * convention that directory strings are terminated with a slash.
      */
-    if ( (Where = index( Name, '\n' ) ) )
+    if ( (Where = strchr( Name, '\n' ) ) )
 	*Where = '/';
 
     return( Name );    /* To be imported from static area to a heap string. */

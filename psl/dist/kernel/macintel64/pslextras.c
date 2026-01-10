@@ -59,9 +59,10 @@
 %  Added external_strlen and external_getenv.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-*
-* $Id$
-*
+%
+% $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
  
 #include <stdlib.h>
@@ -72,81 +73,69 @@
 #include <sys/stat.h>
 #include <sys/times.h>
  
-int external_alarm(sec)
-unsigned long sec;
+int external_alarm(unsigned long sec)
 {
   return alarm(sec);
 }
  
-int external_ualarm(usec,repeat)
-unsigned long usec,repeat;
+int external_ualarm(unsigned long usec,unsigned long repeat)
 {
   return ualarm(usec,repeat);
 }
  
-char *expand_file_name();    /* from unix-io.c */
-long time();         /* from kernel */
+char *expand_file_name(char *);    /* from unix-io.c */
+time_t time(time_t *tloc);         /* from kernel */
  
 /* Tag( external_time )
  */
-long external_time(tloc)
-long *tloc;
+long external_time(time_t *tloc)
 {
-  return (time(tloc));
+  return (long)(time(tloc));
 }
  
 /* Tag( external_timc )
  */
 long
-external_timc(buffer)
-     struct tms *buffer;
+external_timc(struct tms *buffer)
 {
   return(times(buffer));
 }
  
 /* Tag( external_stat )
  */
-int external_stat(path, buf)
-char *path;
-struct stat *buf;
+int external_stat(char *path, struct stat *buf)
 {
     return stat(expand_file_name(path), buf);
 }
 
 
-int external_mkdir (path, mode)
-     char * path;
-     mode_t mode;
+int external_mkdir (char *path, mode_t mode)
 { 
   return mkdir (expand_file_name(path), mode); 
 }
 
-int external_rmdir (path)
-    char * path;
+int external_rmdir (char *path)
 { 
   return rmdir (expand_file_name(path));
 }
 
 /* Tag( external_link )
  */
-int external_link (path1, path2)
-char *path1, *path2;
+int external_link (char *path1, char *path2)
 {
     return link(expand_file_name(path1), expand_file_name(path2));
 }
  
 /* Tag( external_unlink )
  */
-int external_unlink (path)
-char *path;
+int external_unlink (char *path)
 {
     return unlink(expand_file_name(path));
 }
  
 /* Tag( external_strlen )
  */
-int external_strlen (s)
-     char *s;
+int external_strlen (char *s)
 {
     return strlen(s);
 }
@@ -155,16 +144,13 @@ char *getenv(const char *name);
  
 /* Tag( external_getenv )
  */
-char *external_getenv (name)
-     char *name;
+char *external_getenv (char *name)
 {
     return getenv(name);
 }
  
  
-int external_setenv (var, val,ov)
-    char *var, *val;
-    int ov;
+int external_setenv (char *var, char *val, int ov)
 {
   int i;
   extern char **environ;
@@ -193,9 +179,7 @@ int external_setenv (var, val,ov)
  * to have to do a realloc().
  */
 int
-setenv (var, value,ov)
-     const char *var, *value;
-     int ov;
+setenv (const char *var, const char *value, int ov)
 {
     extern char **environ;
     int index = 0;
@@ -207,10 +191,9 @@ setenv (var, value,ov)
         environ[index] = (void *)malloc (len + strlen (value) + 1);
         strcpy (environ [index], var);
         strcat (environ [index], value);
-        return ov;
+        return (ov);
         }
         index ++;
-   return (ov);
     }
  
     environ [index] = (void *) malloc (len + strlen (value) + 1);
@@ -219,11 +202,9 @@ setenv (var, value,ov)
     environ [++index] = NULL;
     return 0;
 }
- 
+
 void
-block_copy (b1, b2, length)
-     char *b1, *b2;
-     int length;
+block_copy (char *b1, char *b2, int length)
 {
   while (length-- > 0)
     *b2++ = *b1++;
@@ -233,9 +214,7 @@ block_copy (b1, b2, length)
  
 /* Tag( unixreadrecord )
  */
-int unixreadrecord(fp, buf)
-     FILE *fp;
-     char *buf;
+int unixreadrecord(FILE *fp, char *buf)
 {
   int i;
   char c;
@@ -251,10 +230,7 @@ int unixreadrecord(fp, buf)
  
 /* Tag( unixwriterecord )
  */
-void unixwriterecord(fp, buf, count)
-     FILE *fp;
-     char *buf;
-int  count;
+void unixwriterecord(FILE *fp, char *buf, int count)
 {
   int i;
   for (i=0; i<count; i++, buf++)

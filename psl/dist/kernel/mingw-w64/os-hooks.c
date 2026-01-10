@@ -83,10 +83,10 @@ char * cygdrive_prefix = NULL;
 extern void * saved_pxcptinfoptrs;
 extern char bps[];
 
-void init_fp();
+void init_fp(void);
 
-void clear_iob();
-void clear_dtabsize();
+void clear_iob(void);
+void clear_dtabsize(void);
 void psl_main(int,char **);
 char ** copy_argv(int argc,char * argv[]);
 void os_startup_hook(int,char **);
@@ -130,10 +130,8 @@ GlobalVectoredHandler1(
 }
 
 
-void
-main(argc,argv)
-int argc;
-char *argv[];
+int
+main(int argc,char *argv[])
 {
   int val;
  
@@ -144,7 +142,7 @@ char *argv[];
 #ifdef USE_CRLIBM
   crlibm_init();
 #endif
-/*  init_malloc_param();        /* reset malloc parameters.        */
+  //  init_malloc_param();        /* reset malloc parameters.        */
   setvbuf(stdout,NULL,_IONBF,BUFSIZ);
   if (argc > 0)
     abs_execfilepath = _fullpath(NULL,argv[0],_MAX_PATH);
@@ -182,9 +180,7 @@ void init_fp()
 
 
 void
-os_startup_hook(argc, argv)
-     int argc;
-     char *argv[];
+os_startup_hook(int argc, char *argv[])
 {
   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
@@ -250,7 +246,7 @@ extern char *end;
 void
 clear_dtabsize()
 {
- int i;
+  // int i;
  }
 
 // The following attempt to install a Structured exception handler did not work,

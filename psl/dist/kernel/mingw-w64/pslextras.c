@@ -201,9 +201,7 @@ int external_setenv (char *var, char *val)
  
 /* Tag( unixreadrecord )
  */
-int unixreadrecord(fp, buf)
-     FILE *fp;
-     char *buf;
+int unixreadrecord(FILE *fp, char *buf)
 {
   int i;
   char c;
@@ -219,10 +217,7 @@ int unixreadrecord(fp, buf)
  
 /* Tag( unixwriterecord )
  */
-int unixwriterecord(fp, buf, count)
-     FILE *fp;
-     char *buf;
-int  count;
+void unixwriterecord(FILE *fp, char *buf, int count)
 {
   int i;
   for (i=0; i<count; i++, buf++)

@@ -271,7 +271,7 @@ setupbpsandheap(argc,argv)
   printf("symbol table size = %llu (%llX), symbol table address = %llu (%llX)\n"
 	 "bpssize = %llu (%llX), , bps address =  %llu (%llX)\n"
 	 "heapsize = %llu (%llX), heap address = %llu (%llX)\n"
-	 "Total image size = %lld (%llX)\nPage size = %lld (%llX)\n",
+	 "Total image size = %lld (%llX)\nPage size = %ld (%lX)\n",
 	 (long long unsigned) 5*(&symprp - &symval), (long long unsigned) 5*(&symprp - &symval),
 	 (long long unsigned) &symval, (long long unsigned) &symval,
 	 bpssize, bpssize,
