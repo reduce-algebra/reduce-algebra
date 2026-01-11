@@ -1849,16 +1849,11 @@ then
 # 12.x  Monterey        (last version that PSL runs on as of 2023)
 # 13.x  Ventura
 # 14.x  Sonoma
-# 15.x  Sequoia         in use in 2025 = being 6 years on from the
+# 15.x  Sequoia         In use in 2025 = being 6 years on from the
 #                       introduction of ARM-based Macs start to mean that
 #                       the importance of Intel ones begins to fade. 
-#
-
-# I think I am not going to mess with despolyment targets any more
-# so a version built on one platform is only really guaranteed to run
-# on the same one, and Apple introducing incompatible changes represents
-# issues to be addressed to them not to me!
-# ENVP="MACOSX_DEPLOYMENT_TARGET=11.0"
+# 26.x  Tahoe           This is to be the last version that will support
+#                       Intel macs.
 
   AC_MSG_NOTICE([CC=$CC CXX=$CXX CPP=$CPP CXXCPP=$CXXCPP])
   CC="$ENVP $CC"

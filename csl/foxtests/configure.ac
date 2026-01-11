@@ -793,13 +793,6 @@ then
   esac
 fi
 
-if test "x$macintosh_build" = "xyes"
-then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.11
-  CC="$ENVP $CC"
-  CXX="$ENVP $CXX"
-fi
-
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
 AC_OUTPUT
