@@ -82,7 +82,7 @@ external_pwd()
 {
     FILE *popen(const char *, const char *);		       /* May not be in some stdio.h files. */
     FILE * PwdStream;
-    char * Where, *index();
+    char * Where;
 
     /* Simpleminded- Popen a "pwd" cmd and read a line into Name buffer. */
     PwdStream = popen( "pwd", "r" );
