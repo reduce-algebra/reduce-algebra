@@ -178,11 +178,15 @@ long long uxlessp(double *f1,double *f2,long long val1,long long val2)
     return val2;
 }
 
+
+// Length of lisp string object in bytes, as allocated in printers.sl.
 #define WRITENUMBERBUFFERSIZE 100
+// Maximum length of string for floating point printing
+#define MAX_FLOAT_STRING_LENGTH WRITENUMBERBUFFERSIZE-8
 
 typedef struct {
   long long size;
-  char string[WRITENUMBERBUFFERSIZE-8];
+  char string[MAX_FLOAT_STRING_LENGTH];
 } LispString;
 
 /* Tag( uxwritefloat )
@@ -194,38 +198,42 @@ uxwritefloat(LispString *buf, double *flt, char *convstr)
 //     char *convstr;      /* String containing conversion field for sprintf */
 {
   char *temps, *dot, *e;
-  char tempbuf [100]; /* reasonable size limit */
+  char tempbuf [WRITENUMBERBUFFERSIZE]; /* reasonable size limit */
 
   temps = buf->string;       /* Skip over lisp string length to write data */
 
-  snprintf(temps, WRITENUMBERBUFFERSIZE-8, convstr, *flt);
+  snprintf(temps, MAX_FLOAT_STRING_LENGTH, convstr, *flt);
 
-  if (finite(*flt)) 
+  if (finite(*flt))
     {
-
       /* Make sure that there is a trailing .0
        */
       dot = strrchr(temps, '.');
       if (dot == NULL)
 	{
-	  /* Check to see if the number is in scientific notation. If so, we need
-	   *  add the .0 into the middle of the string, just before the e.
+	  /* Check to see if the number is in scientific notation. If so,
+	   *  we must add the .0 into the middle of the string,
+	   *  just before the "e".
 	   */
-	  if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
+	  if ((e = strrchr(temps, 'e')) != NULL ||
+	      (e = strrchr(temps, 'E')) != NULL)
 	    {
-	      strncpy(tempbuf, e, 100); /* save exponent part */
-	      // Now add ".0" and exponent part
+	      /* save exponent part */
+	      strncpy(tempbuf, e, sizeof(tempbuf) - 1);
+	      // Now splice in ".0" before the exponent part
 	      *e = '\0'; 
-	      strlcat(temps, ".0", WRITENUMBERBUFFERSIZE-8);
-	      strlcat(temps, tempbuf, WRITENUMBERBUFFERSIZE-8);
+	      strncat(temps, ".0", MAX_FLOAT_STRING_LENGTH - strlen(temps) - 1);
+	      strncat(temps, tempbuf, MAX_FLOAT_STRING_LENGTH - strlen(temps) - 1);
 	    }
 	  else
 	    {
-	      strlcat(temps, ".0", WRITENUMBERBUFFERSIZE-8);
+	      strncat(temps, ".0", MAX_FLOAT_STRING_LENGTH - strlen(temps) - 1);
 	    }
 	}
     }
-  /* Install the length of the string into the Lisp header word
+  /* Install the length of the string into the Lisp header word.
+     Note that the header word is the 0-based index of the last character,
+     e.g. length - 1 .
    */
   buf->size = strlen(temps) - 1;
 }
@@ -279,7 +287,6 @@ uxtan (double *r, double *x)
   fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
-
 }
 
 int
@@ -404,8 +411,6 @@ uxcosh (double *r, double *x)
   return (1);
 }
 
-#if 0
-// currently not used because it is not defined in crlibm
 int
 uxtanh (double *r, double *x)
 {
@@ -414,13 +419,12 @@ uxtanh (double *r, double *x)
   if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
 }
-#endif
 
 int
 uxhypot (double *res, double *x, double *y)
 {
-    *res = hypot( *x, *y );
-    fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-    if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
-    return 1;
+  *res = hypot( *x, *y );
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  return 1;
 }

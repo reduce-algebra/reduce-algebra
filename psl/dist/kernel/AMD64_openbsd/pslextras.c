@@ -162,8 +162,8 @@ int external_setenv (char *var, char *val, int ov)
  
   bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
   environ = envnew;
-  strncpy(var_plus_equal_sign, var, 98);
-  strncat(var_plus_equal_sign, "=", 1);
+  strlcpy(var_plus_equal_sign, var, 100);
+  strlcat(var_plus_equal_sign, "=", 100);
   return(setenv (var_plus_equal_sign, val,ov));
 }
  
@@ -185,16 +185,16 @@ setenv (const char *var, const char *value, int ov)
         if (strncmp (environ [index], var, len) == 0) {
         /* found it */
         environ[index] = (void *)malloc (len + strlen (value) + 1);
-        strncpy (environ [index], var, len + strlen (value) + 1);
-        strncat (environ [index], value, strlen(value));
+        strlcpy (environ [index], var, len + strlen (value) + 1);
+        strlcat (environ [index], value, len + strlen(value) + 1);
         return (ov);
         }
         index ++;
     }
  
     environ [index] = (void *) malloc (len + strlen (value) + 1);
-    strncpy (environ [index], var, len + strlen (value) + 1);
-    strncat (environ [index], value, strlen(value));
+    strlcpy (environ [index], var, len + strlen (value) + 1);
+    strlcat (environ [index], value, len + strlen(value) + 1);
     environ [++index] = NULL;
     return 0;
 }

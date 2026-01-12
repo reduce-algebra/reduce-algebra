@@ -178,20 +178,31 @@ long long uxlessp(double *f1,double *f2,long long val1,long long val2)
     return val2;
 }
 
+
+// Length of lisp string object in bytes, as allocated in printers.sl.
+#define WRITENUMBERBUFFERSIZE 100
+// Maximum length of string for floating point printing
+#define MAX_FLOAT_STRING_LENGTH WRITENUMBERBUFFERSIZE-8
+
+typedef struct {
+  long long size;
+  char string[MAX_FLOAT_STRING_LENGTH];
+} LispString;
+
 /* Tag( uxwritefloat )
  */
 void
-uxwritefloat(char *buf, double *flt, char *convstr)
+uxwritefloat(LispString *buf, double *flt, char *convstr)
 //     char *buf;          /* String buffer to return float int */
 //     double *flt;        /* Pointer to the float */
 //     char *convstr;      /* String containing conversion field for sprintf */
 {
   char *temps, *dot, *e;
-  char tempbuf [100]; /* reasonable size limit */
+  char tempbuf [WRITENUMBERBUFFERSIZE]; /* reasonable size limit */
 
-  temps = buf + 8;       /* Skip over lisp string length to write data */
+  temps = buf->string;       /* Skip over lisp string length to write data */
 
-  sprintf(temps,convstr, *flt);
+  snprintf(temps, MAX_FLOAT_STRING_LENGTH, convstr, *flt);
 
   if (finite(*flt))
     {
@@ -200,34 +211,39 @@ uxwritefloat(char *buf, double *flt, char *convstr)
       dot = strrchr(temps, '.');
       if (dot == NULL)
 	{
-	  /* Check to see if the number is in scientific notation. If so, we need
-	   *  add the .0 into the middle of the string, just before the e.
+	  /* Check to see if the number is in scientific notation. If so,
+	   *  we must add the .0 into the middle of the string,
+	   *  just before the "e".
 	   */
-	  if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
+	  if ((e = strrchr(temps, 'e')) != NULL ||
+	      (e = strrchr(temps, 'E')) != NULL)
 	    {
-	      strncpy(tempbuf, e, 100); /* save exponent part */
-	      // Now add ".0" and exponent part
+	      /* save exponent part */
+	      strncpy(tempbuf, e, sizeof(tempbuf) - 1);
+	      // Now splice in ".0" before the exponent part
 	      *e = '\0'; 
-	      strcat(temps, ".0");     /* Add .0 onto original string */
-	      strcat(temps, tempbuf);  /* add the exponent part onto the end */
+	      strncat(temps, ".0", MAX_FLOAT_STRING_LENGTH - strlen(temps) - 1);
+	      strncat(temps, tempbuf, MAX_FLOAT_STRING_LENGTH - strlen(temps) - 1);
 	    }
 	  else
 	    {
-	      strcat(temps, ".0");
+	      strncat(temps, ".0", MAX_FLOAT_STRING_LENGTH - strlen(temps) - 1);
 	    }
 	}
     }
-  /* Install the length of the string into the Lisp header word
+  /* Install the length of the string into the Lisp header word.
+     Note that the header word is the 0-based index of the last character,
+     e.g. length - 1 .
    */
-  *((long long *)buf) = strlen(temps) - 1;
+  buf->size = strlen(temps) - 1;
 }
 
 void
-uxwritefloat8(buf, flt, convstr,dummy)
-     char *buf;          /* String buffer to return float int */
-     double *flt;        /* Pointer to the float */
-     char *convstr;      /* String containing conversion field for sprintf */
-     int dummy;  /* We need to have 128 bit alingemnt of the stack */
+uxwritefloat8(LispString* buf, double* flt, char* convstr, int dummy)
+//     char *buf;          /* String buffer to return float int */
+//     double *flt;        /* Pointer to the float */
+//     char *convstr;      /* String containing conversion field for sprintf */
+//     int dummy;  /* We need to have 128 bit alingemnt of the stack */
 { uxwritefloat(buf, flt, convstr); }
 
 

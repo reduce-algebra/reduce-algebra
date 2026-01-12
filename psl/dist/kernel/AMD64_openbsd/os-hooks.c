@@ -71,7 +71,8 @@
 jmp_buf mainenv;
 char *abs_execfilepath;
  
-void clear_iob(), clear_dtabsize();
+void clear_iob(void);
+void clear_dtabsize(void);
 
 void psl_main(int argc, char *argv[], long long *symvalptr);
 
@@ -94,7 +95,7 @@ main(int argc,char *argv[])
     /* Record path to exec file */
   if (argc > 0)
     abs_execfilepath = realpath(argv[0],NULL);
- 
+
  if (getenv("BPSL_DEBUG") != NULL) 
      Debug = 1;
 
