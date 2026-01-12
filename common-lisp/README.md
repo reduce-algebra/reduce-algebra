@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2025-12-31 11:28:20 franc>
+Time-stamp: <2026-01-11 18:27:45 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -27,7 +27,7 @@ I recommend SBCL because in my experience it is the fastest, it is easy to insta
 
 I recommend that you use [Subversion](https://en.wikipedia.org/wiki/Apache_Subversion) (`svn`) to install and maintain a copy of the whole [REDUCE trunk](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/) and use the `common-lisp` sub-directory as your build directory.  Then the build process should [determine the REDUCE revision](#determining-the-reduce-revision) automatically.
 
-You need to obtain, build (if necessary) and install the version(s) of Common Lisp that you intend to use (see links above), support for which is not part of this project.  Most are available as pre-built binary distributions.  On Linux, possibly out-of-date versions of SBCL and CLISP should be available via a package manager such as Synaptic (but not via a software installer for windowed applications).  To use CCL you need to create a command called either `ccl` or `ccl64`, as explained in the CCL documentation.  The build and run scripts use whichever is available, preferring `ccl64`.  I have only tested 64-bit CCL and I call the command to run it `ccl`.  The build and run scripts expect to find the commands `sbcl`, `clisp`, `ccl` and/or `ccl64` on your command search path.
+You need to obtain, build (if necessary) and install the version(s) of Common Lisp that you intend to use (see links above), support for which is not part of this project.  Most are available as pre-built binary distributions.  On Linux, possibly out-of-date versions of SBCL and CLISP should be available via a package manager such as Synaptic (but not via a software installer for windowed applications).  To use CCL you need to create a command called either `ccl` or `ccl64`, as explained in the CCL documentation.  My build and run scripts use whichever is available, preferring `ccl64`.  (I have only tested 64-bit CCL and I call the command to run it `ccl`.)  The build and run scripts expect to find the commands `sbcl`, `clisp`, `ccl` and/or `ccl64` on your command search path.
 
 You need to use a minimal Unix-like environment including [**fairly recent** versions of `bash`](#required-version-of-bash) and `grep`; on MS Windows I use [Cygwin](https://cygwin.com/).  (The `grep` command is used only for reporting an error summary, which could be commented out without affecting the build process.)
 
@@ -89,7 +89,7 @@ If you do not build within the REDUCE Subversion file tree then the following tw
 
 * The build directory must contain a link to, or copy of, the file [psl/boot.sl](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/psl/boot.sl).  (The way to create a link in Windows is with `mklink` at a Windows command prompt running as Administrator, which you can open by holding the Windows key and typing `x`.  A Windows shortcut created using the File Explorer GUI will probably not work!)
 
-* The `packages` directory for the version of REDUCE you want to build must be available.  This could be the `packages` directory installed as part of a binary distribution or a recent download from the [Subversion repository](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/).  It is easiest to add the `packages` directory as a symbolic link in either the `common-lisp` directory or its parent.  (On Windows I recommend a directory symbolic link created using `mklink /d`.)  Alternatively, you can set the environment variable `reduce` to the directory containing the `packages` directory (without a trailing directory separator).
+* The `packages` directory for the version of REDUCE you want to build must be available.  This could be the `packages` directory installed as part of a binary distribution or a recent download from the [Subversion repository](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/).  It is easiest to add the `packages` directory as a symbolic link in either the `common-lisp` directory or its parent.  (On Windows I recommend a directory symbolic link created using `mklink /d`.)  Alternatively, you can set the environment variable `reduce` to the directory containing the `packages` directory (with or without a trailing directory separator).  On Windows you can use either `\` or `/` as the directory separator.
 
 Open a window running `bash` and make your chosen build directory current.  If you need to set the `reduce` environment variable, you can do it like this.  For example, to use the `packages` directory from a _default_ REDUCE installation to build SBCL REDUCE on MS Windows, execute the `bash` command
 
@@ -269,7 +269,7 @@ No build errors.  Package test issues as for Windows, except that ofsf was kille
 
 ## Known limitations
 
-I cannot see any way to support the facilities for restricting execution time on CLISP or CCL.  In more detail: the file `rlisp/inter.red` defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no garbage collection hooks exist in CLISP or CCL.  The procedures `with!-timeout` and similar just run without any restriction so don't use CLISP or CCL REDUCE is you need this facility!  It works on SBCL!
+I cannot see any way to support the facilities for restricting execution time on CLISP or CCL.  In more detail: the file `rlisp/inter.red` defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no garbage collection hooks exist in CLISP or CCL.  The procedures `with!-timeout` and similar just run without any restriction so don't use CLISP or CCL REDUCE is you need this facility!  It works on SBCL.
 
 
 ## To do

@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-01-08 12:12:42 franc>
+;; Time-stamp: <2026-01-12 16:13:45 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -27,7 +27,7 @@
 
 ;; Uncomment the next line for a debug build; comment it out for a
 ;; production build:
-(eval-when (:compile-toplevel :load-toplevel :execute) (push :debug *features*))
+;; (eval-when (:compile-toplevel :load-toplevel :execute) (push :debug *features*))
 
 (declaim (optimize #-DEBUG speed #+DEBUG debug #+DEBUG safety))
 #+(and SBCL (not DEBUG))
@@ -1924,7 +1924,7 @@ EXPR PROCEDURE LENGTH(X);
       ELSE PLUS(1, LENGTH CDR X);"
   ;; The above recursive definition uses too much stack.
   ;; The CL length function cannot be used because it does not accept
-  ;; atoms or dotted pairs!
+  ;; atoms or improper lists (with a non-nil final cdr)!
   ;; This iterative implementation is based on the description of
   ;; list-length in the CLHS:
   (do ((n 0 (1+ n))                     ; counter
@@ -1949,8 +1949,7 @@ EXPR PROCEDURE LITER(U);
                  \n \o \p \q \r \s \t \u \v \w \x \y \z)
              :test #'eq))
 
-(declaim (inline member memq)
-         (ftype (cl:function (t t) list) member memq))
+(declaim (ftype (cl:function (t t) list) member memq))
 
 (defun member (a l)
   "(member A:any L:any): extra-boolean expr
@@ -1963,7 +1962,11 @@ to A."
   ;; (cond ((atom l) nil)
   ;;       ((equal a (car l)) l)
   ;;       (t (member a (cdr l))))
-  (and (listp l) (cl:member a l :test #'equal)))
+  (loop for tail on l do
+        (when (atom tail) (return))
+        (when (equal a (car tail)) (return tail))))
+
+(declaim (inline memq))
 
 (defun memq (a l)
   "(memq A:any L:any): extra-boolean expr
@@ -2204,7 +2207,7 @@ Otherwise revert to the Common Lisp eval."
 ;;       RETURN EVAL APPLY(CDR FN, LIST U)
 ;; END;
 
-(declaim (ftype (cl:function (cons function) list) expand))
+(declaim (ftype (cl:function (cons function) t) expand))
 
 (defun expand (l fn)
   "EXPAND(L:list, FN:function):list eval, spread
@@ -2215,12 +2218,11 @@ where n is the number of elements in L, Li is the ith element of L.
 EXPR PROCEDURE EXPAND(L,FN);
    IF NULL CDR L THEN CAR L
       ELSE LIST(FN, CAR L, EXPAND(CDR L, FN));"
-  ;; But above definition does not always return a list, since CAR L
-  ;; may be anything!  The following definition should be OK.
-  ;; BETTER TO REWRITE USING LOOP?
-  (list fn (car l) (if (null (cddr l))
-                       (cadr l)
-                       (expand (cdr l) fn))))
+  ;; NB: This function need not return a list, since CAR L may be
+  ;; anything!
+  (if (null (cdr l))
+      (car l)
+      (list fn (car l) (expand (cdr l) fn))))
 
 (defmacro function (fn)
   "FUNCTION(FN:function):function noeval, nospread
@@ -2388,12 +2390,52 @@ parent.  Called by `open' and `cd' on SBCL."
   #+CCL (uiop/filesystem:truenamize filename) ; requires asdf, so remove later?
   )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(declaim (ftype (cl:function (simple-string) pathname) %tidy-pathname))
+
+(defun %tidy-pathname (file-namestring)
+  "Return the full pathname of FILE-NAMESTRING (which need not exist).
+If the first component of FILE-NAMESTRING is an environment variable
+of the form `$name' then replace it by its value, which need not end
+with a directory separator.  On MS Windows, directory separators can
+be either \ or /.  Called by `open', `cd', `filep', `file-write-date'."
+  #+(or WIN32 CYGWIN) ;; convert \ to /:
+  (setq file-namestring (substitute #\/ #\\ file-namestring))
+  (let* ((file-pathname
+          #+SBCL (sb-ext:native-pathname file-namestring)
+          #-SBCL (pathname file-namestring)
+          )
+         (dir (pathname-directory file-pathname))
+         root)
+    (when (and (consp dir)
+               (eq (car dir) :relative)         ; relative filename
+               (stringp (setq root (cadr dir))) ; root := root component
+               (char= (schar root 0) #\$)       ; root start with $
+               (setq root (getenv (subseq root 1)))) ; root := new root
+      #+(or WIN32 CYGWIN) ;; convert \ to /:
+      (setq root (substitute #\/ #\\ root))
+      ;; Ensure trailing /:
+      (when (char/= (schar root (1- (cl:length root))) #\/)
+        (setq root (concatenate 'string root "/")))
+      (setq root                        ; root as pathname
+            #+SBCL (sb-ext:native-namestring root)
+            #-SBCL (pathname root)
+            dir                         ; new full directory
+            (cl:append (pathname-directory root) (cddr dir))
+            file-pathname               ; new full pathname
+            (make-pathname
+             :device (pathname-device root)
+             :directory dir :defaults file-pathname)))
+    file-pathname))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; CLISP user variable CUSTOM:*DEVICE-PREFIX* controls translation
 ;; between Cygwin pathnames (e.g., #P"/cygdrive/c/gnu/clisp/") and
 ;; native Win32 pathnames (e.g., #P"C:\\gnu\\clisp\\").
 
-(declaim (ftype (cl:function ((or simple-string pathname) symbol) filehandle)
-                open))
+(declaim (ftype (cl:function (simple-string symbol) filehandle) open))
 
 (defun open (file how)
   "OPEN(FILE:any, HOW:id):any eval, spread
@@ -2405,19 +2447,19 @@ WRS. An error occurs if HOW is something other than INPUT or
 OUTPUT or the file can't be opened.
 ***** HOW is not option for OPEN
 ***** FILE could not be opened"
-  (setq file (substitute-in-file-name file)) ; substitute environment variables
-  #-CLISP (setq file (expand-file-name file)) ; and then expand . and ..
-  ;; #+cygwin (setq file (win-to-cyg file))
-  #+cygwin (setq file (parse-namestring file)) ; convert Windows filename to Cygwin format
+  ;; (setq file (substitute-in-file-name file)) ; substitute environment variables
+  ;; #-CLISP (setq file (expand-file-name file)) ; and then expand . and ..
+  ;; ;; #+cygwin (setq file (win-to-cyg file))
+  ;; #+cygwin (setq file (parse-namestring file)) ; convert Windows filename to Cygwin format
   (case how
     (input
-     (let ((fh (cl:open file :direction :input)))
+     (let ((fh (cl:open (%tidy-pathname file) :direction :input)))
        ;; An input filehandle is a pair of the form
        ;; (input-stream . echo-stream):
        (cons fh (make-echo-stream fh *standard-output*))))
     (output
      (list 'file
-           (cl:open file :direction :output
+           (cl:open (%tidy-pathname file) :direction :output
                     :if-exists :supersede :if-does-not-exist :create)))
     (t (error-internal "~a is not option for OPEN" how))))
 
@@ -3340,22 +3382,23 @@ elements (for example ids, strings, and vectors) are not.")
 Store item L as the property list of U."
   (setf (symbol-plist u) l))
 
-;; CL union and intersection return different orderings that those in
-;; the REDUCE source, which leads to different (although probably not
+;; CL union and intersection return different orderings than those in
+;; rlisp/rsupport.red, which leads to different (although probably not
 ;; incorrect) results, so don't use them.  However, union is needed in
-;; the build process before it is defined in the rlisp package, so
+;; the build process before it is defined in rlisp/rsupport.red, so
 ;; define an initial version here, which will be replaced when
 ;; building rlisp:
 
-(declaim (ftype (cl:function (list list) list) union))
-
+;; (declaim (ftype (cl:function (list list) list) union))
+;; Declaiming this type breaks crack, which can call union with an
+;; atomic argument.  (This is probably a bug in crack!)
 (defun union (x y)                      ; PSL
   "(union X:list Y:list): list expr
 Returns the union of sets X and Y."
   (cl:union x y :test #'equal))
 
-(declaim (ftype (cl:function (number number) number) mod))
-
+;; (declaim (ftype (cl:function (number number) number) mod))
+;; Declaiming this type breaks cali, which redefines mod!
 (defalias mod cl:mod) ; not just imported because cali redefines mod
 
 (declaim (ftype (cl:function (integer integer) unsigned-byte) gcdn lcmn))
@@ -3439,6 +3482,9 @@ rather like errorset."
            (t () nil))
   #-SBCL (declare (ignore time_limit))
   #-SBCL (list (eval exprn)))
+
+(import 'cl:boundp)            ; avoid the definition in alg/simp.red!
+(flag '(boundp) 'lose)
 
 
 ;;; Hash Tables
@@ -3659,7 +3705,7 @@ not sucessful, the value Nil is returned."
 (defun filep (file)                     ; PSL
   "Return false if FILE does not exist, otherwise return the truename of
 FILE.  Substitutes environment variables in file name."
-  (cl:probe-file (substitute-in-file-name file)))
+  (probe-file (%tidy-pathname file)))
 
 (declaim (inline file-write-date)
          (ftype (cl:function (simple-string) (or unsigned-byte null))
@@ -3669,7 +3715,7 @@ FILE.  Substitutes environment variables in file name."
   "Return the time at which FILE was last written (or created), or nil if
 such a time cannot be determined.  Substitutes environment variables
 in file name."
-  (cl:file-write-date (substitute-in-file-name file)))
+  (cl:file-write-date (%tidy-pathname file)))
 
 #+SBCL (import 'sb-posix:getpid)
 #+CLISP (declaim (ftype (cl:function () unsigned-byte) getpid)) ; ???
@@ -4133,8 +4179,13 @@ Called by ON/OFF COMP; see 'clrend.red'."
 
 #+ABCL (setq *autoload-verbose* t)
 
-(setf (macro-function 'cltrace) (macro-function 'trace)) ; for debugging
-(setf (macro-function 'cluntrace) (macro-function 'untrace))
+(setf (macro-function 'cltrace) (macro-function 'cl:trace)) ; for debugging
+(setf (macro-function 'cluntrace) (macro-function 'cl:untrace))
+
+#+SBCL
+(defmacro cltracebr (&rest fns)
+  "Break on entry to the specified functions and enter the debugger."
+  `(cl:trace :break t ,@fns))
 
 ;; Common Lisp symbols used in REDUCE source code:
 (import
