@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2025-12-30 15:13:21 franc>
+# Time-stamp: <2026-01-12 12:37:50 franc>
 
 # Build REDUCE on supported implementations of Common Lisp (CL),
 # namely SBCL, CLISP and CCL.
@@ -126,6 +126,8 @@ fi
 if [[ "$revision" =~ ^[[:digit:]]+$ ]]; then
     echo '+++++ REDUCE revision number set to' $revision
 else
+    echo '*** The REDUCE revision number cannot be set automatically.'
+    echo '    You can use the -r option to set it manually.'
     unset -v revision
 fi
 
