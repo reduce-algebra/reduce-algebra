@@ -4,16 +4,62 @@
 
 # $Id$
 
-if test "$1" = "--help"
+
+help="no"
+minimal="no"
+check="no"
+univ="no"
+extra=""
+
+for p in $*
+do
+  case $p in
+  --help)
+    help="yes"   
+    ;;
+  --minimal)
+    minimal="yes"
+    ;;
+  --check)
+    check="yes"
+    ;;
+  --univ)
+    univ="yes"
+    ;;
+  --extra=*)
+    extra="${p%extra=}"    
+     ;;
+  *)
+    printf "+++ Unrecognised option $p\n"
+    exit 1
+    ;;
+  esac
+done
+
+# As of early 2026 and running under Big Sur (which is of course no
+# longer supported!) on a mid 2014 macbook I find that python314 fails
+# to build, and unless I take action many other ports depends on it and
+# hence fail. Falling back to python313 for ports that are willing to
+# do so helps rather a lot! This might need reviewing some day! But
+# it is probably valid for the remaining time that universal builds will
+# make sense!
+
+extra="$extra +python313"
+
+if test "$help" = "yes"
 then
   printf "sudo macports-setup.sh [--help] [--minimal]\n"
+  printf "                       [--check] [--univ]]\n"
+  printf "                       [--extra=XXX]\n"
   printf "  help:      displays this message\n"
-  printf "  minimal:   only the bare minimum for local Reduce use\n"
+  printf "  minimal:   only (about) the minimum for local Reduce use\n"
+  printf "  check:     report what is NOT universal\n"
+  printf "  univ:      try to upgrade eveything to universal\n"
+  printf "  extra=XXX  pass XXX to all uses of \"port install\"\n"
   exit 0
 fi
 
-
-# This script can be used on either a Macintosh (once macports has
+# This script can be used on a Macintosh (once macports has
 # been installed, and that in turn required Xcode tools including its
 # command-line option). It installs a collection of "ports" sufficient for
 # building, testing and distributing Reduce.
@@ -54,8 +100,11 @@ fi
 # Report that date at start and end of this just for interest.
 date
 
+if test "$check" != "yes"
+then
 # Ensure that the latest version of macports will be in use.
-port       selfupdate
+  port selfupdate
+fi
 
 # The ordering of the installations here is not arbitrary - I have made at
 # least some attempt to set it up so that dependencies do not lead to
@@ -68,15 +117,17 @@ port       selfupdate
 # If this computer can no create universal binaries I should not play with
 # that at all.
 
-echo "int main() { return 0; }" > /tmp/sample.c
-rm -f /tmp/sample
-gcc -arch x86_64 -arch arm64 /tmp/sample.c -o /tmp/sample >/dev/null 2>/dev/null
-if test -f /tmp/sample
+base=`mktemp SXXXXXXX`
+echo "int main() { return 0; }" > /tmp/$base.c
+rm -f /tmp/$base
+gcc -arch x86_64 -arch arm64 /tmp/$base.c -o /tmp/$base >/dev/null 2>/dev/null
+if test -f /tmp/$base
 then
-  UNIVERSAL=yes
+  universal="yes"
 else
-  UNIVERSAL=no
+  universal="no"
 fi
+rm -f /tmp/$base.c /tmp/$base
 
 # For each port I first try installing in +universal mode than if that
 # fails I try again in plain single-architecture mode. I use "port clean"
@@ -93,14 +144,24 @@ install ()
 # the prerequisites for the installs fails to build as +universal then in
 # the fallback the rest may be build plain. However at the end of this
 # script I perform a sweep that will clean up after any such problems.
+# Also I allow a suffix ":x" that should never be used alongside ":s" that
+# indicated that the port just provides executable utilities rather than
+# libraries, so there is no merit in trying to make it universal.
   case $1 in
+  *:x)
+    P=${1%:x}
+    S=""
+    xtag="yes"
+    ;;
   *:s)
     P=${1%:s}
     S="-s"
+    xtag="no"
     ;;
   *)
     P=$1
     S=""
+    xtag="no"
     ;;
   esac
 # When I clean things I will clean all the other ports that this one
@@ -109,80 +170,72 @@ install ()
 # to build some or even all of those, and if any are in an untidy state
 # that could disrupt the entire build.
   port -N clean --all $P rdepof:$P
-  if test "$UNIVERSAL" = "no" || ! port -f -N $S install $P +universal
+  if test "$xtag" = "yes"
   then
-    if test "$UNIVERSAL" = "no"
+    port -f -N install $P $extra
+  elif test "$universal" = "no" || ! port -f -N $S install $P +universal $extra
+  then
+    if test "$universal" = "no"
     then
       printf "### Using single-architecture install of $P\n"
     else
       printf "### Fallback to simple install of $P\n"
       port -N clean --all $P rdepof:$P
     fi
-    port -f -N $S install $P
+    port -f -N $S install $P $extra
   fi
 }
 
-for p in                      \
-  ncurses:s                   \
-  gperf:s                     \
-  libiconv:s                  \
-  gettext:s                   \
-  xz:s                        \
-  zlib:s                      \
-  libedit:s                   \
-  bzip2:s                     \
-  expat:s                     \
-  gsed                        \
-  pkgconfig                   \
-  subversion                  \
-  autoconf                    \
-  autoconf-archive            \
-  m4                          \
-  perl5                       \
-  autoconf213                 \
-  automake                    \
-  libtool                     \
-  bzip2                       \
-  libffi                      \
-  python_select               \
-  python2_select              \
-  python27                    \
-  python39                    \
-  xorg-libxcb:s               \
-  xorg-libX11:s               \
-  perl5.28                    \
-  Xft2:s                      \
-  xorg-libXext:s              \
-  ccache                      \
-  gtime                       \
-  gmake                       \
-  bc                          \
-  timeout                     \
-  xorg-libXrandr:s            \
-  xorg-libXcursor:s           \
-  brotli                      \
-  brotli-static               \
-  ccache                      \
-  xorg-server                 \
-  xorg
+if test "$check" != "yes" && test "$univ" != "yes"
+then
+  for p in                      \
+    ncurses:s                   \
+    gperf:s                     \
+    libiconv:s                  \
+    gettext:s                   \
+    xz:s                        \
+    zlib:s                      \
+    libedit:s                   \
+    bzip2:s                     \
+    expat:s                     \
+    gsed:x                      \
+    pkgconfig:x                 \
+    subversion:x                \
+    autoconf:x                  \
+    autoconf-archive:x          \
+    m4:x                        \
+    perl5:x                     \
+    autoconf213:x               \
+    automake:x                  \
+    libtool                     \
+    bzip2:x                     \
+    libffi                      \
+    python_select:x             \
+    python2_select:x            \
+    python27:x                  \
+    python39:x                  \
+    xorg-libxcb:s               \
+    xorg-libX11:s               \
+    perl5.28:x                  \
+    Xft2:s                      \
+    xorg-libXext:s              \
+    ccache:x                    \
+    gtime:x                     \
+    gmake:x                     \
+    bc:x                        \
+    timeout:x                   \
+    xorg-libXrandr:s            \
+    xorg-libXcursor:s           \
+    brotli                      \
+    brotli-static               \
+    ccache:x                    \
+    xorg-server                 \
+    xorg
 
-do
-  install $p
-done
-
-case "$*" in
-*--minimal*)
-  printf "You probably have enough installed for a minimal local\n"
-  printf "build of Reduce. But if you want to build documentation and\n"
-  printf "try all [sometimes experimental] options please install the\n"
-  printf "rest of the ports here.\n"
-  exit 0
-  MINIMAL=yes
-  ;;
-*)
-  MINIMAL="no"
-  ;;
-esac
+  do
+    install $p
+  done
+fi
 
 # Once again several of the ports that follow are really not essential
 # for Reduce use, but by installing them I find that the full set of tools
@@ -195,33 +248,33 @@ esac
 # code laid out consistently. All the texlive components are used when
 # building the Reduce manual.
 
-if test "$MINIMAL" != "yes"
+if test "$check" != "yes" && test "$univ" != "yes" && test "$minimal" != "yes"
 then
-  for p in                    \
-    fontconfig:s              \
-    libffi:s                  \
-    gmp:s                     \
-    astyle                    \
-    dvipng                    \
-    findutils                 \
-    fontforge                 \
-    gdb                       \
-    git                       \
-    gnuplot                   \
-    gnutar                    \
-    gzip                      \
-    md5sha1sum                \
-    netpbm                    \
-    psutils                   \
-    rsync                     \
-    texinfo                   \
-    texlive-fonts-extra       \
-    texlive-formats-extra     \
-    texlive-latex-extra       \
-    texlive-plain-generic     \
-    texlive-bin-extra         \
-    texlive-fonts-recommended \
-    wget
+  for p in                      \
+    fontconfig:s                \
+    libffi:s                    \
+    gmp:s                       \
+    astyle:x                    \
+    dvipng:x                    \
+    findutils:x                 \
+    fontforge:x                 \
+    gdb:x                       \
+    git:x                       \
+    gnuplot                     \
+    gnutar:x                    \
+    gzip:x                      \
+    md5sha1sum:x                \
+    netpbm:x                    \
+    psutils:x                   \
+    rsync:x                     \
+    texinfo:x                   \
+    texlive-fonts-extra:x       \
+    texlive-formats-extra:x     \
+    texlive-latex-extra:x       \
+    texlive-plain-generic:x     \
+    texlive-bin-extra:x         \
+    texlive-fonts-recommended:x \
+    wget:x
   do
     install $p
   done
@@ -232,50 +285,60 @@ fi
 # ports that could have been universal have ended up installed in a plain
 # form, so I scan, identify those and try for +universal again. I report
 # at the end on any that still fail. In January 2022 there are some but none
-# that cause serious problems for me.
+# that cause serious problems for me. Reviewed in January 2026. I now reverse
+# the order because that gets a lot of X11 packages upgraded early in the
+# process and that works well for me in cases that the full upgrade is
+# interrupted part way through.
 
-if test "$UNIVERSAL" = "yes"
-then
-
-  all=`port installed installed | grep active | tail -n +2 | sed -e 's/@.*$//g'`
-  failures=""
+all=`port installed installed | \
+     grep active | \
+     tail -n +2 | \
+     sed -e 's/@.*$//g' | \
+     sort -r`
+failures=""
 
 # The above sets all to a list of all the ports that are at present active.
 # I will then check each to see if a universal version is already installed,
 # and if not whether one may be available.
 
-  for P in $all
-  do
-    if port installed $P | grep "universal.*active" >/dev/null
-    then
+for P in $all
+do
+  if port installed $P | grep "universal.*active" >/dev/null
+  then
 # If the current version is already universal I do not have to do more for
 # this package.
-      continue
-    fi
-    if port variants $P | grep "universal:" > /dev/null
-    then
+    continue
+  fi
+  if port variants $P | grep "universal:" > /dev/null
+  then
 # Here the currently active port is not universal but the option +universal
 # will be understood.
-      printf "$P is not universal yet but potentially could be\n"
-    else
+    case $P in
+    clang* | llvm* | python* | texlive* | ImageMagick | ccache |\
+    subversion | rsync)
+# These things do not need th be universal - they are packages I will
+# run on this machine but I will not move their binaries elsewhere.
+# Furthermore building or rebuilding them can be seriously tedious.
+      printf "$P does not need to be universal\n";
       continue
-    fi
+      ;;
+    *)
+      printf "$P is not universal yet but potentially could be\n"
+      ;;
+    esac
+  else
+    continue
+  fi
+  if test "$check" != "yes"
+  then
     port -N clean --all $P rdepof:$P
-    if ! port -f -N install $P +universal
+    if ! port -f -N install $P +universal $extra
     then
 # Collect a list of cases where the universal build fails.
-      failures="$failures $P"
+      failures="$P $failures"
     fi
-  done
-fi
-
-# "port reclaim" will discard all the non-active versions of ports, so when
-# I have succeded in installing a universal variant it will get rid of the
-# single-architecture version. However I am concerned that it might discard
-# some things that are in fact still useful, so I will not do it automatically
-# here... Anybody who feels they want to may do it for themselves!
-#
-# port -N reclaim
+  fi
+done
 
 if test "$failures" != ""
 then
