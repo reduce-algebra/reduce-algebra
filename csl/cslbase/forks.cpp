@@ -401,7 +401,11 @@ LispObject Lopen_fork(LispObject env)
 // do not need to worry about tidying up anything, and I really would hate
 // it if some destructor in the child process performed file operations in
 // the name of clean termination and messed things up for the parent.
+#ifndef HAVE_QUICK_EXIT
+        exit(0);
+#else
         quick_exit(0);
+#endif
     }
     else if (pid < 0)
     {
