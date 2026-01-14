@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-01-12 16:13:45 franc>
+;; Time-stamp: <2026-01-13 18:20:31 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -25,9 +25,9 @@
 ;; For Common Lisp documentation see
 ;; https://www.lispworks.com/documentation/HyperSpec/Front/
 
-;; Uncomment the next line for a debug build; comment it out for a
-;; production build:
-;; (eval-when (:compile-toplevel :load-toplevel :execute) (push :debug *features*))
+;; The DEBUG feature may be initially added by build.sh:
+#+DEBUG (eval-when (:compile-toplevel :load-toplevel :execute)
+          (push :DEBUG *features*))
 
 (declaim (optimize #-DEBUG speed #+DEBUG debug #+DEBUG safety))
 #+(and SBCL (not DEBUG))
@@ -4099,6 +4099,7 @@ When all done, execute FASLEND;~2%" name))
            (getenv "INSIDE_EMACS"))
        (progn
          #+DEBUG (format t "~&Interactive mode -- debugger enabled~%")
+         #+DEBUG (setq *break-on-signals* 'cl:error)
          (with-simple-restart
              (abort "Exit REDUCE.")
            (loop
@@ -4112,15 +4113,26 @@ When all done, execute FASLEND;~2%" name))
 
 #+CLISP (setq custom:*report-error-print-backtrace* t)
 
-#+(or CCL ECL)
+#+CCL
 (defun reduce-init-function ()
-  #+CCL (standard-lisp)
-  (with-simple-restart
-      (abort "Exit REDUCE.")
-    (loop
-     (with-simple-restart
-         (abort "Return to REDUCE.")
-       (begin)))))
+  (standard-lisp)
+  (if  (or (getenv "interactive")
+           (getenv "INSIDE_EMACS"))
+       (progn
+         #+DEBUG (format t "~&Interactive mode -- debugger enabled~%")
+         #+DEBUG (setq *break-on-signals* 'cl:error)
+         (with-simple-restart
+             (abort "Exit REDUCE.")
+           (loop
+            (with-simple-restart
+                (abort "Return to REDUCE.")
+              (begin)))))
+       (progn
+         #+DEBUG (format t "~&Batch mode -- debugger disabled~%")
+         ;; (setq *break-on-errors* nil)
+         ;; documented but undeclared free variable!!!
+         (begin)))
+  (quit))
 
 (declaim (ftype (cl:function (string) null) save-reduce-image))
 

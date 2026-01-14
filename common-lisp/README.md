@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-01-11 18:27:45 franc>
+Time-stamp: <2026-01-14 10:54:08 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -20,18 +20,18 @@ From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Gu
 
 The files in this directory are intended to build and run recent versions of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support [Steel Bank Common Lisp](http://www.sbcl.org/) (SBCL), [CLISP](https://clisp.sourceforge.io/) and [Clozure Common Lisp](https://ccl.clozure.com/) (CCL) on MS Windows 11 and Ubuntu 24.  I understand that REDUCE builds and runs on SBCL, CLISP and CCL on macOS, although I don't run macOS myself.  The support for CCL is based on code provided by Marco Ferraris.  See [Status](#status) below for build and test details.
 
-I recommend SBCL because in my experience it is the fastest, it is easy to install and set up, binary distributions are readily available, and it is frequently updated.  CLISP is slow, and I find CCL tricky to install and set up.
+I recommend SBCL because in my experience it is the fastest, it is easy to install and set up, binary distributions are readily available, and it is well maintained and frequently updated.  CLISP is slow, and I find CCL tricky to install and set up.
 
 
 ## Building REDUCE
 
-I recommend that you use [Subversion](https://en.wikipedia.org/wiki/Apache_Subversion) (`svn`) to install and maintain a copy of the whole [REDUCE trunk](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/) and use the `common-lisp` sub-directory as your build directory.  Then the build process should [determine the REDUCE revision](#determining-the-reduce-revision) automatically.
+I recommend that you either use [Subversion](https://en.wikipedia.org/wiki/Apache_Subversion) (`svn`) to install from SourceForge and maintain a copy of the whole [REDUCE trunk](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/), or download and unzip the latest source snapshot from SourceForge by using the _Download Snapshot_ link towards the top of the [REDUCE trunk](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/) page.  If you use the `common-lisp` sub-directory as your build directory then the build process should [determine the REDUCE revision](#determining-the-reduce-revision) automatically.
 
-You need to obtain, build (if necessary) and install the version(s) of Common Lisp that you intend to use (see links above), support for which is not part of this project.  Most are available as pre-built binary distributions.  On Linux, possibly out-of-date versions of SBCL and CLISP should be available via a package manager such as Synaptic (but not via a software installer for windowed applications).  To use CCL you need to create a command called either `ccl` or `ccl64`, as explained in the CCL documentation.  My build and run scripts use whichever is available, preferring `ccl64`.  (I have only tested 64-bit CCL and I call the command to run it `ccl`.)  The build and run scripts expect to find the commands `sbcl`, `clisp`, `ccl` and/or `ccl64` on your command search path.
+You need to obtain, build if necessary and install the version(s) of Common Lisp that you intend to use (see links above), support for which is not part of this project.  Most are available as pre-built binary distributions.  On Linux, possibly out-of-date versions of SBCL and CLISP should be available via a package manager such as Synaptic (but not via a software installer for windowed applications).  To use CCL you need to create a command called either `ccl` or `ccl64`, as explained in the CCL documentation.  My build and run scripts use whichever is available, preferring `ccl64`.  (I have only tested 64-bit CCL and I call the command to run it `ccl`.)  The build and run scripts expect to find the commands `sbcl`, `clisp`, `ccl` and/or `ccl64` on your command search path.
 
 You need to use a minimal Unix-like environment including [**fairly recent** versions of `bash`](#required-version-of-bash) and `grep`; on MS Windows I use [Cygwin](https://cygwin.com/).  (The `grep` command is used only for reporting an error summary, which could be commented out without affecting the build process.)
 
-Run the build script in the `common-lisp` directory by executing the `bash` command
+Make the `common-lisp` directory current and run then the build script by executing the `bash` command
 
 ```sh
 ./build.sh -l <lisp>
@@ -39,7 +39,7 @@ Run the build script in the `common-lisp` directory by executing the `bash` comm
 
 where `<lisp>` is the version of Common Lisp to use: `sbcl`, `clisp` or `ccl`.
 
-The build process should create two sub-directories in the build directory called `fasl.<lisp>` and `log.<lisp>`.  The whole `log.*` directory and the `*.lisp`, `*.dat` and `bootstrap.*` files in the `fasl.*` directory could be deleted after the build; they are not required to run REDUCE.  (I will probably delete superfluous files automatically at some later date, but for now they are useful for debugging.)  Note that the builds for different Lisps are completely independent since they use different sub-directories.
+The build process should create two sub-directories in the build directory called `fasl.<lisp>` and `log.<lisp>`.  The whole `log.*` directory and the `*.lisp`, `*.dat` and `bootstrap.*` files in the `fasl.*` directory could be deleted after the build since they are not required to run REDUCE.  (I will probably delete superfluous files automatically at some later date, but for now they are useful for debugging.)  Note that the builds for different Lisps are completely independent since they use different sub-directories.
 
 The build script supports some optional flags: `-c` provides a clean build, by first deleting all the files that get built; `-f` forces all REDUCE packages to be recompiled, even if they appear to be up to date; `-b` builds only bootstrap REDUCE; `-h` displays help.  To rebuild using an updated version of Common Lisp, you should always do a clean build, i.e.
 
@@ -111,13 +111,15 @@ export reduce='/usr/share/reduce'
 
 ### Determining the REDUCE revision
 
-If you used Subversion to download or update a copy of the REDUCE distribution files from [SourceForge](https://sourceforge.net/projects/reduce-algebra/) then the build process should correctly determine the REDUCE revision from the `packages` directory, which contains all the REDUCE source code.  This determination uses the programs [`svnversion`](https://svnbook.red-bean.com/en/1.7/svn.ref.svnversion.re.html) and [`readlink`](https://www.gnu.org/software/coreutils/manual/html_node/readlink-invocation.html) (if available).  Otherwise, the REDUCE revision can be specified by hand using the `-r` option to `build.sh`, e.g.
+If you used Subversion to download or update a copy of the REDUCE distribution files from [SourceForge](https://sourceforge.net/projects/reduce-algebra/) then the build process should correctly determine the REDUCE revision from the `packages` directory, which contains all the REDUCE source code.  This determination uses the programs [`svnversion`](https://svnbook.red-bean.com/en/1.7/svn.ref.svnversion.re.html) and [`readlink`](https://www.gnu.org/software/coreutils/manual/html_node/readlink-invocation.html) (if available).  If that fails, the build script tries to parse a number out of the root directory, which should work if you downloaded a source snapshot from SourceForge (and did not change the root directory name).
+
+Otherwise, or to override the default mechanisms described above, you can always specify the REDUCE revision by using the `-r` option to `build.sh`, e.g.
 
 ```sh
 ./build.sh -l <lisp> -r <revision> -c
 ```
 
-The order of precedence of the two mechanisms for determining the REDUCE revision is first the `-r` option, then `svnversion`.  **Note that the file `packages/support/revision.red` is no longer used.**
+The order of precedence of the mechanisms for determining the REDUCE revision is first the `-r` option, then `svnversion`, then the root directory.  **Note that the file `packages/support/revision.red` is no longer used.**
 
 ### Using unsupported versions of Common Lisp
 
@@ -138,9 +140,15 @@ instead of
 
 ## Implementation-specific functionality
 
+On MS Windows, you can use either `\` or `/` to input directory separators; `\` is converted to `/` internally, so all output will use `/`.
+
+REDUCE on Common Lisp tries to enable interactive Lisp debugging when it is run interactively and to disable it otherwise, but the mechanisms for doing this depend on the version of Common Lisp and are currently experimental.  Interactively, an interrupt signal generated by _Control-C_ should start a break loop that facilitates interactive debugging using Common Lisp syntax, initially in the `standard-lisp` package.  This could be useful to debug REDUCE code at the Lisp level.
+
 The following facilities are modelled on those provided by PSL; please see the PSL manual for further details.
 
-Lisp-level function tracing is provided by the commands `tr` and `trst`, which are available in both algebraic and symbolic modes.  A command of the form `tr fn1, fn2, ...;` (without any quotes) turns on tracing of the argument and return values of each of the functions `fn1`, `fn2`, etc.; if no functions are specified, i.e. `tr();` (or `tr nil;`), it lists all traced functions.  The command `trst` is similar but also traces assignments, which works for functions that have been compiled using `faslout` provided the appropriate Lisp file is still available in the `fasl` directory.  The commands `untr` and `untrst` (which is just a synonym for `untr`) turns off tracing; if no functions are specified they turn off tracing for all traced functions.  These tracing commands are independent of the Common Lisp `trace` and `untrace` macros, which are also made available (in symbolic mode only) via the names `cltrace` and `cluntrace` (to avoid clashing with the matrix trace operator).  Input of function names uses Standard Lisp (i.e. REDUCE) syntax but output uses Common Lisp syntax, although it does not include any package prefixes, which can make Common Lisp tracing output from REDUCE look a little strange.  If a REDUCE algebraic-mode operator that is implemented by a Lisp function with a different name is traced, then the underlying Lisp function is automatically traced instead.
+Lisp-level function tracing is provided by the commands `tr` and `trst`, which are available in both algebraic and symbolic modes.  A command of the form `tr fn1, fn2, ...;` (without any quotes) turns on tracing of the argument and return values of each of the functions `fn1`, `fn2`, etc.; if no functions are specified, i.e. `tr();` (or `tr nil;`), it lists all traced functions.  The command `trst` is similar but also traces assignments, which works for functions that have been compiled using `faslout` provided the appropriate Lisp file is still available in the `fasl` directory.  The commands `untr` and `untrst` (which is just a synonym for `untr`) turns off tracing; if no functions are specified they turn off tracing for all traced functions.  Input of function names uses Standard Lisp (i.e. REDUCE) syntax but output uses Common Lisp syntax, although it does not include any package prefixes, which can make Common Lisp tracing output from REDUCE look a little strange.  If a REDUCE algebraic-mode operator that is implemented by a Lisp function with a different name is traced, then the underlying Lisp function is automatically traced instead.
+
+The tracing commands described above are independent of the Common Lisp `trace` and `untrace` macros, which are also made available (in symbolic mode only) via the names `cltrace` and `cluntrace` (to avoid clashing with the matrix trace operator).
 
 Preliminary implementations of the `system`, `pipe-open` and `channelflush` functions are provided.  The functions `getenv`, `setenv` and `getpid` provide access to environment variables and the REDUCE process identifier, and should be portable across operating systems.
 
@@ -175,7 +183,7 @@ The test output differences for the `arith` and `numeric` package are identical 
 
 #### Windows
 
-REDUCE 7220 on native Windows SBCL 2.5.11.
+REDUCE 7254 on native Windows SBCL 2.6.0.
 
 No build errors.
 
