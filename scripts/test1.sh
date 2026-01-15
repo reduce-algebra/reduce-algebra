@@ -635,6 +635,7 @@ XXX
 cltest() {
   cmd="$1"
   logdir="$2"
+  lisp=${3^^}                   # Lisp name in upper case
   mkdir -p "$logdir"
   ( limittime $cmd > $logdir/$p.rlg.tmp ) <<XXX 2>$p.howlong.tmp
 off int;
@@ -679,7 +680,7 @@ XXX
     then printf "Diff is in $logdir/$p.rlg.diff "
     else printf "OK " ; rm -f $logdir/$p.rlg.diff $logdir/$p.rlg.orig
   fi
-  printf "Tested on $mc SBCL\n" > $logdir/$p.time
+  printf "Tested on $mc $lisp\n" > $logdir/$p.time
   sed -e "1,/END OF REDUCE TEST RUN/d"  <$logdir/$p.rlg.tmp | \
     sed -e '/^1: *$/d;' >>$logdir/$p.time
   if test "$keep" = "no"
@@ -748,7 +749,7 @@ do
     ;;
 
   sbcl|clisp|ccl)
-    cltest "$here/common-lisp/red$pp" "$logdir"
+    cltest "$here/common-lisp/red$pp" "$logdir" $pp
     ;;
 
   *)
