@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2026-01-12 12:37:50 franc>
+# Time-stamp: <2026-01-13 17:46:01 franc>
 
 # Build REDUCE on supported implementations of Common Lisp (CL),
 # namely SBCL, CLISP and CCL.
@@ -24,7 +24,7 @@
 # 3. Compile "trace.lisp", which provides rudimentary function
 #    tracing.
 
-# 4. Compile all required fasl files and save a build REDUCE system.
+# 4. Compile all required fasl files and save a final REDUCE system.
 
 # This script must be run with the top-level CL REDUCE directory
 # called "common-lisp" as the current directory.
@@ -33,23 +33,25 @@
 
 function help {
     echo 'Build REDUCE on Common Lisp'
-    echo 'Usage: ./build.sh [-h] -l <lisp> [-r revision] [-c/f] [-b]'
+    echo 'Usage: ./build.sh [-h] -l <lisp> [-r revision] [-c/f] [-d] [-b/o]'
     echo '<lisp> = sbcl/clisp/ccl'
     echo 'Option -r sets the REDUCE revision number (overriding the default).'
     echo 'Option -c ensures a clean build by deleting any previous build.'
     echo 'Option -f forces recompilation of all packages.'
+    echo 'Option -d configures the build for debugging.'
     echo 'Option -b builds only the bootstrap REDUCE image.'
     echo 'Option -o builds only the core REDUCE packages.'
     echo 'Option -h displays this help message and exits.'
     exit 1
 }
 
-while getopts l:r:cfboh option
+while getopts l:r:cfdboh option
 do
     case $option in
         l) lisp=$OPTARG;;
         r) revision=$OPTARG;;
         c) clean=true;;
+        d) debug='(push :debug *features*)';;
         f) force='!*forcecompile := t;';;
         b) bootstraponly=true;;
         o) coreonly=true;;
@@ -100,30 +102,49 @@ case $lisp in
         ;;
 esac
 
-if [ $clean ]; then
+if [ -v clean ]; then
     echo '+++++ Clean build'
     rm -rf fasl.$lisp log.$lisp
 fi
 
-if [ -z "$reduce" ]; then
+[ -v debug ] && echo '+++++ Debug build'
+
+if [ ! -v reduce ]
+then
     if [ -e './packages' ]; then export reduce=.
     elif [ -e '../packages' ]; then export reduce=..
     else echo 'Error: cannot find packages directory.  Please set $reduce.'; exit 1
     fi
 fi
 
-if [ -z "$revision" ] && type svnversion > /dev/null; then
-    packages="$reduce/packages"
-    # If $packages is a symlink then follow it (if possible):
-    if [ -L $packages ] && type readlink > /dev/null; then
-        packages=$(readlink -n "$packages")
+if [ ! -v revision ]
+then
+    if type svnversion > /dev/null
+    then
+        # Try to use Subversion in the packages directory:
+        packages="$reduce/packages"
+        # If $packages is a symlink then follow it (if possible):
+        if [ -L $packages ] && type readlink > /dev/null
+        then
+            packages=$(readlink -n "$packages")
+        fi
+        revision=$(svnversion -n "$packages")
+        # Value may be (e.g.) 4123:4168MSP so extract the second number:
+        revision=${revision/#*:}     # delete first number and ":"
+        revision=${revision/%[A-Z]*} # delete trailing letters
     fi
-    revision=$(svnversion -n "$packages")
-    # Value may be (e.g.) 4123:4168MSP so extract the second number:
-    revision=${revision/#*:}     # delete first number and ":"
-    revision=${revision/%[A-Z]*} # delete trailing letters
+    if [[ ! "$revision" =~ ^[[:digit:]]+$ ]]
+    then
+        # Try to parse the parent directory name:
+        revision=$(basename $(realpath ..))
+        shopt -s extglob
+        revision=${revision/#+([^[:digit:]])} # delete leading non-digits
+        revision=${revision/%+([^[:digit:]])} # delete trailing non-digits
+        shopt -u extglob
+    fi
 fi
-if [[ "$revision" =~ ^[[:digit:]]+$ ]]; then
+if [[ "$revision" =~ ^[[:digit:]]+$ ]]
+then
     echo '+++++ REDUCE revision number set to' $revision
 else
     echo '*** The REDUCE revision number cannot be set automatically.'
@@ -142,6 +163,7 @@ if [ "sl-on-cl.lisp" -nt "fasl.$lisp/sl-on-cl.$faslext" ]
 then
     echo $'\n+++++ Compiling sl-on-cl'
     time eval $runlisp << EOF &> log.$lisp/sl-on-cl.blg &&
+$debug
 (or (compile-file "sl-on-cl.lisp")
     #+CCL (quit 1)
     #-CCL (exit #+SBCL :code 1))
@@ -173,7 +195,11 @@ then
     echo $'\a'
 fi
 
-if [ $bootstraponly ]; then exit; fi
+if [ -v bootstraponly ]
+then
+    echo $'\nBootstrap only build requested.'
+    exit
+fi
 
 ################
 # Build REDUCE #
@@ -258,7 +284,11 @@ grep_errors $p
 
 done
 
-if [ $coreonly ]; then exit; fi
+if [ -v coreonly ]
+then
+    echo $'\nCore packages only build requested.'
+    exit
+fi
 
 ##############################
 # Compile trace if necessary #
