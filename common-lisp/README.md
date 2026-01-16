@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-01-14 10:54:08 franc>
+Time-stamp: <2026-01-14 11:44:48 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -34,7 +34,7 @@ You need to use a minimal Unix-like environment including [**fairly recent** ver
 Make the `common-lisp` directory current and run then the build script by executing the `bash` command
 
 ```sh
-./build.sh -l <lisp>
+./build.sh <lisp>
 ```
 
 where `<lisp>` is the version of Common Lisp to use: `sbcl`, `clisp` or `ccl`.
@@ -44,7 +44,7 @@ The build process should create two sub-directories in the build directory calle
 The build script supports some optional flags: `-c` provides a clean build, by first deleting all the files that get built; `-f` forces all REDUCE packages to be recompiled, even if they appear to be up to date; `-b` builds only bootstrap REDUCE; `-h` displays help.  To rebuild using an updated version of Common Lisp, you should always do a clean build, i.e.
 
 ```sh
-./build.sh -l <lisp> -c
+./build.sh -c <lisp>
 ```
 
 
@@ -116,7 +116,7 @@ If you used Subversion to download or update a copy of the REDUCE distribution f
 Otherwise, or to override the default mechanisms described above, you can always specify the REDUCE revision by using the `-r` option to `build.sh`, e.g.
 
 ```sh
-./build.sh -l <lisp> -r <revision> -c
+./build.sh -r <revision> -c <lisp>
 ```
 
 The order of precedence of the mechanisms for determining the REDUCE revision is first the `-r` option, then `svnversion`, then the root directory.  **Note that the file `packages/support/revision.red` is no longer used.**

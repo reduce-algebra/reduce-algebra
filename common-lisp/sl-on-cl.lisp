@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-01-13 18:20:31 franc>
+;; Time-stamp: <2026-01-15 16:21:23 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -1215,7 +1215,7 @@ in interpreted functions are automatically considered fluid."
 ;;; Error Handling
 ;;; ==============
 
-(define-condition sl-error-no-message (cl:error)
+(define-condition sl-error1 (cl:error)
   ()
   (:documentation "Standard Lisp error without error number or message"))
 
@@ -1225,10 +1225,10 @@ in interpreted functions are automatically considered fluid."
   "This is the simplest error return, without a message printed.
 It can be defined as ERROR(99,NIL) if necessary.
 In PSL it is throw('!$error!$,99)."
-  ;; This error is called by rederr.
-  (cl:error 'sl-error-no-message))
+  ;; This error function is called by rederr.
+  (cl:error 'sl-error1))
 
-(define-condition sl-error (sl-error-no-message)
+(define-condition sl-error (cl:error)
   ((errno :initarg :errno) (errmsg :initarg :errmsg))
   (:documentation "Standard Lisp error with an error number and message")
   (:report (lambda (condition stream)
@@ -1301,7 +1301,7 @@ dependent format."
   ;; TO DO: output to both stdout and currently selected output
   ;; device
   (handler-case (list (eval u))         ; protected form
-    (sl-error-no-message ()
+    (sl-error1 ()
       (%print-backtrace-maybe tr)
       nil)
     (sl-error (condition)
@@ -1486,13 +1486,15 @@ Returns the upper limit of U if U is a vector, or NIL if it is not."
 ;; EXPR PROCEDURE ABS(U);
 ;;    IF LESSP(U, 0) THEN MINUS(U) ELSE U;
 
-(declaim (ftype (cl:function (number) number) add1 difference))
+(declaim (ftype (cl:function (number) number) add1))
 
 (defalias add1 cl:1+
   "ADD1(U:number):number eval, spread
 Returns the value of U plus 1 of the same type as U (fixed or floating).
 EXPR PROCEDURE ADD1(U);
    PLUS2(U, 1);")
+
+(declaim (ftype (cl:function (number number) number) difference))
 
 (defalias difference cl:-
   "DIFFERENCE(U:number, V:number):number eval, spread
@@ -4040,7 +4042,8 @@ When all done, execute FASLEND;~2%" name))
 (declaim (ftype (cl:function () t) reduce-init-function))
 
 #+SBCL
-;; See function `toplevel-repl' in "sbcl-2.2.3/src/code/toplevel.lisp".
+;; See function `toplevel-repl' in
+;; "sbcl-2.6.0/src/code/toplevel.lisp".
 (defun reduce-init-function ()
   "The function executed at startup of the saved REDUCE memory image."
   ;; Enable the interactive debugger only if the input and output are
@@ -4061,20 +4064,13 @@ When all done, execute FASLEND;~2%" name))
   (setq sb-ext:*evaluator-mode*
         (if *comp :compile :interpret))
   (standard-lisp)
-  ;; (loop
-  ;;  ;; CLHS recommends that there should always be an
-  ;;  ;; ABORT restart; we have this one here, and one per
-  ;;  ;; debugger level.
-  ;;  (with-simple-restart
-  ;;      (abort "~@<Exit debugger, returning to top level.~@:>")
-  ;;    (catch 'toplevel-catcher
-  ;;      (begin))))
   (with-simple-restart
       (abort "Exit REDUCE.")
     (loop
      (with-simple-restart
          (abort "Return to REDUCE.")
-       (begin)))))
+       (catch 'toplevel-catcher         ; thrown internally by SBCL
+         (begin))))))
 
 #+CLISP
 ;; See function `main-loop' in
