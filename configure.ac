@@ -209,6 +209,7 @@ fi
 # seems to be possible.
 
 default_univ="no"
+AC_MSG_NOTICE([Test `uname` for universal build possibility])
 if test `uname` = "Darwin"
 then
   AC_MSG_NOTICE([Test for universal build possibility])

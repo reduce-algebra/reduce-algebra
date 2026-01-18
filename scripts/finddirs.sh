@@ -257,10 +257,12 @@ gettarget() {
 # it sets $root, $dirbase and $tags to parts of the name.
 
   host="$guessed"
+echo host=$guessed in finddirs.sh > /tmp/debug.log
   case $host in
 # On a macintosh specifying --enable-x86_84, --enable-aarch64 or
 # --enable-universal must map onto the host triple.
-  *apple-darwin*)
+  *darwin*)
+echo host=darwin, args=$* in finddirs.sh >> /tmp/debug.log
     case $* in
     *--enable-universal*)
       host=${host/x86_64/universal}

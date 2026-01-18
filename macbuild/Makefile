@@ -31,7 +31,7 @@ $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
 	LANG=C svnversion .. $(REVISION) > $(BUILDTOPDIR)/svnversion.txt
-	( pushd $(BUILDTOPDIR) ; ./autogen.sh -f ; popd )
+	( pushd $(BUILDTOPDIR) ; ./autogen.sh ; popd )
 	./make-source.sh $(SNAPSHOT) 
 	touch $(BUILDTOPDIR).stamp
 
