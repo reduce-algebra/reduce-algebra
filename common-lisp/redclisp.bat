@@ -1,3 +1,3 @@
 @echo off
 rem Start Windows CLISP REDUCE.
-clisp -M %~dp0fasl.clisp\reduce.mem %*
+clisp -ansi -norc -E utf-8 -M %~dp0fasl.clisp\reduce.mem %*

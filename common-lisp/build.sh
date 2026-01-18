@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2026-01-14 15:17:22 franc>
+# Time-stamp: <2026-01-17 16:36:21 franc>
 
 # Build REDUCE on supported implementations of Common Lisp (CL),
 # namely SBCL, CLISP and CCL.
@@ -30,6 +30,9 @@
 # called "common-lisp" as the current directory.
 
 # Always do a clean build after updating your version of Common Lisp!
+
+# NB: According to Marco Ferraris, bash on macOS does not accept the
+# -v conditional operator, so use -n and -z instead.
 
 function help {
     echo 'Build REDUCE on Common Lisp'
@@ -60,7 +63,7 @@ do
     esac
 done
 
-[ -v lisp ] || lisp=${!OPTIND}
+[ -n "$lisp" ] || lisp=${!OPTIND}
 lisp=${lisp,,}                  # ensure lower case
 
 # The following commands to run Lisp all suppress the user
@@ -77,9 +80,9 @@ case $lisp in
         ;;
     'clisp')
         runlisp='clisp -ansi -norc -E utf-8'
-        runlispfile='clisp -ansi -norc'
-        runbootstrap='clisp -q -ansi -norc -M fasl.clisp/bootstrap.mem'
-        runreduce='clisp -q -ansi -norc -M fasl.clisp/reduce.mem'
+        runlispfile="$runlisp"
+        runbootstrap="$runlisp -q -M fasl.clisp/bootstrap.mem"
+        runreduce="$runlisp -q -M fasl.clisp/reduce.mem"
         saveext='mem'
         faslext='fas'
         ;;
@@ -105,14 +108,14 @@ case $lisp in
         ;;
 esac
 
-if [ -v clean ]; then
+if [ -n "$clean" ]; then
     echo '+++++ Clean build'
     rm -rf fasl.$lisp log.$lisp
 fi
 
-[ -v debug ] && echo '+++++ Debug build'
+[ -n "$debug" ] && echo '+++++ Debug build'
 
-if [ ! -v reduce ]
+if [ -z "$reduce" ]
 then
     if [ -e './packages' ]; then export reduce=.
     elif [ -e '../packages' ]; then export reduce=..
@@ -120,7 +123,7 @@ then
     fi
 fi
 
-if [ ! -v revision ]
+if [ -z "$revision" ]
 then
     if type svnversion > /dev/null
     then
@@ -198,7 +201,7 @@ then
     echo $'\a'
 fi
 
-if [ -v bootstraponly ]
+if [ -n "$bootstraponly" ]
 then
     echo $'\nBootstrap only build requested.'
     exit
@@ -287,7 +290,7 @@ grep_errors $p
 
 done
 
-if [ -v coreonly ]
+if [ -n "$coreonly" ]
 then
     echo $'\nCore packages only build requested.'
     exit
