@@ -1,3 +1,0 @@
-#define cr_function_under_test cr_sinpif
-#define ref_function_under_test ref_sinpi
-#define mpfr_function_under_test mpfr_sinpi
