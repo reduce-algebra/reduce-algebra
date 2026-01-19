@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-01-14 11:44:48 franc>
+Time-stamp: <2026-01-19 11:16:59 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -211,6 +211,7 @@ Lisp | Run Time (ms) | GC Time (ms)
 csl  |        102508 | 1156
 sbcl |        192035 | 3180
 
+
 ### GNU CLISP
 
 #### Windows
@@ -228,51 +229,41 @@ numeric  | Minor numerical differences
 
 #### Ubuntu 24 (on WSL)
 
-REDUCE 7220 on CLISP 2.49
+REDUCE 7259 on CLISP 2.49
 
 No build errors.
 
 Package  | Output Issues
 ---------|--------------
 arith    | CLISP is numerically more accurate than CSL/PSL!
-conlaw   | Timed out; OK with --no-timeout
 economise| Timed out; OK with --no-timeout
-eds      | Lots of issues (probably from excalc) [1]
-excalc   | Lots of issues [1]
-gf2      | Segmentation fault
+gf2      | Different backtrace
 ibalp    | Stack overflow. `reset() found no driver frame (core dumped)`
 numeric  | Minor numerical differences
-sstools  | Timed out; OK with --no-timeout
-susy2    | Timed out; OK with --no-timeout
-xideal   | Lots of issues (probably from excalc) [1]
 
-1. When run interactively, the errors related to excalc do not arise; they seem to be caused by the test1.sh script.
 
 ### Clozure Common Lisp (CCL)
 
 #### Windows
 
-REDUCE 7220 on native Windows CCL 1.13
+REDUCE 7263 on native Windows CCL 1.13
 
 No build errors.
 
 Package  | Output Issues
 ---------|--------------
 arith    | CCL is numerically more accurate than CSL/PSL!
-cantens  | `***** numeric indices out of range`
+economise| Very slow!
 gf2      | Different backtrace
 lalr     | Compiled functions instead of lambdas (because CCL always compiles)
-laplace  | `***** Factorizer error: Term content division failed` (8)
 numeric  | Minor numerical differences
 ofsf     | Incredibly slow!
-solve    | `***** check-solns` (3)
-taylor   | `***** Invalid substitution in Taylor kernel: dependent variables y y`
 
 #### Ubuntu 24 (on WSL)
 
-REDUCE 7220 on CCL 1.13
+REDUCE 7263 on CCL 1.13
 
-No build errors.  Package test issues as for Windows, except that ofsf was killed by the timeout.
+No build errors.  Package test issues probably similar to those for Windows, except that slow tests time out, but not yet retested.
 
 
 ## Known limitations
