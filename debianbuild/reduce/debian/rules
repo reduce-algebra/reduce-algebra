@@ -105,8 +105,8 @@ endif
 	touch configure-stamp
 
 
-build:	configure-stamp build-stamp
-build-stamp:
+build:	build-stamp
+build-stamp:	configure-stamp
 	dh_testdir
 #	cd $(TOPDIR) ; make
 	cd $(CSLBUILDDIR) ; make bootstrapreduce.img ; make csl.img ; make
