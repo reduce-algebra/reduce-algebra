@@ -1,3 +1,0 @@
-#define cr_function_under_test cr_cospif
-#define ref_function_under_test ref_cospi
-#define mpfr_function_under_test mpfr_cospi

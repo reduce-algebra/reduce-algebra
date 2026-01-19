@@ -397,10 +397,6 @@ LispObject Lopen_fork(LispObject env)
         }
         close(fork_pipes_from[write_end]);
         close(fork_pipes_to[read_end]);
-// When there is no more to do I use quick_exit because by doing that I
-// do not need to worry about tidying up anything, and I really would hate
-// it if some destructor in the child process performed file operations in
-// the name of clean termination and messed things up for the parent.
 #ifndef HAVE_QUICK_EXIT
         exit(0);
 #else

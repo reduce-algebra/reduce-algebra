@@ -100,14 +100,21 @@ fi
 # will be a problem when cross-compiling and for that case I ought to
 # seek a version specific to the architecture I am building for. Ugh!
 # Well it seems that if I list ALL versions that I find then ones that are
-# not the relevant architecture get ignored...
-a=`find /usr/lib -name libtinfo.a -printf "%p "`
-if test "$a" = ""
-then    # No libtinfo found
-  AC_SEARCH_LIBS([tgetent], [ncurses curses tinfo])
-else    # At least one version found.
-  LIBS="$LIBS $a"
-fi
+# not the relevant architecture get ignored... But OH DEAR on the Mac
+# this usage of "find" seems not to be supported...
+case `uname -a` in
+*Darwin*)
+  ;;
+*)
+  a=`find /usr/lib -name libtinfo.a -printf "%p "`
+  if test "$a" = ""
+  then    # No libtinfo found
+    AC_SEARCH_LIBS([tgetent], [ncurses curses tinfo])
+  else    # At least one version found.
+    LIBS="$LIBS $a"
+  fi
+  ;;
+esac
 
 OLIBS="$LIBS"
 LIBS="$OLIBS -lncurses"
