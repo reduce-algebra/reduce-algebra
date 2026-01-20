@@ -27,7 +27,9 @@ chmod +x distrib/psl/redpsl
 cp $1/cslbuild/*/redfront/rfpsl distrib/psl/rfpsl
 chmod +x distrib/psl/rfpsl
 
-cp Reduce-source_$2.tar.bz2 distrib/Reduce-source_$2.tar.bz2
+# People who want the sources should fetch the separate source archive!
+# Putting a copy in here just gobbles up a load of space and is redundant.
+# cp Reduce-source_$2.tar.bz2 distrib/Reduce-source_$2.tar.bz2
 
 cp $1/doc/manual/manual.pdf distrib/reduce-manual.pdf
 
