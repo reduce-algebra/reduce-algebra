@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+ 42G    VirtualBoxVMs/windows#! /usr/bin/env bash
 
 # This script makes snapshots of Reduce. It should be capable of
 # building ones for Windows (64-bit), Macintosh, Linux-x86_64
@@ -38,6 +38,7 @@
 #                                                           December 2019
 #                                                           June 2020
 #                                                           June 2022
+#                                                           January 2026
 
 # [some of the access schemes that chain ssh and virtual machines etc do not
 # get path quoting right yet, but the simple cases are OK!]
@@ -445,6 +446,7 @@ build_win64() {
   copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "chmod +x scripts/*.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "rm *.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
@@ -468,6 +470,7 @@ build_altwin64() {
   copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "chmod +x scripts/*.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "rm *.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
@@ -501,6 +504,7 @@ build_debian() {
 # having difficulty fixing that - so here as a work-round I force a bunch
 # of scripts to be executable.
   execute_in_dir "linux" "$REDUCE_BUILD/C"               "chmod +x scripts/*.sh"
+  execute_in_dir "linux" "$REDUCE_BUILD/C"               "rm *.stamp"
   execute_in_dir "linux" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "linux" "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "linux" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
@@ -552,6 +556,7 @@ build_macintosh() {
   copy_files "$REDUCE_DISTRIBUTION/macbuild/" "$REDUCE_BUILD/"   "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"          "$REDUCE_BUILD/C/"
   execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "chmod +x scripts/*.sh"
+  execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "rm *.stamp"
   execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "./autogen.sh"
   execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION source-archive"
   execute_in_dir "macintosh" "$REDUCE_BUILD"              "touch C.stamp"

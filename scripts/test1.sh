@@ -635,7 +635,15 @@ XXX
 cltest() {
   cmd="$1"
   logdir="$2"
-  lisp=${3^^}                   # Lisp name in upper case
+  lisp=`echo $3 | tr 'a-z' 'A-Z'`               # Lisp name in upper case
+# With bash one would expect to go
+#      lisp=${3^^}
+# to convert to upper case. However that needs a version of bash newer
+# that the /bin/bash on a Macintosh (Apple stuck with the final GPL 2 version
+# since GPL 3 wanted to restrict them too much). So they moved to zsh for
+# their default shell hoping it would not hurt too many people who use
+# bash-isms that are jolly convenient but that arose after the GPL 3
+# restrictions were applied. 
   mkdir -p "$logdir"
   ( limittime $cmd > $logdir/$p.rlg.tmp ) <<XXX 2>$p.howlong.tmp
 off int;

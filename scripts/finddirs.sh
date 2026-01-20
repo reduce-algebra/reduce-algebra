@@ -242,6 +242,15 @@ gettarget() {
   --jlisp | --jlispboot)
     root="jlisp/"
     ;;
+  --sbcl)
+    root="sbclbuild/"
+    ;;
+  --clisp)
+    root="clispbuild/"
+    ;;
+  --ccl)
+    root="cclbuild/"
+    ;;
   *)
     printf "Unknown target system \"$1\"\n"
     exit 1
@@ -249,7 +258,7 @@ gettarget() {
   esac
   shift
 
-# Now find the directory within cslbuild or psbuild
+# Now find the directory within cslbuild or psbuild (etc)
 # that will be used if no tags are to be stuck on the end. In
 # a simple case that is just the output from config.guess. However
 # on various systems it either normalises the name or adds extra
