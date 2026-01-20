@@ -29,7 +29,7 @@ module rsupport;   % Basic functions needed to support RLISP and REDUCE.
 
 % $Id$
 
-fluid '(!*backtrace !*comp);
+fluid '(!*backtrace !*protfg !*comp);
 
 symbolic procedure aconc(u,v);
    % Adds element v to the tail of u. u is destroyed in process.
@@ -241,7 +241,7 @@ symbolic procedure map!-reserved!-ids l;
          v := map!-reserved!-id car l . v;
          l := cdr l >>;
       return reversip v
-   end;    
+   end;
 
 symbolic procedure get!-print!-name u;
    idp u and get(u,'oldnam) or u;

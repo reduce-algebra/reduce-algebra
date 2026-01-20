@@ -17,6 +17,7 @@
 *.out
 *.out.ps
 *.toc
+*.wc
 cm*.png
 manual/bild*.png
 manual/gnuplot*.png

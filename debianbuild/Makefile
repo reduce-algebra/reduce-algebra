@@ -35,7 +35,7 @@ $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
 	( LANG=C svnversion .. $(REVISION) > $(BUILDTOPDIR)/svnversion.txt )
-	( cd $(BUILDTOPDIR) ; ./autogen.sh -f )
+	( cd $(BUILDTOPDIR) ; ./autogen.sh )
 	-rm -rf reduce-source_$(SNAPSHOT)
 	touch $(BUILDTOPDIR).stamp
 
@@ -73,19 +73,15 @@ TARDEST=/tmp/reduce-snapshot_$(SNAPSHOT)_$(MACHINE)
 
 tarpackages:
 # This assumes that both the CSL and PSL versions have already been built in
-# the $(BUILDTOPDIR) directory. (PSL not on ARM...)
+# the $(BUILDTOPDIR) directory.
 	rm -rf $(TARDEST)
 	mkdir $(TARDEST)
 	mkdir $(TARDEST)/csl
-ifeq (,$(findstring arm,$(MACHINE)))
 	mkdir $(TARDEST)/psl
-endif
 	mkdir $(TARDEST)/reduce.doc
 	cp $(BUILDTOPDIR)/doc/manual/manual.pdf $(TARDEST)/manual.pdf
 	cp $(BUILDTOPDIR)/scripts/cslhere.sh $(TARDEST)/redcsl
-ifeq (,$(findstring arm,$(MACHINE)))
 	cp $(BUILDTOPDIR)/scripts/pslhere.sh $(TARDEST)/redpsl
-endif
 	cp -r $(BUILDTOPDIR)/xmpl $(TARDEST)
 	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/csl $(TARDEST)/csl
 	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/csl.img $(TARDEST)/csl
@@ -96,15 +92,11 @@ endif
 	cp $(BUILDTOPDIR)/generic/newfront/build/rfcsl $(TARDEST)
 	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/reduce.doc/BINARY-LICENSE.txt $(TARDEST)/reduce.doc
 	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/reduce.doc/BSD-LICENSE.txt $(TARDEST)/reduce.doc
-ifeq (,$(findstring arm,$(MACHINE)))
 	cp -r $(BUILDTOPDIR)/pslbuild/$(BUILD)/psl $(TARDEST)/psl
 	cp -r $(BUILDTOPDIR)/pslbuild/$(BUILD)/red $(TARDEST)/psl
 	cp $(BUILDTOPDIR)/generic/newfront/build/rfpsl $(TARDEST)
-endif
 	chmod +x $(TARDEST)/redcsl $(TARDEST)/rfcsl
-ifeq (,$(findstring arm,$(MACHINE)))
 	chmod +x $(TARDEST)/redpsl $(TARDEST)/rfpsl 
-endif
 	tar cfj reduce-freestanding_$(SNAPSHOT)_$(MACHINE).tar.bz2 -C /tmp reduce-snapshot_$(SNAPSHOT)_$(MACHINE)
 
 source-archive:
@@ -114,9 +106,7 @@ source-archive:
 	$(MAKE) reduce-source-csl_$(SNAPSHOT).tar.bz2
 	$(MAKE) reduce-source-csl-embedded_$(SNAPSHOT).tar.bz2
 	$(MAKE) reduce-source-csl-support_$(SNAPSHOT).tar.bz2
-ifeq (,$(findstring arm,$(MACHINE)))
 	$(MAKE) reduce-source-psl_$(SNAPSHOT).tar.bz2
-endif
 	ls -lh *.tar.bz2
 #	-rm -rf reduce-source_$(SNAPSHOT)
 
@@ -148,13 +138,10 @@ reduce-source-csl-support_$(SNAPSHOT).tar.bz2:
 		--owner=root --group=root \
 		reduce-source_$(SNAPSHOT)/csl/support-packages
 
-ifeq (,$(findstring arm,$(MACHINE)))
-# PSL is not at present available on the ARM.
 reduce-source-psl_$(SNAPSHOT).tar.bz2:
 	tar cfj reduce-source-psl_$(SNAPSHOT).tar.bz2 \
 		--owner=root --group=root \
 		reduce-source_$(SNAPSHOT)/psl
-endif
 
 clean:
 	rm -rf $(BUILDTOPDIR) $(BUILDTOPDIR).log
