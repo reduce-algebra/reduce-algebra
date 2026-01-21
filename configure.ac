@@ -271,11 +271,28 @@ then
   with_psl="yes"
 fi
 
+AC_ARG_WITH(sbcl,
+  AS_HELP_STRING([--with-sbcl], [Use the sbcl Lisp system]),
+  [],
+  [with_sbcl="no"])
+
+AC_ARG_WITH(clisp,
+  AS_HELP_STRING([--with-clisp], [Use the clisp Lisp system]),
+  [],
+  [with_clisp="no"])
+
+AC_ARG_WITH(ccl,
+  AS_HELP_STRING([--with-ccl], [Use the ccl Lisp system]),
+  [],
+  [with_ccl="no"])
+
 # Ensure that at least one Lisp system is selected
-if test "$with_psl" = "no" && test "$with_csl" = "no"
+if test "$with_psl" = "no" && test "$with_csl" = "no" && \
+   test "$with_sbcl" = no  && test "$with_clisp" = no && \
+   test "$with_ccl" = no
 then
   AC_MSG_ERROR(
-    [you must specify either --with-csl or --with-psl to select a Lisp])
+    [you must specify a Lisp version to use: csl, psl, sbcl. clisp or ccl])
 fi
 
 AC_ARG_WITH(gui,
@@ -1046,6 +1063,18 @@ yes)
   then
     psl_inplace_build
   fi
+  if test "$with_sbcl" != "no"
+  then
+    sbcl_inplace_build
+  fi
+  if test "$with_clisp" != "no"
+  then
+    clisp_inplace_build
+  fi
+  if test "$with_ccl" != "no"
+  then
+    ccl_inplace_build
+  fi
   printf "All sub-tasks should have completed\n"
   exit 0
   ;;
@@ -1500,6 +1529,9 @@ AC_MSG_NOTICE([All sub-packages have had their configure script launched])
 
 AM_CONDITIONAL(csl, test "$with_csl" != "no")
 AM_CONDITIONAL(psl, test "$with_psl" != "no")
+AM_CONDITIONAL(sbcl, test "$with_sbcl" != "no")
+AM_CONDITIONAL(clisp, test "$with_clisp" != "no")
+AM_CONDITIONAL(ccl, test "$with_ccl" != "no")
 AM_CONDITIONAL(cslpsl, test "$with_csl" != "no" && test "$with_psl" != "no")
 AM_CONDITIONAL(fox, test "$with_fox" != "no")
 AM_CONDITIONAL(wx,  test "$with_wx" != "no")
