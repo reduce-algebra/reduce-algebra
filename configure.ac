@@ -57,8 +57,6 @@ AC_CONFIG_AUX_DIR([.])
 
 AC_CANONICAL_HOST()
 
-echo "HOST=$host  $host_cpu   $host_vendor   $host_os @@@@"
-
 abssrcdir=`"$srcdir/scripts/here.sh"`
 
 if which cygpath 2> /dev/null
@@ -273,18 +271,45 @@ fi
 
 AC_ARG_WITH(sbcl,
   AS_HELP_STRING([--with-sbcl], [Use the sbcl Lisp system]),
-  [],
+  [with_sbcl="yes"],
   [with_sbcl="no"])
+
+if test "$with_sbcl" != "no"
+then
+  AC_CHECK_PROG([have_sbcl], [sbcl], [yes], [no])
+  if test "$have_sbcl" != "yes"
+  then
+    AC_MSG_ERROR([sbcl not usable -- giving up])
+  fi
+fi
 
 AC_ARG_WITH(clisp,
   AS_HELP_STRING([--with-clisp], [Use the clisp Lisp system]),
-  [],
+  [with_clisp="yes"],
   [with_clisp="no"])
+
+if test "$with_clisp" != "no"
+then
+  AC_CHECK_PROG([have_clisp], [clisp], [yes], [no])
+  if test "$have_clisp" != "yes"
+  then
+    AC_MSG_ERROR([clisp not usable -- giving up])
+  fi
+fi
 
 AC_ARG_WITH(ccl,
   AS_HELP_STRING([--with-ccl], [Use the ccl Lisp system]),
-  [],
+  [with_ccl="yes"],
   [with_ccl="no"])
+
+if test "$with_ccl" != "no"
+then
+  AC_CHECK_PROG([have_ccl], [ccl], [yes], [no])
+  if test "$have_ccl" != "yes"
+  then
+    AC_MSG_ERROR([ccl not usable -- giving up])
+  fi
+fi
 
 # Ensure that at least one Lisp system is selected
 if test "$with_psl" = "no" && test "$with_csl" = "no" && \
@@ -968,6 +993,7 @@ psl_inplace_build ()
   AC_MSG_NOTICE([+++ Will build in $abssrcdir/pslbuild/$build])
   mkdir -p "$abssrcdir/pslbuild/$build"
   cd "$abssrcdir/pslbuild/$build"
+  $CC $abssrcdir/canary.c -o canary
 # This passes down any configure arguments to the PSL-specific configuration
 # but at present I do not expect any to be relevant.
   pass_build="--with-build=\"$build\""
@@ -1041,6 +1067,51 @@ psl_inplace_build ()
   eval "$doconfig"
 
   cd "$builddir"
+}
+
+common_lisp_inplace_build ()
+{
+  AC_MSG_NOTICE([+++ Will build in $abssrcdir/${1}build/$build])
+  mkdir -p "$abssrcdir/${1}build/$build"
+  cd "$abssrcdir/${1}build/$build"
+  $CC $abssrcdir/canary.c -o canary
+  printf "\n\n+++ About to configure for ${1} +++\n\n"
+# At present Common Lisp builds are performed by changing directory to
+# the reduce/common-lisp directory and invoking a script called "build.sh"/
+# And at present there are no options and the built version ends up in the
+# common-lisp directory. Possibly in the future it will be desirable to
+# have variant builds (one with debugging option set is parhaps the most
+# obvious prospect). That could motive a change that checks configure
+# arguments here and builds the system in this directory not the common-lisp
+# one. But for straightforward use what exists is perfectly fine!
+#
+## This passes down any configure arguments to the ${1}-specific configuration
+## but at present I do not expect any to be relevant. Maybe in the future
+## the debug option will be useful?
+##  pass_build="--with-build=\"$build\""
+##  eval "$SHELL $abssrcdir/common-lisp/configure --config-cache $ac_configure_args \
+##       --with-${1} $pass_build CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+##          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" "
+  printf "# Makefile for ${1}\n\n"                  > Makefile
+  printf "all:\n"                                  >> Makefile
+  printf "\tpushd $abssrcdir/common-lisp ; \\\\\n" >> Makefile
+  printf "\t./build.sh ${1}\n\n"                   >> Makefile
+  cd "$builddir"
+}
+
+sbcl_inplace_build ()
+{
+  common_lisp_inplace_build sbcl 
+}
+
+clisp_inplace_build ()
+{
+  common_lisp_inplace_build clisp 
+}
+
+ccl_inplace_build ()
+{
+  common_lisp_inplace_build ccl 
 }
 
 # There are many configure options that are valid or relevant at the
