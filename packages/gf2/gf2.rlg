@@ -7,14 +7,11 @@ load_package gf2;
 on echo;
 
 
-lisp if !*csl then force!-output!-radix 16
+lisp if 'csl memq lispsystem!* then force!-output!-radix 16
 else if 'psl memq lispsystem!* then outputbase!* := 16
 else if 'common!-lisp memq lispsystem!* then !*print!-base!* := 16$
 
 
-% FJW: *psl is currently true in REDUCE on Common Lisp so that readch1
-% works correctly, therefore it is safest to avoid it in tests like
-% that above!
 
 operator vv;
 
@@ -180,6 +177,13 @@ Arg1: (list (plus b p s) (plus p s t) (plus (expt b 2) (times p s) w) (plus (
 times p t) w) (plus (expt b 3) (times p w)) (plus (expt b 2) (times b s) w))
 Inside: errorset
 Inside: errorset
+
+
+% Avoid upsetting the testing framework:
+lisp if 'csl memq lispsystem!* then force!-output!-radix 10
+else if 'psl memq lispsystem!* then outputbase!* := 10
+else if 'common!-lisp memq lispsystem!* then !*print!-base!* := 10$
+
 
 
 end;
