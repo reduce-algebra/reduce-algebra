@@ -286,16 +286,13 @@ else
   case `uname -s` in
 
   *CYGWIN*)
-    echo Cygwin special
     for x in $*
     do
       echo $x
     done
-   $* &
-   PID=$!
-
+    $* &
+    PID=$!
     tick=`getconf CLK_TCK`
-
     while true
     do
        d=`cat /proc/$PID/stat 2>/dev/null`
