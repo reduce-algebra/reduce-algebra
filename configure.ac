@@ -1094,7 +1094,7 @@ common_lisp_inplace_build ()
 ##          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" "
   printf "# Makefile for ${1}\n\n"                  > Makefile
   printf "all:\n"                                  >> Makefile
-  printf "\tpushd $abssrcdir/common-lisp ; \\\\\n" >> Makefile
+  printf "\tcd $abssrcdir/common-lisp ; \\\\\n"    >> Makefile
   printf "\t./build.sh ${1}\n\n"                   >> Makefile
   cd "$builddir"
 }
