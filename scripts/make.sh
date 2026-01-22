@@ -44,9 +44,6 @@
 # maybe when Reduce is launched until they do that they may get a
 # version originally configured for the older version of their OS.
 
-# It also tries to build both CSL and PSL setups when they have been
-# configured.
-
 printf "MFLAGS=<%s> MKFLAGS=<%s> MAKECMDGOALS=<%s> args=<%s>\n" \
        "$MFLAGS"    "$MKFLAGS"   "$MAKECMDGOALS"   "$*"
 
@@ -54,22 +51,38 @@ args=""
 flags=""
 buildcsl="no"
 buildpsl="no"
+buildsbcl="no"
+buildclisp="no"
+buildccl="no"
 
 for a in $*
 do
-  if test "$a" = "csl"
+  if test   "$a" = "csl"
   then buildcsl="yes"
   elif test "$a" = "psl"
   then buildpsl="yes"
+  elif test "$a" = "sbcl"
+  then buildsbcl="yes";
+  elif test "$a" = "clisp"
+  then buildclisp="yes";
+  elif test "$a" = "ccl"
+  then buildccl="yes";
   else args="$args $a"
   fi  
 done
 
-# if neither csl or psl are given, build both
-if test "$buildcsl" = "no" -a "$buildpsl" = "no"
+# If no lisp at all is selected I will try to build everything that is
+# configured.
+
+if test "$buildcsl"  = "no" -a "$buildpsl"   = "no" -a \
+        "$buildsbcl" = "no" -a "$buildclisp" = "no" -a \
+        "$buildccl"  = "no"
 then
   buildcsl="yes"
   buildpsl="yes"
+  buildsbcl="yes"
+  buildclisp="yes"
+  buildccl="yes"
 fi
 
 if ! test -d cslbuild
@@ -80,20 +93,35 @@ if ! test -d pslbuild
 then
   buildpsl="no"
 fi
-if test "$buildpsl$buildcsl" = "nono"
+if ! test -d sbclbuild
 then
-  printf "Neither CSL nor PSL seems configured and selected here.\n"
+  buildsbcl="no"
+fi
+if ! test -d clispbuild
+then
+  buildclisp="no"
+fi
+if ! test -d cclbuild
+then
+  buildccl="no"
+fi
+if test "$buildpsl$buildcsl$buildsbcl$buildclisp$buildccl" = "nonononono"
+then
+  printf "No lisps seem configured and selected here.\n"
   printf "Nothing to do. Stopping.\n"
   exit 1
 fi
 
 # The following arranges that if you go "make csl.exe" or
 # "make bootstrapreduce.img" (etc) that the system does not try (in vain)
-# to build a PSL version.
+# to build a PSL version etc.
 
 case $args in
 *csl* | *bootstrap* | *reduce.img* | *c-code* | *.com | *.exe)
   buildpsl="no"
+  buildsbcl="no"
+  buildclisp="no"
+  buildccl="no"
   ;;
 esac
 
@@ -104,12 +132,12 @@ then
   export SHELL
 fi
 
+# This was to do with an experiment that was never followed through...
 if test "${REDUCE_SHARED_BUILD_DIRECTORY}" != ""
 then
   host=`./config.guess`
   host=`scripts/findhost.sh $host`
   os=`scripts/findos.sh`
-
   printf "Current machine tag is %s\n" "$host"
 fi
 
@@ -136,7 +164,7 @@ fi
 # present. And when that is there I check for a file that should be
 # executable on the current platform - if that file is not present or
 # it has been built for a different architecture I will ignore the
-# directory.
+# directory. This check is what the file called "canary" is about.
 
 procids=""
 list=""
@@ -221,6 +249,23 @@ then
   fi
 fi
 
+if test "$buildsbcl"  = "yes" || \
+   test "$buildclisp" = "yes" || \
+   test "$buildccl"   = "yes"
+then
+  for d in sbclbuild/*-*-*/Makefile \
+           clispbuild/*-*-*/Makefile \
+           cclbuild/*-*-*/Makefile
+  do
+    if test `viable ${d%Makefile}canary` = "yes"
+    then
+      w=`dirname $d`
+      echo Will build for $w
+      list="$list $w"
+    fi
+  done
+fi
+
 case $args in
 # If I am making bootstrapreduce or bootstrapreduce.img or csl or csl.img or
 # one of the demo programs I do not need the generated C code...
@@ -228,6 +273,13 @@ case $args in
   firstcsl=""
   ;;
 esac
+
+# The complications here are to do with the fact thatr a CSL build involves
+# building a "bootstrapreduce" and using that to map a selection of Reduce
+# functions into C++. This mapping is generic across all CSL variants and
+# so I *need* it to happen befote I complete any one CSL build but I really
+# *want* it to happen only once even if I am rebuilding multiple CSL
+# variants.
 
 if test "$firstcsl" != ""
 then

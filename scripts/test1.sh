@@ -273,10 +273,16 @@ fi
 
 limittime() {
 # This is intended to run a command for a limited amount of CPU time.
-# Note that under Cygwin it only checks the time DIRECTLY in the
-# command that is launched, not in any sub-processes. So perhaps
-# unexpectedly 'limittime "time ./expensiveCommand"' does not manage
-# to time-out even if 'limittime ./expensiveCommand' might.
+# The scheme on Cygwin is special because "ulimit" is not available. It
+# starts the task in the background and probes on a ragular basis to
+# see if it has completed or it has used too much CPU time. The CPU time
+# check there only investigates a top-level of the task so a layer of
+# shell scripting may leave the shell script itself using nothing but the
+# real work being busy beneath it. To handle that I have a back-stop that
+# terminates things after an allowance of elapsed time that is twice the
+# target CPU time limit.
+# Other than under cygwin I use "ulimit" but I still set up the backstop
+# just in case. 
 
 if test "$no_timeout" = "yes"
 then
@@ -284,43 +290,58 @@ then
   exit $?
 else
   case `uname -s` in
-
   *CYGWIN*)
-    echo Cygwin special
     for x in $*
     do
       echo $x
     done
-   $* &
-   PID=$!
-
+    $* &
+    PID=$!
     tick=`getconf CLK_TCK`
-
+    TIME2=$((2*$TIME))
     while true
     do
-       d=`cat /proc/$PID/stat 2>/dev/null`
-       if test "$d" = ""
-       then
-         break
-       fi
-       user_time=$((`echo $d | cut -d' ' -f16` / $tick))
-       if [ $user_time -ge $TIME ]
-       then
-         kill -9 $PID
-         break
-       fi
-       sleep 1
+      d=`cat /proc/$PID/stat 2>/dev/null`
+      if test "$d" = ""
+      then
+        break
+      fi
+      user_time=$((`echo $d | cut -d' ' -f16` / $tick))
+      if [ $user_time -ge $TIME ] || \
+         [ $TIME2 -le 0 ]
+      then
+        kill -9 $PID
+        break
+      fi
+      sleep 1
+      TIME2=$((TIME2-1))
     done
-
     wait $PID 2>/dev/null
     exit $?
     ;;
   *)
     ulimit -t $TIME
-    $timecmd $*
+    TIME2=$((2*$TIME))
+    $timecmd $* &
+    PID=$!
+    while true
+    do
+      d=`cat /proc/$PID/stat 2>/dev/null`
+      if test "$d" = ""
+      then
+        break
+      fi
+      if [ $TIME2 -le 0 ]
+      then
+        kill -9 $PID
+        break
+      fi
+      sleep 1
+      TIME2=$((TIME2-1))
+    done
+    wait $PID 2>/dev/null
     exit $?
     ;;
-
   esac
 fi
 }

@@ -2,7 +2,7 @@
 # Start Cygwin, Linux or macOS SBCL REDUCE.
 cl=$(realpath $(dirname $0)) # common-lisp directory
 if [ "$OSTYPE" == 'cygwin' ]; then cl=$(cygpath -m $cl); fi
-sbcl --noinform --core $cl/fasl.sbcl/reduce.img $*
+exec sbcl --noinform --core $cl/fasl.sbcl/reduce.img $*
 # Useful command-line arguments:
 #   --control-stack-size megabytes
 #     Size of control stack reserved for each thread in megabytes.

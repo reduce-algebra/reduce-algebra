@@ -3,12 +3,9 @@
 load_package gf2;
 
 on echo;
-lisp if !*csl then force!-output!-radix 16
+lisp if 'csl memq lispsystem!* then force!-output!-radix 16
 else if 'psl memq lispsystem!* then outputbase!* := 16
 else if 'common!-lisp memq lispsystem!* then !*print!-base!* := 16$
-% FJW: *psl is currently true in REDUCE on Common Lisp so that readch1
-% works correctly, therefore it is safest to avoid it in tests like
-% that above!
 
 operator vv;
 gf2_vars {x, y, z};
@@ -52,5 +49,10 @@ gf2_groeb{p + s + b,
           w + p*t,
           w*p + *b**3,
           w + b*s + b**2};
+
+% Avoid upsetting the testing framework:
+lisp if 'csl memq lispsystem!* then force!-output!-radix 10
+else if 'psl memq lispsystem!* then outputbase!* := 10
+else if 'common!-lisp memq lispsystem!* then !*print!-base!* := 10$
 
 end;
