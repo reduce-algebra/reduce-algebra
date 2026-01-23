@@ -137,10 +137,10 @@ install-stamp: build-stamp
 	cp $(GENERICTOPDIR)/breduce/breduce.tex $(GENERICTOPDIR)/breduce/breduce.bbl $(GENERICTOPDIR)/breduce/breduce.pdf $(ADDONDOCDIR)
 # copy man files
 	cp debian/csl.1 debian/redcsl.1 debian/redpsl.1 $(MANDIR)/man1
-	-n -f -s debian/redcsl.1 $(MANDIR)/man1/bootstrapreduce.1
+	ln -f -s debian/redcsl.1 $(MANDIR)/man1/bootstrapreduce.1
 	cp $(REDFRONTSRCDIR)/redfront.1 $(MANDIR)/man1
-	-n -f -s redfront.1 $(MANDIR)/man1/rfcsl.1
-	-n -f -s redfront.1 $(MANDIR)/man1/rfpsl.1
+	ln -f -s redfront.1 $(MANDIR)/man1/rfcsl.1
+	ln -f -s redfront.1 $(MANDIR)/man1/rfpsl.1
 	cp $(GENERICTOPDIR)/breduce/breduce.1 $(MANDIR)/man1
 # copy CSL files
 	cp -r $(CSLBUILDDIR)/csl/reduce.img \
