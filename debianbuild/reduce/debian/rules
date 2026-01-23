@@ -98,11 +98,11 @@ ifneq ($(BUILDPSL),)
 	cd $(TOPDIR) ; ./configure --with-psl
 endif
 	mkdir -p $(REDFRONTBUILDDIR)
+	mkdir -p $(LIBEDITBUILDDIR)
+	cd $(LIBEDITSRCDIR) ; autoreconf -f -i -v
+	cd $(LIBEDITBUILDDIR) ; $(LIBEDITSRCDIR)/configure --prefix=$(REDFRONTSRCDIR) --enable-widec
 	cd $(REDFRONTSRCDIR) ; autoreconf -f -i -v
 	cd $(REDFRONTBUILDDIR) ; ../configure
-	cd $(LIBEDITSRCDIR) ; autoreconf -f -i -v
-	mkdir -p $(LIBEDITBUILDDIR)
-	cd $(LIBEDITBUILDDIR) ; $(LIBEDITSRCDIR)/configure --prefix=$(REDFRONTSRCDIR) --enable-widec
 	touch configure-stamp
 
 
