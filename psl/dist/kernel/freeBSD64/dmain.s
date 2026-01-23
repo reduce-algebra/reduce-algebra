@@ -2424,8 +2424,8 @@ symfnc:
  .quad undefinedfunction
  .globl psl_main
  .quad psl_main
- .globl l0219
- .quad l0219
+ .globl l0220
+ .quad l0220
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
@@ -2436,12 +2436,12 @@ symfnc:
  .quad l0013
  .globl l0006
  .quad l0006
- .globl l0220
- .quad l0220
- .globl l0277
- .quad l0277
- .globl l0270
- .quad l0270
+ .globl l0221
+ .quad l0221
+ .globl l0279
+ .quad l0279
+ .globl l0272
+ .quad l0272
  .globl l0023
  .quad l0023
  .globl initcode
@@ -2453,32 +2453,32 @@ symfnc:
  .globl faslin
  .quad faslin
  .quad undefinedfunction
- .globl l0268
- .quad l0268
+ .globl l0270
+ .quad l0270
  .globl l0015
  .quad l0015
+ .globl l0271
+ .quad l0271
  .globl l0269
  .quad l0269
- .globl l0267
- .quad l0267
  .globl binaryopenread
  .quad binaryopenread
- .globl l0272
- .quad l0272
+ .globl l0274
+ .quad l0274
  .globl l0206
  .quad l0206
  .globl binaryread
  .quad binaryread
- .globl l0288
- .quad l0288
+ .globl l0290
+ .quad l0290
  .globl binaryreadblock
  .quad binaryreadblock
- .globl l0280
- .quad l0280
+ .globl l0282
+ .quad l0282
  .globl binaryclose
  .quad binaryclose
- .globl l0279
- .quad l0279
+ .globl l0281
+ .quad l0281
  .quad undefinedfunction
  .quad undefinedfunction
  .globl l0053
@@ -2621,8 +2621,8 @@ symfnc:
  .quad l0217
  .globl l0218
  .quad l0218
- .globl l0221
- .quad l0221
+ .globl l0219
+ .quad l0219
  .globl l0222
  .quad l0222
  .globl l0223
@@ -2713,22 +2713,22 @@ symfnc:
  .quad l0265
  .globl l0266
  .quad l0266
- .globl l0271
- .quad l0271
+ .globl l0267
+ .quad l0267
+ .globl l0268
+ .quad l0268
  .globl l0273
  .quad l0273
- .globl l0274
- .quad l0274
  .globl l0275
  .quad l0275
  .globl l0276
  .quad l0276
+ .globl l0277
+ .quad l0277
  .globl l0278
  .quad l0278
- .globl l0281
- .quad l0281
- .globl l0282
- .quad l0282
+ .globl l0280
+ .quad l0280
  .globl l0283
  .quad l0283
  .globl l0284
@@ -2739,10 +2739,10 @@ symfnc:
  .quad l0286
  .globl l0287
  .quad l0287
+ .globl l0288
+ .quad l0288
  .globl l0289
  .quad l0289
- .globl l0290
- .quad l0290
  .globl l0291
  .quad l0291
  .globl l0292

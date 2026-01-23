@@ -48,6 +48,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <fenv.h>
@@ -65,6 +66,7 @@
 #define log	log_rn
 #define sinh	sinh_rn
 #define cosh	cosh_rn
+#define pow     pow_rn
 
 #endif
 
@@ -86,7 +88,7 @@ int uxfix(double *f)
 /* Tag( uxassign )
  */
 void
-uxassign(double *f1, double*f2)
+uxassign(double *f1, double *f2)
 {
   *f1 = *f2;
 }
@@ -97,9 +99,13 @@ fexcept_t flagp;
 int
 uxminus(double *f1,double *f2)
 {
+  feclearexcept(FE_OVERFLOW | FE_INVALID);
   *f1 = -*f2;
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_INVALID) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_INVALID);
+      return (0);
+    }
   return (1);
 }
 
@@ -108,9 +114,13 @@ uxminus(double *f1,double *f2)
 int
 uxplus2(double *f1,double *f2,double *f3)
 {
+  feclearexcept(FE_OVERFLOW | FE_INVALID);
   *f1 = *f2 + *f3;
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_INVALID) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_INVALID);
+      return (0);
+    }
   return (1);
 }
 
@@ -119,9 +129,13 @@ uxplus2(double *f1,double *f2,double *f3)
 int
 uxdifference(double *f1,double *f2,double *f3)
 {
+  feclearexcept(FE_OVERFLOW | FE_INVALID);
   *f1 = *f2 - *f3;
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_INVALID) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_INVALID);
+      return (0);
+    }
   return (1);
 }
 
@@ -130,9 +144,13 @@ uxdifference(double *f1,double *f2,double *f3)
 int
 uxtimes2(double *f1,double *f2,double *f3)
 {
+  feclearexcept(FE_OVERFLOW | FE_INVALID);
   *f1 = *f2 * *f3;
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_INVALID) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_INVALID);
+      return (0);
+    }
   return (1);
 }
 
@@ -141,9 +159,13 @@ uxtimes2(double *f1,double *f2,double *f3)
 int
 uxquotient(double *f1,double *f2,double *f3)
 {
+  feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
   *f1 = *f2 / *f3;
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID) ;
+      return (0);
+    }
   return (1);
 }
 
@@ -167,48 +189,64 @@ int uxlessp(double *f1,double *f2,int val1,int val2)
     return val2;
 }
 
+
+// Length of lisp string object in bytes, as allocated in printers.sl.
+#define WRITENUMBERBUFFERSIZE 100
+// Maximum length of string for floating point printing
+#define MAX_FLOAT_STRING_LENGTH WRITENUMBERBUFFERSIZE-4
+
+typedef struct {
+  int size;
+  char string[MAX_FLOAT_STRING_LENGTH];
+} LispString;
+
 /* Tag( uxwritefloat )
  */
 void
-uxwritefloat(char *buf, double *flt, char *convstr)
-//     char *buf;          /* String buffer to return float int */
+uxwritefloat(LispString *buf, double *flt, char *convstr)
+//     LispString *buf;    /* Lisp string buffer to return float in */
 //     double *flt;        /* Pointer to the float */
 //     char *convstr;      /* String containing conversion field for sprintf */
 {
   char *temps, *dot, *e;
-  char tempbuf[102]; /* reasonable size limit */
+  char tempbuf [WRITENUMBERBUFFERSIZE]; /* reasonable size limit */
 
-  temps = buf + 4;       /* Skip over lisp string length to write data */
+  temps = buf->string;       /* Skip over lisp string length to write data */
 
-  snprintf(temps, 99, convstr, *flt);
+  snprintf(temps, MAX_FLOAT_STRING_LENGTH, convstr, *flt);
 
-  if (finite(*flt))
+  if (isfinite(*flt))
     {
       /* Make sure that there is a trailing .0
        */
       dot = strrchr(temps, '.');
       if (dot == NULL)
 	{
-	  /* Check to see if the number is in scientific notation. If so, we need
-	   *  add the .0 into the middle of the string, just before the e.
+	  /* Check to see if the number is in scientific notation. If so,
+	   *  we must add the .0 into the middle of the string,
+	   *  just before the "e".
 	   */
-	  if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
+	  if ((e = strrchr(temps, 'e')) != NULL ||
+	      (e = strrchr(temps, 'E')) != NULL)
 	    {
-	      strncpy(tempbuf, e, 100); /* save exponent part */
-	      // Now add ".0" and exponent part
+	      /* save exponent part */
+	      strncpy(tempbuf, e, sizeof(tempbuf) - 1);
+	      // Now splice in ".0" before the exponent part
 	      *e = '\0'; 
-	      strcat(temps, ".0");     /* Add .0 onto original string */
-	      strcat(temps, tempbuf);  /* add the exponent part onto the end */
+	      strncat(temps, ".0", MAX_FLOAT_STRING_LENGTH - strlen(temps) - 1);
+	      strncat(temps, tempbuf, MAX_FLOAT_STRING_LENGTH - strlen(temps) - 1);
 	    }
 	  else
 	    {
-	      strcat(temps, ".0");
+	      strncat(temps, ".0", MAX_FLOAT_STRING_LENGTH - strlen(temps) - 1);
 	    }
 	}
     }
-  /* Install the length of the string into the Lisp header word
+  /* Install the length of the string into the Lisp header word.
+     Note that the header word is the 0-based index of the last character,
+     e.g. length - 1 .
    */
-  *((int *)buf) = strlen(temps) - 1;
+  buf->size = strlen(temps) - 1;
 }
 
 
@@ -230,125 +268,193 @@ uuxfloattodouble (float *flt, double *dbl)
 int
 uuxsin (double *r, double *x)
 {
-    *r = sin( *x );
-    fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-    if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  feclearexcept(FE_INVALID);
+  *r = sin( *x );
+  if(fetestexcept(FE_INVALID) != 0)
+    {
+      feclearexcept(FE_INVALID);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxcos (double *r, double *x)
 {
+  feclearexcept(FE_INVALID);
   *r = cos( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_INVALID) != 0)
+    {
+      feclearexcept(FE_INVALID);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxtan (double *r, double *x)
 {
-    *r = tan( *x );
-    fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-    if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  feclearexcept(FE_OVERFLOW | FE_INVALID);
+  *r = tan( *x );
+  if(fetestexcept(FE_OVERFLOW | FE_INVALID) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_INVALID);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxasin (double *r, double *x)
 {
-    *r = asin( *x );
-    fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  feclearexcept(FE_INVALID);
+  *r = asin( *x );
+  if(fetestexcept(FE_INVALID) != 0)
+    {
+      feclearexcept(FE_INVALID);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxacos (double *r, double *x)
 {
+  feclearexcept(FE_INVALID);
   *r = acos( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_INVALID) != 0)
+    {
+      feclearexcept(FE_INVALID);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxatan (double *r, double *x)
 {
+  feclearexcept(FE_OVERFLOW | FE_DIVBYZERO| FE_INVALID);
   *r = atan( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxsqrt (double *r, double *x)
 {
-    *r = sqrt( *x );
-    fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-    if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
-    return (1);      
+  feclearexcept(FE_INVALID);
+  *r = sqrt( *x );
+  if(fetestexcept(FE_INVALID) != 0)
+    {
+      feclearexcept(FE_INVALID);
+      return (0);
+    }
+  return (1);
 }
 
 int
 uuxexp (double *r, double *x)
 {
+  feclearexcept(FE_OVERFLOW | FE_UNDERFLOW);
   *r = exp( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_UNDERFLOW) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_UNDERFLOW);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxlog (double *r, double *x)
 {
+  feclearexcept(FE_DIVBYZERO | FE_INVALID);
   *r = log( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
+  if(fetestexcept(FE_DIVBYZERO | FE_INVALID) != 0)
+    {
+      feclearexcept(FE_DIVBYZERO | FE_INVALID);return (0);
+    }
   return (1);
 }
 
 int
 uuxatan2 (double *r, double *y, double *x)
 {
+  feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
   *r = atan2( *y, *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxsinh (double *r, double *x)
 {
+  feclearexcept(FE_OVERFLOW);
   *r = sinh( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW) != 0)
+    {
+      feclearexcept(FE_OVERFLOW);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxcosh (double *r, double *x)
 {
+  feclearexcept(FE_OVERFLOW);
   *r = cosh( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW) != 0)
+    {
+      feclearexcept(FE_OVERFLOW);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxtanh (double *r, double *x)
 {
+  feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
   *r = tanh( *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
+      return (0);
+    }
   return (1);
 }
 
 int
 uuxhypot (double *res, double *x, double *y)
 {
-    *res = hypot( *x, *y );
-    fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-    if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
-    return 1;
+  feclearexcept(FE_OVERFLOW | FE_UNDERFLOW);
+  *res = hypot( *x, *y );
+  if(fetestexcept(FE_OVERFLOW | FE_UNDERFLOW) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_UNDERFLOW);
+      return (0);
+    }
+  return 1;
+}
+
+int
+uuxpow (double *res, double *x, double *y)
+{
+  feclearexcept(FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO | FE_INVALID);
+  *res = pow( *x, *y );
+  if(fetestexcept(FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO | FE_INVALID) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO | FE_INVALID);
+      return (0);
+    }
+  return 1;
 }

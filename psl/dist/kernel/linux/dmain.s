@@ -6,7 +6,7 @@
  .globl tokenbuffer
   .comm tokenbuffer,20004
  .globl bndstk
-  .comm bndstk,8004
+  .comm bndstk,80004
  .globl catchstack
   .comm catchstack,6404
  .globl hashtable
@@ -411,7 +411,7 @@ stacklowerbound:
  .long ((29*0x8000000)+335)
  .long ((29*0x8000000)+336)
  .long ((29*0x8000000)+337)
- .long 508
+ .long 510
  .long symnam
  .long ((29*0x8000000)+340)
  .long ((30*0x8000000)+128)
@@ -581,7 +581,9 @@ stacklowerbound:
  .long ((29*0x8000000)+505)
  .long ((29*0x8000000)+506)
  .long ((29*0x8000000)+507)
-  .space 257972
+ .long ((29*0x8000000)+508)
+ .long ((29*0x8000000)+509)
+  .space 257964
  .globl symprp
 symprp:
  .long ((30*0x8000000)+128)
@@ -1092,13 +1094,11 @@ symprp:
  .long ((30*0x8000000)+128)
  .long ((30*0x8000000)+128)
  .long ((30*0x8000000)+128)
-  .space 257972
+ .long ((30*0x8000000)+128)
+ .long ((30*0x8000000)+128)
+  .space 257964
  .globl symnam
 symnam:
- .globl l0271
- .long ((3*0x8000000)+l0271)
- .globl l0272
- .long ((3*0x8000000)+l0272)
  .globl l0273
  .long ((3*0x8000000)+l0273)
  .globl l0274
@@ -2111,7 +2111,15 @@ symnam:
  .long ((3*0x8000000)+l0777)
  .globl l0778
  .long ((3*0x8000000)+l0778)
-  .space 257972
+ .globl l0779
+ .long ((3*0x8000000)+l0779)
+ .globl l0780
+ .long ((3*0x8000000)+l0780)
+ .globl l0781
+ .long ((3*0x8000000)+l0781)
+ .globl l0782
+ .long ((3*0x8000000)+l0782)
+  .space 257964
  .globl symfnc
 symfnc:
  .long undefinedfunction
@@ -2432,8 +2440,8 @@ symfnc:
  .long l0004
  .globl l0168
  .long l0168
- .globl l0223
- .long l0223
+ .globl l0225
+ .long l0225
  .globl _reduceup
  .long _reduceup
  .globl reduceup
@@ -2444,8 +2452,8 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
- .globl l0216
- .long l0216
+ .globl l0218
+ .long l0218
  .globl l0015
  .long l0015
  .globl initcode
@@ -2457,32 +2465,32 @@ symfnc:
  .globl faslin
  .long faslin
  .long undefinedfunction
- .globl l0214
- .long l0214
+ .globl l0216
+ .long l0216
  .globl l0010
  .long l0010
+ .globl l0217
+ .long l0217
  .globl l0215
  .long l0215
- .globl l0213
- .long l0213
  .globl binaryopenread
  .long binaryopenread
- .globl l0218
- .long l0218
+ .globl l0220
+ .long l0220
  .globl l0155
  .long l0155
  .globl binaryread
  .long binaryread
- .globl l0234
- .long l0234
+ .globl l0236
+ .long l0236
  .globl binaryreadblock
  .long binaryreadblock
- .globl l0226
- .long l0226
+ .globl l0228
+ .long l0228
  .globl binaryclose
  .long binaryclose
- .globl l0225
- .long l0225
+ .globl l0227
+ .long l0227
  .long undefinedfunction
  .long undefinedfunction
  .globl l0037
@@ -2712,26 +2720,26 @@ symfnc:
  .long l0210
  .globl l0211
  .long l0211
- .globl sigrelse
- .long sigrelse
  .globl l0212
  .long l0212
- .globl l0217
- .long l0217
+ .globl l0213
+ .long l0213
+ .globl sigrelse
+ .long sigrelse
+ .globl l0214
+ .long l0214
  .globl l0219
  .long l0219
- .globl l0220
- .long l0220
  .globl l0221
  .long l0221
  .globl l0222
  .long l0222
+ .globl l0223
+ .long l0223
  .globl l0224
  .long l0224
- .globl l0227
- .long l0227
- .globl l0228
- .long l0228
+ .globl l0226
+ .long l0226
  .globl l0229
  .long l0229
  .globl l0230
@@ -2742,10 +2750,10 @@ symfnc:
  .long l0232
  .globl l0233
  .long l0233
+ .globl l0234
+ .long l0234
  .globl l0235
  .long l0235
- .globl l0236
- .long l0236
  .globl l0237
  .long l0237
  .globl l0238
@@ -2798,12 +2806,16 @@ symfnc:
  .long l0261
  .globl l0262
  .long l0262
+ .globl l0263
+ .long l0263
+ .globl l0264
+ .long l0264
  .globl lastkernel
  .long lastkernel
  .globl codeaddressp
  .long codeaddressp
  .long undefinedfunction
-  .space 257972
+  .space 257964
  .globl symget
 symget:
  .long ((30*0x8000000)+128)
@@ -3314,4 +3326,6 @@ symget:
  .long ((30*0x8000000)+128)
  .long ((30*0x8000000)+128)
  .long ((30*0x8000000)+128)
-  .space 257972
+ .long ((30*0x8000000)+128)
+ .long ((30*0x8000000)+128)
+  .space 257964

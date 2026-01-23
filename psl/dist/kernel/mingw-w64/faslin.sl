@@ -113,7 +113,7 @@
     % Twiddle the bits.
 
     (if (weq (wand mode 1) 1) 
-	(do-relocation-new code-base code-size bit-table local-id-table (wand mode 2))
+	(do-relocation-new code-base code-size bit-table local-id-table)
 	(do-relocation code-base code-size bit-table local-id-table))
 
     % Call the init code
@@ -147,7 +147,7 @@
 	       (relocate-right-half code-location code-base id-table))
 	      ))))))
 		    
-(de do-relocation-new (code-base code-size bit-table id-table reloc-pc-rel)
+(de do-relocation-new (code-base code-size bit-table id-table)
   (let ((ptr 0)
 	(code-location code-base) 
 	 entry)
@@ -174,21 +174,13 @@
 (compiletime (put 'get_a_halfword 'opencode '(
    (!*move (displacement (reg rax) 0) (reg eax)))))
 
-(de relocate-word (code-location code-base id-table reloc-pc-rel)
+(de relocate-word (code-location code-base id-table)
   (let ((reloc-tag (reloc-word-tag (get_a_halfword code-location)))
-	(reloc-inf (reloc-word-inf (get_a_halfword code-location))
-	(tempo)))
+	(reloc-inf (reloc-word-inf (get_a_halfword code-location))))
 
     (put_a_halfword code-location
-     (progn
-      (setq tempo (compute-relocation reloc-tag reloc-inf code-base id-table)
-      (if (and (not (weq reloc-pc-rel 0))
-               (or (eq reloc-tag reloc-value-cell)
-                   (eq reloc-tag reloc-code-offset)
-                   (eq reloc-tag reloc-function-cell)))
-        (wdifference tempo (wplus2 4 code-location))
-	  tempo))))
-    ))
+      (compute-relocation reloc-tag reloc-inf code-base id-table)
+      )))
 
 (de relocate-inf  (code-location code-base id-table)
   (let ((reloc-tag  (wand (wshift (getmem code-location) -54) 3))

@@ -62,7 +62,7 @@
 %
 %  $Id$
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
  
 #include <windows.h>
@@ -78,7 +78,9 @@
 
 */ 
 
-extern int Debug;
+//extern int Debug;
+
+char *expand_file_name(char *);    /* from unix-io.c */
 
 unsigned int
 external_alarm (unsigned int sec)
@@ -93,8 +95,6 @@ external_ualarm (useconds_t usec, useconds_t repeat)
   /*  ualarm (usec, repeat); */
   return (0);
 }
-
-char *expand_file_name ();    /* from unix-io.c */
  
 /* Tag( external_time )
  */
@@ -144,15 +144,13 @@ int external_stat (char *path, struct stat *buf)
   return stat (expand_file_name (path), buf);
 }
 
-int external_mkdir (path, mode)
-     char * path;
-     mode_t mode;
+
+int external_mkdir (char *path, mode_t mode)
 { 
   return _mkdir (expand_file_name(path)); 
 }
 
-int external_rmdir (path)
-    char * path;
+int external_rmdir (char *path)
 { 
   return _rmdir (expand_file_name(path));
 }
@@ -161,8 +159,8 @@ int external_rmdir (path)
  */
 int external_link (char *oldpath, char *newpath)
 {
-  return CreateHardLink (expand_file_name (newpath),
-			 expand_file_name (oldpath), NULL);
+  return (CreateHardLink (expand_file_name (newpath),
+                          expand_file_name (oldpath), NULL) == 0 ? -1 : 0);
 }
 
 /* Tag( external_unlink )
@@ -185,18 +183,19 @@ char *external_getenv (char *name)
 {
   return getenv(name);
 }
- 
+
 int external_setenv (char *var, char *val)
 {
-  char *envnew;
-
-  envnew = (char *) malloc (strlen(var) + strlen(val) + 2);
-  strcpy(envnew, var);
-  strcat(envnew, "=");
-  strcat(envnew, val);
-  return(_putenv (envnew));
+  return(_putenv_s (var, val));
 }
- 
+
+int
+external_mkfifo(char *x,int y)
+{
+  return (-1);
+}
+
+#if 0
 #define LISPEOF  4      /* Lisp uses ctrl-D for end of file */
  
 /* Tag( unixreadrecord )
@@ -224,14 +223,7 @@ void unixwriterecord(FILE *fp, char *buf, int count)
     fputc(*buf, fp);
 }
 
-int
-mprotect_exec (void *addr,  long long size)
-{
-  DWORD OldProtect;
-
-  return VirtualProtect (addr, size, PAGE_EXECUTE_READWRITE, &OldProtect);
-}
-
+#endif
 
 
 int
@@ -414,5 +406,4 @@ get_registry_value(char *key, char *subkey, char* name, long long *infobuf)
     return 0;
   }
 }
-
 

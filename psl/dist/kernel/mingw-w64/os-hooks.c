@@ -83,7 +83,9 @@ char * cygdrive_prefix = NULL;
 extern void * saved_pxcptinfoptrs;
 extern char bps[];
 
+#if 0
 void init_fp(void);
+#endif
 
 void clear_iob(void);
 void clear_dtabsize(void);
@@ -162,6 +164,8 @@ main(int argc,char *argv[])
   exit(0);
 }
 
+#if 0
+
 /*
  * Initialize floating point exceptions
  * Allow hardware exception for floating point overflow, division by zero and invalid 
@@ -178,6 +182,7 @@ void init_fp()
   cwOriginal = _controlfp(cw, _MCW_EM); //Set it.   
 }
 
+#endif
 
 void
 os_startup_hook(int argc, char *argv[])

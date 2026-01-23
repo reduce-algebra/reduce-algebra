@@ -12,7 +12,7 @@ l0001:
  movl %edi,symval+1072
  movl symval+1040,%edi
  movl %edi,symval+1076
- movl $7996,%eax
+ movl $79996,%eax
  add symval+1040,%eax
  movl %eax,symval+1080
  movl symval+1040,%edi
@@ -1955,19 +1955,19 @@ l0155:
  add $4,%esp
  jmp *symfnc+1228
  .long 0
-/ (*entry echoon expr 0)
+/ (*entry echooff expr 0)
  .globl l0156
 l0156:
  movl symval+1212,%ebx
- call echoon
+ call echooff
  movl %ebx,symval+1212
  ret
  .long 0
-/ (*entry echooff expr 0)
+/ (*entry echoon expr 0)
  .globl l0157
 l0157:
  movl symval+1212,%ebx
- call echooff
+ call echoon
  movl %ebx,symval+1212
  ret
  .long 1
@@ -2006,10 +2006,18 @@ l0161:
  movl %ebx,symval+1212
  add $4,%esp
  ret
- .long 1
-/ (*entry alterheapsize expr 1)
+ .long 0
+/ (*entry unexec expr 0)
  .globl l0162
 l0162:
+ movl symval+1212,%ebx
+ call unexec
+ movl %ebx,symval+1212
+ ret
+ .long 1
+/ (*entry alterheapsize expr 1)
+ .globl l0163
+l0163:
  push %eax
  movl symval+1212,%ebx
  call alterheapsize
@@ -2018,8 +2026,8 @@ l0162:
  ret
  .long 1
 / (*entry allocatemorebps expr 1)
- .globl l0163
-l0163:
+ .globl l0164
+l0164:
  push %eax
  movl symval+1212,%ebx
  call allocatemorebps
@@ -2028,24 +2036,11 @@ l0163:
  ret
  .long 0
 / (*entry get_imagefilepath expr 0)
- .globl l0164
-l0164:
+ .globl l0165
+l0165:
  movl symval+1212,%ebx
  call get_imagefilepath
  movl %ebx,symval+1212
- ret
- .long 4
-/ (*entry unexec expr 4)
- .globl l0165
-l0165:
- push %edx
- push %ecx
- push %ebx
- push %eax
- movl symval+1212,%ebx
- call unexec
- movl %ebx,symval+1212
- add $16,%esp
  ret
  .long 3
 / (*entry get_file_status expr 3)
@@ -2141,9 +2136,30 @@ l0174:
  add $8,%esp
  ret
  .long 2
-/ (*entry external_link expr 2)
+/ (*entry external_mkdir expr 2)
  .globl l0175
 l0175:
+ push %ebx
+ push %eax
+ movl symval+1212,%ebx
+ call external_mkdir
+ movl %ebx,symval+1212
+ add $8,%esp
+ ret
+ .long 1
+/ (*entry external_rmdir expr 1)
+ .globl l0176
+l0176:
+ push %eax
+ movl symval+1212,%ebx
+ call external_rmdir
+ movl %ebx,symval+1212
+ add $4,%esp
+ ret
+ .long 2
+/ (*entry external_link expr 2)
+ .globl l0177
+l0177:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2153,8 +2169,8 @@ l0175:
  ret
  .long 1
 / (*entry external_unlink expr 1)
- .globl l0176
-l0176:
+ .globl l0178
+l0178:
  push %eax
  movl symval+1212,%ebx
  call external_unlink
@@ -2163,50 +2179,18 @@ l0176:
  ret
  .long 1
 / (*entry external_strlen expr 1)
- .globl l0177
-l0177:
+ .globl l0179
+l0179:
  push %eax
  movl symval+1212,%ebx
  call external_strlen
  movl %ebx,symval+1212
  add $4,%esp
  ret
- .long 2
-/ (*entry external_setenv expr 2)
- .globl l0178
-l0178:
- push %ebx
- push %eax
- movl symval+1212,%ebx
- call external_setenv
- movl %ebx,symval+1212
- add $8,%esp
- ret
- .long 1
-/ (*entry external_rmdir expr 1)
- .globl l0179
-l0179:
- push %eax
- movl symval+1212,%ebx
- call external_rmdir
- movl %ebx,symval+1212
- add $4,%esp
- ret
- .long 2
-/ (*entry external_mkdir expr 2)
- .globl l0180
-l0180:
- push %ebx
- push %eax
- movl symval+1212,%ebx
- call external_mkdir
- movl %ebx,symval+1212
- add $8,%esp
- ret
  .long 1
 / (*entry external_getenv expr 1)
- .globl l0181
-l0181:
+ .globl l0180
+l0180:
  push %eax
  movl symval+1212,%ebx
  call external_getenv
@@ -2214,9 +2198,31 @@ l0181:
  add $4,%esp
  ret
  .long 2
-/ (*entry uxfloat expr 2)
+/ (*entry external_setenv expr 2)
+ .globl l0181
+l0181:
+ push %ebx
+ push %eax
+ movl symval+1212,%ebx
+ call external_setenv
+ movl %ebx,symval+1212
+ add $8,%esp
+ ret
+ .long 2
+/ (*entry external_mkfifo expr 2)
  .globl l0182
 l0182:
+ push %ebx
+ push %eax
+ movl symval+1212,%ebx
+ call external_mkfifo
+ movl %ebx,symval+1212
+ add $8,%esp
+ ret
+ .long 2
+/ (*entry uxfloat expr 2)
+ .globl l0183
+l0183:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2226,8 +2232,8 @@ l0182:
  ret
  .long 1
 / (*entry uxfix expr 1)
- .globl l0183
-l0183:
+ .globl l0184
+l0184:
  push %eax
  movl symval+1212,%ebx
  call uxfix
@@ -2236,23 +2242,12 @@ l0183:
  ret
  .long 2
 / (*entry uxassign expr 2)
- .globl l0184
-l0184:
- push %ebx
- push %eax
- movl symval+1212,%ebx
- call uxassign
- movl %ebx,symval+1212
- add $8,%esp
- ret
- .long 2
-/ (*entry uxminus expr 2)
  .globl l0185
 l0185:
  push %ebx
  push %eax
  movl symval+1212,%ebx
- call uxminus
+ call uxassign
  movl %ebx,symval+1212
  add $8,%esp
  ret
@@ -2304,10 +2299,21 @@ l0189:
  movl %ebx,symval+1212
  add $12,%esp
  ret
- .long 4
-/ (*entry uxgreaterp expr 4)
+ .long 2
+/ (*entry uxminus expr 2)
  .globl l0190
 l0190:
+ push %ebx
+ push %eax
+ movl symval+1212,%ebx
+ call uxminus
+ movl %ebx,symval+1212
+ add $8,%esp
+ ret
+ .long 4
+/ (*entry uxgreaterp expr 4)
+ .globl l0191
+l0191:
  push %edx
  push %ecx
  push %ebx
@@ -2319,8 +2325,8 @@ l0190:
  ret
  .long 4
 / (*entry uxlessp expr 4)
- .globl l0191
-l0191:
+ .globl l0192
+l0192:
  push %edx
  push %ecx
  push %ebx
@@ -2332,8 +2338,8 @@ l0191:
  ret
  .long 3
 / (*entry uxwritefloat expr 3)
- .globl l0192
-l0192:
+ .globl l0193
+l0193:
  push %ecx
  push %ebx
  push %eax
@@ -2344,8 +2350,8 @@ l0192:
  ret
  .long 2
 / (*entry uuxdoubletofloat expr 2)
- .globl l0193
-l0193:
+ .globl l0194
+l0194:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2355,8 +2361,8 @@ l0193:
  ret
  .long 2
 / (*entry uuxfloattodouble expr 2)
- .globl l0194
-l0194:
+ .globl l0195
+l0195:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2366,8 +2372,8 @@ l0194:
  ret
  .long 2
 / (*entry uuxsin expr 2)
- .globl l0195
-l0195:
+ .globl l0196
+l0196:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2377,8 +2383,8 @@ l0195:
  ret
  .long 2
 / (*entry uuxcos expr 2)
- .globl l0196
-l0196:
+ .globl l0197
+l0197:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2388,8 +2394,8 @@ l0196:
  ret
  .long 2
 / (*entry uuxtan expr 2)
- .globl l0197
-l0197:
+ .globl l0198
+l0198:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2399,8 +2405,8 @@ l0197:
  ret
  .long 2
 / (*entry uuxasin expr 2)
- .globl l0198
-l0198:
+ .globl l0199
+l0199:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2410,8 +2416,8 @@ l0198:
  ret
  .long 2
 / (*entry uuxacos expr 2)
- .globl l0199
-l0199:
+ .globl l0200
+l0200:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2421,8 +2427,8 @@ l0199:
  ret
  .long 2
 / (*entry uuxatan expr 2)
- .globl l0200
-l0200:
+ .globl l0201
+l0201:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2432,8 +2438,8 @@ l0200:
  ret
  .long 2
 / (*entry uuxsqrt expr 2)
- .globl l0201
-l0201:
+ .globl l0202
+l0202:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2443,8 +2449,8 @@ l0201:
  ret
  .long 2
 / (*entry uuxexp expr 2)
- .globl l0202
-l0202:
+ .globl l0203
+l0203:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2454,8 +2460,8 @@ l0202:
  ret
  .long 2
 / (*entry uuxlog expr 2)
- .globl l0203
-l0203:
+ .globl l0204
+l0204:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2465,8 +2471,8 @@ l0203:
  ret
  .long 3
 / (*entry uuxatan2 expr 3)
- .globl l0204
-l0204:
+ .globl l0205
+l0205:
  push %ecx
  push %ebx
  push %eax
@@ -2477,8 +2483,8 @@ l0204:
  ret
  .long 2
 / (*entry uuxsinh expr 2)
- .globl l0205
-l0205:
+ .globl l0206
+l0206:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2488,8 +2494,8 @@ l0205:
  ret
  .long 2
 / (*entry uuxcosh expr 2)
- .globl l0206
-l0206:
+ .globl l0207
+l0207:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2499,8 +2505,8 @@ l0206:
  ret
  .long 2
 / (*entry uuxtanh expr 2)
- .globl l0207
-l0207:
+ .globl l0208
+l0208:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2508,29 +2514,42 @@ l0207:
  movl %ebx,symval+1212
  add $8,%esp
  ret
- .long 2
-/ (*entry uuxhypot expr 2)
- .globl l0208
-l0208:
+ .long 3
+/ (*entry uuxhypot expr 3)
+ .globl l0209
+l0209:
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call uuxhypot
  movl %ebx,symval+1212
- add $8,%esp
+ add $12,%esp
+ ret
+ .long 3
+/ (*entry uuxpow expr 3)
+ .globl l0210
+l0210:
+ push %ecx
+ push %ebx
+ push %eax
+ movl symval+1212,%ebx
+ call uuxpow
+ movl %ebx,symval+1212
+ add $12,%esp
  ret
  .long 0
 / (*entry external_pwd expr 0)
- .globl l0209
-l0209:
+ .globl l0211
+l0211:
  movl symval+1212,%ebx
  call external_pwd
  movl %ebx,symval+1212
  ret
  .long 2
 / (*entry sun3_sigset expr 2)
- .globl l0210
-l0210:
+ .globl l0212
+l0212:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2540,8 +2559,8 @@ l0210:
  ret
  .long 2
 / (*entry sun3_sigrelse expr 2)
- .globl l0211
-l0211:
+ .globl l0213
+l0213:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2562,8 +2581,8 @@ sigrelse:
  ret
  .long 2
 / (*entry mask_signal expr 2)
- .globl l0212
-l0212:
+ .globl l0214
+l0214:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2573,8 +2592,8 @@ l0212:
  ret
  .long 1
 / (*entry unixputc expr 1)
- .globl l0213
-l0213:
+ .globl l0215
+l0215:
  push %eax
  movl symval+1212,%ebx
  call unixputc
@@ -2583,8 +2602,8 @@ l0213:
  ret
  .long 1
 / (*entry unixputs expr 1)
- .globl l0214
-l0214:
+ .globl l0216
+l0216:
  push %eax
  movl symval+1212,%ebx
  call unixputs
@@ -2593,8 +2612,8 @@ l0214:
  ret
  .long 1
 / (*entry unixputn expr 1)
- .globl l0215
-l0215:
+ .globl l0217
+l0217:
  push %eax
  movl symval+1212,%ebx
  call unixputn
@@ -2603,16 +2622,16 @@ l0215:
  ret
  .long 0
 / (*entry unixcleario expr 0)
- .globl l0216
-l0216:
+ .globl l0218
+l0218:
  movl symval+1212,%ebx
  call unixcleario
  movl %ebx,symval+1212
  ret
  .long 1
 / (*entry expand_file_name expr 1)
- .globl l0217
-l0217:
+ .globl l0219
+l0219:
  push %eax
  movl symval+1212,%ebx
  call expand_file_name
@@ -2621,8 +2640,8 @@ l0217:
  ret
  .long 2
 / (*entry unixopen expr 2)
- .globl l0218
-l0218:
+ .globl l0220
+l0220:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2632,8 +2651,8 @@ l0218:
  ret
  .long 1
 / (*entry unixcd expr 1)
- .globl l0219
-l0219:
+ .globl l0221
+l0221:
  push %eax
  movl symval+1212,%ebx
  call unixcd
@@ -2642,8 +2661,8 @@ l0219:
  ret
  .long 1
 / (*entry ctime expr 1)
- .globl l0220
-l0220:
+ .globl l0222
+l0222:
  push %eax
  movl symval+1212,%ebx
  call ctime
@@ -2652,8 +2671,8 @@ l0220:
  ret
  .long 1
 / (*entry external_system expr 1)
- .globl l0221
-l0221:
+ .globl l0223
+l0223:
  push %eax
  movl symval+1212,%ebx
  call external_system
@@ -2662,8 +2681,8 @@ l0221:
  ret
  .long 1
 / (*entry external_fullpath expr 1)
- .globl l0222
-l0222:
+ .globl l0224
+l0224:
  push %eax
  movl symval+1212,%ebx
  call external_fullpath
@@ -2672,8 +2691,8 @@ l0222:
  ret
  .long 1
 / (*entry external_exit expr 1)
- .globl l0223
-l0223:
+ .globl l0225
+l0225:
  push %eax
  movl symval+1212,%ebx
  call external_exit
@@ -2682,8 +2701,8 @@ l0223:
  ret
  .long 2
 / (*entry fopen expr 2)
- .globl l0224
-l0224:
+ .globl l0226
+l0226:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2693,8 +2712,8 @@ l0224:
  ret
  .long 1
 / (*entry fclose expr 1)
- .globl l0225
-l0225:
+ .globl l0227
+l0227:
  push %eax
  movl symval+1212,%ebx
  call fclose
@@ -2703,8 +2722,8 @@ l0225:
  ret
  .long 4
 / (*entry fread expr 4)
- .globl l0226
-l0226:
+ .globl l0228
+l0228:
  push %edx
  push %ecx
  push %ebx
@@ -2716,8 +2735,8 @@ l0226:
  ret
  .long 2
 / (*entry fputc expr 2)
- .globl l0227
-l0227:
+ .globl l0229
+l0229:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2727,8 +2746,8 @@ l0227:
  ret
  .long 1
 / (*entry fgetc expr 1)
- .globl l0228
-l0228:
+ .globl l0230
+l0230:
  push %eax
  movl symval+1212,%ebx
  call fgetc
@@ -2737,8 +2756,8 @@ l0228:
  ret
  .long 3
 / (*entry fgets expr 3)
- .globl l0229
-l0229:
+ .globl l0231
+l0231:
  push %ecx
  push %ebx
  push %eax
@@ -2749,8 +2768,8 @@ l0229:
  ret
  .long 4
 / (*entry fwrite expr 4)
- .globl l0230
-l0230:
+ .globl l0232
+l0232:
  push %edx
  push %ecx
  push %ebx
@@ -2762,8 +2781,8 @@ l0230:
  ret
  .long 1
 / (*entry fflush expr 1)
- .globl l0231
-l0231:
+ .globl l0233
+l0233:
  push %eax
  movl symval+1212,%ebx
  call fflush
@@ -2772,8 +2791,8 @@ l0231:
  ret
  .long 3
 / (*entry fseek expr 3)
- .globl l0232
-l0232:
+ .globl l0234
+l0234:
  push %ecx
  push %ebx
  push %eax
@@ -2784,8 +2803,8 @@ l0232:
  ret
  .long 1
 / (*entry clearerr expr 1)
- .globl l0233
-l0233:
+ .globl l0235
+l0235:
  push %eax
  movl symval+1212,%ebx
  call clearerr
@@ -2794,8 +2813,8 @@ l0233:
  ret
  .long 1
 / (*entry getw expr 1)
- .globl l0234
-l0234:
+ .globl l0236
+l0236:
  push %eax
  movl symval+1212,%ebx
  call getw
@@ -2804,8 +2823,8 @@ l0234:
  ret
  .long 2
 / (*entry putw expr 2)
- .globl l0235
-l0235:
+ .globl l0237
+l0237:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2815,8 +2834,8 @@ l0235:
  ret
  .long 2
 / (*entry signal expr 2)
- .globl l0236
-l0236:
+ .globl l0238
+l0238:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2826,8 +2845,8 @@ l0236:
  ret
  .long 1
 / (*entry sleep expr 1)
- .globl l0237
-l0237:
+ .globl l0239
+l0239:
  push %eax
  movl symval+1212,%ebx
  call sleep
@@ -2836,8 +2855,8 @@ l0237:
  ret
  .long 3
 / (*entry ieee_handler expr 3)
- .globl l0238
-l0238:
+ .globl l0240
+l0240:
  push %ecx
  push %ebx
  push %eax
@@ -2848,8 +2867,8 @@ l0238:
  ret
  .long 4
 / (*entry ieee_flags expr 4)
- .globl l0239
-l0239:
+ .globl l0241
+l0241:
  push %edx
  push %ecx
  push %ebx
@@ -2861,8 +2880,8 @@ l0239:
  ret
  .long 1
 / (*entry setlinebuf expr 1)
- .globl l0240
-l0240:
+ .globl l0242
+l0242:
  push %eax
  movl symval+1212,%ebx
  call setlinebuf
@@ -2871,24 +2890,24 @@ l0240:
  ret
  .long 0
 / (*entry getpid expr 0)
- .globl l0241
-l0241:
+ .globl l0243
+l0243:
  movl symval+1212,%ebx
  call getpid
  movl %ebx,symval+1212
  ret
  .long 0
 / (*entry gethostid expr 0)
- .globl l0242
-l0242:
+ .globl l0244
+l0244:
  movl symval+1212,%ebx
  call gethostid
  movl %ebx,symval+1212
  ret
  .long 2
 / (*entry unixsocketopen expr 2)
- .globl l0243
-l0243:
+ .globl l0245
+l0245:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2898,8 +2917,8 @@ l0243:
  ret
  .long 3
 / (*entry getsocket expr 3)
- .globl l0244
-l0244:
+ .globl l0246
+l0246:
  push %ecx
  push %ebx
  push %eax
@@ -2910,8 +2929,8 @@ l0244:
  ret
  .long 3
 / (*entry writesocket expr 3)
- .globl l0245
-l0245:
+ .globl l0247
+l0247:
  push %ecx
  push %ebx
  push %eax
@@ -2922,8 +2941,8 @@ l0245:
  ret
  .long 1
 / (*entry unixclosesocket expr 1)
- .globl l0246
-l0246:
+ .globl l0248
+l0248:
  push %eax
  movl symval+1212,%ebx
  call unixclosesocket
@@ -2932,16 +2951,16 @@ l0246:
  ret
  .long 0
 / (*entry fork expr 0)
- .globl l0247
-l0247:
+ .globl l0249
+l0249:
  movl symval+1212,%ebx
  call fork
  movl %ebx,symval+1212
  ret
  .long 1
 / (*entry wait expr 1)
- .globl l0248
-l0248:
+ .globl l0250
+l0250:
  push %eax
  movl symval+1212,%ebx
  call wait
@@ -2950,8 +2969,8 @@ l0248:
  ret
  .long 2
 / (*entry popen expr 2)
- .globl l0249
-l0249:
+ .globl l0251
+l0251:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -2961,8 +2980,8 @@ l0249:
  ret
  .long 1
 / (*entry pclose expr 1)
- .globl l0250
-l0250:
+ .globl l0252
+l0252:
  push %eax
  movl symval+1212,%ebx
  call pclose
@@ -2971,8 +2990,8 @@ l0250:
  ret
  .long 3
 / (*entry shmctl expr 3)
- .globl l0251
-l0251:
+ .globl l0253
+l0253:
  push %ecx
  push %ebx
  push %eax
@@ -2983,8 +3002,8 @@ l0251:
  ret
  .long 3
 / (*entry shmget expr 3)
- .globl l0252
-l0252:
+ .globl l0254
+l0254:
  push %ecx
  push %ebx
  push %eax
@@ -2995,8 +3014,8 @@ l0252:
  ret
  .long 3
 / (*entry shmat expr 3)
- .globl l0253
-l0253:
+ .globl l0255
+l0255:
  push %ecx
  push %ebx
  push %eax
@@ -3007,8 +3026,8 @@ l0253:
  ret
  .long 1
 / (*entry shmdt expr 1)
- .globl l0254
-l0254:
+ .globl l0256
+l0256:
  push %eax
  movl symval+1212,%ebx
  call shmdt
@@ -3017,8 +3036,8 @@ l0254:
  ret
  .long 4
 / (*entry semctl expr 4)
- .globl l0255
-l0255:
+ .globl l0257
+l0257:
  push %edx
  push %ecx
  push %ebx
@@ -3030,8 +3049,8 @@ l0255:
  ret
  .long 3
 / (*entry semget expr 3)
- .globl l0256
-l0256:
+ .globl l0258
+l0258:
  push %ecx
  push %ebx
  push %eax
@@ -3042,8 +3061,8 @@ l0256:
  ret
  .long 3
 / (*entry semop expr 3)
- .globl l0257
-l0257:
+ .globl l0259
+l0259:
  push %ecx
  push %ebx
  push %eax
@@ -3054,8 +3073,8 @@ l0257:
  ret
  .long 2
 / (*entry dlopen expr 2)
- .globl l0258
-l0258:
+ .globl l0260
+l0260:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -3065,8 +3084,8 @@ l0258:
  ret
  .long 1
 / (*entry dlerror expr 1)
- .globl l0259
-l0259:
+ .globl l0261
+l0261:
  push %eax
  movl symval+1212,%ebx
  call dlerror
@@ -3075,8 +3094,8 @@ l0259:
  ret
  .long 2
 / (*entry dlsym expr 2)
- .globl l0260
-l0260:
+ .globl l0262
+l0262:
  push %ebx
  push %eax
  movl symval+1212,%ebx
@@ -3086,8 +3105,8 @@ l0260:
  ret
  .long 1
 / (*entry dlclose expr 1)
- .globl l0261
-l0261:
+ .globl l0263
+l0263:
  push %eax
  movl symval+1212,%ebx
  call dlclose
@@ -3096,8 +3115,8 @@ l0261:
  ret
  .long 4
 / (*entry unix-profile expr 4)
- .globl l0262
-l0262:
+ .globl l0264
+l0264:
  push %edx
  push %ecx
  push %ebx
@@ -3115,49 +3134,49 @@ codeaddressp:
  and $134217727,%eax
  movl %eax,(%esp)
  movl $((30*0x8000000)+256),%eax
- call *symfnc+2028
+ call *symfnc+2036
  and $134217727,%eax
  cmpl (%esp),%eax
- jle l0263
+ jle l0265
  movl $((30*0x8000000)+128),%eax
- jmp l0264
-l0263:
- movl $((30*0x8000000)+116),%eax
-l0264:
- cmpl $((30*0x8000000)+128),%eax
- je l0265
- movl $((30*0x8000000)+505),%eax
- call *symfnc+2028
- and $134217727,%eax
- cmpl (%esp),%eax
- jg l0266
- movl $((30*0x8000000)+128),%eax
- jmp l0265
-l0266:
- movl $((30*0x8000000)+116),%eax
+ jmp l0266
 l0265:
+ movl $((30*0x8000000)+116),%eax
+l0266:
  cmpl $((30*0x8000000)+128),%eax
- jne l0267
+ je l0267
+ movl $((30*0x8000000)+507),%eax
+ call *symfnc+2036
+ and $134217727,%eax
+ cmpl (%esp),%eax
+ jg l0268
+ movl $((30*0x8000000)+128),%eax
+ jmp l0267
+l0268:
+ movl $((30*0x8000000)+116),%eax
+l0267:
+ cmpl $((30*0x8000000)+128),%eax
+ jne l0269
  movl symval+1136,%eax
  and $134217727,%eax
  cmpl (%esp),%eax
- jle l0268
+ jle l0270
  movl $((30*0x8000000)+128),%eax
- jmp l0269
-l0268:
+ jmp l0271
+l0270:
  movl $((30*0x8000000)+116),%eax
-l0269:
+l0271:
  cmpl $((30*0x8000000)+128),%eax
- je l0267
+ je l0269
  movl symval+1144,%eax
  and $134217727,%eax
  cmpl (%esp),%eax
- jg l0270
+ jg l0272
  movl $((30*0x8000000)+128),%eax
- jmp l0267
-l0270:
+ jmp l0269
+l0272:
  movl $((30*0x8000000)+116),%eax
-l0267:
+l0269:
  add $4,%esp
  ret
  .long 1
@@ -3174,2188 +3193,2197 @@ initcode:
  .globl symval
  .globl symprp
  .globl symnam
- .globl l0271
-l0271:
- .long 0
- .byte 0,0
- .globl l0272
-l0272:
- .long 0
- .byte 1,0
  .globl l0273
 l0273:
  .long 0
- .byte 2,0
+ .byte 0,0
  .globl l0274
 l0274:
  .long 0
- .byte 3,0
+ .byte 1,0
  .globl l0275
 l0275:
  .long 0
- .byte 4,0
+ .byte 2,0
  .globl l0276
 l0276:
  .long 0
- .byte 5,0
+ .byte 3,0
  .globl l0277
 l0277:
  .long 0
- .byte 6,0
+ .byte 4,0
  .globl l0278
 l0278:
  .long 0
- .byte 7,0
+ .byte 5,0
  .globl l0279
 l0279:
  .long 0
- .byte 8,0
+ .byte 6,0
  .globl l0280
 l0280:
  .long 0
- .byte 9,0
+ .byte 7,0
  .globl l0281
 l0281:
  .long 0
- .byte 10,0
+ .byte 8,0
  .globl l0282
 l0282:
  .long 0
- .byte 11,0
+ .byte 9,0
  .globl l0283
 l0283:
  .long 0
- .byte 12,0
+ .byte 10,0
  .globl l0284
 l0284:
  .long 0
- .byte 13,0
+ .byte 11,0
  .globl l0285
 l0285:
  .long 0
- .byte 14,0
+ .byte 12,0
  .globl l0286
 l0286:
  .long 0
- .byte 15,0
+ .byte 13,0
  .globl l0287
 l0287:
  .long 0
- .byte 16,0
+ .byte 14,0
  .globl l0288
 l0288:
  .long 0
- .byte 17,0
+ .byte 15,0
  .globl l0289
 l0289:
  .long 0
- .byte 18,0
+ .byte 16,0
  .globl l0290
 l0290:
  .long 0
- .byte 19,0
+ .byte 17,0
  .globl l0291
 l0291:
  .long 0
- .byte 20,0
+ .byte 18,0
  .globl l0292
 l0292:
  .long 0
- .byte 21,0
+ .byte 19,0
  .globl l0293
 l0293:
  .long 0
- .byte 22,0
+ .byte 20,0
  .globl l0294
 l0294:
  .long 0
- .byte 23,0
+ .byte 21,0
  .globl l0295
 l0295:
  .long 0
- .byte 24,0
+ .byte 22,0
  .globl l0296
 l0296:
  .long 0
- .byte 25,0
+ .byte 23,0
  .globl l0297
 l0297:
  .long 0
- .byte 26,0
+ .byte 24,0
  .globl l0298
 l0298:
  .long 0
- .byte 27,0
+ .byte 25,0
  .globl l0299
 l0299:
  .long 0
- .byte 28,0
+ .byte 26,0
  .globl l0300
 l0300:
  .long 0
- .byte 29,0
+ .byte 27,0
  .globl l0301
 l0301:
  .long 0
- .byte 30,0
+ .byte 28,0
  .globl l0302
 l0302:
  .long 0
- .byte 31,0
+ .byte 29,0
  .globl l0303
 l0303:
  .long 0
- .byte 32,0
+ .byte 30,0
  .globl l0304
 l0304:
  .long 0
- .byte 33,0
+ .byte 31,0
  .globl l0305
 l0305:
  .long 0
- .byte 34,0
+ .byte 32,0
  .globl l0306
 l0306:
  .long 0
- .byte 35,0
+ .byte 33,0
  .globl l0307
 l0307:
  .long 0
- .byte 36,0
+ .byte 34,0
  .globl l0308
 l0308:
  .long 0
- .byte 37,0
+ .byte 35,0
  .globl l0309
 l0309:
  .long 0
- .byte 38,0
+ .byte 36,0
  .globl l0310
 l0310:
  .long 0
- .byte 39,0
+ .byte 37,0
  .globl l0311
 l0311:
  .long 0
- .byte 40,0
+ .byte 38,0
  .globl l0312
 l0312:
  .long 0
- .byte 41,0
+ .byte 39,0
  .globl l0313
 l0313:
  .long 0
- .byte 42,0
+ .byte 40,0
  .globl l0314
 l0314:
  .long 0
- .byte 43,0
+ .byte 41,0
  .globl l0315
 l0315:
  .long 0
- .byte 44,0
+ .byte 42,0
  .globl l0316
 l0316:
  .long 0
- .byte 45,0
+ .byte 43,0
  .globl l0317
 l0317:
  .long 0
- .byte 46,0
+ .byte 44,0
  .globl l0318
 l0318:
  .long 0
- .byte 47,0
+ .byte 45,0
  .globl l0319
 l0319:
  .long 0
- .byte 48,0
+ .byte 46,0
  .globl l0320
 l0320:
  .long 0
- .byte 49,0
+ .byte 47,0
  .globl l0321
 l0321:
  .long 0
- .byte 50,0
+ .byte 48,0
  .globl l0322
 l0322:
  .long 0
- .byte 51,0
+ .byte 49,0
  .globl l0323
 l0323:
  .long 0
- .byte 52,0
+ .byte 50,0
  .globl l0324
 l0324:
  .long 0
- .byte 53,0
+ .byte 51,0
  .globl l0325
 l0325:
  .long 0
- .byte 54,0
+ .byte 52,0
  .globl l0326
 l0326:
  .long 0
- .byte 55,0
+ .byte 53,0
  .globl l0327
 l0327:
  .long 0
- .byte 56,0
+ .byte 54,0
  .globl l0328
 l0328:
  .long 0
- .byte 57,0
+ .byte 55,0
  .globl l0329
 l0329:
  .long 0
- .byte 58,0
+ .byte 56,0
  .globl l0330
 l0330:
  .long 0
- .byte 59,0
+ .byte 57,0
  .globl l0331
 l0331:
  .long 0
- .byte 60,0
+ .byte 58,0
  .globl l0332
 l0332:
  .long 0
- .byte 61,0
+ .byte 59,0
  .globl l0333
 l0333:
  .long 0
- .byte 62,0
+ .byte 60,0
  .globl l0334
 l0334:
  .long 0
- .byte 63,0
+ .byte 61,0
  .globl l0335
 l0335:
  .long 0
- .byte 64,0
+ .byte 62,0
  .globl l0336
 l0336:
  .long 0
- .byte 65,0
+ .byte 63,0
  .globl l0337
 l0337:
  .long 0
- .byte 66,0
+ .byte 64,0
  .globl l0338
 l0338:
  .long 0
- .byte 67,0
+ .byte 65,0
  .globl l0339
 l0339:
  .long 0
- .byte 68,0
+ .byte 66,0
  .globl l0340
 l0340:
  .long 0
- .byte 69,0
+ .byte 67,0
  .globl l0341
 l0341:
  .long 0
- .byte 70,0
+ .byte 68,0
  .globl l0342
 l0342:
  .long 0
- .byte 71,0
+ .byte 69,0
  .globl l0343
 l0343:
  .long 0
- .byte 72,0
+ .byte 70,0
  .globl l0344
 l0344:
  .long 0
- .byte 73,0
+ .byte 71,0
  .globl l0345
 l0345:
  .long 0
- .byte 74,0
+ .byte 72,0
  .globl l0346
 l0346:
  .long 0
- .byte 75,0
+ .byte 73,0
  .globl l0347
 l0347:
  .long 0
- .byte 76,0
+ .byte 74,0
  .globl l0348
 l0348:
  .long 0
- .byte 77,0
+ .byte 75,0
  .globl l0349
 l0349:
  .long 0
- .byte 78,0
+ .byte 76,0
  .globl l0350
 l0350:
  .long 0
- .byte 79,0
+ .byte 77,0
  .globl l0351
 l0351:
  .long 0
- .byte 80,0
+ .byte 78,0
  .globl l0352
 l0352:
  .long 0
- .byte 81,0
+ .byte 79,0
  .globl l0353
 l0353:
  .long 0
- .byte 82,0
+ .byte 80,0
  .globl l0354
 l0354:
  .long 0
- .byte 83,0
+ .byte 81,0
  .globl l0355
 l0355:
  .long 0
- .byte 84,0
+ .byte 82,0
  .globl l0356
 l0356:
  .long 0
- .byte 85,0
+ .byte 83,0
  .globl l0357
 l0357:
  .long 0
- .byte 86,0
+ .byte 84,0
  .globl l0358
 l0358:
  .long 0
- .byte 87,0
+ .byte 85,0
  .globl l0359
 l0359:
  .long 0
- .byte 88,0
+ .byte 86,0
  .globl l0360
 l0360:
  .long 0
- .byte 89,0
+ .byte 87,0
  .globl l0361
 l0361:
  .long 0
- .byte 90,0
+ .byte 88,0
  .globl l0362
 l0362:
  .long 0
- .byte 91,0
+ .byte 89,0
  .globl l0363
 l0363:
  .long 0
- .byte 92,0
+ .byte 90,0
  .globl l0364
 l0364:
  .long 0
- .byte 93,0
+ .byte 91,0
  .globl l0365
 l0365:
  .long 0
- .byte 94,0
+ .byte 92,0
  .globl l0366
 l0366:
  .long 0
- .byte 95,0
+ .byte 93,0
  .globl l0367
 l0367:
  .long 0
- .byte 96,0
+ .byte 94,0
  .globl l0368
 l0368:
  .long 0
- .byte 97,0
+ .byte 95,0
  .globl l0369
 l0369:
  .long 0
- .byte 98,0
+ .byte 96,0
  .globl l0370
 l0370:
  .long 0
- .byte 99,0
+ .byte 97,0
  .globl l0371
 l0371:
  .long 0
- .byte 100,0
+ .byte 98,0
  .globl l0372
 l0372:
  .long 0
- .byte 101,0
+ .byte 99,0
  .globl l0373
 l0373:
  .long 0
- .byte 102,0
+ .byte 100,0
  .globl l0374
 l0374:
  .long 0
- .byte 103,0
+ .byte 101,0
  .globl l0375
 l0375:
  .long 0
- .byte 104,0
+ .byte 102,0
  .globl l0376
 l0376:
  .long 0
- .byte 105,0
+ .byte 103,0
  .globl l0377
 l0377:
  .long 0
- .byte 106,0
+ .byte 104,0
  .globl l0378
 l0378:
  .long 0
- .byte 107,0
+ .byte 105,0
  .globl l0379
 l0379:
  .long 0
- .byte 108,0
+ .byte 106,0
  .globl l0380
 l0380:
  .long 0
- .byte 109,0
+ .byte 107,0
  .globl l0381
 l0381:
  .long 0
- .byte 110,0
+ .byte 108,0
  .globl l0382
 l0382:
  .long 0
- .byte 111,0
+ .byte 109,0
  .globl l0383
 l0383:
  .long 0
- .byte 112,0
+ .byte 110,0
  .globl l0384
 l0384:
  .long 0
- .byte 113,0
+ .byte 111,0
  .globl l0385
 l0385:
  .long 0
- .byte 114,0
+ .byte 112,0
  .globl l0386
 l0386:
  .long 0
- .byte 115,0
+ .byte 113,0
  .globl l0387
 l0387:
  .long 0
- .byte 116,0
+ .byte 114,0
  .globl l0388
 l0388:
  .long 0
- .byte 117,0
+ .byte 115,0
  .globl l0389
 l0389:
  .long 0
- .byte 118,0
+ .byte 116,0
  .globl l0390
 l0390:
  .long 0
- .byte 119,0
+ .byte 117,0
  .globl l0391
 l0391:
  .long 0
- .byte 120,0
+ .byte 118,0
  .globl l0392
 l0392:
  .long 0
- .byte 121,0
+ .byte 119,0
  .globl l0393
 l0393:
  .long 0
- .byte 122,0
+ .byte 120,0
  .globl l0394
 l0394:
  .long 0
- .byte 123,0
+ .byte 121,0
  .globl l0395
 l0395:
  .long 0
- .byte 124,0
+ .byte 122,0
  .globl l0396
 l0396:
  .long 0
- .byte 125,0
+ .byte 123,0
  .globl l0397
 l0397:
  .long 0
- .byte 126,0
+ .byte 124,0
  .globl l0398
 l0398:
  .long 0
- .byte 127,0
+ .byte 125,0
  .globl l0399
 l0399:
- .long 2
- .byte 110,105,108,0
+ .long 0
+ .byte 126,0
  .globl l0400
 l0400:
  .long 0
- .byte -127,0
+ .byte 127,0
  .globl l0401
 l0401:
- .long 0
- .byte -126,0
+ .long 2
+ .byte 110,105,108,0
  .globl l0402
 l0402:
  .long 0
- .byte -125,0
+ .byte -127,0
  .globl l0403
 l0403:
  .long 0
- .byte -124,0
+ .byte -126,0
  .globl l0404
 l0404:
  .long 0
- .byte -123,0
+ .byte -125,0
  .globl l0405
 l0405:
  .long 0
- .byte -122,0
+ .byte -124,0
  .globl l0406
 l0406:
  .long 0
- .byte -121,0
+ .byte -123,0
  .globl l0407
 l0407:
  .long 0
- .byte -120,0
+ .byte -122,0
  .globl l0408
 l0408:
  .long 0
- .byte -119,0
+ .byte -121,0
  .globl l0409
 l0409:
  .long 0
- .byte -118,0
+ .byte -120,0
  .globl l0410
 l0410:
  .long 0
- .byte -117,0
+ .byte -119,0
  .globl l0411
 l0411:
  .long 0
- .byte -116,0
+ .byte -118,0
  .globl l0412
 l0412:
  .long 0
- .byte -115,0
+ .byte -117,0
  .globl l0413
 l0413:
  .long 0
- .byte -114,0
+ .byte -116,0
  .globl l0414
 l0414:
  .long 0
- .byte -113,0
+ .byte -115,0
  .globl l0415
 l0415:
  .long 0
- .byte -112,0
+ .byte -114,0
  .globl l0416
 l0416:
  .long 0
- .byte -111,0
+ .byte -113,0
  .globl l0417
 l0417:
  .long 0
- .byte -110,0
+ .byte -112,0
  .globl l0418
 l0418:
  .long 0
- .byte -109,0
+ .byte -111,0
  .globl l0419
 l0419:
  .long 0
- .byte -108,0
+ .byte -110,0
  .globl l0420
 l0420:
  .long 0
- .byte -107,0
+ .byte -109,0
  .globl l0421
 l0421:
  .long 0
- .byte -106,0
+ .byte -108,0
  .globl l0422
 l0422:
  .long 0
- .byte -105,0
+ .byte -107,0
  .globl l0423
 l0423:
  .long 0
- .byte -104,0
+ .byte -106,0
  .globl l0424
 l0424:
  .long 0
- .byte -103,0
+ .byte -105,0
  .globl l0425
 l0425:
  .long 0
- .byte -102,0
+ .byte -104,0
  .globl l0426
 l0426:
  .long 0
- .byte -101,0
+ .byte -103,0
  .globl l0427
 l0427:
  .long 0
- .byte -100,0
+ .byte -102,0
  .globl l0428
 l0428:
  .long 0
- .byte -99,0
+ .byte -101,0
  .globl l0429
 l0429:
  .long 0
- .byte -98,0
+ .byte -100,0
  .globl l0430
 l0430:
  .long 0
- .byte -97,0
+ .byte -99,0
  .globl l0431
 l0431:
  .long 0
- .byte -96,0
+ .byte -98,0
  .globl l0432
 l0432:
  .long 0
- .byte -95,0
+ .byte -97,0
  .globl l0433
 l0433:
  .long 0
- .byte -94,0
+ .byte -96,0
  .globl l0434
 l0434:
  .long 0
- .byte -93,0
+ .byte -95,0
  .globl l0435
 l0435:
  .long 0
- .byte -92,0
+ .byte -94,0
  .globl l0436
 l0436:
  .long 0
- .byte -91,0
+ .byte -93,0
  .globl l0437
 l0437:
  .long 0
- .byte -90,0
+ .byte -92,0
  .globl l0438
 l0438:
  .long 0
- .byte -89,0
+ .byte -91,0
  .globl l0439
 l0439:
  .long 0
- .byte -88,0
+ .byte -90,0
  .globl l0440
 l0440:
  .long 0
- .byte -87,0
+ .byte -89,0
  .globl l0441
 l0441:
  .long 0
- .byte -86,0
+ .byte -88,0
  .globl l0442
 l0442:
  .long 0
- .byte -85,0
+ .byte -87,0
  .globl l0443
 l0443:
  .long 0
- .byte -84,0
+ .byte -86,0
  .globl l0444
 l0444:
  .long 0
- .byte -83,0
+ .byte -85,0
  .globl l0445
 l0445:
  .long 0
- .byte -82,0
+ .byte -84,0
  .globl l0446
 l0446:
  .long 0
- .byte -81,0
+ .byte -83,0
  .globl l0447
 l0447:
  .long 0
- .byte -80,0
+ .byte -82,0
  .globl l0448
 l0448:
  .long 0
- .byte -79,0
+ .byte -81,0
  .globl l0449
 l0449:
  .long 0
- .byte -78,0
+ .byte -80,0
  .globl l0450
 l0450:
  .long 0
- .byte -77,0
+ .byte -79,0
  .globl l0451
 l0451:
  .long 0
- .byte -76,0
+ .byte -78,0
  .globl l0452
 l0452:
  .long 0
- .byte -75,0
+ .byte -77,0
  .globl l0453
 l0453:
  .long 0
- .byte -74,0
+ .byte -76,0
  .globl l0454
 l0454:
  .long 0
- .byte -73,0
+ .byte -75,0
  .globl l0455
 l0455:
  .long 0
- .byte -72,0
+ .byte -74,0
  .globl l0456
 l0456:
  .long 0
- .byte -71,0
+ .byte -73,0
  .globl l0457
 l0457:
  .long 0
- .byte -70,0
+ .byte -72,0
  .globl l0458
 l0458:
  .long 0
- .byte -69,0
+ .byte -71,0
  .globl l0459
 l0459:
  .long 0
- .byte -68,0
+ .byte -70,0
  .globl l0460
 l0460:
  .long 0
- .byte -67,0
+ .byte -69,0
  .globl l0461
 l0461:
  .long 0
- .byte -66,0
+ .byte -68,0
  .globl l0462
 l0462:
  .long 0
- .byte -65,0
+ .byte -67,0
  .globl l0463
 l0463:
  .long 0
- .byte -64,0
+ .byte -66,0
  .globl l0464
 l0464:
  .long 0
- .byte -63,0
+ .byte -65,0
  .globl l0465
 l0465:
  .long 0
- .byte -62,0
+ .byte -64,0
  .globl l0466
 l0466:
  .long 0
- .byte -61,0
+ .byte -63,0
  .globl l0467
 l0467:
  .long 0
- .byte -60,0
+ .byte -62,0
  .globl l0468
 l0468:
  .long 0
- .byte -59,0
+ .byte -61,0
  .globl l0469
 l0469:
  .long 0
- .byte -58,0
+ .byte -60,0
  .globl l0470
 l0470:
  .long 0
- .byte -57,0
+ .byte -59,0
  .globl l0471
 l0471:
  .long 0
- .byte -56,0
+ .byte -58,0
  .globl l0472
 l0472:
  .long 0
- .byte -55,0
+ .byte -57,0
  .globl l0473
 l0473:
  .long 0
- .byte -54,0
+ .byte -56,0
  .globl l0474
 l0474:
  .long 0
- .byte -53,0
+ .byte -55,0
  .globl l0475
 l0475:
  .long 0
- .byte -52,0
+ .byte -54,0
  .globl l0476
 l0476:
  .long 0
- .byte -51,0
+ .byte -53,0
  .globl l0477
 l0477:
  .long 0
- .byte -50,0
+ .byte -52,0
  .globl l0478
 l0478:
  .long 0
- .byte -49,0
+ .byte -51,0
  .globl l0479
 l0479:
  .long 0
- .byte -48,0
+ .byte -50,0
  .globl l0480
 l0480:
  .long 0
- .byte -47,0
+ .byte -49,0
  .globl l0481
 l0481:
  .long 0
- .byte -46,0
+ .byte -48,0
  .globl l0482
 l0482:
  .long 0
- .byte -45,0
+ .byte -47,0
  .globl l0483
 l0483:
  .long 0
- .byte -44,0
+ .byte -46,0
  .globl l0484
 l0484:
  .long 0
- .byte -43,0
+ .byte -45,0
  .globl l0485
 l0485:
  .long 0
- .byte -42,0
+ .byte -44,0
  .globl l0486
 l0486:
  .long 0
- .byte -41,0
+ .byte -43,0
  .globl l0487
 l0487:
  .long 0
- .byte -40,0
+ .byte -42,0
  .globl l0488
 l0488:
  .long 0
- .byte -39,0
+ .byte -41,0
  .globl l0489
 l0489:
  .long 0
- .byte -38,0
+ .byte -40,0
  .globl l0490
 l0490:
  .long 0
- .byte -37,0
+ .byte -39,0
  .globl l0491
 l0491:
  .long 0
- .byte -36,0
+ .byte -38,0
  .globl l0492
 l0492:
  .long 0
- .byte -35,0
+ .byte -37,0
  .globl l0493
 l0493:
  .long 0
- .byte -34,0
+ .byte -36,0
  .globl l0494
 l0494:
  .long 0
- .byte -33,0
+ .byte -35,0
  .globl l0495
 l0495:
  .long 0
- .byte -32,0
+ .byte -34,0
  .globl l0496
 l0496:
  .long 0
- .byte -31,0
+ .byte -33,0
  .globl l0497
 l0497:
  .long 0
- .byte -30,0
+ .byte -32,0
  .globl l0498
 l0498:
  .long 0
- .byte -29,0
+ .byte -31,0
  .globl l0499
 l0499:
  .long 0
- .byte -28,0
+ .byte -30,0
  .globl l0500
 l0500:
  .long 0
- .byte -27,0
+ .byte -29,0
  .globl l0501
 l0501:
  .long 0
- .byte -26,0
+ .byte -28,0
  .globl l0502
 l0502:
  .long 0
- .byte -25,0
+ .byte -27,0
  .globl l0503
 l0503:
  .long 0
- .byte -24,0
+ .byte -26,0
  .globl l0504
 l0504:
  .long 0
- .byte -23,0
+ .byte -25,0
  .globl l0505
 l0505:
  .long 0
- .byte -22,0
+ .byte -24,0
  .globl l0506
 l0506:
  .long 0
- .byte -21,0
+ .byte -23,0
  .globl l0507
 l0507:
  .long 0
- .byte -20,0
+ .byte -22,0
  .globl l0508
 l0508:
  .long 0
- .byte -19,0
+ .byte -21,0
  .globl l0509
 l0509:
  .long 0
- .byte -18,0
+ .byte -20,0
  .globl l0510
 l0510:
  .long 0
- .byte -17,0
+ .byte -19,0
  .globl l0511
 l0511:
  .long 0
- .byte -16,0
+ .byte -18,0
  .globl l0512
 l0512:
  .long 0
- .byte -15,0
+ .byte -17,0
  .globl l0513
 l0513:
  .long 0
- .byte -14,0
+ .byte -16,0
  .globl l0514
 l0514:
  .long 0
- .byte -13,0
+ .byte -15,0
  .globl l0515
 l0515:
  .long 0
- .byte -12,0
+ .byte -14,0
  .globl l0516
 l0516:
  .long 0
- .byte -11,0
+ .byte -13,0
  .globl l0517
 l0517:
  .long 0
- .byte -10,0
+ .byte -12,0
  .globl l0518
 l0518:
  .long 0
- .byte -9,0
+ .byte -11,0
  .globl l0519
 l0519:
  .long 0
- .byte -8,0
+ .byte -10,0
  .globl l0520
 l0520:
  .long 0
- .byte -7,0
+ .byte -9,0
  .globl l0521
 l0521:
  .long 0
- .byte -6,0
+ .byte -8,0
  .globl l0522
 l0522:
  .long 0
- .byte -5,0
+ .byte -7,0
  .globl l0523
 l0523:
  .long 0
- .byte -4,0
+ .byte -6,0
  .globl l0524
 l0524:
  .long 0
- .byte -3,0
+ .byte -5,0
  .globl l0525
 l0525:
  .long 0
- .byte -2,0
+ .byte -4,0
  .globl l0526
 l0526:
  .long 0
- .byte -1,0
+ .byte -3,0
  .globl l0527
 l0527:
+ .long 0
+ .byte -2,0
+ .globl l0528
+l0528:
+ .long 0
+ .byte -1,0
+ .globl l0529
+l0529:
  .long 10
  .byte 102,105,114,115,116,107,101,114,110
  .byte 101,108,0
- .globl l0528
-l0528:
+ .globl l0530
+l0530:
  .long 4
  .byte 115,116,97,99,107,0
- .globl l0529
-l0529:
+ .globl l0531
+l0531:
  .long 12
  .byte 97,114,103,117,109,101,110,116,98,108
  .byte 111,99,107,0
- .globl l0530
-l0530:
+ .globl l0532
+l0532:
  .long 10
  .byte 116,111,107,101,110,98,117,102,102
  .byte 101,114,0
- .globl l0531
-l0531:
+ .globl l0533
+l0533:
  .long 5
  .byte 98,110,100,115,116,107,0,0
- .globl l0532
-l0532:
+ .globl l0534
+l0534:
  .long 9
  .byte 99,97,116,99,104,115,116,97,99,107
  .byte 0,0
- .globl l0533
-l0533:
+ .globl l0535
+l0535:
  .long 8
  .byte 104,97,115,104,116,97,98,108,101,0
- .globl l0534
-l0534:
+ .globl l0536
+l0536:
  .long 12
  .byte 111,110,101,119,111,114,100,98,117
  .byte 102,102,101,114,0
- .globl l0535
-l0535:
- .long 7
- .byte 115,97,118,101,97,114,103,99,0,0
- .globl l0536
-l0536:
- .long 7
- .byte 115,97,118,101,97,114,103,118,0,0
  .globl l0537
 l0537:
+ .long 7
+ .byte 115,97,118,101,97,114,103,99,0,0
+ .globl l0538
+l0538:
+ .long 7
+ .byte 115,97,118,101,97,114,103,118,0,0
+ .globl l0539
+l0539:
  .long 9
  .byte 100,97,116,101,98,117,102,102,101,114
  .byte 0,0
- .globl l0538
-l0538:
+ .globl l0540
+l0540:
  .long 12
  .byte 105,110,105,116,45,112,111,105,110
  .byte 116,101,114,115,0
- .globl l0539
-l0539:
+ .globl l0541
+l0541:
  .long 12
  .byte 99,97,116,99,104,115,116,97,99,107
  .byte 112,116,114,0
- .globl l0540
-l0540:
+ .globl l0542
+l0542:
  .long 15
  .byte 98,110,100,115,116,107,108,111,119
  .byte 101,114,98,111,117,110,100,0,0
- .globl l0541
-l0541:
+ .globl l0543
+l0543:
  .long 15
  .byte 98,110,100,115,116,107,117,112,112
  .byte 101,114,98,111,117,110,100,0,0
- .globl l0542
-l0542:
+ .globl l0544
+l0544:
  .long 8
  .byte 98,110,100,115,116,107,112,116,114
  .byte 0
- .globl l0543
-l0543:
+ .globl l0545
+l0545:
  .long 13
  .byte 104,101,97,112,108,111,119,101,114
  .byte 98,111,117,110,100,0,0
- .globl l0544
-l0544:
+ .globl l0546
+l0546:
  .long 3
  .byte 104,101,97,112,0,0
- .globl l0545
-l0545:
+ .globl l0547
+l0547:
  .long 10
  .byte 105,110,105,116,45,102,108,117,105
  .byte 100,115,0
- .globl l0546
-l0546:
+ .globl l0548
+l0548:
  .long 16
  .byte 103,99,97,114,114,97,121,108,111,119
  .byte 101,114,98,111,117,110,100,0
- .globl l0547
-l0547:
+ .globl l0549
+l0549:
  .long 16
  .byte 103,99,97,114,114,97,121,117,112,112
  .byte 101,114,98,111,117,110,100,0
- .globl l0548
-l0548:
+ .globl l0550
+l0550:
  .long 7
  .byte 104,101,97,112,108,97,115,116,0,0
- .globl l0549
-l0549:
+ .globl l0551
+l0551:
  .long 10
  .byte 111,108,100,104,101,97,112,108,97,115
  .byte 116,0
- .globl l0550
-l0550:
+ .globl l0552
+l0552:
  .long 12
  .byte 104,101,97,112,116,114,97,112,98,111
  .byte 117,110,100,0
- .globl l0551
-l0551:
+ .globl l0553
+l0553:
  .long 15
  .byte 111,108,100,104,101,97,112,116,114
  .byte 97,112,98,111,117,110,100,0,0
- .globl l0552
-l0552:
+ .globl l0554
+l0554:
  .long 13
  .byte 104,101,97,112,117,112,112,101,114
  .byte 98,111,117,110,100,0,0
- .globl l0553
-l0553:
+ .globl l0555
+l0555:
  .long 13
  .byte 95,105,110,102,98,105,116,108,101,110
  .byte 103,116,104,95,0,0
- .globl l0554
-l0554:
+ .globl l0556
+l0556:
  .long 6
  .byte 108,97,115,116,98,112,115,0
- .globl l0555
-l0555:
+ .globl l0557
+l0557:
  .long 12
  .byte 98,112,115,108,111,119,101,114,98,111
  .byte 117,110,100,0
- .globl l0556
-l0556:
+ .globl l0558
+l0558:
  .long 18
  .byte 109,97,105,110,115,116,97,114,116,105
  .byte 110,105,116,105,97,108,105,122,101
  .byte 0
- .globl l0557
-l0557:
+ .globl l0559
+l0559:
  .long 6
  .byte 110,101,120,116,98,112,115,0
- .globl l0558
-l0558:
+ .globl l0560
+l0560:
  .long 16
  .byte 111,108,100,104,101,97,112,117,112
  .byte 112,101,114,98,111,117,110,100,0
- .globl l0559
-l0559:
+ .globl l0561
+l0561:
  .long 16
  .byte 111,108,100,104,101,97,112,108,111
  .byte 119,101,114,98,111,117,110,100,0
- .globl l0560
-l0560:
+ .globl l0562
+l0562:
  .long 14
  .byte 115,116,97,99,107,117,112,112,101,114
  .byte 98,111,117,110,100,0
- .globl l0561
-l0561:
+ .globl l0563
+l0563:
  .long 8
  .byte 117,110,105,120,115,116,100,105,110
  .byte 0
- .globl l0562
-l0562:
+ .globl l0564
+l0564:
  .long 9
  .byte 117,110,105,120,115,116,100,111,117
  .byte 116,0,0
- .globl l0563
-l0563:
+ .globl l0565
+l0565:
  .long 9
  .byte 117,110,105,120,115,116,100,101,114
  .byte 114,0,0
- .globl l0564
-l0564:
- .long 7
- .byte 117,110,105,120,110,117,108,108,0,0
- .globl l0565
-l0565:
- .long 6
- .byte 117,110,105,120,101,111,102,0
  .globl l0566
 l0566:
- .long 6
- .byte 117,110,105,120,116,116,121,0
+ .long 7
+ .byte 117,110,105,120,110,117,108,108,0,0
  .globl l0567
 l0567:
+ .long 6
+ .byte 117,110,105,120,101,111,102,0
+ .globl l0568
+l0568:
+ .long 6
+ .byte 117,110,105,120,116,116,121,0
+ .globl l0569
+l0569:
  .long 16
  .byte 42,42,42,109,117,115,116,45,98,101
  .byte 45,110,105,108,42,42,42,0
- .globl l0568
-l0568:
+ .globl l0570
+l0570:
  .long 20
  .byte 42,42,42,109,117,115,116,45,98,101
  .byte 45,110,105,108,45,116,111,111,42,42
  .byte 42,0
- .globl l0569
-l0569:
- .long 7
- .byte 42,102,97,115,116,99,97,114,0,0
- .globl l0570
-l0570:
- .long 8
- .byte 95,112,115,108,95,109,97,105,110,0
  .globl l0571
 l0571:
- .long 3
- .byte 97,114,103,99,0,0
+ .long 7
+ .byte 42,102,97,115,116,99,97,114,0,0
  .globl l0572
 l0572:
- .long 3
- .byte 97,114,103,118,0,0
+ .long 8
+ .byte 95,112,115,108,95,109,97,105,110,0
  .globl l0573
 l0573:
- .long 14
- .byte 111,115,95,115,116,97,114,116,117,112
- .byte 95,104,111,111,107,0
+ .long 3
+ .byte 97,114,103,99,0,0
  .globl l0574
 l0574:
- .long 7
- .byte 101,98,120,115,97,118,101,42,0,0
+ .long 3
+ .byte 97,114,103,118,0,0
  .globl l0575
 l0575:
  .long 14
- .byte 115,116,97,99,107,108,111,119,101,114
- .byte 98,111,117,110,100,0
+ .byte 111,115,95,115,116,97,114,116,117,112
+ .byte 95,104,111,111,107,0
  .globl l0576
 l0576:
+ .long 7
+ .byte 101,98,120,115,97,118,101,42,0,0
+ .globl l0577
+l0577:
+ .long 14
+ .byte 115,116,97,99,107,108,111,119,101,114
+ .byte 98,111,117,110,100,0
+ .globl l0578
+l0578:
  .long 11
  .byte 105,110,105,116,45,103,99,97,114,114
  .byte 97,121,0,0
- .globl l0577
-l0577:
+ .globl l0579
+l0579:
  .long 7
  .byte 112,114,101,45,109,97,105,110,0,0
- .globl l0578
-l0578:
+ .globl l0580
+l0580:
  .long 15
  .byte 101,120,105,116,45,119,105,116,104
  .byte 45,115,116,97,116,117,115,0,0
- .globl l0579
-l0579:
+ .globl l0581
+l0581:
  .long 14
  .byte 111,115,95,99,108,101,97,110,117,112
  .byte 95,104,111,111,107,0
- .globl l0580
-l0580:
+ .globl l0582
+l0582:
  .long 12
  .byte 101,120,116,101,114,110,97,108,95,101
  .byte 120,105,116,0
- .globl l0581
-l0581:
- .long 8
- .byte 95,114,101,100,117,99,101,117,112,0
- .globl l0582
-l0582:
- .long 7
- .byte 114,101,100,117,99,101,117,112,0,0
  .globl l0583
 l0583:
- .long 9
- .byte 115,116,114,105,110,103,111,112,101
- .byte 110,0,0
+ .long 8
+ .byte 95,114,101,100,117,99,101,117,112,0
  .globl l0584
 l0584:
- .long 5
- .byte 98,101,103,105,110,49,0,0
+ .long 7
+ .byte 114,101,100,117,99,101,117,112,0,0
  .globl l0585
 l0585:
  .long 9
- .byte 42,108,105,115,112,95,104,111,111,107
- .byte 0,0
+ .byte 115,116,114,105,110,103,111,112,101
+ .byte 110,0,0
  .globl l0586
 l0586:
- .long 2
- .byte 114,100,115,0
+ .long 5
+ .byte 98,101,103,105,110,49,0,0
  .globl l0587
 l0587:
- .long 2
- .byte 119,114,115,0
+ .long 9
+ .byte 42,108,105,115,112,95,104,111,111,107
+ .byte 0,0
  .globl l0588
 l0588:
- .long 4
- .byte 99,108,111,115,101,0
+ .long 2
+ .byte 114,100,115,0
  .globl l0589
 l0589:
+ .long 2
+ .byte 119,114,115,0
+ .globl l0590
+l0590:
+ .long 4
+ .byte 99,108,111,115,101,0
+ .globl l0591
+l0591:
  .long 10
  .byte 117,110,105,120,99,108,101,97,114,105
  .byte 111,0
- .globl l0590
-l0590:
+ .globl l0592
+l0592:
  .long 22
  .byte 105,110,105,116,105,97,108,105,122
  .byte 101,45,115,121,109,98,111,108,45,116
  .byte 97,98,108,101,0
- .globl l0591
-l0591:
+ .globl l0593
+l0593:
  .long 7
  .byte 105,110,105,116,99,111,100,101,0,0
- .globl l0592
-l0592:
+ .globl l0594
+l0594:
  .long 19
  .byte 99,111,110,115,111,108,101,45,112,114
  .byte 105,110,116,45,115,116,114,105,110
  .byte 103,0,0
- .globl l0593
-l0593:
+ .globl l0595
+l0595:
  .long 14
  .byte 99,111,110,115,111,108,101,45,110,101
  .byte 119,108,105,110,101,0
- .globl l0594
-l0594:
+ .globl l0596
+l0596:
  .long 5
  .byte 102,97,115,108,105,110,0,0
- .globl l0595
-l0595:
+ .globl l0597
+l0597:
  .long 10
  .byte 108,111,97,100,101,114,45,109,97,105
  .byte 110,0
- .globl l0596
-l0596:
+ .globl l0598
+l0598:
  .long 7
  .byte 117,110,105,120,112,117,116,115,0,0
- .globl l0597
-l0597:
+ .globl l0599
+l0599:
  .long 19
  .byte 99,111,110,115,111,108,101,45,112,114
  .byte 105,110,116,45,110,117,109,98,101,114
  .byte 0,0
- .globl l0598
-l0598:
- .long 7
- .byte 117,110,105,120,112,117,116,110,0,0
- .globl l0599
-l0599:
- .long 7
- .byte 117,110,105,120,112,117,116,99,0,0
  .globl l0600
 l0600:
- .long 13
- .byte 98,105,110,97,114,121,111,112,101,110
- .byte 114,101,97,100,0,0
+ .long 7
+ .byte 117,110,105,120,112,117,116,110,0,0
  .globl l0601
 l0601:
  .long 7
- .byte 117,110,105,120,111,112,101,110,0,0
+ .byte 117,110,105,120,112,117,116,99,0,0
  .globl l0602
 l0602:
+ .long 13
+ .byte 98,105,110,97,114,121,111,112,101,110
+ .byte 114,101,97,100,0,0
+ .globl l0603
+l0603:
+ .long 7
+ .byte 117,110,105,120,111,112,101,110,0,0
+ .globl l0604
+l0604:
  .long 17
  .byte 107,101,114,110,101,108,45,102,97,116
  .byte 97,108,45,101,114,114,111,114,0,0
- .globl l0603
-l0603:
+ .globl l0605
+l0605:
  .long 9
  .byte 98,105,110,97,114,121,114,101,97,100
  .byte 0,0
- .globl l0604
-l0604:
+ .globl l0606
+l0606:
  .long 3
  .byte 103,101,116,119,0,0
- .globl l0605
-l0605:
+ .globl l0607
+l0607:
  .long 14
  .byte 98,105,110,97,114,121,114,101,97,100
  .byte 98,108,111,99,107,0
- .globl l0606
-l0606:
+ .globl l0608
+l0608:
  .long 4
  .byte 102,114,101,97,100,0
- .globl l0607
-l0607:
+ .globl l0609
+l0609:
  .long 10
  .byte 98,105,110,97,114,121,99,108,111,115
  .byte 101,0
- .globl l0608
-l0608:
- .long 5
- .byte 102,99,108,111,115,101,0,0
- .globl l0609
-l0609:
- .long 9
- .byte 110,101,120,116,115,121,109,98,111
- .byte 108,0,0
  .globl l0610
 l0610:
  .long 5
- .byte 115,121,109,110,97,109,0,0
+ .byte 102,99,108,111,115,101,0,0
  .globl l0611
 l0611:
+ .long 9
+ .byte 110,101,120,116,115,121,109,98,111
+ .byte 108,0,0
+ .globl l0612
+l0612:
+ .long 5
+ .byte 115,121,109,110,97,109,0,0
+ .globl l0613
+l0613:
  .long 14
  .byte 104,97,115,104,45,105,110,116,111,45
  .byte 116,97,98,108,101,0
- .globl l0612
-l0612:
+ .globl l0614
+l0614:
  .long 11
  .byte 115,104,111,119,45,110,101,119,45,105
  .byte 100,115,0,0
- .globl l0613
-l0613:
+ .globl l0615
+l0615:
  .long 12
  .byte 102,97,115,108,105,110,45,105,110,116
  .byte 101,114,110,0
- .globl l0614
-l0614:
+ .globl l0616
+l0616:
  .long 26
  .byte 115,101,97,114,99,104,45,115,116,114
  .byte 105,110,103,45,102,111,114,45,99,104
  .byte 97,114,97,99,116,101,114,0
- .globl l0615
-l0615:
- .long 5
- .byte 105,110,116,101,114,110,0,0
- .globl l0616
-l0616:
- .long 5
- .byte 115,117,98,115,101,113,0,0
  .globl l0617
 l0617:
+ .long 5
+ .byte 105,110,116,101,114,110,0,0
+ .globl l0618
+l0618:
+ .long 5
+ .byte 115,117,98,115,101,113,0,0
+ .globl l0619
+l0619:
  .long 22
  .byte 117,110,99,104,101,99,107,101,100,45
  .byte 115,116,114,105,110,103,45,105,110
  .byte 116,101,114,110,0
- .globl l0618
-l0618:
+ .globl l0620
+l0620:
  .long 3
  .byte 103,116,105,100,0,0
- .globl l0619
-l0619:
+ .globl l0621
+l0621:
  .long 9
  .byte 103,116,99,111,110,115,116,115,116
  .byte 114,0,0
- .globl l0620
-l0620:
+ .globl l0622
+l0622:
  .long 15
  .byte 99,111,112,121,115,116,114,105,110
  .byte 103,116,111,102,114,111,109,0,0
- .globl l0621
-l0621:
+ .globl l0623
+l0623:
  .long 16
  .byte 105,110,105,116,105,97,108,105,122
  .byte 101,45,110,101,119,45,105,100,0
- .globl l0622
-l0622:
+ .globl l0624
+l0624:
  .long 12
  .byte 104,97,115,104,45,102,117,110,99,116
  .byte 105,111,110,0
- .globl l0623
-l0623:
+ .globl l0625
+l0625:
  .long 21
  .byte 117,110,99,104,101,99,107,101,100,45
  .byte 115,116,114,105,110,103,45,101,113
  .byte 117,97,108,0,0
- .globl l0624
-l0624:
- .long 5
- .byte 115,121,109,112,114,112,0,0
- .globl l0625
-l0625:
- .long 5
- .byte 115,121,109,103,101,116,0,0
  .globl l0626
 l0626:
  .long 5
- .byte 115,121,109,118,97,108,0,0
+ .byte 115,121,109,112,114,112,0,0
  .globl l0627
 l0627:
+ .long 5
+ .byte 115,121,109,103,101,116,0,0
+ .globl l0628
+l0628:
+ .long 5
+ .byte 115,121,109,118,97,108,0,0
+ .globl l0629
+l0629:
  .long 11
  .byte 112,108,97,110,116,117,110,98,111,117
  .byte 110,100,0,0
- .globl l0628
-l0628:
+ .globl l0630
+l0630:
  .long 14
  .byte 102,97,115,108,105,110,45,98,97,100
  .byte 45,102,105,108,101,0
- .globl l0629
-l0629:
+ .globl l0631
+l0631:
  .long 12
  .byte 114,101,97,100,45,105,100,45,116,97
  .byte 98,108,101,0
- .globl l0630
-l0630:
- .long 4
- .byte 103,116,98,112,115,0
- .globl l0631
-l0631:
- .long 5
- .byte 103,116,119,114,100,115,0,0
  .globl l0632
 l0632:
+ .long 4
+ .byte 103,116,98,112,115,0
+ .globl l0633
+l0633:
+ .long 5
+ .byte 103,116,119,114,100,115,0,0
+ .globl l0634
+l0634:
  .long 16
  .byte 100,111,45,114,101,108,111,99,97,116
  .byte 105,111,110,45,110,101,119,0
- .globl l0633
-l0633:
- .long 12
- .byte 100,111,45,114,101,108,111,99,97,116
- .byte 105,111,110,0
- .globl l0634
-l0634:
- .long 13
- .byte 99,111,100,101,45,98,97,115,101,45
- .byte 104,97,99,107,0,0
  .globl l0635
 l0635:
  .long 12
- .byte 97,100,100,114,101,115,115,97,112,112
- .byte 108,121,48,0
+ .byte 100,111,45,114,101,108,111,99,97,116
+ .byte 105,111,110,0
  .globl l0636
 l0636:
- .long 5
- .byte 100,101,108,98,112,115,0,0
+ .long 13
+ .byte 99,111,100,101,45,98,97,115,101,45
+ .byte 104,97,99,107,0,0
  .globl l0637
 l0637:
- .long 7
- .byte 98,105,116,116,97,98,108,101,0,0
+ .long 12
+ .byte 97,100,100,114,101,115,115,97,112,112
+ .byte 108,121,48,0
  .globl l0638
 l0638:
+ .long 5
+ .byte 100,101,108,98,112,115,0,0
+ .globl l0639
+l0639:
+ .long 7
+ .byte 98,105,116,116,97,98,108,101,0,0
+ .globl l0640
+l0640:
  .long 12
  .byte 114,101,108,111,99,97,116,101,45,119
  .byte 111,114,100,0
- .globl l0639
-l0639:
+ .globl l0641
+l0641:
  .long 11
  .byte 114,101,108,111,99,97,116,101,45,105
  .byte 110,102,0,0
- .globl l0640
-l0640:
+ .globl l0642
+l0642:
  .long 18
  .byte 114,101,108,111,99,97,116,101,45,114
  .byte 105,103,104,116,45,104,97,108,102,0
- .globl l0641
-l0641:
+ .globl l0643
+l0643:
  .long 17
  .byte 99,111,109,112,117,116,101,45,114,101
  .byte 108,111,99,97,116,105,111,110,0,0
- .globl l0642
-l0642:
+ .globl l0644
+l0644:
  .long 17
  .byte 108,111,99,97,108,45,116,111,45,103
  .byte 108,111,98,97,108,45,105,100,0,0
- .globl l0643
-l0643:
- .long 5
- .byte 115,121,109,102,110,99,0,0
- .globl l0644
-l0644:
- .long 3
- .byte 112,117,116,100,0,0
  .globl l0645
 l0645:
- .long 7
- .byte 112,117,116,101,110,116,114,121,0,0
+ .long 5
+ .byte 115,121,109,102,110,99,0,0
  .globl l0646
 l0646:
+ .long 3
+ .byte 112,117,116,100,0,0
+ .globl l0647
+l0647:
+ .long 7
+ .byte 112,117,116,101,110,116,114,121,0,0
+ .globl l0648
+l0648:
  .long 19
  .byte 116,114,121,45,111,116,104,101,114
  .byte 45,98,112,115,45,115,112,97,99,101
  .byte 115,0,0
- .globl l0647
-l0647:
+ .globl l0649
+l0649:
  .long 14
  .byte 103,116,98,112,115,45,110,105,108,45
  .byte 101,114,114,111,114,0
- .globl l0648
-l0648:
- .long 3
- .byte 103,101,116,100,0,0
- .globl l0649
-l0649:
- .long 7
- .byte 115,116,100,101,114,114,111,114,0,0
  .globl l0650
 l0650:
- .long 5
- .byte 103,116,104,101,97,112,0,0
+ .long 3
+ .byte 103,101,116,100,0,0
  .globl l0651
 l0651:
+ .long 7
+ .byte 115,116,100,101,114,114,111,114,0,0
+ .globl l0652
+l0652:
+ .long 5
+ .byte 103,116,104,101,97,112,0,0
+ .globl l0653
+l0653:
  .long 15
  .byte 107,110,111,119,110,45,102,114,101
  .byte 101,45,115,112,97,99,101,0,0
- .globl l0652
-l0652:
+ .globl l0654
+l0654:
  .long 10
  .byte 114,101,97,108,45,103,116,104,101,97
  .byte 112,0
- .globl l0653
-l0653:
+ .globl l0655
+l0655:
  .long 12
  .byte 103,101,116,45,104,101,97,112,45,116
  .byte 114,97,112,0
- .globl l0654
-l0654:
- .long 6
- .byte 114,101,99,108,97,105,109,0
- .globl l0655
-l0655:
- .long 4
- .byte 103,116,115,116,114,0
  .globl l0656
 l0656:
- .long 3
- .byte 99,111,110,115,0,0
+ .long 6
+ .byte 114,101,99,108,97,105,109,0
  .globl l0657
 l0657:
+ .long 4
+ .byte 103,116,115,116,114,0
+ .globl l0658
+l0658:
+ .long 3
+ .byte 99,111,110,115,0,0
+ .globl l0659
+l0659:
  .long 10
  .byte 105,110,116,101,114,114,111,103,97
  .byte 116,101,0
- .globl l0658
-l0658:
- .long 5
- .byte 109,111,100,105,102,121,0,0
- .globl l0659
-l0659:
- .long 2
- .byte 112,117,116,0
  .globl l0660
 l0660:
+ .long 5
+ .byte 109,111,100,105,102,121,0,0
+ .globl l0661
+l0661:
+ .long 2
+ .byte 112,117,116,0
+ .globl l0662
+l0662:
  .long 12
  .byte 117,110,99,104,101,99,107,101,100,45
  .byte 112,117,116,0
- .globl l0661
-l0661:
+ .globl l0663
+l0663:
  .long 13
  .byte 117,110,99,104,101,99,107,101,100,45
  .byte 112,114,111,112,0,0
- .globl l0662
-l0662:
+ .globl l0664
+l0664:
  .long 4
  .byte 97,116,115,111,99,0
- .globl l0663
-l0663:
+ .globl l0665
+l0665:
  .long 16
  .byte 117,110,99,104,101,99,107,101,100,45
  .byte 115,101,116,112,114,111,112,0
- .globl l0664
-l0664:
- .long 8
- .byte 99,111,100,101,45,112,117,116,100,0
- .globl l0665
-l0665:
- .long 3
- .byte 101,120,112,114,0,0
  .globl l0666
 l0666:
- .long 3
- .byte 116,121,112,101,0,0
+ .long 8
+ .byte 99,111,100,101,45,112,117,116,100,0
  .globl l0667
 l0667:
+ .long 3
+ .byte 101,120,112,114,0,0
+ .globl l0668
+l0668:
+ .long 3
+ .byte 116,121,112,101,0,0
+ .globl l0669
+l0669:
  .long 15
  .byte 112,108,97,110,116,99,111,100,101,112
  .byte 111,105,110,116,101,114,0,0
- .globl l0668
-l0668:
- .long 4
- .byte 102,108,117,105,100,0
- .globl l0669
-l0669:
- .long 5
- .byte 102,108,117,105,100,49,0,0
  .globl l0670
 l0670:
- .long 6
- .byte 118,97,114,116,121,112,101,0
+ .long 4
+ .byte 102,108,117,105,100,0
  .globl l0671
 l0671:
- .long 8
- .byte 99,111,110,115,116,97,110,116,63,0
+ .long 5
+ .byte 102,108,117,105,100,49,0,0
  .globl l0672
 l0672:
+ .long 6
+ .byte 118,97,114,116,121,112,101,0
+ .globl l0673
+l0673:
+ .long 8
+ .byte 99,111,110,115,116,97,110,116,63,0
+ .globl l0674
+l0674:
  .long 15
  .byte 42,100,101,102,105,110,101,45,99,111
  .byte 110,115,116,97,110,116,0,0
- .globl l0673
-l0673:
+ .globl l0675
+l0675:
  .long 14
  .byte 112,108,97,110,116,108,97,109,98,100
  .byte 97,108,105,110,107,0
- .globl l0674
-l0674:
+ .globl l0676
+l0676:
  .long 16
  .byte 117,110,100,101,102,105,110,101,100
  .byte 102,117,110,99,116,105,111,110,0
- .globl l0675
-l0675:
+ .globl l0677
+l0677:
  .long 20
  .byte 117,110,100,101,102,105,110,101,100
  .byte 102,117,110,99,116,105,111,110,45,97
  .byte 117,120,0
- .globl l0676
-l0676:
+ .globl l0678
+l0678:
  .long 25
  .byte 99,111,109,112,105,108,101,100,99,97
  .byte 108,108,105,110,103,105,110,116,101
  .byte 114,112,114,101,116,101,100,0,0
- .globl l0677
-l0677:
+ .globl l0679
+l0679:
  .long 8
  .byte 99,111,100,101,102,111,114,109,42,0
- .globl l0678
-l0678:
+ .globl l0680
+l0680:
  .long 28
  .byte 99,111,109,112,105,108,101,100,99,97
  .byte 108,108,105,110,103,105,110,116,101
  .byte 114,112,114,101,116,101,100,97,117
  .byte 120,0
- .globl l0679
-l0679:
- .long 5
- .byte 101,99,104,111,111,110,0,0
- .globl l0680
-l0680:
- .long 6
- .byte 101,99,104,111,111,102,102,0
  .globl l0681
 l0681:
+ .long 6
+ .byte 101,99,104,111,111,102,102,0
+ .globl l0682
+l0682:
+ .long 5
+ .byte 101,99,104,111,111,110,0,0
+ .globl l0683
+l0683:
  .long 26
  .byte 101,120,116,101,114,110,97,108,95,99
  .byte 104,97,114,115,105,110,105,110,112
  .byte 117,116,98,117,102,102,101,114,0
- .globl l0682
-l0682:
+ .globl l0684
+l0684:
  .long 19
  .byte 102,108,117,115,104,115,116,100,111
  .byte 117,116,112,117,116,98,117,102,102
  .byte 101,114,0,0
- .globl l0683
-l0683:
+ .globl l0685
+l0685:
  .long 27
  .byte 101,120,116,101,114,110,97,108,95,117
  .byte 115,101,114,95,104,111,109,101,100
  .byte 105,114,95,115,116,114,105,110,103
  .byte 0,0
- .globl l0684
-l0684:
+ .globl l0686
+l0686:
  .long 30
  .byte 101,120,116,101,114,110,97,108,95,97
  .byte 110,121,117,115,101,114,95,104,111
  .byte 109,101,100,105,114,95,115,116,114
  .byte 105,110,103,0
- .globl l0685
-l0685:
+ .globl l0687
+l0687:
+ .long 5
+ .byte 117,110,101,120,101,99,0,0
+ .globl l0688
+l0688:
  .long 12
  .byte 97,108,116,101,114,104,101,97,112,115
  .byte 105,122,101,0
- .globl l0686
-l0686:
- .long 14
- .byte 97,108,108,111,99,97,116,101,109,111
- .byte 114,101,98,112,115,0
- .globl l0687
-l0687:
- .long 16
- .byte 103,101,116,95,105,109,97,103,101,102
- .byte 105,108,101,112,97,116,104,0
- .globl l0688
-l0688:
- .long 5
- .byte 117,110,101,120,101,99,0,0
  .globl l0689
 l0689:
  .long 14
- .byte 103,101,116,95,102,105,108,101,95,115
- .byte 116,97,116,117,115,0
+ .byte 97,108,108,111,99,97,116,101,109,111
+ .byte 114,101,98,112,115,0
  .globl l0690
 l0690:
+ .long 16
+ .byte 103,101,116,95,105,109,97,103,101,102
+ .byte 105,108,101,112,97,116,104,0
+ .globl l0691
+l0691:
+ .long 14
+ .byte 103,101,116,95,102,105,108,101,95,115
+ .byte 116,97,116,117,115,0
+ .globl l0692
+l0692:
  .long 15
  .byte 103,101,116,95,101,120,101,99,102,105
  .byte 108,101,112,97,116,104,0,0
- .globl l0691
-l0691:
+ .globl l0693
+l0693:
  .long 13
  .byte 101,120,116,101,114,110,97,108,95,97
  .byte 108,97,114,109,0,0
- .globl l0692
-l0692:
+ .globl l0694
+l0694:
  .long 14
  .byte 101,120,116,101,114,110,97,108,95,117
  .byte 97,108,97,114,109,0
- .globl l0693
-l0693:
- .long 12
- .byte 101,120,116,101,114,110,97,108,95,116
- .byte 105,109,101,0
- .globl l0694
-l0694:
- .long 12
- .byte 101,120,116,101,114,110,97,108,95,116
- .byte 105,109,99,0
  .globl l0695
 l0695:
  .long 12
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 116,97,116,0
+ .byte 101,120,116,101,114,110,97,108,95,116
+ .byte 105,109,101,0
  .globl l0696
 l0696:
  .long 12
- .byte 101,120,116,101,114,110,97,108,95,108
- .byte 105,110,107,0
+ .byte 101,120,116,101,114,110,97,108,95,116
+ .byte 105,109,99,0
  .globl l0697
 l0697:
- .long 14
- .byte 101,120,116,101,114,110,97,108,95,117
- .byte 110,108,105,110,107,0
+ .long 12
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 116,97,116,0
  .globl l0698
 l0698:
- .long 14
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 116,114,108,101,110,0
- .globl l0699
-l0699:
- .long 14
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 101,116,101,110,118,0
- .globl l0700
-l0700:
- .long 13
- .byte 101,120,116,101,114,110,97,108,95,114
- .byte 109,100,105,114,0,0
- .globl l0701
-l0701:
  .long 13
  .byte 101,120,116,101,114,110,97,108,95,109
  .byte 107,100,105,114,0,0
+ .globl l0699
+l0699:
+ .long 13
+ .byte 101,120,116,101,114,110,97,108,95,114
+ .byte 109,100,105,114,0,0
+ .globl l0700
+l0700:
+ .long 12
+ .byte 101,120,116,101,114,110,97,108,95,108
+ .byte 105,110,107,0
+ .globl l0701
+l0701:
+ .long 14
+ .byte 101,120,116,101,114,110,97,108,95,117
+ .byte 110,108,105,110,107,0
  .globl l0702
 l0702:
  .long 14
- .byte 101,120,116,101,114,110,97,108,95,103
- .byte 101,116,101,110,118,0
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 116,114,108,101,110,0
  .globl l0703
 l0703:
- .long 6
- .byte 117,120,102,108,111,97,116,0
+ .long 14
+ .byte 101,120,116,101,114,110,97,108,95,103
+ .byte 101,116,101,110,118,0
  .globl l0704
 l0704:
- .long 4
- .byte 117,120,102,105,120,0
+ .long 14
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 101,116,101,110,118,0
  .globl l0705
 l0705:
- .long 7
- .byte 117,120,97,115,115,105,103,110,0,0
+ .long 14
+ .byte 101,120,116,101,114,110,97,108,95,109
+ .byte 107,102,105,102,111,0
  .globl l0706
 l0706:
  .long 6
- .byte 117,120,109,105,110,117,115,0
+ .byte 117,120,102,108,111,97,116,0
  .globl l0707
 l0707:
- .long 6
- .byte 117,120,112,108,117,115,50,0
+ .long 4
+ .byte 117,120,102,105,120,0
  .globl l0708
 l0708:
+ .long 7
+ .byte 117,120,97,115,115,105,103,110,0,0
+ .globl l0709
+l0709:
+ .long 6
+ .byte 117,120,112,108,117,115,50,0
+ .globl l0710
+l0710:
  .long 11
  .byte 117,120,100,105,102,102,101,114,101
  .byte 110,99,101,0,0
- .globl l0709
-l0709:
+ .globl l0711
+l0711:
  .long 7
  .byte 117,120,116,105,109,101,115,50,0,0
- .globl l0710
-l0710:
+ .globl l0712
+l0712:
  .long 9
  .byte 117,120,113,117,111,116,105,101,110
  .byte 116,0,0
- .globl l0711
-l0711:
+ .globl l0713
+l0713:
+ .long 6
+ .byte 117,120,109,105,110,117,115,0
+ .globl l0714
+l0714:
  .long 9
  .byte 117,120,103,114,101,97,116,101,114
  .byte 112,0,0
- .globl l0712
-l0712:
+ .globl l0715
+l0715:
  .long 6
  .byte 117,120,108,101,115,115,112,0
- .globl l0713
-l0713:
+ .globl l0716
+l0716:
  .long 11
  .byte 117,120,119,114,105,116,101,102,108
  .byte 111,97,116,0,0
- .globl l0714
-l0714:
+ .globl l0717
+l0717:
  .long 15
  .byte 117,117,120,100,111,117,98,108,101
  .byte 116,111,102,108,111,97,116,0,0
- .globl l0715
-l0715:
+ .globl l0718
+l0718:
  .long 15
  .byte 117,117,120,102,108,111,97,116,116
  .byte 111,100,111,117,98,108,101,0,0
- .globl l0716
-l0716:
- .long 5
- .byte 117,117,120,115,105,110,0,0
- .globl l0717
-l0717:
- .long 5
- .byte 117,117,120,99,111,115,0,0
- .globl l0718
-l0718:
- .long 5
- .byte 117,117,120,116,97,110,0,0
  .globl l0719
 l0719:
- .long 6
- .byte 117,117,120,97,115,105,110,0
+ .long 5
+ .byte 117,117,120,115,105,110,0,0
  .globl l0720
 l0720:
- .long 6
- .byte 117,117,120,97,99,111,115,0
+ .long 5
+ .byte 117,117,120,99,111,115,0,0
  .globl l0721
 l0721:
- .long 6
- .byte 117,117,120,97,116,97,110,0
+ .long 5
+ .byte 117,117,120,116,97,110,0,0
  .globl l0722
 l0722:
  .long 6
- .byte 117,117,120,115,113,114,116,0
+ .byte 117,117,120,97,115,105,110,0
  .globl l0723
 l0723:
- .long 5
- .byte 117,117,120,101,120,112,0,0
+ .long 6
+ .byte 117,117,120,97,99,111,115,0
  .globl l0724
 l0724:
- .long 5
- .byte 117,117,120,108,111,103,0,0
+ .long 6
+ .byte 117,117,120,97,116,97,110,0
  .globl l0725
 l0725:
- .long 7
- .byte 117,117,120,97,116,97,110,50,0,0
+ .long 6
+ .byte 117,117,120,115,113,114,116,0
  .globl l0726
 l0726:
- .long 6
- .byte 117,117,120,115,105,110,104,0
+ .long 5
+ .byte 117,117,120,101,120,112,0,0
  .globl l0727
 l0727:
- .long 6
- .byte 117,117,120,99,111,115,104,0
+ .long 5
+ .byte 117,117,120,108,111,103,0,0
  .globl l0728
 l0728:
- .long 6
- .byte 117,117,120,116,97,110,104,0
+ .long 7
+ .byte 117,117,120,97,116,97,110,50,0,0
  .globl l0729
 l0729:
- .long 7
- .byte 117,117,120,104,121,112,111,116,0,0
+ .long 6
+ .byte 117,117,120,115,105,110,104,0
  .globl l0730
 l0730:
+ .long 6
+ .byte 117,117,120,99,111,115,104,0
+ .globl l0731
+l0731:
+ .long 6
+ .byte 117,117,120,116,97,110,104,0
+ .globl l0732
+l0732:
+ .long 7
+ .byte 117,117,120,104,121,112,111,116,0,0
+ .globl l0733
+l0733:
+ .long 5
+ .byte 117,117,120,112,111,119,0,0
+ .globl l0734
+l0734:
  .long 11
  .byte 101,120,116,101,114,110,97,108,95,112
  .byte 119,100,0,0
- .globl l0731
-l0731:
+ .globl l0735
+l0735:
  .long 10
  .byte 115,117,110,51,95,115,105,103,115,101
  .byte 116,0
- .globl l0732
-l0732:
+ .globl l0736
+l0736:
  .long 12
  .byte 115,117,110,51,95,115,105,103,114,101
  .byte 108,115,101,0
- .globl l0733
-l0733:
+ .globl l0737
+l0737:
  .long 7
  .byte 115,105,103,114,101,108,115,101,0,0
- .globl l0734
-l0734:
+ .globl l0738
+l0738:
  .long 10
  .byte 109,97,115,107,95,115,105,103,110,97
  .byte 108,0
- .globl l0735
-l0735:
+ .globl l0739
+l0739:
  .long 15
  .byte 101,120,112,97,110,100,95,102,105,108
  .byte 101,95,110,97,109,101,0,0
- .globl l0736
-l0736:
- .long 5
- .byte 117,110,105,120,99,100,0,0
- .globl l0737
-l0737:
- .long 4
- .byte 99,116,105,109,101,0
- .globl l0738
-l0738:
- .long 14
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 121,115,116,101,109,0
- .globl l0739
-l0739:
- .long 16
- .byte 101,120,116,101,114,110,97,108,95,102
- .byte 117,108,108,112,97,116,104,0
  .globl l0740
 l0740:
- .long 4
- .byte 102,111,112,101,110,0
+ .long 5
+ .byte 117,110,105,120,99,100,0,0
  .globl l0741
 l0741:
  .long 4
- .byte 102,112,117,116,99,0
+ .byte 99,116,105,109,101,0
  .globl l0742
 l0742:
- .long 4
- .byte 102,103,101,116,99,0
+ .long 14
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 121,115,116,101,109,0
  .globl l0743
 l0743:
- .long 4
- .byte 102,103,101,116,115,0
+ .long 16
+ .byte 101,120,116,101,114,110,97,108,95,102
+ .byte 117,108,108,112,97,116,104,0
  .globl l0744
 l0744:
- .long 5
- .byte 102,119,114,105,116,101,0,0
+ .long 4
+ .byte 102,111,112,101,110,0
  .globl l0745
 l0745:
- .long 5
- .byte 102,102,108,117,115,104,0,0
+ .long 4
+ .byte 102,112,117,116,99,0
  .globl l0746
 l0746:
  .long 4
- .byte 102,115,101,101,107,0
+ .byte 102,103,101,116,99,0
  .globl l0747
 l0747:
- .long 7
- .byte 99,108,101,97,114,101,114,114,0,0
+ .long 4
+ .byte 102,103,101,116,115,0
  .globl l0748
 l0748:
- .long 3
- .byte 112,117,116,119,0,0
+ .long 5
+ .byte 102,119,114,105,116,101,0,0
  .globl l0749
 l0749:
  .long 5
- .byte 115,105,103,110,97,108,0,0
+ .byte 102,102,108,117,115,104,0,0
  .globl l0750
 l0750:
  .long 4
- .byte 115,108,101,101,112,0
+ .byte 102,115,101,101,107,0
  .globl l0751
 l0751:
+ .long 7
+ .byte 99,108,101,97,114,101,114,114,0,0
+ .globl l0752
+l0752:
+ .long 3
+ .byte 112,117,116,119,0,0
+ .globl l0753
+l0753:
+ .long 5
+ .byte 115,105,103,110,97,108,0,0
+ .globl l0754
+l0754:
+ .long 4
+ .byte 115,108,101,101,112,0
+ .globl l0755
+l0755:
  .long 11
  .byte 105,101,101,101,95,104,97,110,100,108
  .byte 101,114,0,0
- .globl l0752
-l0752:
+ .globl l0756
+l0756:
  .long 9
  .byte 105,101,101,101,95,102,108,97,103,115
  .byte 0,0
- .globl l0753
-l0753:
+ .globl l0757
+l0757:
  .long 9
  .byte 115,101,116,108,105,110,101,98,117
  .byte 102,0,0
- .globl l0754
-l0754:
+ .globl l0758
+l0758:
  .long 5
  .byte 103,101,116,112,105,100,0,0
- .globl l0755
-l0755:
+ .globl l0759
+l0759:
  .long 8
  .byte 103,101,116,104,111,115,116,105,100
  .byte 0
- .globl l0756
-l0756:
+ .globl l0760
+l0760:
  .long 13
  .byte 117,110,105,120,115,111,99,107,101
  .byte 116,111,112,101,110,0,0
- .globl l0757
-l0757:
+ .globl l0761
+l0761:
  .long 8
  .byte 103,101,116,115,111,99,107,101,116
  .byte 0
- .globl l0758
-l0758:
+ .globl l0762
+l0762:
  .long 10
  .byte 119,114,105,116,101,115,111,99,107
  .byte 101,116,0
- .globl l0759
-l0759:
+ .globl l0763
+l0763:
  .long 14
  .byte 117,110,105,120,99,108,111,115,101
  .byte 115,111,99,107,101,116,0
- .globl l0760
-l0760:
- .long 3
- .byte 102,111,114,107,0,0
- .globl l0761
-l0761:
- .long 3
- .byte 119,97,105,116,0,0
- .globl l0762
-l0762:
- .long 4
- .byte 112,111,112,101,110,0
- .globl l0763
-l0763:
- .long 5
- .byte 112,99,108,111,115,101,0,0
  .globl l0764
 l0764:
- .long 5
- .byte 115,104,109,99,116,108,0,0
+ .long 3
+ .byte 102,111,114,107,0,0
  .globl l0765
 l0765:
- .long 5
- .byte 115,104,109,103,101,116,0,0
+ .long 3
+ .byte 119,97,105,116,0,0
  .globl l0766
 l0766:
  .long 4
- .byte 115,104,109,97,116,0
+ .byte 112,111,112,101,110,0
  .globl l0767
 l0767:
- .long 4
- .byte 115,104,109,100,116,0
+ .long 5
+ .byte 112,99,108,111,115,101,0,0
  .globl l0768
 l0768:
  .long 5
- .byte 115,101,109,99,116,108,0,0
+ .byte 115,104,109,99,116,108,0,0
  .globl l0769
 l0769:
  .long 5
- .byte 115,101,109,103,101,116,0,0
+ .byte 115,104,109,103,101,116,0,0
  .globl l0770
 l0770:
  .long 4
- .byte 115,101,109,111,112,0
+ .byte 115,104,109,97,116,0
  .globl l0771
 l0771:
- .long 5
- .byte 100,108,111,112,101,110,0,0
+ .long 4
+ .byte 115,104,109,100,116,0
  .globl l0772
 l0772:
- .long 6
- .byte 100,108,101,114,114,111,114,0
+ .long 5
+ .byte 115,101,109,99,116,108,0,0
  .globl l0773
 l0773:
- .long 4
- .byte 100,108,115,121,109,0
+ .long 5
+ .byte 115,101,109,103,101,116,0,0
  .globl l0774
 l0774:
- .long 6
- .byte 100,108,99,108,111,115,101,0
+ .long 4
+ .byte 115,101,109,111,112,0
  .globl l0775
 l0775:
+ .long 5
+ .byte 100,108,111,112,101,110,0,0
+ .globl l0776
+l0776:
+ .long 6
+ .byte 100,108,101,114,114,111,114,0
+ .globl l0777
+l0777:
+ .long 4
+ .byte 100,108,115,121,109,0
+ .globl l0778
+l0778:
+ .long 6
+ .byte 100,108,99,108,111,115,101,0
+ .globl l0779
+l0779:
  .long 11
  .byte 117,110,105,120,45,112,114,111,102
  .byte 105,108,101,0,0
- .globl l0776
-l0776:
+ .globl l0780
+l0780:
  .long 9
  .byte 108,97,115,116,107,101,114,110,101
  .byte 108,0,0
- .globl l0777
-l0777:
+ .globl l0781
+l0781:
  .long 11
  .byte 99,111,100,101,97,100,100,114,101,115
  .byte 115,112,0,0
- .globl l0778
-l0778:
+ .globl l0782
+l0782:
  .long 14
  .byte 103,101,116,102,99,111,100,101,112
  .byte 111,105,110,116,101,114,0

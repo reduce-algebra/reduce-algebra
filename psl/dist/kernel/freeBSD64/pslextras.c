@@ -62,7 +62,7 @@
 %
 %  $Id$
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
  
 #include <stdlib.h>
@@ -73,7 +73,9 @@
 #include <sys/stat.h>
 #include <sys/times.h>
 #include <sys/resource.h>
- 
+
+char *expand_file_name(char *);    /* from unix-io.c */
+
 int external_alarm(unsigned long sec)
 {
   return alarm(sec);
@@ -81,16 +83,14 @@ int external_alarm(unsigned long sec)
  
 int external_ualarm(unsigned long usec,unsigned long repeat)
 {
-  return( ualarm(usec,repeat));
+  return (ualarm(usec,repeat));
 }
- 
-char *expand_file_name();    /* from unix-io.c */
  
 /* Tag( external_time )
  */
 long external_time(time_t *tloc)
 {
-  return (time(tloc));
+  return (long)(time(tloc));
 }
  
 /* Tag( external_timc )
@@ -107,35 +107,39 @@ external_timc()
  */
 int external_stat(char *path, struct stat *buf)
 {
-    return stat(expand_file_name(path), buf);
+  return stat(expand_file_name(path), buf);
 }
- 
 
-int external_mkdir (char *name, int mode)
- { return mkdir (name, mode); }
 
-int external_rmdir (char *name)
-{ return rmdir (name); }
+int external_mkdir (char *path, mode_t mode)
+{ 
+  return mkdir (expand_file_name(path), mode); 
+}
+
+int external_rmdir (char *path)
+{ 
+  return rmdir (expand_file_name(path));
+}
 
 /* Tag( external_link )
  */
 int external_link (char *path1, char *path2)
 {
-    return link(expand_file_name(path1), expand_file_name(path2));
+  return link(expand_file_name(path1), expand_file_name(path2));
 }
  
 /* Tag( external_unlink )
  */
 int external_unlink (char *path)
 {
-    return unlink(expand_file_name(path));
+  return unlink(expand_file_name(path));
 }
  
 /* Tag( external_strlen )
  */
 int external_strlen (char *s)
 {
-    return strlen(s);
+  return strlen(s);
 }
 
 char *getenv(const char *name);
@@ -144,75 +148,28 @@ char *getenv(const char *name);
  */
 char *external_getenv (char *name)
 {
-    return getenv(name);
+  return getenv(name);
 }
- 
- 
+
+int external_setenv (char *var, char *val)
+{
+  return setenv(var,val,1);
+}
+
+int
+external_mkfifo(char *x,int y)
+{
+  return mkfifo(x,y);
+}
+
+#if 0
 void
-block_copy (b1, b2, length)
-     char *b1, *b2;
-     int length;
+block_copy (char *b1, char *b2, int length)
 {
   while (length-- > 0)
     *b2++ = *b1++;
 }
 
-
-int external_setenv (var, val)
-    char *var, *val;
-{
-  int i;
-  extern char **environ;
-  char **envnew;
-  char var_plus_equal_sign[100];
- 
-  /* Look for first empty slot to find number of existing env variables. */
-  for (i = 0 ; environ [i] != NULL ; i++) ;
- 
-  /* Make a new environment array with 2 new slots - 1 for var being set,
-     and 1 extra empty slot. */
-  envnew = (char **) calloc ((i + 2), sizeof(char *));
- 
-  block_copy((char *)environ, (char *)envnew, i * sizeof(char *));
-  environ = envnew;
-  strcpy(var_plus_equal_sign, var);
-  strcat(var_plus_equal_sign, "=");
-  return(mysetenv (var_plus_equal_sign, val, 1));
-}
- 
-/*
- * sets the value of var to be arg in the Unix environment env.
- * Var should end with '=' (bindings are of the form "var=value").
- * This procedure assumes the memory for the first level of environ
- * was allocated using calloc, with enough extra room at the end so not
- * to have to do a realloc().
- */
-int
-mysetenv (const char *var, const char *value, int ov)
-{
-    extern char **environ;
-    int index = 0;
-    int len = strlen(var);
- 
-    while (environ [index] != NULL) {
-        if (strncmp (environ [index], var, len) == 0) {
-        /* found it */
-        environ[index] = (void *)malloc (len + strlen (value) + 1);
-        strcpy (environ [index], var);
-        strcat (environ [index], value);
-        return 0;
-        }
-        index ++;
-    }
- 
-    environ [index] = (void *) malloc (len + strlen (value) + 1);
-    strcpy (environ [index], var);
-    strcat (environ [index], value);
-    environ [++index] = NULL;
-    return 0;
-}
- 
- 
 #define LISPEOF  4      /* Lisp uses ctrl-D for end of file */
  
 /* Tag( unixreadrecord )
@@ -240,6 +197,7 @@ void unixwriterecord(FILE *fp, char *buf, int count)
     fputc(*buf, fp);
 }
  
+#endif
  
  
  

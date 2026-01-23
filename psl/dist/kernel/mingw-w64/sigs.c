@@ -30,14 +30,13 @@
 * POSSIBILITY OF SUCH DAMAGE.
 *
 ******************************************************************************
- *
- *           Modified by Chris Burdorf (2/17/89)
- *           renamed sigset to sun3_sigset for sun os 4.
-******************************************************************************
 *
 *  $Id$
 *
 ******************************************************************************
+ *
+ *           Modified by Chris Burdorf (2/17/89)
+ *           renamed sigset to sun3_sigset for sun os 4.
  */
  
 #include <signal.h>

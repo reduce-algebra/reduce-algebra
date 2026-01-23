@@ -33,38 +33,35 @@
  *
  ******************************************************************************
  *
+ * $Id$
+ *
+ ******************************************************************************
+ *
+ * Revisions:
+ *
  * Wed Mar 13 15:17:12 1985,  Robert Virding
  *  Modified to use getwd(3). This might be more 4.2BSD specific.
  *
- * $Id$
- *
- */
-
-/* getwd(3) should be defined on all 4.2bsd or compatible Unices.  If
- * it is not present and you comment out USE_GETWD, do check that popen
- * uses vfork instead of fork!  It is not going to work at all on small
- * machines, and will be very slow on big machines, to allocate a PSL
- * worth of swap space (potentially many megabytes) just to exec "pwd".
  */
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-#ifdef USE_GETWD
-#define MAXPATHLEN 255
+#ifndef USE_GETCWD_WORDAROUND
 
 #include "sys/param.h"	/* For MAXPATHLEN, the longest path that can occur. */
+
 char Name[MAXPATHLEN + 2];     /* Need space for '/' and a NULL at the end. */
 
 char *
 external_pwd()
 {
-    char *getwd();
-    char *p = getwd(Name);
+    char *p = getcwd(Name,MAXPATHLEN);
 
     if (p)
 	/* PSL convention, terminate directory strings with a slash. */
-	strcat(Name, "/");
+      strncat(Name, "/", MAXPATHLEN - strlen(Name));
     else
 	/* An error occurred, just return NULL string. */
 	Name[0] = 0;
@@ -79,9 +76,8 @@ char Name[BUFSIZ];
 char *
 external_pwd()
 {
-    FILE *popen(const char *, const char *);		       /* May not be in some stdio.h files. */
     FILE * PwdStream;
-    char * Where, *index();
+    char * Where;
 
     /* Simpleminded- Popen a "pwd" cmd and read a line into Name buffer. */
     PwdStream = popen( "pwd", "r" );

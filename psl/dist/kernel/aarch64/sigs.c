@@ -32,14 +32,14 @@
  *
  ******************************************************************************
  *
+ * $Id$
+ *
+ ******************************************************************************
+ *
  * Revisions:
  *
  *           Modified by Chris Burdorf (2/17/89)
  *           renamed sigset to sun3_sigset for sun os 4.
- *
- ******************************************************************************
- *
- * $Id$
  *
  */
  
@@ -65,9 +65,7 @@ static stack_t *stackinfo_ptr = NULL;
 
 
 void
-sun3_sigset( sig, action )
-void (*action)();
-int sig;
+sun3_sigset(int sig,void (*action)() )
 { 
   struct sigaction act = {};
 
@@ -75,15 +73,15 @@ int sig;
     act.sa_sigaction = action;
     act.sa_flags = SA_SIGINFO | SA_RESTART;
 
-     // set up alternate signal stack for SIGSEGV
-     if (sig == 11) {
-       if (stackinfo_ptr == NULL) {
-           stackinfo_ptr = &stackinfo;
-           sigaltstack(stackinfo_ptr,NULL);
-        }
-        act.sa_flags |= SA_ONSTACK;
-     }
-     sigaction(sig, &act, NULL);
+    // set up alternate signal stack for SIGSEGV
+    if (sig == 11) {
+      if (stackinfo_ptr == NULL) {
+	stackinfo_ptr = &stackinfo;
+	sigaltstack(stackinfo_ptr,NULL);
+      }
+      act.sa_flags |= SA_ONSTACK;
+    }
+    sigaction(sig, &act, NULL);
   }
 
 #ifndef LINUX
@@ -100,9 +98,7 @@ int sig;
 }
 
 void
-sun3_sigrelse(sig, action)
-void (*action)();
-int sig;
+sun3_sigrelse(int sig, void (*action)())
 {
   /*
  sigset_t set;
@@ -123,11 +119,12 @@ int sig;
 
 }
  
-
+#if 0
 void
 ieee_handler()
 {
 }
+#endif
 
 void
 ieee_flags()

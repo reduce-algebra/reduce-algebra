@@ -403,7 +403,7 @@ stacklowerbound:
  .quad ((253<<56)+329)
  .quad ((253<<56)+330)
  .quad ((253<<56)+331)
- .quad 514
+ .quad 515
  .quad _symnam
  .quad ((254<<56)+128)
  .quad ((253<<56)+335)
@@ -585,7 +585,8 @@ stacklowerbound:
  .quad ((253<<56)+511)
  .quad ((253<<56)+512)
  .quad ((253<<56)+513)
-  .space 2395896
+ .quad ((253<<56)+514)
+  .space 2395888
  .globl _symprp
 _symprp:
  .quad ((254<<56)+128)
@@ -1102,11 +1103,10 @@ _symprp:
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
-  .space 2395896
+ .quad ((254<<56)+128)
+  .space 2395888
  .globl _symnam
 _symnam:
- .globl l0319
- .quad ((4<<56)+l0319)
  .globl l0320
  .quad ((4<<56)+l0320)
  .globl l0321
@@ -2133,7 +2133,11 @@ _symnam:
  .quad ((4<<56)+l0831)
  .globl l0832
  .quad ((4<<56)+l0832)
-  .space 2395896
+ .globl l0833
+ .quad ((4<<56)+l0833)
+ .globl l0834
+ .quad ((4<<56)+l0834)
+  .space 2395888
  .globl _symfnc
 _symfnc:
  .quad undefinedfunction
@@ -2440,16 +2444,16 @@ _symfnc:
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
- .globl l0196
- .quad l0196
+ .globl l0197
+ .quad l0197
  .globl l0011
  .quad l0011
  .globl l0005
  .quad l0005
- .globl l0197
- .quad l0197
- .globl l0255
- .quad l0255
+ .globl l0198
+ .quad l0198
+ .globl l0257
+ .quad l0257
  .globl _psl_main
  .quad _psl_main
  .quad undefinedfunction
@@ -2458,8 +2462,8 @@ _symfnc:
  .quad undefinedfunction
  .globl l0006
  .quad l0006
- .globl l0248
- .quad l0248
+ .globl l0250
+ .quad l0250
  .globl l0020
  .quad l0020
  .globl initcode
@@ -2471,30 +2475,30 @@ _symfnc:
  .globl faslin
  .quad faslin
  .quad undefinedfunction
- .globl l0245
- .quad l0245
- .globl l0246
- .quad l0246
+ .globl l0247
+ .quad l0247
+ .globl l0248
+ .quad l0248
  .globl l0013
  .quad l0013
- .globl l0244
- .quad l0244
- .globl l0250
- .quad l0250
+ .globl l0246
+ .quad l0246
+ .globl l0252
+ .quad l0252
  .globl l0183
  .quad l0183
  .globl binaryopenread
  .quad binaryopenread
- .globl l0266
- .quad l0266
+ .globl l0268
+ .quad l0268
  .globl binaryread
  .quad binaryread
- .globl l0258
- .quad l0258
+ .globl l0260
+ .quad l0260
  .globl binaryreadblock
  .quad binaryreadblock
- .globl l0257
- .quad l0257
+ .globl l0259
+ .quad l0259
  .globl binaryclose
  .quad binaryclose
  .globl l0047
@@ -2641,8 +2645,8 @@ _symfnc:
  .quad l0194
  .globl l0195
  .quad l0195
- .globl l0198
- .quad l0198
+ .globl l0196
+ .quad l0196
  .globl l0199
  .quad l0199
  .globl l0200
@@ -2733,24 +2737,24 @@ _symfnc:
  .quad l0242
  .globl l0243
  .quad l0243
- .globl l0247
- .quad l0247
+ .globl l0244
+ .quad l0244
+ .globl l0245
+ .quad l0245
  .globl l0249
  .quad l0249
  .globl l0251
  .quad l0251
- .globl l0252
- .quad l0252
  .globl l0253
  .quad l0253
  .globl l0254
  .quad l0254
+ .globl l0255
+ .quad l0255
  .globl l0256
  .quad l0256
- .globl l0259
- .quad l0259
- .globl l0260
- .quad l0260
+ .globl l0258
+ .quad l0258
  .globl l0261
  .quad l0261
  .globl l0262
@@ -2761,10 +2765,10 @@ _symfnc:
  .quad l0264
  .globl l0265
  .quad l0265
+ .globl l0266
+ .quad l0266
  .globl l0267
  .quad l0267
- .globl l0268
- .quad l0268
  .globl l0269
  .quad l0269
  .globl l0270
@@ -2815,29 +2819,31 @@ _symfnc:
  .quad l0292
  .globl l0293
  .quad l0293
- .globl l0296
- .quad l0296
+ .globl l0294
+ .quad l0294
+ .globl l0297
+ .quad l0297
  .quad undefinedfunction
- .globl l0299
- .quad l0299
- .quad undefinedfunction
- .globl l0303
- .quad l0303
+ .globl l0300
+ .quad l0300
  .quad undefinedfunction
  .globl l0304
  .quad l0304
+ .quad undefinedfunction
+ .globl l0305
+ .quad l0305
  .globl dynloadhelper
  .quad dynloadhelper
  .globl dynloadhelper_float_float
  .quad dynloadhelper_float_float
- .globl l0307
- .quad l0307
+ .globl l0308
+ .quad l0308
  .quad undefinedfunction
  .globl codeaddressp
  .quad codeaddressp
  .globl lastkernel
  .quad lastkernel
-  .space 2395896
+  .space 2395888
  .globl _symget
 _symget:
  .quad ((254<<56)+128)
@@ -3354,4 +3360,5 @@ _symget:
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
-  .space 2395896
+ .quad ((254<<56)+128)
+  .space 2395888

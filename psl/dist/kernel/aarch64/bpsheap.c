@@ -58,21 +58,20 @@
  *
  * $Id$
  *
+ *****************************************************************************
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/mman.h>
 #include <errno.h>
 #include <limits.h>    // for PAGESIZE
-#include <inttypes.h>  // Make newer integer types  of known width available
+#include <inttypes.h>  // Make newer integer types of known width available
 #include <unistd.h>
+#include <sys/mman.h>
 
 #ifndef MY_PAGESIZE
 #define MY_PAGESIZE 16384
 #endif
-
-long long unexec();
 
 
 /* Use 1 if using compacting collector ($pxnk/compact-gc.sl).
@@ -96,7 +95,6 @@ extern int Debug;
 char *  imagefile;
 char *  abs_imagefile = NULL; /* like imagefile, but as an absolute path */
 long long   max_image_size;
-long long   oldbreakvalue;
 long pagesize = -1;
 
 long long bpscontrol[2];
@@ -121,40 +119,28 @@ extern long long  oldheapupperbound;
 extern long long  oldheaplast;
 extern long long  oldheaptrapbound;
 
-#if 0
-/* Write this ourselves to keep from including half the math library */
-static int power(x, n)
-     int x, n;
-{
-  int i, p;
-
-  p = 1;
-  for (i = 1; i <= n; ++i)
-    p = p * x;
-  return(p);
-}
-#endif
 
 void creloc (unsigned long long array, long len, long long diff, unsigned long long lowb, unsigned long long uppb, int do_symval);
 
 long sizeofsymvectors = 0;
 
-void setupbps();
+void setupbps(void);
 void getheap(long long);
 void read_error(char *,long long,long long);
+void * unexec(void);
+
 char *external_user_homedir_string();
 char *external_anyuser_homedir_string(char *);
 
 int
-setupbpsandheap(argc,argv)
-     int argc;
-     char *argv[];
-{ long long ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,diff;
+setupbpsandheap(int argc,char *argv[])
+{
+  long long ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,diff;
   int memset = 0;
   FILE * imago;
   long long headerword [8];
   long long i, total, bpssize, heapsize, mallocsize;
-  long long current_size_in_bytes, heapsize_in_bytes;
+  long long heapsize_in_bytes;
   double bpspercent, heappercent;
   char   *argp, *scanptr, *scanformat;
   void *ii1,*ii2,*ii3,*ii4,*ii5,*ii6,*ii7,*ii8,*ii9,*ii10,*ii11;
@@ -195,7 +181,6 @@ setupbpsandheap(argc,argv)
     }   /* end of for loop -- arg vector searched */
 
   /* protect against invalid values */
-
   if (total < 1000000)  total = total * 1000000;
 
   if (total < MINSIZE)
@@ -229,35 +214,26 @@ setupbpsandheap(argc,argv)
 
   /* On systems in which the image does not start at address 0, this won't
      really allocate the full maximum, but close enough. */
-  current_size_in_bytes = (((long long) sbrk(0))<<5)>>5;
   max_image_size = 0x1000000000000; /* 1 more than allowable size */
 
-  if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
-    if (Debug > 0) {
-      printf("heapsize/current size/total: %llx/%llx/%llx\n",heapsize_in_bytes,current_size_in_bytes,total);
-      printf("Size requested will result in pointer values larger than\n");
-      printf(" PSL items can handle (%llx). Will allocate maximum size instead.\n\n",max_image_size);
-    }
-    heapsize_in_bytes = max_image_size - current_size_in_bytes;
-    total = heapsize_in_bytes + bpssize;
-  }
-
 #if (NUMBEROFHEAPS == 2)
-  heapsize =(heapsize_in_bytes / 8) * 4;  /* ensure full words */
+  heapsize = (heapsize_in_bytes / 8) * 4;  /* ensure full words */
 #else
-  heapsize =(heapsize_in_bytes / 8) * 8;  /* ensure full words */
+  heapsize = (heapsize_in_bytes / 8) * 8;  /* ensure full words */
 #endif
 
   heappercent = ((float) (total - bpssize) / total) * 100.0;
   bpspercent  = ((float) bpssize / total) * 100.0;
 
   if (imagefile == NULL)
-  { printf("Setting heap limit as follows:\n");
-    if (Debug > 0) {
-     printf("Total heap & bps space = %lld (%llx), bps = %.2f, heap = %.2f\n",
-          total, total, bpspercent, heappercent);
+    {
+      if (Debug > 0)
+	{
+	  printf("Setting heap limit as follows:\n");
+	  printf("Total heap & bps space = %lld (%llx), bps = %.2f, heap = %.2f\n",
+		 total, total, bpspercent, heappercent);
+	}
     }
-  }
 
   setupbps();
   getheap(heapsize);
@@ -266,132 +242,140 @@ setupbpsandheap(argc,argv)
   free (ii1); free (ii3); free (ii5); free(ii7);
   free (ii11); free (ii9); free (ii10);
 
-
   if (imagefile == NULL)
-  printf("symbol table size = %llu (%llX), symbol table address = %llu (%llX)\n"
-	 "bpssize = %llu (%llX), , bps address =  %llu (%llX)\n"
-	 "heapsize = %llu (%llX), heap address = %llu (%llX)\n"
-	 "Total image size = %lld (%llX)\nPage size = %ld (%lX)\n",
-	 (long long unsigned) 5*(&symprp - &symval), (long long unsigned) 5*(&symprp - &symval),
-	 (long long unsigned) &symval, (long long unsigned) &symval,
-	 bpssize, bpssize,
-	 bpslowerbound, bpslowerbound,
-	 heapsize, heapsize,
-	 heaplowerbound, heaplowerbound,
-	 (unsigned long long) sbrk(0), (unsigned long long) sbrk(0),
-	 pagesize,pagesize);
+    {
+      printf("symbol table size = %llu (%llX), symbol table address = %llu (%llX)\n"
+	     "bpssize = %llu (%llX), bps address = %llu (%llX)\n"
+	     "heapsize = %llu (%llX), heap address = %llu (%llX)\n"
+	     "Page size = %ld (%lX)\n",
+	     (unsigned long long) 5*(&symprp - &symval), (unsigned long long) 5*(&symprp - &symval),
+	     (unsigned long long) &symval, (unsigned long long) &symval,
+	     bpssize, bpssize,
+	     bpslowerbound, bpslowerbound,
+	     heapsize, heapsize,
+	     heaplowerbound, heaplowerbound,
+	     pagesize,pagesize);
+    }
 
-   if (imagefile != NULL) {
-	ohlb = oldheaplowerbound; ohub = oldheapupperbound;
-	ohl =  oldheaplast; ohtb = oldheaptrapbound;
-        hlb = heaplowerbound; hub = heapupperbound;
-        hl =  heaplast; htb = heaptrapbound;
-    /* save the new values around restore of the old ones */
-	if (Debug > 0) {
+  if (imagefile != NULL)
+    {
+      ohlb = oldheaplowerbound; ohub = oldheapupperbound;
+      ohl =  oldheaplast; ohtb = oldheaptrapbound;
+      hlb = heaplowerbound; hub = heapupperbound;
+      hl =  heaplast; htb = heaptrapbound;
+      /* save the new values around restore of the old ones */
+
+      if (Debug > 0)
+	{
 	  printf("symbol table size = %llu (%llX), symbol table address = %llu (%llx)\n"
 		 "bpssize = %llu (%llX), bps address =  %llu (%llX)\n"
-		 "heapsize = %llu (%llX), heap address = %llu (%llX), heaplast = %llu (%llX)\nTotal image size = %lld (%llX)\n",
-		 (long long unsigned) 5*(&symprp - &symval), (long long unsigned) 5*(&symprp - &symval),
-		 (long long unsigned) &symval, (long long unsigned) &symval,
+		 "heapsize = %llu (%llX), heap address = %llu (%llX), heaplast = %llu (%llX)\n",
+		 (unsigned long long) 5*(&symprp - &symval), (unsigned long long) 5*(&symprp - &symval),
+		 (unsigned long long) &symval, (unsigned long long) &symval,
 		 bpssize, bpssize,
 		 bpslowerbound, bpslowerbound,
 		 heapsize, heapsize,
 		 heaplowerbound, heaplowerbound,
-		 hl, hl,
-		 (unsigned long long) sbrk(0), (unsigned long long) sbrk(0));
+		 hl, hl);
 	}
-	printf("Loading image file :%s \n",imagefile); 
-	imago = fopen (imagefile,"r");
-	if (imago == NULL) { 
-	  perror ("error");
+
+      printf("Loading image file: %s \n",imagefile); 
+      imago = fopen (imagefile,"r");
+      if (imago == NULL)
+	{
+	  perror ("Error loading image file");
 	  exit (-1);
 	}
-	fread (headerword,8,2,imago);
-	unexec();      /* set control vector */
-	if (bpscontrol[0] != headerword[0] 
-	    || bpscontrol[1] != headerword[1])
-	  { printf(" Cannot start the image with this bpsl \n");
-	    printf(" %llx != %llx, %llx != %llx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
-	    exit (-19);
-	  }
-	fread (headerword,8,4,imago);
-	if (Debug > 0) {
+      fread (headerword,8,2,imago);
+      unexec();      /* set control vector */
+      if (bpscontrol[0] != headerword[0] || bpscontrol[1] != headerword[1])
+	{
+	  printf(" Cannot start the image with this bpsl \n");
+	  printf(" %llx != %llx, %llx != %llx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
+	  exit (-19);
+	}
+      fread (headerword,8,4,imago);
+
+      if (Debug > 0)
+	{
 	  printf("symbol table: %llu (%llX) bytes\n",headerword[0],headerword[0]);
 	  printf("heap: %llu (%llx) bytes\n",headerword[1],headerword[1]);
 	  printf("hash table: %llu (%llX) bytes\n",headerword[2],headerword[2]);
 	  printf("BPS: %llu (%llX) bytes\n",headerword[3],headerword[3]);
 	}
 
-	hugo = fread (&symval,1,headerword[0],imago);
-	diff = hlb-heaplowerbound;
+      hugo = fread (&symval,1,headerword[0],imago);
+      if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
 
-	if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
+      diff = hlb-heaplowerbound;
 
-	if (Debug > 0) {
+      if (Debug > 0)
+	{
 	  printf("Relocate heap: %lld (%llx) => %lld (%llx): shift by %lld\n", heaplowerbound, heaplowerbound, hlb, hlb, diff);
 	}
 
-	if (hlb < heaplowerbound) {
+      if (hlb < heaplowerbound)
+	{
 	  creloc((unsigned long long) &symval,headerword[0]/8,diff,hlb -1,heapupperbound+1,1);
 	} 
-        else {
+      else
+	{
 	  creloc((unsigned long long) &symval,headerword[0]/8,diff, heaplowerbound -1, heapupperbound+1,1);
 	}
 
-	sizeofsymvectors = headerword[0]/8;
+      sizeofsymvectors = headerword[0]/8;
 
-	hugo = fread ((char*)hlb,1,headerword[1],imago);
-	if (hugo != headerword[1]) read_error("heap",hugo,headerword[1]);
+      hugo = fread ((char*)hlb,1,headerword[1],imago);
+      if (hugo != headerword[1]) read_error("heap",hugo,headerword[1]);
 
-	if (hlb < heaplowerbound) {
+      if (hlb < heaplowerbound)
+	{
 	  creloc(hlb,headerword[1]/8,diff,hlb -1,heapupperbound+1,0);
 	}
-        else {
+      else
+	{
 	  creloc(hlb,headerword[1]/8,diff, heaplowerbound -1,heapupperbound+1,0);
 	}
-	heaplast += diff;
+      heaplast += diff;
 
-	hugo = fread (&hashtable,1,headerword[2],imago);
-	if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
-	hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
-	if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
-	__builtin___clear_cache((void *)bpslowerbound,(void *)(bpslowerbound+headerword[3]));
-	fclose (imago);
-	if (memset || diff != 0) {
-	  oldheaplowerbound = ohlb; oldheapupperbound = ohub;
-	  oldheaplast = ohl; oldheaptrapbound = ohtb;
-	  heaplowerbound = hlb; heapupperbound = hub;
-	  heaptrapbound = htb;
-	}
-	abs_imagefile = realpath(imagefile,NULL);
-	return (4711);
-   }
-   return (0);
+      hugo = fread (&hashtable,1,headerword[2],imago);
+      if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
+      hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
+      if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
+      __builtin___clear_cache((void *)bpslowerbound,(void *)(bpslowerbound+headerword[3]));
+      fclose (imago);
+      if (memset || diff != 0) {
+	oldheaplowerbound = ohlb; oldheapupperbound = ohub;
+	oldheaplast = ohl; oldheaptrapbound = ohtb;
+	heaplowerbound = hlb; heapupperbound = hub;
+	heaptrapbound = htb;
+      }
+      abs_imagefile = realpath(imagefile,NULL);
+      return (4711);
+    }
+  return (0);
 
 }
 
 void
 read_error(char * what,long long bytesread,long long byteswanted)
-  {
-    printf("File too short while reading %s: bytes read = %lld (%llx), bytes expected = %lld (%llx)\n",
-           what,bytesread,bytesread,byteswanted,byteswanted);
-    exit(-1);
-  }
-
+{
+  printf("File too short while reading %s: bytes read = %lld (%llx), bytes expected = %lld (%llx)\n",
+	 what,bytesread,bytesread,byteswanted,byteswanted);
+  exit(-1);
+}
 
 
 /* The current procedure is to convert the starting address of the char
    array defined in bps.c to an address and store it in nextbps. A check
    is made to make sure that nextbps falls on an even word boundry.
  */
+
 void
 setupbps()
-{ char *p = (char *) bps;
+{
+  char *p = (char *) bps;
   int bpssize;
-  //  char c;
-
-//  nextbps = malloc (50000000);
-//  bps = nextbps;
 
   pagesize = sysconf(_SC_PAGESIZE);
   if (pagesize == -1) {
@@ -403,36 +387,49 @@ setupbps()
   lastbps  =  ((long long)bps + BPSSIZE) & ~7;    /* Down to a multiple of 8. */
   p = (char *)(((long long) bpslowerbound - 1) & ~(pagesize-1));
   bpssize =  ((BPSSIZE + pagesize-1) & ~(pagesize-1));
-  if (mprotect(p, bpssize, PROT_READ | PROT_WRITE | PROT_EXEC )) {
-            perror("Couldn’t mprotect");
-            exit(errno);
-          }
+  if (mprotect(p, bpssize, PROT_READ | PROT_WRITE | PROT_EXEC))
+    {
+      perror("Couldn’t mprotect");
+      exit(errno);
+    }
 }
 
 
-/* Allocate alternate bps space. Note: The use of sbrk(), and the fact that
-   nextbps is now greater than heaplast means that unexec should be not be
-   tried after this routine is called. The image would be huge.
- */
 long long
 allocatemorebps()
 {
-  long long current_size_in_bytes;
-  long old_nextbps = nextbps;
+  unsigned long long old_nextbps = nextbps;
 
-  current_size_in_bytes = (long long)sbrk(0);
+  nextbps = (unsigned long long) malloc(EXTRABPSSIZE + 2);
 
-  if ((current_size_in_bytes + EXTRABPSSIZE) >= max_image_size)
-    return(0);
+  if ((void *) nextbps == NULL)
+    {
+      nextbps = old_nextbps;
+      return 0;
+    }
 
-  if (((long long)sbrk(0)) % 2)      /* force to even word boundary*/
-     nextbps = (long long)sbrk(1);
+  if ((nextbps + EXTRABPSSIZE)  >= max_image_size)
+    {
+      /* Cannot use this address */
+      free((void *) nextbps);
+      nextbps = old_nextbps;
+      return 0;
+    }
 
-  nextbps = (long long)sbrk(EXTRABPSSIZE);   /* allocate extra BPS */
-  if (nextbps == -1) {
-    nextbps = old_nextbps;
-    return(0);
-  }
+  /* force to even word boundary*/
+  if (nextbps % 2 == 1)
+    {
+      nextbps++;
+    }
+
+  if (mprotect((void *)nextbps, EXTRABPSSIZE, PROT_READ | PROT_WRITE | PROT_EXEC))
+    {
+      perror("Couldn’t mprotect");
+      free((void *)nextbps);
+      nextbps = old_nextbps;
+      return 0;
+    }
+
   lastbps = nextbps + EXTRABPSSIZE;
 
   return(EXTRABPSSIZE);   /* This will be a parameter later */
@@ -441,8 +438,7 @@ allocatemorebps()
 #define HEAPGAP 32000
 
 void
-getheap(heapsize)
-     long long heapsize;
+getheap(long long heapsize)
 {
   unsigned long long old_sbrk;
   
@@ -453,138 +449,137 @@ getheap(heapsize)
   }
 
 #if (NUMBEROFHEAPS == 1)
-/*  heaplowerbound        = (long long)sbrk(heapsize);*/  /* allocate first heap */;
   heaplowerbound = mmap((void *) old_sbrk + HEAPGAP, heapsize,
                         PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   oldheaplowerbund = -1;
 #else
 
-/*  heaplowerbound        = (long long)sbrk(2 * heapsize);*/  /* allocate first heap */;
   heaplowerbound = (long long) mmap((void *) old_sbrk + HEAPGAP, 2*heapsize,
                         PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
 #endif
-  if (heaplowerbound == -1) {
-    perror("GETHEAP");
-    exit(-1);
-  }
+  if (heaplowerbound == -1)
+    {
+      perror("GETHEAP");
+      exit(-1);
+    }
 
   heapupperbound        = heaplowerbound + heapsize;
   heaplast              = heaplowerbound;
-  heaptrapbound         = heapupperbound -120;
-
+  heaptrapbound         = heapupperbound - 120;
 
 #if (NUMBEROFHEAPS == 2)
   oldheaplowerbound     = heapupperbound;
   oldheapupperbound     = oldheaplowerbound + heapsize;
   oldheaplast           = oldheaplowerbound;
-  oldheaptrapbound      = oldheapupperbound -120;
+  oldheaptrapbound      = oldheapupperbound - 120;
+
 #endif
-  oldbreakvalue = (long long )sbrk(0);
-  if (Debug > 0) {
-    printf("         oldbreakvalue = %lld (%llX)\n",old_sbrk,old_sbrk);
-  }
 
 }
 
 /* Tag( alterheapsize )
  */
 long long
-alterheapsize(increment)
-int increment;
+alterheapsize(int increment)
 {
 /*
   alters the size of the heap by the specified increment.  Returns
   the increment if successful, otherwise returns 0.  May fail if
-  the sbrk is unsuccessful or if the user tries to cut the heap back
-  to nothing or the current break value does not match the old value.
-  The latter case occurs when a malloc or sbrk has allocated space for
-  some other software, in which case we cannot allocate any more space
-  contiguously.
+  the mremap is unsuccessful or if the user tries to cut the heap back.
 
   Modifies both the heap and gcarray size.
   NOTE: a garbage collection should probably be performed before this
     routine is called.
-  NOTE: only implemented for the one heap version on the 68000.
 */
 
-  //int heapsize;
-  int current_size_in_bytes;
+  long long diff;
 
 #if (NUMBEROFHEAPS == 1)
+
+  int heapsize;
   int gcarraysize, newbreakvalue;
  
-  printf("***** cannot extend heap on this machine\n");
+  printf("***** Cannot extend heap on this machine\n");
   return(0);
 
-  if ((long long) sbrk(0) != oldbreakvalue)  /* Non contiguous memory */
-      return(0);
-
-  newbreakvalue = oldbreakvalue + increment;
-
-  /* don't let the user cut his heap back to nothing, taking into account
-     space for the gcarray. */
-  if ((increment < 0) &&
-      ((newbreakvalue - heaplowerbound) <
-       (((heaplast + MINIMUMHEAPADD - heaplowerbound) * 9) / 8)))
-    return(0);
-
-  current_size_in_bytes = sbrk(0);
-
-  if ((current_size_in_bytes +  increment) >= max_image_size)
-    return(0);
-
-  if ((long long)sbrk(increment) == -1)     /* the sbrk failed. */
-     return(0);
-
-  newbreakvalue = (long long) sbrk(0);
-  heapsize = (((newbreakvalue - heaplowerbound) / 4) * 4);
-
-  gcarraysize = (((heapsize / 9) / 4) * 4);
-  heapsize = heapsize - gcarraysize;
-
-  heapupperbound = heaplowerbound + heapsize;
-  heaptrapbound     = heapupperbound;
-
-  oldbreakvalue    = newbreakvalue;
-  return(increment);
 #else
+
+  printf("***** Cannot extend heap on this machine\n");
+  return(0);
+
+#if 0
+
   /* assumes the current heap is the 'lower' one */
-  int newbreakvalue;
+  void * realo;
 
-  if ((long long) sbrk(0) != oldbreakvalue)  /* Non contiguous memory */
-      {  printf(" unable to allocate %llx %llx\n",(long long)sbrk(0),oldbreakvalue);
-        return(0); }
+  if (increment < 0)
+    {
+      return(0);
+    }
+  
+  if ((oldheapupperbound + 2*increment) >= max_image_size)
+    {
+      return(-1);
+    }
 
-  current_size_in_bytes = ( (long long) sbrk(0) <<5) >>5;
+  if (Debug > 0)
+    {
+      fprintf(stderr,"Trying to increase heap size by %d bytes\n",increment);
+    }
 
-  if ((current_size_in_bytes + 2* increment) >= max_image_size)
-    return(-1);
+  realo = mremap((void *) heaplowerbound, 2*(heapupperbound - heaplowerbound),
+		 2*(heapupperbound - heaplowerbound + increment), 0);
+		 
+  if (realo == (void *) MAP_FAILED)
+    {
+      if (Debug > 0)
+	{
+	  perror("mremap failed\n");
+	}
+      return (-2);
+    }
+  if (Debug > 0)
+    {
+      fprintf(stderr,"Old heaplowerbound = %lld (%llX), new = %lld (%llX)\n",
+	      heaplowerbound,heaplowerbound,(long long)realo,(long long)realo);
+    }
 
-  if ((long long)sbrk(2 * increment) == -1)       /* the sbrk failed. */
-     return(-2);
+  diff =  realo - (void *)heaplowerbound;
+  if (realo < (void *)heaplowerbound)
+    {
+      creloc((long long)realo,(heapupperbound - heaplowerbound)/8,diff,(long long)realo - 1,(long long)realo + diff + increment - 1,0);
+      creloc((long long) &symval,sizeofsymvectors,diff,(long long)realo -1,(long long)realo + diff + increment - 1,1);
+    }
+  else if (realo > (void *)heaplowerbound)
+    {
+      creloc((long long)realo,(heapupperbound - heaplowerbound)/8,diff,heaplowerbound - 1,(long long)realo + diff + increment - 1,0);
+      creloc((long long) &symval,sizeofsymvectors,diff, heaplowerbound - 1,(long long)realo + diff + increment - 1,1);
+    }
 
-  newbreakvalue = (long long) sbrk(0);
-
-  heapupperbound        = heapupperbound + increment ;
+  heaplowerbound        = (unsigned long long) realo;
+  heaplast              = heaplast + diff;
+  heapupperbound        = heapupperbound + diff + increment;
   heaptrapbound         = heapupperbound - 120;
-  oldheaplowerbound     = oldheaplowerbound + increment;
-  oldheapupperbound     = oldheapupperbound + 2* increment ;
-  oldheaplast           = oldheaplowerbound;
-  oldheaptrapbound      = oldheapupperbound -120;
+  oldheaplowerbound     = oldheaplowerbound + diff + increment;
+  oldheapupperbound     = oldheapupperbound + diff + 2*increment;
+  oldheaplast           = oldheaplowerbound + diff;
+  oldheaptrapbound      = oldheapupperbound - 120;
 
-
-  oldbreakvalue = newbreakvalue;
   return(increment);
+
+#endif
+
 #endif
 
 }
 
-long long unexec()
+void *
+unexec()
 {
   bpscontrol[0] = bpslowerbound;
   bpscontrol[1] = BPSSIZE;
-  return((long long) bpscontrol);
+  return (bpscontrol);
 }
 
 char * get_imagefilepath ()

@@ -103,8 +103,8 @@
  
 % Defined in echo.c
 %
-(external-function echoon               ())
 (external-function echooff              ())
+(external-function echoon               ())
 (external-function external_charsininputbuffer    (chan))
 (external-function flushstdoutputbuffer ())
 (external-function external_user_homedir_string    ())
@@ -113,6 +113,7 @@
  
 % Defined in bpsheap.c
 %
+(external-function unexec               ())
 (external-function alterheapsize        (integer))
 (external-function allocatemorebps      (amount))
 (external-function get_imagefilepath    ())
@@ -139,28 +140,32 @@
 (external-function external_alarm      (sec))
 (external-function external_ualarm     (usec repeat))
 (external-function external_time       (buffer))
-(external-function external_timc       (buffer))
+(external-function external_timc       ())
 (external-function external_stat       (path buf))
+(external-function external_mkdir      (path mode))
+(external-function external_rmdir      (path))
 (external-function external_link       (path1 path2))
 (external-function external_unlink     (path))
-(external-function external_rmdir      (path))
-(external-function external_mkdir      (path mode))
 (external-function external_strlen     (strptr))
-(external-function external_setenv     (varstring valstring))
 (external-function external_getenv     (envstring))
+(external-function external_setenv     (varstring valstring))
+(external-function external_mkfifo     (path mode))
+
+% Defined in float.c
+%
 (external-function uxfloat             (buffer integer))
 (external-function uxfix               (buffer))
 (external-function uxassign            (arg1-buffer arg2-buffer))
-(external-function uxminus             (arg1-buffer arg2-buffer))
 (external-function uxplus2             (result-buffer arg1-buffer arg2-buffer))
 (external-function uxdifference        (result-buffer arg1-buffer arg2-buffer))
 (external-function uxtimes2            (result-buffer arg1-buffer arg2-buffer))
 (external-function uxquotient          (result-buffer arg1-buffer arg2-buffer))
+(external-function uxminus             (arg1-buffer arg2-buffer))
 (external-function uxgreaterp          (arg1-buffer arg2-buffer tee nill))
 (external-function uxlessp             (arg1-buffer arg2-buffer tee nill))
 (external-function uxwritefloat        (buffer floatptr convstr))
 (external-function uxdoubletofloat     (x y))
-(external-function uxfloattodouble     (y y))
+(external-function uxfloattodouble     (x y))
 (external-function uxsin               (r x))
 (external-function uxcos               (r x))
 (external-function uxtan               (r x))
@@ -174,7 +179,8 @@
 (external-function uxsinh              (r x))
 (external-function uxcosh              (r x))
 (external-function uxtanh              (r x))
-(external-function uxhypot             (r x))
+(external-function uxhypot             (r x y))
+(external-function uxpow               (r x y))
 
  
 % Defined in pwd-fn.c
@@ -188,11 +194,7 @@
 (external-function sun3_sigrelse       (signame handler))
 (de sigrelse(a b)(sun3_sigrelse a b))
 (external-function mask_signal         (signo block))
- 
-% Defined In unexec.c
-%
-(external-function unexec              (newname aname dstart bstart))
- 
+
  
 % Defined in unix-io.c
 %
@@ -206,11 +208,11 @@
 (external-function ctime                (buffer))
 (external-function external_system      (command))
 (external-function external_fullpath    (relpath))
+(external-function external_exit        (status))
 
 
 % Defined In the C Library
 %
-(external-function external_exit        (status))
 (external-function fopen                (name mode))
 (external-function fclose               (fp))
 (external-function fread                (buf size count fp))
@@ -224,8 +226,7 @@
 (external-function xgetw                (fp))
 (external-function putw                 (w fp))
 (external-function signal               (signame handler))
-(external-function sleep        (sec))
-(external-function ieee_handler (str1 str2 handl)) 
+(external-function sleep                (sec))
 (external-function ieee_flags		(str1 str2 str3 str4))
  
 %% See $pxnk/sys-io.sl for the call to this. In SYS V, it may have to be
