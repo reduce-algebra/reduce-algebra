@@ -56,7 +56,7 @@ case $@ in
   printf "   or  $0 --test machine1 ...\n"
   printf "where the supported 'machines' are\n"
   printf "    windows (win64), macintosh, linux (linux64),\n"
-  printf "and rpi (rpi32), rpi64.\n"
+  printf "and rpi, rpi64.\n"
   printf "You can also include '--rev=NNNN' to specify a revision to use\n"
   printf "but note that '--rev=NNNN' must be the first item on the command line\n"
   printf "'rpi' is a Raspberry Pi running raspbian (now called Raspberry Pi OS).\n"
@@ -257,7 +257,7 @@ hostname() {
   linux | linux64)
     echo "linux"
     ;;
-  rpi | rpi32)
+  rpi)
     echo "rpi"
     ;;
   *)
@@ -345,7 +345,6 @@ build() {
     linux       | \
     linux64     | \
     rpi         | \
-    rpi32       | \
     rpi64       | \
     macintosh)
       full="no"
@@ -386,7 +385,6 @@ build() {
     linux      | \
     linux64    | \
     rpi        | \
-    rpi32      | \
     rpi64      | \
     macintosh)
       add_target "$a"
@@ -398,7 +396,6 @@ build() {
     -linux      | \
     -linux64    | \
     -rpi        | \
-    -rpi32      | \
     -rpi64      | \
     -macintosh)
       remove_target "${a#-}"
@@ -484,8 +481,7 @@ build_altwindows() {
 }
 
 build_debian() {
-####@@@@
-  printf "build_debian starting $*\n";
+  printf "\n\nbuild_debian starting $*\n";
 # Common code for building on a Linux variant.
   if test "$MODE" = "none"
   then
@@ -526,15 +522,6 @@ build_linux64() {
 
 build_linux() {
   build_linux64
-}
-
-build_rpi32() {
-  machine_rpi32
-  build_debian rpi
-}
-
-build_rpi() {
-  build_rpi32
 }
 
 build_rpi64() {
@@ -691,24 +678,6 @@ machine_linux64() {
 
 machine_linux() {
   machine_linux64
-}
-
-machine_rpi32() {
-  MODE="none"
-  hosts_rpi 2> /dev/null
-  if test "$MODE" = "none"
-  then
-    case `uname -n` in
-    *)
-      printf "Do not know how to access a Raspberry Pi from `uname -n`\n"
-      MODE=none
-      ;;
-    esac
-  fi
-}
-
-machine_rpi() {
-  machine_rpi32
 }
 
 machine_rpi64() {
