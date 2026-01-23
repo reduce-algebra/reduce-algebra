@@ -39,11 +39,11 @@ $(BUILDTOPDIR).stamp:
 	-rm -rf reduce-source_$(SNAPSHOT)
 	touch $(BUILDTOPDIR).stamp
 
-reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages tarpackages
+reduce-packages:	tarpackages
 
 # suppress complaint about distribution "unstable" in Ubuntu
 # by specifying the debian lintian profile
-debpackages:
+debpackages:	$(BUILDTOPDIR).stamp
 	cd reduce ; \
 	echo DEBUILD_LINTIAN_OPTS= $${DEBUILD_LINTIAN_OPTS} ; \
 	debuild \
@@ -53,7 +53,7 @@ debpackages:
             -b -us -uc \
 	    --lintian-opts --profile debian
 
-rpmpackages:
+rpmpackages:	debpackages
 	for f in reduce-*_$(SNAPSHOT)_*.deb ; \
 	  do \
 	     msg=`fakeroot alien -k -r -g $${f}` ; \
@@ -71,7 +71,7 @@ rpmpackages:
 
 TARDEST=/tmp/reduce-snapshot_$(SNAPSHOT)_$(MACHINE)
 
-tarpackages:
+tarpackages:	rpmpackages
 # This assumes that both the CSL and PSL versions have already been built in
 # the $(BUILDTOPDIR) directory.
 	rm -rf $(TARDEST)

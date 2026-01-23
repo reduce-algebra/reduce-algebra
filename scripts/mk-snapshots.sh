@@ -1,4 +1,4 @@
- 42G    VirtualBoxVMs/windows#! /usr/bin/env bash
+#! /usr/bin/env bash
 
 # This script makes snapshots of Reduce. It should be capable of
 # building ones for Windows (64-bit), Macintosh, Linux-x86_64
@@ -449,7 +449,7 @@ build_win64() {
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "rm *.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make -j1 REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   stop_remote_host
@@ -473,7 +473,7 @@ build_altwin64() {
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "rm *.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make -j1 REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
   stop_remote_host
@@ -507,7 +507,7 @@ build_debian() {
   execute_in_dir "linux" "$REDUCE_BUILD/C"               "rm *.stamp"
   execute_in_dir "linux" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "linux" "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "linux" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "linux" "$REDUCE_BUILD"                 "make -j1 REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
   fetch_files    "$REDUCE_BUILD/*.deb"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
   fetch_files    "$REDUCE_BUILD/*.rpm"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
@@ -558,9 +558,9 @@ build_macintosh() {
   execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "chmod +x scripts/*.sh"
   execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "rm *.stamp"
   execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "./autogen.sh"
-  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION source-archive"
+  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make -j1  REVISION=$REVISION source-archive"
   execute_in_dir "macintosh" "$REDUCE_BUILD"              "touch C.stamp"
-  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION"
+  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make -j1 REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
   fetch_files    "$REDUCE_BUILD/*.dmg"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
   fetch_files    "$REDUCE_BUILD/*.bz2"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
