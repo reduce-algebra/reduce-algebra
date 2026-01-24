@@ -153,17 +153,9 @@
 %   (*sigsetup 29 IOHandler    IOHandlerInstruction    "IO ready")
    (*sigsetup 30 Pwrhandler   PwrHandlerInstruction   "Power failure")
    (*sigsetup 31 Syshandler   SysHandlerInstruction   "Bad system call")
-   (*entry initializeinterrupts-1 expr 0)
+   (*entry initializeinterrupts expr 0)
    (*sigcall)
    (*exit 0)))
- 
-(de initializeinterrupts ()
-%%    (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
-%%		  (strbase (strinf "tozero")) 0)
-%%    (ieee_handler (strbase (strinf "set"))
-%%                  (strbase (strinf "common"))
-%%                  (symfnc (id2int 'fpehandler)))
-      (initializeinterrupts-1))
  
 (lap
  '((!*entry sigunwind expr 0)

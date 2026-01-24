@@ -17,7 +17,6 @@ s/\]/\)/g
 s/\\//g
 s/L0/MZL0/g
 s/_old_/_old/g
-s/main/_psl_main/g
 s/hashtable/hashtable/g
 s/.globl symval/.globl _symval\
  .globl symval\

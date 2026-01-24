@@ -140,7 +140,7 @@
            'nostackoverflow
 	  ))
 
-     (*link initializeinterrupts-1 expr 0)
+     (*link initializeinterrupts expr 0)
      (pop (reg 1))
      (pop (reg rsi)) 		             % restored saved registers
      (pop (reg rdi))
@@ -171,17 +171,10 @@
        (*sigsetup 21 IOVHandler  IOVHandlerInstruction  "Terminal Interrupt")
        (*sigsetup 22 ALGHandler  ALGHandlerInstruction  "Abort")
 
-       (*entry initializeinterrupts-1 expr 0)
+       (*entry initializeinterrupts expr 0)
        (*sigcall)
        (*exit 0)))
 
-(de initializeinterrupts ()
-       (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
-				(strbase (strinf "tozero")) 0)
-       (ieee_handler (strbase (strinf "set"))
-                  (strbase (strinf "common"))
-                  (symfnc (id2int 'fpehandler)))
-       (initializeinterrupts-1))
  
 (lap
  '((!*entry sigunwind expr 0)
