@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PNK:BINDING.SL 
+% File:         PXNK:BINDING.SL 
 % Title:        Primitives to support Lambda binding 
 % Author:       Eric Benson 
 % Created:      18 August 1981 
@@ -64,7 +64,7 @@
 
 (global '(bndstksize))
 
-(setq bndstksize  2000)
+(setq bndstksize  20000)
 
 (global '(bndstk bndstkptr bndstkupperbound bndstklowerbound
 	  *dump-bndstk-on-overflow*))

@@ -1,4 +1,4 @@
- 42G    VirtualBoxVMs/windows#! /usr/bin/env bash
+#! /usr/bin/env bash
 
 # This script makes snapshots of Reduce. It should be capable of
 # building ones for Windows (64-bit), Macintosh, Linux-x86_64
@@ -56,7 +56,7 @@ case $@ in
   printf "   or  $0 --test machine1 ...\n"
   printf "where the supported 'machines' are\n"
   printf "    windows (win64), macintosh, linux (linux64),\n"
-  printf "and rpi (rpi32), rpi64.\n"
+  printf "and rpi, rpi64.\n"
   printf "You can also include '--rev=NNNN' to specify a revision to use\n"
   printf "but note that '--rev=NNNN' must be the first item on the command line\n"
   printf "'rpi' is a Raspberry Pi running raspbian (now called Raspberry Pi OS).\n"
@@ -257,7 +257,7 @@ hostname() {
   linux | linux64)
     echo "linux"
     ;;
-  rpi | rpi32)
+  rpi)
     echo "rpi"
     ;;
   *)
@@ -345,7 +345,6 @@ build() {
     linux       | \
     linux64     | \
     rpi         | \
-    rpi32       | \
     rpi64       | \
     macintosh)
       full="no"
@@ -386,7 +385,6 @@ build() {
     linux      | \
     linux64    | \
     rpi        | \
-    rpi32      | \
     rpi64      | \
     macintosh)
       add_target "$a"
@@ -398,7 +396,6 @@ build() {
     -linux      | \
     -linux64    | \
     -rpi        | \
-    -rpi32      | \
     -rpi64      | \
     -macintosh)
       remove_target "${a#-}"
@@ -449,7 +446,7 @@ build_win64() {
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "rm *.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make -j1 REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   stop_remote_host
@@ -473,7 +470,7 @@ build_altwin64() {
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "rm *.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make -j1 REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
   stop_remote_host
@@ -484,8 +481,7 @@ build_altwindows() {
 }
 
 build_debian() {
-####@@@@
-  printf "build_debian starting $*\n";
+  printf "\n\nbuild_debian starting $*\n";
 # Common code for building on a Linux variant.
   if test "$MODE" = "none"
   then
@@ -507,7 +503,7 @@ build_debian() {
   execute_in_dir "linux" "$REDUCE_BUILD/C"               "rm *.stamp"
   execute_in_dir "linux" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "linux" "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "linux" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "linux" "$REDUCE_BUILD"                 "make -j1 REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
   fetch_files    "$REDUCE_BUILD/*.deb"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
   fetch_files    "$REDUCE_BUILD/*.rpm"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
@@ -526,15 +522,6 @@ build_linux64() {
 
 build_linux() {
   build_linux64
-}
-
-build_rpi32() {
-  machine_rpi32
-  build_debian rpi
-}
-
-build_rpi() {
-  build_rpi32
 }
 
 build_rpi64() {
@@ -558,9 +545,9 @@ build_macintosh() {
   execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "chmod +x scripts/*.sh"
   execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "rm *.stamp"
   execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "./autogen.sh"
-  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION source-archive"
+  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make -j1  REVISION=$REVISION source-archive"
   execute_in_dir "macintosh" "$REDUCE_BUILD"              "touch C.stamp"
-  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION"
+  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make -j1 REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
   fetch_files    "$REDUCE_BUILD/*.dmg"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
   fetch_files    "$REDUCE_BUILD/*.bz2"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
@@ -691,24 +678,6 @@ machine_linux64() {
 
 machine_linux() {
   machine_linux64
-}
-
-machine_rpi32() {
-  MODE="none"
-  hosts_rpi 2> /dev/null
-  if test "$MODE" = "none"
-  then
-    case `uname -n` in
-    *)
-      printf "Do not know how to access a Raspberry Pi from `uname -n`\n"
-      MODE=none
-      ;;
-    esac
-  fi
-}
-
-machine_rpi() {
-  machine_rpi32
 }
 
 machine_rpi64() {

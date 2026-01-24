@@ -1,80 +1,77 @@
 /*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% File:         bpsheap.c
-% Description:  Code to dynamically set up bps and heap structures
-% Author:       RAM, HP/FSD
-% Created:      9-Mar-84
-% Modified:
-% Mode:         Text
-% Package:
-% Status:       Open Source: BSD License
-%
-% (c) Copyright 1982, University of Utah
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Revisions:
-%
-% 11-Aug-88 (Julian Padget)
-%  Added initialization of bpslowerbound in setupbps().
-% 07-Apr-87 (Harold Carr & Leigh Stoller)
-%  Put in error checking to ensure that the memory pointers will fit in
-%   info field of the lisp item.
-% 21-Dec-86 (Leigh Stoller)
-%  Added allocatemorebps function, called from try-other-bps-spaces in
-%   allocators.sl.
-% 18-Dec-86 (Leigh Stoller)
-%  Changed to newer model. Bps is now defined in bps.c so that unexec can
-%  alter the text/data boundry. Took out code that allowed command line
-%  modification of bpssize. (Now set in the Makefile). Added setupbps()
-%  that initialzes nextbps and lastbps.
-% 20-Sep-86 (Leigh Stoller)
-%  Removed assembler alias statements because they are not portable. Instead,
-%  a sed script will be used to convert the _variables of C to VARIABLES of
-%  PSL.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% $Id$
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-*/
+ * File:         PXK:bpsheap.c
+ * Description:  Code to dynamically set up bps and heap structures
+ * Author:       RAM, HP/FSD
+ * Created:      9-Mar-84
+ * Modified:
+ * Status:       Open Source: BSD License
+ * Mode:         Text
+ * Package:
+ *
+ * (c) Copyright 1982, University of Utah
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *    * Redistributions of source code must retain the relevant copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+ * CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************
+ *
+ * Revisions:
+ *
+ * 11-Aug-88 (Julian Padget)
+ *  Added initialization of bpslowerbound in setupbps().
+ * 07-Apr-87 (Harold Carr & Leigh Stoller)
+ *  Put in error checking to ensure that the memory pointers will fit in
+ *   info field of the lisp item.
+ * 21-Dec-86 (Leigh Stoller)
+ *  Added allocatemorebps function, called from try-other-bps-spaces in
+ *   allocators.sl.
+ * 18-Dec-86 (Leigh Stoller)
+ *  Changed to newer model. Bps is now defined in bps.c so that unexec can
+ *  alter the text/data boundry. Took out code that allowed command line
+ *  modification of bpssize. (Now set in the Makefile). Added setupbps()
+ *  that initialzes nextbps and lastbps.
+ * 20-Sep-86 (Leigh Stoller)
+ *  Removed assembler alias statements because they are not portable. Instead,
+ *  a sed script will be used to convert the _variables of C to VARIABLES of
+ *  PSL.
+ *
+ *****************************************************************************
+ *
+ * $Id$
+ *
+ *****************************************************************************
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/mman.h>
 #include <errno.h>
-#include <limits.h>    /* for PAGESIZE */
-#include <inttypes.h>  // Make newer integer types  of known width available
+#include <limits.h>    // for PAGESIZE
+#include <inttypes.h>  // Make newer integer types of known width available
 #include <unistd.h>
+#include <sys/mman.h>
 
-#ifndef PAGESIZE
-#define PAGESIZE 4096
+#ifndef MY_PAGESIZE
+#define MY_PAGESIZE 4096
 #endif
-
-long unexec();
 
 
 /* Use 1 if using compacting collector ($pxnk/compact-gc.sl).
@@ -99,6 +96,7 @@ char *  imagefile;
 char *  abs_imagefile = NULL; /* like imagefile, but as an absolute path */
 int     max_image_size;
 int     oldbreakvalue;
+long pagesize = -1;
 
 long bpscontrol[2];
 
@@ -122,33 +120,22 @@ extern int  oldheapupperbound;
 extern int  oldheaplast;
 extern int  oldheaptrapbound;
 
-/* Write this ourselves to keep from including half the math library */
-static int power(x, n)
-     int x, n;
-{
-  int i, p;
-
-  p = 1;
-  for (i = 1; i <= n; ++i)
-    p = p * x;
-  return(p);
-}
 
 int creloc (unsigned int array, int len, int diff, unsigned int lowb, unsigned int uppb, int do_symval);
 
 long sizeofsymvectors = 0;
 
-void setupbps();
+void setupbps(void);
 void getheap(int);
 void read_error(char *,int,int);
+void * unexec(void);
 char *external_user_homedir_string();
 char *external_anyuser_homedir_string(char *);
 
 int
-setupbpsandheap(argc,argv)
-     int argc;
-     char *argv[];
-{ int ohl,ohtb,ohub,hl,htb,hlb,hub;
+setupbpsandheap(int argc,char *argv[])
+{
+  int ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub;
   int diff;
   int memset = 0;
   FILE * imago;
@@ -227,7 +214,7 @@ setupbpsandheap(argc,argv)
   /* On systems in which the image does not start at address 0, this won't
      really allocate the full maximum, but close enough. */
   current_size_in_bytes = (((int) sbrk(0))<<5)>>5;
-  max_image_size = power(2, _infbitlength_); /* 1 more than allowable size */
+  max_image_size = 1 << _infbitlength_; /* 1 more than allowable size */
 
   if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
     if (Debug > 0) {
@@ -239,21 +226,26 @@ setupbpsandheap(argc,argv)
   }
 
 #if (NUMBEROFHEAPS == 2)
-  heapsize =(heapsize_in_bytes / 4) * 2;  /* insure full words */
+  heapsize = (heapsize_in_bytes / 8) * 4;  /* ensure full words */
 #else
-  heapsize =(heapsize_in_bytes / 4) * 4;  /* insure full words */
+  heapsize = (heapsize_in_bytes / 8) * 8;  /* ensure full words */
 #endif
 
   heappercent = ((float) (total - bpssize) / total) * 100.0;
   bpspercent  = ((float) bpssize / total) * 100.0;
 
   if (imagefile == NULL)
-  { printf("Setting heap limit as follows:\n");
-    printf("Total heap & bps space = %d (%X), bps = %.2f, heap = %.2f\n",
-          total, total, bpspercent, heappercent);
-  }
+    {
+      if (Debug > 0)
+	{
+	  printf("Setting heap limit as follows:\n");
+	  printf("Total heap & bps space = %d (%X), bps = %.2f, heap = %.2f\n",
+		 total, total, bpspercent, heappercent);
+	}
+    }
 
   setupbps();
+
   getheap(heapsize);
 
   free (ii2); free(ii4); free (ii6); free(ii8);
@@ -262,132 +254,154 @@ setupbpsandheap(argc,argv)
 
 
   if (imagefile == NULL)
-  printf("symbol table size = %u (%X), symbol table address = %u (%X)\n"
-	 "bpssize = %u (%X), , bps address =  %u (%X)\n"
-	 "heapsize = %u (%X), heap address = %u (%X)\nTotal image size = %d (%X)\n",
-	 5*(&symprp - &symval), 5*(&symprp - &symval),
-	 (unsigned int) &symval, (unsigned int) &symval,
-	 bpssize, bpssize,
-	 bpslowerbound, bpslowerbound,
-	 heapsize, heapsize,
-	 heaplowerbound, heaplowerbound,
-	 (int) sbrk(0), (int) sbrk(0));
+    {
+      printf("symbol table size = %u (%X), symbol table address = %u (%X)\n"
+	     "bpssize = %u (%X), bps address =  %u (%X)\n"
+	     "heapsize = %u (%X), heap address = %u (%X)\n"
+	     "Page size = %d (%X)\n",
+	     5*(&symprp - &symval), 5*(&symprp - &symval),
+	     (unsigned int) &symval, (unsigned int) &symval,
+	     bpssize, bpssize,
+	     bpslowerbound, bpslowerbound,
+	     heapsize, heapsize,
+	     heaplowerbound, heaplowerbound,
+	     pagesize,pagesize);
+    }
 
-   if (imagefile != NULL) {
-	ohl = oldheaplowerbound; ohub = oldheapupperbound;
-	ohl =  oldheaplast; ohtb = oldheaptrapbound;
-        hlb = heaplowerbound; hub = heapupperbound;
-        hl =  heaplast; htb = heaptrapbound;
-    /* save the new values around restore of the old ones */
-	if (Debug > 0) {
+  if (imagefile != NULL)
+    {
+      ohlb = oldheaplowerbound; ohub = oldheapupperbound;
+      ohl =  oldheaplast; ohtb = oldheaptrapbound;
+      hlb = heaplowerbound; hub = heapupperbound;
+      hl =  heaplast; htb = heaptrapbound;
+      /* save the new values around restore of the old ones */
+
+      if (Debug > 0)
+	{
 	  printf("symbol table size = %u (%X), symbol table address = %u (%X)\n"
 		 "bpssize = %u (%X), bps address =  %u (%X)\n"
-		 "heapsize = %u (%X), heap address = %u (%X)\nTotal image size = %d (%X)\n",
+		 "heapsize = %u (%X), heap address = %u (%X), heaplast = %u (%X)\n",
 		 5*(&symprp - &symval), 5*(&symprp - &symval),
 		 (unsigned int) &symval, (unsigned int) &symval,
 		 bpssize, bpssize,
 		 bpslowerbound, bpslowerbound,
 		 heapsize, heapsize,
 		 heaplowerbound, heaplowerbound,
-		 (int) sbrk(0), (int) sbrk(0));
+		 hl, hl);
 	}
-	printf("Loading image file :%s \n",imagefile); 
-	imago = fopen (imagefile,"r");
-	if (imago == NULL) { 
-	  perror ("error");
+
+      printf("Loading image file :%s \n",imagefile);
+      imago = fopen (imagefile,"r");
+      if (imago == NULL)
+	{
+	  perror ("Error loading image file");
 	  exit (-1);
 	}
-	fread (headerword,4,2,imago);
-	unexec();      /* set control vector */
-	if ((int) bpscontrol[0] != headerword[0] 
-	    || bpscontrol[1] != headerword[1])
-	  { printf(" Cannot start the image with this bpsl \n");
-	    printf(" %lx != %x, %lx != %x\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
-	    exit (-19);
-	  }
-	fread (headerword,4,4,imago);
-	if (Debug > 0) {
+      fread (headerword,4,2,imago);
+      unexec();      /* set control vector */
+      if ((int) bpscontrol[0] != headerword[0] || bpscontrol[1] != headerword[1])
+	{
+	  printf(" Cannot start the image with this bpsl \n");
+	  printf(" %lx != %x, %lx != %x\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
+	  exit (-19);
+	}
+      fread (headerword,4,4,imago);
+      if (Debug > 0)
+	{
 	  printf("symbol table: %u (%x) bytes\n",headerword[0],headerword[0]);
 	  printf("heap: %u (%x) bytes\n",headerword[1],headerword[1]);
 	  printf("hash table: %u (%x) bytes\n",headerword[2],headerword[2]);
 	  printf("BPS: %u (%x) bytes\n",headerword[3],headerword[3]);
 	}
 
-	hugo = fread (&symval,1,headerword[0],imago);
-	diff = hlb-heaplowerbound;
+      hugo = fread (&symval,1,headerword[0],imago);
+      if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
 
-	if (Debug > 0) {
-	printf("Relocate heap: %x => %x: shift by %d\n", heaplowerbound, hlb, diff);
+      diff = hlb-heaplowerbound;
+
+      if (Debug > 0)
+	{
+	  printf("Relocate heap: %x => %x: shift by %d\n", heaplowerbound, hlb, diff);
 	}
 
-	if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
-	if (hlb < heaplowerbound) {
+      if (hlb < heaplowerbound)
+	{
 	  creloc((unsigned int) &symval,headerword[0]/4,diff,hlb -1,heapupperbound+1,1);
 	} 
-        else {
+      else
+	{
 	  creloc((unsigned int) &symval,headerword[0]/4,diff, heaplowerbound -1, heapupperbound+1,1);
 	}
 
-	sizeofsymvectors = headerword[0]/4;
+      sizeofsymvectors = headerword[0]/4;
 
-	hugo = fread ((char*)hlb,1,headerword[1],imago);
-	if (hugo != headerword[1]) read_error("heap",hugo,headerword[1]);
-	if (hlb < heaplowerbound) {
+      hugo = fread ((char*)hlb,1,headerword[1],imago);
+      if (hugo != headerword[1]) read_error("heap",hugo,headerword[1]);
+
+      if (hlb < heaplowerbound)
+	{
 	  creloc(hlb,headerword[1]/4,diff,hlb -1,heapupperbound+1,0);
 	}
-        else {
+      else
+	{
 	  creloc(hlb,headerword[1]/4,diff, heaplowerbound -1,heapupperbound+1,0);
 	}
-	heaplast += diff;
+      heaplast += diff;
 
-	hugo = fread (&hashtable,1,headerword[2],imago);
-	if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
-	hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
-	if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
-	fclose (imago);
-	if (memset || diff != 0) {
-	  oldheaplowerbound = ohl; oldheapupperbound = ohub;
+      hugo = fread (&hashtable,1,headerword[2],imago);
+      if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
+      hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
+      if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
+      fclose (imago);
+      if (memset || diff != 0)
+	{
+	  oldheaplowerbound = ohlb; oldheapupperbound = ohub;
 	  oldheaplast = ohl; oldheaptrapbound = ohtb;
 	  heaplowerbound = hlb; heapupperbound = hub;
 	  heaptrapbound = htb;
 	}
-	abs_imagefile = realpath(imagefile,NULL);
-	return (4711);
-   }
-   return (0);
+      abs_imagefile = realpath(imagefile,NULL);
+      return (4711);
+    }
+  return (0);
 
 }
 
 void
 read_error(char * what,int bytesread,int byteswanted)
-  {
-    printf("File too short while reading %s: bytes read = %d (%x), bytes expected = %d (%x)\n",
-           what,bytesread,bytesread,byteswanted,byteswanted);
-    exit(-1);
-  }
-
+{
+  printf("File too short while reading %s: bytes read = %d (%x), bytes expected = %d (%x)\n",
+	 what,bytesread,bytesread,byteswanted,byteswanted);
+  exit(-1);
+}
 
 
 /* The current procedure is to convert the starting address of the char
    array defined in bps.c to an address and store it in nextbps. A check
    is made to make sure that nextbps falls on an even word boundry.
  */
+
 void
 setupbps()
-{ char *p = (char *) bps;
+{
+  char *p = (char *) bps;
   int bpssize;
 
-//  nextbps = malloc (50000000);
-//  bps = nextbps;
+  pagesize = sysconf(_SC_PAGESIZE);
+  if (pagesize == -1) {
+    pagesize = MY_PAGESIZE;
+  }
+
   nextbps  =  ((int)bps + 3) & ~3;        /* Up to a multiple of 4. */
   bpslowerbound = nextbps;
   lastbps  =  ((int)bps + BPSSIZE) & ~3;    /* Down to a multiple of 4. */
-  p = (char *)(((int) bpslowerbound  -1) & ~(PAGESIZE-1));
-  bpssize =  ((BPSSIZE + PAGESIZE-1) & ~(PAGESIZE-1));
-  if (mprotect(p, bpssize, PROT_READ | PROT_WRITE | PROT_EXEC )) {
-            perror("Couldn’t mprotect");
-            exit(errno);
-          }
+  p = (char *)(((int) bpslowerbound - 1) & ~(pagesize-1));
+  bpssize =  ((BPSSIZE + pagesize-1) & ~(pagesize-1));
+  if (mprotect(p, bpssize, PROT_READ | PROT_WRITE | PROT_EXEC))
+    {
+      perror("Couldn’t mprotect");
+      exit(errno);
+    }
 }
 
 
@@ -416,25 +430,29 @@ allocatemorebps()
   }
   lastbps = nextbps + EXTRABPSSIZE;
 
-  return(EXTRABPSSIZE);   /* This will be a paramter later */
+  return(EXTRABPSSIZE);   /* This will be a parameter later */
 }
 
 void
-getheap(heapsize)
-     int heapsize;
+getheap(int heapsize)
 {
 
 #if (NUMBEROFHEAPS == 1)
+
   heaplowerbound        = (int)sbrk(heapsize);  /* allocate first heap */;
   oldheaplowerbound     = -1;
+
 #else
 
   heaplowerbound        = (int)sbrk(2 * heapsize);  /* allocate first heap */;
+
 #endif
-  if (heaplowerbound == -1) {
-    perror("GETHEAP");
-    exit(-1);
-  }
+
+  if (heaplowerbound == -1)
+    {
+      perror("GETHEAP");
+      exit(-1);
+    }
 
   /*heapsize = 119000000;
   heaplowerbound = &bps;
@@ -442,23 +460,23 @@ getheap(heapsize)
   */
   heapupperbound        = heaplowerbound + heapsize;
   heaplast              = heaplowerbound;
-  heaptrapbound         = heapupperbound -120;
-
+  heaptrapbound         = heapupperbound - 120;
 
 #if (NUMBEROFHEAPS == 2)
   oldheaplowerbound     = heapupperbound;
   oldheapupperbound     = oldheaplowerbound + heapsize;
   oldheaplast           = oldheaplowerbound;
-  oldheaptrapbound      = oldheapupperbound -120;
+  oldheaptrapbound      = oldheapupperbound - 120;
+
 #endif
+
   oldbreakvalue = (int)sbrk(0);
 }
 
 /* Tag( alterheapsize )
  */
 int
-alterheapsize(increment)
-int increment;
+alterheapsize(int increment)
 {
 /*
   alters the size of the heap by the specified increment.  Returns
@@ -472,16 +490,15 @@ int increment;
   Modifies both the heap and gcarray size.
   NOTE: a garbage collection should probably be performed before this
     routine is called.
-  NOTE: only implemented for the one heap version on the 68000.
 */
 
-  int heapsize;
   int current_size_in_bytes;
 
 #if (NUMBEROFHEAPS == 1)
+  int heapsize;
   int gcarraysize, newbreakvalue;
  
-  printf("***** cannot extend heap on this machine\n");
+  printf("***** Cannot extend heap on this machine\n");
   return(0);
 
   if ((int) sbrk(0) != oldbreakvalue)  /* Non contiguous memory */
@@ -500,6 +517,10 @@ int increment;
 
   if ((current_size_in_bytes +  increment) >= max_image_size)
     return(0);
+
+  if (Debug > 0) {
+    fprintf(stderr,"Trying to increase heap size by %d bytes\n",increment);
+  }
 
   if ((int)sbrk(increment) == -1)     /* the sbrk failed. */
      return(0);
@@ -533,25 +554,26 @@ int increment;
 
   newbreakvalue = (int) sbrk(0);
 
-  heapupperbound        = heapupperbound + increment ;
+  heapupperbound        = heapupperbound + increment;
   heaptrapbound         = heapupperbound - 120;
   oldheaplowerbound     = oldheaplowerbound + increment;
-  oldheapupperbound     = oldheapupperbound + 2* increment ;
+  oldheapupperbound     = oldheapupperbound + 2*increment;
   oldheaplast           = oldheaplowerbound;
-  oldheaptrapbound      = oldheapupperbound -120;
-
+  oldheaptrapbound      = oldheapupperbound - 120;
 
   oldbreakvalue = newbreakvalue;
   return(increment);
+
 #endif
 
 }
 
-long unexec()
+void *
+unexec()
 {
   bpscontrol[0] = bpslowerbound;
   bpscontrol[1] = BPSSIZE;
-  return((long) bpscontrol);
+  return (bpscontrol);
 }
 
 char * get_imagefilepath ()

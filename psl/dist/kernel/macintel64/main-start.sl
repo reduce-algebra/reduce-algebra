@@ -262,9 +262,9 @@
 )
 
 (compiletime
-  (setq mainentrypointname* '!p!s!l!_!m!a!i!n))
+  (setq mainentrypointname* '!_!p!s!l!_!m!a!i!n))
  
-(lap '((*entry !p!s!l!_!m!a!i!n expr 0)
+(lap '((*entry !_!p!s!l!_!m!a!i!n expr 0)
 
        (*move (reg rdi) (reg 1))
        (*move (reg rsi) (reg 2))

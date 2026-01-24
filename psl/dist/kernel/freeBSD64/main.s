@@ -1999,7 +1999,7 @@ pslsignalhandler:
 l0207:
  .quad [[4<<56]+l0208]
  .quad 0
-/ (*entry echoon expr 0)
+/ (*entry echooff expr 0)
  .globl l0209
 l0209:
  mov symval+2424(%rip),%rbx
@@ -2008,12 +2008,12 @@ l0209:
  shr $5,%rsp
  shl $5,%rsp
  mov %rax,40(%rsp)
- call echoon
+ call echooff
  mov 40(%rsp),%rsp
  mov %rbx,symval+2424(%rip)
  ret
  .quad 0
-/ (*entry echooff expr 0)
+/ (*entry echoon expr 0)
  .globl l0210
 l0210:
  mov symval+2424(%rip),%rbx
@@ -2022,7 +2022,7 @@ l0210:
  shr $5,%rsp
  shl $5,%rsp
  mov %rax,40(%rsp)
- call echooff
+ call echoon
  mov 40(%rsp),%rsp
  mov %rbx,symval+2424(%rip)
  ret
@@ -2088,10 +2088,24 @@ l0214:
  mov %rbx,symval+2424(%rip)
  add $8,%rsp
  ret
- .quad 1
-/ (*entry alterheapsize expr 1)
+ .quad 0
+/ (*entry unexec expr 0)
  .globl l0215
 l0215:
+ mov symval+2424(%rip),%rbx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
+ call unexec
+ mov 40(%rsp),%rsp
+ mov %rbx,symval+2424(%rip)
+ ret
+ .quad 1
+/ (*entry alterheapsize expr 1)
+ .globl l0216
+l0216:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -2107,8 +2121,8 @@ l0215:
  ret
  .quad 1
 / (*entry allocatemorebps expr 1)
- .globl l0216
-l0216:
+ .globl l0217
+l0217:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -2124,8 +2138,8 @@ l0216:
  ret
  .quad 0
 / (*entry get_imagefilepath expr 0)
- .globl l0217
-l0217:
+ .globl l0218
+l0218:
  mov symval+2424(%rip),%rbx
  mov %rsp,%rax
  sub $64,%rsp
@@ -2138,8 +2152,8 @@ l0217:
  ret
  .quad 3
 / (*entry get_file_status expr 3)
- .globl l0218
-l0218:
+ .globl l0219
+l0219:
  push %rcx
  push %rbx
  push %rax
@@ -2159,8 +2173,8 @@ l0218:
  ret
  .quad 2
 / (*entry os_startup_hook expr 2)
- .globl l0219
-l0219:
+ .globl l0220
+l0220:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2178,8 +2192,8 @@ l0219:
  ret
  .quad 0
 / (*entry os_cleanup_hook expr 0)
- .globl l0220
-l0220:
+ .globl l0221
+l0221:
  mov symval+2424(%rip),%rbx
  mov %rsp,%rax
  sub $64,%rsp
@@ -2192,8 +2206,8 @@ l0220:
  ret
  .quad 0
 / (*entry get_execfilepath expr 0)
- .globl l0221
-l0221:
+ .globl l0222
+l0222:
  mov symval+2424(%rip),%rbx
  mov %rsp,%rax
  sub $64,%rsp
@@ -2206,8 +2220,8 @@ l0221:
  ret
  .quad 1
 / (*entry external_alarm expr 1)
- .globl l0222
-l0222:
+ .globl l0223
+l0223:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -2223,8 +2237,8 @@ l0222:
  ret
  .quad 2
 / (*entry external_ualarm expr 2)
- .globl l0223
-l0223:
+ .globl l0224
+l0224:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2242,8 +2256,8 @@ l0223:
  ret
  .quad 1
 / (*entry external_time expr 1)
- .globl l0224
-l0224:
+ .globl l0225
+l0225:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -2257,12 +2271,10 @@ l0224:
  mov %rbx,symval+2424(%rip)
  add $8,%rsp
  ret
- .quad 1
-/ (*entry external_timc expr 1)
- .globl l0225
-l0225:
- push %rax
- mov 0(%rsp),%rdi
+ .quad 0
+/ (*entry external_timc expr 0)
+ .globl l0226
+l0226:
  mov symval+2424(%rip),%rbx
  mov %rsp,%rax
  sub $64,%rsp
@@ -2272,12 +2284,11 @@ l0225:
  call external_timc
  mov 40(%rsp),%rsp
  mov %rbx,symval+2424(%rip)
- add $8,%rsp
  ret
  .quad 2
 / (*entry external_stat expr 2)
- .globl l0226
-l0226:
+ .globl l0227
+l0227:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2294,9 +2305,45 @@ l0226:
  add $16,%rsp
  ret
  .quad 2
+/ (*entry external_mkdir expr 2)
+ .globl l0228
+l0228:
+ push %rbx
+ push %rax
+ mov 8(%rsp),%rsi
+ mov 0(%rsp),%rdi
+ mov symval+2424(%rip),%rbx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
+ call external_mkdir
+ mov 40(%rsp),%rsp
+ mov %rbx,symval+2424(%rip)
+ add $16,%rsp
+ ret
+ .quad 1
+/ (*entry external_rmdir expr 1)
+ .globl l0229
+l0229:
+ push %rax
+ mov 0(%rsp),%rdi
+ mov symval+2424(%rip),%rbx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
+ call external_rmdir
+ mov 40(%rsp),%rsp
+ mov %rbx,symval+2424(%rip)
+ add $8,%rsp
+ ret
+ .quad 2
 / (*entry external_link expr 2)
- .globl l0227
-l0227:
+ .globl l0230
+l0230:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2313,26 +2360,9 @@ l0227:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry external_strlen expr 1)
- .globl l0228
-l0228:
- push %rax
- mov 0(%rsp),%rdi
- mov symval+2424(%rip),%rbx
- mov %rsp,%rax
- sub $64,%rsp
- shr $5,%rsp
- shl $5,%rsp
- mov %rax,40(%rsp)
- call external_strlen
- mov 40(%rsp),%rsp
- mov %rbx,symval+2424(%rip)
- add $8,%rsp
- ret
- .quad 1
 / (*entry external_unlink expr 1)
- .globl l0229
-l0229:
+ .globl l0231
+l0231:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -2346,29 +2376,10 @@ l0229:
  mov %rbx,symval+2424(%rip)
  add $8,%rsp
  ret
- .quad 2
-/ (*entry external_setenv expr 2)
- .globl l0230
-l0230:
- push %rbx
- push %rax
- mov 8(%rsp),%rsi
- mov 0(%rsp),%rdi
- mov symval+2424(%rip),%rbx
- mov %rsp,%rax
- sub $64,%rsp
- shr $5,%rsp
- shl $5,%rsp
- mov %rax,40(%rsp)
- call external_setenv
- mov 40(%rsp),%rsp
- mov %rbx,symval+2424(%rip)
- add $16,%rsp
- ret
  .quad 1
-/ (*entry external_rmdir expr 1)
- .globl l0231
-l0231:
+/ (*entry external_strlen expr 1)
+ .globl l0232
+l0232:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -2377,29 +2388,10 @@ l0231:
  shr $5,%rsp
  shl $5,%rsp
  mov %rax,40(%rsp)
- call external_rmdir
+ call external_strlen
  mov 40(%rsp),%rsp
  mov %rbx,symval+2424(%rip)
  add $8,%rsp
- ret
- .quad 2
-/ (*entry external_mkdir expr 2)
- .globl l0232
-l0232:
- push %rbx
- push %rax
- mov 8(%rsp),%rsi
- mov 0(%rsp),%rdi
- mov symval+2424(%rip),%rbx
- mov %rsp,%rax
- sub $64,%rsp
- shr $5,%rsp
- shl $5,%rsp
- mov %rax,40(%rsp)
- call external_mkdir
- mov 40(%rsp),%rsp
- mov %rbx,symval+2424(%rip)
- add $16,%rsp
  ret
  .quad 1
 / (*entry external_getenv expr 1)
@@ -2419,9 +2411,47 @@ l0233:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry uxfloat expr 2)
+/ (*entry external_setenv expr 2)
  .globl l0234
 l0234:
+ push %rbx
+ push %rax
+ mov 8(%rsp),%rsi
+ mov 0(%rsp),%rdi
+ mov symval+2424(%rip),%rbx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
+ call external_setenv
+ mov 40(%rsp),%rsp
+ mov %rbx,symval+2424(%rip)
+ add $16,%rsp
+ ret
+ .quad 2
+/ (*entry external_mkfifo expr 2)
+ .globl l0235
+l0235:
+ push %rbx
+ push %rax
+ mov 8(%rsp),%rsi
+ mov 0(%rsp),%rdi
+ mov symval+2424(%rip),%rbx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
+ call external_mkfifo
+ mov 40(%rsp),%rsp
+ mov %rbx,symval+2424(%rip)
+ add $16,%rsp
+ ret
+ .quad 2
+/ (*entry uxfloat expr 2)
+ .globl l0236
+l0236:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2439,8 +2469,8 @@ l0234:
  ret
  .quad 1
 / (*entry uxfix expr 1)
- .globl l0235
-l0235:
+ .globl l0237
+l0237:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -2456,8 +2486,8 @@ l0235:
  ret
  .quad 2
 / (*entry uxassign expr 2)
- .globl l0236
-l0236:
+ .globl l0238
+l0238:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2473,29 +2503,10 @@ l0236:
  mov %rbx,symval+2424(%rip)
  add $16,%rsp
  ret
- .quad 2
-/ (*entry uxminus expr 2)
- .globl l0237
-l0237:
- push %rbx
- push %rax
- mov 8(%rsp),%rsi
- mov 0(%rsp),%rdi
- mov symval+2424(%rip),%rbx
- mov %rsp,%rax
- sub $64,%rsp
- shr $5,%rsp
- shl $5,%rsp
- mov %rax,40(%rsp)
- call uxminus
- mov 40(%rsp),%rsp
- mov %rbx,symval+2424(%rip)
- add $16,%rsp
- ret
  .quad 3
 / (*entry uxplus2 expr 3)
- .globl l0238
-l0238:
+ .globl l0239
+l0239:
  push %rcx
  push %rbx
  push %rax
@@ -2515,8 +2526,8 @@ l0238:
  ret
  .quad 3
 / (*entry uxdifference expr 3)
- .globl l0239
-l0239:
+ .globl l0240
+l0240:
  push %rcx
  push %rbx
  push %rax
@@ -2536,8 +2547,8 @@ l0239:
  ret
  .quad 3
 / (*entry uxtimes2 expr 3)
- .globl l0240
-l0240:
+ .globl l0241
+l0241:
  push %rcx
  push %rbx
  push %rax
@@ -2557,8 +2568,8 @@ l0240:
  ret
  .quad 3
 / (*entry uxquotient expr 3)
- .globl l0241
-l0241:
+ .globl l0242
+l0242:
  push %rcx
  push %rbx
  push %rax
@@ -2576,10 +2587,29 @@ l0241:
  mov %rbx,symval+2424(%rip)
  add $24,%rsp
  ret
+ .quad 2
+/ (*entry uxminus expr 2)
+ .globl l0243
+l0243:
+ push %rbx
+ push %rax
+ mov 8(%rsp),%rsi
+ mov 0(%rsp),%rdi
+ mov symval+2424(%rip),%rbx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
+ call uxminus
+ mov 40(%rsp),%rsp
+ mov %rbx,symval+2424(%rip)
+ add $16,%rsp
+ ret
  .quad 4
 / (*entry uxgreaterp expr 4)
- .globl l0242
-l0242:
+ .globl l0244
+l0244:
  push %rdx
  push %rcx
  push %rbx
@@ -2601,8 +2631,8 @@ l0242:
  ret
  .quad 4
 / (*entry uxlessp expr 4)
- .globl l0243
-l0243:
+ .globl l0245
+l0245:
  push %rdx
  push %rcx
  push %rbx
@@ -2624,8 +2654,8 @@ l0243:
  ret
  .quad 3
 / (*entry uxwritefloat expr 3)
- .globl l0244
-l0244:
+ .globl l0246
+l0246:
  push %rcx
  push %rbx
  push %rax
@@ -2645,8 +2675,8 @@ l0244:
  ret
  .quad 4
 / (*entry uxwritefloat8 expr 4)
- .globl l0245
-l0245:
+ .globl l0247
+l0247:
  push %rdx
  push %rcx
  push %rbx
@@ -2668,8 +2698,8 @@ l0245:
  ret
  .quad 2
 / (*entry uxdoubletofloat expr 2)
- .globl l0246
-l0246:
+ .globl l0248
+l0248:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2687,8 +2717,8 @@ l0246:
  ret
  .quad 2
 / (*entry uxfloattodouble expr 2)
- .globl l0247
-l0247:
+ .globl l0249
+l0249:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2706,8 +2736,8 @@ l0247:
  ret
  .quad 2
 / (*entry uxsin expr 2)
- .globl l0248
-l0248:
+ .globl l0250
+l0250:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2725,8 +2755,8 @@ l0248:
  ret
  .quad 2
 / (*entry uxcos expr 2)
- .globl l0249
-l0249:
+ .globl l0251
+l0251:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2744,8 +2774,8 @@ l0249:
  ret
  .quad 2
 / (*entry uxtan expr 2)
- .globl l0250
-l0250:
+ .globl l0252
+l0252:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2763,8 +2793,8 @@ l0250:
  ret
  .quad 2
 / (*entry uxasin expr 2)
- .globl l0251
-l0251:
+ .globl l0253
+l0253:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2782,8 +2812,8 @@ l0251:
  ret
  .quad 2
 / (*entry uxacos expr 2)
- .globl l0252
-l0252:
+ .globl l0254
+l0254:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2801,8 +2831,8 @@ l0252:
  ret
  .quad 2
 / (*entry uxatan expr 2)
- .globl l0253
-l0253:
+ .globl l0255
+l0255:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2820,8 +2850,8 @@ l0253:
  ret
  .quad 2
 / (*entry uxsqrt expr 2)
- .globl l0254
-l0254:
+ .globl l0256
+l0256:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2839,8 +2869,8 @@ l0254:
  ret
  .quad 2
 / (*entry uxexp expr 2)
- .globl l0255
-l0255:
+ .globl l0257
+l0257:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2858,8 +2888,8 @@ l0255:
  ret
  .quad 2
 / (*entry uxlog expr 2)
- .globl l0256
-l0256:
+ .globl l0258
+l0258:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2877,8 +2907,8 @@ l0256:
  ret
  .quad 3
 / (*entry uxatan2 expr 3)
- .globl l0257
-l0257:
+ .globl l0259
+l0259:
  push %rcx
  push %rbx
  push %rax
@@ -2898,8 +2928,8 @@ l0257:
  ret
  .quad 2
 / (*entry uxsinh expr 2)
- .globl l0258
-l0258:
+ .globl l0260
+l0260:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2917,8 +2947,8 @@ l0258:
  ret
  .quad 2
 / (*entry uxcosh expr 2)
- .globl l0259
-l0259:
+ .globl l0261
+l0261:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2936,8 +2966,8 @@ l0259:
  ret
  .quad 2
 / (*entry uxtanh expr 2)
- .globl l0260
-l0260:
+ .globl l0262
+l0262:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2953,12 +2983,14 @@ l0260:
  mov %rbx,symval+2424(%rip)
  add $16,%rsp
  ret
- .quad 2
-/ (*entry uxhypot expr 2)
- .globl l0261
-l0261:
+ .quad 3
+/ (*entry uxhypot expr 3)
+ .globl l0263
+l0263:
+ push %rcx
  push %rbx
  push %rax
+ mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -2970,12 +3002,33 @@ l0261:
  call uxhypot
  mov 40(%rsp),%rsp
  mov %rbx,symval+2424(%rip)
- add $16,%rsp
+ add $24,%rsp
+ ret
+ .quad 3
+/ (*entry uxpow expr 3)
+ .globl l0264
+l0264:
+ push %rcx
+ push %rbx
+ push %rax
+ mov 16(%rsp),%rdx
+ mov 8(%rsp),%rsi
+ mov 0(%rsp),%rdi
+ mov symval+2424(%rip),%rbx
+ mov %rsp,%rax
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rax,40(%rsp)
+ call uxpow
+ mov 40(%rsp),%rsp
+ mov %rbx,symval+2424(%rip)
+ add $24,%rsp
  ret
  .quad 0
 / (*entry external_pwd expr 0)
- .globl l0262
-l0262:
+ .globl l0265
+l0265:
  mov symval+2424(%rip),%rbx
  mov %rsp,%rax
  sub $64,%rsp
@@ -2988,8 +3041,8 @@ l0262:
  ret
  .quad 2
 / (*entry sun3_sigset expr 2)
- .globl l0263
-l0263:
+ .globl l0266
+l0266:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3007,8 +3060,8 @@ l0263:
  ret
  .quad 1
 / (*entry sigrelse expr 1)
- .globl l0264
-l0264:
+ .globl l0267
+l0267:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3024,8 +3077,8 @@ l0264:
  ret
  .quad 2
 / (*entry mask_signal expr 2)
- .globl l0265
-l0265:
+ .globl l0268
+l0268:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3041,33 +3094,10 @@ l0265:
  mov %rbx,symval+2424(%rip)
  add $16,%rsp
  ret
- .quad 4
-/ (*entry unexec expr 4)
- .globl l0266
-l0266:
- push %rdx
- push %rcx
- push %rbx
- push %rax
- mov 24(%rsp),%rcx
- mov 16(%rsp),%rdx
- mov 8(%rsp),%rsi
- mov 0(%rsp),%rdi
- mov symval+2424(%rip),%rbx
- mov %rsp,%rax
- sub $64,%rsp
- shr $5,%rsp
- shl $5,%rsp
- mov %rax,40(%rsp)
- call unexec
- mov 40(%rsp),%rsp
- mov %rbx,symval+2424(%rip)
- add $32,%rsp
- ret
  .quad 1
 / (*entry unixputc expr 1)
- .globl l0267
-l0267:
+ .globl l0269
+l0269:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3083,8 +3113,8 @@ l0267:
  ret
  .quad 1
 / (*entry unixputs expr 1)
- .globl l0268
-l0268:
+ .globl l0270
+l0270:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3100,8 +3130,8 @@ l0268:
  ret
  .quad 1
 / (*entry unixputn expr 1)
- .globl l0269
-l0269:
+ .globl l0271
+l0271:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3117,8 +3147,8 @@ l0269:
  ret
  .quad 0
 / (*entry unixcleario expr 0)
- .globl l0270
-l0270:
+ .globl l0272
+l0272:
  mov symval+2424(%rip),%rbx
  mov %rsp,%rax
  sub $64,%rsp
@@ -3131,8 +3161,8 @@ l0270:
  ret
  .quad 1
 / (*entry expand_file_name expr 1)
- .globl l0271
-l0271:
+ .globl l0273
+l0273:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3148,8 +3178,8 @@ l0271:
  ret
  .quad 2
 / (*entry unixopen expr 2)
- .globl l0272
-l0272:
+ .globl l0274
+l0274:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3167,8 +3197,8 @@ l0272:
  ret
  .quad 1
 / (*entry unixcd expr 1)
- .globl l0273
-l0273:
+ .globl l0275
+l0275:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3184,8 +3214,8 @@ l0273:
  ret
  .quad 1
 / (*entry ctime expr 1)
- .globl l0274
-l0274:
+ .globl l0276
+l0276:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3201,8 +3231,8 @@ l0274:
  ret
  .quad 1
 / (*entry external_system expr 1)
- .globl l0275
-l0275:
+ .globl l0277
+l0277:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3218,8 +3248,8 @@ l0275:
  ret
  .quad 1
 / (*entry external_fullpath expr 1)
- .globl l0276
-l0276:
+ .globl l0278
+l0278:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3235,8 +3265,8 @@ l0276:
  ret
  .quad 1
 / (*entry external_exit expr 1)
- .globl l0277
-l0277:
+ .globl l0279
+l0279:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3252,8 +3282,8 @@ l0277:
  ret
  .quad 2
 / (*entry fopen expr 2)
- .globl l0278
-l0278:
+ .globl l0280
+l0280:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3271,8 +3301,8 @@ l0278:
  ret
  .quad 1
 / (*entry fclose expr 1)
- .globl l0279
-l0279:
+ .globl l0281
+l0281:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3288,8 +3318,8 @@ l0279:
  ret
  .quad 4
 / (*entry fread expr 4)
- .globl l0280
-l0280:
+ .globl l0282
+l0282:
  push %rdx
  push %rcx
  push %rbx
@@ -3311,8 +3341,8 @@ l0280:
  ret
  .quad 2
 / (*entry fputc expr 2)
- .globl l0281
-l0281:
+ .globl l0283
+l0283:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3330,8 +3360,8 @@ l0281:
  ret
  .quad 1
 / (*entry fgetc expr 1)
- .globl l0282
-l0282:
+ .globl l0284
+l0284:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3347,8 +3377,8 @@ l0282:
  ret
  .quad 3
 / (*entry fgets expr 3)
- .globl l0283
-l0283:
+ .globl l0285
+l0285:
  push %rcx
  push %rbx
  push %rax
@@ -3368,8 +3398,8 @@ l0283:
  ret
  .quad 4
 / (*entry fwrite expr 4)
- .globl l0284
-l0284:
+ .globl l0286
+l0286:
  push %rdx
  push %rcx
  push %rbx
@@ -3391,8 +3421,8 @@ l0284:
  ret
  .quad 1
 / (*entry fflush expr 1)
- .globl l0285
-l0285:
+ .globl l0287
+l0287:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3408,8 +3438,8 @@ l0285:
  ret
  .quad 3
 / (*entry fseek expr 3)
- .globl l0286
-l0286:
+ .globl l0288
+l0288:
  push %rcx
  push %rbx
  push %rax
@@ -3429,8 +3459,8 @@ l0286:
  ret
  .quad 1
 / (*entry clearerr expr 1)
- .globl l0287
-l0287:
+ .globl l0289
+l0289:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3446,8 +3476,8 @@ l0287:
  ret
  .quad 1
 / (*entry xgetw expr 1)
- .globl l0288
-l0288:
+ .globl l0290
+l0290:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3463,8 +3493,8 @@ l0288:
  ret
  .quad 2
 / (*entry putw expr 2)
- .globl l0289
-l0289:
+ .globl l0291
+l0291:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3482,8 +3512,8 @@ l0289:
  ret
  .quad 2
 / (*entry signal expr 2)
- .globl l0290
-l0290:
+ .globl l0292
+l0292:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3501,8 +3531,8 @@ l0290:
  ret
  .quad 1
 / (*entry sleep expr 1)
- .globl l0291
-l0291:
+ .globl l0293
+l0293:
  push %rax
  mov 0(%rsp),%rdi
  mov symval+2424(%rip),%rbx
@@ -3515,50 +3545,6 @@ l0291:
  mov 40(%rsp),%rsp
  mov %rbx,symval+2424(%rip)
  add $8,%rsp
- ret
- .quad 3
-/ (*entry ieee_handler expr 3)
- .globl l0292
-l0292:
- push %rcx
- push %rbx
- push %rax
- mov 16(%rsp),%rdx
- mov 8(%rsp),%rsi
- mov 0(%rsp),%rdi
- mov symval+2424(%rip),%rbx
- mov %rsp,%rax
- sub $64,%rsp
- shr $5,%rsp
- shl $5,%rsp
- mov %rax,40(%rsp)
- call ieee_handler
- mov 40(%rsp),%rsp
- mov %rbx,symval+2424(%rip)
- add $24,%rsp
- ret
- .quad 4
-/ (*entry ieee_flags expr 4)
- .globl l0293
-l0293:
- push %rdx
- push %rcx
- push %rbx
- push %rax
- mov 24(%rsp),%rcx
- mov 16(%rsp),%rdx
- mov 8(%rsp),%rsi
- mov 0(%rsp),%rdi
- mov symval+2424(%rip),%rbx
- mov %rsp,%rax
- sub $64,%rsp
- shr $5,%rsp
- shl $5,%rsp
- mov %rax,40(%rsp)
- call ieee_flags
- mov 40(%rsp),%rsp
- mov %rbx,symval+2424(%rip)
- add $32,%rsp
  ret
  .quad 1
 / (*entry setlinebuf expr 1)
@@ -5910,12 +5896,12 @@ l0743:
  .byte 104,97,110,100,108,101,114,0,0
  .globl l0744
 l0744:
- .quad 5
- .byte 101,99,104,111,111,110,0,0
- .globl l0745
-l0745:
  .quad 6
  .byte 101,99,104,111,111,102,102,0
+ .globl l0745
+l0745:
+ .quad 5
+ .byte 101,99,104,111,111,110,0,0
  .globl l0746
 l0746:
  .quad 26
@@ -5944,84 +5930,83 @@ l0749:
  .byte 105,110,103,0
  .globl l0750
 l0750:
+ .quad 5
+ .byte 117,110,101,120,101,99,0,0
+ .globl l0751
+l0751:
  .quad 12
  .byte 97,108,116,101,114,104,101,97,112,115
  .byte 105,122,101,0
- .globl l0751
-l0751:
+ .globl l0752
+l0752:
  .quad 14
  .byte 97,108,108,111,99,97,116,101,109,111
  .byte 114,101,98,112,115,0
- .globl l0752
-l0752:
+ .globl l0753
+l0753:
  .quad 16
  .byte 103,101,116,95,105,109,97,103,101,102
  .byte 105,108,101,112,97,116,104,0
- .globl l0753
-l0753:
+ .globl l0754
+l0754:
  .quad 14
  .byte 103,101,116,95,102,105,108,101,95,115
  .byte 116,97,116,117,115,0
- .globl l0754
-l0754:
+ .globl l0755
+l0755:
  .quad 15
  .byte 103,101,116,95,101,120,101,99,102,105
  .byte 108,101,112,97,116,104,0,0
- .globl l0755
-l0755:
+ .globl l0756
+l0756:
  .quad 13
  .byte 101,120,116,101,114,110,97,108,95,97
  .byte 108,97,114,109,0,0
- .globl l0756
-l0756:
+ .globl l0757
+l0757:
  .quad 14
  .byte 101,120,116,101,114,110,97,108,95,117
  .byte 97,108,97,114,109,0
- .globl l0757
-l0757:
- .quad 12
- .byte 101,120,116,101,114,110,97,108,95,116
- .byte 105,109,101,0
  .globl l0758
 l0758:
  .quad 12
  .byte 101,120,116,101,114,110,97,108,95,116
- .byte 105,109,99,0
+ .byte 105,109,101,0
  .globl l0759
 l0759:
  .quad 12
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 116,97,116,0
+ .byte 101,120,116,101,114,110,97,108,95,116
+ .byte 105,109,99,0
  .globl l0760
 l0760:
  .quad 12
- .byte 101,120,116,101,114,110,97,108,95,108
- .byte 105,110,107,0
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 116,97,116,0
  .globl l0761
 l0761:
- .quad 14
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 116,114,108,101,110,0
- .globl l0762
-l0762:
- .quad 14
- .byte 101,120,116,101,114,110,97,108,95,117
- .byte 110,108,105,110,107,0
- .globl l0763
-l0763:
- .quad 14
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 101,116,101,110,118,0
- .globl l0764
-l0764:
- .quad 13
- .byte 101,120,116,101,114,110,97,108,95,114
- .byte 109,100,105,114,0,0
- .globl l0765
-l0765:
  .quad 13
  .byte 101,120,116,101,114,110,97,108,95,109
  .byte 107,100,105,114,0,0
+ .globl l0762
+l0762:
+ .quad 13
+ .byte 101,120,116,101,114,110,97,108,95,114
+ .byte 109,100,105,114,0,0
+ .globl l0763
+l0763:
+ .quad 12
+ .byte 101,120,116,101,114,110,97,108,95,108
+ .byte 105,110,107,0
+ .globl l0764
+l0764:
+ .quad 14
+ .byte 101,120,116,101,114,110,97,108,95,117
+ .byte 110,108,105,110,107,0
+ .globl l0765
+l0765:
+ .quad 14
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 116,114,108,101,110,0
  .globl l0766
 l0766:
  .quad 14
@@ -6029,223 +6014,223 @@ l0766:
  .byte 101,116,101,110,118,0
  .globl l0767
 l0767:
- .quad 6
- .byte 117,120,102,108,111,97,116,0
+ .quad 14
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 101,116,101,110,118,0
  .globl l0768
 l0768:
- .quad 4
- .byte 117,120,102,105,120,0
+ .quad 14
+ .byte 101,120,116,101,114,110,97,108,95,109
+ .byte 107,102,105,102,111,0
  .globl l0769
 l0769:
- .quad 7
- .byte 117,120,97,115,115,105,103,110,0,0
+ .quad 6
+ .byte 117,120,102,108,111,97,116,0
  .globl l0770
 l0770:
- .quad 6
- .byte 117,120,109,105,110,117,115,0
+ .quad 4
+ .byte 117,120,102,105,120,0
  .globl l0771
 l0771:
- .quad 6
- .byte 117,120,112,108,117,115,50,0
+ .quad 7
+ .byte 117,120,97,115,115,105,103,110,0,0
  .globl l0772
 l0772:
+ .quad 6
+ .byte 117,120,112,108,117,115,50,0
+ .globl l0773
+l0773:
  .quad 11
  .byte 117,120,100,105,102,102,101,114,101
  .byte 110,99,101,0,0
- .globl l0773
-l0773:
- .quad 7
- .byte 117,120,116,105,109,101,115,50,0,0
  .globl l0774
 l0774:
- .quad 9
- .byte 117,120,113,117,111,116,105,101,110
- .byte 116,0,0
+ .quad 7
+ .byte 117,120,116,105,109,101,115,50,0,0
  .globl l0775
 l0775:
  .quad 9
- .byte 117,120,103,114,101,97,116,101,114
- .byte 112,0,0
+ .byte 117,120,113,117,111,116,105,101,110
+ .byte 116,0,0
  .globl l0776
 l0776:
  .quad 6
- .byte 117,120,108,101,115,115,112,0
+ .byte 117,120,109,105,110,117,115,0
  .globl l0777
 l0777:
+ .quad 9
+ .byte 117,120,103,114,101,97,116,101,114
+ .byte 112,0,0
+ .globl l0778
+l0778:
+ .quad 6
+ .byte 117,120,108,101,115,115,112,0
+ .globl l0779
+l0779:
  .quad 11
  .byte 117,120,119,114,105,116,101,102,108
  .byte 111,97,116,0,0
- .globl l0778
-l0778:
+ .globl l0780
+l0780:
  .quad 12
  .byte 117,120,119,114,105,116,101,102,108
  .byte 111,97,116,56,0
- .globl l0779
-l0779:
+ .globl l0781
+l0781:
  .quad 14
  .byte 117,120,100,111,117,98,108,101,116
  .byte 111,102,108,111,97,116,0
- .globl l0780
-l0780:
+ .globl l0782
+l0782:
  .quad 14
  .byte 117,120,102,108,111,97,116,116,111
  .byte 100,111,117,98,108,101,0
- .globl l0781
-l0781:
- .quad 4
- .byte 117,120,115,105,110,0
- .globl l0782
-l0782:
- .quad 4
- .byte 117,120,99,111,115,0
  .globl l0783
 l0783:
  .quad 4
- .byte 117,120,116,97,110,0
+ .byte 117,120,115,105,110,0
  .globl l0784
 l0784:
- .quad 5
- .byte 117,120,97,115,105,110,0,0
+ .quad 4
+ .byte 117,120,99,111,115,0
  .globl l0785
 l0785:
- .quad 5
- .byte 117,120,97,99,111,115,0,0
+ .quad 4
+ .byte 117,120,116,97,110,0
  .globl l0786
 l0786:
  .quad 5
- .byte 117,120,97,116,97,110,0,0
+ .byte 117,120,97,115,105,110,0,0
  .globl l0787
 l0787:
  .quad 5
- .byte 117,120,115,113,114,116,0,0
+ .byte 117,120,97,99,111,115,0,0
  .globl l0788
 l0788:
- .quad 4
- .byte 117,120,101,120,112,0
+ .quad 5
+ .byte 117,120,97,116,97,110,0,0
  .globl l0789
 l0789:
- .quad 4
- .byte 117,120,108,111,103,0
+ .quad 5
+ .byte 117,120,115,113,114,116,0,0
  .globl l0790
 l0790:
- .quad 6
- .byte 117,120,97,116,97,110,50,0
+ .quad 4
+ .byte 117,120,101,120,112,0
  .globl l0791
 l0791:
- .quad 5
- .byte 117,120,115,105,110,104,0,0
+ .quad 4
+ .byte 117,120,108,111,103,0
  .globl l0792
 l0792:
- .quad 5
- .byte 117,120,99,111,115,104,0,0
+ .quad 6
+ .byte 117,120,97,116,97,110,50,0
  .globl l0793
 l0793:
  .quad 5
- .byte 117,120,116,97,110,104,0,0
+ .byte 117,120,115,105,110,104,0,0
  .globl l0794
 l0794:
- .quad 6
- .byte 117,120,104,121,112,111,116,0
+ .quad 5
+ .byte 117,120,99,111,115,104,0,0
  .globl l0795
 l0795:
+ .quad 5
+ .byte 117,120,116,97,110,104,0,0
+ .globl l0796
+l0796:
+ .quad 6
+ .byte 117,120,104,121,112,111,116,0
+ .globl l0797
+l0797:
+ .quad 4
+ .byte 117,120,112,111,119,0
+ .globl l0798
+l0798:
  .quad 11
  .byte 101,120,116,101,114,110,97,108,95,112
  .byte 119,100,0,0
- .globl l0796
-l0796:
+ .globl l0799
+l0799:
  .quad 10
  .byte 115,117,110,51,95,115,105,103,115,101
  .byte 116,0
- .globl l0797
-l0797:
+ .globl l0800
+l0800:
  .quad 7
  .byte 115,105,103,114,101,108,115,101,0,0
- .globl l0798
-l0798:
+ .globl l0801
+l0801:
  .quad 10
  .byte 109,97,115,107,95,115,105,103,110,97
  .byte 108,0
- .globl l0799
-l0799:
- .quad 5
- .byte 117,110,101,120,101,99,0,0
- .globl l0800
-l0800:
+ .globl l0802
+l0802:
  .quad 15
  .byte 101,120,112,97,110,100,95,102,105,108
  .byte 101,95,110,97,109,101,0,0
- .globl l0801
-l0801:
- .quad 5
- .byte 117,110,105,120,99,100,0,0
- .globl l0802
-l0802:
- .quad 4
- .byte 99,116,105,109,101,0
  .globl l0803
 l0803:
+ .quad 5
+ .byte 117,110,105,120,99,100,0,0
+ .globl l0804
+l0804:
+ .quad 4
+ .byte 99,116,105,109,101,0
+ .globl l0805
+l0805:
  .quad 14
  .byte 101,120,116,101,114,110,97,108,95,115
  .byte 121,115,116,101,109,0
- .globl l0804
-l0804:
+ .globl l0806
+l0806:
  .quad 16
  .byte 101,120,116,101,114,110,97,108,95,102
  .byte 117,108,108,112,97,116,104,0
- .globl l0805
-l0805:
- .quad 4
- .byte 102,111,112,101,110,0
- .globl l0806
-l0806:
- .quad 4
- .byte 102,112,117,116,99,0
  .globl l0807
 l0807:
  .quad 4
- .byte 102,103,101,116,99,0
+ .byte 102,111,112,101,110,0
  .globl l0808
 l0808:
  .quad 4
- .byte 102,103,101,116,115,0
+ .byte 102,112,117,116,99,0
  .globl l0809
 l0809:
- .quad 5
- .byte 102,119,114,105,116,101,0,0
+ .quad 4
+ .byte 102,103,101,116,99,0
  .globl l0810
 l0810:
- .quad 5
- .byte 102,102,108,117,115,104,0,0
+ .quad 4
+ .byte 102,103,101,116,115,0
  .globl l0811
 l0811:
- .quad 4
- .byte 102,115,101,101,107,0
+ .quad 5
+ .byte 102,119,114,105,116,101,0,0
  .globl l0812
 l0812:
- .quad 7
- .byte 99,108,101,97,114,101,114,114,0,0
+ .quad 5
+ .byte 102,102,108,117,115,104,0,0
  .globl l0813
 l0813:
- .quad 3
- .byte 112,117,116,119,0,0
+ .quad 4
+ .byte 102,115,101,101,107,0
  .globl l0814
 l0814:
- .quad 5
- .byte 115,105,103,110,97,108,0,0
+ .quad 7
+ .byte 99,108,101,97,114,101,114,114,0,0
  .globl l0815
 l0815:
- .quad 4
- .byte 115,108,101,101,112,0
+ .quad 3
+ .byte 112,117,116,119,0,0
  .globl l0816
 l0816:
- .quad 11
- .byte 105,101,101,101,95,104,97,110,100,108
- .byte 101,114,0,0
+ .quad 5
+ .byte 115,105,103,110,97,108,0,0
  .globl l0817
 l0817:
- .quad 9
- .byte 105,101,101,101,95,102,108,97,103,115
- .byte 0,0
+ .quad 4
+ .byte 115,108,101,101,112,0
  .globl l0818
 l0818:
  .quad 9

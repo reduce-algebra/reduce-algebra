@@ -109,7 +109,7 @@ sun3_sigrelse(int sig, void (*action)())
 
 }
  
-
+#if 0
 int
 ieee_handler(char *x,int y)
 {
@@ -122,6 +122,7 @@ ieee_flags(long long x1,long long x2,long long x3,long long x4)
   //  if(x1 == 10)  forminit((FILE **)x2,(FILE **)x3);
   //return 0;
 }
+#endif
 
 /*
  * block / unblock a specific signal

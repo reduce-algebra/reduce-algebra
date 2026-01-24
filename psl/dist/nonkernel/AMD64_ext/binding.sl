@@ -114,7 +114,7 @@
     (bstackunderflow)
     (while (wgreaterp bndstkptr ptr)
       (setf (symval (inf (bndstkid bndstkptr))) (bndstkval bndstkptr))
-        (setq bndstkptr (adjustbndstkptr bndstkptr -1)))))
+      (setq bndstkptr (adjustbndstkptr bndstkptr -1)))))
 
 (de clearbindings ()
   %. Restore bindings to top level

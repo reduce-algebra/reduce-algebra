@@ -1,5 +1,4 @@
  
-s/main/_psl_main/g
 s/\*jumphugo %eax/jmp  \*%eax/g
 s/mov \[\[/movl $\(\(/g
 s/mov /movl /g

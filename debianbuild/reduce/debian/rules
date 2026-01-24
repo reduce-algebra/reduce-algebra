@@ -93,15 +93,15 @@ endif
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-	cd $(TOPDIR) ; ./configure --prefix=/usr --with-csl
+	cd $(TOPDIR) ; ./autogen.sh
+	cd $(TOPDIR) ; ./configure --without-autogen --prefix=/usr --with-csl
 ifneq ($(BUILDPSL),)
-	cd $(TOPDIR) ; ./configure --with-psl
+	cd $(TOPDIR) ; ./configure --without-autogen --with-psl
 endif
 	mkdir -p $(REDFRONTBUILDDIR)
-	cd $(REDFRONTSRCDIR) ; autoreconf -f -i -v
-	cd $(REDFRONTBUILDDIR) ; ../configure
 	mkdir -p $(LIBEDITBUILDDIR)
-	cd $(LIBEDITBUILDDIR) ; autoreconf -f -i -v; $(LIBEDITSRCDIR)/configure --prefix=$(REDFRONTSRCDIR) --enable-widec
+	cd $(LIBEDITBUILDDIR) ; $(LIBEDITSRCDIR)/configure --prefix=$(REDFRONTSRCDIR) --enable-widec
+	cd $(REDFRONTBUILDDIR) ; ../configure
 	touch configure-stamp
 
 
@@ -137,10 +137,10 @@ install-stamp: build-stamp
 	cp $(GENERICTOPDIR)/breduce/breduce.tex $(GENERICTOPDIR)/breduce/breduce.bbl $(GENERICTOPDIR)/breduce/breduce.pdf $(ADDONDOCDIR)
 # copy man files
 	cp debian/csl.1 debian/redcsl.1 debian/redpsl.1 $(MANDIR)/man1
-	ln -s debian/redcsl.1 $(MANDIR)/man1/bootstrapreduce.1
+	ln -f -s debian/redcsl.1 $(MANDIR)/man1/bootstrapreduce.1
 	cp $(REDFRONTSRCDIR)/redfront.1 $(MANDIR)/man1
-	ln -s redfront.1 $(MANDIR)/man1/rfcsl.1
-	ln -s redfront.1 $(MANDIR)/man1/rfpsl.1
+	ln -f -s redfront.1 $(MANDIR)/man1/rfcsl.1
+	ln -f -s redfront.1 $(MANDIR)/man1/rfpsl.1
 	cp $(GENERICTOPDIR)/breduce/breduce.1 $(MANDIR)/man1
 # copy CSL files
 	cp -r $(CSLBUILDDIR)/csl/reduce.img \
