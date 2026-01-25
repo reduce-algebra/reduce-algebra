@@ -86,8 +86,8 @@
 
 
 (define-constant maxtokensize          5000)
-(define-constant bndstksize            2000)
-(define-constant catchstacksize        400)
+(define-constant bndstksize            20000)
+(define-constant catchstacksize        4000)
 (define-constant hash-table-size       68023)
 (define-constant savesize              4)
 (define-constant maxargblock           15)

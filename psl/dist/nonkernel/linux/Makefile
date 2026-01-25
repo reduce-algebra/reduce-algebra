@@ -69,7 +69,7 @@ PXNKFILES= \
 	$(PNKL)/allocators.b $(PNKL)/binding.b $(PNKL)/386-ext.b \
 	$(PNKL)/scan-table.b $(PNKL)/sys-date.b $(PNKL)/sys-extras.b \
 	$(PNKL)/sys-faslin.b $(PNKL)/sys-gc.b $(PNKL)/sys-io.b \
-	$(PNKL)/static-gc.b \
+	$(PNKL)/static-gc.b $(PNKL)/catch-throw.b \
 	$(PNKL)/timc.b $(PNKL)/trap.b $(PNKL)/write-float.b $(PNKL)/wfloat.b
 
 all: $(PXNKFILES)
@@ -86,6 +86,9 @@ $(PNKL)/backtrace.b: $(PXNK)/backtrace.sl
 
 $(PNKL)/binding.b: $(PXNK)/binding.sl
 	$(PDIST)/make-pnk-lap.bsh $(PXNK) binding
+
+$(PNKL)/catch-throw.b: $(PXNK)/catch-throw.sl $(PL)/if-system.b	
+	$(PDIST)/make-pnk-lap.bsh $(PXNK) catch-throw
 
 $(PNKL)/ieee-decls.b: $(PXNK)/ieee-decls.sl $(PL)/if-system.b
 	$(PDIST)/make-pnk-lap.bsh $(PXNK) ieee-decls
@@ -147,9 +150,6 @@ $(PNKL)/static-gc.b: $(PXNK)/static-gc.sl
 $(PNKL)/base-io.b: $(PXNK)/base-io.sl $(PL)/if-system.b $(PNKL)/io-decls.b
 	$(PDIST)/make-pnk-lap.bsh $(PXNK) base-io
  
-$(PNKL)/catch-throw.b: $(PXNK)/catch-throw.sl $(PL)/if-system.b	
-	$(PDIST)/make-pnk-lap.bsh $(PXNK) catch-throw
-
 $(PNKL)/copiers.b: $(PXNK)/copiers.sl
 	$(PDIST)/make-pnk-lap.bsh $(PXNK) copiers
 
