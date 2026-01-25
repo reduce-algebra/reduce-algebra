@@ -7,7 +7,7 @@ Standards-Version: 3.9.1
 Homepage: https://reduce-algebra.sourceforge.io/
 
 Package: reduce-complete
-Architecture: i386 amd64
+Architecture: i386 amd64 arm arm64 riscv64
 Depends: gnuplot-x11 | gnuplot-qt, ${shlibs:Depends}, ${misc:Depends}
 Conflicts: reduce-common, reduce-csl, reduce-psl, reduce-addons
 Description: REDUCE Computer Algebra System

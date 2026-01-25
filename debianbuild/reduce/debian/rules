@@ -75,7 +75,8 @@ endif
 	rm -rf $(GENERICTOPDIR)/newfront/lib
 	rm -rf $(GENERICTOPDIR)/newfront/include
 
-clean: 
+clean:
+	printf "\n\n@@@@ debian rules: clean @@@@\n\n"; 
 	dh_clean
 #	cd $(TOPDIR) ; make clean
 	-make -C $(DOCMISCDIR) clean
@@ -92,6 +93,7 @@ endif
 #override_dh_auto_configure:
 configure: configure-stamp
 configure-stamp:
+	printf "\n\n@@@@ debian rules: configure @@@@\n\n"; 
 	dh_testdir
 	cd $(TOPDIR) ; ./autogen.sh
 	cd $(TOPDIR) ; ./configure --without-autogen --prefix=/usr --with-csl
@@ -107,21 +109,33 @@ endif
 
 build:	build-stamp
 build-stamp:	configure-stamp
+	printf "\n\n@@@@ debian rules: build @@@@\n\n"; 
 	dh_testdir
-#	cd $(TOPDIR) ; make
-	cd $(CSLBUILDDIR) ; make bootstrapreduce.img ; make csl.img ; make
+	printf "\n\n@@@@ debian rules: build - bootstrapreduce.img @@@@\n\n"; 
+	cd $(CSLBUILDDIR) ; make bootstrapreduce.img
+	printf "\n\n@@@@ debian rules: build - csl.img @@@@\n\n"; 
+	cd $(CSLBUILDDIR) ; make csl.img
+	printf "\n\n@@@@ debian rules: build - CSL Reduce @@@@\n\n"; 
+	cd $(CSLBUILDDIR) ; make
 ifneq ($(BUILDPSL),)
+	printf "\n\n@@@@ debian rules: build - PSL Reduce @@@@\n\n"; 
 	cd $(PSLBUILDDIR) ; make
 endif
+	printf "\n\n@@@@ debian rules: build - docmisc @@@@\n\n"; 
 	cd $(DOCMISCDIR) ; make
+	printf "\n\n@@@@ debian rules: build - docsrc @@@@\n\n"; 
 	cd $(DOCSRCDIR) ; make
+	printf "\n\n@@@@ debian rules: build - libedit @@@@\n\n"; 
 	cd $(LIBEDITBUILDDIR) ; make install
+	printf "\n\n@@@@ debian rules: build - redfront @@@@\n\n"; 
 	cd $(REDFRONTBUILDDIR) ; make
+	printf "\n\n@@@@ debian rules: build complete @@@@\n\n"; 
 	touch build-stamp
 
 
 install: install-stamp
 install-stamp: build-stamp
+	printf "\n\n@@@@ debian rules: install @@@@\n\n"; 
 # create target directories
 	mkdir -p $(SHAREDIR)/scripts $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR) $(MANDIR)/man1
 	mkdir -p $(REDFRONTSHAREDIR)/redfront $(EMACSSITELISPDIR) $(EMACSSITESTARTDIR) $(ADDONDOCDIR)
@@ -142,6 +156,7 @@ install-stamp: build-stamp
 	ln -f -s redfront.1 $(MANDIR)/man1/rfcsl.1
 	ln -f -s redfront.1 $(MANDIR)/man1/rfpsl.1
 	cp $(GENERICTOPDIR)/breduce/breduce.1 $(MANDIR)/man1
+	printf "\n\n@@@@ debian rules: install - CSL files  @@@@\n\n"; 
 # copy CSL files
 	cp -r $(CSLBUILDDIR)/csl/reduce.img \
 		$(CSLBUILDDIR)/csl/reduce \
@@ -156,6 +171,7 @@ install-stamp: build-stamp
 	$(RSYNC_CMD) --chmod=Fa-x --exclude "/src/***" $(CSLBUILDDIR)/csl/reduce.fonts/ $(FONTDIR)
 #	chmod -x $(FONTDIR)/*.ttf $(FONTDIR)/*.pfa $(FONTDIR)/*.pfb
 ifneq ($(BUILDPSL),)                                                          # copy PSL files
+	printf "\n\n@@@@ debian rules: install - PSL files  @@@@\n\n"; 
 	$(RSYNC_CMD) --exclude "kernel/***" --exclude "xport.*" $(PSLBUILDDIR)/psl/ $(LIBDIR)/pslbuild/psl/
 	chmod -x $(LIBDIR)/pslbuild/psl/*.b
 	$(RSYNC_CMD) $(PSLBUILDDIR)/red/ $(LIBDIR)/pslbuild/red/
@@ -163,6 +179,7 @@ ifneq ($(BUILDPSL),)                                                          # 
 	$(TOPDIR)/psl/saveimage.sh $(PSLBUILDDIR) $(abspath $(LIBDIR)/pslbuild/red) /usr/lib/reduce/pslbuild
 endif
 # copy common files
+	printf "\n\n@@@@ debian rules: install - common files  @@@@\n\n"; 
 	$(RSYNC_CMD) --no-perms --chmod=Fa-x --exclude "/regressions/***" $(TOPDIR)/packages/ $(SHAREDIR)/packages/
 #	chmod a+x $(TOPDIR)/packages/gcref/gcref $(TOPDIR)/packages/redlog/regressions/make.sh
 	for file in $(shell cat debian/reduce.scripts) ; do chmod a+x $(SHAREDIR)/$${file} ; done
@@ -181,6 +198,7 @@ endif
 	cp -a debian/runbootstrapreduce.sh $(BINDIR)/bootstrapreduce
 	cp -a debian/runcsllisp.sh $(BINDIR)/csl
 # copy rest
+	printf "\n\n@@@@ debian rules: install - other files @@@@\n\n"; 
 	cp $(REDFRONTBUILDDIR)/rfcsl $(BINDIR)
 	cp $(REDFRONTBUILDDIR)/rfpsl $(BINDIR)
 	cp $(GENERICTOPDIR)/breduce/breduce $(BINDIR)
@@ -195,14 +213,17 @@ endif
 	cp debian/redpsl.desktop $(DESKTOPDIR)/redpsl.desktop
 	chmod a-x $(DESKTOPDIR)/*.desktop
 
+	printf "\n\n@@@@ debian rules: install - dh_install  @@@@\n\n"; 
 # run dh_install to copy the files into the package build dirs
 	dh_install
+	printf "\n\n@@@@ debian rules: install - complete  @@@@\n\n"; 
 
 	touch install-stamp
 
 
 # Build architecture-independent files here.
 binary-indep: install
+	printf "\n\n@@@@ debian rules: binary-indep @@@@\n\n"; 
 	dh_testdir -i
 	dh_testroot -i
 	dh_installdocs -i
@@ -227,6 +248,7 @@ binary-indep: install
 
 # Build architecture-dependent files here.
 binary-arch: install
+	printf "\n\n@@@@ debian rules: binary-arch @@@@\n\n"; 
 	dh_testdir -a
 	dh_testroot -a
 	dh_installdocs -a
