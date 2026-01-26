@@ -62,19 +62,19 @@ endif
 # the default one.
 
 all:	$(FOXDEP) $(WXDEP)
-	echo Build all: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) all
+	printf "\n\n=== Build all: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) all\n"
 	cd $(LISPDIR) && $(LOCALCYG) $(MAKE) $(MFLAGS) $(MYFLAGS) all MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 
 
 if csl
 if fox
 fox $(FOXDEP):
-	echo Build FOX: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
+	printf "\n\n=== Build FOX: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install\n\n"
 	cd fox && $(LOCALCYG) $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 endif
 if wx
 wx $(WXDEP):
-	echo Build wxWidgets: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
+	printf "\n\n=== Build wxWidgets: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install\n"
 	cd wxWidgets && $(LOCALCYG) $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 endif
 
@@ -92,7 +92,7 @@ $(srcdir)/Makefile.am:
 endif
 
 %::	$(FOXDEP) $(WXDEP)
-	echo $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) makecmdgoals=$(MAKECMDGOALS)
+	printf "\n=== $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) makecmdgoals=$(MAKECMDGOALS)\n"
 	cd $(LISPDIR) && $(MAKE) $(MFLAGS) $(MYFLAGS) $(MAKECMDGOALS) MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 
 # end of Makefile.am

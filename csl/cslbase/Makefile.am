@@ -799,6 +799,7 @@ SHARED=$(cslbase)/fwin.h $(cslbase)/log.h $(cslbase)/termed.h \
 	$(cslbase)/fwin.cpp $(cslbase)/termed.cpp 
 
 $(FOXDEPS):	$(csl)/fox/CHANGED $(SHARED)
+	printf "\n\n=== About to build FOX library\n\n";
 	@printf "About to build FOX for %s ($@)\n" `pwd`
 	-$(TRACE)@$(MAKE) -C ../fox install
 
@@ -834,6 +835,7 @@ reduce_DEPENDENCIES += $(CRLIBMDEPS)
 reduce_web_DEPENDENCIES += $(CRLIBMDEPS)
 
 $(CRLIBMDEPS):
+	printf "\n\n=== About to build crlibm library\n\n";
 	@printf "About to build crlibm for %s ($@)\n" `pwd`
 	-$(TRACE)@$(MAKE) -C ../crlibm/scs_lib
 	-$(TRACE)@$(MAKE) -C ../crlibm install-am
@@ -871,6 +873,7 @@ reduce_web_DEPENDENCIES += $(JITDEPS)
 
 $(JITDEPS):
 	@printf "About to build asmjit for %s ($@)\n" `pwd`
+	printf "\n\n=== About to build asmjit library\n\n";
 	-$(TRACE)@$(MAKE) -C ../asmjit install
 
 else !enable_jit
@@ -921,6 +924,7 @@ reduce_web_DEPENDENCIES += $(LIBFFIDEPS)
 
 $(LIBFFIDEPS):
 	@printf "About to build libffi for %s ($@)\n" `pwd`
+	printf "\n\n=== About to build libffi library\n\n";
 	-$(TRACE)@$(MAKE) -C ../libffi install
 
 endif !mac_framework
@@ -954,6 +958,7 @@ reduce_web_DEPENDENCIES += $(SOFTFLOATDEPS)
 
 $(SOFTFLOATDEPS):
 	@printf "About to build softfloat for %s ($@)\n" `pwd`
+	printf "\n\n=== About to build softfloat library\n\n";
 	-$(TRACE)@$(MAKE) -C ../softfloat install
 
 # Note that all the compilation of these files must be performed using
@@ -1348,6 +1353,7 @@ if wx
 
 $(csl)/wxWidgets/wxWidgets_revision:	\
 		$(csl)/support-packages/wxWidgets_revision
+	printf "\n\n=== Unpack wsWidgets\n\n";
 	$(TRACE) ( cd $(csl)/support-packages && \
 	a="wxWidgets-*-*-*.tar.bz2" && \
 	a=$${a##* } && \
@@ -1368,6 +1374,7 @@ $(csl)/wxWidgets/wxWidgets_revision:	\
 WXDEPS=../bin/wx-config
 
 ../bin/wx-config:	$(csl)/wxWidgets/wxWidgets_revision
+	printf "\n\n=== About to build wxWidgets library\n\n";
 	@printf "About to build wxWidgets for %s ($@)\n" `pwd`
 	-$(TRACE)@$(MAKE) -C ../wxWidgets install
 
@@ -1465,6 +1472,7 @@ $(cslbase)/arithlib.hpp:	$(cslbase)/flatten \
 		$(cslbase)/arithlib.base.hpp $(cslbase)/lvector.h \
 		$(cslbase)/acnutil.h $(cslbase)/multiply.base.cpp \
 		$(cslbase)/fftutils.cpp $(cslbase)/fftmod.cpp
+	printf "\n\n=== Prepare arithlib source\n\n";
 	cd $(cslbase) && ./flatten arithlib.base.hpp arithlib.hpp
 
 $(cslbase)/arithlib.h:	$(cslbase)/arithlib.cpp
@@ -2683,6 +2691,7 @@ $(reduce)/bin/rfcsl$(EXEEXT): \
 		$(generic)/newfront/redsig.c \
 		$(generic)/newfront/redstrings.c $(HDRS)
 	@printf "Relinking $@ because of $?\n"
+	printf "\n\n=== About to build redfront\n\n";
 	@printf "About to build redfront for %s\n" `pwd`
 	$(MAKE) -C ../redfront
 

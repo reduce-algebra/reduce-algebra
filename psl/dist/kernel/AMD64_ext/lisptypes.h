@@ -1,6 +1,17 @@
-
-% Authors: Arthur Norman
-
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% File:         PXK:lisptype.h
+% Description:  Miscellaneous floating point types for Lisp
+% Author:       Rainer Schöpf
+% Created:      12-Jan-2026
+% Modified:     
+% Mode:         Text
+% Package:      
+% Status:       Open Source: BSD License
+%
+% (c) Copyright 2026, Reduce Developers.
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 %
@@ -23,14 +34,29 @@
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Revisions:
+%  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id: float.c 7252 2026-01-11 14:28:54Z schoepf $
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
 
-% $Id$
+#ifndef _PSL_LISP_TYPES_H
+#define _PSL_LISP_TYPES_H
 
-% This file will be automatically updated by the code in scripts/commit.sh
-% to show the latest subversion revision number.
+#define LISPWORD uint64_t
+#define LISPINT int64_t
 
-fluid '(revision!*);
+#define LispSTRING(len) \
+  typedef struct { \
+    LISPWORD size; \
+    char string[len]; \
+  } LispString
 
-revision!* := 7278;
+#define LispStringBuffer(len) LISPSTRING(len-sizeof(LISPWORD))
 
-end;
+#endif
