@@ -947,8 +947,7 @@ execute_in_dir() {
   local)
     cd $HERE
     printf "cd $dir; $cmd\n"
-    cd $dir
-    $cmd
+    eval "cd $dir; $cmd"
     cd $HERE
     ;;
   ssh)
