@@ -4,7 +4,7 @@
 
 # Usage:
 #   scripts/testall.sh [options] [systems-to-test] [[a few package names]]
-# Options:             --noregressions --install --keep
+# Options:             --noregressions --nopackages --install --keep
 #                      --just-time --skip-missing-rlg --no-timeout
 # Systems-to-test:     --csl --bootstrapreduce
 #                      --csl=XXX --bootstrapreduce=XXX
@@ -17,6 +17,8 @@
 #
 # --noregressions: Arrange that the large number of small regressions tests
 #    are not run.
+# --nopackages: Do not test any packages; run only the large number of
+#    small regressions tests.
 # --install: Install test in the main tree after they are generated.
 # --keep: Preserve temporary files used while running the tests, parhaps
 #    to help with debugging the test framework.
@@ -56,6 +58,7 @@ here=`dirname "$here"`
 # do need to scan the argument list and collect them
 
 noregressions="no"
+nopackages="no"
 just_time="no"
 args_for_test1=""
 platforms=""
@@ -72,6 +75,10 @@ do
     ;;
   --noregressions)
     noregressions="yes"
+    shift
+    ;;
+  --nopackages)
+    nopackages="yes"
     shift
     ;;
   --just-time)
@@ -135,10 +142,13 @@ then
               sed -e 's/(//; s/".*//'`
   fi
 
-  for pkg in $packages
-  do
-    $scripthere/test1.sh $args_for_test1 $platforms $pkg
-  done
+  if test "$nopackages" = "no"
+  then
+      for pkg in $packages
+      do
+          $scripthere/test1.sh $args_for_test1 $platforms $pkg
+      done
+  fi
 
   if test "$noregressions" = "no"
   then
