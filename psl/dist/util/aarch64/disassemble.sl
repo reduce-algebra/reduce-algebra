@@ -583,7 +583,7 @@
 	    ((and (weq !V 1) (wlessp opc 3)) % LDR literal simd/fp
 	     (list 'ldr (regnum-to-simd-regname2 regt opc) targetaddr))
 	    ((and (weq !V 0) (weq opc 2))
-	     (list 'ldrsw (regnum-to-regname regt 1) targetaddr))
+	     (list 'ldrsw (regnum-to-regname regt 1 nil) targetaddr))
 	    (t (list 'prfm regt) targetaddr))
       ))
 
@@ -695,10 +695,11 @@
 	    ((weq size 2#10)
 	     (setq instr (cdr (assoc opc '((0 . str) (1 . ldr) (2 . ldrsw))))))
 	    (t
-	     (setq instr (cdr (assoc opc '((0 . str) (1 . ldr) (2 . prfm)))))))
+	     (setq instr (cdr (assoc opc '((0 . str) (1 . ldr) (2 . prfm)))))
+             (setq is64bit 1)))
 
       (setq extend (decode-extend option))
-	    
+
       (list instr
 	    (regnum-to-regname regt is64bit nil)
 	    (bldmsg "[%w" (regnum-to-regname regn 1 t))
