@@ -3055,7 +3055,7 @@ public:
 #endif // __header_lvector_h
 
 // end of lvector.h
-// fftutils.cpp                                   Copyright 2026 A C Norman
+// fftutils.cpp                                   Copyright 2025 A C Norman
 
 // $Id$
 
@@ -3151,7 +3151,7 @@ support my current usage. Others who pick this up might want to review
 and extent that!
 
 Copyright (c) 2013 - 2017 Jason Lee @ calccrypto at gmail.com
-              2020 - 2026 Arthur Norman
+              2020 - 2025 Arthur Norman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -3205,12 +3205,12 @@ header-only library.
 #include <type_traits>
 
 // The following works with both gcc and clang++ on the platforms that
-// support 128-bit integers that I have tried. Note that for the unsigned
-// case I use type_traits to obtain the desired type because the names
-// used by the raw C++ compilers differ.
+// ith older versions of the compilers "__uint128_t" needed to be
+// replaced by "unsigned __int128_t" but as of December 2025 I find
+// the following works on the platforms that I have tried...
 
 using int128_t = __int128_t;
-using uint128_t = std::make_unsigned<__int128_t>::type;
+using uint128_t = __uint128_t;
 
 namespace INT128names
 {
@@ -9240,6 +9240,7 @@ template <typename T,
 // works it is a really good thing I can not rely solely on it. Each time I
 // use a random_device it gives me just 32 bits. For my real generator that
 // is not really enough.
+// Even worse, in extreme case its use can raise a sts::runtime_exception!
 // So here I create 3 notionally unpredictable units and then merge in the
 // identity of the current thread and two measurements related to time.
 // To avoid thread safety issues with random_device I make calls to it
@@ -9273,15 +9274,31 @@ template <typename T,
 
 // Should this be thread_local?
 
+inline unsigned int getrand(std::random_device& rd)
+{   unsigned int r = 1234567;
+// in pathological cases trying to get data from a random_device can fail
+// and raise an error, which I catch here so that I can return a rather
+// arbitrary fixed value in that case. This issue is why for seeding my
+// pseudo-random generator I also mix in clock information which at least
+// may help a bit in the desparate case.
+    try
+    {   r = rd();
+    }
+    catch (std::runtime_error &e)
+    {
+    }
+    return r;
+}
+
 [[gnu::used]] inline std::mt19937_64 mersenne_twister(*(([]()->std::seed_seq*
   {
     Digit threadid =
         static_cast<Digit>(std::hash<std::thread::id>()(
                                        std::this_thread::get_id()));
     std::random_device basic_randomness;
-    Digit seed_component_1 = static_cast<Digit>(basic_randomness());
-    Digit seed_component_2 = static_cast<Digit>(basic_randomness());
-    Digit seed_component_3 = static_cast<Digit>(basic_randomness());
+    Digit seed_component_1 = static_cast<Digit>(getrand(basic_randomness));
+    Digit seed_component_2 = static_cast<Digit>(getrand(basic_randomness));
+    Digit seed_component_3 = static_cast<Digit>(getrand(basic_randomness));
     Digit time_now =
         static_cast<Digit>
         (std::time(nullptr));
@@ -18943,8 +18960,8 @@ static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
     {   carry = addWithCarry(a[i], b[i], carry, result[i]);
         i++;
     }
-    for (size_t j=i; j<lenA; j++)
-        carry = addWithCarry(a[j], carry, result[j]);
+    for (; i<lenA; i++)
+        carry = addWithCarry(a[i], carry, result[i]);
     return carry;
 }
 
@@ -18976,10 +18993,8 @@ static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
     {   borrow = subtractWithBorrow(a[i], b[i], borrow, result[i]);
         i++;
     }
-    while (i<lenA)
-    {   borrow = subtractWithBorrow(a[i], 0, borrow, result[i]);
-        i++;
-    }
+    for (; i<lenA; i++)
+        borrow = subtractWithBorrow(a[i], 0, borrow, result[i]);
     return borrow;
 }
 
@@ -19846,7 +19861,7 @@ static void kara(ConstDigitPtr a, std::size_t N,
 
 public:
 
-// fftmod.cpp                                     Copyright 2026 A C Norman
+// fftmod.cpp                                     Copyright 2025 A C Norman
 
 // $Id$
 
@@ -20048,7 +20063,6 @@ static void inverse_slow_ft(DigitPtr32 a, size_t N)
 
 #define DIF_FT generic_dif_ft
 #define DIT_FT generic_dit_ft
-
 // fftkernel.cpp                                  Copyright 2026 A C Norman
 
 // $Id$
@@ -20261,7 +20275,6 @@ static void DIT_FT(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 #define DIF_FT sse4_dif_ft
 #define DIT_FT sse4_dit_ft
 #pragma GCC target ("sse4.2")
-
 // fftkernel.cpp                                  Copyright 2026 A C Norman
 
 // $Id$
@@ -20474,7 +20487,6 @@ static void DIT_FT(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 #define DIF_FT avx_dif_ft
 #define DIT_FT avx_dit_ft
 #pragma GCC target ("avx")
-
 // fftkernel.cpp                                  Copyright 2026 A C Norman
 
 // $Id$
@@ -20710,7 +20722,6 @@ static void dit_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 
 #define DIF_FT dif_ft
 #define DIT_FT dit_ft
-
 // fftkernel.cpp                                  Copyright 2026 A C Norman
 
 // $Id$

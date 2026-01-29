@@ -1155,12 +1155,23 @@ static LispObject Lrationalize(LispObject env, LispObject a)
 
 #ifndef AVOID_THREADS
 static std::random_device hopefully_random;
+static unsigned hoperand()
+{   unsigned int r = 1234567;
+    try
+    {   r = hopefully_random();    // can fail!!!!
+    }
+    catch (std::system_error &e)
+    {
+    }
+    return r;
+}
+
 #endif
 
 static std::seed_seq initial_random_seed
 {
 #ifndef AVOID_THREADS
-    hopefully_random(),
+    hoperand(),
     static_cast<unsigned int>(
         std::hash<std::thread::id>()(std::this_thread::get_id())),
 #endif

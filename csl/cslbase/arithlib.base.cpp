@@ -3792,6 +3792,7 @@ template <typename T,
 // works it is a really good thing I can not rely solely on it. Each time I
 // use a random_device it gives me just 32 bits. For my real generator that
 // is not really enough.
+// Even worse, in extreme case its use can raise a sts::runtime_exception!
 // So here I create 3 notionally unpredictable units and then merge in the
 // identity of the current thread and two measurements related to time.
 // To avoid thread safety issues with random_device I make calls to it
@@ -3825,15 +3826,31 @@ template <typename T,
 
 // Should this be thread_local?
 
+inline unsigned int getrand(std::random_device& rd)
+{   unsigned int r = 1234567;
+// in pathological cases trying to get data from a random_device can fail
+// and raise an error, which I catch here so that I can return a rather
+// arbitrary fixed value in that case. This issue is why for seeding my
+// pseudo-random generator I also mix in clock information which at least
+// may help a bit in the desparate case.
+    try
+    {   r = rd();
+    }
+    catch (std::runtime_error &e)
+    {
+    }
+    return r;
+}
+
 [[gnu::used]] inline std::mt19937_64 mersenne_twister(*(([]()->std::seed_seq*
   {
     Digit threadid =
         static_cast<Digit>(std::hash<std::thread::id>()(
                                        std::this_thread::get_id()));
     std::random_device basic_randomness;
-    Digit seed_component_1 = static_cast<Digit>(basic_randomness());
-    Digit seed_component_2 = static_cast<Digit>(basic_randomness());
-    Digit seed_component_3 = static_cast<Digit>(basic_randomness());
+    Digit seed_component_1 = static_cast<Digit>(getrand(basic_randomness));
+    Digit seed_component_2 = static_cast<Digit>(getrand(basic_randomness));
+    Digit seed_component_3 = static_cast<Digit>(getrand(basic_randomness));
     Digit time_now =
         static_cast<Digit>
         (std::time(nullptr));

@@ -282,7 +282,7 @@ limittime() {
 # terminates things after an allowance of elapsed time that is twice the
 # target CPU time limit.
 # Other than under cygwin I use "ulimit" but I still set up the backstop
-# just in case. 
+# just in case.
 
 if test "$no_timeout" = "yes"
 then
@@ -637,7 +637,7 @@ XXX
     sed -e "$SED1" >$logdir/$p.rlg
   diffBw $logdir/$p.rlg.orig $logdir/$p.rlg >$logdir/$p.rlg.diff
   if test -s $logdir/$p.rlg.diff
-    then printf "diff is in $logdir/$p.rlg.diff\n"
+    then printf "Diffs: $logdir/$p.rlg.diff "
     else printf "OK " ; rm -f $logdir/$p.rlg.diff $logdir/$p.rlg.orig
   fi
   printf "Tested on $mc PSL\n" > $logdir/$p.time
@@ -664,7 +664,7 @@ cltest() {
 # since GPL 3 wanted to restrict them too much). So they moved to zsh for
 # their default shell hoping it would not hurt too many people who use
 # bash-isms that are jolly convenient but that arose after the GPL 3
-# restrictions were applied. 
+# restrictions were applied.
   mkdir -p "$logdir"
   ( limittime $cmd > $logdir/$p.rlg.tmp ) <<XXX 2>$p.howlong.tmp
 off int;
@@ -698,15 +698,16 @@ XXX
   fi
   cat $p.howlong.tmp >> $logdir/$p.rlg.tmp
   printf "${logdir%-times}.."
-  sed -e "/^Tested on /,//d" <$rlgfile |
+  sed -e "/^Tested on /,//d" <$rlgfile | \
     sed -e "$SED1" >$logdir/$p.rlg.orig
   sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
       -e "/OMIT/,/TIMO/d" <$logdir/$p.rlg.tmp | \
     sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
+    sed -e "s/${ESCAPED_DIR}.//" | \
     sed -e "$SED1" >$logdir/$p.rlg
   diffBw $logdir/$p.rlg.orig $logdir/$p.rlg >$logdir/$p.rlg.diff
   if test -s $logdir/$p.rlg.diff
-    then printf "Diff is in $logdir/$p.rlg.diff "
+    then printf "Diffs: $logdir/$p.rlg.diff "
     else printf "OK " ; rm -f $logdir/$p.rlg.diff $logdir/$p.rlg.orig
   fi
   printf "Tested on $mc $lisp\n" > $logdir/$p.time

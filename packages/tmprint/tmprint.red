@@ -2923,7 +2923,7 @@ procedure tm_setpchar!-csl(c);
 
 if not getd 'tm_setpchar!-orig then copyd('tm_setpchar!-orig,'setpchar);
 
-if tm_pslp() then
+if tm_pslp() or 'common!-lisp memq lispsystem!* then
    copyd('setpchar,'tm_setpchar!-psl)
 else
    copyd('setpchar,'tm_setpchar!-csl);
