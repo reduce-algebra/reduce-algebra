@@ -3823,23 +3823,17 @@ template <typename T,
 // delays initialization of any of the variables within the following
 // function until the function is first used!
 
-
-// Should this be thread_local?
-
-inline unsigned int syatem_randomness()
+inline unsigned int system_randomness()
 {   static std::random_device basic_randomness;
     static unsigned int r = 1234567;
-    r++;
-// in pathological cases trying to get data from a random_device can fail
+// In pathological cases trying to get data from a random_device can fail
 // and raise an error, which I catch here so that I can return a rather
-// arbitrary fixed value in that case. This issue is why for seeding my
-// pseudo-random generator I also mix in clock information which at least
-// may help a bit in the desparate case.
+// arbitrary value in that case.
     try
-    {   r = rd();
+    {   r = basic_randomness();
     }
     catch (const std::exception &e)
-    {
+    {   r++;
     }
     return r;
 }

@@ -1153,20 +1153,17 @@ static LispObject Lrationalize(LispObject env, LispObject a)
 // identity of the current thread). You will see that I could easily add
 // other sources of entropy here.
 
-inline unsigned int system_randomness(<1>)
+inline unsigned int system_randomness()
 {   static std::random_device basic_randomness;
     static unsigned int r = 1234567;
-    r++;
-// in pathological cases trying to get data from a random_device can fail
+// In pathological cases trying to get data from a random_device can fail
 // and raise an error, which I catch here so that I can return a rather
-// arbitrary fixed value in that case. This issue is why for seeding my
-// pseudo-random generator I also mix in clock information which at least
-// may help a bit in the desparate case.
+// arbitrary value in that case.
     try
-    {   r = rd();
+    {   r = basic_randomness();
     }
     catch (const std::exception &e)
-    {
+    {   r++;
     }
     return r;
 }
@@ -1195,12 +1192,10 @@ uint32_t Crand()
 void Csrand(uint64_t seed)
 {   if (seed == 0)
     {   std::seed_seq random_seed
-        {
-#ifndef AVOID_THREADS
-            hopefully_random(),
+        {   system_randomness(),
+            system_randomness(),
             static_cast<unsigned int>(
                 std::hash<std::thread::id>()(std::this_thread::get_id())),
-#endif
             static_cast<unsigned int>(std::time(nullptr)),
             static_cast<unsigned int>(
                 std::chrono::steady_clock::now().
