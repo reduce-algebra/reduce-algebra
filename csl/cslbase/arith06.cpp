@@ -1153,32 +1153,31 @@ static LispObject Lrationalize(LispObject env, LispObject a)
 // identity of the current thread). You will see that I could easily add
 // other sources of entropy here.
 
-#ifndef AVOID_THREADS
-static std::random_device hopefully_random;
-static unsigned hoperand()
-{   unsigned int r = 1234567;
+inline unsigned int system_randomness()
+{   static std::random_device basic_randomness;
+    static unsigned int r = 1234567;
+// In pathological cases trying to get data from a random_device can fail
+// and raise an error, which I catch here so that I can return a rather
+// arbitrary value in that case.
     try
-    {   r = hopefully_random();    // can fail!!!!
+    {   r = basic_randomness();
     }
-    catch (std::system_error &e)
-    {
+    catch (const std::exception &e)
+    {   r++;
     }
     return r;
 }
 
-#endif
-
 static std::seed_seq initial_random_seed
-{
-#ifndef AVOID_THREADS
-    hoperand(),
+{   system_randomness(),
+    system_randomness(),
     static_cast<unsigned int>(
         std::hash<std::thread::id>()(std::this_thread::get_id())),
-#endif
     static_cast<unsigned int>(std::time(nullptr)),
     static_cast<unsigned int>(
         std::chrono::steady_clock::now().time_since_epoch().count())
 };
+
 static std::mt19937 mersenne_twister(initial_random_seed);
 
 uint32_t Crand()
@@ -1193,12 +1192,10 @@ uint32_t Crand()
 void Csrand(uint64_t seed)
 {   if (seed == 0)
     {   std::seed_seq random_seed
-        {
-#ifndef AVOID_THREADS
-            hopefully_random(),
+        {   system_randomness(),
+            system_randomness(),
             static_cast<unsigned int>(
                 std::hash<std::thread::id>()(std::this_thread::get_id())),
-#endif
             static_cast<unsigned int>(std::time(nullptr)),
             static_cast<unsigned int>(
                 std::chrono::steady_clock::now().

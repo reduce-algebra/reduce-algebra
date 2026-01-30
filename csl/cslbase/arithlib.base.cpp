@@ -3823,34 +3823,28 @@ template <typename T,
 // delays initialization of any of the variables within the following
 // function until the function is first used!
 
-
-// Should this be thread_local?
-
-inline unsigned int getrand(std::random_device& rd)
-{   unsigned int r = 1234567;
-// in pathological cases trying to get data from a random_device can fail
+inline unsigned int system_randomness()
+{   static std::random_device basic_randomness;
+    static unsigned int r = 1234567;
+// In pathological cases trying to get data from a random_device can fail
 // and raise an error, which I catch here so that I can return a rather
-// arbitrary fixed value in that case. This issue is why for seeding my
-// pseudo-random generator I also mix in clock information which at least
-// may help a bit in the desparate case.
+// arbitrary value in that case.
     try
-    {   r = rd();
+    {   r = basic_randomness();
     }
-    catch (std::runtime_error &e)
-    {
+    catch (const std::exception &e)
+    {   r++;
     }
     return r;
 }
 
 [[gnu::used]] inline std::mt19937_64 mersenne_twister(*(([]()->std::seed_seq*
-  {
+{   unsigned int seed_component_1 = system_randomness();
+    unsigned int seed_component_2 = system_randomness();
+    unsigned int seed_component_3 = system_randomness();
     Digit threadid =
         static_cast<Digit>(std::hash<std::thread::id>()(
                                        std::this_thread::get_id()));
-    std::random_device basic_randomness;
-    Digit seed_component_1 = static_cast<Digit>(getrand(basic_randomness));
-    Digit seed_component_2 = static_cast<Digit>(getrand(basic_randomness));
-    Digit seed_component_3 = static_cast<Digit>(getrand(basic_randomness));
     Digit time_now =
         static_cast<Digit>
         (std::time(nullptr));
@@ -3872,9 +3866,6 @@ inline unsigned int getrand(std::random_device& rd)
         static_cast<std::uint32_t>(time_now),
         static_cast<std::uint32_t>(chrono_now),
         static_cast<std::uint32_t>(threadid>>32),
-        static_cast<std::uint32_t>(seed_component_1>>32),
-        static_cast<std::uint32_t>(seed_component_2>>32),
-        static_cast<std::uint32_t>(seed_component_3>>32),
         static_cast<std::uint32_t>(time_now>>32),
         static_cast<std::uint32_t>(chrono_now>>32),
         static_cast<std::uint32_t>(
