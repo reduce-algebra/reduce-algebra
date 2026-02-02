@@ -1,0 +1,433 @@
+﻿
+# /
+/cslbuild
+/pslbuild
+/config.log
+/rebuild.log
+/csl-times
+/psl-times
+/csl-psl-times-comparison
+/TAGS
+/.gdb_history
+/autom4te.cache
+/m4
+
+# /common-lisp/
+/common-lisp/log.*
+/common-lisp/fasl.*
+/common-lisp/sl-on-cl.fas
+/common-lisp/sl-on-cl.fasl
+/common-lisp/trace.fas
+/common-lisp/trace.fasl
+
+# /csl/
+/csl/autom4te.cache
+/csl/compile
+/csl/config.guess
+/csl/config.sub
+/csl/depcomp
+/csl/install-sh
+/csl/ltmain.sh
+/csl/m4
+/csl/missing
+
+# /csl/cslbase/
+/csl/cslbase/autom4te.cache
+
+# /csl/fox/
+/csl/fox/autom4te.cache
+/csl/fox/compile
+/csl/fox/ltmain.sh
+
+# /csl/new-embedded/for-emscripten/
+/csl/new-embedded/for-emscripten/*.oo
+/csl/new-embedded/for-emscripten/*.ooo
+/csl/new-embedded/for-emscripten/*.tmp
+/csl/new-embedded/for-emscripten/*.log
+
+# /debianbuild/
+/debianbuild/*.deb
+/debianbuild/*.changes
+/debianbuild/*.rpm
+/debianbuild/*.build
+/debianbuild/C
+/debianbuild/C.log
+/debianbuild/C.stamp
+
+# /debianbuild/reduce/
+/debianbuild/reduce/build-stamp
+/debianbuild/reduce/configure-stamp
+/debianbuild/reduce/install-stamp
+
+# /debianbuild/reduce/debian/
+/debianbuild/reduce/debian/tmp
+/debianbuild/reduce/debian/files
+/debianbuild/reduce/debian/*.debhelper.log
+/debianbuild/reduce/debian/*.substvars
+/debianbuild/reduce/debian/reduce-csl
+/debianbuild/reduce/debian/reduce-psl
+/debianbuild/reduce/debian/reduce-addons
+/debianbuild/reduce/debian/reduce-common
+/debianbuild/reduce/debian/reduce-complete
+/debianbuild/reduce/debian/C
+/debianbuild/reduce/debian/.debhelper
+
+# /doc/manual/
+/doc/manual/manual.bib.bak
+/doc/manual/manual.css
+/doc/manual/manual.pdf
+/doc/manual/*.html
+/doc/manual/*.4??
+/doc/manual/*x.png
+/doc/manual/cmsy*.png
+/doc/manual/idxmake.*
+/doc/manual/*.aux
+/doc/manual/*.toc
+/doc/manual/*.idx
+/doc/manual/*.ind
+/doc/manual/*.ilg
+/doc/manual/*.log
+/doc/manual/*.out
+/doc/manual/*.tmp
+/doc/manual/*.lg
+/doc/manual/*.idv
+/doc/manual/*.xref
+/doc/manual/*.dvi
+/doc/manual/*.blg
+/doc/manual/*.bbl
+
+# /doc/misc/
+/doc/misc/*.html
+/doc/misc/*.4??
+/doc/misc/*x.png
+/doc/misc/idxmake.*
+/doc/misc/*.aux
+/doc/misc/*.toc
+/doc/misc/*.idx
+/doc/misc/*.ind
+/doc/misc/*.ilg
+/doc/misc/*.log
+/doc/misc/*.out
+/doc/misc/*.tmp
+/doc/misc/*.lg
+/doc/misc/*.idv
+/doc/misc/*.xref
+/doc/misc/*.dvi
+/doc/misc/*.blg
+/doc/misc/*.bbl
+/doc/misc/primer.pdf
+/doc/misc/sl.pdf
+
+# /doc/primers/
+/doc/primers/*.idx
+/doc/primers/*.log
+/doc/primers/*.out
+
+# /generic/newfront/
+/generic/newfront/Makefile.in
+/generic/newfront/aclocal.m4
+/generic/newfront/autom4te.cache
+/generic/newfront/compile
+/generic/newfront/config.guess
+/generic/newfront/config.sub
+/generic/newfront/configure
+/generic/newfront/depcomp
+/generic/newfront/install-sh
+/generic/newfront/missing
+/generic/newfront/ltmain.sh
+
+# /generic/newfront/m4/
+/generic/newfront/m4/libtool.m4
+/generic/newfront/m4/ltoptions.m4
+/generic/newfront/m4/ltsugar.m4
+/generic/newfront/m4/ltversion.m4
+/generic/newfront/m4/lt~obsolete.m4
+
+# /generic/qreduce/
+/generic/qreduce/*.pyc
+/generic/qreduce/libreduce.log
+/generic/qreduce/*.so
+
+# /jlisp/
+/jlisp/uk
+/jlisp/*.img
+/jlisp/*.log
+/jlisp/testlogs
+
+# /jslisp/
+/jslisp/build
+/jslisp/dist
+
+# /jslisp/nbproject/
+/jslisp/nbproject/private
+
+# /libraries/SoftFloat-3a/source/
+/libraries/SoftFloat-3a/source/Makefile.in
+/libraries/SoftFloat-3a/source/autom4te.cache
+/libraries/SoftFloat-3a/source/compile
+/libraries/SoftFloat-3a/source/config.guess
+/libraries/SoftFloat-3a/source/config.sub
+/libraries/SoftFloat-3a/source/configure
+/libraries/SoftFloat-3a/source/depcomp
+/libraries/SoftFloat-3a/source/install-sh
+/libraries/SoftFloat-3a/source/ltmain.sh
+/libraries/SoftFloat-3a/source/m4
+/libraries/SoftFloat-3a/source/missing
+
+# /libraries/crlibm/
+/libraries/crlibm/autom4te.cache
+/libraries/crlibm/ltmain.sh
+/libraries/crlibm/m4
+
+# /libraries/libedit-20140620-3.1/
+/libraries/libedit-20140620-3.1/Makefile.in
+/libraries/libedit-20140620-3.1/aclocal.m4
+/libraries/libedit-20140620-3.1/autom4te.cache
+/libraries/libedit-20140620-3.1/compile
+/libraries/libedit-20140620-3.1/config.guess
+/libraries/libedit-20140620-3.1/config.h.in
+/libraries/libedit-20140620-3.1/config.log
+/libraries/libedit-20140620-3.1/config.sub
+/libraries/libedit-20140620-3.1/configure
+/libraries/libedit-20140620-3.1/depcomp
+/libraries/libedit-20140620-3.1/examples/Makefile.in
+/libraries/libedit-20140620-3.1/install-sh
+/libraries/libedit-20140620-3.1/ltmain.sh
+/libraries/libedit-20140620-3.1/missing
+
+# /libraries/libedit-20140620-3.1/examples/
+/libraries/libedit-20140620-3.1/examples/Makefile.in
+
+# /libraries/libedit-20140620-3.1/m4/
+/libraries/libedit-20140620-3.1/m4/libtool.m4
+/libraries/libedit-20140620-3.1/m4/ltoptions.m4
+/libraries/libedit-20140620-3.1/m4/ltsugar.m4
+/libraries/libedit-20140620-3.1/m4/ltversion.m4
+/libraries/libedit-20140620-3.1/m4/lt~obsolete.m4
+
+# /libraries/libedit-20140620-3.1/src/
+/libraries/libedit-20140620-3.1/src/Makefile.in
+
+# /packages/redlog/cl/
+/packages/redlog/cl/clqe.mo
+/packages/redlog/cl/clqe.cp
+/packages/redlog/cl/clqe.log
+/packages/redlog/cl/clqe.mos
+/packages/redlog/cl/clqe.ky
+/packages/redlog/cl/clqe.pg
+/packages/redlog/cl/clqe.toc
+/packages/redlog/cl/clqe.cps
+/packages/redlog/cl/clqe.fn
+/packages/redlog/cl/clslp.red
+/packages/redlog/cl/clqe.fns
+/packages/redlog/cl/clqe.html
+/packages/redlog/cl/clqe.tps
+/packages/redlog/cl/clqe.vr
+/packages/redlog/cl/clqe.pdf
+/packages/redlog/cl/clqe.texi
+/packages/redlog/cl/clqe.ef
+/packages/redlog/cl/clqe.aux
+/packages/redlog/cl/clqe.tp
+/packages/redlog/cl/clqe.tgf
+
+# /psl/
+/psl/newnames
+/psl/mkreduce
+/psl/autom4te.cache
+/psl/compile
+/psl/config.guess
+/psl/config.sub
+/psl/install-sh
+/psl/ltmain.sh
+/psl/m4
+/psl/missing
+
+# /psl/bin/AMD64/
+/psl/bin/AMD64/bare-psl
+/psl/bin/AMD64/bare-psl.img
+/psl/bin/AMD64/old-bare-psl.img
+/psl/bin/AMD64/old-pslcomp.img
+/psl/bin/AMD64/pslcomp.img
+/psl/bin/AMD64/pslcomp
+/psl/bin/AMD64/tmp.sed
+
+# /psl/bin/AMD64_ext/
+/psl/bin/AMD64_ext/bare-psl
+/psl/bin/AMD64_ext/bare-psl.img
+/psl/bin/AMD64_ext/old-bare-psl
+/psl/bin/AMD64_ext/old-pslcomp
+/psl/bin/AMD64_ext/pslcomp
+/psl/bin/AMD64_ext/pslcomp.img
+/psl/bin/AMD64_ext/tmp.sed
+
+# /psl/bin/aarch64/
+/psl/bin/aarch64/bare-psl
+/psl/bin/aarch64/bare-psl.img
+/psl/bin/aarch64/old-bare-psl
+/psl/bin/aarch64/old-pslcomp
+/psl/bin/aarch64/pslcomp
+/psl/bin/aarch64/pslcomp.img
+/psl/bin/aarch64/tmp.sed
+
+# /psl/bin/armv6/
+/psl/bin/armv6/bare-psl
+/psl/bin/armv6/bare-psl.img
+/psl/bin/armv6/old-bare-psl
+/psl/bin/armv6/old-pslcomp
+/psl/bin/armv6/pslcomp
+/psl/bin/armv6/pslcomp.img
+/psl/bin/armv6/tmp.sed
+/psl/bin/armv6/.imago
+/psl/bin/armv6/old-bare-psl.img
+/psl/bin/armv6/old-pslcomp.img
+
+# /psl/bin/brock/
+/psl/bin/brock/bare-psl
+/psl/bin/brock/bare-psl.img
+/psl/bin/brock/old-bare-psl.img
+/psl/bin/brock/old-pslcomp.img
+/psl/bin/brock/pslcomp
+/psl/bin/brock/pslcomp.img
+/psl/bin/brock/tmp.sed
+
+# /psl/bin/freeBSD/
+/psl/bin/freeBSD/bare-psl.img
+/psl/bin/freeBSD/bare-psl.img.old
+/psl/bin/freeBSD/bare-psl.old
+/psl/bin/freeBSD/old-bare-psl
+/psl/bin/freeBSD/old-bare-psl.img
+/psl/bin/freeBSD/old-pslcomp
+/psl/bin/freeBSD/old-pslcomp.img
+/psl/bin/freeBSD/pslcomp.img
+/psl/bin/freeBSD/pslcomp.img.old
+/psl/bin/freeBSD/pslcomp.old
+/psl/bin/freeBSD/tmp.sed
+
+# /psl/bin/freeBSD64/
+/psl/bin/freeBSD64/bare-psl.img
+/psl/bin/freeBSD64/bare-psl.img.old
+/psl/bin/freeBSD64/bare-psl.old
+/psl/bin/freeBSD64/old-bare-psl
+/psl/bin/freeBSD64/old-bare-psl.img
+/psl/bin/freeBSD64/old-pslcomp
+/psl/bin/freeBSD64/old-pslcomp.img
+/psl/bin/freeBSD64/pslcomp.img
+/psl/bin/freeBSD64/pslcomp.img.old
+/psl/bin/freeBSD64/pslcomp.old
+/psl/bin/freeBSD64/tmp.sed
+
+# /psl/bin/linux/
+/psl/bin/linux/bare-psl.img
+/psl/bin/linux/bare-psl.img.old
+/psl/bin/linux/bare-psl.old
+/psl/bin/linux/old-bare-psl
+/psl/bin/linux/old-bare-psl.img
+/psl/bin/linux/old-pslcomp
+/psl/bin/linux/old-pslcomp.img
+/psl/bin/linux/pslcomp.img
+/psl/bin/linux/pslcomp.img.old
+/psl/bin/linux/pslcomp.old
+/psl/bin/linux/tmp.sed
+
+# /psl/bin/macintel64/
+/psl/bin/macintel64/bare-psl.img
+/psl/bin/macintel64/pslcomp.img
+
+# /psl/bin/mingw-w64/
+/psl/bin/mingw-w64/bare-psl
+/psl/bin/mingw-w64/bare-psl.img
+/psl/bin/mingw-w64/old-bare-psl
+/psl/bin/mingw-w64/old-pslcomp
+/psl/bin/mingw-w64/pslcomp
+/psl/bin/mingw-w64/pslcomp.img
+/psl/bin/mingw-w64/tmp.sed
+
+# /psl/dist/kernel/AMD64_ext/
+/psl/dist/kernel/AMD64_ext/tmp.sl
+
+# /psl/dist/kernel/aarch64/
+/psl/dist/kernel/aarch64/tmp.sl
+
+# /psl/dist/kernel/armv6/
+/psl/dist/kernel/armv6/tmp.sl
+
+# /psl/dist/kernel/brock/
+/psl/dist/kernel/brock/tmp.sl
+
+# /psl/dist/kernel/freeBSD/
+/psl/dist/kernel/freeBSD/tmp.sl
+
+# /psl/dist/kernel/freeBSD64/
+/psl/dist/kernel/freeBSD64/tmp.sl
+
+# /psl/dist/kernel/linux/
+/psl/dist/kernel/linux/tmp.sl
+
+# /psl/dist/kernel/macintel/
+/psl/dist/kernel/macintel/tmp.sl
+
+# /psl/dist/kernel/win32/
+/psl/dist/kernel/win32/main.s.orig
+
+# /psl/dist/manual/
+/psl/dist/manual/allman1.pdf
+/psl/dist/manual/allman1.css
+/psl/dist/manual/*.html
+/psl/dist/manual/*.4??
+/psl/dist/manual/*x.png
+/psl/dist/manual/idxmake.*
+/psl/dist/manual/*.aux
+/psl/dist/manual/*.toc
+/psl/dist/manual/*.idx
+/psl/dist/manual/*.ind
+/psl/dist/manual/*.ilg
+/psl/dist/manual/*.log
+/psl/dist/manual/*.out
+/psl/dist/manual/*.tmp
+/psl/dist/manual/*.lg
+/psl/dist/manual/*.idv
+/psl/dist/manual/*.xref
+/psl/dist/manual/*.dvi
+
+# /scripts/
+/scripts/Makefile.in
+/scripts/autom4te.cache
+/scripts/compile
+/scripts/config.guess
+/scripts/config.sub
+/scripts/install-sh
+/scripts/ltmain.sh
+/scripts/m4
+/scripts/missing
+
+# /vsl/
+/vsl/vslmanual.log
+/vsl/vslmanual.dvi
+/vsl/vslmanual.idx
+/vsl/vslmanual.ind
+/vsl/vslmanual.ilg
+/vsl/*.img
+/vsl/*.log
+/vsl/vsl
+/vsl/modules
+
+# /web/
+/web/htdocs/lisp-docs
+/web/htdocs/manual
+/web/htdocs/reduce38-docs
+/web/htdocs/reduce40.pdf
+
+# /web/htdocs/manpages/
+/web/htdocs/manpages/*.html *.pdf
+
+# /web/htdocs/reduce-ide/
+/web/htdocs/reduce-ide/packages
+/web/htdocs/reduce-ide/reduce-ide.pdf
+/web/htdocs/reduce-ide/reduce-ide_html
+
+# /winbuild64/
+/winbuild64/Output
+/winbuild64/reduce.iss
+/winbuild64/reduce.img
+/winbuild64/*.log
+/winbuild64/*.stamp
