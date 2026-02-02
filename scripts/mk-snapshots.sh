@@ -32,20 +32,12 @@
 # user on the system that this script runs on can access it without needing
 # any extra interaction.
 #
-# As of Jan 2026 this can take an initial argument --testmode or --update
-# where the first of those leaves the version of all files on disc 
-# unchanged so that alterations in them can be tried without things
-# having to be in the central repository, while --update forces the
-# local version to be fully tp to date.
-#
-#
 #                                                       ACN February 2018
 #                                                           July 2019
 #                                                           September 2019
 #                                                           December 2019
 #                                                           June 2020
 #                                                           June 2022
-#                                                           January 2026
 
 # [some of the access schemes that chain ssh and virtual machines etc do not
 # get path quoting right yet, but the simple cases are OK!]
@@ -63,10 +55,11 @@ case $@ in
   printf "   or  $0 --test machine1 ...\n"
   printf "where the supported 'machines' are\n"
   printf "    windows (win64), macintosh, linux (linux64),\n"
-  printf "and rpi64. (note that rpi32 is no longer supported)\n"
+  printf "and rpi (rpi32), rpi64.\n"
   printf "You can also include '--rev=NNNN' to specify a revision to use\n"
   printf "but note that '--rev=NNNN' must be the first item on the command line\n"
-  printf "'rpi64' is a Raspberry Pi running raspbian (now called Raspberry Pi OS).\n"
+  printf "'rpi' is a Raspberry Pi running raspbian (now called Raspberry Pi OS).\n"
+  printf "'pi64' uses 64-bit Raspberry Pi OS.\n"
   printf "If no machines are listed the script will attempt to build a\n"
   printf "default set. The results will end up in a snapshots directory in\n"
   printf "the Reduce tree. The hosts used during the build can be adapted to\n"
@@ -79,16 +72,6 @@ case $@ in
   printf "NOTE: There are no options here for creating 32-bit snapshots on\n"
   printf "      either Windows or Linux.\n"
   exit
-  ;;
-esac
-
-case $1 in
---testmode)
-  testmode="yes"
-  shift
-  ;;
---update)
-  update="yes"
   ;;
 esac
 
@@ -185,7 +168,7 @@ case "$*" in
   ;;
 esac
 
-# Similarly any item containing "--rev=" anywhere on the command line will be
+# Similarly any item containing "--rev=" anywhereon the command line will be
 # treated as a revision specifier.
 
 SVNOPT=""
@@ -226,37 +209,32 @@ prepare() {
   mkdir -p $SNAPSHOTS
   if test -d $REDUCE_DISTRIBUTION
   then
-    if test "$testmode" != "yes"
-    then 
-      printf "Will update and use existing $REDUCE_DISTRIBUTION file-set.\n"
-      pushd $REDUCE_DISTRIBUTION >/dev/null
-      svn -R revert .
+    printf "Will update and use existing $REDUCE_DISTRIBUTION file-set.\n"
+    pushd $REDUCE_DISTRIBUTION >/dev/null
+    svn -R revert .
 # Get rid of any files that are in the local tree but are not present in the
 # subversion repository. If "svn update" had a "--delete" option a bit like
 # the one that rsync has or a bit like "Git clean" I would not have to
 # use odd-looking shell scripting like this!
-      svn st | grep '^?' | awk '{$1=""; print $0}' | xargs -I{} rm -rf '{}'
+    svn st | grep '^?' | awk '{$1=""; print $0}' | xargs -I{} rm -rf '{}'
 # I want a log of how the update went put in $SNAPSHOTS, however that might
 # either be an absolute path or it could be one relative to the Reduce
 # trunk directory on the machine coordinating the build. That makes it hard
 # to send stuff there directly, so I first put the log within
 # $REDUCE_DISTRIBUTION and then when I have done a "popd" back to my top
 # level location I can move it to where I want it!
-      svn $SVNOPT update | tee reduce-update.log
-      REV=`svnversion`
-      popd >/dev/null
-      mv $REDUCE_DISTRIBUTION/reduce-update.log $SNAPSHOTS
-    else
-      printf "testmode: will use existing revision $REV in $REDUCE_DISTRIBUTION\n"
-    fi
+    svn $SVNOPT update | tee reduce-update.log
+    REVISION=`svnversion`
+    popd >/dev/null
+    mv $REDUCE_DISTRIBUTION/reduce-update.log $SNAPSHOTS
   else
     printf "Will check out a new $REDUCE_DISTRIBUTION to use.\n"
     svn co $SVNOPT svn://svn.code.sf.net/p/reduce-algebra/code/trunk \
            $REDUCE_DISTRIBUTION > $SNAPSHOTS/reduce-checkout.log
     pushd $REDUCE_DISTRIBUTION >/dev/null
-    REV=`svnversion`
+    REVISION=`svnversion`
     popd >/dev/null
-# REV will be the subversion revision of the copy that I will make the
+# REVISION will be the subversion revision of the copy that I will make the
 # snapshot of, written in the form "svnNNNN".
   fi
   chmod +x $REDUCE_DISTRIBUTION/scripts/*.sh
@@ -277,6 +255,9 @@ hostname() {
     ;;
   linux | linux64)
     echo "linux"
+    ;;
+  rpi | rpi32)
+    echo "rpi"
     ;;
   *)
     echo "$1"
@@ -332,6 +313,9 @@ build() {
     *x86_64*)
       local="linux64"
       ;;
+    *arm*)
+      local="rpi"
+      ;;
     *aarch64*)
       local="rpi64"
       ;;
@@ -359,6 +343,8 @@ build() {
     altwin64    | \
     linux       | \
     linux64     | \
+    rpi         | \
+    rpi32       | \
     rpi64       | \
     macintosh)
       full="no"
@@ -371,7 +357,7 @@ build() {
 # you can use a platform name prefixed with a "-" to disable that one.
 # so:
 #   no arguments, or just a --rc=FILE one:   linux64 win64 macintosh
-#   linux64 rpi64:                           just those 2 platforms
+#   linux64 rpi:                             just those 2 platforms
 #   -macintosh:                              linux64 & win64, not macintosh
 #
   if test "$full" = "yes"
@@ -398,6 +384,8 @@ build() {
     altwin64   | \
     linux      | \
     linux64    | \
+    rpi        | \
+    rpi32      | \
     rpi64      | \
     macintosh)
       add_target "$a"
@@ -408,6 +396,8 @@ build() {
     -altwin64   | \
     -linux      | \
     -linux64    | \
+    -rpi        | \
+    -rpi32      | \
     -rpi64      | \
     -macintosh)
       remove_target "${a#-}"
@@ -430,7 +420,7 @@ build() {
 # I will expect that there is a bash function to build for each possible
 # target architecture.
     printf "Next build for $TARGET\n"
-    build_$TARGET
+    eval "build_$TARGET"
     printf "Completed building for $TARGET\n"
   done
 }
@@ -454,12 +444,10 @@ build_win64() {
 # The files in winbuild64 provide the framework for building the snapshot.
   copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"     "rm -f *.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"     "chmod +x scripts/*.sh"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"     "ls -lh"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"     "./autogen.sh"
-  execute_in_dir "windows" "$REDUCE_BUILD"       "touch C.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD"       "make -j1 REVISION=$REV"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "chmod +x scripts/*.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   stop_remote_host
@@ -479,12 +467,10 @@ build_altwin64() {
   start_remote_host
   copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"     "rm -f *.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"     "chmod +x scripts/*.sh"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"     "ls -lh"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"     "./autogen.sh"
-  execute_in_dir "windows" "$REDUCE_BUILD"       "touch C.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD"       "make -j1 REVISION=$REV"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "chmod +x scripts/*.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
   stop_remote_host
@@ -495,7 +481,8 @@ build_altwindows() {
 }
 
 build_debian() {
-  printf "\n\nbuild_debian starting for $*\n";
+####@@@@
+  printf "build_debian starting $*\n";
 # Common code for building on a Linux variant.
   if test "$MODE" = "none"
   then
@@ -513,12 +500,10 @@ build_debian() {
 # executable permissions set on all the files that it should, and I am
 # having difficulty fixing that - so here as a work-round I force a bunch
 # of scripts to be executable.
-  execute_in_dir "linux" "$REDUCE_BUILD/C"    "rm -f *.stamp"
-  execute_in_dir "linux" "$REDUCE_BUILD/C"    "chmod +x scripts/*.sh"
-  execute_in_dir "linux" "$REDUCE_BUILD/C"    "ls -lh"
-  execute_in_dir "linux" "$REDUCE_BUILD/C"    "./autogen.sh"
-  execute_in_dir "linux" "$REDUCE_BUILD"      "touch C.stamp"
-  execute_in_dir "linux" "$REDUCE_BUILD"      "make -j1 REVISION=$REV"
+  execute_in_dir "linux" "$REDUCE_BUILD/C"               "chmod +x scripts/*.sh"
+  execute_in_dir "linux" "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "linux" "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "linux" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
   fetch_files    "$REDUCE_BUILD/*.deb"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
   fetch_files    "$REDUCE_BUILD/*.rpm"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
@@ -539,6 +524,15 @@ build_linux() {
   build_linux64
 }
 
+build_rpi32() {
+  machine_rpi32
+  build_debian rpi
+}
+
+build_rpi() {
+  build_rpi32
+}
+
 build_rpi64() {
 # Much the same as for 32-bit Raspberry pi but it will need a different
 # host.
@@ -557,13 +551,11 @@ build_macintosh() {
 # As you might imagine, macbuild holds build scripts here.
   copy_files "$REDUCE_DISTRIBUTION/macbuild/" "$REDUCE_BUILD/"   "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"          "$REDUCE_BUILD/C/"
-  execute_in_dir "macintosh" "$REDUCE_BUILD/C" "rm -f *.stamp"
-  execute_in_dir "macintosh" "$REDUCE_BUILD/C" "chmod +x scripts/*.sh"
-  execute_in_dir "macintosh" "$REDUCE_BUILD/C" "ls -lh"
-  execute_in_dir "macintosh" "$REDUCE_BUILD/C" "./autogen.sh"
-  execute_in_dir "macintosh" "$REDUCE_BUILD"   "make -j1  REVISION=$REV source-archive"
-  execute_in_dir "macintosh" "$REDUCE_BUILD"   "touch C.stamp"
-  execute_in_dir "macintosh" "$REDUCE_BUILD"   "make -j1 REVISION=$REV"
+  execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "chmod +x scripts/*.sh"
+  execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "./autogen.sh"
+  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION source-archive"
+  execute_in_dir "macintosh" "$REDUCE_BUILD"              "touch C.stamp"
+  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION"
   backup_old_snapshots "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
   fetch_files    "$REDUCE_BUILD/*.dmg"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
   fetch_files    "$REDUCE_BUILD/*.bz2"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
@@ -696,6 +688,24 @@ machine_linux() {
   machine_linux64
 }
 
+machine_rpi32() {
+  MODE="none"
+  hosts_rpi 2> /dev/null
+  if test "$MODE" = "none"
+  then
+    case `uname -n` in
+    *)
+      printf "Do not know how to access a Raspberry Pi from `uname -n`\n"
+      MODE=none
+      ;;
+    esac
+  fi
+}
+
+machine_rpi() {
+  machine_rpi32
+}
+
 machine_rpi64() {
   MODE="none"
   hosts_rpi64 2> /dev/null
@@ -727,7 +737,6 @@ start_remote_host() {
 # other when it is remote.
   case $MODE in
   virtual)
-    printf "\n\n@@@@ start_remote_host @@@@\n\n"
 # If the VM happens to be running already (perhaps left over from an
 # interrupted previous attempt) I need to shut it down before I try
 # to re-configure it. Note that all this will just stall if the VM
@@ -783,7 +792,6 @@ start_remote_host() {
     done
     ;;
   ssh+virtual)
-    printf "\n\n@@@@ start_remote_host over ssh @@@@\n\n"
 # Now I express a similar sequence of steps, but with the Virtual Machine
 # being created on a remote host. Note that this means that the port that
 # I select must be available for use on that remote system.
@@ -856,7 +864,6 @@ RSYNC_OPTIONS="-a -c --force \
 MAC_RSYNC_EXTRA="--rsync-path=/opt/local/bin/rsync"
 
 copy_files() {
-  printf "\n\n@@@@ copy_files @@@@\n\n"
 # Usage example : copy_files "$REDUCE_DISTRIBUTION/macbuild/" "$REDUCE_BUILD/" "--exclude=C"
   if test "$1" = "" || test "$2" = ""
   then
@@ -905,7 +912,6 @@ copy_files() {
 }
 
 execute_in_dir() {
-  printf "\n\n@@@@ execute_in_dir $2: $3 @@@@\n\n"
 # Usage example: execute_in_dir "$REDUCE_BUILD/C" "./autogen.sh"
   if test "$1" = "" || test "$2" = ""
   then
@@ -935,7 +941,7 @@ execute_in_dir() {
   *macintosh*)
     cmd="export PATH=/opt/local/bin:\$PATH; $cmd"
     ;;
-  *linux*)
+  *linux* | *rpi*)
     cmd="export PATH=/usr/local/bin:\$PATH; $cmd"
     ;;
   esac
@@ -946,14 +952,15 @@ execute_in_dir() {
   case $MODE in
   local)
     cd $HERE
-    printf "cd $dir; $cmd\n"
+    printf "eval \"cd $dir; $cmd\"\n"
     eval "cd $dir; $cmd"
     cd $HERE
     ;;
   ssh)
-    cmd="export PATH=/usr/local/bin:/usr/bin:/bin:\$PATH; cd $dir; $cmd"
-    printf "\nssh $USER@$HOST \"$cmd\"\n"
-    ssh $USER@$HOST "$cmd"
+    cmd=export\ PATH=/usr/local/bin:/usr/bin:/bin:\\\$PATH\;\ cd\ $dir\;\ $cmd
+    cmd=`echo \$cmd | sed 's/[^a-zA-Z0-9]/\\\&/g'`
+    printf "\nssh $USER@$HOST eval $cmd\n"
+    ssh $USER@$HOST "eval $cmd"
     ;;
   virtual)
     printf "ssh -p $PORT $SSHOPTS $USER@localhost \"export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd\"\n"
@@ -976,7 +983,6 @@ execute_in_dir() {
 }
 
 backup_old_snapshots() {
-  printf "\n\n@@@@ backup_old_snapshots @@@@\n\n"
 # Usage example: backup_old_snapshots "$SNAP/linux32" "$SNAP/old/linux32"
   if test "$1" = "" || test "$2" = ""
   then
@@ -1016,7 +1022,6 @@ fetch_files() {
 # to rather simple cases. That is achieved by using several calls to this
 # fetch_files procedure, eg one for .dmg and a second for .bz2.
 # The issue was noticed and addressed in July 2022.
-   printf "\n\n@@@@ fetch_files @@@@\n\n"
   if test "$1" = "" || test "$2" = "" || test "$3" = ""
   then
     printf "Internal error\n"
@@ -1033,8 +1038,8 @@ fetch_files() {
   case $MODE in
   local | altlocal)
     cd $HERE
-    printf "rsync $RSO $src $dest\n"
-    rsync $RSO $src $dest
+    printf "eval \"rsync $RSO $src $dest\"\n"
+    eval "rsync $RSO $src $dest"
     ;;
   ssh | ssh+altlocal)
     printf "rsync $RSO \"$USER@$HOST:$src\" $dest\n"
@@ -1062,7 +1067,6 @@ stop_remote_host() {
 # If I am using a virtual machine I will shut it down.
   case $MODE in
   virtual)
-    printf "\n\n@@@@ stop the virtual machine @@@@\n\n"
 # If this is closing things down at the end of a build I should know the
 # port number to communicate with it, and I will try sending a command
 # to instruct it to power off. On machines other than Windows that would
@@ -1107,7 +1111,6 @@ stop_remote_host() {
     vboxmanage controlvm $VM poweroff
     ;;
   ssh+virtual)
-    printf "\n\n@@@@ stop the virtual machine over ssh @@@@\n\n"
     printf "ssh $USER@$HOST vboxmanage controlvm $VM acpipowerbutton\n"
     ssh $USER@$HOST vboxmanage controlvm $VM acpipowerbutton
     for n in `seq 1 60`
@@ -1140,7 +1143,7 @@ stop_remote_host() {
 if test "$1" = "-test" ||
    test "$1" = "--test"
 then
-  printf "\n\n@@@@ Test machine access @@@@ \n\n"
+  printf "\n\n+++ Test machine access +++ \n\n"
   shift
 # --test can be followed by a list of machines to test for access.
   if test "$*" = ""
@@ -1177,12 +1180,7 @@ else
   cd $HERE
   prepare
   cd $HERE
-  if test "$update" != "yes"
-  then
-    build "$@"
-  else
-    printf "\n\n@@@@ files updates but not built @@@@\n\n"
-  fi
+  build "$@"
   cd $HERE
 fi
 
