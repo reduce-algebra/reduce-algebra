@@ -9271,23 +9271,17 @@ template <typename T,
 // delays initialization of any of the variables within the following
 // function until the function is first used!
 
-
-// Should this be thread_local?
-
-inline unsigned int syatem_randomness()
+inline unsigned int system_randomness()
 {   static std::random_device basic_randomness;
     static unsigned int r = 1234567;
-    r++;
-// in pathological cases trying to get data from a random_device can fail
+// In pathological cases trying to get data from a random_device can fail
 // and raise an error, which I catch here so that I can return a rather
-// arbitrary fixed value in that case. This issue is why for seeding my
-// pseudo-random generator I also mix in clock information which at least
-// may help a bit in the desparate case.
+// arbitrary value in that case.
     try
-    {   r = rd();
+    {   r = basic_randomness();
     }
     catch (const std::exception &e)
-    {
+    {   r++;
     }
     return r;
 }
@@ -9345,13 +9339,11 @@ inline unsigned int syatem_randomness()
 
 MAYBE_UNUSED static void reseed(Digit n)
 {   if (n == 0)
-    {   std::random_device basic_randomness;
-        Digit threadid =
+    {   Digit threadid =
             static_cast<Digit>(
                 std::hash<std::thread::id>()(
                     std::this_thread::get_id()));
-        Digit seed_component =
-            static_cast<Digit>(basic_randomness());
+        Digit seed_component = system_randomness();
         Digit time_now =
             static_cast<Digit>(std::time(nullptr));
         Digit chrono_now =
@@ -19235,7 +19227,6 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
     display("a", a, N);
     display("b", b, M);
 #endif // TRACE_TIMES
-#ifndef NO_THREADS
 // The variable TLworkspace starts off with a null pointer, but the first
 // time I do a biggerMul() in a thread that thread is given a vector
 // of digits big enough for it and any sunsequent use there. On all but the
@@ -19244,7 +19235,6 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
     Digit* workspace = TLworkspace;
     if (workspace == nullptr)
         TLworkspace = workspace = new Digit[topWorkspaceSize(FFT_THRESHOLD)];
-#endif
     if (4*N <= 5*M)
     {   if (N < KARABIG) kara(a, N, b, M, result, workspace);
         else kara<true>(a, N, b, M, result, workspace);
