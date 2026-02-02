@@ -619,7 +619,7 @@ symbolic procedure make!:ratnum(nm,dn);
    % ****      redefining these four routines.
    if zerop dn then rerror(arith,3,"Zero divisor in make:ratnum")
     else if dn > 0 then '!:ratnum!: . (nm . dn)
-    else '!:ratnum!: . (-nm . -dn);
+    else '!:ratnum!: . ((-nm) . (-dn));
 
 symbolic procedure ratnump!:(x);
    % This function returns T if X is a rational number
