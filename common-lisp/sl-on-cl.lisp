@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-01-15 16:21:23 franc>
+;; Time-stamp: <2026-02-03 12:47:30 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -32,6 +32,15 @@
 (declaim (optimize #-DEBUG speed #+DEBUG debug #+DEBUG safety))
 #+(and SBCL (not DEBUG))
 (declaim (sb-ext:muffle-conditions sb-ext:compiler-note style-warning))
+
+;; Use Common Lisp expt and math functions if possible, cf.
+;; "support/fastmath.red".  OK for SBCL and CCL, but CLISP expt causes
+;; floating point underflow, trigonometric function accuracy can be
+;; poor for very large arguments, and tan can lead to division by
+;; zero, so use "arith/math.red" for safety:
+#+(and (or SBCL CCl LISPMATH) (not NOLISPMATH))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (push :LISPMATH *features*))
 
 #+SBCL (eval-when (:compile-toplevel :load-toplevel :execute)
          (require :sb-posix))
@@ -62,7 +71,7 @@
            :mapc :mapcan :mapcar :mapcon :maplist :append :assoc
            :delete :length :member :sort :sublis :subla :subst :rassoc
            :apply :eval :function :close :open :princ :print :prin1
-           :read :terpri :complexp :union :load :time
+           :reverse :read :terpri :complexp :union :load :time
            :char-downcase :char-upcase :string-downcase :mod
            :file-write-date :char-code :symbol-name :number)
 
@@ -416,8 +425,8 @@ EXPR PROCEDURE ZEROP(U);
 
 (import '(cl:first cl:second cl:third cl:fourth cl:rest))
 
-(declaim (inline lastpair lastcar nth pnth))
-(declaim (ftype (cl:function (t) t) lastpair lastcar))
+(declaim (inline lastpair lastcar nth pnth)
+         (ftype (cl:function (t) t) lastpair lastcar))
 
 (defun lastpair (l)
   "(lastpair L:pair): any expr
@@ -1256,17 +1265,15 @@ as if its argument `tr' were true.")
 ;; source code for the various Lisp systems.  It is therefore
 ;; unreliable!
 
-(declaim (inline %print-backtrace-maybe)
-         (ftype (cl:function (boolean) null) %print-backtrace-maybe))
+(declaim (inline %print-backtrace)
+         (ftype (cl:function () null) %print-backtrace))
 
-(defun %print-backtrace-maybe (tr)
-  "Optionally, print backtrace to default output stream.
-Do so if TR or global *DEBUG is true."
-  (when (or tr *debug)
+(defun %print-backtrace ()
+  "Print backtrace to default output stream."
     #+SBCL (sb-debug:print-backtrace)
     #+CLISP (system::print-backtrace)   ; See clisp/src/reploop.lisp
     #+CCL (format t "~&~{~s~%~}" (ccl:backtrace-as-list))
-    ))
+    )
 
 ;; Limit length of backtrace:
 #+SBCL (setq sb-debug:*backtrace-frame-count* 20) ; default 1000
@@ -1302,19 +1309,23 @@ dependent format."
   ;; device
   (handler-case (list (eval u))         ; protected form
     (sl-error1 ()
-      (%print-backtrace-maybe tr)
+      ;; Handle calls of SL error1 function. (???)
+      ;; Used like throw-catch; no message and normally no backtrace.
+      (when *debug (%print-backtrace))
       nil)
     (sl-error (condition)
+      ;; Handle calls of SL error function.
       (if msgp
           (let ((msg (slot-value condition 'errmsg)))
             ;; If MESSAGE is a list then it is displayed without top
             ;; level parentheses:
             (format t "~&***** ~:[~a~;~{~a~^ ~}~]~%" (listp msg) msg)))
-      (%print-backtrace-maybe tr)
+      (when (or tr *debug) (%print-backtrace))
       (slot-value condition 'errno))
-    (cl:error (condition)               ; Should this be caught here?
+    (cl:error (condition)
+      ;; Handle CL and SL internal errors. (???)
       (if msgp (format t "~&***** ~a~%" condition))
-      (%print-backtrace-maybe tr)
+      (when (or tr *debug) (%print-backtrace))
       nil)))
 
 
@@ -1530,16 +1541,22 @@ EXPR PROCEDURE DIVIDE(U, V);
    (QUOTIENT(U, V) . REMAINDER(U, V));"
   (multiple-value-call #'cons (truncate u v)))
 
-;; Type must match redefinition in arith/math (and not be inline):
-(declaim (ftype (cl:function (number number) number) expt))
+(declaim #+LISPMATH (inline expt)
+         (ftype (cl:function (number number) number) expt))
 
 (defun expt (u v)
-  ;; Defined explicitly so that it can be redefined in arith/math
   "EXPT(U:number, V:integer):number eval, spread
 Returns U raised to the V power. A floating point U to an integer
 power V does not have V changed to a floating number before
 exponentiation."
-  (cl:expt u v))
+  ;; The definition needed for REDUCE is more general!
+  (cl:expt (if (integerp u) u (cl:float u 1d0))
+           (if (integerp v) v (cl:float v 1d0))))
+
+;; Prevent use of the definition of expt in "arith/math.red":
+#+LISPMATH (flag '(expt) 'lose)
+
+;; Should fexpt be an alias for expt (see "arith/math.red")?
 
 (declaim (inline fix)
          (ftype (cl:function (number) integer) fix))
@@ -1752,31 +1769,62 @@ Returns the product of U and V.")
 
 (defun izerop (u) (cl:zerop u))         ; used in plot/plotexp3
 
-;; Fast built-in floating point functions:
+
+;;; Floating Point Math Functions
+;;; =============================
 
-;; (defalias ACOS acos)
-;; (defalias ASIN asin)
-;; (defalias ATAN atan)
-;; (defalias ATAN2 atan)
-;; (defalias COS cos)
-;; (defalias EXP exp)
-;; (defalias LN log)
-;; (defalias LOG log)
-;; (defalias LOGB log)
-;; (defsubst LOG10 (x) (log x 10))
-;; (defalias SIN sin)
-;; (defalias SQRT sqrt)
-;; (defalias TAN tan)
-;; ;; The following will fail for floats with very large magnitudes since
-;; ;; they return fixnums rather than big integers.  If that is a problem
-;; ;; then remove these aliases and in particular remove the lose flags
-;; ;; in "eslrend.red".
-;; (defalias CEILING ceiling)
-;; (defalias FLOOR floor)
-;; (defalias ROUND round)
+(import '(floor ceiling round))
 
-;; The above cause errors in the arith test file when trig results or
-;; arguments are complex so all commented out for now.
+;; Prevent use of the definitions in "arith/math.red":
+(flag '(floor ceiling round) 'lose)
+
+;; Elementary transcendental functions may be called with integer
+;; arguments, which are automatically coerced to the lowest precision
+;; float type available.  This would lead to loss of precision and
+;; type errors.  So explicitly convert the arguments to double-float.
+
+#+LISPMATH
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (shadow '(sin cos tan asin acos atan
+            sinh cosh tanh asinh acosh atanh
+            sqrt exp log)))            ; cannot be in the progn below!
+
+#+LISPMATH
+(progn
+  (declaim (inline sin cos tan asin acos atan atan2
+                   sinh cosh tanh asinh acosh atanh
+                   sqrt exp log ln logb)
+           (ftype (cl:function (number) double-float)
+                  sin cos tan asin acos atan
+                  sinh cosh tanh asinh acosh atanh
+                  sqrt exp log ln)
+           (ftype (cl:function (number number) double-float)
+                  atan2 logb))
+
+  (defun sin (x) (cl:sin (cl:float x 1d0)))
+  (defun cos (x) (cl:cos (cl:float x 1d0)))
+  (defun tan (x) (cl:tan (cl:float x 1d0)))
+  (defun asin (x) (cl:asin (cl:float x 1d0)))
+  (defun acos (x) (cl:acos (cl:float x 1d0)))
+  (defun atan (x) (cl:atan (cl:float x 1d0)))
+  (defun atan2 (x y) (cl:atan (cl:float x 1d0) (cl:float y 1d0)))
+  (defun sinh (x) (cl:sinh (cl:float x 1d0)))
+  (defun cosh (x) (cl:cosh (cl:float x 1d0)))
+  (defun tanh (x) (cl:tanh (cl:float x 1d0)))
+  (defun asinh (x) (cl:asinh (cl:float x 1d0)))
+  (defun acosh (x) (cl:acosh (cl:float x 1d0)))
+  (defun atanh (x) (cl:atanh (cl:float x 1d0)))
+  (defun sqrt (x) (cl:sqrt (cl:float x 1d0)))
+  (defun exp (x) (cl:exp (cl:float x 1d0)))
+  (defun log (x) (cl:log (cl:float x 1d0)))
+  (defun ln (x) (cl:log (cl:float x 1d0)))
+  (defun logb (x y) (cl:log (cl:float x 1d0) (cl:float y 1d0)))
+
+  ;; Prevent use of the definitions in "arith/math.red":
+  (flag '(sin cos tan asin acos atan atan2
+          sinh cosh tanh asinh acosh atanh
+          sqrt exp log ln logb)
+        'lose))
 
 
 ;;; Map Composite Functions
@@ -2016,15 +2064,21 @@ EXPR PROCEDURE PAIR(U, V);
       (error-internal "Different length lists in PAIR")
       (cl:map 'list #'cons u v)))
 
-(import 'cl:reverse)
-;; REVERSE(U:list):list eval, spread
-;; Returns a copy of the top level of U in reverse order.
-;; EXPR PROCEDURE REVERSE(U);
-;; BEGIN SCALAR W;
-;;    WHILE U DO << W := CAR U . W;
-;;                  U := CDR U >>;
-;;    RETURN W
-;; END;
+(declaim (ftype (cl:function (list) list) reverse))
+
+(defun reverse (u)
+  "REVERSE(U:list):list eval, spread
+Returns a copy of the top level of U in reverse order.
+EXPR PROCEDURE REVERSE(U);
+BEGIN SCALAR W;
+   WHILE U DO << W := CAR U . W;
+                 U := CDR U >>;
+   RETURN W
+END;"
+  ;; Must accept an improper (i.e. dotted) list or an atom!
+  (do (w) ((atom u) w)
+    (setq w (cons (car u) w)
+          u (cdr u))))
 
 (declaim (ftype (cl:function (list) list) reversip))
 
@@ -2332,83 +2386,28 @@ Returns the number of lines printed on the current page. At the top
 of a page, 0 is returned."
   0)
 
-(declaim (ftype (cl:function (simple-string) simple-string)
-                substitute-in-file-name))
+(declaim (ftype (cl:function (simple-string &optional boolean) pathname)
+                %tidy-pathname))
 
-(defun substitute-in-file-name (filename) ; ***** TO BE REVISED! *****
-  "Return a copy of FILENAME with all environment variables substituted.
-Replace every substring of the form `$name' terminated by a
-non-alphanumeric character by its value.  Called by `open', etc."
-  ;; A simplified version of the Elisp function
-  ;; `substitute-in-file-name'.
-  ;; Replace environment variables with their values:
-  ;; #+SBCL (setq filename (namestring (sb-ext:parse-native-namestring filename)))
-  (loop
-     with beg and end = 0 and l
-     while
-       (and end (setq beg (position #\$ filename :start end)))
-     do
-       (push (subseq filename end beg) l)
-       (setq end (position-if-not #'alphanumericp filename :start (1+ beg)))
-       (push (getenv (subseq filename (1+ beg) end)) l)
-     finally
-       (if l (setq filename
-                   (cl:apply #'concatenate 'string
-                             (nreverse
-                              (if end
-                                  (push (subseq filename end) l)
-                                  l))))))
-  filename)
-
-(declaim (ftype (cl:function ((or simple-string pathname)) pathname)
-                expand-file-name))
-
-(defun expand-file-name (filename) ; ***** TO BE REVISED! *****
-  "Return a copy of FILENAME with a leading `.' replaced by the
-current working directory and each leading `..' replaced by its
-parent.  Called by `open' and `cd' on SBCL."
-  ;; A simplified version of the Elisp function `expand-file-name'.
-  ;; sb-ext:native-pathname seems necessary to preserve odd characters
-  ;; such as ^ in a filename:
-  #+SBCL (setq filename (sb-ext:native-pathname filename))
-  #-CCL
-  (let ((d (copy-list (pathname-directory filename))))
-    (when (eq (car d) :relative)
-      ;; Replace a leading "." with the current working directory:
-      (when (cl:equal (cadr d) ".")
-        (setf (cdr d) (cddr d))         ; remove "." component
-        (setq filename (merge-pathnames
-                        (make-pathname :directory d :defaults filename))))
-      ;; Replace each leading ".." with the parent directory:
-      (loop with cwd = (pathname-directory *default-pathname-defaults*)
-         while (cl:member (cadr d) '(".." :up :back))
-         do
-           (setf (cdr d) (cddr d))      ; remove ".." component
-           (setq cwd (butlast cwd))
-         finally (setq filename (merge-pathnames
-                                 (make-pathname :directory d :defaults filename)
-                                 (make-pathname :directory cwd)))))
-    filename)
-  #+CCL (uiop/filesystem:truenamize filename) ; requires asdf, so remove later?
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(declaim (ftype (cl:function (simple-string) pathname) %tidy-pathname))
-
-(defun %tidy-pathname (file-namestring)
-  "Return the full pathname of FILE-NAMESTRING (which need not exist).
-If the first component of FILE-NAMESTRING is an environment variable
-of the form `$name' then replace it by its value, which need not end
-with a directory separator.  On MS Windows, directory separators can
-be either \ or /.  Called by `open', `cd', `filep', `file-write-date'."
+(defun %tidy-pathname (path-string &optional ensure-dir)
+  "Return the full pathname of PATH-STRING (which need not exist).
+If the first component of PATH-STRING is an environment variable of
+the form `$name' then replace it by its value, which need not end with
+a directory separator.  On MS Windows, directory separators can be
+either \ or /.  If ENSURE-DIR is non-nil then ensure that PATH-STRING
+represents a directory (by appending a directory separator if
+necessary).  Called by `open', `cd', `filep', `file-write-date'."
   #+(or WIN32 CYGWIN) ;; convert \ to /:
-  (setq file-namestring (substitute #\/ #\\ file-namestring))
-  (let* ((file-pathname
-          #+SBCL (sb-ext:native-pathname file-namestring)
-          #-SBCL (pathname file-namestring)
+  (setq path-string (substitute #\/ #\\ path-string))
+  (when ensure-dir
+    ;; Ensure directory by ensuring trailing /:
+    (when (char/= (schar path-string (1- (cl:length path-string))) #\/)
+      (setq path-string (concatenate 'string path-string "/"))))
+  (let* ((path-pathname
+          #+SBCL (sb-ext:native-pathname path-string)
+          #-SBCL (pathname path-string)
           )
-         (dir (pathname-directory file-pathname))
+         (dir (pathname-directory path-pathname))
          root)
     (when (and (consp dir)
                (eq (car dir) :relative)         ; relative filename
@@ -2425,13 +2424,11 @@ be either \ or /.  Called by `open', `cd', `filep', `file-write-date'."
             #-SBCL (pathname root)
             dir                         ; new full directory
             (cl:append (pathname-directory root) (cddr dir))
-            file-pathname               ; new full pathname
+            path-pathname               ; new full pathname
             (make-pathname
              :device (pathname-device root)
-             :directory dir :defaults file-pathname)))
-    file-pathname))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             :directory dir :defaults path-pathname)))
+    path-pathname))
 
 ;; CLISP user variable CUSTOM:*DEVICE-PREFIX* controls translation
 ;; between Cygwin pathnames (e.g., #P"/cygdrive/c/gnu/clisp/") and
@@ -2449,10 +2446,6 @@ WRS. An error occurs if HOW is something other than INPUT or
 OUTPUT or the file can't be opened.
 ***** HOW is not option for OPEN
 ***** FILE could not be opened"
-  ;; (setq file (substitute-in-file-name file)) ; substitute environment variables
-  ;; #-CLISP (setq file (expand-file-name file)) ; and then expand . and ..
-  ;; ;; #+cygwin (setq file (win-to-cyg file))
-  ;; #+cygwin (setq file (parse-namestring file)) ; convert Windows filename to Cygwin format
   (case how
     (input
      (let ((fh (cl:open (%tidy-pathname file) :direction :input)))
@@ -2478,9 +2471,16 @@ previous page length is returned. If LEN is 0, no automatic page
 ejects will occur."
   nil)
 
+(defconstant %tab-width 8
+  "Outputting a Tab character increments `%posn' to the next integer
+multiple of `%tab-width'.")
+
 (defvar %posn 0
   "Number of characters in the current line output by Standard LISP.
-Accessed (read-only) via the function `POSN'.
+Except that Tab increments `%posn' the next integer multiple of
+`%tab-width', and Newline resets `%posn' to 0.
+Set by the functions `%prin-string', `terpri' and `readch'.
+Accessed (read-only) via the function `posn'.
 It's value should be between 0 and `%linelength' inclusive.")
 
 (declaim (inline posn)
@@ -2507,17 +2507,39 @@ beginning of a line."
 (declaim (ftype (cl:function (simple-string) null) %prin-string))
 
 (defun %prin-string (s)
-  "Print string S preceded by a space or newline if necessary.
+  "Print string S preceded by a newline or space if necessary.
 Check and update `%posn' to keep it <= `%linelength'.
-This is the only function that actually produces graphical output."
-  (let ((len (cl:length s)))
+This is the only function that actually produces graphical output.
+(S already contains any ! escape characters required.)"
+  ;; This code is designed to reproduce the output in
+  ;; "regressions/2011-08-31-linelength.rlg", but without visibly
+  ;; overflowing!
+  (let ((len (cl:length s)) overflowed)
     (when %prin-space-maybe (incf %posn))
-    (incf %posn len)                    ; posn after printing s
-    (if (> %posn %linelength)
+    ;; Compute %posn AFTER printing S here to determine whether to
+    ;; break the line:
+    (do ((i 0 (1+ i)))
+        ((= i len))
+      (case (schar s i)
+        (#\Tab           ; invisible, so no overflow (same for Space?)
+         (setq %posn (* (1+ (floor %posn %tab-width)) %tab-width)))
+        (#\Newline
+         (when (> (1+ %posn) %linelength) (setq overflowed t))
+         (setq %posn 0))
+        (otherwise
+         (when (> (incf %posn) %linelength) (setq overflowed t)))))
+    (if overflowed
         (progn
-          (cl:terpri)
-          (setq %posn len))             ; posn after printing s
-        (if %prin-space-maybe (cl:princ #\Space)))
+          (cl:terpri) (setq %posn 0)
+          ;; Re-compute %posn AFTER printing S here because the effect
+          ;; of Tabs will have changed:
+          (do ((i 0 (1+ i)))
+              ((= i len))
+            (case (schar s i)
+              (#\Tab (setq %posn (* (1+ (floor %posn %tab-width)) %tab-width)))
+              (#\Newline (setq %posn 0))
+              (otherwise (incf %posn)))))
+        (when %prin-space-maybe (cl:princ #\Space)))
     (setq %prin-space-maybe nil)
     (cl:princ s))
   nil)
@@ -2539,7 +2561,7 @@ This is the only function that actually produces graphical output."
 (defun terpri ()
   "TERPRI():NIL
 The current print line is terminated."
-  (setf %posn 0) (cl:terpri) nil)
+  (setq %posn 0) (cl:terpri) nil)
 
 (declaim (inline print)
          (ftype (cl:function (t) t) print))
@@ -2641,7 +2663,7 @@ in vector-notation.  The value of U is returned."
   ;; "arith/rounded.red"!
   (if (zerop u) "0.0"
       (let* ((absu (abs u))
-             (e (floor (log absu 10d0)))) ; decimal exponent
+             (e (floor (cl:log absu 10d0)))) ; decimal exponent
         ;; |u| = m 10^e, where 0 <= m < 10, so (for e >= 0) the
         ;; integer part of u contains e+1 digits.  To make u
         ;; contain d significant digits, multiply by a scale
@@ -2835,6 +2857,7 @@ Comments delimited by % and end-of-line are not transparent to READCH."
         $eof$                           ; not a char!
         (progn
           (when *echo                   ; track output position
+            ;; Revise as for %prin-string?
             (setq %posn (if (char= c #\Newline) 0 (1+ %posn))))
           (if *raise
               ;; down-case (because REDUCE is now LC, not UC!)
@@ -3104,7 +3127,8 @@ A function hung on the garbage collection hook."
   #+CLISP (%nth-room-value 1)
   #+(not (or SBCL CLISP)) 0)
 
-(declaim (ftype (cl:function (t) list) explode2 explode2uc))
+(declaim (ftype (cl:function (t) list)
+                explode2 explodec explode2uc explode2lc))
 
 (defun explode2 (u)                     ; PSL
   "(explode2 U:atom-vector): id-list expr
@@ -3117,7 +3141,9 @@ PRIN2-like version of EXPLODE without escapes or double quotes."
     (t (cl:map 'list #'%intern-character-preserve-case
                (princ-to-string u)))))
 
-(defun explode2uc (u)                   ; defined in "pslrend.red"
+(defalias explodec explode2)            ; see "pslrend.red"
+
+(defun explode2uc (u)                   ; see "pslrend.red"
   "Upper-case version of explode2."
   ;; NB: downcase because of symbol name case inversion!
   (cl:map 'list #'%intern-character-preserve-case
@@ -3126,6 +3152,39 @@ PRIN2-like version of EXPLODE without escapes or double quotes."
              (string u)
              (cl:float (%prin-float-to-string u))
              (t (princ-to-string u))))))
+
+(defun explode2lc (u)                   ; defined in "pslrend.red"
+  "Lower-case version of explode2."
+  ;; NB: upcase because of symbol name case inversion!
+  (cl:map 'list #'%intern-character-preserve-case
+          (cl:string-upcase
+           (typecase u
+             (string u)
+             (cl:float (%prin-float-to-string u))
+             (t (princ-to-string u))))))
+
+(declaim (ftype (cl:function (unsigned-byte) list) explodehex))
+
+(defun explodehex (u)
+  "Explode an unsigned integer to a list of hexadecimal digits.
+Hex digits are represented as identifiers using lower case letters."
+  (cl:map 'list #'%intern-character-preserve-case
+          (with-output-to-string (s)
+            (write u :base 16 :stream s))))
+
+(declaim (ftype (cl:function (t) list) explodecn exploden))
+
+(defun explodecn (u)
+  "Like explodec but returns a list of the numeric codes of the
+characters involved, e.g. explodecn \"#alpha;\" => (945)."
+  (cl:mapcar #'(lambda (x) (cl:char-code (character x)))
+             (explodec u)))
+
+(defun exploden (u)
+  "Like explode but returns a list of integer codes.
+Note some codes can be bigger than 0xff."
+  (cl:mapcar #'(lambda (x) (cl:char-code (character x)))
+             (explode u)))
 
 (declaim (inline concat2)
          (ftype (cl:function (string string) ; might not be simple!
@@ -3628,78 +3687,41 @@ COMMAND to the interpreter and return the process exit code."
 Return the current working directory in system specific format."
   (namestring (truename *default-pathname-defaults*)))
 
-(declaim (ftype (cl:function (&optional simple-string)
+(declaim (ftype (cl:function (&optional (or null simple-string))
                              (or null simple-string))
                 cd chdir))
 
-#+SBCL
 (defun cd (&optional dir)               ; PSL / Unix
   "(cd DIR:{null,string}):{nil,string} expr
-Set the current working directory to string DIR (if supplied and
-non-empty), after substituting environment variables and then
-expanding \".\" and \"..\".  If successful then return the new current
-directory; otherwise, return nil."
-  (unless (and dir (string/= dir ""))
-    (return-from cd
-      (sb-ext:native-namestring *default-pathname-defaults*)))
-  ;; SBCL seems to mis-parse ".." to be the same as "." hence this
-  ;; inelegant hack.  Allow dir not to end with a separator:
-  (if (pathname-name dir)
-      (setq dir (concatenate 'string dir "/")))
-  ;; Substitute environment variables and then expand . and ..:
-  (setq dir (substitute-in-file-name dir))
-  (setq dir (expand-file-name dir))
-  (setq dir (pathname dir))
-  ;; ;; Allow dir not to end with a separator:
-  ;; (if (pathname-name dir)
-  ;;     (setq dir (make-pathname :directory
-  ;;                              (nconc (or (pathname-directory dir) '(:relative))
-  ;;                                     (list (pathname-name dir))))))
-  (setq dir (merge-pathnames dir))
-  (and (probe-file dir)
-       ;; Return the new current working directory:
-       (sb-ext:native-namestring        ; \ instead of /
-        (setq *default-pathname-defaults* dir))))
+Set the current working directory to string DIR (if supplied, non-nil
+and a non-empty string), which need not end with a directory
+separator.  If the first component of DIR is an environment variable
+of the form `$name' then replace it by its value, which need not end
+with a directory separator.  On MS Windows, directory separators can
+be either \ or /.  DIR may contain \".\" and \"..\".  If successful,
+return the new current directory as a string; otherwise, return nil."
+  #-CLISP
+  (if (not (and dir (> (cl:length dir) 0)))
+      ;; CCL requires truename below because
+      ;; *default-pathname-defaults* is initially #P"":
+      (namestring (truename *default-pathname-defaults*))
+      ;; Substitute any environment variable and ensure directory:
+      (let ((dir-pathname (%tidy-pathname dir t)))
+        ;; Ensure the directory exists, and return the new simplified
+        ;; current working directory as a string:
+        (when (setq dir-pathname (probe-file dir-pathname)) ; returns truename
+          (namestring (setq *default-pathname-defaults* dir-pathname)))))
+  #+CLISP
+  ;; CLISP probe-file doesn't accept a directory (with no filename),
+  ;; hence this bespoke code:
+  (values
+   (ignore-errors                  ; avoid error if dir does not exist
+     (namestring
+      ;; ext:cd crashes with arg nil or ""!
+      (cl:apply #'ext:cd (and dir (> (cl:length dir) 0)
+                              (list (%tidy-pathname dir t))))))))
 
-#+CLISP
-(defun cd (&optional dir)               ; PSL / Unix
-  "(cd DIR:{null,string}):{nil,string} expr
-Set the current working directory to string DIR (if supplied and
-non-empty), after substituting environment variables and then
-expanding \".\" and \"..\".  If successful then return the new current
-directory."
-  ;; In CLISP, MAKE-PATHNAME canonicalizes the PATHNAME directory component.
-  (namestring
-   ;; cd crashes with nil or ""!
-   (cl:apply #'ext:cd (and dir (string/= dir "")
-                           (list (substitute-in-file-name dir))))))
-
-#+ABCL
-(defun cd (x)
-    "Change current directory, as per POSIX chdir(2), to a given pathname object"
-    (if-let (x (pathname x))
-      (setf *default-pathname-defaults* (truename x)) ;; d-p-d is canonical!
-      ))
-
-#+CCL
-(defun cd (dir)							; PSL
-  "(cd DIR:string):BOOLEAN expr
-Set the current working directory to DIR after expanding the filename
-according to the rules of the operating system.  If this operation is
-not sucessful, the value Nil is returned."
-  (setq dir (pathname dir))
-  ;; Allow dir not to end with a separator:
-  (if (string/= (file-namestring dir) "")
-      (setq dir (make-pathname :directory
-                               (append (or (pathname-directory dir) '(:relative))
-                                       (list (file-namestring dir))))))
-  ;; Expand environment variables, "." and "..":
-  (setq dir (substitute-in-file-name (namestring dir)))
-  (setq dir (merge-pathnames dir))
-  (and (probe-file dir) (namestring (ccl::cd dir))))
-
-#+(or SBCL CLISP CCL)      ; to avoid a syntax error with other Lisps!
-(defalias chdir cd)                   ; CSL / MS Windows
+(defalias chdir cd)                     ; CSL / MS Windows
 
 (declaim (inline filep)
          (ftype (cl:function (simple-string) (or pathname null)) filep))
@@ -3823,7 +3845,8 @@ loadextensions*.  The strings from each list are used in a left to
 right order, for a given string from loaddirectories* each extension
 from loadextensions* is used.
 
-Load a \".sl\" file using Standard Lisp read syntax."
+Load a \".sl\" file using Standard Lisp read syntax.
+(load 'compiler) is a compatibility no-op."
   ;; filename defaults are taken from *default-pathname-defaults*,
   ;; which defaults to the directory in which SBCL was started.
   (let ((*readtable* (copy-readtable nil)) ; normal CL syntax
@@ -3831,7 +3854,9 @@ Load a \".sl\" file using Standard Lisp read syntax."
         (*redefmsg *verboseload) file-pathname)
     (if (symbolp file)
         (progn
-          (if (cl:member file options*) (return-from load)) ; already loaded
+          (when (or (cl:member file options*) ; already loaded
+                    (cl:eq file 'compiler))   ; compatibility no-op
+            (return-from load))
           (push file options*)
           (setq file-pathname
                 (pathname (cl:string-downcase (cl:symbol-name file)))))
@@ -4221,8 +4246,9 @@ Called by ON/OFF COMP; see 'clrend.red'."
 ;;; sl-on-cl.lisp ends here
 
 ;; To do:
-;; Use pathnames more consistently.
-;; Revise documentation strings and function order to follow PSL manual more closely.
+
+;; Revise documentation strings and function order to follow PSL
+;; manual more closely.
 
 ;; Move implementation into a separate package and only export
 ;; required symbols.  This should make profiling easier!
