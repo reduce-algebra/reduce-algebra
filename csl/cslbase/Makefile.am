@@ -359,7 +359,7 @@ arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
 		arith-elem.cpp arith-misc.cpp qdouble.cpp arithlib.cpp
-ARITHDEP=arithlib.h qdouble.h
+ARITHDEP=arithlib.cpp qdouble.h
 else !arithlib
 arith_sources =
 ARITHDEP=

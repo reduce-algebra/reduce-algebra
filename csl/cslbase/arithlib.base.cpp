@@ -3891,13 +3891,11 @@ inline unsigned int system_randomness()
 
 MAYBE_UNUSED static void reseed(Digit n)
 {   if (n == 0)
-    {   std::random_device basic_randomness;
-        Digit threadid =
+    {   Digit threadid =
             static_cast<Digit>(
                 std::hash<std::thread::id>()(
                     std::this_thread::get_id()));
-        Digit seed_component =
-            static_cast<Digit>(basic_randomness());
+        Digit seed_component = system_randomness();
         Digit time_now =
             static_cast<Digit>(std::time(nullptr));
         Digit chrono_now =

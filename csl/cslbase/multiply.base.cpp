@@ -705,7 +705,6 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
     display("a", a, N);
     display("b", b, M);
 #endif // TRACE_TIMES
-#ifndef NO_THREADS
 // The variable TLworkspace starts off with a null pointer, but the first
 // time I do a biggerMul() in a thread that thread is given a vector
 // of digits big enough for it and any sunsequent use there. On all but the
@@ -714,7 +713,6 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
     Digit* workspace = TLworkspace;
     if (workspace == nullptr)
         TLworkspace = workspace = new Digit[topWorkspaceSize(FFT_THRESHOLD)];
-#endif
     if (4*N <= 5*M)
     {   if (N < KARABIG) kara(a, N, b, M, result, workspace);
         else kara<true>(a, N, b, M, result, workspace);
