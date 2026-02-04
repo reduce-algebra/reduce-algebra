@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2026-01-17 16:36:21 franc>
+# Time-stamp: <2026-02-03 12:51:17 franc>
 
 # Build REDUCE on supported implementations of Common Lisp (CL),
 # namely SBCL, CLISP and CCL.
@@ -42,20 +42,24 @@ function help {
     echo 'Option -c ensures a clean build by deleting any previous build.'
     echo 'Option -f forces recompilation of all packages.'
     echo 'Option -d configures the build for debugging.'
+    echo 'Option -m use Common Lisp floating-point math functions.'
+    echo 'Option -n do NOT use Common Lisp floating-point math functions.'
     echo 'Option -b builds only the bootstrap REDUCE image.'
     echo 'Option -o builds only the core REDUCE packages.'
     echo 'Option -h displays this help message and exits.'
     exit 1
 }
 
-while getopts l:r:cfdboh option
+while getopts l:r:cfdmnboh option
 do
     case $option in
         l) lisp=$OPTARG;;       # obsolete
         r) revision=$OPTARG;;
         c) clean=true;;
-        d) debug='(push :debug *features*)';;
         f) force='!*forcecompile := t;';;
+        d) debug='(push :DEBUG *features*)';;
+        m) lispmath='(push :LISPMATH *features*)';;
+        n) nolispmath='(push :NOLISPMATH *features*)';;
         b) bootstraponly=true;;
         o) coreonly=true;;
         h) help;;
@@ -108,12 +112,15 @@ case $lisp in
         ;;
 esac
 
-if [ -n "$clean" ]; then
+if [ -n "$clean" ]
+then
     echo '+++++ Clean build'
     rm -rf fasl.$lisp log.$lisp
 fi
 
-[ -n "$debug" ] && echo '+++++ Debug build'
+[ -n "$debug" ] && echo '+++++ Building for debugging'
+[ -n "$lispmath" ] && echo '+++++ Using Common Lisp floating-point math functions'
+[ -n "$nolispmath" ] && echo '+++++ NOT using Common Lisp floating-point math functions'
 
 if [ -z "$reduce" ]
 then
@@ -169,7 +176,7 @@ if [ "sl-on-cl.lisp" -nt "fasl.$lisp/sl-on-cl.$faslext" ]
 then
     echo $'\n+++++ Compiling sl-on-cl'
     time eval $runlisp << EOF &> log.$lisp/sl-on-cl.blg &&
-$debug
+$debug $lispmath $nolispmath
 (or (compile-file "sl-on-cl.lisp")
     #+CCL (quit 1)
     #-CCL (exit #+SBCL :code 1))
@@ -211,7 +218,7 @@ fi
 # Build REDUCE #
 ################
 
-echo $'\n+++++ Building REDUCE...'
+echo -n $'\n+++++ Collecting package data...'
 
 eval $runbootstrap << EOF &> log.$lisp/build.blg
 symbolic; $force
@@ -257,8 +264,14 @@ bye;
 EOF
 
 if [ ! -e fasl.$lisp/core-packages.dat -o ! -e fasl.$lisp/noncore-packages.dat ]
-then echo '***** Running bootstrap REDUCE failed'; exit 1
+then
+    echo 'failed'; exit 1
+else
+    echo 'done.  Possible errors:'
+    grep_errors build
 fi
+
+echo $'\n+++++ Building REDUCE...'
 
 # Compile the "core" packages, each in a separate invocation of
 # bootstrap REDUCE to avoid adverse interactions:
@@ -348,10 +361,6 @@ time eval $runlisp << EOF &> log.$lisp/reduce.blg
 (load!-package 'rtools)
 (load!-package 'mathpr)
 (load!-package 'entry)
-
-% cf. support/fastmath.red:
-(flag '(sin cos tan sind cosd tand cotd secd cscd asin acos atan
-   asecd acscd atan2d atan2 sqrt exp log hypot cosh sinh tanh) 'lose)
 
 (cl:fmakunbound 'prettyprint)   % otherwise defautoload has no effect!
 (defautoload prettyprint pretty)  % since only in entry file for PSL!

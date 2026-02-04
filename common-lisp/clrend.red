@@ -2,7 +2,7 @@ module clrend;  % CL REDUCE "back-end".
 
 % Authors: Anthony C. Hearn, Martin L. Griss, Arthur C. Norman, et al.
 % Modified by FJW for REDUCE on Common Lisp via "sl-on-cl.lisp".
-% Time-stamp: <2025-10-07 17:19:55 franc>
+% Time-stamp: <2026-01-28 12:29:04 franc>
 % The standard versions are "packages/support/*rend.red".
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,7 +52,7 @@ global '(tab!* !$eol!$ ff!* cr!*
      version!*
      symchar!*);
 
-switch break, gc, printlower, redefmsg, debug, verboseload;
+switch break, gc, printlower, redefmsg, debug, verboseload, pwrds;
 
 % This procedure definition taken from "pslrend.red" is required for
 % the factor module:
@@ -286,8 +286,6 @@ flag('(printc), 'lose);
 
 symbolic procedure ttab n;  while posn() < n do prin2 " ";
 
-symbolic inline procedure explodec x; explode2 x;
-
 
 #if (memq 'sbcl lispsystem!*)
 % Make the COMP switch control the SBCL evaluation mode:
@@ -392,6 +390,13 @@ symbolic procedure lalr_collect_terminals grammar;
   end;
 
 flag('(lalr_collect_terminals), 'lose);
+
+% Fixes for the tmprint package
+% =============================
+
+inline procedure writechar n;
+   % Print the character whose code is n.
+   prin2 int2id n;
 
 endmodule;
 

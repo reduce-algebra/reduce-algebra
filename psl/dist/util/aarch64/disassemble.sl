@@ -453,9 +453,11 @@
 	(when (or (eq instr 'movz)
 		  (weq sf 1)
 		  (and (weq sf 0) (not (weq imm16 16#ffff))))
-	  (setq instr 'mov)
 	  (setq imm16 (wshift imm16 shift))
-	  (setq shift 0)))
+	  (setq shift 0)
+	  (if (eq instr 'movn) (setq imm16 (wnot imm16)))
+	  (setq instr 'mov)
+))
       (setq instr (list instr (regnum-to-regname regd sf nil) (prefix!# imm16)))
       (if (weq shift 0) instr
 	(nconc instr (list (bldmsg "LSL #%d" shift))))
