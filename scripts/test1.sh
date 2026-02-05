@@ -877,7 +877,7 @@ then
       diffBw $basedir/$p.rlg $logdir/$p.rlg > ${basedir%-times}-${logdir%-times}-comparison/$p.rlg.diff
       if test -s ${basedir%-times}-${logdir%-times}-comparison/$p.rlg.diff
       then
-        printf "***** ${basedir%--times} and ${logdir%-times} test logs differ!\n"
+        printf "***** ${basedir%-times} and ${logdir%-times} test logs differ!\n"
       else
         rm -f ${basedir%-times}-${logdir%-times}-comparison/$p.rlg.diff
       fi
