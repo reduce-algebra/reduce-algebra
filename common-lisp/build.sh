@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2026-02-03 12:51:17 franc>
+# Time-stamp: <2026-02-05 12:25:16 franc>
 
 # Build REDUCE on supported implementations of Common Lisp (CL),
 # namely SBCL, CLISP and CCL.
@@ -351,7 +351,7 @@ time eval $runlisp << EOF &> log.$lisp/reduce.blg
 (load "clprolo")                % initial CL specific code
 
 (cl:defvar revision!* $revision)
-(cl:if (not (cl:boundp 'revision!*)) (setq revision!* nil))
+(cl:when (not (cl:boundp 'revision!*)) (setq revision!* nil))
 (load!-package 'rlisp)
 (load!-package 'clrend)
 (load!-package 'smacros)
@@ -361,6 +361,14 @@ time eval $runlisp << EOF &> log.$lisp/reduce.blg
 (load!-package 'rtools)
 (load!-package 'mathpr)
 (load!-package 'entry)
+
+% Protect math functions from (further) redefinition for uniformity
+% across Lisps; the lose flag is used by assist.
+
+(flag '(sin cos tan asin acos atan atan2
+        sinh cosh tanh asinh acosh atanh
+        sqrt exp log ln logb expt)
+      'lose)
 
 (cl:fmakunbound 'prettyprint)   % otherwise defautoload has no effect!
 (defautoload prettyprint pretty)  % since only in entry file for PSL!

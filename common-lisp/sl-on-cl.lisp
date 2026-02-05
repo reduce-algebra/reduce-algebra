@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-02-03 12:47:30 franc>
+;; Time-stamp: <2026-02-04 17:59:00 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -82,7 +82,7 @@
 
   #+ABCL (:import-from :ext :getenv)
 
-  #+CCL (:import-from :ccl :quit :getenv :setenv :gc :gctime)
+  #+CCL (:import-from :ccl :quit :getenv :setenv :gc)
 
   #+ECL (:import-from :ext :quit :getenv :setenv)
   )
@@ -2539,9 +2539,9 @@ This is the only function that actually produces graphical output.
               (#\Tab (setq %posn (* (1+ (floor %posn %tab-width)) %tab-width)))
               (#\Newline (setq %posn 0))
               (otherwise (incf %posn)))))
-        (when %prin-space-maybe (cl:princ #\Space)))
+        (when %prin-space-maybe (write-char #\Space)))
     (setq %prin-space-maybe nil)
-    (cl:princ s))
+    (write-string s))
   nil)
 
 ;; PRINC(U:id):id eval, spread
@@ -3004,7 +3004,13 @@ beginning of the year 1970.  The difference of 70 years is
 70*31,536,000 = 2,207,520,000 seconds.  This function should not be
 used to determine an absolute date or time!")
 
+(declaim ((rational 0) +milliseconds-per-internal-time-unit+))
+
 (defconstant +milliseconds-per-internal-time-unit+
+  ;; `internal-time-units-per-second' is a positive integer
+  ;; representing the number of internal time units in one second.  In
+  ;; SBCL, CLISP and 64-bit CCL, it's value is 1000000, so an internal
+  ;; time unit is one microsecond.
   (/ 1000 internal-time-units-per-second)
   "Multiplier to convert internal time units to milliseconds.")
 
@@ -3015,6 +3021,26 @@ used to determine an absolute date or time!")
 Elapsed time from some arbitrary initial point in milliseconds."
   ;; This is used for timing computations, so use run time.
   (values (round (* (get-internal-run-time)
+                    +milliseconds-per-internal-time-unit+))))
+
+(declaim (ftype (cl:function ((integer 0)) (integer 0)) %nth-room-value))
+
+#+CLISP
+(defun %nth-room-value (n)
+  "Return the Nth multiple value provided by CLISP `room' function.
+Counting starts at 0.  Suppress the printed output."
+  (with-open-stream (*standard-output* (make-broadcast-stream))
+    (nth-value n (room nil))))
+
+(declaim (ftype (cl:function () (integer 0)) gctime))
+
+(defun gctime ()
+  "The total time (in milliseconds) spent in garbage collection."
+  ;; cf. time () defined above.
+  ;; For CCL, only documented in "ccl/lib/time.lisp".
+  (values (round (* #+SBCL sb-ext:*gc-run-time*
+                    #+CLISP (%nth-room-value 5)
+                    #+CCL (ccl:gctime)
                     +milliseconds-per-internal-time-unit+))))
 
 (declaim (ftype (cl:function () list) oblist))
@@ -3040,24 +3066,6 @@ and updates gctime*."
   #+CLISP (ext:gc)
   #+CCL (ccl:gc)
   )
-
-(declaim (ftype (cl:function ((integer 0)) t) %nth-room-value)) ; ???
-
-#+CLISP
-(defun %nth-room-value (n)
-  "Return the Nth multiple value provided by CLISP `room' function.
-Suppress the printed output."
-  (let ((*standard-output* (make-broadcast-stream)))
-    (nth-value n (room nil))))
-
-(declaim (ftype (cl:function () (integer 0)) gctime))
-
-#-CCL
-(defun gctime ()
-  "The total time (in milliseconds) spent in garbage collection."
-  (values (round (* #+SBCL sb-ext:*gc-run-time*
-                    #+CLISP (%nth-room-value 5)
-                    +milliseconds-per-internal-time-unit+))))
 
 (defvar gcknt* 0
   "gcknt* = [Initially: 0] global
@@ -4103,36 +4111,25 @@ When all done, execute FASLEND;~2%" name))
 (defun reduce-init-function ()
   "The function executed at startup of the saved REDUCE memory image."
   (standard-lisp)
-  ;; (if  (and (interactive-stream-p *standard-input*)
-  ;;           (interactive-stream-p *standard-output*))
-  ;;      (system::driver       ; build driver-frame; do #'lambda "infinitely"
-  ;;       #'(lambda ()
-  ;;           (system::with-abort-restart (:report (system::text "Abort main loop"))
-  ;;             ;; ANSI CL wants an ABORT restart to be available.
-  ;;             (begin))))
-  ;;      ;; Non-interactively, when an ERROR occurs, or when a
-  ;;      ;; Control+C interrupt occurs, the error message is
-  ;;      ;; printed and CLISP terminates with an error status.
-  ;;      (progn
-  ;;        #+DEBUG (setq custom:*report-error-print-backtrace* t)
-  ;;        (system::driver #'(lambda () (ext:exit-on-error (begin))))))
   (if  (or (interactive-stream-p *standard-output*)
            (getenv "INSIDE_EMACS"))
        (progn
          #+DEBUG (format t "~&Interactive mode -- debugger enabled~%")
          #+DEBUG (setq *break-on-signals* 'cl:error)
-         (with-simple-restart
-             (abort "Exit REDUCE.")
-           (loop
-            (with-simple-restart
-                (abort "Return to REDUCE.")
-              (begin)))))
+         (system::driver ; build driver-frame; do #'lambda "infinitely"
+          #'(lambda ()
+              (system::with-abort-restart (:report (system::text "Abort main loop"))
+                ;; ANSI CL wants an ABORT restart to be available.
+                (begin)))))
+       ;; Non-interactively, when an ERROR occurs, or when a
+       ;; Control+C interrupt occurs, the error message is
+       ;; printed and CLISP terminates with an error status.
        (progn
          #+DEBUG (format t "~&Batch mode -- debugger disabled~%")
-         (ext:exit-on-error (begin))))
-  (ext:exit))
+         #+DEBUG (setq custom:*report-error-print-backtrace* t)
+         (system::driver #'(lambda () (ext:exit-on-error (begin)))))))
 
-#+CLISP (setq custom:*report-error-print-backtrace* t)
+;; #+CLISP (setq custom:*report-error-print-backtrace* t)
 
 #+CCL
 (defun reduce-init-function ()

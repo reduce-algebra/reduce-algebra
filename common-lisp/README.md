@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-02-03 17:21:30 franc>
+Time-stamp: <2026-02-05 12:17:48 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -180,8 +180,17 @@ Lisp  | Total CPU Time (s) | Total GC Time (s)
 csl   | 85                 | 2
 psl   | 196                | 1
 sbcl  | 214                | 8
-clisp | 1982               | 812 (needs checking!)
-ccl   | 1127               | 34573 (needs checking!)
+clisp | 1982               | 812
+ccl   | 1127               | 35
+
+#### Generic Regression Test Issues
+
+Regression Test               | Comment / To Do
+------------------------------|----------------
+2011-08-31-linelength         | CSL and PSL printing overflows visibly; SL-on-CL printing designed not to!
+2014-03-17-utf8-in-list       | Needs more work.  (PSL also differs.)  Might be fixable.
+2019-07-30-sub-with-df        | Generic REDUCE issue?
+2023-05-27-lambda-expressions | Algebraic lambda mostly works but freestanding lambda expressions not handled correctly.  Might be fixable.
 
 #### Steel Bank Common Lisp (SBCL)
 
@@ -189,17 +198,13 @@ REDUCE 7290 on (native Windows) SBCL 2.6.1 (using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
-gf2          | Missing final backtrace
-numeric      | Expected numerical discrepancies
+gf2          | Missing final backtrace.
+numeric      | Expected numerical discrepancies.
 
 Regression Test                    | Comment / To Do
 -----------------------------------|----------------
-2011-08-31-linelength              | CSL and PSL printing overflows visibly; CL doesn't!
 2013-06-30-rounding                | Expected numerical discrepancies, but only for sin and in the lowest-order bit.
-2014-03-17-utf8-in-list            | Needs more work.  (PSL also differs.)
 2014-11-09-accuracy-elementary-fns | Expected numerical discrepancies, but only in the lowest-order bit.
-2019-07-30-sub-with-df             | Generic REDUCE issue.
-2023-05-27-lambda-expressions      | Algebraic lambda mostly works but freestanding lambda expressions not handled correctly.
 
 #### GNU CLISP
 
@@ -207,22 +212,17 @@ REDUCE 7290 on Cygwin CLISP 2.49 (**not** using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
-arith        | Expected numerical discrepancies
-assist       | `*** tan is protected/unprotected`
+arith        | Expected numerical discrepancies.
 economise    | Output truncated; probably timed out.
 gf2          | `+++ Error in call to gf2_groeb`
-ibalp        | Stack overflow. `reset() found no driver frame`
-numeric      | Expected numerical discrepancies
+ibalp        | `*** - Program stack overflow. RESET`
+numeric      | Expected numerical discrepancies.
 
 Regression Test                    | Comment / To Do
 -----------------------------------|----------------
-2011-08-31-linelength              | As for SBCL, but also a CLISP bug: printing any object containing a newline also prints a newline before the object.
-2013-06-30-rounding                | Expected numerical discrepancies for pi and sin.
-2014-03-17-utf8-in-list            | As for SBCL.
-2014-11-09-accuracy-elementary-fns | Expected numerical discrepancies;  `***** 7.591469770011592E7  invalid for  SIN`
-2019-07-30-sub-with-df             | As for SBCL.
-2020-10-25-safe-fp.rlg.diff        | COMMON-LISP:EXPT: floating point underflow.
-2023-05-27-lambda-expressions      | As for SBCL.
+2013-06-30-rounding                | Expected numerical discrepancies for pi, sin and sqrt(2).
+2014-11-09-accuracy-elementary-fns | Expected numerical discrepancies; 2 large arguments invalid for sin.
+2020-10-25-safe-fp                 | expt and * show floating point underflow.
 2024-02-23-error-in-matrix-svd-computation | Expected numerical discrepancies.
 
 #### Clozure Common Lisp (CCL)
@@ -232,8 +232,8 @@ REDUCE 7290 on native Windows CCL 1.13 (using LispMath)
 Package Test | Comment / To Do
 -------------|----------------
 gf2          | `+++ Error in call to gf2_groeb`
-lalr         | Compiled functions instead of lambdas (because CCL always compiles)
-numeric      | Expected numerical discrepancies
+lalr         | Compiled functions instead of lambdas (because CCL always compiles).
+numeric      | Expected numerical discrepancies.
 ofsf         | Output truncated; probably timed out!
 
 Regression test results as for SBCL.
@@ -245,8 +245,8 @@ Lisp  | Total CPU Time (s) | Total GC Time (s)
 csl   | 121                | 2
 psl   | 116                | 1
 sbcl  | 192                | 3
-clisp | 1542               | 394 (needs checking!)
-ccl   | 1218               | 32933 (needs checking!)
+clisp | 1542               | 394
+ccl   | 1218               | 33
 
 #### Steel Bank Common Lisp (SBCL)
 
