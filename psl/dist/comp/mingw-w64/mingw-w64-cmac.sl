@@ -275,18 +275,12 @@
  
 (DefAnyreg CAR
            AnyregCAR   %Grab the source so caller can displace off it.
-%          ((regp anyp)    (displacement source 16#c0000000))
-%          ((anyp regp)    (*move SOURCE REGISTER)
-%                         (displacement REGISTER 16#c0000000))
            (       (!*Field REGISTER SOURCE InfStartingBit InfBitLength)
                    (indirect REGISTER))
 )
 
 (DefAnyreg CDR
            AnyregCDR     %Same as CAR, except move to next word in pair.
-%          ((regp anyp)    (displacement source 16#c0000004))
-%          ((anyp regp)    (*move SOURCE REGISTER)
-%                          (displacement REGISTER 16#c0000004))
            (       (!*Field REGISTER SOURCE InfStartingBit InfBitLength)
                    (Displacement REGISTER 8)))
 
@@ -298,8 +292,6 @@
 (DefAnyreg MEMORY
 	   AnyregMEMORY
 	   ((RegP ZeroP)      (indirect SOURCE))
-%   ((RegP ZeroP)      (*move SOURCE REGISTER)
-%		      (indirect REGISTER))
 	   ((Anyp  ZeroP)      (*MOVE SOURCE REGISTER)
 			       (indirect REGISTER))
  	   ((RegP InumP)  (Displacement SOURCE ARGTWO))
@@ -1299,7 +1291,7 @@ preload  (setq initload
 % stack has to be aligned for SSE instructions in dyn. linking in C
                  '(!*move (reg st) (reg 1))
                  '(sub 64 (reg st))
-                 '(!*wshift (reg st) -5)
+		 '(!*wshift (reg st) -5)
                  '(!*wshift (reg st) 5)
                  '(!*move (reg 1) (displacement (reg st) 40))
 		 (list 'call (list 'ForeignEntry FunctionName))
