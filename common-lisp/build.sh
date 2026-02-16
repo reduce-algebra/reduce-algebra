@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2026-02-05 12:25:16 franc>
+# Time-stamp: <2026-02-16 12:24:17 franc>
 
 # Build REDUCE on supported implementations of Common Lisp (CL),
 # namely SBCL, CLISP and CCL.
@@ -75,6 +75,7 @@ lisp=${lisp,,}                  # ensure lower case
 
 case $lisp in
     'sbcl')
+        echo '+++++ Building REDUCE on Steel Bank Common Lisp'
         runlisp='sbcl --no-userinit --disable-debugger'
         runlispfile='sbcl --no-userinit --disable-debugger --load'
         runbootstrap='sbcl --core fasl.sbcl/bootstrap.img --noinform --no-userinit --disable-debugger'
@@ -83,6 +84,7 @@ case $lisp in
         faslext='fasl'
         ;;
     'clisp')
+        echo '+++++ Building REDUCE on CLISP'
         runlisp='clisp -ansi -norc -E utf-8'
         runlispfile="$runlisp"
         runbootstrap="$runlisp -q -M fasl.clisp/bootstrap.mem"
@@ -91,6 +93,7 @@ case $lisp in
         faslext='fas'
         ;;
     'ccl')
+        echo '+++++ Building REDUCE on Clozure Common Lisp'
         if [ "$(type -ft ccl64)" ]; then CCL='ccl64'; else CCL='ccl'; fi
         runlisp="$CCL -n"
         runlispfile="$CCL -n -l"
