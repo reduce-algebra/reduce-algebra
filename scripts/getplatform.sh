@@ -114,7 +114,7 @@ getplatform() {
   --jlispboot)
     printf "jlispboot"
     ;;
-  --sbcl | --clisp | --ccl)
+  --sbcl | --clisp | --ccl | --sbcl=profile)
     printf "${1#--}"
     ;;
   esac
@@ -149,6 +149,9 @@ getlogdir() {
     else
       logdir="psl:${var#${mc}}"
     fi
+    ;;
+  sbcl=profile)
+    logdir=${pp%=profile}
     ;;
   *)
     logdir="$pp"

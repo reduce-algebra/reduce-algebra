@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-02-05 12:17:48 franc>
+Time-stamp: <2026-02-16 15:28:18 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -171,7 +171,7 @@ I performed all testing on the same computer using Windows 11, a recent version 
 ../scripts/testall.sh --csl --psl --sbcl --clisp --ccl
 ```
 
-"LispMath" below means the expt function and the floating-point math (elementary transcendental) functions provided by Common Lisp, which I use if they appear to work well.  This is the case for SBCL and CCL, but not for CLISP.
+"LispMath" below means the floating-point math (elementary transcendental) functions provided by Common Lisp, which I use if they appear to work well.  This is the case for SBCL and CCL, but not for CLISP.
 
 ### Windows
 
@@ -194,7 +194,7 @@ Regression Test               | Comment / To Do
 
 #### Steel Bank Common Lisp (SBCL)
 
-REDUCE 7290 on (native Windows) SBCL 2.6.1 (using LispMath)
+REDUCE 7295 on native Windows SBCL 2.6.1 (using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
@@ -208,12 +208,12 @@ Regression Test                    | Comment / To Do
 
 #### GNU CLISP
 
-REDUCE 7290 on Cygwin CLISP 2.49 (**not** using LispMath)
+REDUCE 7295 on Cygwin CLISP 2.49 (**not** using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
 arith        | Expected numerical discrepancies.
-economise    | Output truncated; probably timed out.
+economise    | Output truncated; presumably timed out.
 gf2          | `+++ Error in call to gf2_groeb`
 ibalp        | `*** - Program stack overflow. RESET`
 numeric      | Expected numerical discrepancies.
@@ -222,19 +222,18 @@ Regression Test                    | Comment / To Do
 -----------------------------------|----------------
 2013-06-30-rounding                | Expected numerical discrepancies for pi, sin and sqrt(2).
 2014-11-09-accuracy-elementary-fns | Expected numerical discrepancies; 2 large arguments invalid for sin.
-2020-10-25-safe-fp                 | expt and * show floating point underflow.
 2024-02-23-error-in-matrix-svd-computation | Expected numerical discrepancies.
 
 #### Clozure Common Lisp (CCL)
 
-REDUCE 7290 on native Windows CCL 1.13 (using LispMath)
+REDUCE 7295 on native Windows CCL 1.13 (using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
 gf2          | `+++ Error in call to gf2_groeb`
 lalr         | Compiled functions instead of lambdas (because CCL always compiles).
 numeric      | Expected numerical discrepancies.
-ofsf         | Output truncated; probably timed out!
+ofsf         | Output truncated; presumably timed out!
 
 Regression test results as for SBCL.
 
@@ -250,19 +249,19 @@ ccl   | 1218               | 33
 
 #### Steel Bank Common Lisp (SBCL)
 
-REDUCE 7290 on SBCL 2.6.0.
+REDUCE 7294 on SBCL 2.6.1 (using LispMath)
 
 All test results very similar to those for Windows, except no differences for numeric package or 2013-06-30-rounding regression test.
 
 ### GNU CLISP
 
-REDUCE 7290 on CLISP 2.49
+REDUCE 7294 on CLISP 2.49 (**not** using LispMath)
 
 All test results very similar to those for Windows.
 
 #### Clozure Common Lisp (CCL)
 
-REDUCE 7290 on CCL 1.13
+REDUCE 7294 on CCL 1.13 (using LispMath)
 
 All test results very similar to those for Windows, except no differences for numeric package or 2013-06-30-rounding regression test.
 
@@ -284,7 +283,6 @@ I cannot see any way to support the facilities for restricting execution time on
 * Better error handling.
 * Make faslout/faslend more robust by using a single function that calls begin internally (cf. infile) and make faslend generate a throw.  (See also the old mkfasl code?)
 * Implement a genuinely lower-case Standard Lisp, perhaps using case-inversion for a few special symbols such as `lambda`, `nil`, `t`?
-* Hide the implementation details within an implementation package and only export required functions to the STANDARD-LISP package?
 
 <!-- Local Variables: -->
 <!-- fill-column: 1000 -->

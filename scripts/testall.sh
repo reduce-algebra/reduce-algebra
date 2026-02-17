@@ -85,7 +85,7 @@ do
     just_time="yes"
     shift
     ;;
-  --csl* | --bootstrapreduce* | --psl* | --jlisp | --jlispboot | --sbcl | --clisp | --ccl)
+  --csl* | --bootstrapreduce* | --psl* | --jlisp | --jlispboot | --sbcl* | --clisp | --ccl)
     platforms="$platforms $1"
     if test "$basecase" = ""
     then

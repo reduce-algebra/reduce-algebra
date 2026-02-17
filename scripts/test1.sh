@@ -51,11 +51,15 @@
 #     --jlispboot Run tests using Jlisp "bootstrapreduce.jar".
 #
 # Common Lisp, specifically Steel Bank Common Lisp (SBCL), GNU CLISP
-# or Clozure Common Lisp (CCL).  Other Common Lisp variants might be
+# or Clozure Common Lisp (CCL).  Other Common Lisp versions might be
 # supported later.
 #     --sbcl      Use SBCL REDUCE from ../common-lisp.
 #     --clisp     Use CLISP REDUCE from ../common-lisp.
 #     --ccl       Use CCL REDUCE from ../common-lisp.
+#     --sbcl=profile
+#                 Profile SBCL REDUCE; the profile report appears at
+#                 the end of the test log, and hence the diff.
+#                 Profiling is slow, so best to use --no-timeout.
 #
 #
 # PACKAGE or REGRESSION
@@ -665,6 +669,11 @@ cltest() {
 # their default shell hoping it would not hurt too many people who use
 # bash-isms that are jolly convenient but that arose after the GPL 3
 # restrictions were applied.
+  if [ "$4" = 'profile' ]
+  then
+      profile_begin='lisp profile!-begin();'
+      profile_end='lisp profile!-end();'
+  fi
   mkdir -p "$logdir"
   ( limittime $cmd > $logdir/$p.rlg.tmp ) <<XXX 2>$p.howlong.tmp
 off int;
@@ -675,8 +684,10 @@ $loader
 lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
 resettime1;
-write "START OF REDUCE TEST RUN ON $mc"\$ \
-lisp begin with!-timeout($TIME1, << semic!* := '!;; in "$f">>) end\$ \
+$profile_begin
+write "START OF REDUCE TEST RUN ON $mc"\$
+lisp begin with!-timeout($TIME1, << semic!* := '!;; in "$f">>) end\$
+$profile_end
 write "END OF REDUCE TEST RUN"\$
 symbolic eval '
   (prog (cpu_time gc_time)
@@ -780,6 +791,11 @@ do
 
   sbcl|clisp|ccl)
     cltest "$here/common-lisp/red$pp" "$logdir" $pp
+    ;;
+
+  sbcl=profile)
+    pp=${pp%=profile}
+    cltest "$here/common-lisp/red$pp" "$logdir" $pp 'profile'
     ;;
 
   *)
