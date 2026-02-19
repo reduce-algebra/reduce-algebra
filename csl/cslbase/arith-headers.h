@@ -50,7 +50,7 @@
 
 #include "headers.h"
 
-#include "arithlib.h"
+#include "arithlib.cpp"
 #include "dispatch.h"
 
 #endif // header_arith_headers_h
