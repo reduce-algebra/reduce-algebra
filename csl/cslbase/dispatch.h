@@ -97,7 +97,7 @@
 #define CSL 1
 #endif // CSL
 
-#include "arithlib.h"
+#include "arithlib.cpp"
 
 namespace CSL_LISP
 {
