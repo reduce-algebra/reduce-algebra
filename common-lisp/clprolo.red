@@ -2,7 +2,7 @@
 
 % Author: Anthony C. Hearn.
 % Modified by FJW for REDUCE on Common Lisp via "sl-on-cl.lisp".
-% Time-stamp: <2025-10-08 16:27:59 franc>
+% Time-stamp: <2026-02-20 12:45:55 franc>
 % The standard version is "packages/support/pslprolo.red".
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -53,61 +53,6 @@ symbolic procedure create!-package(u,v);
       car u >>;
 
 % create!-package('(clprolo),nil);
-
-symbolic procedure evload l;
-   % Modified from cslprolo.red (which calls load!-module, not load).
-   % Written like this because load is defined as a statement in
-   % "rlisp/module.red".  Might be better defined in "sl-on-cl.lisp".
-   while l do << apply(function load, list car l); l := cdr l >>;
-
-flag('(concat), 'variadic);
-
-% This useful utility function is defined in sl-on-cl:
-flag('(eqcar),'lose);
-
-% The SL definition of PRINC is not used in REDUCE since PRINC is
-% redefined in rlisp/rsupport.red as
-% symbolic procedure princ u; prin2 u;
-% so I define it as an alias for PRIN2 in sl-on-cl.lisp:
-flag('(princ),'lose);
-
-% These functions are already defined (more or less) in Common Lisp:
-flag('(first second third rest lastpair lastcar nth pnth reversip
-   evenp oddp symbol!-name),'lose);
-
-% These functions are defined in rlisp/tok.red, but I have
-% re-implemented them in sl-on-cl.lisp:
-flag('(list2widestring widestring2list
-   % The following are only used by the above:
-   string!-store1 string!-store2 string!-store3 string!-store4
-      moan!-if!-not!-follower moan!-if!-truncated),'lose);
-
-% These small integer (fixnum) operators are defined in
-% alg/farith.red, but optimised versions are defined in sl-on-cl:
-flag('(iplus2 itimes2 isub1 iadd1 iminus idifference
-   iquotient iremainder igreaterp ilessp iminusp iequal),'lose);
-
-% Procedure gcdn is defined in alg/numsup, and procedure lcmn is
-% defined in algint/fracdi and taylor/tayutils, but these functions
-% are already provided (as gcd and lcm) in Common Lisp:
-flag('(gcdn lcmn),'lose);
-
-% The definitions of geq and leq in rlisp/rsupport.red don't work
-% correctly with mixed integer and float arguments because (equal 1.0
-% 1) is nil in Common Lisp!  (It is also nil according to the Standard
-% Lisp Report, but I suspect it is actually true in PSL and CSL!)
-% However, Common Lisp provides numerical predicates >= and <= that
-% correctly accept mixed-type arguments, to which I alias geq and leq,
-% so...
-flag('(geq leq),'lose);
-
-% red!-char!-downcase is defined in sl-on-cl, used in rlisp/tok.red
-% and redefined in several files:
-flag('(red!-char!-downcase),'lose);
-
-% orderp is defined in sl-on-cl and used in rlisp/switch; prevent it
-% being redefined as it would be for PSL:
-flag('(orderp),'lose);
 
 % endmodule;
 

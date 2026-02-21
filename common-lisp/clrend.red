@@ -2,7 +2,7 @@ module clrend;  % CL REDUCE "back-end".
 
 % Authors: Anthony C. Hearn, Martin L. Griss, Arthur C. Norman, et al.
 % Modified by FJW for REDUCE on Common Lisp via "sl-on-cl.lisp".
-% Time-stamp: <2026-01-28 12:29:04 franc>
+% Time-stamp: <2026-02-20 15:06:23 franc>
 % The standard versions are "packages/support/*rend.red".
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -300,12 +300,6 @@ put('comp, 'simpfg, '((t (compilation t))
 
 procedure compute!-prompt!-string(count,level); "";
 
-% The function subla is built into CSL and PSL and flagged lose.  It
-% is also defined in "rtools/general.red" and "alg/general.red", but
-% is needed early in the boot process, so I have defined it in
-% "sl-on-cl.lisp".
-
-flag('(subla), 'lose);
 
 % Fixes for the crack suite
 % =========================

@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-02-15 17:38:30 franc>
+;; Time-stamp: <2026-02-20 18:18:03 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -12,8 +12,8 @@
 ;; - CCL (Clozure Common Lisp); see https://ccl.clozure.com/
 ;; - ECL (Embeddable Common Lisp); see https://ecl.common-lisp.dev/
 
-;; Support for Armed Bear Common Lisp by Rainer Schöpf, but not yet complete!
-;; Support for Clozure Common Lisp by Marco Ferraris.
+;; Support for Clozure Common Lisp by Marco Ferraris.  Also support
+;; for Armed Bear Common Lisp by Rainer Schöpf, but not yet complete!
 
 ;; This file implements a superset of Standard Lisp that is a subset
 ;; of PSL and CSL in a package called STANDARD-LISP with nickname SL.
@@ -207,10 +207,6 @@ is printed whenever a function is redefined by PUTD.")
 
 (deftype number () '(or integer double-float))
 
-;; NB: CLISP only accepts (typespec var*) as an abbreviation for (type
-;; typespec var*) for standardized atomic type specifiers, which I
-;; think is a bug!
-
 ;; First, some utility functions used only internally:
 
 (defmacro %defalias (newname oldname &optional docstring)
@@ -236,12 +232,6 @@ documentation string for OLDNAME."
        ',newname)))
 
 (declaim (ftype (cl:function (t t) boolean) eqcar))
-
-(export 'eqcar)                         ; used internally
-
-(defun eqcar (u v)
-  "Return true if U is a cons cell and its car is eq to V."
-  (and (consp u) (eq (car u) v)))
 
 (declaim (ftype (cl:function (character) character) %character-invert-case))
 
@@ -315,6 +305,14 @@ EXPR PROCEDURE CONSTANTP(U);
 ;;             (vv (find-symbol (symbol-name v))))
 ;;         (and uu vv (cl:eq uu vv)))
 ;;       (cl:eq u v)))
+
+(export 'eqcar)                         ; used internally
+
+(defun eqcar (u v)
+  "Return true if U is a cons cell and its car is eq to V."
+  (and (consp u) (eq (car u) v)))
+
+;; (flag '(eqcar) 'sl::lose)               ; later
 
 (declaim (ftype (cl:function (t t) boolean) sl::eqn equal))
 
@@ -461,6 +459,8 @@ EXPR PROCEDURE ZEROP(U);
 
 (import '(cl:first cl:second cl:third cl:fourth cl:rest) :sl)
 
+;; (flag '(first second third rest) 'sl::lose) ; later
+
 (declaim (inline sl::lastpair sl::lastcar sl::nth sl::pnth)
          (ftype (cl:function (t) t) sl::lastpair sl::lastcar))
 
@@ -513,6 +513,8 @@ an out of range error occurs.
           (t (pnth (rest l) (sub1 n)))))"
   (nthcdr (1- n) l))
 
+;; (flag '(sl::lastpair sl::lastcar sl::nth sl::pnth) 'sl::lose) ; later
+
 
 ;;; Identifiers
 ;;; ===========
@@ -521,12 +523,6 @@ an out of range error occurs.
   "Report an error detected internally in sl-on-cl with message
 MESSAGE possibly followed by arguments ARGS as for `format'."
   `(cl:error ,message ,@args))
-
-(declaim (ftype (cl:function (symbol) character) %id-to-char-invert-case))
-
-(defun %id-to-char-invert-case (c)
-  "As `cl:character', but case-inverted."
-  (%character-invert-case (character c)))
 
 (declaim (ftype (cl:function (list) t) sl::compress))
 
@@ -539,8 +535,10 @@ characters.  Identifiers are not interned.  Function pointers may not
 be compressed.  If an entity cannot be parsed out of U an error
 occurs:
 ***** Poorly formed atom in COMPRESS"
+  ;; NB: Doesn't handle a dotted pair correctly, but it doesn't seem
+  ;; to matter!
   (labels
-      ((compress () ; This internal function recursively process lists.
+      ((%compress () ; This internal function recursively processes lists.
          ;; Concatenate the characters into a string and then handle any !
          ;; characters as follows:
          ;; A string begins with " and should retain any ! characters without
@@ -549,35 +547,35 @@ occurs:
          ;; characters.
          ;; Otherwise, assume an identifier and replace ! by \, but !! by \!
          (let (u0)                      ; first element
-           (compress-skip-spaces)       ; skip leading spaces
+           (%compress-skip-spaces)      ; skip leading spaces
            (if (or (null u)
                    (cl:member (setq u0 (car u))
-                              '(sl::\' sl::\) sl::\, sl::\% sl::\[ sl::\\ sl::\`))) ; PSL
+                              '(#\' #\) #\, #\% #\[ #\\ #\`) ; PSL
+                              :test #'char=))
                (%error "Poorly formed S-expression in COMPRESS"))
            (cond
              ;; LIST?
-             ((eq u0 'sl::\() (setq u (cdr u))
-              (compress-skip-spaces)    ; skip leading spaces
+             ((char= u0 #\() (setq u (cdr u))
+              (%compress-skip-spaces)   ; skip leading spaces
               (loop
-                    while (not (eq (car u) 'sl::\)))
-                    collect (compress)
-                    do (compress-skip-spaces)))
+                    while (not (char= (car u) #\)))
+                    collect (%compress)
+                    do (%compress-skip-spaces)))
              ;; STRING?
-             ((eq u0 'sl::\")
+             ((char= u0 #\")
               ;; In Standard Lisp, "" in a string represents ":
               (loop with newu while (setq u (cdr u)) do
-                    (when (eq (car u) 'sl::\")
+                    (when (char= (car u) #\")
                       (setq u (cdr u))
-                      (if (not (and u (eq (car u) 'sl::\"))) ; end of string
-                          (return-from compress
-                            (cl:map 'string #'%id-to-char-invert-case
-                                    (nreverse newu)))))
+                      (when (not (and u (char= (car u) #\"))) ; end of string
+                        (return-from %compress
+                          (cl:map 'string #'%character-invert-case
+                                  (nreverse newu)))))
                     (push (car u) newu))
               ;; String not terminated:
               (%error "Poorly formed S-expression in COMPRESS"))
              ;; NUMBER?
-             ((or (digit u0) (char= (character u0) #\-))
-              ;; (eq u0 '-) fails because u0 is in SL but - is (an operator) in CL.
+             ((or (digit-char-p u0) (char= u0 #\-))
               (multiple-value-bind (obj pos)
                   (read-from-string (cl:map 'string #'character u))
                 (setq u (nthcdr pos u))
@@ -593,44 +591,27 @@ occurs:
               (loop with newu do
                     (cond ((or (null u)
                                (cl:member (car u)
-                                          '(sl::\  sl::\" sl::\' sl::\( sl::\) sl::\,
-                                            sl::\% sl::\[ sl::\\ sl::\] sl::\`)))
+                                          '(#\Space  #\" #\' #\( #\) #\,
+                                            #\% #\[ #\\ #\] #\`)
+                                          :test #'char=))
                            (return
                              (make-symbol ; uninterned symbol
                               (cl:map 'string #'character (nreverse newu)))))
-                          ((eq (car u) 'sl::!) ; ignore ! but keep WHATEVER follows it
+                          ((char= (car u) #\!) ; ignore ! but keep WHATEVER follows it
                            (if (setf u (cdr u))
                                (push (car u) newu)))
                           (t (push (car u) newu)))
                     (setf u (cdr u)))))))
        ;;
-       (compress-skip-spaces ()
-         (loop while (eq (car u) 'sl::\ ) do (setq u (cdr u)))))
+       (%compress-skip-spaces ()
+         (loop while (char= (car u) #\Space) do (setq u (cdr u)))))
     ;;
-    (compress)))
-
-;; The following potential succinct new version of compress causes a
-;; problem reading "rlisp/tok.red" that I can't track down, so it is
-;; commented out for now.
-
-;; (defun sl::compress (u)                 ; PSL spec
-;;   "COMPRESS(U:id-list):{atom-vector} eval, spread
-;; U is a list of single character identifiers which is built into a
-;; Standard LISP entity and returned.  Recognized are lists, numbers,
-;; strings, and identifiers with the escape character prefixing special
-;; characters.  Identifiers are not interned.  Function pointers may not
-;; be compressed.  If an entity cannot be parsed out of U an error
-;; occurs:
-;; ***** Poorly formed atom in COMPRESS"
-;;   (let ((*readtable* %sl-readtable%))
-;;     (read-from-string
-;;      ;; When reading a string, it must be followed by something:
-;;      (concatenate 'string (cl:map 'string #'character u) " ")
-;;      nil $eof$)))
+    (setq u (cl:mapcar #'character u))
+    (%compress)))
 
 (declaim (ftype (cl:function (t) list) explode))
 
-(export 'explode)                       ; used internally (recursive)
+(export 'explode)                       ; used internally
 
 (defun explode (u)                      ; PSL spec
   "(explode U:any): id-list expr
@@ -643,45 +624,48 @@ printing (using prin1) to a list.  E.g.
 2 lisp> (explode '(a . b))
 \(!( a !  !. !  b !))"
   ;; Add support for vectors?  Share code with print routines?
-  (if (consp u)
-      ;; Exploding a cons:
-      (let ((ll (list (explode (car u)) (list 'sl::\())))
-        (loop while (consp (setq u (cdr u)))
-              do (push (list 'sl::\ ) ll)
-              do (push (explode (car u)) ll))
-        (when u
-          (push (list 'sl::\  'sl::\. 'sl::\ ) ll)
-          (push (explode u) ll))
-        (push (list 'sl::\)) ll)
-        (cl:apply #'nconc (nreverse ll)))
-      ;; Exploding an atom:
-      (typecase u
-        (string
-         ;; Add leading and trailing " and convert internal " to "":
-         (nconc
-          (list 'sl::\")
-          (loop for c across u
-                collect (%intern-character-invert-case c)
-                when (char= c #\") collect 'sl::\")
-          (list 'sl::\")))
-        (integer
-         (cl:map 'list #'%intern-character-preserve-case
-                 (princ-to-string u)))
-        (cl:float
-         (cl:map 'list #'%intern-character-invert-case
-                 (%prin-float-to-string u)))
-        (t
-         ;; Identifier, function-pointer, etc -- insert ! before
-         ;; an upper-case letter, leading digit or _, or special
-         ;; character (except _):
-         (loop with s = (princ-to-string u) and c
-               for i below (cl:length s)
-               do (setq c (aref s i))
-               unless (or (upper-case-p c) ; case-inverted!
-                          (and (not (eql i 0))
-                               (or (digit-char-p c) (char= c #\_))))
-               collect 'sl::\!
-               collect (%intern-character-preserve-case c))))))
+  (labels
+      ((%explode (u)
+         "Explode recursively to a list of CL characters."
+         (if (consp u)
+             ;; Exploding a cons:
+             (let ((ll (list (%explode (car u)) (list #\() )))
+               (loop while (consp (setq u (cdr u)))
+                     do (push (list #\Space) ll)
+                     do (push (%explode (car u)) ll))
+               (when u
+                 (push (list #\Space #\. #\Space) ll)
+                 (push (%explode u) ll))
+               (push (list #\)) ll)
+               (cl:apply #'nconc (nreverse ll)))
+             ;; Exploding an atom:
+             (typecase u
+               (string
+                ;; Add leading and trailing " and convert internal " to "":
+                `(#\"
+                  ,@(loop for c across u
+                          collect (%character-invert-case c)
+                          when (char= c #\") collect #\")
+                  #\"))
+               (integer
+                (cl:map 'list #'identity
+                        (princ-to-string u)))
+               (cl:float
+                (cl:map 'list #'%character-invert-case
+                        (%prin-float-to-string u)))
+               (t
+                ;; Identifier, function-pointer, etc -- insert ! before
+                ;; an upper-case letter, leading digit or _, or special
+                ;; character (except _):
+                (loop with s = (princ-to-string u) and c
+                      for i below (cl:length s)
+                      do (setq c (aref s i))
+                      unless (or (upper-case-p c) ; case-inverted!
+                                 (and (not (eql i 0))
+                                      (or (digit-char-p c) (char= c #\_))))
+                      collect #\!
+                      collect c))))))
+    (cl:mapcar #'%intern-character-preserve-case (%explode u))))
 
 (defvar %gensym-counter% 0
   "A non-negative integer used in constructing the name of the next
@@ -790,6 +774,34 @@ Do not do this if Lisp file load in progress."
     (setf %saved-plist-alist% nil))
   nil)
 
+(declaim (inline get)
+         (ftype (cl:function (t symbol) t) get))
+
+(export 'get)                           ; used internally
+
+(defun get (u ind)
+  "GET(U:any, IND:id):any eval, spread
+Returns the property associated with indicator IND from the
+property list of U. If U does not have indicator IND, NIL is
+returned.  GET cannot be used to access functions (use GETD
+instead)."
+  ;; MUST return nil if u is not a symbol.
+  (when (symbolp u) (cl:get u ind)))
+
+(declaim (inline put)
+         (ftype (cl:function (symbol symbol t) t) put))
+
+(export 'put)                           ; used internally
+
+(defun put (u ind prop)
+  "PUT(U:id, IND:id, PROP:any):any eval, spread
+The indicator IND with the property PROP is placed on the
+property list of the id U. If the action of PUT occurs, the value
+of PROP is returned. If either of U and IND are not ids the type
+mismatch error will occur and no property will be placed. PUT
+cannot be used to define functions (use PUTD instead)."
+  (setf (cl:get u ind) prop))
+
 (declaim (ftype (cl:function (list symbol) null) flag))
 
 (export 'flag)                          ; used internally
@@ -813,32 +825,6 @@ Returns T if U has been previously flagged with V, else NIL. Returns
 NIL if either U or V is not an id."
   (when (and (symbolp u) (symbolp v)) (cl:get u v)))
 
-(declaim (ftype (cl:function (t symbol) t) get))
-
-(export 'get)                           ; used internally
-
-(defun get (u ind)
-  "GET(U:any, IND:id):any eval, spread
-Returns the property associated with indicator IND from the
-property list of U. If U does not have indicator IND, NIL is
-returned.  GET cannot be used to access functions (use GETD
-instead)."
-  ;; MUST return nil if u is not a symbol.
-  (when (symbolp u) (cl:get u ind)))
-
-(declaim (ftype (cl:function (symbol symbol t) t) put))
-
-(export 'put)                           ; used internally
-
-(defun put (u ind prop)
-  "PUT(U:id, IND:id, PROP:any):any eval, spread
-The indicator IND with the property PROP is placed on the
-property list of the id U. If the action of PUT occurs, the value
-of PROP is returned. If either of U and IND are not ids the type
-mismatch error will occur and no property will be placed. PUT
-cannot be used to define functions (use PUTD instead)."
-  (setf (cl:get u ind) prop))
-
 (declaim (ftype (cl:function (list symbol) null) sl::remflag))
 
 (defun sl::remflag (u v)
@@ -859,6 +845,10 @@ Returns the removed property or NIL if there was no such indicator."
   (prog1 (get u ind)
     (when *defn (%save-plist u))
     (cl:remprop u ind)))
+
+(flag '(first second third rest) 'sl::lose)
+(flag '(sl::lastpair sl::lastcar sl::nth sl::pnth) 'sl::lose)
+(flag '(eqcar) 'sl::lose)
 
 
 ;;; Function Definition
@@ -1688,7 +1678,7 @@ Returns T if U is strictly less than V, otherwise returns NIL.")
 ;; definitions should be a bit faster:
 (%defalias sl::geq cl:>=)
 (%defalias sl::leq cl:<=)
-;; Flagged lose in "clprolo.red".
+(flag '(sl::geq sl::leq) 'sl::lose)
 
 ;; The function neq is defined in "rlisp/rsupport.red", but this
 ;; definition should be a bit faster:
@@ -1817,46 +1807,42 @@ Returns the product of U and V.")
 ;; Small integer (fixnum) arithmetic operators defined in
 ;; alg/farith.red:
 
-(declaim (inline sl::iplus2 sl::itimes2)
-         (ftype (cl:function (fixnum fixnum) fixnum)
+(declaim (ftype (cl:function (fixnum fixnum) fixnum)
                 sl::iplus2 sl::itimes2))
 
-(defun sl::iplus2 (u v) (+ u v))
+(%defalias sl::iplus2 cl:+)
 
-(defun sl::itimes2 (u v) (* u v))
+(%defalias sl::itimes2 cl:*)
 
-(declaim (inline sl::isub1 sl::iadd1 sl::iminus)
-         (ftype (cl:function (fixnum) fixnum)
+(declaim (ftype (cl:function (fixnum) fixnum)
                 sl::isub1 sl::iadd1 sl::iminus))
 
-(defun sl::isub1 (u) (1- u))
+(%defalias sl::isub1 cl:1-)
 
-(defun sl::iadd1 (u) (1+ u))
+(%defalias sl::iadd1 cl:1+)
 
-(defun sl::iminus (u) (- u))
+(%defalias sl::iminus cl:-)
 
-(declaim (inline sl::idifference sl::iquotient sl::iremainder)
+(declaim (inline sl::iquotient)
          (ftype (cl:function (fixnum fixnum) fixnum)
                 sl::idifference sl::iquotient sl::iremainder))
 
-(defun sl::idifference (u v) (- u v))
+(%defalias sl::idifference cl:-)
 
 (defun sl::iquotient (u v) (values (truncate u v)))
 
-(defun sl::iremainder (u v) (rem u v))
+(%defalias sl::iremainder cl:rem)
 
-(declaim (inline sl::igreaterp sl::ilessp)
-         (ftype (cl:function (fixnum fixnum) boolean)
+(declaim (ftype (cl:function (fixnum fixnum) boolean)
                 sl::igreaterp sl::ilessp))
 
-(defun sl::igreaterp (u v) (> u v))
+(%defalias sl::igreaterp cl:>)
 
-(defun sl::ilessp (u v) (< u v))
+(%defalias sl::ilessp cl:<)
 
-(declaim (inline sl::iminusp)
-         (ftype (cl:function (fixnum) boolean) sl::iminusp))
+(declaim (ftype (cl:function (fixnum) boolean) sl::iminusp))
 
-(defun sl::iminusp (u) (cl:minusp u))
+(%defalias sl::iminusp cl:minusp)
 
 ;; iequal is defined in CSL (but not PSL).  It is called with a list
 ;; as its first argument in sqrt2top in int/df2q.red, so it does not
@@ -1865,19 +1851,22 @@ Returns the product of U and V.")
 
 (declaim (ftype (cl:function (t t) boolean) sl::iequal))
 
-(%defalias sl::iequal eql)
+(%defalias sl::iequal cl:eql)
+
+(flag '(sl::iplus2 sl::itimes2 sl::isub1 sl::iadd1
+        sl::iminus sl::idifference sl::iquotient sl::iremainder
+        sl::igreaterp sl::ilessp sl::iminusp sl::iequal)
+      'sl::lose)
 
 ;; Small integer (fixnum) arithmetic operators required but not defined:
 
-(declaim (inline sl::itimes)
-         (ftype (cl:function (fixnum fixnum) fixnum) sl::itimes))
+(declaim (ftype (cl:function (fixnum fixnum) fixnum) sl::itimes))
 
-(defun sl::itimes (u v) (* u v)) ; used as a binary operator in dipoly/torder
+(%defalias sl::itimes cl:*) ; used as a binary operator in dipoly/torder
 
-(declaim (inline sl::izerop)
-         (ftype (cl:function (fixnum) boolean) sl::izerop))
+(declaim (ftype (cl:function (fixnum) boolean) sl::izerop))
 
-(defun sl::izerop (u) (cl:zerop u))     ; used in plot/plotexp3
+(%defalias sl::izerop cl:zerop)         ; used in plot/plotexp3
 
 
 ;;; Floating Point Math Functions
@@ -2023,10 +2012,25 @@ to test for equality.
   (cond ((not (pairp v)) nil)
         ((and (pairp (car v)) (equal u (caar v))) (car v))
         (t (assoc u (cdr v)))))"
-  (and (consp v)
-       (loop for x in v do
-             (if (and (consp x) (equal u (car x)))
-                 (return x)))))
+  (when (consp v)
+    (loop for x in v
+          when (and (consp x) (equal u (car x)))
+          return x)))
+
+(declaim (ftype (cl:function (t t) list) sl::atsoc))
+
+(defun sl::atsoc (u v)
+  "Return the element of list V whose car is eq to U, or nil if not found.
+The list V need not be proper and the elements of V can be of any
+type, unlike for Common Lisp `assoc'."
+  ;; This definition replaces the recursive definition in
+  ;; "rsupport.red".
+  (when (consp v)
+    (loop for x on v
+          if (and (consp x) (eqcar (car x) u))
+          return (car x))))
+
+(flag '(sl::atsoc) 'sl::lose)
 
 (declaim (ftype (cl:function (list symbol) list) sl::deflist))
 
@@ -2042,7 +2046,7 @@ EXPR PROCEDURE DEFLIST(U, IND);
       ELSE << PUT(CAAR U, IND, CADAR U);
               CAAR U >> . DEFLIST(CDR U, IND);"
   (cl:mapcar #'(lambda (x)
-                 (if *defn (%save-plist (car x)))
+                 (when *defn (%save-plist (car x)))
                  (put (car x) ind (cadr x))
                  (car x))
              u))
@@ -2117,9 +2121,9 @@ to A."
   ;; (cond ((atom l) nil)
   ;;       ((equal a (car l)) l)
   ;;       (t (member a (cdr l))))
-  (loop for tail on l do
-        (when (atom tail) (return))
-        (when (equal a (car tail)) (return tail))))
+  (loop for tail on l
+        when (atom tail) return nil
+        when (equal a (car tail)) return tail))
 
 (declaim (inline sl::memq))
 
@@ -2134,7 +2138,7 @@ to A."
   ;; (cond ((atom l) nil)
   ;;       ((eq a (car l)) l)
   ;;       (t (memq a (cdr l))))
-  (and (consp l) (cl:member a l :test #'cl:eq)))
+  (when (consp l) (cl:member a l :test #'cl:eq)))
 
 (import 'cl:nconc :sl)
 ;; NCONC(U:list, V:list):list eval, spread
@@ -2185,9 +2189,13 @@ END;"
     (setq w (cons (car u) w)
           u (cdr u))))
 
-(declaim (ftype (cl:function (list) list)  sl::reversip))
+(declaim (ftype (cl:function (list) list)  sl::reversip sl::reversip*))
 
-(%defalias sl::reversip cl:nreverse)       ; PSL function
+(%defalias sl::reversip cl:nreverse)    ; rsupport.red
+
+(%defalias sl::reversip* cl:nreverse)   ; rsupport.red
+
+(flag '(sl::reversip sl::reversip*) 'sl::lose)
 
 (declaim (ftype (cl:function (t list (function ())) t) sl::sassoc))
 
@@ -2229,9 +2237,15 @@ EXPR PROCEDURE SUBLIS(X, Y);
                  END;"
   (cl:sublis x y :test #'equal))
 
+;; The function subla is built into CSL and PSL and flagged lose.  It
+;; is also defined in "rtools/general.red" and "alg/general.red", but
+;; is needed early in the boot process.
+
 (defun sl::subla (x y)                  ; PSL function
   "Eq version of sublis; replaces atoms only."
   (cl:sublis x y :test #'eq))
+
+(flag '(sl::subla) 'sl::lose)
 
 (declaim (inline sl::subst)
          (ftype (cl:function (t t t) t) sl::subst))
@@ -2253,10 +2267,11 @@ EXPR PROCEDURE SUBST(U, V, W);
 (declaim (inline sl::rassoc)
          (ftype (cl:function (t list) list) sl::rassoc))
 
-(defun sl::rassoc (key list)
-  "Return non-nil if KEY is equal to the cdr of an element of LIST.
-The value is actually the first element of LIST whose cdr equals KEY."
-  (cl:rassoc key list :test #'equal))
+(defun sl::rassoc (key alist)
+  "Return non-nil if KEY is equal to the cdr of an element of ALIST.
+The value is actually the first element of ALIST whose cdr equals KEY.
+The elements of ALIST must be lists!"
+  (cl:rassoc key alist :test #'equal))
 
 
 ;;; The Interpreter
@@ -2439,25 +2454,25 @@ the value of FILEHANDLE. An error occurs if the file can not be
 closed.
 ***** FILEHANDLE could not be closed"
   ;; A null filehandle represents standard IO; ignore it.
-  (if filehandle
-      (prog1 filehandle
-        (case (car filehandle)
-          (sl::file
-           ;; Output file stream ('file output-stream):
-           (cl:close (cadr filehandle)))
-          #+SBCL
-          (sl::pipe
-           ;; Output pipe stream ('pipe output-stream . process):
-           (sb-ext:process-close (cddr filehandle)) ; closes output-stream
-           (sb-ext:process-kill (cddr filehandle) 9)) ; 9 = SIGKILL
-          #+CLISP
-          (sl::pipe
-           ;; Output pipe stream ('pipe output-stream):
-           (cl:close (cadr filehandle))) ; closes output-stream
-          (t
-           ;; Input filehandle -- close echo stream then input stream:
-           (cl:close (cdr filehandle))
-           (cl:close (car filehandle)))))))
+  (when filehandle
+    (prog1 filehandle
+      (case (car filehandle)
+        (sl::file
+         ;; Output file stream ('file output-stream):
+         (cl:close (cadr filehandle)))
+        #+SBCL
+        (sl::pipe
+         ;; Output pipe stream ('pipe output-stream . process):
+         (sb-ext:process-close (cddr filehandle)) ; closes output-stream
+         (sb-ext:process-kill (cddr filehandle) 9)) ; 9 = SIGKILL
+        #+CLISP
+        (sl::pipe
+         ;; Output pipe stream ('pipe output-stream):
+         (cl:close (cadr filehandle)))  ; closes output-stream
+        (t
+         ;; Input filehandle -- close echo stream then input stream:
+         (cl:close (cdr filehandle))
+         (cl:close (car filehandle)))))))
 
 (declaim (ftype (cl:function () null) sl::eject))
 
@@ -2664,7 +2679,7 @@ This is the only function that actually produces graphical output.
 ;; The SL definition of PRINC is not used in REDUCE since PRINC is
 ;; redefined in rlisp/rsupport.red as
 ;; symbolic procedure princ u; prin2 u;
-;; so define it that way below and then flag it lose in clprolo.red.
+;; so define it that way below and then flag it lose.
 
 (declaim (inline terpri)
          (ftype (cl:function () null) terpri))
@@ -2741,6 +2756,8 @@ in vector-notation.  The value of U is returned."
   u)
 
 (%defalias sl::princ prin2)
+
+(flag '(sl::princ) 'sl::lose)
 
 (defun %prin1-id-to-string (u)
   "Convert identifier U to a string including appropriate `!' escapes."
@@ -3025,14 +3042,14 @@ selected output file.
       (ecase (car filehandle)
         (sl::file
          ;; Output file stream ('file output-stream):
-         (if (open-stream-p (cadr filehandle))
-             (setq *standard-output* (cadr filehandle)
-                   %write-stream% filehandle)))
+         (when (open-stream-p (cadr filehandle))
+           (setq *standard-output* (cadr filehandle)
+                 %write-stream% filehandle)))
         (sl::pipe
          ;; Output pipe stream ('pipe output-stream . process):
-         (if (open-stream-p (cadr filehandle))
-             (setq *standard-output* (cadr filehandle)
-                   %write-stream% filehandle)))))))
+         (when (open-stream-p (cadr filehandle))
+           (setq *standard-output* (cadr filehandle)
+                 %write-stream% filehandle)))))))
 
 (declaim (ftype (cl:function (simple-string symbol) filehandle) sl::pipe-open))
 
@@ -3263,7 +3280,7 @@ A function hung on the garbage collection hook."
   #+(not (or SBCL CLISP)) 0)
 
 (declaim (ftype (cl:function (t) list)
-                explode2  sl::explodec sl::explode2uc sl::explode2lc))
+                explode2 sl::explodec sl::explode2uc sl::explode2lc))
 
 (export 'explode2)                      ; used internally
 
@@ -3346,6 +3363,8 @@ Note some codes can be bigger than 0xff."
   ;; Flagged variadic in clprolo.
   (cl:apply #'concatenate 'string s))
 
+(flag '(concat) 'sl::variadic)
+
 ;; (%defalias sl::allocate-string cl:make-string ; PSL
 ;;   "(allocate-string SIZE:integer): string expr
 ;; Constructs and returns a string with SIZE characters. The contents of
@@ -3369,11 +3388,11 @@ lisp> (string2list \"STRING\")
   "Generalize cl:character to accept also a character code."
   (if (integerp x)
       ;; (if (<= 0 x 255)                  ; (and (<= 0 x) (<= x 255))
-          ;; Was 127, but then reading rlisp/tok.red fails!
-          ;; Should 128 -> nil as specified for PSL?
-          (code-char x)
-          ;; (%error "~d is not a character code" x))
-      (%id-to-char-invert-case x)))
+      ;; Was 127, but then reading rlisp/tok.red fails!
+      ;; Should 128 -> nil as specified for PSL?
+      (code-char x)
+      ;; (%error "~d is not a character code" x))
+      (%character-invert-case (character x))))
 
 (declaim (inline sl::list2string)
          (ftype (cl:function (list) simple-string)
@@ -3418,6 +3437,14 @@ are not valid UTF-8 is to be considered undefined."
 ;; Stores into a PSL string. String indexes start with 0."
 ;;   (setf (aref s i) (%character x)))
 
+;; These functions are defined in "rlisp/tok.red":
+(flag '(sl::list2widestring sl::widestring2list
+        ;; The following are only used by the above:
+        sl::string-store1 sl::string-store2
+        sl::string-store3 sl::string-store4
+        sl::moan-if-not-follower sl::moan-if-truncated)
+      'sl::lose)
+
 (declaim (ftype (cl:function (simple-string) (integer 0))  sl::string-length))
 
 (%defalias sl::string-length cl:length  ; PSL
@@ -3436,6 +3463,10 @@ function with string-upper-bound, documented below.")
   (values (cl:intern (cl:string-upcase (cl:symbol-name c)) :sl)))
 
 (%defalias sl::red-char-downcase sl::char-downcase) ; PSL
+
+;; red-char-downcase is used in "rlisp/tok.red" and redefined in
+;; several files:
+(flag '(sl::red-char-downcase) 'sl::lose)
 
 (defun sl::char-upcase (c)              ; CSL
   "Convert single-character identifier C to lower case."
@@ -3489,6 +3520,8 @@ character ! does not appear in the result.
   (%string-invert-case (cl:symbol-name d)))
 
 (%defalias sl::symbol-name sl::id2string)
+
+(flag '(sl::symbol-name) 'sl::lose)
 
 (declaim (inline string-downcase)
          (ftype (cl:function ((or symbol simple-string)) simple-string) string-downcase))
@@ -3592,10 +3625,34 @@ Store item L as the property list of U."
 ;; (declaim (ftype (cl:function (list list) list) union))
 ;; Declaiming this type breaks crack, which can call union with an
 ;; atomic argument.  (This is probably a bug in crack!)
-(defun sl::union (x y)                      ; PSL
-  "(union X:list Y:list): list expr
-Returns the union of sets X and Y."
-  (cl:union x y :test #'equal))
+
+;; (defun sl::union (x y)                      ; PSL
+;;   "(union X:list Y:list): list expr
+;; Returns the union of sets X and Y."
+;;   (cl:union x y :test #'equal))
+
+;; Non-recursive implementations of union and intersection that are
+;; designed to be compatible with the REDUCE versions defined in
+;; "rlisp/rsupport.red", which they replace.  Note that they MUST use
+;; sl::member and sl::delete!
+
+(declaim (ftype (cl:function (t t) list) sl::union sl::intersection))
+
+(defun sl::union (x y)
+  "Return the union of sets X and Y."
+  (when (consp x)
+    (loop for elx in x
+          unless (sl::member elx y) do (push elx y)))
+  y)
+
+(defun sl::intersection (x y)
+  "Return the intersection of sets X and Y."
+  (when (consp x)
+    (loop for elx in x
+          when (sl::member elx y) collect elx
+          and do (setq y (sl::delete elx y)))))
+
+(flag '(sl::union sl::intersection) 'sl::lose)
 
 ;; (declaim (ftype (cl:function (number number) number) mod))
 ;; Declaiming this type breaks cali, which redefines mod!
@@ -3604,8 +3661,12 @@ Returns the union of sets X and Y."
 (declaim (ftype (cl:function (integer integer) unsigned-byte)
                 sl::gcdn sl::lcmn))
 
+;; Procedure gcdn is defined in "alg/numsup.red", and procedure lcmn
+;; is defined in "algint/fracdi.red" and "taylor/tayutils.red", but
+;; these functions are already available (as gcd and lcm):
 (%defalias sl::gcdn cl:gcd)
 (%defalias sl::lcmn cl:lcm)
+(flag '(sl::gcdn sl::lcmn) 'sl::lose)
 
 (declaim (ftype (cl:function (symbol symbol) boolean) sl::orderp))
 
@@ -3634,6 +3695,10 @@ lower-case letters (i.e. ASCII code U <= ASCII code V)."
              (return (char< l m)))
             ((= i j) (return (<= j k)))
             ((= i k) (return nil))))))
+
+;; orderp is used in "rlisp/switch.red"; prevent it being redefined as
+;; it would be for PSL:
+(flag '(sl::orderp) 'sl::lose)
 
 (defvar sl::bfz*)
 
@@ -4028,6 +4093,11 @@ Load a \".sl\" file using Standard Lisp read syntax.
                               :if-does-not-exist nil)
             (%load-extensions file-pathname)))))
 
+(defun sl::evload (module-list)
+  "Load each module in MODULE-LIST in turn."
+  ;; Modified from cslprolo.red (which calls load!-module, not load).
+  (dolist (m module-list) (load m)))
+
 
 ;;; Faslout/faslend interface
 ;;; =========================
@@ -4099,8 +4169,8 @@ files depends on the version of Common Lisp.)"
   ;; Output subsequent code as Common Lisp to a temporary file until
   ;; FASLEND evaluated.
   (setq name (string-downcase name))
-  (if *int
-      (format t "FASLOUT ~a: IN files$ or type in expressions.
+  (when *int
+    (format t "FASLOUT ~a: IN files$ or type in expressions.
 When all done, execute FASLEND;~2%" name))
   ;; (unless
   (setq %faslout-stream%
@@ -4110,8 +4180,8 @@ When all done, execute FASLEND;~2%" name))
                  #+CLISP charset:UTF-8
                  #-(or CLISP CCL) :UTF-8))
   ;; (%error "FASLOUT cannot open ~a" %faslout-name.lisp%))
-  (if %faslout-header%
-      (cl:princ %faslout-header% %faslout-stream%))
+  (when %faslout-header%
+    (cl:princ %faslout-header% %faslout-stream%))
   (setf %faslout-saved-prettyprint% (symbol-function 'prettyprint)
         (symbol-function 'prettyprint) (symbol-function '%faslout-prettyprint))
   (setq *defn t
@@ -4254,7 +4324,7 @@ When all done, execute FASLEND;~2%" name))
     (loop
      (with-simple-restart
          (abort "Return to REDUCE.")
-       (catch 'toplevel-catcher         ; thrown internally by SBCL
+       (catch 'sb-impl::toplevel-catcher ; thrown internally by SBCL
          (begin))))))
 
 #+CLISP
@@ -4362,7 +4432,7 @@ Called by ON/OFF COMP; see 'clrend.red'."
 ;; Tracing support
 ;; ===============
 
-(setf (macro-function 'sl::cltrace) (macro-function 'cl:trace)) ; for debugging
+(setf (macro-function 'sl::cltrace) (macro-function 'cl:trace))
 (setf (macro-function 'sl::cluntrace) (macro-function 'cl:untrace))
 
 #+SBCL
@@ -4378,7 +4448,7 @@ Called by ON/OFF COMP; see 'clrend.red'."
   (defun sl::profile-begin ()
     (sb-profile:profile "SL"))
   (defun sl::profile-end ()
-    (sb-profile:report :limit 50 :print-no-call-list nil)))
+    (sb-profile:report :limit 30 :print-no-call-list nil)))
 
 ;; Common Lisp symbols used in REDUCE source code:
 (import
@@ -4392,12 +4462,11 @@ Called by ON/OFF COMP; see 'clrend.red'."
    )
  :sl)
 
+(flag '(evenp oddp) 'sl::lose)
+
 ;;; sl-on-cl.lisp ends here
 
 ;; To do:
-
-;; Revise compress to use read and explode to use prin1.  Failing
-;; that, use Common Lisp characters.
 
 ;; Try using long floats in CLISP; see manual section 12.2.4.
 
