@@ -381,7 +381,9 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
 		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
 		winsupport.cpp csl.cpp fasl.cpp preserve.cpp bytes1.cpp \
-		showhdr.cpp float128_t.cpp \
+		showhdr.cpp \
+		float128_t.cpp cbrtq.cpp exp10q.cpp exp2q.cpp expm1q.cpp \
+		expq.cpp hypotq.cpp logq.cpp rsqrtq.cpp sqrtq.cpp \
 		$(gc_sources) $(arith_sources)
 
 # This little rule is because from time to time I really want to see the

@@ -37,6 +37,7 @@ cd $here
 ccache -C > /dev/null
 find . -name config.cache | xargs rm -rf
 find . -name autom4te.cache | xargs rm -rf
+find . -name aclocal.m4 | xargs rm -rf
 
 if test "$1" = "--fast"
 then
