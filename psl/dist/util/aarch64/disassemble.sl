@@ -45,7 +45,8 @@
 
 
 (fluid '(bytes* lth* reg* regnr* segment*  symvalhigh symfnchigh *curradr* *currinst* *big-endian*
-		labels* *largest-target-addr* targetaddr* genlbl-pname* gensympname))
+	 labels* *largest-target-addr* targetaddr* targetaddr-is-load*
+	 return-seen* genlbl-pname* gensympname))
 
           (de getwrd(a)(getmem a))
 
@@ -231,8 +232,9 @@
 
 (de decode (p1 pp addr*)
   (prog (i lth name instr)
-      (setq targetaddr* nil)	 
+      (setq targetaddr* nil targetaddr-is-load* nil)
       (setq lth 4)
+      (if return-seen* (return (list ".word" pp)))
 %      (setq cc (wand 16#0f (wshift pp -28)))
       %% big branch for various instruction types
       (setq instr
@@ -253,7 +255,9 @@
 		  ))
       (when (and targetaddr* (not (assoc targetaddr* labels*)))
 	(setq labels* (cons (cons targetaddr* (gen-target-label)) labels*))
-	(setq *comment (cdar labels*)))
+	(setq *comment (cond ((not targetaddr-is-load*) (cdar labels*))
+			     ((weq (tag (getmem targetaddr*)) id-tag) (bldmsg "%w -> %w" (cdar labels*) (getmem targetaddr*)))
+			     (t (bldmsg "%w = %d -> %w" (cdar labels*) (getmem targetaddr*) (safe-int2id (getmem targetaddr*)))))))
       (return instr)
       ))
 
@@ -580,6 +584,7 @@
 	   (targetaddr (bldmsg "0x%x" (setq targetaddr* (wplus2 *curradr* offset))))
 	   (regt (wand pp 2#11111))
 	   (instr))
+      (setq targetaddr-is-load* t)
       (cond ((and (weq !V 0) (wlessp opc 2)) % LDR literal
 	     (list 'ldr (regnum-to-regname regt opc nil) targetaddr))
 	    ((and (weq !V 1) (wlessp opc 3)) % LDR literal simd/fp
@@ -653,7 +658,7 @@
 	    (if (weq !V 1) (regnum-to-simd-regname1 regt size opc) (regnum-to-regname regt (wand size 1) nil))
 	    (bldmsg "[%w%s"
 		    (if (weq !V 1) (regnum-to-simd-regname1 regn size opc) (regnum-to-regname regn 1 t))
-		    (if (or (weq type 2#01) (and unsigned (weq imm 0))) "]" ""))
+		    (if (or (and (not unsigned) (weq type 2#01)) (and unsigned (weq imm 0))) "]" ""))
 	    (if (and unsigned (weq imm 0)) nil
 	      (bldmsg "#%d%s" imm
 		      (cond (unsigned "]")
@@ -1319,7 +1324,7 @@
 )
     
 (de disassemble (fkt)
-    (prog(base instr jk jk77 p1 pp lth x
+    (prog(base instr jk jk77 p1 pp lth x return-seen*
 	       jmem symvalhigh symfnchigh frame
 	       argumentblockhigh labels* label bstart bend breg com4 memp1
 	       !*lower lc name)
@@ -1368,7 +1373,8 @@
                       ((and       % test within-range
                         (geq (car x) bstart)
                         (leq (car x) bend)
-                       )(rplacd x (gensym)) )
+			)
+		       (rplacd x (gensym)) )
                       (t (rplaca x nil))
          )      ) ) )
   % third pass: print instructions
@@ -1404,9 +1410,13 @@ loop
          (setq *curradr* base *currinst* pp)
          (setq !*comment nil)
          (setq instr (decode p1 pp base))      % instruction
-	 (if (null instr) (return nil))
-	 (when (and (return-instr-p instr) (not (wgreaterp *largest-target-addr* base)))
-	   (setq bend base))
+         (if (null instr) (return nil))
+         (when (return-instr-p instr)
+	   %% The following doesn't work for functions that end with a BR instruction,
+	   %% need a more complex logic.
+	   (setq return-seen* t)
+	   (unless (wgreaterp *largest-target-addr* base)
+	     (setq bend base)))
          (setq lth 4)
          (setq name (when instr (pop instr)))
 
