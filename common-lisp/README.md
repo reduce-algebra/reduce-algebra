@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-02-16 15:28:18 franc>
+Time-stamp: <2026-02-21 16:05:48 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -179,9 +179,9 @@ Lisp  | Total CPU Time (s) | Total GC Time (s)
 ------|--------------------|------------------
 csl   | 85                 | 2
 psl   | 196                | 1
-sbcl  | 214                | 8
-clisp | 1982               | 812
-ccl   | 1127               | 35
+sbcl  | 206                | 8
+clisp | 1820               | 832
+ccl   | 1129               | 345
 
 #### Generic Regression Test Issues
 
@@ -194,7 +194,7 @@ Regression Test               | Comment / To Do
 
 #### Steel Bank Common Lisp (SBCL)
 
-REDUCE 7295 on native Windows SBCL 2.6.1 (using LispMath)
+REDUCE 7298 on native Windows SBCL 2.6.1 (using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
@@ -208,7 +208,7 @@ Regression Test                    | Comment / To Do
 
 #### GNU CLISP
 
-REDUCE 7295 on Cygwin CLISP 2.49 (**not** using LispMath)
+REDUCE 7298 on Cygwin CLISP 2.49 (**not** using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
@@ -226,7 +226,7 @@ Regression Test                    | Comment / To Do
 
 #### Clozure Common Lisp (CCL)
 
-REDUCE 7295 on native Windows CCL 1.13 (using LispMath)
+REDUCE 7298 on native Windows CCL 1.13 (using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
@@ -243,25 +243,25 @@ Lisp  | Total CPU Time (s) | Total GC Time (s)
 ------|--------------------|------------------
 csl   | 121                | 2
 psl   | 116                | 1
-sbcl  | 192                | 3
-clisp | 1542               | 394
-ccl   | 1218               | 33
+sbcl  | 188                | 4
+clisp | 1384               | 401
+ccl   | 1197               | 31
 
 #### Steel Bank Common Lisp (SBCL)
 
-REDUCE 7294 on SBCL 2.6.1 (using LispMath)
+REDUCE 7299 on SBCL 2.6.1 (using LispMath)
 
 All test results very similar to those for Windows, except no differences for numeric package or 2013-06-30-rounding regression test.
 
 ### GNU CLISP
 
-REDUCE 7294 on CLISP 2.49 (**not** using LispMath)
+REDUCE 7299 on CLISP 2.49 (**not** using LispMath)
 
 All test results very similar to those for Windows.
 
 #### Clozure Common Lisp (CCL)
 
-REDUCE 7294 on CCL 1.13 (using LispMath)
+REDUCE 7299 on CCL 1.13 (using LispMath)
 
 All test results very similar to those for Windows, except no differences for numeric package or 2013-06-30-rounding regression test.
 
@@ -279,8 +279,6 @@ I cannot see any way to support the facilities for restricting execution time on
 * Check that command-line options to redsbcl etc. work; the preserved REDUCE executable may not handle them!
 * Review my hacked version of `gnuintfc.red` for Common Lisp.
 
-* Optimise SL-on-CL to improve its speed.
-* Better error handling.
 * Make faslout/faslend more robust by using a single function that calls begin internally (cf. infile) and make faslend generate a throw.  (See also the old mkfasl code?)
 * Implement a genuinely lower-case Standard Lisp, perhaps using case-inversion for a few special symbols such as `lambda`, `nil`, `t`?
 
