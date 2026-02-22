@@ -210,6 +210,7 @@ cd psl
 (load!-package 'revision)
 (load!-package 'rlisp)
 (load!-package rend_file)
+
 (load!-package 'poly)
 (load!-package 'arith)
 (load!-package 'alg)
@@ -272,6 +273,8 @@ cd psl
       (putv win-messages 3 '(~on '(fancy)))
       (putv win-messages 4 '(and *fancy (~off '(fancy))))))
 
+(setq gensympname (copystring "g0000"))
+
 (prog nil
    (reclaim)
    (terpri)
@@ -290,7 +293,9 @@ cd psl
    (prin2t (free-bps))
   (setq !*init!-stats!* nil))
 
-(de alterheapsize (d) (rederr "Sorry, but at present the Heap cannot be extended. Please start Reduce again with a larger heap (-td parameter) and rerun."))
+(de alterheapsize (d)
+   (prog (*protfg)
+       (rederr "Sorry, but at present the Heap cannot be extended. Please start Reduce again with a larger heap (-td parameter) and rerun.")))
 
 (setq symbolfilename!* "$topdir/psl/bpsl")
 (setq loaddirectories!* (quote ("" "$topdir/red/" "$topdir/psl/")))
