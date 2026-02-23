@@ -1,6 +1,6 @@
 # $HOME/.snapshots
 
-# A C Norman, 2020
+# A C Norman, 2020-2026
 #
 #
 # --------------------------------------------------------------------------
@@ -53,12 +53,27 @@
 # (4)   MODE=virtual; VM=machine-name
 # Oracle VirtualBox must be installed on the current machine, and it must have
 # a development-ready VM called machine-name installed. This machine must
-# support passwordless ssh access from the current world.
+# support passwordless ssh access from the current world using the userid
+# that you are logged in under.
 #
-# (5)   MODE=ssh+virtual; HOST=remote.machine; VM=virtual.on.remote
+# (5)   MODE=utm; VM=machine-name
+# This is only relevent if you are hosting on a Macintosh, in which case
+# it used the UTM virtualiser (which is a wrapoped around qemu). Here
+# the virtual machine must have a user called "reduce" that will accept
+# passwordless access from where you are.  Note that the VM is controlled
+# using "utmctl" and that only works when run directly on the Mac. Well
+# if you are accessing the Mac terminal that you use to launch mk-snapshots.sh
+# that will fail unless you use some scheme such as /usr/bin/screen to make
+# it appear to macOS that you are sitting directly connected to it rather
+# then at a distance.
+#
+# (6)   MODE=ssh+virtual; HOST=remote.machine; VM=virtual.on.remote
 # Access a remote machine using SSH and then run virtualbox on it!
 #
-# (6)   MODE=altlocal, ssh+altlocal, ssh+ssh+altlocal
+# (7)   MOD=ssh+utm is NOT available because of the constraints on how
+#       utmctl can be used.
+#
+# (8)   MODE=altlocal, ssh+altlocal, ssh+ssh+altlocal
 # There may be cases where it is possible run run commands using an
 # alternative operating system in a container or somewhat equivalent
 # scheme. For instance with Linux this may involve booting an alternative
@@ -69,13 +84,16 @@
 # advantage of it. At the time of writing this I do not have a concrete
 # useful instance of this (!), but a few months ago I could use it to
 # have one Raspberry Pi computer supporting both 32 and 64-bit builds.
+# So this depends on provision of soem script "altlocal" that does something
+# interesting!
 #
-#
-# The file here is the one that I am using as of June 2020 and
+# The file here is the one that I could be using as of February 2026 and
 # shows something of the range of computers I have tried to support and the
 # ways in which they link together - in the process including instances of
 # each of the above. A minimal script that just ran on a single host and
-# that only supported a few targets would of course be a lot shorter.
+# that only supported a few targets would of course be a lot shorter and
+# those cut-down versions are what I typically actually use. So this file
+# is mostly for documentation.
 #
 # When you install this as $HOME/.spapshots you may wish to delete all the
 # comments down to here!
@@ -140,11 +158,11 @@ panamint)
   }
 
   hosts_altwin64() {
-# Here I force use of a Windows VM... This optiond can be useful for testing
+# Here I force use of a Windows VM... This option can be useful for testing
 # because the VM can be a Windows image set up without any of the
 # customisation I have for my main computer. The VM must be called
 # "REDUCE-pkg-factory-Windows and must accept ssh access without need
-# for passwords.
+# for passwords. Not actuallu used! 
     MODE=virtual
     VM="REDUCE-pkg-factory-Windows"
   }
@@ -152,7 +170,8 @@ panamint)
   hosts_macintosh() {
     MODE=ssh
 # At home when my macbook is in range of the wifi it gets the address
-# 192.168.1.8
+# 192.168.1.8. So when I run mk-snapshots.sh on panamint (Windows) I build
+# Macintosh snapshots at arm's length over ssh. 
     HOST=192.168.1.8
   }
 
@@ -166,30 +185,22 @@ panamint)
     VM="REDUCE-pkg-factory-Ubuntu"
   }
 
-  hosts_rpi32() {
-# As before, use a remote machine. If I had DNS set up in a more
-# elaborate way it would become more obvious that this host is "acn1-rpi4".
-# or "rpi3-32" or some such name. This is a Raspberry Pi running in 32-bit
-# mode.
-    MODE=ssh
-    HOST=192.168.1.20
-  }
-
   hosts_rpi64() {
 # A Raspberry pi 4 running the 64-bit of Raspberry Pi OS. At home I move
 # Raspberry Pis around and re-work just which operating system they run
 # rather often so I tend to refer to them by their ip addresses on my
 # private local network...
     MODE=ssh
-    HOST=192.168.1.26
+    HOST=192.168.1.25
   }
   ;;
 
 #######################################################################
-gauguin)
+acn1)
 
-# "gauguin" is a Linux box (running the most recent release of Ubuntu)
-
+# "acn1" is a Linux box (running the most recent release of Ubuntu)
+# The setup presented here is out of date by it still shows the sort of
+# think that can be possible.
   hosts_macintosh() {
 # gauguin does not have a macintosh directly available, but by tunneling
 # via codemist.dynu.com it can gain access to the private macintosh on the
@@ -199,7 +210,7 @@ gauguin)
 # only destination for ssh access, and so to get to other computers on
 # my private network I use it as a gateway.
     MODE=ssh+ssh
-    HOST1=codemist.dynu.com
+    HOST1=codemist.casacam.net
     HOST2=192.168.1.8
   }
 
@@ -224,105 +235,22 @@ gauguin)
     VM="REDUCE-pkg-factory-Ubuntu"
   }
 
-  hosts_rpi32() {
-# Access using ssh via a gateway system. HOST1 is
-# the gateway and HOST2 the system used for the build.
-    MODE=ssh+ssh
-    HOST1=codemist.dynu.com
-    HOST2=192.168.1.20
-  }
-
   hosts_rpi64() {
     MODE=ssh+ssh
-    HOST1=codemist.dynu.com
-    HOST2=192.168.1.26
+    HOST1=codemist.casacam.net
+    HOST2=192.168.1.25
   }
   ;;
 
 #######################################################################
-math-smreduce.mat.brocku.ca)
-
-# A remote Macintosh which is the "official" build host for Reduce snapshots.
-
-
-# math-smreduce is a Macintosh, but it needs the file-space used during
-# snapshot builds to be put on a separate volume rather than within the
-# main Reduce tree.
-  REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
-  REDUCE_BUILD="/Volumes/DATA/reduce-build"
-  SNAPSHOTS="/Volumes/DATA/snapshots"
-
-
-  hosts_macintosh() {
-    MODE=local
-  }
-
-  hosts_win64() {
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Windows"
-  }
-
-hosts_linux64() {
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu"
-  }
-
-  hosts_rpi32() {
-# Not supported here. It seems tidy to put in a function definition that
-# does nothing just to document that fact. Note that an empty function body
-# is not acceptable to bash, so I put in a return statement.
-    return 0
-  }
-
-  hosts_rpi64() {
-    return 0
-  }
-  ;;
-
-#######################################################################
-# Various of the Raspberry pi systems at home! The hostnames detected here
-# are the ones that they self-identify as and may not be anything at all
-# to do with DNS names!
-
-acn1-rpi4 | rpi3-32)
+# This is for when I launch the snapshot building on a Raspberry Pi at home
+acn1-rpi5)
   hosts_macintosh() {
     MODE=ssh
     HOST=192.168.1.8
   }
 
   hosts_win64() {
-# From the private network I can access panamint using its private address.
-    MODE=ssh
-    HOST=192.168.1.10
-  }
-
-hosts_linux64() {
-# A virtual machine running on a remote system (panamint).
-    MODE=ssh+virtual
-    HOST=192.168.1.10
-    VM="REDUCE-pkg-factory-Ubuntu"
-  }
-
-hosts_rpi32() {
-# Use the machine directly.
-    MODE=local
-  }
-
-hosts_rpi64() {
-    MODE=ssh
-    HOST=192.168.1.26
-  }
-  ;;
-
-#######################################################################
-# A 64-bit Raspberry Pi
-rpi4-8g)
-  hosts_macintosh() {
-    MODE=ssh
-    HOST=192.168.1.5
-  }
-
-  hosts_win64() {
     MODE=ssh
     HOST=192.168.1.10
   }
@@ -333,45 +261,9 @@ rpi4-8g)
     VM="REDUCE-pkg-factory-Ubuntu"
   }
 
-  hosts_rpi() {
-    MODE=ssh
-    HOST=192.168.1.20
-  }
-
   hosts_rpi64() {
 # Use the machine directly.
     MODE=local
-  }
-  ;;
-
-#######################################################################
-OlderMacBook | acn1macbook)
-
-  hosts_macintosh() {
-# All these hosts are macintoshes and so the build of a macintosh snapshot
-# can be performed on them directly.
-    MODE=local
-  }
-
-  hosts_win64() {
-    MODE=ssh
-    HOST=192.168.1.10
-  }
-
-  hosts_linux64() {
-    MODE=ssh+virtual
-    HOST=192.168.1.10
-    VM="REDUCE-pkg-factory-Ubuntu"
-  }
-
-  hosts_rpi32() {
-    MODE=ssh
-    HOST=192.168.1.20
-  }
-
-  hosts_rpi64() {
-    MODE=ssh
-    HOST=192.168.1.26
   }
   ;;
 
@@ -398,7 +290,7 @@ hosts_linux() {
 }
 
 hosts_rpi() {
-  hosts_rpi32
+  hosts_rpi64
 }
 
 # end of .snapshots

@@ -1917,7 +1917,7 @@ inline int128_t int128(int64_t v)
 
 // Once this header has been installed both HAVE_UINT128_T and
 // HAVE_INT128_T will be defined. That is rather as if autoconf had
-// been used to check for the presence of 129-8 integer types.
+// been used to check for the presence of 128-bit integer types.
 
 #ifndef HAVE_UINT128_T
 #define HAVE_UINT128_T 1

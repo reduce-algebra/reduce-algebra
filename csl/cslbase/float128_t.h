@@ -53,6 +53,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include "int128_t.h"
+
 #ifdef HAVE_BITCAST
 #include <bit>
 using std::bit_cast;
@@ -171,6 +173,8 @@ extern float128_t f128_0;           // 0.0_Q . v;
 extern float128_t f128_half;        // 0.5_Q . v;
 extern float128_t f128_mhalf;       // (-0.5_Q) . v;
 extern float128_t f128_1;           // 1.0_Q . v;
+extern float128_t f128_1plus;       // 1.0_Q . v + 1ULP;
+extern float128_t f128_1minus;      // 1.0_Q . v - 1ULP;
 extern float128_t f128_m1;          // (-1.0_Q) . v;
 extern float128_t f128_10_16;       // 1.0e16_Q . v;
 extern float128_t f128_10_17;       // 1.0e17_Q . v;
@@ -178,6 +182,14 @@ extern float128_t f128_10_18;       // 1.0e18_Q . v;
 extern float128_t f128_10_19;       // 1.0e19_Q . v;
 extern float128_t f128_scale;       // {fpOrder(0x0080000000000000ULL, 0x4038000000000000ULL)};
 extern float128_t f128_N1;          // {fpOrder(0, 0x4fff000000000000ULL)}; // 2^4096
+extern float128_t f128_expmin;      // smallest useful input to exp()
+extern float128_t f128_expmax;      // largest useful input to exp()
+extern float128_t f128_exp2min;     // smallest useful input to 2^x
+extern float128_t f128_exp2max;     // largest useful input to 2^x
+extern float128_t f128_exp10min;    // smallest useful input to 10^x
+extern float128_t f128_exp10max;    // largest useful input to 10^x
+extern float128_t f128_expm1min;    // smallest useful input to e^x-1
+extern float128_t f128_expm1max;    // largest useful input to e^x-1
 
 extern float128_t f128_epsilon;
 extern float128_t f128_half_epsilon;
@@ -929,6 +941,8 @@ inline float128_t f128_0            = 0.0_Q . v;
 inline float128_t f128_half         = 0.5_Q . v;
 inline float128_t f128_mhalf        = (-0.5_Q) . v;
 inline float128_t f128_1            = 1.0_Q . v;
+inline float128_t f128_1plus        = {fpOrder(0x0000000000000001ULL, 0x3fff000000000000ULL)}; 
+inline float128_t f128_1minus       = {fpOrder(0xffffffffffffffffULL, 0x3ffe000000000000ULL)}; 
 inline float128_t f128_m1           = (-1.0_Q) . v;
 inline float128_t f128_10_16        = 1.0e16_Q . v;
 inline float128_t f128_10_17        = 1.0e17_Q . v;
@@ -936,6 +950,23 @@ inline float128_t f128_10_18        = 1.0e18_Q . v;
 inline float128_t f128_10_19        = 1.0e19_Q . v;
 inline float128_t f128_scale        = {fpOrder(0x0080000000000000ULL, 0x4038000000000000ULL)};
 inline float128_t f128_N1           = {fpOrder(0, 0x4fff000000000000ULL)}; // 2^4096
+inline float128_t f128_expmin       = {fpOrder(0xbb059fabb506ff34ULL, 0xc00c654bb3b2c73eULL)};
+inline float128_t f128_expmax       = {fpOrder(0xf35793c7673007e6ULL, 0x400c62e42fefa39eULL)};
+//  b128u128_u xmin = {.f = -0x1.654bb3b2c73e bb059fabb506ff34 p+13q},
+//             xmax = {.f =  0x1.62e42fefa39e f35793c7673007e6 p+13q};
+inline float128_t f128_exp2min      = {fpOrder(0x0000000000000000ULL, 0xc00d010000000000ULL)};
+inline float128_t f128_exp2max      = {fpOrder(0x0000000000000000ULL, 0x400d000000000000ULL)};
+//  b128u128_u xmin = {.f = -0x1.01bcp+14q},
+//             xmax = {.f = 0x1p+14q};
+inline float128_t f128_exp10min     = {fpOrder(0x6893f84497c723c1ULL, 0xc00a3657d621f4e9ULL)};
+inline float128_t f128_exp10max     = {fpOrder(0xef311f12b35816faULL, 0x400a34413509f79fULL)};
+//  b128u128_u xmin = {.f = f128_exp10min,-0x1.3657d621f4e96893f84497c723c1p+12q
+//             xmax = {.f = 0x1.34413509f79fef311f12b35816fap+12q};
+inline float128_t f128_expm1min     = {fpOrder(0x90b9ff9d97e6c709ULL, 0xc00a3c133ab16db9ULL)};
+inline float128_t f128_expm1max     = {fpOrder(0xf35793c7673007e6ULL, 0x400c62e42fefa39eULL)};
+//  b128u128_u xmin ={.f = -0x1.3c133ab16db990b9ff9d97e6c709p+6q},
+//             xmax = {.f = 0x1.62e42fefa39ef35793c7673007e6p+13q};
+ 
 
 inline float128_t f128_epsilon      = 1.925929944387235853055977942584927319e-34_Q . v;
 inline float128_t f128_half_epsilon = 9.629649721936179265279889712924636593e-35_Q . v;
@@ -1145,6 +1176,113 @@ constexpr inline OctFloat operator ""_QQX (const char* s)
 }
 
 #endif // FLOAT256
+
+// I am going to do this without relying on intrinsics. Across history and
+// different compilers there is confusion about the order of arguments
+// and whether it is the sum or the carry result that is returned. And
+// here I can use a C++ reference argument rather than a pointer to get
+// the second result returned. So this may be slower than use of intrinsics
+// but should be more portable.
+
+inline uint32_t add_with_carry(uint32_t a, unsigned int b, unsigned int& cout)
+{   uint32_t r = a + b;
+    cout = (r < a);
+    return r;
+}
+
+inline uint32_t add_with_carry(uint32_t a, uint32_t b,
+                               unsigned int cin, unsigned int& cout)
+{   unsigned int w1, w2;
+    uint32_t r = add_with_carry(a, b, w1);
+    r = add_with_carry(r, cin, w2);
+    cout = w1 + w2;
+    return r;
+}
+inline uint32_t subtract_with_borrow(uint32_t a, uint32_t b, unsigned int& bout)
+{   uint32_t r = a-b;
+    bout = (r > a);
+    return r;
+}
+
+inline uint32_t subtract_with_borrow(uint32_t a, uint32_t b,
+                                     unsigned int bin, unsigned int& bout)
+{   unsigned int w1, w2;
+    uint64_t r = subtract_with_borrow(a, b, w1);
+    r = subtract_with_borrow(r, bin, w2);
+    bout = w1 + w2;
+    return r;
+}
+
+inline uint64_t add_with_carry(uint64_t a, uint64_t b, unsigned int& cout)
+{   uint64_t r = a + b;
+    cout = (r < a);
+    return r;
+}
+
+inline uint64_t add_with_carry(uint64_t a, uint64_t b,
+                               unsigned int cin, unsigned int& cout)
+{   unsigned int w1, w2;
+    uint64_t r = add_with_carry(a, b, w1);
+    r = add_with_carry(r, (uint64_t)cin, w2);
+    cout = w1 + w2;
+    return r;
+}
+inline uint64_t subtract_with_borrow(uint64_t a, uint64_t b, unsigned int& bout)
+{   uint64_t r = a-b;
+    bout = (r > a);
+    return r;
+}
+
+inline uint64_t subtract_with_borrow(uint64_t a, uint64_t b,
+                                     unsigned int bin, unsigned int& bout)
+{   unsigned int w1, w2;
+    uint64_t r = subtract_with_borrow(a, b, w1);
+    r = subtract_with_borrow(r, (uint64_t)bin, w2);
+    bout = w1 + w2;
+    return r;
+}
+
+inline uint128_t add_with_carry(uint128_t a, uint128_t b, unsigned int& cout)
+{   uint128_t r = a + b;
+    cout = (r < a);
+    return r;
+}
+
+inline uint128_t add_with_carry(uint128_t a, uint128_t b,
+                               unsigned int cin, unsigned int& cout)
+{   unsigned int w1, w2;
+    uint128_t r = add_with_carry(a, b, w1);
+    r = add_with_carry(r, (uint128_t)cin, w2);
+    cout = w1 + w2;
+    return r;
+}
+inline uint128_t subtract_with_borrow(uint128_t a, uint128_t b, unsigned int& bout)
+{   uint128_t r = a-b;
+    bout = (r > a);
+    return r;
+}
+
+inline uint128_t subtract_with_borrow(uint128_t a, uint128_t b,
+                                     unsigned int bin, unsigned int& bout)
+{   unsigned int w1, w2;
+    uint128_t r = subtract_with_borrow(a, b, w1);
+    r = subtract_with_borrow(r, (uint128_t)bin, w2);
+    bout = w1 + w2;
+    return r;
+}
+
+// The following are from "core math" and should deliver correctly rounded
+// values on 128-bit arguments.
+
+extern float128_t cr_cbrtq(float128_t x);      // cube root
+extern float128_t cr_exp10q(float128_t x);     // 10^x
+extern float128_t cr_exp2q(float128_t x);      // 2^x
+extern float128_t cr_expm1q(float128_t x);     // e^x - 1
+extern float128_t cr_expq(float128_t x);       // e^x
+extern float128_t cr_hypotq(float128_t x, float128_t y);
+extern float128_t cr_logq(float128_t x);       // ln x
+extern float128_t cr_rsqrtq(float128_t x);     // 1/sqrt x
+extern float128_t cr_sqrtq(float128_t x);      // sqrt x
 
 } // end namespace
 
