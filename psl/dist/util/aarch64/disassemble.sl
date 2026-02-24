@@ -253,8 +253,9 @@
 		  (t
 		   (unknown-instr-error pp))
 		  ))
-      (when (and targetaddr* (not (assoc targetaddr* labels*)))
-	(setq labels* (cons (cons targetaddr* (gen-target-label)) labels*))
+      (when targetaddr*
+        (if (not (assoc targetaddr* labels*))
+	    (setq labels* (cons (cons targetaddr* (gen-target-label)) labels*)))
 	(setq *comment (cond ((not targetaddr-is-load*) (cdar labels*))
 			     ((weq (tag (getmem targetaddr*)) id-tag) (bldmsg "%w -> %w" (cdar labels*) (getmem targetaddr*)))
 			     (t (bldmsg "%w = %d -> %w" (cdar labels*) (getmem targetaddr*) (safe-int2id (getmem targetaddr*)))))))
