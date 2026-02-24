@@ -11,6 +11,7 @@
 % Compiletime:  PL:IO-DECLS.B 
 % Runtime:      
 %
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 %
@@ -64,7 +65,7 @@
   %  Mark a a pair of channels as open for a special purpose.
  
   (let ((channel (findfreechannel)))
-    (setf (wgetv channelstatus channel) 'channelopenspecial)
+    (setf (wgetv channelstatus channel) channelopenspecial)
     (setf (wgetv channeltable  channel) string)
     channel
     ))
@@ -100,14 +101,22 @@
 
   (testlegalchannel channel)
 
+  (prog (chr)  
+
+  % If the input buffer is empty (end of string), return EOF
+
+     (if (wgreaterp (wgetv nextposition channel)
+                    (wgetv bufferlength channel))
+	 (return !$eof!$))
+
   % Pull the next character out of the buffer.
 
-  (let ((chr (strbyt (strinf (igetv iobuffer channel))
-                     (wgetv nextposition channel))))
-    (setf (wgetv nextposition channel) (+ (wgetv nextposition channel) 1))
-    (when *echo (writechar chr))
-    chr
-    ))
+     (setq chr (wand 16#ff (strbyt (strinf (igetv iobuffer channel))
+				   (wgetv nextposition channel))))
+     (setf (wgetv nextposition channel) (+ (wgetv nextposition channel) 1))
+     (when *echo (writechar chr))
+     (return chr)
+     ))
 
 (off fast-integers)
 
