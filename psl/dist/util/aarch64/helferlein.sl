@@ -4,9 +4,9 @@
 % Description:    various useful access functions
 % Author:         Herbert Melenk and Winfried Neun, ZIB Berlin
 % Created:        5 February 1989 (SUN4 version)
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Utilities
-% Status:         Open Source: BSD License
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -73,7 +73,7 @@
     (de c-p-s-nl (stri)
            (console-print-string stri))))
 
-(de printo (x) (puthex x 8) (terminalwritechar 32 32)
+(de printo (x) (puthex x 16) (terminalwritechar 32 32)
 	      (terminalwritechar 32 32)
 	      (terminalwritechar 32 32)
 
@@ -118,40 +118,19 @@ T )
 
 (de dumpo (x n)
    (prog (outputbase* addr)
-	(setq outputbase* 8)
+	(setq outputbase* 16)
 	(when (greaterp n 255) (setq n 255))
 	(console-newline)
 	(printo x) (console-newline)
 	(ifor (from i 0 n 1)
 	  (do (progn
-	        (setq addr (wplus2 (inf x) (wshift i 2)))
+	        (setq addr (wplus2 (inf x) (wshift i 3)))
 	        (when (eq (wand addr 31) 0)
-	                  (console-newline) (puthex addr 8)
+	                  (console-newline) (puthex addr 16)
 	                  (c-p-s " ---------------"))
 
 	                  (printo (getmem addr))
 	) )   )
-   (return t)
-)  )
-
-(compiletime (put 'memory_abs 'opencode
-  '    ( (ldr (reg 1) (indirect (reg 1)) ))))
-
-(de dumpo_abs (x n)
-   (prog (outputbase* addr)
-        (setq outputbase* 8)
-        (when (greaterp n 255) (setq n 255))
-        (console-newline)
-        (printo x) (console-newline)
-        (ifor (from i 0 n 1)
-          (do (progn
-                (setq addr (wplus2 x (wshift i 2)))
-                (when (eq (wand addr 31) 0)
-                          (console-newline) (puthex addr 8)
-                          (c-p-s " ---------------"))
-
-                          (printo (memory_abs addr))
-        ) )   )
    (return t)
 )  )
 
