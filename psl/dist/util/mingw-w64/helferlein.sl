@@ -77,7 +77,7 @@
     (de c-p-s-nl (stri)
            (console-print-string stri))))
 
-(de printo (x) (puthex x 8) (terminalwritechar 32 32)
+(de printo (x) (puthex x 16) (terminalwritechar 32 32)
 	      (terminalwritechar 32 32)
 	      (terminalwritechar 32 32)
 
