@@ -56,10 +56,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                                                            
 %                                                                          
+(fluid '(safearithargs!*0 safearithargs!*1))
 
-(de internal_beforegcsystemhook nil nil)
+(de internal_beforegcsystemhook nil
+    (mask-terminal-interrupt t)
+    (setq safearithargs!*0 (wgetv arithargloc 0 )
+          safearithargs!*1 (wgetv arithargloc 1 ))
+    nil)
 
-(de internal_aftergcsystemhook nil nil)
+(de internal_aftergcsystemhook nil
+    (wputv arithargloc 0 safearithargs!*0)
+    (wputv arithargloc 1 safearithargs!*1)
+    (setq safearithargs!*0 NIL safearithargs!*1 nil)
+    (mask-terminal-interrupt nil)
+     nil)
 
 (de beforegcsystemhook nil
    (unless (or  (funboundp 'beforegcuserhook)

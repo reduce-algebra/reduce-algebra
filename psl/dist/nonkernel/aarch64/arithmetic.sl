@@ -131,12 +131,11 @@
         (function(lambda(x)(remprop x 'opencode)))))
 
 
-(fluid '(arithargloc arithargloc2 staticfloatloc fpstatusloc* fp-except-mode*))
+(fluid '(arithargloc staticfloatloc fpstatusloc* fp-except-mode*))
 
 (loadtime
   (progn % Allocate Physical Space                                         
          (setq arithargloc (gtwarray 2))
-         (setq arithargloc2 (loc (wgetv arithargloc 1)))
          (wputv arithargloc 0 0)
          (wputv arithargloc 1 0)
          (setq staticfloatloc (gtwarray 3))
@@ -465,7 +464,7 @@
 (compiletime
  (dm wquotient2 (u)
      (let ((divisor (gensym)))
-     (print (cdr u))
+%     (print (cdr u))
      `(let ((,divisor ,(caddr u)))
 	(if (eq ,divisor 0)
 	    (continuableerror 99 "Division by zero" (list 'quotient ,(cadr u) ,divisor))
