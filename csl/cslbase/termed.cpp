@@ -1492,13 +1492,15 @@ int term_setup(const char *argv0, const char *colour)
 #endif // !EMBEDDED
 }
 
-void enable_keyboard(bool terminalUsed)
+void enable_keyboard()
 {
 #if defined embedded || defined AVOID_TERMINAL_THREADS
     return;
 #else // AVOID_TERMINAL_THREADS
-    if (!terminalUsed || !termEnabled) return;
-// Start the thread that keeps trying to read from the terminal
+    if (!termEnabled) return;
+// Start the thread that keeps trying to read from the terminal. I want to
+// do this even if main input is only from a file since it is how I spot
+// user interrupts such as ^C and ^G.
     startKeyboardThread();
 #endif // AVOID_TERMINAL_THREADS
 }

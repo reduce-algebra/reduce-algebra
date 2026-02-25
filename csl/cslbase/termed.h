@@ -84,7 +84,7 @@ extern bool termEnabled;
 // raw mode and start a thread that watches it.
 
 extern int term_setup(const char *argv0, const char *colours);
-extern void enable_keyboard(bool terminalUsed);
+extern void enable_keyboard();
 
 // Before returning from your code it would be a really good idea to
 // call "term_close" since that can re-set all sorts of terminal
