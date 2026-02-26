@@ -3,7 +3,7 @@
 ;; Copyright (C) 2019, 2025, 2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-02-12 17:30:57 franc>
+;; Time-stamp: <2026-02-25 16:54:46 franc>
 ;; Created: 20 February 2019
 
 ;; Based on, and hopefully consistent with, the portable REDUCE
@@ -72,10 +72,11 @@ List all traced functions if no functions or nil are specified."
    slim::%fasl-directory-pathname%)
   "Absolute pathname of the form \"/.../fasl.<lisp>/???.lisp\".")
 
-(declaim (ftype (cl:function (symbol) cons) get-fasl-source))
+(declaim (ftype (cl:function (symbol) list) get-fasl-source))
 
 (defun get-fasl-source (name)
-  "Get DE form for function NAME from file \"/.../fasl.<lisp>/modulename.lisp\"."
+  "Return DE form for function NAME from file \"/.../fasl.<lisp>/modulename.lisp\",
+or nil if it cannot be found."
   (let ((*readtable* (copy-readtable nil)) ; read CL syntax
         file stream form)
     (when (setq file (get name 'sl::defined-in-file)) ; e.g. |PGK/MOD.RED|
@@ -197,15 +198,15 @@ must be interpreted for assignment tracing.
     ;;
     (if params
         (setq params (car params))      ; unwrap params
-        (progn
+        (let (number-of-args)
           (format *trace-output*
                   "~&*** ~a source unavailable.
     Recursive calls may not be traced.
     Using generic parameter names.~%"
                   name)
-          (when (setq params (get name 'sl::number-of-args))
+          (when (setq number-of-args (get name 'sl::number-of-args))
             (setq params
-                  (loop for i from 1 upto params collect
+                  (loop for i from 1 upto number-of-args collect
                         (format nil "Arg~d" i))))))
     ;;
     (pushnew name *traced-functions*)
@@ -258,7 +259,7 @@ NAME must be quoted when called!"
   "If non-nil then ask whether to continue before each traced execution.
 Abort with an error if the answer is no.")
 
-(declaim (ftype (cl:function (symbol list list) function) run-traced-function))
+(declaim (ftype (cl:function (symbol list list) t) run-traced-function))
 
 (defun run-traced-function (name params args)
   (let ((trace-depth (1+ trace-depth))
