@@ -843,8 +843,12 @@ then
 # Each file packageName.showtime will contain just one line of the form
 #       ("packageName" cputime gctime)
 # where the times are recorded in milliseconds.
-    tt=`cat $logdir/$p.showtime | \
-        sed -e 's/[^ ]* //; s/ .*//'`
+# But if the test times out then this file will not exist!
+    if test -f $logdir/$p.showtime
+    then
+      tt=`cat $logdir/$p.showtime | \
+          sed -e 's/[^ ]* //; s/ .*//'`
+    fi
 # base gets set to the time recorded for the first platform in the list.
 
     if test "$none" = "yes"
