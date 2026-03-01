@@ -667,7 +667,7 @@ static void __attribute__((noinline)) as_expm1q_superaccurate(int *el, u2x64 m, 
   arsu7(x, 0x402e - ((x0 >> 112)&0x7fff));
   int e = x[6];
   int jt = x[5]>>60;
-  x[5] &= ~0ull>>4;
+  x[5] &= ~0ULL>>4;
   u6x64 f,f1,f2,ft;
   pol6(f, x[5], sizeof(c)/sizeof(c[0]), c);
   pol6red(f1, x[4], c);
@@ -679,7 +679,7 @@ static void __attribute__((noinline)) as_expm1q_superaccurate(int *el, u2x64 m, 
   if(sg<=0){
     if(__builtin_expect(sg>=-5, 1)) {
       unsigned int c0;
-      ft[5+sg] = subtract_with_borrow(ft[5+sg], 1ul<<sl, 0, c0);
+      ft[5+sg] = subtract_with_borrow(ft[5+sg], 1ULL<<sl, 0, c0);
       for(int i=6+sg;i<6;i++) ft[i] = subtract_with_borrow(ft[i], 0, c0, c0);
     }
     for(int i=0;i<6;i++) ft[i] ^= sm;
@@ -697,9 +697,9 @@ static void __attribute__((noinline)) as_expm1q_superaccurate(int *el, u2x64 m, 
     int ls = ~sl&63;
     if(sg==1){
       m[0] = (ft[5]<<1)<<ls|ft[4]>>sl;
-      m[1] = ( ~0ul<<1)<<ls|ft[5]>>sl;
+      m[1] = ( ~0ULL<<1)<<ls|ft[5]>>sl;
     } else if(sg==2){
-      m[0] = ( ~0ul<<1)<<ls|ft[5]>>sl;
+      m[0] = ( ~0ULL<<1)<<ls|ft[5]>>sl;
       m[1] = ~0ul;
     } else {
       m[0] = ~0ul;
@@ -768,7 +768,7 @@ static void __attribute__((noinline)) as_expm1q_accurate(int *el, u2x64 m, uint1
   arsu4(x, 0x402e - ((x0 >> 112)&0x7fff));
   int e = x[3];
   int jt0 = x[2]>>60, jt1 = (x[2]>>56)&15;
-  x[2] &= ~0ull>>8;
+  x[2] &= ~0ULL>>8;
   u3x64 f,f1,ft;
   mhu3u3u3(ft, tbl0[jt0], tbl1[jt1]);
   pol3(f, x[2], sizeof(c)/sizeof(c[0]), c);
@@ -783,7 +783,7 @@ static void __attribute__((noinline)) as_expm1q_accurate(int *el, u2x64 m, uint1
   if(sg<=0){
     if(sg>=-2) {
       unsigned int c0;
-      f[2+sg] = subtract_with_borrow(f[2+sg], 1ul<<sl, 0, c0);
+      f[2+sg] = subtract_with_borrow(f[2+sg], 1ULL<<sl, 0, c0);
       for(int i=3+sg;i<3;i++) f[i] = subtract_with_borrow(f[i], 0, c0, c0);
     }
     for(int i=0;i<3;i++) f[i] ^= sm;
@@ -818,8 +818,8 @@ static void __attribute__((noinline)) as_expm1q_accurate(int *el, u2x64 m, uint1
     int w = 74 - e, wl = w&63, wg = w>>6;
 
     tm[0] = ~0ul;
-    tm[1] = wg==1?(1ul<<wl) - 1ul:~0ul;
-    tm[2] = wg==2?(1ul<<wl) - 1ul: 0ul;
+    tm[1] = wg==1?(1ULL<<wl) - 1ULL:~0ULL;
+    tm[2] = wg==2?(1ULL<<wl) - 1ULL: 0ULL;
 
     t0[0] &= tm[0];
     t0[1] &= tm[1];
@@ -844,10 +844,10 @@ static void __attribute__((noinline)) as_expm1q_accurate(int *el, u2x64 m, uint1
 float128_t cr_expm1q(float128_t x) {
 //-   unsigned flagp = _mm_getcsr(), oflagp = flagp, rm = flagp&_MM_ROUND_MASK;
   b128u128_u u = {.a = reinterpret_f128_as_uint128_t(x)};
-  uint64_t b1 = u.b[1]&~0ull>>1; // strip the sign
+  uint64_t b1 = u.b[1]&~0ULL>>1; // strip the sign
   if(__builtin_expect(b1<0x3ffe000000000000, 1)){ // |x|<~0x1p-1
     b128u128_u m = u, res, m0;
-    m.b[1] = (m.b[1]&~0ull>>16)|1ull<<48;
+    m.b[1] = (m.b[1]&~0ULL>>16)|1ULL<<48;
     uint64_t sm = u.b[1]>>63;
     int e = (b1>>48) - 16383, sj = 37-e, eout;
     if(__builtin_expect(sj<49, 1)){ // 0x1p-11<|x|<~0x1p-1
@@ -1036,7 +1036,7 @@ float128_t cr_expm1q(float128_t x) {
 	fh = add_with_carry(fh, m0.b[1], k, k);
 	if(k){ // this addition can cause overflow
 	  res.b[0] = fh<<63|fl>>1;
-	  res.b[1] = 1ul<<63|fh>>1;
+	  res.b[1] = 1ULL<<63|fh>>1;
 	  eout++;
 	} else {
 	  res.b[0] = fl;
@@ -1052,7 +1052,7 @@ float128_t cr_expm1q(float128_t x) {
 //-      uint64_t rb = (uint64_t)(rm==_MM_ROUND_NEAREST)<<14;
       uint64_t rb = (uint64_t)1<<14;
       uint64_t t0 = res.a + rb + off[sm];
-      uint64_t tm = (1ul<<15) - 1ul;
+      uint64_t tm = (1ULL<<15) - 1ul;
       tm &= t0;
       if(__builtin_expect(tm <= 6ul, 0))
 	as_expm1q_accurate(&eout, res.b, u.a);
@@ -1064,7 +1064,7 @@ float128_t cr_expm1q(float128_t x) {
 //-       uint64_t rb = (uint64_t)(rm==_MM_ROUND_NEAREST)<<13;
       uint64_t rb = (uint64_t)1<<13;
       uint64_t t0 = res.a + rb + off[sm];
-      uint64_t tm = (1ul<<14) - 1ul;
+      uint64_t tm = (1ULL<<14) - 1ul;
       tm &= t0;
       if(__builtin_expect(tm <= 6ul, 0)){
 	as_expm1q_accurate(&eout, res.b, u.a);
@@ -1090,16 +1090,16 @@ float128_t cr_expm1q(float128_t x) {
   }
   static const b128u128_u xmin ={.f = f128_expm1min},
                           xmax = {.f = f128_expm1max};
-  if(__builtin_expect(b1>=0x400c62e42fefa39eull, 0)){// other special cases: nan, inf, overflow
-    if(b1==0x7fffull<<48&&u.b[0]==0){
+  if(__builtin_expect(b1>=0x400c62e42fefa39eULL, 0)){// other special cases: nan, inf, overflow
+    if(b1==0x7fffULL<<48&&u.b[0]==0){
       if(!(u.b[1]>>63))
 	return x; // x = +Inf
       else
 	return f128_m1; // x = -Inf
     }
-    if(b1>0x7fffull<<48 || (b1==0x7fffull<<48 && u.b[0])){
-//-       if(!(b1&(1ull<<47))) flagp |= FE_INVALID; // complain about the snan argument by the invalid exception
-      u.b[1] |= 1ull<<47; // snan -> qnan
+    if(b1>0x7fffULL<<48 || (b1==0x7fffULL<<48 && u.b[0])){
+//-       if(!(b1&(1ULL<<47))) flagp |= FE_INVALID; // complain about the snan argument by the invalid exception
+      u.b[1] |= 1ULL<<47; // snan -> qnan
 //-       if(__builtin_expect(oflagp!=flagp, 0)) _mm_setcsr(flagp);
       return reinterpret_uint128_t_as_f128(u.a); // qNaN
     }
@@ -1107,7 +1107,7 @@ float128_t cr_expm1q(float128_t x) {
 #ifdef CORE_MATH_SUPPORT_ERRNO
       errno = ERANGE;
 #endif
-      b128u128_u kinf = {.b = {0,0x7fffull<<48}};
+      b128u128_u kinf = {.b = {0,0x7fffULL<<48}};
 //-      kinf.a -= rm != _MM_ROUND_UP && rm != _MM_ROUND_NEAREST;
       kinf.a -= 1;
 //-       flagp |= FE_OVERFLOW|FE_INEXACT;
@@ -1203,7 +1203,7 @@ float128_t cr_expm1q(float128_t x) {
 
   b128u128_u gf = {.f = x}, m = gf, res;
   int64_t sm = gf.bs[1]>>63;
-  m.b[1] = (m.b[1]&~0ull>>16)|1ull<<48;
+  m.b[1] = (m.b[1]&~0ULL>>16)|1ULL<<48;
   u3x64 fs; mhu3xu2(fs, iln2+4, m.a);
   fs[0] ^= sm; fs[1] ^= sm; fs[2] ^= sm;
   arsu3(fs, 0x401a - ((gf.b[1] >> 48)&0x7fff));
@@ -1231,7 +1231,7 @@ float128_t cr_expm1q(float128_t x) {
 //-    uint128_t rb = (uint128_t)(rm==_MM_ROUND_NEAREST)<<(14-nz);
     uint128_t rb = (uint128_t)1<<(14-nz);
     z0 += rb + (6&~sm);
-    uint128_t tm = ((uint128_t)1ul<<(15-nz)) - 1ul;
+    uint128_t tm = ((uint128_t)1ULL<<(15-nz)) - 1ul;
     tm &= z0;
     if(__builtin_expect(tm <= 6ul, 0)){
       as_expm1q_accurate(&el, res.b, gf.a);
@@ -1253,7 +1253,7 @@ float128_t cr_expm1q(float128_t x) {
     } else {
 //-       rb = (uint128_t)(rm==_MM_ROUND_NEAREST)<<(14+s);
       rb = (uint128_t)1<<(14+s);
-      tm = ((uint128_t)1ul<<(15+s)) - 1ul;
+      tm = ((uint128_t)1ULL<<(15+s)) - 1ul;
     }
     uint128_t z0 = res.a;
     z0 += rb;

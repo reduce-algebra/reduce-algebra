@@ -255,7 +255,7 @@ inline b128u128_u as_icbrt(b128u128_u x, unsigned i){
   r = mhuu(r, rcbrt_i[i]);
   uint128_t r2 = (uint128_t)r*r;
   x.a >>= 3-i;
-  x.b[1] |= 1ull<<(61+i);
+  x.b[1] |= 1ULL<<(61+i);
   b128u128_u sx = {.a = mhUU(r2, x.a)};
   int128_t H = mhuU(r, sx.a);
   int64_t h = H, m = h>>63;
@@ -287,7 +287,7 @@ float128_t cr_cbrtq(float128_t x){
   uint32_t e = (u.b[1]>>48)&0x7fff, i; // exponent
   if(__builtin_expect(e==0, 0)){ // x is subnormal or x=+-0
     int32_t ns = -15;
-    u.b[1] &= ~0ull>>1;
+    u.b[1] &= ~0ULL>>1;
     if(u.b[1]){
       ns += __builtin_clzll(u.b[1]);
     } else {
@@ -302,8 +302,8 @@ float128_t cr_cbrtq(float128_t x){
     i = e%3;
     u.a <<= ns; // normalize mantissa
   } else if(__builtin_expect(e==0x7fff, 0)){// other special cases: NaN, inf
-    if((u.b[1]<<16|u.b[0]) && !(u.b[1]&(1ull<<47))){ // x = sNaN
-      u.b[1] |= 1ull<<47; // sNaN -> qNaN
+    if((u.b[1]<<16|u.b[0]) && !(u.b[1]&(1ULL<<47))){ // x = sNaN
+      u.b[1] |= 1ULL<<47; // sNaN -> qNaN
       feraiseexcept (FE_INVALID);
       return u.f; // NaN
     }

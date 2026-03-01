@@ -1,7 +1,6 @@
 // Big Number arithmetic.                             A C Norman, 2019-2026
 
-// To use this, go "#include "arithlib.h" and link against "arithlib.cpp"
-// or as an alternatice #include "arithlib.cpp" as a header-only library.
+// To use this  #include "arithlib.cpp" as a header-only library.
 
 #ifndef __arithlib_cpp
 #define __arithlib_cpp 1
@@ -497,6 +496,3645 @@ static constexpr bool isHeader = ([](){
 #include <algorithm>
 #include <filesystem>
 
+// float128_t.h                                Copyright Arthur Norman 2026
+
+// $Id$
+
+/**************************************************************************
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+
+// *************************
+// * * * W A R N I N G * * *
+// *************************
+//
+// It is possible that on some platforms - especially 32-bit x86 ones -
+// that floating point operations are compiled to use 80-bit extra
+// precision for some intermediate working. That could potentially
+// disrupt things for me. If necessary one can set compilation flags
+// such as "-msse2" to avoid that. I believe that on 64-bit systems that
+// double precision operations always round in the IEEE style and so
+// will be safe.
+
+  
+#ifndef header_float128_t
+#define header_float128_t
+
+#include <type_traits>
+#include <cstring>
+#include <iostream>
+#include <iomanip>
+
+// "int128_t.h":  128 bit integer types for C++
+//                             Copyright Jason Lee, Arthur Norman 2013-2026
+
+// $Id$
+  
+#ifndef __int128_t_h__
+#define __int128_t_h__
+
+/*
+If you go "#include "int128_t.h" you should end up with two types -
+uint128_t and int128_t for wide integers. If these are supported by
+your C++ compiler directly (possibly via names like unsigned __int128
+and __int128) then the native versions will be used. Otherwise classes
+with the relevant names will be introduced with most arithmetic operators
+overloaded to use them.
+
+The test of what to do is based around whether __SIZEOF_INT128__ is
+defined. This is automatically predefined by the compiler and does
+not need any action from the programmer. For at least the platforms I
+care about most (well x86_64 Linux, Raspberry Pi 5 (64-bit), Mac M1, all
+using g++ or clang++) this gets defined and then a type __int128_t exists.
+I then set up aliases int128_t and uint128_t.#
+
+I *ASSUME* that if __SIZEOF_INT128__ is not defined then both signed and
+unsigned 128-bit integers will be avaliable with __int128_t being the
+signed type. I also assume that the plain names int128_t and uint128_t
+will be available for me to define as classes that behave as much like
+regular integers as can reasonably be arranged.
+
+Some of my C++ coding may be ugly or otherwise bad! The unsigned part
+was originally by Jason Lee and should be robust and tidy (apart from where I
+altered it)  but the signed variant is mine and may be repetitive, ugly,
+incomplete or otherwise less satisfactory!
+
+I have also not worried very much about performance-tuning of the signed
+code. The unsigned version had some care to avoid unnecessary work, but here
+my stance is that a computer that does not support native 128-bit will be
+slow at big arithmetic whatever I do, so hurting it a bit mnore will not
+upset me too much. A C++ expert may want to address that issue as well as
+code style!
+
+I have a collection of uses of "typename enable_if<std::is_arithetic<..."
+in here that is sufficient to resolve some ambiguities that arose in use
+with CSL, but I have not put that in everywhere - just in enough places to
+support my current usage. Others who pick this up might want to review
+and extent that!
+
+Copyright (c) 2013 - 2017 Jason Lee @ calccrypto at gmail.com
+              2020 - 2025 Arthur Norman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+With much help from Auston Sterling
+
+Thanks to Stefan Deigmo?=ller for finding
+a bug in operator*.
+
+Thanks to Frano?=ois Dessenne for convincing me
+to do a general rewrite of this class.
+
+
+This code incorporated the Jason Lee code but has been re-worked by Arthur
+Norman, 2020-, and now provides both signed and unsigned 128-bit types called
+uint128_t and int128_t, and to arrange that it can always be loaded as a
+header-only library.
+*/
+
+
+// I want this to be a standalone header file that could be used outside
+// CSL, and so I include the C++ header files that it used and I will refer
+// to things as e.g. std::uint64_t even though through CSL I have a "using"
+// directive to render the "std::" unnecessary.
+
+#include <cinttypes>
+#include <cstdint>
+#include <string>
+#include <iostream>
+#include <stdexcept>
+#include <utility>
+#include <type_traits>
+
+#ifdef __SIZEOF_INT128__
+
+#include <type_traits>
+
+// The following works with both gcc and clang++ on the platforms that
+// ith older versions of the compilers "__uint128_t" needed to be
+// replaced by "unsigned __int128_t" but as of December 2025 I find
+// the following works on the platforms that I have tried...
+
+using int128_t = __int128_t;
+using uint128_t = __uint128_t;
+
+namespace INT128names
+{
+
+// I provide getUPPER(), getLOWER() and PACK128() for conversions between
+// unsigned 128-bit integers and pairs of unsigned 64-bit values.
+
+inline std::uint64_t getUPPER(uint128_t a)
+{   return a >> 64;
+}
+
+inline std::uint64_t getLOWER(uint128_t a)
+{   return static_cast<std::uint64_t>(a);
+}
+
+inline uint128_t PACK128(std::uint64_t high, std::uint64_t low)
+{   return uint128_t(high)<<64 | low;
+}
+
+inline bool TOP_BIT(uint128_t a)
+{   return (a >> 127) != 0;
+}
+
+inline uint128_t UNSIGNED_FLIP_TOP_BIT(uint128_t a)
+{   return a ^ (uint128_t(1)<<127);
+}
+
+} // end of namespace
+
+#else // __SIZEOF_INT128__
+
+class uint128_t;
+class int128_t;
+#define __SIZEOF_INT128__ 16
+
+class uint128_t
+{
+private:
+    std::uint64_t UPPER, LOWER;
+
+public:
+    // Constructors
+    uint128_t();
+    uint128_t(const uint128_t & rhs);
+    uint128_t(uint128_t && rhs);
+    uint128_t(int128_t rhs);
+
+    template <typename T>
+    uint128_t(const T & rhs)
+        : UPPER(0), LOWER(rhs)
+    {   static_assert(std::is_integral <T>::value,
+                      "Input argument type must be an integer.");
+    }
+
+    template <typename S, typename T> uint128_t(const S & upper_rhs,
+            const T & lower_rhs)
+        : UPPER(upper_rhs), LOWER(lower_rhs)
+    {   static_assert(std::is_integral <S>::value &&
+                      std::is_integral <T>::value
+                      , "Input argument types must be integers.");
+    }
+
+    //  RHS input args only
+
+    // Assignment Operator
+    uint128_t operator=(const uint128_t & rhs);
+    uint128_t operator=(uint128_t && rhs);
+    uint128_t operator=(int128_t rhs);
+
+    template <typename T> uint128_t operator=(const T & rhs)
+    {   static_assert(std::is_integral <T>::value,
+                      "Input argument type must be an integer.");
+        UPPER = 0;
+        LOWER = rhs;
+        return *this;
+    }
+
+    // Typecast Operators
+    operator bool() const;
+    operator std::uint8_t() const;
+    operator std::uint16_t() const;
+    operator std::uint32_t() const;
+    operator std::uint64_t() const;
+    operator std::int64_t() const;
+    operator int128_t() const;
+
+    // Bitwise Operators
+    uint128_t operator&(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator&(const T & rhs) const
+    {   return uint128_t(0, LOWER & static_cast<std::uint64_t>(rhs));
+    }
+
+    uint128_t & operator&=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator&=(const T & rhs)
+    {   UPPER = 0;
+        LOWER &= rhs;
+        return *this;
+    }
+
+    uint128_t operator|(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator|(const T & rhs) const
+    {   return uint128_t(UPPER, LOWER | static_cast<std::uint64_t>(rhs));
+    }
+
+    uint128_t & operator|=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator|=(const T & rhs)
+    {   LOWER |= static_cast<std::uint64_t>(rhs);
+        return *this;
+    }
+
+    uint128_t operator^(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator^(const T & rhs) const
+    {   return uint128_t(UPPER, LOWER ^ static_cast<std::uint64_t>(rhs));
+    }
+
+    uint128_t & operator^=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator^=(const T & rhs)
+    {   LOWER ^= static_cast<std::uint64_t>(rhs);
+        return *this;
+    }
+
+    uint128_t operator~() const;
+
+    // Bit Shift Operators
+    uint128_t operator<<(const uint128_t & rhs) const;
+
+    template <typename T> uint128_t operator<<(const T & rhs) const
+    {   return *this << uint128_t(rhs);
+    }
+
+    uint128_t & operator<<=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator<<=(const T & rhs)
+    {   *this = *this << uint128_t(rhs);
+        return *this;
+    }
+
+    uint128_t operator>>(const uint128_t & rhs) const;
+
+    template <typename T> uint128_t operator>>(const T & rhs) const
+    {   return *this >> uint128_t(rhs);
+    }
+
+    uint128_t & operator>>=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator>>=(const T & rhs)
+    {   *this = *this >> uint128_t(rhs);
+        return *this;
+    }
+
+    // Logical Operators
+    bool operator!() const;
+    bool operator&&(const uint128_t & rhs) const;
+    bool operator||(const uint128_t & rhs) const;
+
+    template <typename T> bool operator&&(const T & rhs)
+    {   return static_cast <bool> (*this && rhs);
+    }
+
+    template <typename T> bool operator||(const T & rhs)
+    {   return static_cast <bool> (*this || rhs);
+    }
+
+    // Comparison Operators
+    bool operator==(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator==(const T & rhs) const
+    {   return (!UPPER && (LOWER == static_cast<std::uint64_t>(rhs)));
+    }
+
+    bool operator!=(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator!=(const T & rhs) const
+    {   return (UPPER | (LOWER != static_cast<std::uint64_t>(rhs)));
+    }
+
+    bool operator>(const uint128_t & rhs) const;
+
+    template <typename T> bool operator>(const T & rhs) const
+    {   return (UPPER || (LOWER > static_cast<std::uint64_t>(rhs)));
+    }
+
+    bool operator<(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<(const T & rhs) const
+    {   return (!UPPER)?(LOWER < static_cast<std::uint64_t>(rhs)):false;
+    }
+
+    bool operator>=(const uint128_t & rhs) const;
+
+    template <typename T> bool operator>=(const T & rhs) const
+    {   return ((*this > rhs) | (*this == rhs));
+    }
+
+    bool operator<=(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<=(const T & rhs) const
+    {   return ((*this < rhs) | (*this == rhs));
+    }
+
+    // Arithmetic Operators
+    uint128_t operator+(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator+(const T & rhs) const
+    {   return uint128_t(UPPER + ((LOWER + static_cast<std::uint64_t>(rhs)) <
+                                  LOWER), LOWER + static_cast<std::uint64_t>(rhs));
+    }
+
+    uint128_t & operator+=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator+=(const T & rhs)
+    {   UPPER = UPPER + ((LOWER + rhs) < LOWER);
+        LOWER = LOWER + rhs;
+        return *this;
+    }
+
+    uint128_t operator-(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator-(const T & rhs) const
+    {   return uint128_t(static_cast<std::uint64_t>(
+                             UPPER - ((LOWER - rhs) > LOWER)),
+                         static_cast<std::uint64_t>(LOWER - rhs));
+    }
+
+    uint128_t & operator-=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator-=(const T & rhs)
+    {   *this = *this - rhs;
+        return *this;
+    }
+
+    uint128_t operator*(const uint128_t & rhs) const;
+
+    template <typename T> uint128_t operator*(const T & rhs) const
+    {   return *this * uint128_t(rhs);
+    }
+
+    uint128_t & operator*=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator*=(const T & rhs)
+    {   *this = *this * uint128_t(rhs);
+        return *this;
+    }
+
+private:
+    std::pair <uint128_t, uint128_t> divmod(const uint128_t & lhs,
+                                            const uint128_t & rhs) const;
+
+public:
+    uint128_t operator/(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator/(const T & rhs) const
+    {   return *this / uint128_t(rhs);
+    }
+
+    uint128_t & operator/=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator/=(const T & rhs)
+    {   *this = *this / uint128_t(rhs);
+        return *this;
+    }
+
+    uint128_t operator%(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator%(const T & rhs) const
+    {   return *this - (rhs * (*this / rhs));
+    }
+
+    uint128_t & operator%=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator%=(const T & rhs)
+    {   *this = *this % uint128_t(rhs);
+        return *this;
+    }
+
+    // Increment Operator
+    uint128_t & operator++();
+    uint128_t operator++(int);
+
+    // Decrement Operator
+    uint128_t & operator--();
+    uint128_t operator--(int);
+
+    // Nothing done since promotion doesn't work here
+    uint128_t operator+() const;
+
+    // two's complement
+    uint128_t operator-() const;
+
+    // Get private values
+    const std::uint64_t & upper() const
+    {   return UPPER;
+    }
+    const std::uint64_t & lower() const
+    {   return LOWER;
+    }
+
+    // Get bitsize of value
+    std::uint8_t bits() const;
+
+    // Get string representation of value
+    std::string str(std::uint8_t base = 10,
+                    const unsigned int & len = 0) const;
+};
+
+namespace INT128names
+{
+
+inline std::uint64_t getUPPER(uint128_t a)
+{   return a.upper();
+}
+
+inline std::uint64_t getLOWER(uint128_t a)
+{   return a.lower();
+}
+
+inline uint128_t PACK128(std::uint64_t high, std::uint64_t low)
+{   return uint128_t(high, low);
+}
+
+inline bool TOP_BIT(uint128_t a)
+{   return (getUPPER(a) >> 63) != 0;
+}
+
+inline uint128_t UNSIGNED_FLIP_TOP_BIT(uint128_t a)
+{   return uint128_t(getUPPER(a) ^ static_cast<std::uint64_t>(1)<<63,
+                     getLOWER(a));
+}
+
+} // end of namespace
+
+// Bitwise Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator&(const T & lhs, const uint128_t & rhs)
+{   return rhs & lhs;
+}
+
+template <typename T> T & operator&=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs & lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator|(const T & lhs, const uint128_t & rhs)
+{   return rhs | lhs;
+}
+
+template <typename T> T & operator|=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs | lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator^(const T & lhs, const uint128_t & rhs)
+{   return rhs ^ lhs;
+}
+
+template <typename T> T & operator^=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs ^ lhs);
+}
+
+// Bitshift operators
+uint128_t operator<<(const bool & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint8_t  & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int8_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int16_t  & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int32_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int64_t & lhs, const uint128_t & rhs);
+
+template <typename T> T & operator<<=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) << rhs);
+}
+
+uint128_t operator>>(const bool & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint8_t  & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int8_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int16_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int32_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int64_t & lhs, const uint128_t & rhs);
+
+template <typename T> T & operator>>=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) >> rhs);
+}
+
+// Comparison Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator==(const T & lhs, const uint128_t & rhs)
+{   return (!rhs.upper() &&
+            (static_cast<std::uint64_t>(lhs) == rhs.lower()));
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator!=(const T & lhs, const uint128_t & rhs)
+{   return (rhs.upper() ||
+            (static_cast<std::uint64_t>(lhs) != rhs.lower()));
+}
+
+template <typename T> bool operator>(const T & lhs, const uint128_t & rhs)
+{   return (!rhs.upper()) &&
+           (static_cast<std::uint64_t>(lhs) > rhs.lower());
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<(const T & lhs, const uint128_t & rhs)
+{   if (rhs.upper())
+    {   return true;
+    }
+    return (static_cast<std::uint64_t>(lhs) < rhs.lower());
+}
+
+template <typename T> bool operator>=(const T & lhs, const uint128_t & rhs)
+{   if (rhs.upper())
+    {   return false;
+    }
+    return (static_cast<std::uint64_t>(lhs) >= rhs.lower());
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<=(const T & lhs, const uint128_t & rhs)
+{   if (rhs.upper())
+    {   return true;
+    }
+    return (static_cast<std::uint64_t>(lhs) <= rhs.lower());
+}
+
+// Arithmetic Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator+(const T & lhs, const uint128_t & rhs)
+{   return rhs + lhs;
+}
+
+template <typename T> T & operator+=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs + lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator-(const T & lhs, const uint128_t & rhs)
+{   return -(rhs - lhs);
+}
+
+template <typename T> T & operator-=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (-(rhs - lhs));
+}
+
+template <typename T> uint128_t operator*(const T & lhs, const uint128_t & rhs)
+{   return rhs * lhs;
+}
+
+template <typename T> T & operator*=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs * lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator/(const T & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) / rhs;
+}
+
+template <typename T> T & operator/=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) / rhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+ operator%(const T & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) % rhs;
+}
+
+template <typename T> T & operator%=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) % rhs);
+}
+
+// IO Operator
+std::ostream & operator<<(std::ostream & stream, const uint128_t & rhs);
+
+// I do not go "#define UINT128_T" here because while I am setting up
+// int128_t I want to know if the unsigned version is native or
+// simulated. A key reason for that is that if both are native then
+// casts between them will already exist, while if either is simulated
+// I will need to define something.
+
+inline uint128_t::uint128_t()
+    : UPPER(0), LOWER(0)
+{}
+
+inline uint128_t::uint128_t(const uint128_t & rhs)
+    : UPPER(rhs.UPPER), LOWER(rhs.LOWER)
+{}
+
+inline uint128_t::uint128_t(uint128_t && rhs)
+    : UPPER(std::move(rhs.UPPER)), LOWER(std::move(rhs.LOWER))
+{   if (this != &rhs)
+    {   rhs.UPPER = 0;
+        rhs.LOWER = 0;
+    }
+}
+
+inline uint128_t uint128_t::operator=(const uint128_t & rhs)
+{   UPPER = rhs.UPPER;
+    LOWER = rhs.LOWER;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator=(uint128_t && rhs)
+{   if (this != &rhs)
+    {   UPPER = std::move(rhs.UPPER);
+        LOWER = std::move(rhs.LOWER);
+        rhs.UPPER = 0;
+        rhs.LOWER = 0;
+    }
+    return *this;
+}
+
+inline uint128_t::operator bool() const
+{   return (bool) (UPPER | LOWER);
+}
+
+inline uint128_t::operator std::uint8_t() const
+{   return static_cast<std::uint8_t>(LOWER);
+}
+
+inline uint128_t::operator std::uint16_t() const
+{   return static_cast<std::uint16_t>(LOWER);
+}
+
+inline uint128_t::operator std::uint32_t() const
+{   return (std::uint32_t) LOWER;
+}
+
+inline uint128_t::operator std::uint64_t() const
+{   return (std::uint64_t) LOWER;
+}
+
+inline uint128_t::operator std::int64_t() const
+{   return (std::int64_t) LOWER;
+}
+
+inline uint128_t uint128_t::operator&(const uint128_t & rhs) const
+{   return uint128_t(UPPER & rhs.UPPER, LOWER & rhs.LOWER);
+}
+
+inline uint128_t & uint128_t::operator&=(const uint128_t & rhs)
+{   UPPER &= rhs.UPPER;
+    LOWER &= rhs.LOWER;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator|(const uint128_t & rhs) const
+{   return uint128_t(UPPER | rhs.UPPER, LOWER | rhs.LOWER);
+}
+
+inline uint128_t & uint128_t::operator|=(const uint128_t & rhs)
+{   UPPER |= rhs.UPPER;
+    LOWER |= rhs.LOWER;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator^(const uint128_t & rhs) const
+{   return uint128_t(UPPER ^ rhs.UPPER, LOWER ^ rhs.LOWER);
+}
+
+inline uint128_t & uint128_t::operator^=(const uint128_t & rhs)
+{   UPPER ^= rhs.UPPER;
+    LOWER ^= rhs.LOWER;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator~() const
+{   return uint128_t(~UPPER, ~LOWER);
+}
+
+inline uint128_t uint128_t::operator<<(const uint128_t & rhs) const
+{   const std::uint64_t shift = rhs.LOWER;
+    if (((bool) rhs.UPPER) || (shift >= 128))
+    {   return uint128_t(0);
+    }
+    else if (shift == 64)
+    {   return uint128_t(LOWER, 0);
+    }
+    else if (shift == 0)
+    {   return *this;
+    }
+    else if (shift < 64)
+    {   return uint128_t((UPPER << shift) + (LOWER >> (64 - shift)),
+                         LOWER << shift);
+    }
+    else if ((128 > shift) && (shift > 64))
+    {   return uint128_t(LOWER << (shift - 64), 0);
+    }
+    else
+    {   return uint128_t(0);
+    }
+}
+
+inline uint128_t & uint128_t::operator<<=(const uint128_t & rhs)
+{   *this = *this << rhs;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator>>(const uint128_t & rhs) const
+{   const std::uint64_t shift = rhs.LOWER;
+    if (((bool) rhs.UPPER) || (shift >= 128))
+    {   return uint128_t(0);
+    }
+    else if (shift == 64)
+    {   return uint128_t(0, UPPER);
+    }
+    else if (shift == 0)
+    {   return *this;
+    }
+    else if (shift < 64)
+    {   return uint128_t(UPPER >> shift,
+                         (UPPER << (64 - shift)) + (LOWER >> shift));
+    }
+    else if ((128 > shift) && (shift > 64))
+    {   return uint128_t(0, (UPPER >> (shift - 64)));
+    }
+    else
+    {   return uint128_t(0);
+    }
+}
+
+inline uint128_t & uint128_t::operator>>=(const uint128_t & rhs)
+{   *this = *this >> rhs;
+    return *this;
+}
+
+inline bool uint128_t::operator!() const
+{   return !(bool) (UPPER | LOWER);
+}
+
+inline bool uint128_t::operator&&(const uint128_t & rhs) const
+{   return ((bool) *this && rhs);
+}
+
+inline bool uint128_t::operator||(const uint128_t & rhs) const
+{   return ((bool) *this || rhs);
+}
+
+inline bool uint128_t::operator==(const uint128_t & rhs) const
+{   return ((UPPER == rhs.UPPER) && (LOWER == rhs.LOWER));
+}
+
+inline bool uint128_t::operator!=(const uint128_t & rhs) const
+{   return ((UPPER != rhs.UPPER) | (LOWER != rhs.LOWER));
+}
+
+inline bool uint128_t::operator>(const uint128_t & rhs) const
+{   if (UPPER == rhs.UPPER)
+    {   return (LOWER > rhs.LOWER);
+    }
+    return (UPPER > rhs.UPPER);
+}
+
+inline bool uint128_t::operator<(const uint128_t & rhs) const
+{   if (UPPER == rhs.UPPER)
+    {   return (LOWER < rhs.LOWER);
+    }
+    return (UPPER < rhs.UPPER);
+}
+
+inline bool uint128_t::operator>=(const uint128_t & rhs) const
+{   return ((*this > rhs) || (*this == rhs));
+}
+
+inline bool uint128_t::operator<=(const uint128_t & rhs) const
+{   return ((*this < rhs) || (*this == rhs));
+}
+
+inline uint128_t uint128_t::operator+(const uint128_t & rhs) const
+{   return uint128_t(UPPER + rhs.UPPER + ((LOWER + rhs.LOWER) <
+                                          LOWER), LOWER + rhs.LOWER);
+}
+
+inline uint128_t & uint128_t::operator+=(const uint128_t & rhs)
+{   UPPER += rhs.UPPER + ((LOWER + rhs.LOWER) < LOWER);
+    LOWER += rhs.LOWER;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator-(const uint128_t & rhs) const
+{   return uint128_t(UPPER - rhs.UPPER - ((LOWER - rhs.LOWER) >
+                                          LOWER), LOWER - rhs.LOWER);
+}
+
+inline uint128_t & uint128_t::operator-=(const uint128_t & rhs)
+{   *this = *this - rhs;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator*(const uint128_t & rhs) const
+{   // split values into 4 32-bit parts
+    std::uint64_t top[4] = {UPPER >> 32, UPPER & 0xffffffff, LOWER >> 32, LOWER & 0xffffffff};
+    std::uint64_t bottom[4] = {rhs.UPPER >> 32, rhs.UPPER & 0xffffffff, rhs.LOWER >> 32, rhs.LOWER & 0xffffffff};
+    std::uint64_t products[4][4];
+
+    // multiply each component of the values
+    for(int y = 3; y > -1; y--)
+    {   for(int x = 3; x > -1; x--)
+        {   products[3 - x][y] = top[x] * bottom[y];
+        }
+    }
+
+    // first row
+    std::uint64_t fourth32 = (products[0][3] & 0xffffffff);
+    std::uint64_t third32  = (products[0][2] & 0xffffffff) +
+                             (products[0][3] >> 32);
+    std::uint64_t second32 = (products[0][1] & 0xffffffff) +
+                             (products[0][2] >> 32);
+    std::uint64_t first32  = (products[0][0] & 0xffffffff) +
+                             (products[0][1] >> 32);
+
+    // second row
+    third32  += (products[1][3] & 0xffffffff);
+    second32 += (products[1][2] & 0xffffffff) + (products[1][3] >> 32);
+    first32  += (products[1][1] & 0xffffffff) + (products[1][2] >> 32);
+
+    // third row
+    second32 += (products[2][3] & 0xffffffff);
+    first32  += (products[2][2] & 0xffffffff) + (products[2][3] >> 32);
+
+    // fourth row
+    first32  += (products[3][3] & 0xffffffff);
+
+    // move carry to next digit
+    third32  += fourth32 >> 32;
+    second32 += third32  >> 32;
+    first32  += second32 >> 32;
+
+    // remove carry from current digit
+    fourth32 &= 0xffffffff;
+    third32  &= 0xffffffff;
+    second32 &= 0xffffffff;
+    first32  &= 0xffffffff;
+
+    // combine components
+    return uint128_t((first32 << 32) | second32,
+                     (third32 << 32) | fourth32);
+}
+
+inline uint128_t & uint128_t::operator*=(const uint128_t & rhs)
+{   *this = *this * rhs;
+    return *this;
+}
+
+inline std::pair <uint128_t, uint128_t> uint128_t::divmod(
+    const uint128_t & lhs, const uint128_t & rhs) const
+{   // Save some calculations /////////////////////
+    if (rhs == uint128_t(0))
+    {   throw std::domain_error("Error: division or modulus by 0");
+    }
+    else if (rhs == uint128_t(1))
+    {   return std::pair <uint128_t, uint128_t> (lhs, uint128_t(0));
+    }
+    else if (lhs == rhs)
+    {   return std::pair <uint128_t, uint128_t> (uint128_t(1), uint128_t(0));
+    }
+    else if ((lhs == uint128_t(0)) || (lhs < rhs))
+    {   return std::pair <uint128_t, uint128_t> (uint128_t(0), lhs);
+    }
+
+    std::pair <uint128_t, uint128_t> qr (uint128_t(0), uint128_t(0));
+    for(std::uint8_t x = lhs.bits(); x > 0; x--)
+    {   qr.first  <<= uint128_t(1);
+        qr.second <<= uint128_t(1);
+
+        if ((lhs >> (x - 1U)) & 1)
+        {   qr.second++;
+        }
+
+        if (qr.second >= rhs)
+        {   qr.second -= rhs;
+            qr.first++;
+        }
+    }
+    return qr;
+}
+
+inline uint128_t uint128_t::operator/(const uint128_t & rhs) const
+{   return divmod(*this, rhs).first;
+}
+
+inline uint128_t & uint128_t::operator/=(const uint128_t & rhs)
+{   *this = *this / rhs;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator%(const uint128_t & rhs) const
+{   return divmod(*this, rhs).second;
+}
+
+inline uint128_t & uint128_t::operator%=(const uint128_t & rhs)
+{   *this = *this % rhs;
+    return *this;
+}
+
+inline uint128_t & uint128_t::operator++()
+{   static const uint128_t uint128_1(1);
+    return *this += uint128_1;
+}
+
+inline uint128_t uint128_t::operator++(int)
+{   uint128_t temp(*this);
+    ++*this;
+    return temp;
+}
+
+inline uint128_t & uint128_t::operator--()
+{   static const uint128_t uint128_1(1);
+    return *this -= uint128_1;
+}
+
+inline uint128_t uint128_t::operator--(int)
+{   uint128_t temp(*this);
+    --*this;
+    return temp;
+}
+
+inline uint128_t uint128_t::operator+() const
+{   return *this;
+}
+
+inline uint128_t uint128_t::operator-() const
+{   static const uint128_t uint128_1(1);
+    return ~*this + uint128_1;
+}
+
+inline std::uint8_t uint128_t::bits() const
+{   std::uint8_t out = 0;
+    if (UPPER)
+    {   out = 64;
+        std::uint64_t up = UPPER;
+        while (up)
+        {   up >>= 1;
+            out++;
+        }
+    }
+    else
+    {   std::uint64_t low = LOWER;
+        while (low)
+        {   low >>= 1;
+            out++;
+        }
+    }
+    return out;
+}
+
+inline std::string uint128_t::str(std::uint8_t base,
+                                  const unsigned int & len) const
+{   if ((base < 2) || (base > 16))
+    {   throw std::invalid_argument("Base must be in the range [2, 16]");
+    }
+    std::string out = "";
+    if (!(*this))
+    {   out = "0";
+    }
+    else
+    {   std::pair <uint128_t, uint128_t> qr(*this, uint128_t(0));
+        do
+        {   qr = divmod(qr.first, base);
+            out = "0123456789abcdef"[static_cast<std::uint8_t>(qr.second)] + out;
+        }
+        while (qr.first);
+    }
+    if (out.size() < len)
+    {   out = std::string(len - out.size(), '0') + out;
+    }
+    return out;
+}
+
+inline uint128_t operator<<(const bool & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::uint8_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::int8_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::int16_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::int32_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::int64_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator>>(const bool & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::uint8_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::int8_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::int16_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::int32_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::int64_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline std::ostream & operator<<(std::ostream & stream, const uint128_t & rhs)
+{   if (stream.flags() & stream.oct)
+    {   stream << rhs.str(8);
+    }
+    else if (stream.flags() & stream.dec)
+    {   stream << rhs.str(10);
+    }
+    else if (stream.flags() & stream.hex)
+    {   stream << rhs.str(16);
+    }
+    return stream;
+}
+
+// Now I should certainly have a type uint128_t.
+
+namespace INT128names
+{
+inline uint128_t UNSIGNED(int128_t a);
+};
+
+class int128_t
+{
+private:
+    std::int64_t UPPER;
+    std::uint64_t LOWER;
+
+public:
+    // Constructors
+    int128_t()
+    {   UPPER = 0;
+        LOWER = 0;
+    }
+    int128_t(const int128_t & rhs)
+    {   UPPER = rhs.UPPER;
+        LOWER = rhs.LOWER;
+    }
+    int128_t(int128_t && rhs)
+    {   UPPER = rhs.UPPER;
+        LOWER = rhs.LOWER;
+    }
+    int128_t(uint128_t v)
+    {   UPPER = static_cast<std::int64_t>(INT128names::getUPPER(v));
+        LOWER = INT128names::getLOWER(v);
+    }
+
+    int128_t(const bool &rhs)
+    {   UPPER = 0;
+        LOWER = rhs;
+    }
+    template <typename T> int128_t(const T & rhs)
+        : UPPER(rhs < 0 ? -1 : 0), LOWER(rhs)
+    {   static_assert(std::is_integral <T>::value,
+                      "Input argument type must be an integer.");
+    }
+    template <typename S, typename T> int128_t(const S & upper_rhs,
+                                               const T & lower_rhs)
+        : UPPER(upper_rhs), LOWER(lower_rhs)
+    {   static_assert(std::is_integral <S>::value &&
+                      std::is_integral <T>::value
+                      , "Input argument types must be integers.");
+    }
+
+    std::int64_t getUPPER()
+    {   return UPPER;
+    }
+
+    std::uint64_t getLOWER()
+    {   return LOWER;
+    }
+
+    static uint128_t FLIP_TOP_BIT(int128_t a)
+    {   return INT128names::UNSIGNED_FLIP_TOP_BIT(INT128names::UNSIGNED(a));
+    }
+
+    //  RHS input args only
+
+    // Assignment Operator
+    int128_t operator=(const int128_t & rhs)
+    {   UPPER = rhs.UPPER;
+        LOWER = rhs.LOWER;
+        return *this;
+    }
+    int128_t operator=(int128_t && rhs)
+    {   UPPER = rhs.UPPER;
+        LOWER = rhs.LOWER;
+        return *this;
+    }
+    int128_t operator=(uint128_t rhs)
+    {   UPPER = static_cast<std::int64_t>(INT128names::getUPPER(rhs));
+        LOWER = INT128names::getLOWER(rhs);
+        return *this;
+    }
+
+    template <typename T> int128_t operator=(const T & rhs)
+    {   static_assert(std::is_integral <T>::value,
+                      "Input argument type must be an integer.");
+        UPPER = rhs < 0 ? -1 : 0;
+        LOWER = rhs;
+        return *this;
+    }
+
+    // Typecast Operators
+    operator bool() const
+    {   return (bool) (UPPER | LOWER);
+    }
+    
+    operator std::int8_t() const
+    {   return static_cast<std::int8_t>(LOWER);
+    }
+
+    operator std::int16_t() const
+    {   return static_cast<std::int16_t>(LOWER);
+    }
+
+    operator std::int32_t() const
+    {   return (std::int32_t) LOWER;
+    }
+
+    operator std::int64_t() const
+    {   return (std::int64_t) LOWER;
+    }
+
+    operator std::uint8_t() const
+    {   return static_cast<std::uint8_t>(LOWER);
+    }
+
+    operator std::uint16_t() const
+    {   return static_cast<std::uint16_t>(LOWER);
+    }
+
+    operator std::uint32_t() const
+    {   return (std::uint32_t) LOWER;
+    }
+
+    operator std::uint64_t() const
+    {   return (std::uint64_t) LOWER;
+    }
+
+    operator uint128_t() const
+    {   return INT128names::PACK128(static_cast<std::uint64_t>(UPPER), LOWER);
+    }
+
+    // Bitwise Operators
+    int128_t operator&(const int128_t & rhs) const
+    {   return int128_t(UPPER&rhs.UPPER, LOWER&rhs.LOWER);
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator&(const T & rhs) const
+    {   return int128_t(rhs >= 0 ? 0 : UPPER,
+                        LOWER & static_cast<std::uint64_t>(rhs));
+    }
+
+    int128_t & operator&=(const int128_t & rhs)
+    {   UPPER &= rhs.UPPER;
+        LOWER &= rhs.LOWER;
+        return *this;
+    }
+
+    template <typename T> int128_t & operator&=(const T & rhs)
+    {   if (rhs >= 0) UPPER = 0;
+        LOWER &= rhs;
+        return *this;
+    }
+
+    int128_t operator|(const int128_t & rhs) const
+    {   return int128_t(UPPER|rhs.UPPER, LOWER|rhs.LOWER);
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator|(const T & rhs) const
+    {   return int128_t(rhs < 0 ? -1 : UPPER,
+                        LOWER | static_cast<std::uint64_t>(rhs));
+    }
+
+    int128_t & operator|=(const int128_t & rhs)
+    {   UPPER |= rhs.UPPER;
+        LOWER |= rhs.LOWER;
+        return *this;
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    & operator|=(const T & rhs)
+    {   if (rhs < 0) UPPER = -1;
+        LOWER |= static_cast<std::uint64_t>(rhs);
+        return *this;
+    }
+
+    int128_t operator^(const int128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator^(const T & rhs) const
+    {   return int128_t(rhs<0 ? ~UPPER : UPPER,
+                        LOWER ^ static_cast<std::uint64_t>(rhs));
+    }
+
+    int128_t & operator^=(const int128_t & rhs);
+
+    template <typename T> int128_t & operator^=(const T & rhs)
+    {   if (rhs < 0) UPPER = ~UPPER;
+        LOWER ^= static_cast<std::uint64_t>(rhs);
+        return *this;
+    }
+
+    int128_t operator~() const
+    {   return int128_t(~INT128names::UNSIGNED(*this));
+    }
+
+    // Bit Shift Operators
+    int128_t operator<<(const int128_t & rhs) const;
+
+    template <typename T> int128_t operator<<(const T & rhs) const
+    {   return *this << int128_t(rhs);
+    }
+
+    int128_t & operator<<=(const int128_t & rhs);
+
+    template <typename T> int128_t & operator<<=(const T & rhs)
+    {   *this = *this << int128_t(rhs);
+        return *this;
+    }
+
+    int128_t operator>>(const int128_t & rhs) const
+    {   bool sign = UPPER < 0;
+        uint128_t r = INT128names::UNSIGNED(*this) >> INT128names::UNSIGNED(rhs);
+        if (sign) r |= INT128names::UNSIGNED(int128_t(-1)) << INT128names::UNSIGNED(int128_t(128)-rhs);
+        return int128_t(r);
+    }
+
+    template <typename T> int128_t operator>>(const T & rhs) const
+    {   return *this >> int128_t(rhs);
+    }
+
+    int128_t & operator>>=(const int128_t & rhs)
+    {   bool sign = UPPER < 0;
+        uint128_t r = INT128names::UNSIGNED(*this) >> INT128names::UNSIGNED(rhs);
+        if (sign) r |= INT128names::UNSIGNED(int128_t(-1)) << INT128names::UNSIGNED(int128_t(128)-rhs);
+        UPPER=static_cast<std::int64_t>(INT128names::getUPPER(r));
+        LOWER=INT128names::getLOWER(r);
+        return *this;
+    }
+
+    template <typename T> int128_t & operator>>=(const T & rhs)
+    {   *this = *this >> int128_t(rhs);
+        return *this;
+    }
+
+    // Logical Operators
+    bool operator!() const;
+    bool operator&&(const int128_t & rhs) const;
+    bool operator||(const int128_t & rhs) const;
+
+    template <typename T> bool operator&&(const T & rhs)
+    {   return static_cast <bool> (*this && rhs);
+    }
+
+    template <typename T> bool operator||(const T & rhs)
+    {   return static_cast <bool> (*this || rhs);
+    }
+
+    // Comparison Operators
+    bool operator==(const int128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator==(const T & rhs) const
+    {   return (UPPER == (rhs>=0 ? 0 : -1) &&
+               (LOWER == static_cast<std::uint64_t>(rhs)));
+    }
+
+    bool operator!=(const int128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator!=(const T & rhs) const
+    {   return (UPPER != (rhs>0 ? 0 : -1) ||
+               (LOWER != static_cast<std::uint64_t>(rhs)));
+    }
+
+    bool operator>(const int128_t & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) > int128_t::FLIP_TOP_BIT(rhs);
+    }
+
+    template <typename T> bool operator>(const T & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) > int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
+    }
+
+    bool operator<(const int128_t & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) < int128_t::FLIP_TOP_BIT(rhs);
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<(const T & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) < int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
+    }
+
+    bool operator>=(const int128_t & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) >= int128_t::FLIP_TOP_BIT(rhs);
+    }
+
+    template <typename T> bool operator>=(const T & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) >= int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
+    }
+
+    bool operator<=(const int128_t & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) <= int128_t::FLIP_TOP_BIT(rhs);
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<=(const T & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) <= int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
+    }
+
+    // Arithmetic Operators
+    int128_t operator+(const int128_t & rhs) const
+    {   return int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
+    }
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator+(const T & rhs) const
+    {   return int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
+    }
+
+    int128_t & operator+=(const int128_t & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+    template <typename T> int128_t & operator+=(const T & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+    int128_t operator-(const int128_t & rhs) const
+    {   return int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator=(const T & rhs)
+    {   return *this = int128_t(rhs);
+    }
+
+    int128_t & operator-=(const int128_t & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+    template <typename T> int128_t & operator-=(const T & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+    int128_t operator*(const int128_t & rhs) const
+    {   return int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
+    }
+
+    template <typename T> int128_t operator*(const T & rhs) const
+    {   return int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
+    }
+
+    int128_t & operator*=(const int128_t & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+    template <typename T> int128_t & operator*=(const T & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+private:
+    std::pair <int128_t, int128_t> divrem(const int128_t & a,
+                                          const int128_t & b) const
+    {   uint128_t ua = INT128names::UNSIGNED(a), ub = INT128names::UNSIGNED(b), uq;
+        if (a.upper() < 0)
+        {   if (b.upper() < 0) uq = (-ua)/(-ub);
+            else uq = -((-ua)/ub);
+        }
+        else
+        {   if (b.upper() < 0) uq = -(ua/(-ub));
+            else uq = ua/ub;
+        }
+        int128_t q(uq);
+        return std::pair<int128_t,int128_t>(q, a - q*b);
+    }
+
+public:
+    int128_t operator/(const int128_t & rhs) const
+    {   return  divrem(*this, rhs).first;
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator/(const T & rhs) const
+    {   return *this / int128_t(rhs);
+    }
+
+    int128_t & operator/=(const int128_t & rhs);
+
+    template <typename T> int128_t & operator/=(const T & rhs)
+    {   *this = *this / int128_t(rhs);
+        return *this;
+    }
+
+    int128_t operator%(const int128_t & rhs) const
+    {   return divrem(*this, rhs).second;
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator%(const T & rhs) const
+    {   return  *this % int128_t(rhs);
+    }
+
+    int128_t & operator%=(const int128_t & rhs);
+
+    template <typename T> int128_t & operator%=(const T & rhs)
+    {   *this = *this % int128_t(rhs);
+        return *this;
+    }
+
+    // Increment Operator
+    int128_t & operator++();
+    int128_t operator++(int);
+
+    // Decrement Operator
+    int128_t & operator--();
+    int128_t operator--(int);
+
+    // Nothing done since promotion doesn't work here
+    int128_t operator+() const
+    {   return *this;
+    }
+
+    // two's complement
+    int128_t operator-() const;
+
+    // Get private values
+    const std::int64_t & upper() const
+    {   return UPPER;
+    }
+    const std::uint64_t & lower() const
+    {   return LOWER;
+    }
+
+    // Get bitsize of value
+    std::uint8_t bits() const;
+
+    // Get string representation of value
+    std::string str(std::uint8_t base = 10,
+                    unsigned int len = 0) const;
+};
+
+inline uint128_t INT128names::UNSIGNED(int128_t a)
+{   return INT128names::PACK128(static_cast<std::uint64_t>(a.getUPPER()), a.getLOWER());
+}
+
+// Bitwise Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator&(const T & lhs, const int128_t & rhs)
+{   return rhs & lhs;
+}
+
+template <typename T> T & operator&=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (rhs & lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator|(const T & lhs, const int128_t & rhs)
+{   return rhs | lhs;
+}
+
+template <typename T> T & operator|=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (rhs | lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator^(const T & lhs, const int128_t & rhs)
+{   return rhs ^ lhs;
+}
+
+template <typename T> T & operator^=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (rhs ^ lhs);
+}
+
+// Bitshift operators
+
+//inline int128_t operator<<(const int128_t & lhs, const int128_t & rhs)
+//{   return int128_t(int128_t::INT128names::UNSIGNED(lhs) << INT128names::UNSIGNED(rhs));
+//}
+
+inline int128_t operator<<(const bool & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::uint8_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::uint16_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::uint32_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::uint64_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::int8_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::int16_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::int32_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::int64_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+//inline int128_t operator>>(const int128_t & lhs, const int128_t & rhs)
+//{   if (lhs >= 0) return int128_t((int128_t::INT128names::UNSIGNED(lhs) >> INT128names::UNSIGNED(rhs));
+//    else return int128_t((int128_t::INT128names::UNSIGNED(lhs) >> INT128names::UNSIGNED(rhs)) |
+//                         (INT128names::UNSIGNED(int128_t(-1)) << (128-INT128names::UNSIGNED(rhs))));
+//}
+
+inline int128_t operator>>(const bool & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::uint8_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::uint16_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::uint32_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::uint64_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::int8_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::int16_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::int32_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::int64_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+template <typename T> T & operator<<=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (int128_t(lhs) << rhs);
+}
+
+template <typename T> T & operator>>=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (int128_t(lhs) >> rhs);
+}
+
+// Comparison Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator==(const T & lhs, const int128_t & rhs)
+{   return (rhs.upper() == (lhs<0?-1:0) &&
+            (static_cast<std::uint64_t>(lhs) == rhs.lower()));
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator!=(const T & lhs, const int128_t & rhs)
+{   
+    return (rhs.upper() != (lhs<0?-1:0) ||
+            (static_cast<std::uint64_t>(lhs) != rhs.lower()));
+}
+
+template <typename T> bool operator>(const T & lhs, const int128_t & rhs)
+{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) >
+           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<(const T & lhs, const int128_t & rhs)
+{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) <
+           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
+}
+
+template <typename T> bool operator>=(const T & lhs,
+                                      const int128_t & rhs)
+{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) >=
+           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<=(const T & lhs, const int128_t & rhs)
+{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) <=
+           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
+}
+
+// Arithmetic Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator+(const T & lhs, const int128_t & rhs)
+{   return rhs + lhs;
+}
+
+template <typename T> T & operator+=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (rhs + lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator-(const T & lhs, const int128_t & rhs)
+{   return -(rhs - lhs);
+}
+
+template <typename T> T & operator-=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (-(rhs - lhs));
+}
+
+template <typename T> int128_t operator*(const T & lhs, const int128_t & rhs)
+{   return rhs * lhs;
+}
+
+template <typename T> T & operator*=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (rhs * lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator/(const T & lhs, const int128_t & rhs)
+{   return int128_t(lhs) / rhs;
+}
+
+template <typename T> T & operator/=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (int128_t(lhs) / rhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator%(const T & lhs, const int128_t & rhs)
+{   return int128_t(lhs) % rhs;
+}
+
+template <typename T> T & operator%=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (int128_t(lhs) % rhs);
+}
+
+// IO Operator
+std::ostream & operator<<(std::ostream & stream, const int128_t & rhs);
+
+
+//inline bool greaterp128(const int128_t & a, const int128_t & b)
+//{   uint128_t aa(a.upper() ^ UINT64_C(0x8000000000000000), a.lower());
+//    uint128_t bb(b.upper() ^ UINT64_C(0x8000000000000000), b.lower());
+//    return aa > bb;
+//}
+
+// The code here is because x<<n can have undefined value for signed types x,
+// and I want one that just "does what I expect" even in cases where there
+// is overflow. The situation with x>>n is even less satisfactory because
+// when x is signed there is little guarantee about how its sign bit is
+// handled. I want it to be replicated into the space vacated by the shift.
+
+//inline int128_t ASL128(const int128_t & a, int n)
+//{   if (n >= 128) return 0;
+//    if (n < 64) return
+//            int128_t((a.upper()<<n) | (a.lower()>>(64-n)),
+//                     a.lower()<<n);
+//    else if (n == 64) return int128_t(a.lower(), 0);
+//    else return int128_t(a.lower()<<(n-64), 0);
+//}
+
+//inline int128_t ASR128(const int128_t & a, int n)
+//{   if (n >= 128) return int128_t(a < 0 ? -1 : 0);
+//    if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
+//                                    (a.upper()<<(64-n)) | (a.lower()>>n));
+//    else if (n == 64) return int128_t(-static_cast<std::int64_t>(a.upper()<0),
+//                                          a.upper());
+//    else if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
+//                                         (a.upper()<<(64-n)) | (a.lower()>>n));
+//    else return int128_t(-static_cast<std::int64_t>(a.upper()<0),
+//                             ASR((static_cast<std::int64_t>(a.upper())), n-64));
+//}
+
+namespace INT128
+{
+
+inline std::int64_t getUPPER(int128_t a)
+{   return a.getUPPER();
+}
+
+inline std::uint64_t getLOWER(int128_t a)
+{   return a.getLOWER();
+}
+
+inline int128_t PACK128(std::int64_t high, std::uint64_t low)
+{   return int128_t(high, low);
+}
+
+} // end of namespace
+
+inline std::string int128_t::str(std::uint8_t base,
+                                 unsigned int len) const
+{   std::string out = "";
+    if (UPPER==0 && LOWER==0) out = "0";
+    else
+    {   uint128_t u = INT128names::UNSIGNED(*this);
+        if (base==10 && UPPER<0)
+        {   u = -u;
+            len--;
+        }
+        do
+        {   int r = static_cast<std::uint64_t>(u % base);
+            out = "0123456789abcdef"[r] + out;
+            u = u / base;
+        } while (u != 0);
+    }
+    if (out.size() < len) out = std::string(len - out.size(), '0') + out;
+    if (base==10 && UPPER<0) out = "-" + out;
+    return out; 
+}
+
+inline int128_t & int128_t::operator++()
+{   static const int128_t int128_1(1);
+    return *this += int128_1;
+}
+
+inline int128_t int128_t::operator++(int)
+{   int128_t temp(*this);
+    ++*this;
+    return temp;
+}
+
+inline int128_t & int128_t::operator--()
+{   static const int128_t int128_1(1);
+    return *this -= int128_1;
+}
+
+inline int128_t int128_t::operator--(int)
+{   int128_t temp(*this);
+    --*this;
+    return temp;
+}
+
+inline int128_t int128_t::operator-() const
+{   static const int128_t int128_1(1);
+    return ~*this + int128_1;
+}
+
+inline std::ostream & operator<<(std::ostream & stream, const int128_t & rhs)
+{   if (stream.flags() & stream.oct)
+    {   stream << rhs.str(8);
+    }
+    else if (stream.flags() & stream.dec)
+    {   stream << rhs.str(10);
+    }
+    else if (stream.flags() & stream.hex)
+    {   stream << rhs.str(16);
+    }
+    return stream;
+}
+
+inline uint128_t uint128(int128_t v)
+{   return INT128names::PACK128(static_cast<std::uint64_t>(v>>64),
+                   INT128names::getLOWER(INT128names::UNSIGNED(v)));
+}
+
+inline uint128_t uint128(std::uint64_t v)
+{   return INT128names::PACK128(static_cast<std::uint64_t>(0), v);
+}
+
+inline uint128_t uint128(int64_t v)
+{   return INT128names::PACK128(
+        static_cast<std::uint64_t>(v<0 ? 0xffffffffffffffffU : 0U),
+        v);
+}
+
+inline int128_t int128(int64_t v)
+{   return int128_t(static_cast<std::int64_t>(v<0 ? -1 : 0),
+                    static_cast<std::uint64_t>(v));
+}
+
+#endif // __SIZEOF_INT128__
+
+// Once this header has been installed both HAVE_UINT128_T and
+// HAVE_INT128_T will be defined. That is rather as if autoconf had
+// been used to check for the presence of 128-bit integer types.
+
+#ifndef HAVE_UINT128_T
+#define HAVE_UINT128_T 1
+#endif
+
+#ifndef HAVE_INT128_T
+#define HAVE_INT128_T 1
+#endif
+
+#endif // __int128_t_h__
+
+// end of int128_t.h
+
+#ifdef HAVE_BITCAST
+#include <bit>
+using std::bit_cast;
+#else // HAVE_BITCAST
+#ifndef CSL_BITCAST
+// For most of CSL this is a redundant repeat of stuff from machine.h,
+// however by including it here I make this header free-standing.
+template <class To, class From>
+std::enable_if_t<
+    sizeof(To) == sizeof(From) &&
+    std::is_trivially_copyable_v<From> &&
+    std::is_trivially_copyable_v<To>,
+    To>
+bit_cast(const From& src) noexcept
+{   static_assert(std::is_trivially_constructible_v<To>,
+        "This implementation additionally requires "
+        "destination type to be trivially constructible");
+    To dst;
+    std::memcpy(&dst, &src, sizeof(To));
+    return dst;
+}
+#define CSL_BITCAST 1
+#endif // CSL_BITCAST
+#endif // HAVE_BITCAST
+
+// For any degree of sanity at all here I need to arrange that I can use
+// 128-bit floats using the normal arithmetic operators even though they
+// are liable to be implemented in software with ugly function calls
+// as the "real" way of doing things. So here is a C++ wrapper with lots
+// of operator overloading.
+
+
+// With this I can write literals as for instance
+//       123.456e78_Q                           normal decimal style.
+// OR    0xDDDD'DDDDDDDDDDDD'DDDDDDDDDDDDDDDD_QX hexadecimal 128-bits.
+// These generate objects of type QuadFloat and that type supports
+// the basic arithmetic operations +-*/ and comparison operations such
+// as ">" and ">=".
+// It directed to and ostream via "<<" the data is displayed in hex
+// format. Well I have a chance of using G format decimal printing so
+// I should use that unless the "hex" flag is set.
+
+// Note that hex input is FRAGILE. For instance the hex input must have
+// 32 hex digits (the separator "'" may be used to help make the format
+// clearer) and they must be proper hex digits.
+// Decimal input is intended to yield an exactly correct value in particular
+// when the input is a decimal rendering of an exactly representable value,
+// however I have not put any effort into coping with sub-normal numbers.
+// If the decimal provided has a value between two representable values
+// I attempt to round to the nearest, rounding to even om ambiguity. This
+// is done subject to me using a limited number of guard bits in the
+// calculation.
+
+// This builds on top of the softfloat library from John R Hauser, a copy
+// of which can be found elsewhere within the CSL/Reduce source tree.
+
+extern "C" {
+
+/*============================================================================
+
+This C header file is part of the SoftFloat IEEE Floating-Point Arithmetic
+Package, Release 3a, by John R. Hauser.
+
+Copyright 2011, 2012, 2013, 2014 The Regents of the University of California.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+ 1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions, and the following disclaimer.
+
+ 2. Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions, and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+ 3. Neither the name of the University nor the names of its contributors may
+    be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS "AS IS", AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ARE
+DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+=============================================================================*/
+
+
+/*============================================================================
+| Note:  If SoftFloat is made available as a general library for programs to
+| use, it is strongly recommended that a platform-specific version of this
+| header, "softfloat.h", be created that folds in "softfloat_types.h" and that
+| eliminates all dependencies on compile-time macros.
+*============================================================================*/
+
+
+#ifndef softfloat_h
+#define softfloat_h 1
+
+#include <stdbool.h>
+#include <stdint.h>
+
+/*
+ * "platform.h", created automatically by the "configure" script
+ *
+ * This has just a minimum collection of definitions to allow
+ * the SoftFloat library to be used.
+ */
+#define LITTLEENDIAN 1
+#define SOFTFLOAT_FAST_INT64 1
+#define SOFTFLOAT_FAST_DIV64TO32 1
+#define INLINE static inline
+#define INLINE_LEVEL 5
+/* end of platform.h  */
+
+/*============================================================================
+
+This C header file is part of the SoftFloat IEEE Floating-Point Arithmetic
+Package, Release 3a, by John R. Hauser.
+
+Copyright 2011, 2012, 2013, 2014 The Regents of the University of California.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+ 1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions, and the following disclaimer.
+
+ 2. Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions, and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+ 3. Neither the name of the University nor the names of its contributors may
+    be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS "AS IS", AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ARE
+DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+=============================================================================*/
+
+#ifndef softfloat_types_h
+#define softfloat_types_h 1
+
+#include <stdint.h>
+
+/*----------------------------------------------------------------------------
+| Types used to pass 32-bit, 64-bit, and 128-bit floating-point arguments and
+| results to/from functions.  These types must be exactly 32 bits, 64 bits,
+| and 128 bits in size, respectively.  Where a platform has "native" support
+| for IEEE-Standard floating-point formats, the types below may, if desired,
+| be defined as aliases for the native types (typically `float' and `double',
+| and possibly `long double').
+*----------------------------------------------------------------------------*/
+typedef struct { uint32_t v; } float32_t;
+typedef struct { uint64_t v; } float64_t;
+typedef struct { uint64_t v[2]; } float128_t;
+
+/*----------------------------------------------------------------------------
+| The format of an 80-bit extended floating-point number in memory.  This
+| structure must contain a 16-bit field named `signExp' and a 64-bit field
+| named `signif'.
+*----------------------------------------------------------------------------*/
+#ifdef LITTLEENDIAN
+struct extFloat80M { uint64_t signif; uint16_t signExp; };
+#else
+struct extFloat80M { uint16_t signExp; uint64_t signif; };
+#endif
+
+/*----------------------------------------------------------------------------
+| The type used to pass 80-bit extended floating-point arguments and
+| results to/from functions.  This type must have size identical to
+| `struct extFloat80M'.  Type `extFloat80_t' can be defined as an alias for
+| `struct extFloat80M'.  Alternatively, if a platform has "native" support
+| for IEEE-Standard 80-bit extended floating-point, it may be possible,
+| if desired, to define `extFloat80_t' as an alias for the native type
+| (presumably either `long double' or a nonstandard compiler-intrinsic type).
+| In that case, the `signif' and `signExp' fields of `struct extFloat80M'
+| must align exactly with the locations in memory of the sign, exponent, and
+| significand of the native type.
+*----------------------------------------------------------------------------*/
+typedef struct extFloat80M extFloat80_t;
+
+#endif
+
+
+/*----------------------------------------------------------------------------
+| Software floating-point underflow tininess-detection mode.
+*----------------------------------------------------------------------------*/
+extern uint_fast8_t softfloat_detectTininess;
+enum {
+    softfloat_tininess_beforeRounding = 0,
+    softfloat_tininess_afterRounding  = 1
+};
+
+/*----------------------------------------------------------------------------
+| Software floating-point rounding mode.
+*----------------------------------------------------------------------------*/
+extern uint_fast8_t softfloat_roundingMode;
+enum {
+    softfloat_round_near_even   = 0,
+    softfloat_round_minMag      = 1,
+    softfloat_round_min         = 2,
+    softfloat_round_max         = 3,
+    softfloat_round_near_maxMag = 4
+};
+
+/*----------------------------------------------------------------------------
+| Software floating-point exception flags.
+*----------------------------------------------------------------------------*/
+extern uint_fast8_t softfloat_exceptionFlags;
+enum {
+    softfloat_flag_inexact   =  1,
+    softfloat_flag_underflow =  2,
+    softfloat_flag_overflow  =  4,
+    softfloat_flag_infinite  =  8,
+    softfloat_flag_invalid   = 16
+};
+
+/*----------------------------------------------------------------------------
+| Routine to raise any or all of the software floating-point exception flags.
+*----------------------------------------------------------------------------*/
+void softfloat_raiseFlags( uint_fast8_t );
+
+/*----------------------------------------------------------------------------
+| Integer-to-floating-point conversion routines.
+*----------------------------------------------------------------------------*/
+float32_t ui32_to_f32( uint32_t );
+float64_t ui32_to_f64( uint32_t );
+#ifdef SOFTFLOAT_FAST_INT64
+extFloat80_t ui32_to_extF80( uint32_t );
+float128_t ui32_to_f128( uint32_t );
+#endif
+void ui32_to_extF80M( uint32_t, extFloat80_t * );
+void ui32_to_f128M( uint32_t, float128_t * );
+float32_t ui64_to_f32( uint64_t );
+float64_t ui64_to_f64( uint64_t );
+#ifdef SOFTFLOAT_FAST_INT64
+extFloat80_t ui64_to_extF80( uint64_t );
+float128_t ui64_to_f128( uint64_t );
+#endif
+void ui64_to_extF80M( uint64_t, extFloat80_t * );
+void ui64_to_f128M( uint64_t, float128_t * );
+float32_t i32_to_f32( int32_t );
+float64_t i32_to_f64( int32_t );
+#ifdef SOFTFLOAT_FAST_INT64
+extFloat80_t i32_to_extF80( int32_t );
+float128_t i32_to_f128( int32_t );
+#endif
+void i32_to_extF80M( int32_t, extFloat80_t * );
+void i32_to_f128M( int32_t, float128_t * );
+float32_t i64_to_f32( int64_t );
+float64_t i64_to_f64( int64_t );
+#ifdef SOFTFLOAT_FAST_INT64
+extFloat80_t i64_to_extF80( int64_t );
+float128_t i64_to_f128( int64_t );
+#endif
+void i64_to_extF80M( int64_t, extFloat80_t * );
+void i64_to_f128M( int64_t, float128_t * );
+
+/*----------------------------------------------------------------------------
+| 32-bit (single-precision) floating-point operations.
+*----------------------------------------------------------------------------*/
+uint_fast32_t f32_to_ui32( float32_t, uint_fast8_t, bool );
+uint_fast64_t f32_to_ui64( float32_t, uint_fast8_t, bool );
+int_fast32_t f32_to_i32( float32_t, uint_fast8_t, bool );
+int_fast64_t f32_to_i64( float32_t, uint_fast8_t, bool );
+uint_fast32_t f32_to_ui32_r_minMag( float32_t, bool );
+uint_fast64_t f32_to_ui64_r_minMag( float32_t, bool );
+int_fast32_t f32_to_i32_r_minMag( float32_t, bool );
+int_fast64_t f32_to_i64_r_minMag( float32_t, bool );
+float64_t f32_to_f64( float32_t );
+#ifdef SOFTFLOAT_FAST_INT64
+extFloat80_t f32_to_extF80( float32_t );
+float128_t f32_to_f128( float32_t );
+#endif
+void f32_to_extF80M( float32_t, extFloat80_t * );
+void f32_to_f128M( float32_t, float128_t * );
+float32_t f32_roundToInt( float32_t, uint_fast8_t, bool );
+float32_t f32_add( float32_t, float32_t );
+float32_t f32_sub( float32_t, float32_t );
+float32_t f32_mul( float32_t, float32_t );
+float32_t f32_mulAdd( float32_t, float32_t, float32_t );
+float32_t f32_div( float32_t, float32_t );
+float32_t f32_rem( float32_t, float32_t );
+float32_t f32_sqrt( float32_t );
+bool f32_eq( float32_t, float32_t );
+bool f32_le( float32_t, float32_t );
+bool f32_lt( float32_t, float32_t );
+bool f32_eq_signaling( float32_t, float32_t );
+bool f32_le_quiet( float32_t, float32_t );
+bool f32_lt_quiet( float32_t, float32_t );
+bool f32_isSignalingNaN( float32_t );
+
+/*----------------------------------------------------------------------------
+| 64-bit (double-precision) floating-point operations.
+*----------------------------------------------------------------------------*/
+uint_fast32_t f64_to_ui32( float64_t, uint_fast8_t, bool );
+uint_fast64_t f64_to_ui64( float64_t, uint_fast8_t, bool );
+int_fast32_t f64_to_i32( float64_t, uint_fast8_t, bool );
+int_fast64_t f64_to_i64( float64_t, uint_fast8_t, bool );
+uint_fast32_t f64_to_ui32_r_minMag( float64_t, bool );
+uint_fast64_t f64_to_ui64_r_minMag( float64_t, bool );
+int_fast32_t f64_to_i32_r_minMag( float64_t, bool );
+int_fast64_t f64_to_i64_r_minMag( float64_t, bool );
+float32_t f64_to_f32( float64_t );
+#ifdef SOFTFLOAT_FAST_INT64
+extFloat80_t f64_to_extF80( float64_t );
+float128_t f64_to_f128( float64_t );
+#endif
+void f64_to_extF80M( float64_t, extFloat80_t * );
+void f64_to_f128M( float64_t, float128_t * );
+float64_t f64_roundToInt( float64_t, uint_fast8_t, bool );
+float64_t f64_add( float64_t, float64_t );
+float64_t f64_sub( float64_t, float64_t );
+float64_t f64_mul( float64_t, float64_t );
+float64_t f64_mulAdd( float64_t, float64_t, float64_t );
+float64_t f64_div( float64_t, float64_t );
+float64_t f64_rem( float64_t, float64_t );
+float64_t f64_sqrt( float64_t );
+bool f64_eq( float64_t, float64_t );
+bool f64_le( float64_t, float64_t );
+bool f64_lt( float64_t, float64_t );
+bool f64_eq_signaling( float64_t, float64_t );
+bool f64_le_quiet( float64_t, float64_t );
+bool f64_lt_quiet( float64_t, float64_t );
+bool f64_isSignalingNaN( float64_t );
+
+/*----------------------------------------------------------------------------
+| Rounding precision for 80-bit extended double-precision floating-point.
+| Valid values are 32, 64, and 80.
+*----------------------------------------------------------------------------*/
+extern uint_fast8_t extF80_roundingPrecision;
+
+/*----------------------------------------------------------------------------
+| 80-bit extended double-precision floating-point operations.
+*----------------------------------------------------------------------------*/
+#ifdef SOFTFLOAT_FAST_INT64
+uint_fast32_t extF80_to_ui32( extFloat80_t, uint_fast8_t, bool );
+uint_fast64_t extF80_to_ui64( extFloat80_t, uint_fast8_t, bool );
+int_fast32_t extF80_to_i32( extFloat80_t, uint_fast8_t, bool );
+int_fast64_t extF80_to_i64( extFloat80_t, uint_fast8_t, bool );
+uint_fast32_t extF80_to_ui32_r_minMag( extFloat80_t, bool );
+uint_fast64_t extF80_to_ui64_r_minMag( extFloat80_t, bool );
+int_fast32_t extF80_to_i32_r_minMag( extFloat80_t, bool );
+int_fast64_t extF80_to_i64_r_minMag( extFloat80_t, bool );
+float32_t extF80_to_f32( extFloat80_t );
+float64_t extF80_to_f64( extFloat80_t );
+float128_t extF80_to_f128( extFloat80_t );
+extFloat80_t extF80_roundToInt( extFloat80_t, uint_fast8_t, bool );
+extFloat80_t extF80_add( extFloat80_t, extFloat80_t );
+extFloat80_t extF80_sub( extFloat80_t, extFloat80_t );
+extFloat80_t extF80_mul( extFloat80_t, extFloat80_t );
+extFloat80_t extF80_div( extFloat80_t, extFloat80_t );
+extFloat80_t extF80_rem( extFloat80_t, extFloat80_t );
+extFloat80_t extF80_sqrt( extFloat80_t );
+bool extF80_eq( extFloat80_t, extFloat80_t );
+bool extF80_le( extFloat80_t, extFloat80_t );
+bool extF80_lt( extFloat80_t, extFloat80_t );
+bool extF80_eq_signaling( extFloat80_t, extFloat80_t );
+bool extF80_le_quiet( extFloat80_t, extFloat80_t );
+bool extF80_lt_quiet( extFloat80_t, extFloat80_t );
+bool extF80_isSignalingNaN( extFloat80_t );
+#endif
+uint_fast32_t extF80M_to_ui32( const extFloat80_t *, uint_fast8_t, bool );
+uint_fast64_t extF80M_to_ui64( const extFloat80_t *, uint_fast8_t, bool );
+int_fast32_t extF80M_to_i32( const extFloat80_t *, uint_fast8_t, bool );
+int_fast64_t extF80M_to_i64( const extFloat80_t *, uint_fast8_t, bool );
+uint_fast32_t extF80M_to_ui32_r_minMag( const extFloat80_t *, bool );
+uint_fast64_t extF80M_to_ui64_r_minMag( const extFloat80_t *, bool );
+int_fast32_t extF80M_to_i32_r_minMag( const extFloat80_t *, bool );
+int_fast64_t extF80M_to_i64_r_minMag( const extFloat80_t *, bool );
+float32_t extF80M_to_f32( const extFloat80_t * );
+float64_t extF80M_to_f64( const extFloat80_t * );
+void extF80M_to_f128M( const extFloat80_t *, float128_t * );
+void
+ extF80M_roundToInt(
+     const extFloat80_t *, uint_fast8_t, bool, extFloat80_t * );
+void extF80M_add( const extFloat80_t *, const extFloat80_t *, extFloat80_t * );
+void extF80M_sub( const extFloat80_t *, const extFloat80_t *, extFloat80_t * );
+void extF80M_mul( const extFloat80_t *, const extFloat80_t *, extFloat80_t * );
+void extF80M_div( const extFloat80_t *, const extFloat80_t *, extFloat80_t * );
+void extF80M_rem( const extFloat80_t *, const extFloat80_t *, extFloat80_t * );
+void extF80M_sqrt( const extFloat80_t *, extFloat80_t * );
+bool extF80M_eq( const extFloat80_t *, const extFloat80_t * );
+bool extF80M_le( const extFloat80_t *, const extFloat80_t * );
+bool extF80M_lt( const extFloat80_t *, const extFloat80_t * );
+bool extF80M_eq_signaling( const extFloat80_t *, const extFloat80_t * );
+bool extF80M_le_quiet( const extFloat80_t *, const extFloat80_t * );
+bool extF80M_lt_quiet( const extFloat80_t *, const extFloat80_t * );
+bool extF80M_isSignalingNaN( const extFloat80_t * );
+
+/*----------------------------------------------------------------------------
+| 128-bit (quadruple-precision) floating-point operations.
+*----------------------------------------------------------------------------*/
+#ifdef SOFTFLOAT_FAST_INT64
+uint_fast32_t f128_to_ui32( float128_t, uint_fast8_t, bool );
+uint_fast64_t f128_to_ui64( float128_t, uint_fast8_t, bool );
+int_fast32_t f128_to_i32( float128_t, uint_fast8_t, bool );
+int_fast64_t f128_to_i64( float128_t, uint_fast8_t, bool );
+uint_fast32_t f128_to_ui32_r_minMag( float128_t, bool );
+uint_fast64_t f128_to_ui64_r_minMag( float128_t, bool );
+int_fast32_t f128_to_i32_r_minMag( float128_t, bool );
+int_fast64_t f128_to_i64_r_minMag( float128_t, bool );
+float32_t f128_to_f32( float128_t );
+float64_t f128_to_f64( float128_t );
+extFloat80_t f128_to_extF80( float128_t );
+float128_t f128_roundToInt( float128_t, uint_fast8_t, bool );
+float128_t f128_add( float128_t, float128_t );
+float128_t f128_sub( float128_t, float128_t );
+float128_t f128_mul( float128_t, float128_t );
+float128_t f128_mulAdd( float128_t, float128_t, float128_t );
+float128_t f128_div( float128_t, float128_t );
+float128_t f128_rem( float128_t, float128_t );
+float128_t f128_sqrt( float128_t );
+bool f128_eq( float128_t, float128_t );
+bool f128_le( float128_t, float128_t );
+bool f128_lt( float128_t, float128_t );
+bool f128_eq_signaling( float128_t, float128_t );
+bool f128_le_quiet( float128_t, float128_t );
+bool f128_lt_quiet( float128_t, float128_t );
+bool f128_isSignalingNaN( float128_t );
+#endif
+uint_fast32_t f128M_to_ui32( const float128_t *, uint_fast8_t, bool );
+uint_fast64_t f128M_to_ui64( const float128_t *, uint_fast8_t, bool );
+int_fast32_t f128M_to_i32( const float128_t *, uint_fast8_t, bool );
+int_fast64_t f128M_to_i64( const float128_t *, uint_fast8_t, bool );
+uint_fast32_t f128M_to_ui32_r_minMag( const float128_t *, bool );
+uint_fast64_t f128M_to_ui64_r_minMag( const float128_t *, bool );
+int_fast32_t f128M_to_i32_r_minMag( const float128_t *, bool );
+int_fast64_t f128M_to_i64_r_minMag( const float128_t *, bool );
+float32_t f128M_to_f32( const float128_t * );
+float64_t f128M_to_f64( const float128_t * );
+void f128M_to_extF80M( const float128_t *, extFloat80_t * );
+void f128M_roundToInt( const float128_t *, uint_fast8_t, bool, float128_t * );
+void f128M_add( const float128_t *, const float128_t *, float128_t * );
+void f128M_sub( const float128_t *, const float128_t *, float128_t * );
+void f128M_mul( const float128_t *, const float128_t *, float128_t * );
+void
+ f128M_mulAdd(
+     const float128_t *, const float128_t *, const float128_t *, float128_t *
+ );
+void f128M_div( const float128_t *, const float128_t *, float128_t * );
+void f128M_rem( const float128_t *, const float128_t *, float128_t * );
+void f128M_sqrt( const float128_t *, float128_t * );
+bool f128M_eq( const float128_t *, const float128_t * );
+bool f128M_le( const float128_t *, const float128_t * );
+bool f128M_lt( const float128_t *, const float128_t * );
+bool f128M_eq_signaling( const float128_t *, const float128_t * );
+bool f128M_le_quiet( const float128_t *, const float128_t * );
+bool f128M_lt_quiet( const float128_t *, const float128_t * );
+bool f128M_isSignalingNaN( const float128_t * );
+
+#endif
+
+}
+
+#ifdef LITTLEENDIAN
+#define fpOrder(a, b)    {a, b}
+#define fp256Order(a, b) {a, b}
+#define HIPART 1
+#define LOPART 0
+#else // LITTLEENDIAN
+#define fpOrder(a, b)    {b, a}
+#define fp256Order(a, b) {b, a}
+#define HIPART 0
+#define LOPART 1
+#endif // LITTLEENDIAN
+
+namespace CSL_LISP
+{
+
+inline int  f128_exponent(const float128_t p);
+inline void f128_set_exponent(float128_t *p, int n);
+extern void f128_ldexp(float128_t *p, int n);
+extern void f128_frexp(float128_t p, float128_t *r, int *x);
+extern float128_t f128_modf(float128_t p, float128_t& intpart);
+
+inline bool f128_infinitep(const float128_t p);
+inline bool f128_finite(const float128_t p);
+inline bool f128_nanp(const float128_t x);
+inline bool f128_subnorm(const float128_t x);
+inline bool f128_negative(const float128_t x);
+inline float128_t f128_minus(float128_t x);
+inline void f128_negate(float128_t *x);
+extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
+
+// This file may be used more of less stand-alone so I will not rely on
+// "earlier" CSL headers to define these...
+
+#ifndef UNUSED_NAME
+#if __has_cpp_attribute(maybe_unused)
+// C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
+// and functions. Earlier versions of gcc and clang supported [[gnu::unused]]
+// as a non-standard annotation with similar effect.
+#define UNUSED_NAME [[maybe_unused]]
+#elif defined __GNUC__
+#define UNUSED_NAME [[gnu::unused]]
+#else // [[maybe_unused]] or [[gnu::unused]] availability
+// In any other case I just omit any annotation and if I get warnings about
+// unused things then so be it.
+#define UNUSED_NAME
+#endif // annotation for unused things
+#endif // UNUSED_NAME
+
+
+extern float128_t f128_NaN;         // a NaN
+extern float128_t f128_inf;         // infinity
+extern float128_t f128_minf;        // -infinity
+extern float128_t f128_0;           // 0.0_Q . v;
+extern float128_t f128_half;        // 0.5_Q . v;
+extern float128_t f128_mhalf;       // (-0.5_Q) . v;
+extern float128_t f128_1;           // 1.0_Q . v;
+extern float128_t f128_1plus;       // 1.0_Q . v + 1ULP;
+extern float128_t f128_1minus;      // 1.0_Q . v - 1ULP;
+extern float128_t f128_m1;          // (-1.0_Q) . v;
+extern float128_t f128_10_16;       // 1.0e16_Q . v;
+extern float128_t f128_10_17;       // 1.0e17_Q . v;
+extern float128_t f128_10_18;       // 1.0e18_Q . v;
+extern float128_t f128_10_19;       // 1.0e19_Q . v;
+extern float128_t f128_scale;       // {fpOrder(0x0080000000000000ULL, 0x4038000000000000ULL)};
+extern float128_t f128_N1;          // {fpOrder(0, 0x4fff000000000000ULL)}; // 2^4096
+extern float128_t f128_expmin;      // smallest useful input to exp()
+extern float128_t f128_expmax;      // largest useful input to exp()
+extern float128_t f128_exp2min;     // smallest useful input to 2^x
+extern float128_t f128_exp2max;     // largest useful input to 2^x
+extern float128_t f128_exp10min;    // smallest useful input to 10^x
+extern float128_t f128_exp10max;    // largest useful input to 10^x
+extern float128_t f128_expm1min;    // smallest useful input to e^x-1
+extern float128_t f128_expm1max;    // largest useful input to e^x-1
+
+extern float128_t f128_epsilon;
+extern float128_t f128_half_epsilon;
+extern float128_t f128_max;
+extern float128_t f128_negmax;
+extern float128_t f128_min;
+extern float128_t f128_negmin;
+extern float128_t f128_normmin;
+extern float128_t f128_negnormmin;
+extern float128_t f128_pi;
+extern float128_t f128_halfpi;
+extern float128_t f128_mhalfpi;
+
+inline bool f128_zerop(const float128_t p)
+{   return ((p.v[HIPART] & INT64_C(0x7fffffffffffffff)) == 0) &&
+           (p.v[LOPART] == 0);
+}
+
+inline bool f128_infinitep(const float128_t p)
+{   return (((p.v[HIPART] >> 48) & 0x7fff) == 0x7fff) &&
+           ((p.v[HIPART] & INT64_C(0xffffffffffff)) == 0) &&
+           (p.v[LOPART] == 0);
+}
+
+inline bool f128_finite(const float128_t p)
+{   return (((p.v[HIPART] >> 48) & 0x7fff) != 0x7fff);
+}
+
+inline void f128_make_infinite(float128_t *p)
+{   p->v[HIPART] |= UINT64_C(0x7fff000000000000);
+    p->v[HIPART] &= UINT64_C(0xffff000000000000);
+    p->v[LOPART] = 0;
+}
+
+inline void f128_make_zero(float128_t *p)
+{   p->v[HIPART] &= UINT64_C(0x8000000000000000);
+    p->v[LOPART] = 0;
+}
+
+// Here I do not count 0.0 (or -0.0) as sub-normal.
+
+inline bool f128_subnorm(const float128_t p)
+{   return (((p.v[HIPART] >> 48) & 0x7fff) == 0) &&
+           (((p.v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
+            (p.v[LOPART] != 0));
+}
+
+inline bool f128_nanp(const float128_t p)
+{   return (((p.v[HIPART] >> 48) & 0x7fff) == 0x7fff) &&
+           (((p.v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
+            (p.v[LOPART] != 0));
+}
+
+inline bool f128_negative(const float128_t x)
+{   if (f128_nanp(x)) return false;
+    return (static_cast<int64_t>(x.v[HIPART])) < 0;
+}
+
+inline int f128_exponent(const float128_t p)
+{   return ((p.v[HIPART] >> 48) & 0x7fff) - 0x3fff;
+}
+
+inline void f128_set_exponent(float128_t *p, int n)
+{   p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
+                   ((static_cast<uint64_t>(n) + 0x3fff) << 48);
+}
+
+inline void f128_mantissa(const float128_t p, uint64_t& hi, uint64_t& lo)
+{   hi = p.v[HIPART] & 0x0000ffffffffffffULL;
+    if ((p.v[HIPART] & 0x7fff000000000000ULL) != 0)
+                 hi |= 0x0001000000000000ULL;  // hidden bit
+    lo = p.v[LOPART];
+}
+
+inline void f128_negate(float128_t *x)
+{   x->v[HIPART] ^= UINT64_C(0x8000000000000000);
+}
+
+inline float128_t f128_minus(float128_t x)
+{   x.v[HIPART] ^= UINT64_C(0x8000000000000000);
+    return x;
+}
+
+inline bool floating_edge_case128(float128_t r)
+{   return f128_infinitep(r) || f128_nanp(r);
+}
+
+extern int float128_to_binary(const float128_t d, int64_t &mhi, uint64_t &mlo);
+extern intptr_t float128_to_5_digits(float128_t d,
+                                     int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0);
+
+#ifdef FLOAT256
+
+struct float256_t
+{
+#ifdef LITTLEENDIAN
+    float128_t lo;
+    float128_t hi;
+#else
+    float128_t hi;
+    float128_t lo;
+#endif
+};
+
+inline void f128_to_f256M(const float128_t a, float256_t *b)
+{   b->hi = a;
+    b->lo = f128_0;
+}
+
+extern void f256M_add(
+    const float256_t *x, const float256_t *y, float256_t *z);
+
+extern void f256M_mul(
+    const float256_t *x, const float256_t *y, float256_t *z);
+
+extern void f256M_div(
+    const float256_t *x, const float256_t *y, float256_t *z);
+
+extern void f256M_pow(const float256_t *x, unsigned int y, float256_t *z);
+
+#endif // FLOAT256
+
+// These print 128-bit floats in the various standard styles, returning the
+// number of characters used. The "sprint" versions put their result in
+// a buffer, while "print" goes to stdout.
+
+extern int f128_sprint_E(char *s, int width, int precision, float128_t p);
+extern int f128_sprint_F(char *s, int width, int precision, float128_t p);
+extern int f128_sprint_G(char *s, int width, int precision, float128_t p);
+
+extern void f128_print(float128_t p);
+extern int f128_print_E(int width, int precision, float128_t p);
+extern int f128_print_F(int width, int precision, float128_t p);
+extern int f128_print_G(int width, int precision, float128_t p);
+
+// By making the code that generated a QuadFloat from a string of
+// characters "constexpr" I can move all costs associated with use
+// of QuadFloat literals to compile-time. At least with a sufficiently
+// good compiler implementing sufficiently recent C++ features.
+
+inline constexpr uint64_t f160_leftshift(
+    uint64_t m[5], uint64_t carry, int bits=1)
+{   for (int i=0; i<5; i++)
+    {   uint64_t w = (m[i]<<bits) + carry;
+        m[i] = w & 0xffffffffU;
+        carry = w >> 32;
+    }
+    return carry;
+}
+
+inline constexpr uint64_t f160_rightshift(uint64_t m[5], uint64_t carry, int bits=1)
+{   for (int i=4; i>=0; i--)
+    {   uint64_t w = m[i];
+        m[i] = (w>>bits) + (carry<<(32-bits));
+        carry = w & ((1U<<bits) - 1);
+    }
+    return carry;
+}
+
+// I want constexpr versions of these functions here, and so even though
+// I have them defined elsewhere I will provide versions in this file
+// (and with slightly different names).
+
+inline constexpr int f160_nlz(uint64_t x)
+{   int n = 0;
+    if (x <= 0x00000000FFFFFFFFU)
+    {   n = n +32;
+        x = x <<32;
+    }
+    if (x <= 0x0000FFFFFFFFFFFFU)
+    {   n = n +16;
+        x = x <<16;
+    }
+    if (x <= 0x00FFFFFFFFFFFFFFU)
+    {   n = n + 8;
+        x = x << 8;
+    }
+    if (x <= 0x0FFFFFFFFFFFFFFFU)
+    {   n = n + 4;
+        x = x << 4;
+    }
+    if (x <= 0x3FFFFFFFFFFFFFFFU)
+    {   n = n + 2;
+        x = x << 2;
+    }
+    if (x <= 0x7FFFFFFFFFFFFFFFU)
+    {   n = n + 1;
+    }
+    return n;
+}
+
+inline constexpr int f160_z(unsigned int n)
+{   if (n==0) return 64;
+    uint64_t v=0;
+    int r = -1;
+    for (int k=0; k<64; k++)
+    {   v = 1ULL<<k;
+        if (v%67 == n) r = k;
+    }
+    return r;
+};
+
+// The hope is that setting up this table will not even come close to
+// compiler limits for the work that can be done while expanding constexpr
+// function calls.
+
+constexpr static int8_t f160_ntzTable[67] =
+{   f160_z( 0), f160_z( 1), f160_z( 2), f160_z( 3), f160_z( 4),
+    f160_z( 5), f160_z( 6), f160_z( 7), f160_z( 8), f160_z( 9),
+    f160_z(10), f160_z(11), f160_z(12), f160_z(13), f160_z(14),
+    f160_z(15), f160_z(16), f160_z(17), f160_z(18), f160_z(19),
+    f160_z(20), f160_z(21), f160_z(22), f160_z(23), f160_z(24),
+    f160_z(25), f160_z(26), f160_z(27), f160_z(28), f160_z(29),
+    f160_z(30), f160_z(31), f160_z(32), f160_z(33), f160_z(34),
+    f160_z(35), f160_z(36), f160_z(37), f160_z(38), f160_z(39),
+    f160_z(40), f160_z(41), f160_z(42), f160_z(43), f160_z(44),
+    f160_z(45), f160_z(46), f160_z(47), f160_z(48), f160_z(49),
+    f160_z(50), f160_z(51), f160_z(52), f160_z(53), f160_z(54),
+    f160_z(55), f160_z(56), f160_z(57), f160_z(58), f160_z(59),
+    f160_z(60), f160_z(61), f160_z(62), f160_z(63), f160_z(64),
+    f160_z(65), f160_z(66)
+};
+
+inline constexpr int f160_ntz(uint64_t n)
+{   return f160_ntzTable[(n & -n) % 67];
+}
+inline constexpr void f160_mul(uint64_t m[5], uint64_t n, int& bx)
+{   uint64_t carry = 0;
+    for (int i=0; i<5; i++)
+    {   uint64_t w = n*m[i] + carry;
+        m[i] = w & 0xffffffffU;
+        carry = w >> 32;
+    }
+    if (carry != 0)
+    {   int carryBits = 64 - f160_nlz(carry);
+        f160_rightshift(m, carry, carryBits);
+        bx += carryBits;
+    }
+}
+
+inline constexpr void f160_div(uint64_t m[5], uint64_t n, int& bx)
+{   uint64_t carry = 0;
+    for (int i=4; i>=0; i--)
+    {   uint64_t w = m[i] + (carry<<32);
+        m[i] = w/n;
+        carry = w%n;
+    }
+    carry = (carry<<32)/n;
+    if (m[4] == 0)
+    {   for (int i=3; i>=0; i--) m[i+1] = m[1];
+        m[0] = carry;
+        carry = 0;
+    }
+    int carryBits = f160_nlz(m[4]) - 32;
+    f160_leftshift(m, carry>>(32-carryBits), carryBits);
+    bx -= carryBits;
+}
+
+#ifdef LITTLEENDIAN
+constexpr int f128_low = 0, f128_high = 1;
+#else // LITTLEENDIAN
+constexpr int f128_low = 1, f128_high = 0;
+#endif // LITTLEENDIAN
+
+inline constexpr float128_t atof128(const char* s)
+{
+// I will collect the mantissa in a 5-word array, storing just
+// 32 bits in each word. That is 160 bits and is going to give me
+// 48 guard bits while I calculate the floating point representation.
+// With that many guard bits I will hope not to have too much pain with
+// overall accuracy of conversion once the result is packed in 128 bits.
+// Ha ha ha - if the user were to write a decimal with 48+ significant
+// decimal digits (way more than are needed to get a QuadFloat accurate)
+// then the 160-bit integer here could overflow and that would lead to
+// a grossly incorrect result! So I will want to avoid collecting digits
+// beyond say 47 - however I will need to count such skipped over digits
+// in case the input is 50 digits followed by ".0".
+    uint64_t m[5] = {0,0,0,0,0};
+    float128_t r = {0,0};
+    int x = 0;    // decimal exponent
+    int digits = 0, skipped = 0;
+    bool isZero = true, dotSeen = false, sign = false;
+    int c = *s++;
+    if (c == '-')
+    {   sign = true;
+        c = *s++;
+    }
+// Here I do repeated multiplication by 10 and just discard any bits that
+// fall off to the right. This is rather crude! Two things that would be
+// better would be (a) multiuplying by maybe 100000000 as much as possible
+// to cope with larger exponents with fewer multiplications and (b) rounding
+// after each multipication. 
+    while (c>='0' && c<='9')
+    {   if (c != '0') isZero = false;
+        if (!isZero) digits++;
+        if (digits < 47)
+        {   unsigned int carry = c - '0';
+            for (int i=0; i<5; i++)
+            {   uint64_t d = 10*m[i] + carry;
+                carry = d>>32;
+                m[i] = d & 0xffffffffU;
+            }
+        }
+        else skipped++;
+        if (dotSeen) x--;
+        c = *s++;
+        if (c == '.')
+        {   c = *s++;
+            dotSeen = true;
+        }
+    }
+// If the NNN.NNN part does not have any non-zero digits then
+// whatever exponent might follow the result is going to be zero, so
+// I will return it now. However in a spirit of enthusiasm I will
+// allow the zero to be a signed one.
+    if (isZero)
+    {   r.v[f128_high] = r.v[f128_low] = 0;
+        if (sign) r.v[f128_high] |= 0x8000000000000000LLU;
+        return r;
+    }
+    int xx = skipped;    // explicitly specified decimal exponent
+                         // I allow all sorts of silly characters!
+    if (c == 'e' || c == 'E' || c == 'd' || c == 'D' ||
+        c == 'l' || c == 'l' || c == 's' || c == 'S' ||
+        c == 'f' || c == 'F')
+    {   c = *s++;
+        if (c == '+') c = *s++;
+        bool xsign = false;
+        if (c == '-')
+        {   xsign = true;
+            c = *s++;
+        }
+        while (c>='0' && c<='9')
+        {   xx = 10*xx + c - '0';
+            c = *s++;
+        }
+        if (xsign) xx = -xx;
+    }
+    x += xx;
+    int bx = 160;     // binary exponent
+// Now normalise the value - first get the top word non-zero.
+    while (m[4] == 0)
+    {   for (int i=3; i>=0; i--) m[i+1] = m[i];
+        m[0] = 0;
+        bx -= 32;
+    }
+// Now shift within the words to get the top bit non-zero.
+    int carryBits = f160_nlz(m[4]) - 32;
+    f160_leftshift(m, 0, carryBits);
+    bx -= carryBits;
+
+//    while ((m[4] & 0x80000000U) == 0)
+//    {   f160_leftshift(m, 0);
+//        bx--;
+//    }
+
+// Now I have in effect a 160-bit floating point value for an integer
+// made from all the digits of the input.
+// I need to multiply by 10^x (or if x is negative I divide). I do so
+// in a naive manner - ie repeated multiplication or division by the
+// constant 10. The largest 120-bit float is almost 10^5000 so in the
+// worst case I may be performing almost 5000 multiplications here, and
+// each can corrupt a low bit of the value. I feel that the result means
+// I will not want to rely on say the bottom 16 bits of my result. Well to
+// save a little time and also improve accuracy I scale in chunks of 10^9
+// while I can, so actually the worst number of multiplications is just
+// under 560 and maybe I will only lose 10 bits.
+    while (x > 8)
+    {   f160_mul(m, 1000000000, bx);
+        x -= 9;
+    }
+    while (x > 0)
+    {   f160_mul(m, 10, bx);
+        x--;
+    }
+// Similarly for division I am not bothering to round the quotient.
+    while (x < -8)
+    {   f160_div(m, 1000000000, bx);
+        x += 9;
+    }
+    while (x < 0)
+    {   f160_div(m, 10, bx);
+        x++;
+    }
+    bx += 0x3ffe;
+// At this stage I have an extra-precision value which I should
+// round to the nearest proper result.
+    if ((m[1] & 0x7fff) >= 0x4000)
+    {   uint64_t carry = 0x8000;
+        for (int i=1; i<5; i++)
+        {   uint64_t w = m[i] + carry;
+            m[i] = w & 0xffffffffU;
+            carry = w >> 32;
+        }
+        if (carry != 0)
+        {   f160_rightshift(m, 1);
+            bx++;
+        }
+    }
+    for (int i=0; i<5; i++) m[i] &= 0xffffffffU;  // ensure clean!
+    m[4] &= 0x7fffffffU;   // lose the hidden bit
+    uint64_t hh = (m[4]<<32) | m[3];
+    uint64_t ll = (m[2]<<32) | m[1];
+// Shift the mantissa right 15 bits to put it where it needs to be.
+    ll = (ll>>15) | (hh<<49);
+    hh = hh>>15;
+// Insert exponent
+    if (bx >= 0x7fff)   // Overflow to infinity
+    {   bx = 0x7fff;
+        hh = ll = 0;
+    }
+    if (bx <= 0)
+    {   hh |= 0x0001000000000000ULL; // restore bit that will not be hidden
+        int sh = 1-bx;
+        bx = 0;                      // to leave a subnormal number or zero.
+        if (sh >= 128) hh = ll = 0;
+        else
+        {   if (sh >= 64)
+            {   ll = hh;
+                hh = 0;
+                sh -= 64;
+            }
+            if (sh != 0)
+            {   ll = (hh<<(64-sh)) | (ll >> sh);
+                hh >>= sh;
+            }
+        }
+    }
+    hh |= static_cast<uint64_t>(bx & 0x7fffU)<<48;
+    if (sign) hh |= 0x8000000000000000LLU;
+    r.v[f128_high] = hh;
+    r.v[f128_low] = ll;
+    return r;
+}
+
+// I do not intend to support NaN, infinity values or sub-normalised
+// values in code that uses QuadFloat. Well to be more precise, support
+// for them is whatever follows from the underpinning float128_t type. 
+
+class QuadFloat
+{
+public:
+// Many people would believe I should make the data field here
+// private rather than public, and provide an access function in
+// case of need.
+
+    float128_t v;
+
+    constexpr QuadFloat():v()               // default constructor
+    {   v = f128_0;
+    }
+    constexpr QuadFloat(float128_t n):v()   // import from a float128_t
+    {   v = n;
+    }
+    constexpr QuadFloat(const char* s):v()  // value as from a text string
+    {   v = atof128(s);
+    }
+    constexpr QuadFloat(const QuadFloat& rhs):v()
+    {   v = rhs.v;
+    }
+    QuadFloat(int n):v()
+    {   v = i32_to_f128(n);
+    }
+    QuadFloat(int64_t n):v()
+    {   v = i64_to_f128(n);
+    }
+    QuadFloat(float64_t n):v()
+    {   v = f64_to_f128(n);
+    }
+    QuadFloat(double d):v()
+    {   float64_t n;
+        std::memcpy(reinterpret_cast<char*>(&n),
+                    reinterpret_cast<char*>(&d),
+                    sizeof(double));
+        v = f64_to_f128(n);
+    }
+    constexpr QuadFloat(QuadFloat&& rhs):v()
+    {   v = rhs.v;
+    }
+
+    operator double()
+    {   float64_t r = f128_to_f64(v);
+// The following line is probably the most genuine use of bit_cast I have
+// written anywhere!
+        return bit_cast<double>(r.v);
+    }
+
+    operator int64_t()
+    {   return f128_to_i64(v, softfloat_round_minMag, false);
+    }
+
+    friend std::ostream& operator<<(std::ostream& o, const QuadFloat& d)
+    {   bool hex = (o.flags() & std::ios::hex) != 0;
+        if (hex)
+        {   return o << std::setw(16) << std::setfill('0') << d.v.v[1]
+                 << "'" << std::setw(16) << std::setfill('0') << d.v.v[0];
+        }
+        else
+        {   char buffer[64];
+            f128_sprint_G(buffer, 0, 36, d.v);
+            return o << buffer;
+        }
+    }
+
+    constexpr QuadFloat operator=(const QuadFloat& rhs)
+    {   v = rhs.v;
+        return *this;
+    }
+    constexpr QuadFloat operator=(QuadFloat&& rhs)
+    {   v = rhs.v;
+        return *this;
+    }
+
+    bool operator==(const QuadFloat& rhs) const;
+    bool operator!=(const QuadFloat& rhs) const;
+    bool operator<(const QuadFloat& rhs) const;
+    bool operator<=(const QuadFloat& rhs) const;
+    bool operator>(const QuadFloat& rhs) const;
+    bool operator>=(const QuadFloat& rhs) const;
+
+    constexpr QuadFloat operator+() const;
+    constexpr QuadFloat operator-() const;
+
+    QuadFloat operator+(const QuadFloat& rhs) const;
+    QuadFloat operator-(const QuadFloat& rhs) const;
+    QuadFloat operator*(const QuadFloat& rhs) const;
+    QuadFloat operator/(const QuadFloat& rhs) const;
+
+    QuadFloat operator+=(const QuadFloat& rhs);
+    QuadFloat operator-=(const QuadFloat& rhs);
+    QuadFloat operator*=(const QuadFloat& rhs);
+    QuadFloat operator/=(const QuadFloat& rhs);
+
+    bool isinf()
+    {   return f128_infinitep(v);
+    }
+
+    bool isfinite()
+    {   return f128_finite(v);
+    }
+
+    bool isnan()
+    {   return f128_nanp(v);
+    }
+
+    bool issubnorm()
+    {   return f128_subnorm(v);
+    }
+
+    bool isnegative()
+    {   return f128_negative(v);
+    }
+
+    constexpr bool sign();
+    constexpr int exponent();
+    constexpr QuadFloat set_exponent(int64_t n);
+    constexpr QuadFloat mantissa();
+};
+
+inline bool QuadFloat::operator==(const QuadFloat& rhs) const
+{   return f128_eq(v, rhs.v);
+}
+
+inline bool QuadFloat::operator!=(const QuadFloat& rhs) const
+{   return !f128_eq(v, rhs.v);
+}
+
+inline bool QuadFloat::operator<(const QuadFloat& rhs) const
+{   return f128_lt(v, rhs.v);
+}
+
+inline bool QuadFloat::operator<=(const QuadFloat& rhs) const
+{   return f128_le(v, rhs.v);
+}
+
+inline bool QuadFloat::operator>(const QuadFloat& rhs) const
+{   return f128_lt(rhs.v, v);
+}
+
+inline bool QuadFloat::operator>=(const QuadFloat& rhs) const
+{   return f128_le(rhs.v, v);
+}
+
+constexpr inline QuadFloat QuadFloat::operator+() const
+{   return *this;
+}
+
+constexpr inline QuadFloat QuadFloat::operator-() const
+{   float128_t r{{0,0}};
+    r.v[f128_high] = v.v[f128_high] ^ 0x8000000000000000ULL;
+    r.v[f128_low] = v.v[f128_low];
+    return QuadFloat(r);
+}
+
+inline QuadFloat QuadFloat::operator+(const QuadFloat& rhs) const
+{   return QuadFloat(f128_add(v, rhs.v));
+}
+
+inline QuadFloat QuadFloat::operator-(const QuadFloat& rhs) const
+{   return QuadFloat(f128_sub(v, rhs.v));
+}
+
+inline QuadFloat QuadFloat::operator*(const QuadFloat& rhs) const
+{   return QuadFloat(f128_mul(v, rhs.v));
+}
+
+inline QuadFloat QuadFloat::operator/(const QuadFloat& rhs) const
+{   return QuadFloat(f128_div(v, rhs.v));
+}
+
+inline QuadFloat QuadFloat::operator+=(const QuadFloat& rhs)
+{   v = f128_add(v, rhs.v);
+    return *this;
+}
+
+inline QuadFloat QuadFloat::operator-=(const QuadFloat& rhs)
+{   v = f128_sub(v, rhs.v);
+    return *this;
+}
+
+inline QuadFloat QuadFloat::operator*=(const QuadFloat& rhs)
+{   v = f128_mul(v, rhs.v);
+    return *this;
+}
+
+inline QuadFloat QuadFloat::operator/=(const QuadFloat& rhs)
+{   v = f128_div(v, rhs.v);
+    return *this;
+}
+
+inline constexpr bool QuadFloat::sign()
+{
+#ifdef LITTLEENDIAN
+    uint64_t top = v.v[1];
+#else // LITTLEENDIAN
+    uint64_t top = v.v[0];
+#endif // LITTLEENDIAN
+    return (top & 0x8000000000000000U) != 0;
+}
+
+inline constexpr int QuadFloat::exponent()
+{
+#ifdef LITTLEENDIAN
+    uint64_t top = v.v[1];
+#else // LITTLEENDIAN
+    uint64_t top = v.v[0];
+#endif // LITTLEENDIAN
+    return ((top>>48) & 0x7fff) - 0x3fff;
+}
+
+inline constexpr QuadFloat QuadFloat::set_exponent(int64_t n)
+{   float128_t r = v;
+#ifdef LITTLEENDIAN
+    r.v[1] = (r.v[1] & 0x8000ffffffffffffU) | (((n + 0x3fff) & 0x7fff)<<48);
+#else // LITTLEENDIAN
+    r.v[0] = (r.v[0] & 0x8000ffffffffffffU) | (((n + 0x3fff) & 0x7fff)<<48);
+#endif // LITTLEENDIAN
+    return r;
+}
+
+inline constexpr QuadFloat QuadFloat::mantissa()
+{   float128_t r = v;
+#ifdef LITTLEENDIAN
+    r.v[1] = (r.v[1] & 0x8000ffffffffffffU) | 0x3fff000000000000U;
+#else // LITTLEENDIAN
+    r.v[0] = (r.v[0] & 0x8000ffffffffffffU) | 0x3fff000000000000U;
+#endif // LITTLEENDIAN
+    return QuadFloat(r);
+}
+
+inline uint128_t qmantissa(QuadFloat a)
+{   uint64_t hi, lo;
+    f128_mantissa(a.v, hi, lo);
+    return (static_cast<uint128_t>(hi)<<64) + lo;
+}
+
+inline QuadFloat qmodf(QuadFloat a, QuadFloat& intpart)
+{   return QuadFloat(f128_modf(a.v, intpart.v));
+}
+
+inline constexpr QuadFloat operator ""_Q (const char *s)
+{   return QuadFloat(s);
+}
+
+#define HAVE_Q_LITERALS 1
+
+inline constexpr unsigned hexFromChar(int c)
+{   switch (c)
+    {
+    default:  return -1;
+    case '0': return 0;
+    case '1': return 1;
+    case '2': return 2;
+    case '3': return 3;
+    case '4': return 4;
+    case '5': return 5;
+    case '6': return 6;
+    case '7': return 7;
+    case '8': return 8;
+    case '9': return 9;
+    case 'a': return 10;
+    case 'b': return 11;
+    case 'c': return 12;
+    case 'd': return 13;
+    case 'e': return 14;
+    case 'f': return 15;
+    case 'A': return 10;
+    case 'B': return 11;
+    case 'C': return 12;
+    case 'D': return 13;
+    case 'E': return 14;
+    case 'F': return 15;
+    }
+}
+
+inline constexpr QuadFloat operator ""_QX (const char* s)
+{   uint64_t high=0, low=0, w = 0;
+    s += 2; // skip over the "0x" prefix.
+    int c = *s++, d=0;
+    int n = 0;
+    while ((d = hexFromChar(c)) >= 0)
+    {   w = 16*w + d;
+        c = *s++;
+        if (c == '\'') c = *s++;
+        if (++n == 16) break;
+    }
+    high = w;
+    w = 0;
+    n = 0;
+    while ((d = hexFromChar(c)) >= 0)
+    {   w = 16*w + d;
+        c = *s++;
+        if (c == '\'') c = *s++;
+        if (++n == 16) break;
+    }
+    low = w;
+    float128_t r = {{0,0}};    
+#ifdef LITTLEENDIAN
+    r.v[0] = low;
+    r.v[1] = high;
+#else // LITTLEENDIAN
+    r.v[0] = high;
+    r.v[1] = low;
+#endif // LITTLEENDIAN
+    return QuadFloat(r);
+}
+
+inline float128_t f128_NaN          = {fpOrder(0, 0x7fff800000000000LL)}; 
+inline float128_t f128_inf          = {fpOrder(0, 0x7fff000000000000LL)}; 
+inline float128_t f128_minf         = {fpOrder(0, 0xffff000000000000LL)}; 
+inline float128_t f128_0            = 0.0_Q . v;
+inline float128_t f128_half         = 0.5_Q . v;
+inline float128_t f128_mhalf        = (-0.5_Q) . v;
+inline float128_t f128_1            = 1.0_Q . v;
+inline float128_t f128_1plus        = {fpOrder(0x0000000000000001ULL, 0x3fff000000000000ULL)}; 
+inline float128_t f128_1minus       = {fpOrder(0xffffffffffffffffULL, 0x3ffe000000000000ULL)}; 
+inline float128_t f128_m1           = (-1.0_Q) . v;
+inline float128_t f128_10_16        = 1.0e16_Q . v;
+inline float128_t f128_10_17        = 1.0e17_Q . v;
+inline float128_t f128_10_18        = 1.0e18_Q . v;
+inline float128_t f128_10_19        = 1.0e19_Q . v;
+inline float128_t f128_scale        = {fpOrder(0x0080000000000000ULL, 0x4038000000000000ULL)};
+inline float128_t f128_N1           = {fpOrder(0, 0x4fff000000000000ULL)}; // 2^4096
+inline float128_t f128_expmin       = {fpOrder(0xbb059fabb506ff34ULL, 0xc00c654bb3b2c73eULL)};
+inline float128_t f128_expmax       = {fpOrder(0xf35793c7673007e6ULL, 0x400c62e42fefa39eULL)};
+//  b128u128_u xmin = {.f = -0x1.654bb3b2c73e bb059fabb506ff34 p+13q},
+//             xmax = {.f =  0x1.62e42fefa39e f35793c7673007e6 p+13q};
+inline float128_t f128_exp2min      = {fpOrder(0x0000000000000000ULL, 0xc00d010000000000ULL)};
+inline float128_t f128_exp2max      = {fpOrder(0x0000000000000000ULL, 0x400d000000000000ULL)};
+//  b128u128_u xmin = {.f = -0x1.01bcp+14q},
+//             xmax = {.f = 0x1p+14q};
+inline float128_t f128_exp10min     = {fpOrder(0x6893f84497c723c1ULL, 0xc00a3657d621f4e9ULL)};
+inline float128_t f128_exp10max     = {fpOrder(0xef311f12b35816faULL, 0x400a34413509f79fULL)};
+//  b128u128_u xmin = {.f = f128_exp10min,-0x1.3657d621f4e96893f84497c723c1p+12q
+//             xmax = {.f = 0x1.34413509f79fef311f12b35816fap+12q};
+inline float128_t f128_expm1min     = {fpOrder(0x90b9ff9d97e6c709ULL, 0xc00a3c133ab16db9ULL)};
+inline float128_t f128_expm1max     = {fpOrder(0xf35793c7673007e6ULL, 0x400c62e42fefa39eULL)};
+//  b128u128_u xmin ={.f = -0x1.3c133ab16db990b9ff9d97e6c709p+6q},
+//             xmax = {.f = 0x1.62e42fefa39ef35793c7673007e6p+13q};
+ 
+// If I am at all uncertain about my treratment of the "_Q" suffix I might
+// properly give thse values in hex.
+inline float128_t f128_epsilon      = 1.925929944387235853055977942584927319e-34_Q . v;
+inline float128_t f128_half_epsilon = 9.629649721936179265279889712924636593e-35_Q . v;
+inline float128_t f128_max          = 1.18973149535723176508575932662800702e+4932_Q . v;
+inline float128_t f128_negmax       = (-1.18973149535723176508575932662800702e+4932_Q) . v;
+inline float128_t f128_min          = {fpOrder(1, 0)};
+//                                        6.47517511943802511092443895822764655e-4966_Q . v;
+inline float128_t f128_negmin       = {fpOrder(1, 0x8000000000000000ULL)};
+//                                        (-6.47517511943802511092443895822764655e-4966_Q) . v;
+inline float128_t f128_normmin      = 3.36210314311209350626267781732175260e-4932_Q . v; 
+inline float128_t f128_negnormmin   = (-3.36210314311209350626267781732175260e-4932_Q) . v;
+inline float128_t f128_pi           = (3.141592653589793238462643383279502884197169_Q) . v;
+inline float128_t f128_halfpi       = (1.570796326794896619231321691639751442098585_Q) . v;
+inline float128_t f128_mhalfpi      = (-1.570796326794896619231321691639751442098585_Q) . v;
+
+#ifdef FLOAT256
+
+// Now some limited support for 256-bit floats, implemented as pairs
+// of 128-bit numbers using the strategy sometimes known as double-double.
+// But here it should be quad-quad.
+// Infinities, NaNs and gradual underflow will NOT be well supported here
+// so code that uses these numbers should take care!
+
+extern void f256M_negate(const float256_t *x, float256_t *z);
+extern void f256M_add(const float256_t *x, const float256_t *y, float256_t *z);
+extern void f256M_mul(const float256_t *x, const float256_t *y, float256_t *z);
+extern void f256M_pow(const float256_t *x, unsigned int y, float256_t *z);
+extern void f256M_gt(const float256_t *x, float256_t *y);
+extern void f256M_ge(const float256_t *x, float256_t *y);
+extern void f256M_lt(const float256_t *x, float256_t *y);
+extern void f256M_le(const float256_t *x, float256_t *y);
+
+// I will want working precision even higher than 128-bits. I will
+// arrange that using pairs of 128-bit floats such that the value
+// I am representing is their sum. The code I have here will not be
+// robust against issues of denormailised numbers, infinities or
+// NaNs, and so its use needs to take care to avoid such cases.
+//
+// I am following the scheme from T J Dekker, Numer Math 18 224-242 (1971).
+
+extern float256_t
+  f256_5, //      = fp256Order(fpOrder(0,0), fpOrder(0, 0x4001400000000000ULL)),
+  f256_10, //     = fp256Order(fpOrder(0,0), fpOrder(0, 0x4002400000000000ULL)),
+  f256_r5, //     = fp256Order(fpOrder(0x00000000000000000ULL, 0x4001400000000000ULL),
+           //                  fpOrder(0x00000000000000000ULL, 0x0000000000000000ULL)),
+  f256_r10, //    = fp256Order(fpOrder(0x9999999999999999aULL, 0xbf8a999999999999ULL),
+            //                 fpOrder(0x9999999999999999aULL, 0x3ffc999999999999ULL)),
+  f256_10_16; //  = fp256Order(fpOrder(0,0), fpOrder(0, 0x40341c37937e0800ULL));
+
+extern float256_t ato256(const char* s);
+
+class OctFloat
+{
+public:
+// Many people would believe I should make the data field here
+// private rather than public, and provide an access function in
+// case of need.
+
+    float256_t v;
+
+    constexpr OctFloat():v()               // default constructor
+    {   v.hi = v.lo = f128_0;
+    }
+    constexpr OctFloat(float128_t n):v()   // import from a float128_t
+    {   v.hi = n;
+        v.lo = f128_0;
+    }
+    constexpr OctFloat(float256_t n):v()   // import from a float256_t
+    {   v.hi = n.hi;
+        v.lo = n.lo;
+    }
+    OctFloat(const char* s):v()            // value as from a text string
+    {   v = ato256(s);
+    }
+    constexpr OctFloat(const QuadFloat hi):v()
+    {   v.hi = hi.v;
+        v.lo = f128_0;
+    }
+    constexpr OctFloat(const QuadFloat hi, const QuadFloat lo):v()
+    {   v.hi = hi.v;
+        v.lo = lo.v;
+    }
+    constexpr OctFloat(const OctFloat& rhs):v()
+    {   v = rhs.v;
+    }
+    OctFloat(int n):v()
+    {   QuadFloat w(n);
+        v.hi = w.v;
+        v.lo = f128_0;
+    }
+    OctFloat(int64_t n):v()
+    {   v.hi = i64_to_f128(n);
+        v.lo = f128_0;
+    }
+    OctFloat(float64_t n):v()
+    {   v.hi = f64_to_f128(n);
+        v.lo = f128_0;
+    }
+    OctFloat(double d):v()
+    {   float64_t n;
+        std::memcpy(reinterpret_cast<char*>(&n),
+                    reinterpret_cast<char*>(&d),
+                    sizeof(double));
+        v.hi = f64_to_f128(n);
+        v.lo = f128_0;
+    }
+    constexpr OctFloat(OctFloat&& rhs):v()
+    {   v = rhs.v;
+    }
+
+    friend std::ostream& operator<<(std::ostream& o, const OctFloat& d)
+    {   return o << QuadFloat(d.v.hi) << "_:_" << QuadFloat(d.v.lo);
+    }
+
+    constexpr OctFloat operator=(const OctFloat& rhs)
+    {   v = rhs.v;
+        return *this;
+    }
+    constexpr OctFloat operator=(OctFloat&& rhs)
+    {   v = rhs.v;
+        return *this;
+    }
+
+// Beware at present - these overloads only support operations with the
+// OctFloat argument as the left operand! I could set up some templates
+// etc to allow for things the other way round, but given that OctFloats
+// are ONLY intended for internal use in support of bettter precision in
+// some QuadFloat operations I am not going to add that extra complication.
+
+    bool operator==(const OctFloat& rhs) const;
+    bool operator!=(const OctFloat& rhs) const;
+    bool operator<(const OctFloat& rhs) const;
+    bool operator<=(const OctFloat& rhs) const;
+    bool operator>(const OctFloat& rhs) const;
+    bool operator>=(const OctFloat& rhs) const;
+
+    OctFloat operator-() const;
+
+    OctFloat operator+(const OctFloat& rhs) const;
+    OctFloat operator-(const OctFloat& rhs) const;
+    OctFloat operator*(const OctFloat& rhs) const;
+    OctFloat operator/(const OctFloat& rhs) const;
+
+};
+
+
+// I will allow oct-float literals in the form 1.234e56_QQ but NOTE
+// WELL that I will not expect all the bits in the value read to be
+// fully accurate. The results will be best when the values are within
+// reasonable reach of 1.0, and infinities, subnormal numbers etc may
+// not be well supported. The values will have around 227 bits which
+// gives a little over 68 decimals. The literals here will not be
+// assembled at compile time and so it will probably be best to
+// set up all constants using static initialization so that the
+// conversion from decimal to binary is performed at program startup
+// time. Another option will be to run a jiffy program once that
+// sets up the constants that way and then renders the binary values
+// in hex, since I will be able to provide a compile-time translation
+// from hex-formatted input of the form 0xNNNN...NNN_QQX into the
+// required data. For this there will be exactly 64 hex digits that
+// will denote the bit pattern in a most-significant-digit-first layout.
+// So the main thing that the parsing will need to do is to allow for
+// byte ordering on the target machine.
+//
+// Well probably the best way to put OctFloat literal values in source code
+// will be along the lines of OctFloat(1.23_Q, 4.56e-36_Q) leveraging the
+// fact that QuadDoubles can be read in competently. Or to input then
+// as hex values with an 0x prefix and _QQX suffix and exactly 64 hex
+// digits between.
+
+
+inline OctFloat oct_10(10);
+
+inline OctFloat operator ""_QQ (const char* s)
+{   return OctFloat(ato256(s));
+}
+
+// If the user specified other than exactly 64 hex digits with _QQX the
+// result will be something that is as defined by this code but that
+// ought not to be relied upon!
+
+constexpr inline OctFloat operator ""_QQX (const char* s)
+{   s += 2; // skip over the "0x" prefix.
+    if (*s == '\'') s++;
+    uint64_t data[4] = {0, 0, 0, 0};
+    for (int i=0; i<4; i++)
+    {   uint64_t w = 0;
+        for (int j=0; j<16; j++)
+        {   int c = *s++, d=0;
+            if ((d = hexFromChar(c)) < 0)
+            {   s--;
+                break;
+            }
+            if (*s == '\'') s++;
+            w = 16*w + d;
+        }
+        data[i] = w;
+    }
+    float256_t r = {{0, 0}, {0,0}};
+#ifdef LITTLEENDIAN
+    const int low = 0, high = 1;
+#else // LITTLEENDIAN
+    const int low = 1, high = 0;
+#endif // LITTLEENDIAN
+    r.hi.v[high] = data[0];
+    r.hi.v[low] = data[1];
+    r.lo.v[high] = data[2];
+    r.lo.v[low] = data[3];
+    return OctFloat(r);
+}
+
+#endif // FLOAT256
+
+// I am going to do this without relying on intrinsics. Across history and
+// different compilers there is confusion about the order of arguments
+// and whether it is the sum or the carry result that is returned. And
+// here I can use a C++ reference argument rather than a pointer to get
+// the second result returned. So this may be slower than use of intrinsics
+// but should be more portable.
+
+inline uint32_t add_with_carry(uint32_t a, unsigned int b, unsigned int& cout)
+{   uint32_t r = a + b;
+    cout = (r < a);
+    return r;
+}
+
+inline uint32_t add_with_carry(uint32_t a, uint32_t b,
+                               unsigned int cin, unsigned int& cout)
+{   unsigned int w1, w2;
+    uint32_t r = add_with_carry(a, b, w1);
+    r = add_with_carry(r, cin, w2);
+    cout = w1 + w2;
+    return r;
+}
+inline uint32_t subtract_with_borrow(uint32_t a, uint32_t b, unsigned int& bout)
+{   uint32_t r = a-b;
+    bout = (r > a);
+    return r;
+}
+
+inline uint32_t subtract_with_borrow(uint32_t a, uint32_t b,
+                                     unsigned int bin, unsigned int& bout)
+{   unsigned int w1, w2;
+    uint64_t r = subtract_with_borrow(a, b, w1);
+    r = subtract_with_borrow(r, bin, w2);
+    bout = w1 + w2;
+    return r;
+}
+
+inline uint64_t add_with_carry(uint64_t a, uint64_t b, unsigned int& cout)
+{   uint64_t r = a + b;
+    cout = (r < a);
+    return r;
+}
+
+inline uint64_t add_with_carry(uint64_t a, uint64_t b,
+                               unsigned int cin, unsigned int& cout)
+{   unsigned int w1, w2;
+    uint64_t r = add_with_carry(a, b, w1);
+    r = add_with_carry(r, (uint64_t)cin, w2);
+    cout = w1 + w2;
+    return r;
+}
+inline uint64_t subtract_with_borrow(uint64_t a, uint64_t b, unsigned int& bout)
+{   uint64_t r = a-b;
+    bout = (r > a);
+    return r;
+}
+
+inline uint64_t subtract_with_borrow(uint64_t a, uint64_t b,
+                                     unsigned int bin, unsigned int& bout)
+{   unsigned int w1, w2;
+    uint64_t r = subtract_with_borrow(a, b, w1);
+    r = subtract_with_borrow(r, (uint64_t)bin, w2);
+    bout = w1 + w2;
+    return r;
+}
+
+inline uint128_t add_with_carry(uint128_t a, uint128_t b, unsigned int& cout)
+{   uint128_t r = a + b;
+    cout = (r < a);
+    return r;
+}
+
+inline uint128_t add_with_carry(uint128_t a, uint128_t b,
+                               unsigned int cin, unsigned int& cout)
+{   unsigned int w1, w2;
+    uint128_t r = add_with_carry(a, b, w1);
+    r = add_with_carry(r, (uint128_t)cin, w2);
+    cout = w1 + w2;
+    return r;
+}
+inline uint128_t subtract_with_borrow(uint128_t a, uint128_t b, unsigned int& bout)
+{   uint128_t r = a-b;
+    bout = (r > a);
+    return r;
+}
+
+inline uint128_t subtract_with_borrow(uint128_t a, uint128_t b,
+                                     unsigned int bin, unsigned int& bout)
+{   unsigned int w1, w2;
+    uint128_t r = subtract_with_borrow(a, b, w1);
+    r = subtract_with_borrow(r, (uint128_t)bin, w2);
+    bout = w1 + w2;
+    return r;
+}
+
+// The following are from "core math" and should deliver correctly rounded
+// values on 128-bit arguments.
+
+extern float128_t cr_cbrtq(float128_t x);      // cube root
+extern float128_t cr_exp10q(float128_t x);     // 10^x
+extern float128_t cr_exp2q(float128_t x);      // 2^x
+extern float128_t cr_expm1q(float128_t x);     // e^x - 1
+extern float128_t cr_expq(float128_t x);       // e^x
+extern float128_t cr_hypotq(float128_t x, float128_t y);
+extern float128_t cr_logq(float128_t x);       // ln x
+extern float128_t cr_rsqrtq(float128_t x);     // 1/sqrt x
+extern float128_t cr_sqrtq(float128_t x);      // sqrt x
+
+} // end namespace
+
+#endif // header_float128_t
+
+// end of float128_t.h
 // bitmaps.h                                    Copyright (C) 2026 Codemist
 
 #ifndef header_bitmaps_h
@@ -3103,1938 +6741,6 @@ public:
 // It is not standard-compliant and even with those compilers it may
 // not be available on all computers.
 
-// "int128_t.h":  128 bit integer types for C++
-//                             Copyright Jason Lee, Arthur Norman 2013-2026
-
-// $Id$
-  
-#ifndef __int128_t_h__
-#define __int128_t_h__
-
-/*
-If you go "#include "int128_t.h" you should end up with two types -
-uint128_t and int128_t for wide integers. If these are supported by
-your C++ compiler directly (possibly via names like unsigned __int128
-and __int128) then the native versions will be used. Otherwise classes
-with the relevant names will be introduced with most arithmetic operators
-overloaded to use them.
-
-The test of what to do is based around whether __SIZEOF_INT128__ is
-defined. This is automatically predefined by the compiler and does
-not need any action from the programmer. For at least the platforms I
-care about most (well x86_64 Linux, Raspberry Pi 5 (64-bit), Mac M1, all
-using g++ or clang++) this gets defined and then a type __int128_t exists.
-I then set up aliases int128_t and uint128_t.#
-
-I *ASSUME* that if __SIZEOF_INT128__ is not defined then both signed and
-unsigned 128-bit integers will be avaliable with __int128_t being the
-signed type. I also assume that the plain names int128_t and uint128_t
-will be available for me to define as classes that behave as much like
-regular integers as can reasonably be arranged.
-
-Some of my C++ coding may be ugly or otherwise bad! The unsigned part
-was originally by Jason Lee and should be robust and tidy (apart from where I
-altered it)  but the signed variant is mine and may be repetitive, ugly,
-incomplete or otherwise less satisfactory!
-
-I have also not worried very much about performance-tuning of the signed
-code. The unsigned version had some care to avoid unnecessary work, but here
-my stance is that a computer that does not support native 128-bit will be
-slow at big arithmetic whatever I do, so hurting it a bit mnore will not
-upset me too much. A C++ expert may want to address that issue as well as
-code style!
-
-I have a collection of uses of "typename enable_if<std::is_arithetic<..."
-in here that is sufficient to resolve some ambiguities that arose in use
-with CSL, but I have not put that in everywhere - just in enough places to
-support my current usage. Others who pick this up might want to review
-and extent that!
-
-Copyright (c) 2013 - 2017 Jason Lee @ calccrypto at gmail.com
-              2020 - 2025 Arthur Norman
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-With much help from Auston Sterling
-
-Thanks to Stefan Deigmo?=ller for finding
-a bug in operator*.
-
-Thanks to Frano?=ois Dessenne for convincing me
-to do a general rewrite of this class.
-
-
-This code incorporated the Jason Lee code but has been re-worked by Arthur
-Norman, 2020-, and now provides both signed and unsigned 128-bit types called
-uint128_t and int128_t, and to arrange that it can always be loaded as a
-header-only library.
-*/
-
-
-// I want this to be a standalone header file that could be used outside
-// CSL, and so I include the C++ header files that it used and I will refer
-// to things as e.g. std::uint64_t even though through CSL I have a "using"
-// directive to render the "std::" unnecessary.
-
-#include <cinttypes>
-#include <cstdint>
-#include <string>
-#include <iostream>
-#include <stdexcept>
-#include <utility>
-#include <type_traits>
-
-#ifdef __SIZEOF_INT128__
-
-#include <type_traits>
-
-// The following works with both gcc and clang++ on the platforms that
-// ith older versions of the compilers "__uint128_t" needed to be
-// replaced by "unsigned __int128_t" but as of December 2025 I find
-// the following works on the platforms that I have tried...
-
-using int128_t = __int128_t;
-using uint128_t = __uint128_t;
-
-namespace INT128names
-{
-
-// I provide getUPPER(), getLOWER() and PACK128() for conversions between
-// unsigned 128-bit integers and pairs of unsigned 64-bit values.
-
-inline std::uint64_t getUPPER(uint128_t a)
-{   return a >> 64;
-}
-
-inline std::uint64_t getLOWER(uint128_t a)
-{   return static_cast<std::uint64_t>(a);
-}
-
-inline uint128_t PACK128(std::uint64_t high, std::uint64_t low)
-{   return uint128_t(high)<<64 | low;
-}
-
-inline bool TOP_BIT(uint128_t a)
-{   return (a >> 127) != 0;
-}
-
-inline uint128_t UNSIGNED_FLIP_TOP_BIT(uint128_t a)
-{   return a ^ (uint128_t(1)<<127);
-}
-
-} // end of namespace
-
-#else // __SIZEOF_INT128__
-
-class uint128_t;
-class int128_t;
-#define __SIZEOF_INT128__ 16
-
-class uint128_t
-{
-private:
-    std::uint64_t UPPER, LOWER;
-
-public:
-    // Constructors
-    uint128_t();
-    uint128_t(const uint128_t & rhs);
-    uint128_t(uint128_t && rhs);
-    uint128_t(int128_t rhs);
-
-    template <typename T>
-    uint128_t(const T & rhs)
-        : UPPER(0), LOWER(rhs)
-    {   static_assert(std::is_integral <T>::value,
-                      "Input argument type must be an integer.");
-    }
-
-    template <typename S, typename T> uint128_t(const S & upper_rhs,
-            const T & lower_rhs)
-        : UPPER(upper_rhs), LOWER(lower_rhs)
-    {   static_assert(std::is_integral <S>::value &&
-                      std::is_integral <T>::value
-                      , "Input argument types must be integers.");
-    }
-
-    //  RHS input args only
-
-    // Assignment Operator
-    uint128_t operator=(const uint128_t & rhs);
-    uint128_t operator=(uint128_t && rhs);
-    uint128_t operator=(int128_t rhs);
-
-    template <typename T> uint128_t operator=(const T & rhs)
-    {   static_assert(std::is_integral <T>::value,
-                      "Input argument type must be an integer.");
-        UPPER = 0;
-        LOWER = rhs;
-        return *this;
-    }
-
-    // Typecast Operators
-    operator bool() const;
-    operator std::uint8_t() const;
-    operator std::uint16_t() const;
-    operator std::uint32_t() const;
-    operator std::uint64_t() const;
-    operator std::int64_t() const;
-    operator int128_t() const;
-
-    // Bitwise Operators
-    uint128_t operator&(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator&(const T & rhs) const
-    {   return uint128_t(0, LOWER & static_cast<std::uint64_t>(rhs));
-    }
-
-    uint128_t & operator&=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator&=(const T & rhs)
-    {   UPPER = 0;
-        LOWER &= rhs;
-        return *this;
-    }
-
-    uint128_t operator|(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator|(const T & rhs) const
-    {   return uint128_t(UPPER, LOWER | static_cast<std::uint64_t>(rhs));
-    }
-
-    uint128_t & operator|=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator|=(const T & rhs)
-    {   LOWER |= static_cast<std::uint64_t>(rhs);
-        return *this;
-    }
-
-    uint128_t operator^(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator^(const T & rhs) const
-    {   return uint128_t(UPPER, LOWER ^ static_cast<std::uint64_t>(rhs));
-    }
-
-    uint128_t & operator^=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator^=(const T & rhs)
-    {   LOWER ^= static_cast<std::uint64_t>(rhs);
-        return *this;
-    }
-
-    uint128_t operator~() const;
-
-    // Bit Shift Operators
-    uint128_t operator<<(const uint128_t & rhs) const;
-
-    template <typename T> uint128_t operator<<(const T & rhs) const
-    {   return *this << uint128_t(rhs);
-    }
-
-    uint128_t & operator<<=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator<<=(const T & rhs)
-    {   *this = *this << uint128_t(rhs);
-        return *this;
-    }
-
-    uint128_t operator>>(const uint128_t & rhs) const;
-
-    template <typename T> uint128_t operator>>(const T & rhs) const
-    {   return *this >> uint128_t(rhs);
-    }
-
-    uint128_t & operator>>=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator>>=(const T & rhs)
-    {   *this = *this >> uint128_t(rhs);
-        return *this;
-    }
-
-    // Logical Operators
-    bool operator!() const;
-    bool operator&&(const uint128_t & rhs) const;
-    bool operator||(const uint128_t & rhs) const;
-
-    template <typename T> bool operator&&(const T & rhs)
-    {   return static_cast <bool> (*this && rhs);
-    }
-
-    template <typename T> bool operator||(const T & rhs)
-    {   return static_cast <bool> (*this || rhs);
-    }
-
-    // Comparison Operators
-    bool operator==(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator==(const T & rhs) const
-    {   return (!UPPER && (LOWER == static_cast<std::uint64_t>(rhs)));
-    }
-
-    bool operator!=(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator!=(const T & rhs) const
-    {   return (UPPER | (LOWER != static_cast<std::uint64_t>(rhs)));
-    }
-
-    bool operator>(const uint128_t & rhs) const;
-
-    template <typename T> bool operator>(const T & rhs) const
-    {   return (UPPER || (LOWER > static_cast<std::uint64_t>(rhs)));
-    }
-
-    bool operator<(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator<(const T & rhs) const
-    {   return (!UPPER)?(LOWER < static_cast<std::uint64_t>(rhs)):false;
-    }
-
-    bool operator>=(const uint128_t & rhs) const;
-
-    template <typename T> bool operator>=(const T & rhs) const
-    {   return ((*this > rhs) | (*this == rhs));
-    }
-
-    bool operator<=(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator<=(const T & rhs) const
-    {   return ((*this < rhs) | (*this == rhs));
-    }
-
-    // Arithmetic Operators
-    uint128_t operator+(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator+(const T & rhs) const
-    {   return uint128_t(UPPER + ((LOWER + static_cast<std::uint64_t>(rhs)) <
-                                  LOWER), LOWER + static_cast<std::uint64_t>(rhs));
-    }
-
-    uint128_t & operator+=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator+=(const T & rhs)
-    {   UPPER = UPPER + ((LOWER + rhs) < LOWER);
-        LOWER = LOWER + rhs;
-        return *this;
-    }
-
-    uint128_t operator-(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator-(const T & rhs) const
-    {   return uint128_t(static_cast<std::uint64_t>(
-                             UPPER - ((LOWER - rhs) > LOWER)),
-                         static_cast<std::uint64_t>(LOWER - rhs));
-    }
-
-    uint128_t & operator-=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator-=(const T & rhs)
-    {   *this = *this - rhs;
-        return *this;
-    }
-
-    uint128_t operator*(const uint128_t & rhs) const;
-
-    template <typename T> uint128_t operator*(const T & rhs) const
-    {   return *this * uint128_t(rhs);
-    }
-
-    uint128_t & operator*=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator*=(const T & rhs)
-    {   *this = *this * uint128_t(rhs);
-        return *this;
-    }
-
-private:
-    std::pair <uint128_t, uint128_t> divmod(const uint128_t & lhs,
-                                            const uint128_t & rhs) const;
-
-public:
-    uint128_t operator/(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator/(const T & rhs) const
-    {   return *this / uint128_t(rhs);
-    }
-
-    uint128_t & operator/=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator/=(const T & rhs)
-    {   *this = *this / uint128_t(rhs);
-        return *this;
-    }
-
-    uint128_t operator%(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator%(const T & rhs) const
-    {   return *this - (rhs * (*this / rhs));
-    }
-
-    uint128_t & operator%=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator%=(const T & rhs)
-    {   *this = *this % uint128_t(rhs);
-        return *this;
-    }
-
-    // Increment Operator
-    uint128_t & operator++();
-    uint128_t operator++(int);
-
-    // Decrement Operator
-    uint128_t & operator--();
-    uint128_t operator--(int);
-
-    // Nothing done since promotion doesn't work here
-    uint128_t operator+() const;
-
-    // two's complement
-    uint128_t operator-() const;
-
-    // Get private values
-    const std::uint64_t & upper() const
-    {   return UPPER;
-    }
-    const std::uint64_t & lower() const
-    {   return LOWER;
-    }
-
-    // Get bitsize of value
-    std::uint8_t bits() const;
-
-    // Get string representation of value
-    std::string str(std::uint8_t base = 10,
-                    const unsigned int & len = 0) const;
-};
-
-namespace INT128names
-{
-
-inline std::uint64_t getUPPER(uint128_t a)
-{   return a.upper();
-}
-
-inline std::uint64_t getLOWER(uint128_t a)
-{   return a.lower();
-}
-
-inline uint128_t PACK128(std::uint64_t high, std::uint64_t low)
-{   return uint128_t(high, low);
-}
-
-inline bool TOP_BIT(uint128_t a)
-{   return (getUPPER(a) >> 63) != 0;
-}
-
-inline uint128_t UNSIGNED_FLIP_TOP_BIT(uint128_t a)
-{   return uint128_t(getUPPER(a) ^ static_cast<std::uint64_t>(1)<<63,
-                     getLOWER(a));
-}
-
-} // end of namespace
-
-// Bitwise Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator&(const T & lhs, const uint128_t & rhs)
-{   return rhs & lhs;
-}
-
-template <typename T> T & operator&=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (rhs & lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator|(const T & lhs, const uint128_t & rhs)
-{   return rhs | lhs;
-}
-
-template <typename T> T & operator|=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (rhs | lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator^(const T & lhs, const uint128_t & rhs)
-{   return rhs ^ lhs;
-}
-
-template <typename T> T & operator^=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (rhs ^ lhs);
-}
-
-// Bitshift operators
-uint128_t operator<<(const bool & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint8_t  & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int8_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int16_t  & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int32_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int64_t & lhs, const uint128_t & rhs);
-
-template <typename T> T & operator<<=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (uint128_t(lhs) << rhs);
-}
-
-uint128_t operator>>(const bool & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint8_t  & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int8_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int16_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int32_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int64_t & lhs, const uint128_t & rhs);
-
-template <typename T> T & operator>>=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (uint128_t(lhs) >> rhs);
-}
-
-// Comparison Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator==(const T & lhs, const uint128_t & rhs)
-{   return (!rhs.upper() &&
-            (static_cast<std::uint64_t>(lhs) == rhs.lower()));
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator!=(const T & lhs, const uint128_t & rhs)
-{   return (rhs.upper() ||
-            (static_cast<std::uint64_t>(lhs) != rhs.lower()));
-}
-
-template <typename T> bool operator>(const T & lhs, const uint128_t & rhs)
-{   return (!rhs.upper()) &&
-           (static_cast<std::uint64_t>(lhs) > rhs.lower());
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator<(const T & lhs, const uint128_t & rhs)
-{   if (rhs.upper())
-    {   return true;
-    }
-    return (static_cast<std::uint64_t>(lhs) < rhs.lower());
-}
-
-template <typename T> bool operator>=(const T & lhs, const uint128_t & rhs)
-{   if (rhs.upper())
-    {   return false;
-    }
-    return (static_cast<std::uint64_t>(lhs) >= rhs.lower());
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator<=(const T & lhs, const uint128_t & rhs)
-{   if (rhs.upper())
-    {   return true;
-    }
-    return (static_cast<std::uint64_t>(lhs) <= rhs.lower());
-}
-
-// Arithmetic Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator+(const T & lhs, const uint128_t & rhs)
-{   return rhs + lhs;
-}
-
-template <typename T> T & operator+=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (rhs + lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator-(const T & lhs, const uint128_t & rhs)
-{   return -(rhs - lhs);
-}
-
-template <typename T> T & operator-=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (-(rhs - lhs));
-}
-
-template <typename T> uint128_t operator*(const T & lhs, const uint128_t & rhs)
-{   return rhs * lhs;
-}
-
-template <typename T> T & operator*=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (rhs * lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator/(const T & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) / rhs;
-}
-
-template <typename T> T & operator/=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (uint128_t(lhs) / rhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
- operator%(const T & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) % rhs;
-}
-
-template <typename T> T & operator%=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (uint128_t(lhs) % rhs);
-}
-
-// IO Operator
-std::ostream & operator<<(std::ostream & stream, const uint128_t & rhs);
-
-// I do not go "#define UINT128_T" here because while I am setting up
-// int128_t I want to know if the unsigned version is native or
-// simulated. A key reason for that is that if both are native then
-// casts between them will already exist, while if either is simulated
-// I will need to define something.
-
-inline uint128_t::uint128_t()
-    : UPPER(0), LOWER(0)
-{}
-
-inline uint128_t::uint128_t(const uint128_t & rhs)
-    : UPPER(rhs.UPPER), LOWER(rhs.LOWER)
-{}
-
-inline uint128_t::uint128_t(uint128_t && rhs)
-    : UPPER(std::move(rhs.UPPER)), LOWER(std::move(rhs.LOWER))
-{   if (this != &rhs)
-    {   rhs.UPPER = 0;
-        rhs.LOWER = 0;
-    }
-}
-
-inline uint128_t uint128_t::operator=(const uint128_t & rhs)
-{   UPPER = rhs.UPPER;
-    LOWER = rhs.LOWER;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator=(uint128_t && rhs)
-{   if (this != &rhs)
-    {   UPPER = std::move(rhs.UPPER);
-        LOWER = std::move(rhs.LOWER);
-        rhs.UPPER = 0;
-        rhs.LOWER = 0;
-    }
-    return *this;
-}
-
-inline uint128_t::operator bool() const
-{   return (bool) (UPPER | LOWER);
-}
-
-inline uint128_t::operator std::uint8_t() const
-{   return static_cast<std::uint8_t>(LOWER);
-}
-
-inline uint128_t::operator std::uint16_t() const
-{   return static_cast<std::uint16_t>(LOWER);
-}
-
-inline uint128_t::operator std::uint32_t() const
-{   return (std::uint32_t) LOWER;
-}
-
-inline uint128_t::operator std::uint64_t() const
-{   return (std::uint64_t) LOWER;
-}
-
-inline uint128_t::operator std::int64_t() const
-{   return (std::int64_t) LOWER;
-}
-
-inline uint128_t uint128_t::operator&(const uint128_t & rhs) const
-{   return uint128_t(UPPER & rhs.UPPER, LOWER & rhs.LOWER);
-}
-
-inline uint128_t & uint128_t::operator&=(const uint128_t & rhs)
-{   UPPER &= rhs.UPPER;
-    LOWER &= rhs.LOWER;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator|(const uint128_t & rhs) const
-{   return uint128_t(UPPER | rhs.UPPER, LOWER | rhs.LOWER);
-}
-
-inline uint128_t & uint128_t::operator|=(const uint128_t & rhs)
-{   UPPER |= rhs.UPPER;
-    LOWER |= rhs.LOWER;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator^(const uint128_t & rhs) const
-{   return uint128_t(UPPER ^ rhs.UPPER, LOWER ^ rhs.LOWER);
-}
-
-inline uint128_t & uint128_t::operator^=(const uint128_t & rhs)
-{   UPPER ^= rhs.UPPER;
-    LOWER ^= rhs.LOWER;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator~() const
-{   return uint128_t(~UPPER, ~LOWER);
-}
-
-inline uint128_t uint128_t::operator<<(const uint128_t & rhs) const
-{   const std::uint64_t shift = rhs.LOWER;
-    if (((bool) rhs.UPPER) || (shift >= 128))
-    {   return uint128_t(0);
-    }
-    else if (shift == 64)
-    {   return uint128_t(LOWER, 0);
-    }
-    else if (shift == 0)
-    {   return *this;
-    }
-    else if (shift < 64)
-    {   return uint128_t((UPPER << shift) + (LOWER >> (64 - shift)),
-                         LOWER << shift);
-    }
-    else if ((128 > shift) && (shift > 64))
-    {   return uint128_t(LOWER << (shift - 64), 0);
-    }
-    else
-    {   return uint128_t(0);
-    }
-}
-
-inline uint128_t & uint128_t::operator<<=(const uint128_t & rhs)
-{   *this = *this << rhs;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator>>(const uint128_t & rhs) const
-{   const std::uint64_t shift = rhs.LOWER;
-    if (((bool) rhs.UPPER) || (shift >= 128))
-    {   return uint128_t(0);
-    }
-    else if (shift == 64)
-    {   return uint128_t(0, UPPER);
-    }
-    else if (shift == 0)
-    {   return *this;
-    }
-    else if (shift < 64)
-    {   return uint128_t(UPPER >> shift,
-                         (UPPER << (64 - shift)) + (LOWER >> shift));
-    }
-    else if ((128 > shift) && (shift > 64))
-    {   return uint128_t(0, (UPPER >> (shift - 64)));
-    }
-    else
-    {   return uint128_t(0);
-    }
-}
-
-inline uint128_t & uint128_t::operator>>=(const uint128_t & rhs)
-{   *this = *this >> rhs;
-    return *this;
-}
-
-inline bool uint128_t::operator!() const
-{   return !(bool) (UPPER | LOWER);
-}
-
-inline bool uint128_t::operator&&(const uint128_t & rhs) const
-{   return ((bool) *this && rhs);
-}
-
-inline bool uint128_t::operator||(const uint128_t & rhs) const
-{   return ((bool) *this || rhs);
-}
-
-inline bool uint128_t::operator==(const uint128_t & rhs) const
-{   return ((UPPER == rhs.UPPER) && (LOWER == rhs.LOWER));
-}
-
-inline bool uint128_t::operator!=(const uint128_t & rhs) const
-{   return ((UPPER != rhs.UPPER) | (LOWER != rhs.LOWER));
-}
-
-inline bool uint128_t::operator>(const uint128_t & rhs) const
-{   if (UPPER == rhs.UPPER)
-    {   return (LOWER > rhs.LOWER);
-    }
-    return (UPPER > rhs.UPPER);
-}
-
-inline bool uint128_t::operator<(const uint128_t & rhs) const
-{   if (UPPER == rhs.UPPER)
-    {   return (LOWER < rhs.LOWER);
-    }
-    return (UPPER < rhs.UPPER);
-}
-
-inline bool uint128_t::operator>=(const uint128_t & rhs) const
-{   return ((*this > rhs) || (*this == rhs));
-}
-
-inline bool uint128_t::operator<=(const uint128_t & rhs) const
-{   return ((*this < rhs) || (*this == rhs));
-}
-
-inline uint128_t uint128_t::operator+(const uint128_t & rhs) const
-{   return uint128_t(UPPER + rhs.UPPER + ((LOWER + rhs.LOWER) <
-                                          LOWER), LOWER + rhs.LOWER);
-}
-
-inline uint128_t & uint128_t::operator+=(const uint128_t & rhs)
-{   UPPER += rhs.UPPER + ((LOWER + rhs.LOWER) < LOWER);
-    LOWER += rhs.LOWER;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator-(const uint128_t & rhs) const
-{   return uint128_t(UPPER - rhs.UPPER - ((LOWER - rhs.LOWER) >
-                                          LOWER), LOWER - rhs.LOWER);
-}
-
-inline uint128_t & uint128_t::operator-=(const uint128_t & rhs)
-{   *this = *this - rhs;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator*(const uint128_t & rhs) const
-{   // split values into 4 32-bit parts
-    std::uint64_t top[4] = {UPPER >> 32, UPPER & 0xffffffff, LOWER >> 32, LOWER & 0xffffffff};
-    std::uint64_t bottom[4] = {rhs.UPPER >> 32, rhs.UPPER & 0xffffffff, rhs.LOWER >> 32, rhs.LOWER & 0xffffffff};
-    std::uint64_t products[4][4];
-
-    // multiply each component of the values
-    for(int y = 3; y > -1; y--)
-    {   for(int x = 3; x > -1; x--)
-        {   products[3 - x][y] = top[x] * bottom[y];
-        }
-    }
-
-    // first row
-    std::uint64_t fourth32 = (products[0][3] & 0xffffffff);
-    std::uint64_t third32  = (products[0][2] & 0xffffffff) +
-                             (products[0][3] >> 32);
-    std::uint64_t second32 = (products[0][1] & 0xffffffff) +
-                             (products[0][2] >> 32);
-    std::uint64_t first32  = (products[0][0] & 0xffffffff) +
-                             (products[0][1] >> 32);
-
-    // second row
-    third32  += (products[1][3] & 0xffffffff);
-    second32 += (products[1][2] & 0xffffffff) + (products[1][3] >> 32);
-    first32  += (products[1][1] & 0xffffffff) + (products[1][2] >> 32);
-
-    // third row
-    second32 += (products[2][3] & 0xffffffff);
-    first32  += (products[2][2] & 0xffffffff) + (products[2][3] >> 32);
-
-    // fourth row
-    first32  += (products[3][3] & 0xffffffff);
-
-    // move carry to next digit
-    third32  += fourth32 >> 32;
-    second32 += third32  >> 32;
-    first32  += second32 >> 32;
-
-    // remove carry from current digit
-    fourth32 &= 0xffffffff;
-    third32  &= 0xffffffff;
-    second32 &= 0xffffffff;
-    first32  &= 0xffffffff;
-
-    // combine components
-    return uint128_t((first32 << 32) | second32,
-                     (third32 << 32) | fourth32);
-}
-
-inline uint128_t & uint128_t::operator*=(const uint128_t & rhs)
-{   *this = *this * rhs;
-    return *this;
-}
-
-inline std::pair <uint128_t, uint128_t> uint128_t::divmod(
-    const uint128_t & lhs, const uint128_t & rhs) const
-{   // Save some calculations /////////////////////
-    if (rhs == uint128_t(0))
-    {   throw std::domain_error("Error: division or modulus by 0");
-    }
-    else if (rhs == uint128_t(1))
-    {   return std::pair <uint128_t, uint128_t> (lhs, uint128_t(0));
-    }
-    else if (lhs == rhs)
-    {   return std::pair <uint128_t, uint128_t> (uint128_t(1), uint128_t(0));
-    }
-    else if ((lhs == uint128_t(0)) || (lhs < rhs))
-    {   return std::pair <uint128_t, uint128_t> (uint128_t(0), lhs);
-    }
-
-    std::pair <uint128_t, uint128_t> qr (uint128_t(0), uint128_t(0));
-    for(std::uint8_t x = lhs.bits(); x > 0; x--)
-    {   qr.first  <<= uint128_t(1);
-        qr.second <<= uint128_t(1);
-
-        if ((lhs >> (x - 1U)) & 1)
-        {   qr.second++;
-        }
-
-        if (qr.second >= rhs)
-        {   qr.second -= rhs;
-            qr.first++;
-        }
-    }
-    return qr;
-}
-
-inline uint128_t uint128_t::operator/(const uint128_t & rhs) const
-{   return divmod(*this, rhs).first;
-}
-
-inline uint128_t & uint128_t::operator/=(const uint128_t & rhs)
-{   *this = *this / rhs;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator%(const uint128_t & rhs) const
-{   return divmod(*this, rhs).second;
-}
-
-inline uint128_t & uint128_t::operator%=(const uint128_t & rhs)
-{   *this = *this % rhs;
-    return *this;
-}
-
-inline uint128_t & uint128_t::operator++()
-{   static const uint128_t uint128_1(1);
-    return *this += uint128_1;
-}
-
-inline uint128_t uint128_t::operator++(int)
-{   uint128_t temp(*this);
-    ++*this;
-    return temp;
-}
-
-inline uint128_t & uint128_t::operator--()
-{   static const uint128_t uint128_1(1);
-    return *this -= uint128_1;
-}
-
-inline uint128_t uint128_t::operator--(int)
-{   uint128_t temp(*this);
-    --*this;
-    return temp;
-}
-
-inline uint128_t uint128_t::operator+() const
-{   return *this;
-}
-
-inline uint128_t uint128_t::operator-() const
-{   static const uint128_t uint128_1(1);
-    return ~*this + uint128_1;
-}
-
-inline std::uint8_t uint128_t::bits() const
-{   std::uint8_t out = 0;
-    if (UPPER)
-    {   out = 64;
-        std::uint64_t up = UPPER;
-        while (up)
-        {   up >>= 1;
-            out++;
-        }
-    }
-    else
-    {   std::uint64_t low = LOWER;
-        while (low)
-        {   low >>= 1;
-            out++;
-        }
-    }
-    return out;
-}
-
-inline std::string uint128_t::str(std::uint8_t base,
-                                  const unsigned int & len) const
-{   if ((base < 2) || (base > 16))
-    {   throw std::invalid_argument("Base must be in the range [2, 16]");
-    }
-    std::string out = "";
-    if (!(*this))
-    {   out = "0";
-    }
-    else
-    {   std::pair <uint128_t, uint128_t> qr(*this, uint128_t(0));
-        do
-        {   qr = divmod(qr.first, base);
-            out = "0123456789abcdef"[static_cast<std::uint8_t>(qr.second)] + out;
-        }
-        while (qr.first);
-    }
-    if (out.size() < len)
-    {   out = std::string(len - out.size(), '0') + out;
-    }
-    return out;
-}
-
-inline uint128_t operator<<(const bool & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::uint8_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::int8_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::int16_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::int32_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::int64_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator>>(const bool & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::uint8_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::int8_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::int16_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::int32_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::int64_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline std::ostream & operator<<(std::ostream & stream, const uint128_t & rhs)
-{   if (stream.flags() & stream.oct)
-    {   stream << rhs.str(8);
-    }
-    else if (stream.flags() & stream.dec)
-    {   stream << rhs.str(10);
-    }
-    else if (stream.flags() & stream.hex)
-    {   stream << rhs.str(16);
-    }
-    return stream;
-}
-
-// Now I should certainly have a type uint128_t.
-
-namespace INT128names
-{
-inline uint128_t UNSIGNED(int128_t a);
-};
-
-class int128_t
-{
-private:
-    std::int64_t UPPER;
-    std::uint64_t LOWER;
-
-public:
-    // Constructors
-    int128_t()
-    {   UPPER = 0;
-        LOWER = 0;
-    }
-    int128_t(const int128_t & rhs)
-    {   UPPER = rhs.UPPER;
-        LOWER = rhs.LOWER;
-    }
-    int128_t(int128_t && rhs)
-    {   UPPER = rhs.UPPER;
-        LOWER = rhs.LOWER;
-    }
-    int128_t(uint128_t v)
-    {   UPPER = static_cast<std::int64_t>(INT128names::getUPPER(v));
-        LOWER = INT128names::getLOWER(v);
-    }
-
-    int128_t(const bool &rhs)
-    {   UPPER = 0;
-        LOWER = rhs;
-    }
-    template <typename T> int128_t(const T & rhs)
-        : UPPER(rhs < 0 ? -1 : 0), LOWER(rhs)
-    {   static_assert(std::is_integral <T>::value,
-                      "Input argument type must be an integer.");
-    }
-    template <typename S, typename T> int128_t(const S & upper_rhs,
-                                               const T & lower_rhs)
-        : UPPER(upper_rhs), LOWER(lower_rhs)
-    {   static_assert(std::is_integral <S>::value &&
-                      std::is_integral <T>::value
-                      , "Input argument types must be integers.");
-    }
-
-    std::int64_t getUPPER()
-    {   return UPPER;
-    }
-
-    std::uint64_t getLOWER()
-    {   return LOWER;
-    }
-
-    static uint128_t FLIP_TOP_BIT(int128_t a)
-    {   return INT128names::UNSIGNED_FLIP_TOP_BIT(INT128names::UNSIGNED(a));
-    }
-
-    //  RHS input args only
-
-    // Assignment Operator
-    int128_t operator=(const int128_t & rhs)
-    {   UPPER = rhs.UPPER;
-        LOWER = rhs.LOWER;
-        return *this;
-    }
-    int128_t operator=(int128_t && rhs)
-    {   UPPER = rhs.UPPER;
-        LOWER = rhs.LOWER;
-        return *this;
-    }
-    int128_t operator=(uint128_t rhs)
-    {   UPPER = static_cast<std::int64_t>(INT128names::getUPPER(rhs));
-        LOWER = INT128names::getLOWER(rhs);
-        return *this;
-    }
-
-    template <typename T> int128_t operator=(const T & rhs)
-    {   static_assert(std::is_integral <T>::value,
-                      "Input argument type must be an integer.");
-        UPPER = rhs < 0 ? -1 : 0;
-        LOWER = rhs;
-        return *this;
-    }
-
-    // Typecast Operators
-    operator bool() const
-    {   return (bool) (UPPER | LOWER);
-    }
-    
-    operator std::int8_t() const
-    {   return static_cast<std::int8_t>(LOWER);
-    }
-
-    operator std::int16_t() const
-    {   return static_cast<std::int16_t>(LOWER);
-    }
-
-    operator std::int32_t() const
-    {   return (std::int32_t) LOWER;
-    }
-
-    operator std::int64_t() const
-    {   return (std::int64_t) LOWER;
-    }
-
-    operator std::uint8_t() const
-    {   return static_cast<std::uint8_t>(LOWER);
-    }
-
-    operator std::uint16_t() const
-    {   return static_cast<std::uint16_t>(LOWER);
-    }
-
-    operator std::uint32_t() const
-    {   return (std::uint32_t) LOWER;
-    }
-
-    operator std::uint64_t() const
-    {   return (std::uint64_t) LOWER;
-    }
-
-    operator uint128_t() const
-    {   return INT128names::PACK128(static_cast<std::uint64_t>(UPPER), LOWER);
-    }
-
-    // Bitwise Operators
-    int128_t operator&(const int128_t & rhs) const
-    {   return int128_t(UPPER&rhs.UPPER, LOWER&rhs.LOWER);
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator&(const T & rhs) const
-    {   return int128_t(rhs >= 0 ? 0 : UPPER,
-                        LOWER & static_cast<std::uint64_t>(rhs));
-    }
-
-    int128_t & operator&=(const int128_t & rhs)
-    {   UPPER &= rhs.UPPER;
-        LOWER &= rhs.LOWER;
-        return *this;
-    }
-
-    template <typename T> int128_t & operator&=(const T & rhs)
-    {   if (rhs >= 0) UPPER = 0;
-        LOWER &= rhs;
-        return *this;
-    }
-
-    int128_t operator|(const int128_t & rhs) const
-    {   return int128_t(UPPER|rhs.UPPER, LOWER|rhs.LOWER);
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator|(const T & rhs) const
-    {   return int128_t(rhs < 0 ? -1 : UPPER,
-                        LOWER | static_cast<std::uint64_t>(rhs));
-    }
-
-    int128_t & operator|=(const int128_t & rhs)
-    {   UPPER |= rhs.UPPER;
-        LOWER |= rhs.LOWER;
-        return *this;
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    & operator|=(const T & rhs)
-    {   if (rhs < 0) UPPER = -1;
-        LOWER |= static_cast<std::uint64_t>(rhs);
-        return *this;
-    }
-
-    int128_t operator^(const int128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator^(const T & rhs) const
-    {   return int128_t(rhs<0 ? ~UPPER : UPPER,
-                        LOWER ^ static_cast<std::uint64_t>(rhs));
-    }
-
-    int128_t & operator^=(const int128_t & rhs);
-
-    template <typename T> int128_t & operator^=(const T & rhs)
-    {   if (rhs < 0) UPPER = ~UPPER;
-        LOWER ^= static_cast<std::uint64_t>(rhs);
-        return *this;
-    }
-
-    int128_t operator~() const
-    {   return int128_t(~INT128names::UNSIGNED(*this));
-    }
-
-    // Bit Shift Operators
-    int128_t operator<<(const int128_t & rhs) const;
-
-    template <typename T> int128_t operator<<(const T & rhs) const
-    {   return *this << int128_t(rhs);
-    }
-
-    int128_t & operator<<=(const int128_t & rhs);
-
-    template <typename T> int128_t & operator<<=(const T & rhs)
-    {   *this = *this << int128_t(rhs);
-        return *this;
-    }
-
-    int128_t operator>>(const int128_t & rhs) const
-    {   bool sign = UPPER < 0;
-        uint128_t r = INT128names::UNSIGNED(*this) >> INT128names::UNSIGNED(rhs);
-        if (sign) r |= INT128names::UNSIGNED(int128_t(-1)) << INT128names::UNSIGNED(int128_t(128)-rhs);
-        return int128_t(r);
-    }
-
-    template <typename T> int128_t operator>>(const T & rhs) const
-    {   return *this >> int128_t(rhs);
-    }
-
-    int128_t & operator>>=(const int128_t & rhs)
-    {   bool sign = UPPER < 0;
-        uint128_t r = INT128names::UNSIGNED(*this) >> INT128names::UNSIGNED(rhs);
-        if (sign) r |= INT128names::UNSIGNED(int128_t(-1)) << INT128names::UNSIGNED(int128_t(128)-rhs);
-        UPPER=static_cast<std::int64_t>(INT128names::getUPPER(r));
-        LOWER=INT128names::getLOWER(r);
-        return *this;
-    }
-
-    template <typename T> int128_t & operator>>=(const T & rhs)
-    {   *this = *this >> int128_t(rhs);
-        return *this;
-    }
-
-    // Logical Operators
-    bool operator!() const;
-    bool operator&&(const int128_t & rhs) const;
-    bool operator||(const int128_t & rhs) const;
-
-    template <typename T> bool operator&&(const T & rhs)
-    {   return static_cast <bool> (*this && rhs);
-    }
-
-    template <typename T> bool operator||(const T & rhs)
-    {   return static_cast <bool> (*this || rhs);
-    }
-
-    // Comparison Operators
-    bool operator==(const int128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator==(const T & rhs) const
-    {   return (UPPER == (rhs>=0 ? 0 : -1) &&
-               (LOWER == static_cast<std::uint64_t>(rhs)));
-    }
-
-    bool operator!=(const int128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator!=(const T & rhs) const
-    {   return (UPPER != (rhs>0 ? 0 : -1) ||
-               (LOWER != static_cast<std::uint64_t>(rhs)));
-    }
-
-    bool operator>(const int128_t & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) > int128_t::FLIP_TOP_BIT(rhs);
-    }
-
-    template <typename T> bool operator>(const T & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) > int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
-    }
-
-    bool operator<(const int128_t & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) < int128_t::FLIP_TOP_BIT(rhs);
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator<(const T & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) < int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
-    }
-
-    bool operator>=(const int128_t & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) >= int128_t::FLIP_TOP_BIT(rhs);
-    }
-
-    template <typename T> bool operator>=(const T & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) >= int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
-    }
-
-    bool operator<=(const int128_t & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) <= int128_t::FLIP_TOP_BIT(rhs);
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator<=(const T & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) <= int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
-    }
-
-    // Arithmetic Operators
-    int128_t operator+(const int128_t & rhs) const
-    {   return int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
-    }
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator+(const T & rhs) const
-    {   return int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
-    }
-
-    int128_t & operator+=(const int128_t & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-    template <typename T> int128_t & operator+=(const T & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-    int128_t operator-(const int128_t & rhs) const
-    {   return int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator=(const T & rhs)
-    {   return *this = int128_t(rhs);
-    }
-
-    int128_t & operator-=(const int128_t & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-    template <typename T> int128_t & operator-=(const T & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-    int128_t operator*(const int128_t & rhs) const
-    {   return int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
-    }
-
-    template <typename T> int128_t operator*(const T & rhs) const
-    {   return int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
-    }
-
-    int128_t & operator*=(const int128_t & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-    template <typename T> int128_t & operator*=(const T & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-private:
-    std::pair <int128_t, int128_t> divrem(const int128_t & a,
-                                          const int128_t & b) const
-    {   uint128_t ua = INT128names::UNSIGNED(a), ub = INT128names::UNSIGNED(b), uq;
-        if (a.upper() < 0)
-        {   if (b.upper() < 0) uq = (-ua)/(-ub);
-            else uq = -((-ua)/ub);
-        }
-        else
-        {   if (b.upper() < 0) uq = -(ua/(-ub));
-            else uq = ua/ub;
-        }
-        int128_t q(uq);
-        return std::pair<int128_t,int128_t>(q, a - q*b);
-    }
-
-public:
-    int128_t operator/(const int128_t & rhs) const
-    {   return  divrem(*this, rhs).first;
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator/(const T & rhs) const
-    {   return *this / int128_t(rhs);
-    }
-
-    int128_t & operator/=(const int128_t & rhs);
-
-    template <typename T> int128_t & operator/=(const T & rhs)
-    {   *this = *this / int128_t(rhs);
-        return *this;
-    }
-
-    int128_t operator%(const int128_t & rhs) const
-    {   return divrem(*this, rhs).second;
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator%(const T & rhs) const
-    {   return  *this % int128_t(rhs);
-    }
-
-    int128_t & operator%=(const int128_t & rhs);
-
-    template <typename T> int128_t & operator%=(const T & rhs)
-    {   *this = *this % int128_t(rhs);
-        return *this;
-    }
-
-    // Increment Operator
-    int128_t & operator++();
-    int128_t operator++(int);
-
-    // Decrement Operator
-    int128_t & operator--();
-    int128_t operator--(int);
-
-    // Nothing done since promotion doesn't work here
-    int128_t operator+() const
-    {   return *this;
-    }
-
-    // two's complement
-    int128_t operator-() const;
-
-    // Get private values
-    const std::int64_t & upper() const
-    {   return UPPER;
-    }
-    const std::uint64_t & lower() const
-    {   return LOWER;
-    }
-
-    // Get bitsize of value
-    std::uint8_t bits() const;
-
-    // Get string representation of value
-    std::string str(std::uint8_t base = 10,
-                    unsigned int len = 0) const;
-};
-
-inline uint128_t INT128names::UNSIGNED(int128_t a)
-{   return INT128names::PACK128(static_cast<std::uint64_t>(a.getUPPER()), a.getLOWER());
-}
-
-// Bitwise Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator&(const T & lhs, const int128_t & rhs)
-{   return rhs & lhs;
-}
-
-template <typename T> T & operator&=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (rhs & lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator|(const T & lhs, const int128_t & rhs)
-{   return rhs | lhs;
-}
-
-template <typename T> T & operator|=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (rhs | lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator^(const T & lhs, const int128_t & rhs)
-{   return rhs ^ lhs;
-}
-
-template <typename T> T & operator^=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (rhs ^ lhs);
-}
-
-// Bitshift operators
-
-//inline int128_t operator<<(const int128_t & lhs, const int128_t & rhs)
-//{   return int128_t(int128_t::INT128names::UNSIGNED(lhs) << INT128names::UNSIGNED(rhs));
-//}
-
-inline int128_t operator<<(const bool & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::uint8_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::uint16_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::uint32_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::uint64_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::int8_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::int16_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::int32_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::int64_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-//inline int128_t operator>>(const int128_t & lhs, const int128_t & rhs)
-//{   if (lhs >= 0) return int128_t((int128_t::INT128names::UNSIGNED(lhs) >> INT128names::UNSIGNED(rhs));
-//    else return int128_t((int128_t::INT128names::UNSIGNED(lhs) >> INT128names::UNSIGNED(rhs)) |
-//                         (INT128names::UNSIGNED(int128_t(-1)) << (128-INT128names::UNSIGNED(rhs))));
-//}
-
-inline int128_t operator>>(const bool & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::uint8_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::uint16_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::uint32_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::uint64_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::int8_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::int16_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::int32_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::int64_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-template <typename T> T & operator<<=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (int128_t(lhs) << rhs);
-}
-
-template <typename T> T & operator>>=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (int128_t(lhs) >> rhs);
-}
-
-// Comparison Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator==(const T & lhs, const int128_t & rhs)
-{   return (rhs.upper() == (lhs<0?-1:0) &&
-            (static_cast<std::uint64_t>(lhs) == rhs.lower()));
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator!=(const T & lhs, const int128_t & rhs)
-{   
-    return (rhs.upper() != (lhs<0?-1:0) ||
-            (static_cast<std::uint64_t>(lhs) != rhs.lower()));
-}
-
-template <typename T> bool operator>(const T & lhs, const int128_t & rhs)
-{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) >
-           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator<(const T & lhs, const int128_t & rhs)
-{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) <
-           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
-}
-
-template <typename T> bool operator>=(const T & lhs,
-                                      const int128_t & rhs)
-{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) >=
-           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator<=(const T & lhs, const int128_t & rhs)
-{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) <=
-           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
-}
-
-// Arithmetic Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator+(const T & lhs, const int128_t & rhs)
-{   return rhs + lhs;
-}
-
-template <typename T> T & operator+=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (rhs + lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator-(const T & lhs, const int128_t & rhs)
-{   return -(rhs - lhs);
-}
-
-template <typename T> T & operator-=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (-(rhs - lhs));
-}
-
-template <typename T> int128_t operator*(const T & lhs, const int128_t & rhs)
-{   return rhs * lhs;
-}
-
-template <typename T> T & operator*=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (rhs * lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator/(const T & lhs, const int128_t & rhs)
-{   return int128_t(lhs) / rhs;
-}
-
-template <typename T> T & operator/=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (int128_t(lhs) / rhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator%(const T & lhs, const int128_t & rhs)
-{   return int128_t(lhs) % rhs;
-}
-
-template <typename T> T & operator%=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (int128_t(lhs) % rhs);
-}
-
-// IO Operator
-std::ostream & operator<<(std::ostream & stream, const int128_t & rhs);
-
-
-//inline bool greaterp128(const int128_t & a, const int128_t & b)
-//{   uint128_t aa(a.upper() ^ UINT64_C(0x8000000000000000), a.lower());
-//    uint128_t bb(b.upper() ^ UINT64_C(0x8000000000000000), b.lower());
-//    return aa > bb;
-//}
-
-// The code here is because x<<n can have undefined value for signed types x,
-// and I want one that just "does what I expect" even in cases where there
-// is overflow. The situation with x>>n is even less satisfactory because
-// when x is signed there is little guarantee about how its sign bit is
-// handled. I want it to be replicated into the space vacated by the shift.
-
-//inline int128_t ASL128(const int128_t & a, int n)
-//{   if (n >= 128) return 0;
-//    if (n < 64) return
-//            int128_t((a.upper()<<n) | (a.lower()>>(64-n)),
-//                     a.lower()<<n);
-//    else if (n == 64) return int128_t(a.lower(), 0);
-//    else return int128_t(a.lower()<<(n-64), 0);
-//}
-
-//inline int128_t ASR128(const int128_t & a, int n)
-//{   if (n >= 128) return int128_t(a < 0 ? -1 : 0);
-//    if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
-//                                    (a.upper()<<(64-n)) | (a.lower()>>n));
-//    else if (n == 64) return int128_t(-static_cast<std::int64_t>(a.upper()<0),
-//                                          a.upper());
-//    else if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
-//                                         (a.upper()<<(64-n)) | (a.lower()>>n));
-//    else return int128_t(-static_cast<std::int64_t>(a.upper()<0),
-//                             ASR((static_cast<std::int64_t>(a.upper())), n-64));
-//}
-
-namespace INT128
-{
-
-inline std::int64_t getUPPER(int128_t a)
-{   return a.getUPPER();
-}
-
-inline std::uint64_t getLOWER(int128_t a)
-{   return a.getLOWER();
-}
-
-inline int128_t PACK128(std::int64_t high, std::uint64_t low)
-{   return int128_t(high, low);
-}
-
-} // end of namespace
-
-inline std::string int128_t::str(std::uint8_t base,
-                                 unsigned int len) const
-{   std::string out = "";
-    if (UPPER==0 && LOWER==0) out = "0";
-    else
-    {   uint128_t u = INT128names::UNSIGNED(*this);
-        if (base==10 && UPPER<0)
-        {   u = -u;
-            len--;
-        }
-        do
-        {   int r = static_cast<std::uint64_t>(u % base);
-            out = "0123456789abcdef"[r] + out;
-            u = u / base;
-        } while (u != 0);
-    }
-    if (out.size() < len) out = std::string(len - out.size(), '0') + out;
-    if (base==10 && UPPER<0) out = "-" + out;
-    return out; 
-}
-
-inline int128_t & int128_t::operator++()
-{   static const int128_t int128_1(1);
-    return *this += int128_1;
-}
-
-inline int128_t int128_t::operator++(int)
-{   int128_t temp(*this);
-    ++*this;
-    return temp;
-}
-
-inline int128_t & int128_t::operator--()
-{   static const int128_t int128_1(1);
-    return *this -= int128_1;
-}
-
-inline int128_t int128_t::operator--(int)
-{   int128_t temp(*this);
-    --*this;
-    return temp;
-}
-
-inline int128_t int128_t::operator-() const
-{   static const int128_t int128_1(1);
-    return ~*this + int128_1;
-}
-
-inline std::ostream & operator<<(std::ostream & stream, const int128_t & rhs)
-{   if (stream.flags() & stream.oct)
-    {   stream << rhs.str(8);
-    }
-    else if (stream.flags() & stream.dec)
-    {   stream << rhs.str(10);
-    }
-    else if (stream.flags() & stream.hex)
-    {   stream << rhs.str(16);
-    }
-    return stream;
-}
-
-inline uint128_t uint128(int128_t v)
-{   return INT128names::PACK128(static_cast<std::uint64_t>(v>>64),
-                   INT128names::getLOWER(INT128names::UNSIGNED(v)));
-}
-
-inline uint128_t uint128(std::uint64_t v)
-{   return INT128names::PACK128(static_cast<std::uint64_t>(0), v);
-}
-
-inline uint128_t uint128(int64_t v)
-{   return INT128names::PACK128(
-        static_cast<std::uint64_t>(v<0 ? 0xffffffffffffffffU : 0U),
-        v);
-}
-
-inline int128_t int128(int64_t v)
-{   return int128_t(static_cast<std::int64_t>(v<0 ? -1 : 0),
-                    static_cast<std::uint64_t>(v));
-}
-
-#endif // __SIZEOF_INT128__
-
-// Once this header has been installed both HAVE_UINT128_T and
-// HAVE_INT128_T will be defined. That is rather as if autoconf had
-// been used to check for the presence of 129-8 integer types.
-
-#ifndef HAVE_UINT128_T
-#define HAVE_UINT128_T 1
-#endif
-
-#ifndef HAVE_INT128_T
-#define HAVE_INT128_T 1
-#endif
-
-#endif // __int128_t_h__
-
-// end of int128_t.h
 
 // I want to be able to find the number of leading zeros in an integer.
 // In bitmaps.h I set up a function "nlz()" for this that maps onto
@@ -9693,23 +11399,6 @@ MAYBE_UNUSED static void reseed(Digit n)
 #ifdef softfloat_h
 // Some constants that are useful when I am dealing with float128_t.
 
-#if HAVE_Q_LITERALS
-
-// Observe that use of the "_Q" suffix is somewhat delicate, since the
-// literal generated a QuadFloat and one then needs to access its "v"
-// field to obtain the float128_t value. And the whitespace before ".v"
-// seems to be necessary. Also there are parenthese so that the "-" sign is
-// handled as part of the syntax of the literal.
-
-[[gnu::used]] inline float128_t
-    f128_0      = 0_Q .v,
-    f128_half   = 0.5_Q .v,
-    f128_mhalf  = (-0.5_Q) .v,
-    f128_1      = 1.0_Q .v,
-    f128_m1     = (-1.0_Q) .v,
-    f128_N1     = 1.04438888141315250669175271071662438258e1223_Q .v;// 2^4096
-
-#else // HAVE_Q_LITERALS
 #ifdef LITTLEENDIAN
 [[gnu::used]] inline float128_t
 f128_0      = {{0, INT64_C(0x0000000000000000)}},
@@ -9727,7 +11416,6 @@ f128_1      = {{INT64_C(0x3fff000000000000), 0}},
 f128_m1     = {{INT64_C(0xbfff000000000000), 0}},
 f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
 #endif // !LITTLEENDIAN
-#endif // HAVE_Q_LITERALS
 
 // The following tests are not supported by the version of softfloat that
 // I am using, so I implement them myself.
@@ -10101,7 +11789,8 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
                                      Digit &next,
                                      std::size_t &len,
                                      RoundingMode mode)
-{   if (f128_zero(d))
+{   using namespace CSL_LISP;
+    if (f128_zero(d))
     {   top = mid = next = 0;
         len = 1;
         return;
@@ -10573,7 +12262,8 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 }
 
 [[gnu::used]] inline float128_t Frexp128::op(SignedDigit a, SignedDigit &x)
-{   float128_t d = i64_to_f128(a), d1;
+{   using namespace CSL_LISP;
+    float128_t d = i64_to_f128(a), d1;
     int xi = 0;
     f128_frexp(d, &d1, &xi); // in the CSL sources.
     x = xi;
@@ -10670,7 +12360,8 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 }
 
 [[gnu::used]] inline float128_t Float128::op(std::uint64_t* a)
-{   SignedDigit x = 0;
+{   using namespace CSL_LISP;
+    SignedDigit x = 0;
     float128_t d = Frexp128::op(a, x);
     if (x > 100000) x = 100000;
 // There is an implementation of ldexp() for 128-bit floats in
@@ -11339,18 +13030,6 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // are used in rationalf128 because any 128-bit floating point value that
 // is that large is necessarily an exact integer.
 
-#ifdef HAVE_Q_LITERALS
-
-// Again note ugly parens around negative literal and the whitespace before
-// the ".v".
-
-[[gnu::used]] inline float128_t FP128_INT_LIMIT =
-    5192296858534827628530496329220096.0_Q .v;
-[[gnu::used]] inline float128_t FP128_MINUS_INT_LIMIT =
-    (-5192296858534827628530496329220096.0_Q) .v;
-
-#else // HAVE_Q_LITERALS
-
 #ifdef LITTLEENDIAN
 
 [[gnu::used]] inline float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
@@ -11362,8 +13041,6 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 [[gnu::used]] inline float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
 
 #endif // !LITTLEENDIAN
-#endif // HAVE_Q_LITERALS
-
 
 [[gnu::used]] inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, float128_t b)
 {   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
@@ -23759,7 +25436,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t SetModulus::op(SignedDigit n)
-{   if (n < 1)
+{   using namespace CSL_LISP;
+    if (n < 1)
         UNLIKELY
         return (std::intptr_t)aerror1("Invalid arg to set-modulus",
                                       intToHandle(n));
@@ -23771,7 +25449,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t SetModulus::op(std::uint64_t* n)
-{   if (!Plusp::op(n))
+{   using namespace CSL_LISP;
+    if (!Plusp::op(n))
         UNLIKELY
         return (std::intptr_t)aerror1("Invalid arg to set-modulus",
                                       vectorToHandle(n));
@@ -23832,6 +25511,7 @@ thread_local inline Digit smallModulus = 2;
 {
 // One of the inputs here is a bignum, and that can only be valid if we
 // have a large modulus.
+    using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
@@ -23852,7 +25532,8 @@ thread_local inline Digit smallModulus = 2;
 
 [[gnu::used]] inline std::intptr_t ModularPlus::op(std::uint64_t* a,
                                      std::uint64_t* b)
-{   if (modulusSize != modulus_big)
+{   using namespace CSL_LISP;
+    if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(a));
@@ -23873,7 +25554,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t ModularDifference::op(SignedDigit a, std::uint64_t* b)
-{   if (modulusSize != modulus_big)
+{   using namespace CSL_LISP;
+    if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(b));
@@ -23885,7 +25567,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t ModularDifference::op(std::uint64_t* a, SignedDigit b)
-{   if (modulusSize != modulus_big)
+{   using namespace CSL_LISP;
+    if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(a));
@@ -23893,7 +25576,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t ModularDifference::op(std::uint64_t* a, std::uint64_t* b)
-{   if (modulusSize != modulus_big)
+{   using namespace CSL_LISP;
+    if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(a));
@@ -23953,19 +25637,23 @@ thread_local inline Digit smallModulus = 2;
 
 
 [[gnu::used]] inline std::intptr_t ModularExpt::op(SignedDigit a, SignedDigit b)
-{   return (std::intptr_t)aerror("incomplete ModularExpt");
+{   using namespace CSL_LISP;
+    return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 [[gnu::used]] inline std::intptr_t ModularExpt::op(SignedDigit a, std::uint64_t* b)
-{   return (std::intptr_t)aerror("incomplete ModularExpt");
+{   using namespace CSL_LISP;
+    return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 [[gnu::used]] inline std::intptr_t ModularExpt::op(std::uint64_t* a, SignedDigit b)
-{   return (std::intptr_t)aerror("incomplete ModularExpt");
+{   using namespace CSL_LISP;
+    return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 [[gnu::used]] inline std::intptr_t ModularExpt::op(std::uint64_t* a, std::uint64_t* b)
-{   return (std::intptr_t)aerror("incomplete ModularExpt");
+{   using namespace CSL_LISP;
+    return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 
@@ -24018,7 +25706,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t ModularMinus::op(std::uint64_t* a)
-{   if (modulusSize != modulus_big)
+{   using namespace CSL_LISP;
+    if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad argument for modular-minus",
                                       vectorToHandle(a));
@@ -24033,6 +25722,7 @@ thread_local inline Digit smallModulus = 2;
 // GCD code. Also it could save memory turnover by re-using the space
 // from intermediate results. At least for now I will be happy if I just
 // implement a version that actually works!
+    using namespace CSL_LISP;
     intptr_t a = vectorToHandle(largeModulus());
     intptr_t b = aa;
     intptr_t x = intToHandle(0);
@@ -24059,7 +25749,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t ModularReciprocal::op(SignedDigit aa)
-{   if (aa <= 0)
+{   using namespace CSL_LISP;
+    if (aa <= 0)
         UNLIKELY
         return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
                                       intToHandle(aa));
@@ -24094,7 +25785,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t SafeModularReciprocal::op(SignedDigit aa)
-{   if (aa <= 0)
+{   using namespace CSL_LISP;
+    if (aa <= 0)
         UNLIKELY
         return (std::intptr_t)aerror1(
             "bad argument to safe-modular-reciprocal",

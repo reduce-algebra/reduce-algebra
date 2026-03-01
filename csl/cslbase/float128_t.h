@@ -80,8 +80,6 @@ bit_cast(const From& src) noexcept
 #endif // CSL_BITCAST
 #endif // HAVE_BITCAST
 
-#include "int128_t.h"
-
 // For any degree of sanity at all here I need to arrange that I can use
 // 128-bit floats using the normal arithmetic operators even though they
 // are liable to be implemented in software with ugly function calls
@@ -199,6 +197,9 @@ extern float128_t f128_min;
 extern float128_t f128_negmin;
 extern float128_t f128_normmin;
 extern float128_t f128_negnormmin;
+extern float128_t f128_pi;
+extern float128_t f128_halfpi;
+extern float128_t f128_mhalfpi;
 
 inline bool f128_zerop(const float128_t p)
 {   return ((p.v[HIPART] & INT64_C(0x7fffffffffffffff)) == 0) &&
@@ -967,7 +968,8 @@ inline float128_t f128_expm1max     = {fpOrder(0xf35793c7673007e6ULL, 0x400c62e4
 //  b128u128_u xmin ={.f = -0x1.3c133ab16db990b9ff9d97e6c709p+6q},
 //             xmax = {.f = 0x1.62e42fefa39ef35793c7673007e6p+13q};
  
-
+// If I am at all uncertain about my treratment of the "_Q" suffix I might
+// properly give thse values in hex.
 inline float128_t f128_epsilon      = 1.925929944387235853055977942584927319e-34_Q . v;
 inline float128_t f128_half_epsilon = 9.629649721936179265279889712924636593e-35_Q . v;
 inline float128_t f128_max          = 1.18973149535723176508575932662800702e+4932_Q . v;
@@ -978,6 +980,9 @@ inline float128_t f128_negmin       = {fpOrder(1, 0x8000000000000000ULL)};
 //                                        (-6.47517511943802511092443895822764655e-4966_Q) . v;
 inline float128_t f128_normmin      = 3.36210314311209350626267781732175260e-4932_Q . v; 
 inline float128_t f128_negnormmin   = (-3.36210314311209350626267781732175260e-4932_Q) . v;
+inline float128_t f128_pi           = (3.141592653589793238462643383279502884197169_Q) . v;
+inline float128_t f128_halfpi       = (1.570796326794896619231321691639751442098585_Q) . v;
+inline float128_t f128_mhalfpi      = (-1.570796326794896619231321691639751442098585_Q) . v;
 
 #ifdef FLOAT256
 

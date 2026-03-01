@@ -210,6 +210,7 @@ default_univ="no"
 AC_MSG_NOTICE([Test `uname` for universal build possibility])
 if test `uname` = "Darwin"
 then
+  darwin="yes"
   AC_MSG_NOTICE([Test for universal build possibility])
   if printf "int main() {return 0;}\n" | \
      gcc -c -x c -arch x86_64 -arch arm64 - -o temp.o >/dev/null 2>/dev/null
@@ -521,6 +522,26 @@ AC_ARG_WITH(clang,
 # Apple will really support anything other than their latest version
 # gives me headaches.
 
+if test "$OS" = "Windows_NT"
+then
+  case $PROCESSOR_IDENTIFIER in
+  *ARM*)
+    case $PATH in
+    *clangarm64/bin*)
+# If I am building on Windows-for-ARM using msys and with the mingw64
+# native toolchain I should compile things using clang++ because (at the
+# time I write this!) g++ is not available there at least by default. These
+# tests feel like a bit of a hack. However (and again this is as of January
+# 2026) msys2 on WoA uses x86_64 binaries for many utilities (including
+# bash and uname) and an effect of that is thet eg config.guess does not
+# identify it cleanly. This is NOT part of a working setup for WindowsOnARM!
+       with_clang="yes"
+      ;;
+    esac
+    ;;
+  esac
+fi
+
 ORIG="$CC$CXX"
 OLD_CFLAGS="$CFLAGS"
 OLD_CXXFLAGS="$CXXFLAGS"
@@ -828,6 +849,7 @@ if test "$with_psl" != "no"
 then
   case $host in
   *windows | *cygwin)
+# WoA will be a potential issue here!
     build="x86_64-pc-windows"
     ;;
   *)
@@ -907,18 +929,23 @@ csl_inplace_nativewin_build ()
   $CC $abssrcdir/canary.c -o canary
 # The Windows version would like to know where to find cygwin variants
 # at run-time.
-  cygextra=
-  ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
-  dd64=`echo $build | sed -e "$ed64"`
-  cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
-  AC_MSG_NOTICE([cygextra = $cygextra])
-  if test "$with_clang" = "yes"
+  if test -f /usr/bin/cygpath
   then
-    CC=x86_64-w64-mingw32-clang
-    CXX=x86_64-w64-mingw32-clang++    
-  else
-    CC=x86_64-w64-mingw32-gcc
-    CXX=x86_64-w64-mingw32-g++
+# If I am not running under cygwin I will suppose that the C++ compiler
+# that I naturally identify will be one suitable for a native build here.
+    cygextra=
+    ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
+    dd64=`echo $build | sed -e "$ed64"`
+    cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
+    AC_MSG_NOTICE([cygextra = $cygextra])
+    if test "$with_clang" = "yes"
+    then
+      CC=x86_64-w64-mingw32-clang
+      CXX=x86_64-w64-mingw32-clang++    
+    else
+      CC=x86_64-w64-mingw32-gcc
+      CXX=x86_64-w64-mingw32-g++
+    fi
   fi
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
@@ -938,13 +965,30 @@ csl_inplace_windows_build ()
 # If I am on Windows I will configure for variants:
 #   x86_64-pc-cygwin
 #   x86_64-w64-mingw
-  AC_MSG_NOTICE([Inplace Windows build...])
+# when I am on x86_64 running under a cygwin shell. I will view the
+# availability of the cygpath command as spotting cygwin.
+  if test -x /usr/bin/cygpath
+  then
+    AC_MSG_NOTICE([Inplace Windows build (under cygwin) ...])
 # I am going to suppose that all the compilers I could possibly want
 # are installed. That means I do not need to put in code here to test that!
-  AC_MSG_NOTICE([Configure cygwin64 version])
-  csl_inplace_cygwin_build "x86_64-pc-cygwin"
-  AC_MSG_NOTICE([Configure windows64 version])
-  csl_inplace_nativewin_build "x86_64-pc-windows" "x86_64-w64-mingw32"
+    AC_MSG_NOTICE([Configure cygwin64 version])
+    csl_inplace_cygwin_build "x86_64-pc-cygwin"
+    AC_MSG_NOTICE([Configure windows64 version])
+    csl_inplace_nativewin_build "x86_64-pc-windows" "x86_64-w64-mingw32"
+  else
+# I may now be using msys, and where I want to build things will depend
+# on whether I am on x86_64 or ARM. But since I am definitely on
+# windows I have an easy check... 
+    case $PROCESSOR_IDENTIFIER in
+    *ARM*)
+# Args here are buildmachine then host
+      csl_inplace_nativewin_build "aarch64-pc-msys" ""
+      ;;
+    *)
+      ;;
+    esac
+  fi
 }
 
 csl_inplace_build ()
@@ -1598,17 +1642,18 @@ AC_MSG_NOTICE([All sub-packages have had their configure script launched])
 
 ###############################################################################
 
-AM_CONDITIONAL(csl, test "$with_csl" != "no")
-AM_CONDITIONAL(psl, test "$with_psl" != "no")
-AM_CONDITIONAL(sbcl, test "$with_sbcl" != "no")
-AM_CONDITIONAL(clisp, test "$with_clisp" != "no")
-AM_CONDITIONAL(ccl, test "$with_ccl" != "no")
+AM_CONDITIONAL(csl,    test "$with_csl" != "no")
+AM_CONDITIONAL(psl,    test "$with_psl" != "no")
+AM_CONDITIONAL(sbcl,   test "$with_sbcl" != "no")
+AM_CONDITIONAL(clisp,  test "$with_clisp" != "no")
+AM_CONDITIONAL(ccl,    test "$with_ccl" != "no")
 AM_CONDITIONAL(cslpsl, test "$with_csl" != "no" && test "$with_psl" != "no")
-AM_CONDITIONAL(fox, test "$with_fox" != "no")
-AM_CONDITIONAL(wx,  test "$with_wx" != "no")
+AM_CONDITIONAL(fox,    test "$with_fox" != "no")
+AM_CONDITIONAL(wx,     test "$with_wx" != "no")
 AM_CONDITIONAL(crlibm, test "$with_crlibm" != "no")
 AM_CONDITIONAL(systemffi, test "$ffi_found" != "no")
-AM_CONDITIONAL(jit, test "$enable_jit" = "yes")
+AM_CONDITIONAL(jit,    test "$enable_jit" = "yes")
+AM_CONDITIONAL(darwin, test "$darwin" = "yes")
 
 AC_MSG_NOTICE([final output from top level configuration])
 

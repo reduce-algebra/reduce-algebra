@@ -1,7 +1,5 @@
 // arith-quad.cpp                         Copyright (C) 2022-2026 Codemist
 
-#ifdef ARITHLIB
-
 // $Id$
 
 
@@ -43,42 +41,27 @@ namespace CSL_LISP
 // This has some support for 128-bit floats at a higher level than
 // that in float128_t.[h,cpp].
 //
-// Let me start by noting that on some but very definitely not all
-// platforms that C++ compiler will support a type that may be called
-// __float128 or that may be called long double which may represent
-// IEEE-style 128-bit floating point with 113 bits of precision. However
-// in some cases one or the other of those may be an 80-bit float padded
-// with waste space to fill 129-bits, or just a synonym for 64-bit floats
-// or perhaps neither are present at all. And the issue of library support
-// for extra precision floats and even syntax for writing literals is
-// also rather variable. In cases where the long float type is "proper"
-// 128-bit arithmetic with a range up as far as 2^16383 the implementation
-// is liable to be in software come what may.
+
+// On SOME platforms g++ provides a __float128 type that is 128-bit
+// IEEE format and it supports basic arithmetic but neither IO nor
+// elementary functions. But on others that type is not provided.
 //
-// So for CSL I will use a software implementation that I can build
-// everywhere and it will not be dramatically slower than any scheme
-// more directly supported by the C++ compiler, since I am expecting
-// that the built-in version also has to be implemented in software.
-
-// There are several suites of 128-bit float elementary functions that
-// I could collect. The two that seem most plausible are Cephes in Netlib
-// and a Sun library now in openBSD - both are generously licensed.
+// On SOME platforms g++ provides "long double" but sometimes that is
+// for 80-bit floats and sometimes for 128-bits.
 //
-// When I move to one of them the main problem I will have is that they
-// are written assuming that the C compiler used to compile them has a
-// type "long double" that supports 128-bit floats. C++ does not guarantee
-// that and sometimes "long double" will be 80-bits wide, and my code
-// uses type float128_t and QuadFloat with different degrees of
-// inconvenience. My input syntax for QuadFloat uses a suffix "_Q".
+// In somer cases there is a type "long double" but it is a 64-bit type
+// in the same format as just "double".
+//
+// For cases where there is a 128-bit type "long double" and constants
+// for that format can be parsed there are liberally licensed 128-bit
+// elementary function libraries available. Eg Cephes in Netlib and
+// the Sun Library used with BSD. "core math" provides correctly rounded
+// implementations for a FEW cases.
+//
+// All this means that really the only comfortably portable scheme to
+// support 128-bit floats has to do pretty well everything in software!
 
-// So I have my own elementary function library here. My target has been
-// to get range-reduction "right" and then to use polynomial and rational
-// function approximations that will get all but the bottom few bits of
-// the results correct. I am also going to be content if the various
-// series that I sum have a few more terms that the very best that could
-// be used. I do not have a test suite for testing my results and so
-// they have at best been subject to spot-checks!
-
+// The next paragraph is a concept and may not be followed through on!
 // Well some of my code will use a "quad-double" library that represents
 // values as four IEEE doubles. This means it provides over 200 bits of
 // precision which is much more that I will end up keeping, but the extra
@@ -90,29 +73,15 @@ namespace CSL_LISP
 // less than that for IEEE-style 128-bit floats, so I will need to make
 // most elementary function calls do some range reduction...
 
+// Where I can I will use the "core math" correctly rounding functions.
+
 QuadFloat qsqrt(QuadFloat a)
 {   if (a < 0.0_Q) return QuadFloat(f128_NaN);
-    else return QuadFloat(f128_sqrt(a.v));
+    else return QuadFloat(cr_sqrtq(a.v));
 }
 
 QuadFloat qhypot(QuadFloat a, QuadFloat b)
-{   QuadFloat scale = 1.0_Q;
-    QuadFloat r = a*a + b*b;
-// If the above calculation overflows or underflows I will repeat
-// it but on scaled inputs.
-    if (r.isinf())
-    {   scale = 1.0e4000_Q;
-        a /= scale;
-        b /= scale;
-        r = a*a + b*b;
-    }
-    if (r.issubnorm())
-    {   scale = 1.0e-4000_Q;
-        a /= scale;
-        b /= scale;
-        r = a*a + b*b;
-    }
-    return scale * qsqrt(r);
+{   return QuadFloat(cr_hypotq(a.v, b.v)); 
 }
 
 QuadFloat sumSeries(QuadFloat* coeffs, int n, QuadFloat x)
@@ -1078,6 +1047,10 @@ QuadFloat qasind(QuadFloat a)
     else r = 90.0_Q - qatan(c/aa);
     return a > 0.0_Q ? r : -r;
 }
+
+// There are a whole bunch of things here that have not been implemented,
+// In general I make them return NaN, as an alternative to making then
+// raise exceptions.
  
 QuadFloat qacot(QuadFloat a)
 {   return QuadFloat(f128_NaN);
@@ -1104,183 +1077,12 @@ QuadFloat qasecd(QuadFloat a)
 }
 
 
-// The following were generated by
-//     multipoint_pade(exp, 0, log 2, 1.0e-35);
-  
-QuadFloat expSeriesP[] =
-{   1.0_Q,
-    0.5311122314897473155708310762867830105862_Q,
-    0.1341316226349063906109736328847654541734_Q,
-    0.02128182504443390660396941685062232591263_Q,
-    0.002358032571139503168767115205209855180813_Q,
-    0.0001914574789167483770191652659939777715208_Q,
-    0.00001159299807385004094398240489300323565271_Q,
-    0.0000005198803834949567669206632765211790358255_Q,
-    0.00000001663613306801678764172216406553785315976_Q,
-    0.0000000003458271172782567030998235901617756944301_Q,
-    3.582017162443809136008503040992901038925e-12_Q
-};
-
-QuadFloat expSeriesQ[] =
-{   1.0_Q,
-   -0.468887768510252684429168923713216725946_Q,
-    0.1030193911451590750401425565979566828746_Q,
-   -0.01396034851226549288825534455631664722075_Q,
-    0.001289980262534239275146002054712132578545_Q,
-   -0.0000845900304173951094742183474426012052332_Q,
-    0.000003952200249963015569330902055308740361099_Q,
-   -0.0000001274398716434892380381477816769917304143_Q,
-    0.000000002586678879106302729781044400705769306457_Q,
-   -0.00000000002532728173775129712694973323860935596735_Q
-};
-
-// log2Hi should have around 20 trailing zero bits so multiplication by
-// ix will be exact.
-QuadFloat log2Hi = 0.69314718055994530941723212115505927596_Q;
-QuadFloat log2Lo = 3.03117292114106608273262565025923239575e-28_Q;
-
-QuadFloat qexp(QuadFloat aa, int64_t& ix)
-{
-// I wish to write a = (x2*log 2 + frac) with x2 an integer. If I can
-// do that the exp a = 2^x2 * log frac.
-// Ideally frac will be in the range 0 to log2 but if it strays out
-// by a small amount that will not be a disaster because the approximation
-// I use to cover the range 0 to log2 will work well just slightly beyond
-// that range.
-    QuadFloat recipLog2 = 1.442695040888963407359924681001892137427_Q;
-    QuadFloat w = aa*recipLog2;
-    if (w < -16400.0_Q) return f128_0;
-    else if (w > 16400.0_Q) return f128_inf;
-    ix = static_cast<int64_t>(w);
-    QuadFloat ixq = static_cast<QuadFloat>(ix);
-    QuadFloat frac = (aa - ixq*log2Hi) - ixq*log2Lo;
-    if (frac < 0.0_Q)
-    {   ix--;
-        ixq = static_cast<QuadFloat>(ix);
-        frac = (aa - ixq*log2Hi) - ixq*log2Lo;
-    }
-    return sumSeries(expSeriesP,
-                     sizeof(expSeriesP)/sizeof(expSeriesP[0]),
-                     frac) /
-           sumSeries(expSeriesQ,
-                     sizeof(expSeriesQ)/sizeof(expSeriesQ[0]),
-                     frac);
-}
-
 QuadFloat qexp(QuadFloat a)
-{   int64_t ix;
-    QuadFloat r = qexp(a, ix);
-    f128_ldexp(&r.v, ix);
-    return r;
+{   return QuadFloat(cr_expq(a.v));
 }
-
-// The strategy for ln(x) is first to write x as m*2^k with m in the
-// range sqrt(1/2) to sqrt(2). Then ln(x) = ln m + k ln 2 and since
-// k is a reasonably small integer the latter part will be easy to
-// add in accurately.
-// Next I will split the range of m by powers of 1.03125 by finding a
-// value j such that m*1.03125^j is in the range 1/1.03125 to 1.03125.
-// j will be in the range -11 to 11. Note that 1.03125^11 is exact in
-// quad precision floating point. so calculating the powers of it
-// do not introduce extra error. Now ln m = ln (m*1.03125^j) - j ln(1.03125).
-// ln z over the range 1/1.03125 to 1.03125.
-
-// The following were generated by
-//     procedure ll x; if x=0 then 1 else log(1+x)/x;
-//     multipoint_pade(ll, 1/sqrt(1+1/8)-1, sqrt(1+1/8)-1, 1.0e-35);
-  
-QuadFloat logSeriesP[] =
-{   1.0_Q,
-    3.943255915370577600854221386201409437344_Q,
-    6.342277109207991782334786713407241515159_Q,
-    5.343459981539390108030821421739146907266_Q,
-    2.516365202024229866995401048760119597813_Q,
-    0.6522004796191251623399565599201806166127_Q,
-    0.08462902197543621889866589588936769285466_Q,
-    0.00424840738937273062009811691081004050665_Q,
-    0.00002273496529738760573951461636774996577232_Q,
-   -0.0000002522273807366567302386527808153302718468_Q
-};
-
-QuadFloat logSeriesQ[] =
-{   1.0_Q,
-    4.443255915370577600854221386201409437292_Q,
-    8.230571733559947249428564073174612913189_Q,
-    8.227660543195837865793696329592651792575_Q,
-    4.797485541278144116962949869048389748959_Q,
-    1.6440481528421225577431627922877417936_Q,
-    0.3159775500953728850114883594547986747706_Q,
-    0.03007151871043832759999151702538740502891_Q,
-    0.0010242478160094843927816562198954709553_Q
-};
 
 QuadFloat qln(QuadFloat a)
-{   float128_t reduced;
-    int x;
-    f128_frexp(a.v, &reduced, &x);
-// Now reduced is in the range 0.5 to 1. If it is < sqrt(2)/2 I want to
-// double it - that will leave it in the range sqrt(2)/2 to sqrt(2) 
-    QuadFloat aa(reduced);
-    if (aa <= 0.0_Q) return QuadFloat(f128_NaN);
-    if (aa < 0.7071067811865475244008443621048490392848_Q)
-    {   aa = 2.0_Q*aa;
-        x--;
-    }
-// Now I will multiply or divide by a power of 1.125 until the value
-// lies between sqrt(1.125) and its reciprocal. I will set up a value
-// log125 that is the logarithm of the value I multiplied by.
-    QuadFloat log125;
-    if (aa < 0.9428090415820633658677924828064653857131_Q)
-    {   if (aa < 0.8380524814062785474380377624946358984117_Q)
-        {   if (aa < 0.7449355390278031532782557888841207985881_Q)
-            {   aa = aa*1.423828125_Q;
-                log125 = -0.3533491069691503636163823284115651152054_Q;
-            }
-            else
-            {   aa = aa*1.265625_Q;
-                log125 = -0.235566071312766909077588218941043410137_Q;
-            }
-        }
-        else
-        {   aa = aa*1.125_Q;
-            log125 = -0.1177830356563834545387941094705217050685_Q;
-        }
-    }
-    else
-    {   if (aa < 1.193242693252298947426424861051932753793_Q)
-        {   if (aa < 1.060660171779821286601266543157273558927_Q)
-            {   // aa in range
-                log125 = 0.0_Q;   
-            }
-            else
-            {   aa = aa/1.125_Q;
-                log125 = 0.1177830356563834545387941094705217050685_Q;
-            }
-        }
-        else
-        {   if (aa < 1.342398029908836315854727968683424348017_Q)
-            {   aa = aa/1.265625_Q;
-                log125 = 0.235566071312766909077588218941043410137_Q;
-            }
-            else
-            {   aa = aa/1.423828125_Q;
-                log125 = 0.3533491069691503636163823284115651152054_Q;
-            }
-        }
-    }
-    QuadFloat r = sumSeries(logSeriesP,
-                            sizeof(logSeriesP)/sizeof(logSeriesP[0]),
-                            aa - 1.0_Q) /
-                  sumSeries(logSeriesQ,
-                            sizeof(logSeriesQ)/sizeof(logSeriesQ[0]),
-                            aa - 1.0_Q);
-// I add in the components of my result smallest first.
-    r = (aa - 1.0_Q)*r + log125;
-    if (x != 0)
-    {   r = r + static_cast<QuadFloat>(x)*log2Lo;
-        r = r + static_cast<QuadFloat>(x)*log2Hi;
-    }
-    return r;
+{   return QuadFloat(cr_logq(a.v));
 }
     
 QuadFloat qlog(QuadFloat a, QuadFloat b)
@@ -1338,10 +1140,7 @@ QuadFloat qsinh(QuadFloat a)
     {   a = qexp(a);
         return 0.5_Q*(a - 1.0_Q/a);
     }
- int64_t ix;
-    QuadFloat r = qexp(a, ix);
-    f128_ldexp(&r.v, ix-1);
-    return r;
+    return qexp(a - 0.6931471805599453094172321214581765680755_Q);
 }
 
 QuadFloat qcosh(QuadFloat a)
@@ -1349,10 +1148,7 @@ QuadFloat qcosh(QuadFloat a)
     {   a = qexp(a);
         return 0.5_Q*(a + 1.0_Q/a);
     }
-    int64_t ix;
-    QuadFloat r = qexp(a, ix);
-    f128_ldexp(&r.v, ix-1);
-    return r;
+    return qexp(a - 0.6931471805599453094172321214581765680755_Q);
 }
 
 QuadFloat qsech(QuadFloat a)
@@ -1431,7 +1227,7 @@ QuadFloat qexpt(QuadFloat a, QuadFloat b)
 // can then be separated and converted back to QuadFloat where the
 // power of 2 can be calculated.
 
-#pragma message "expt for 120-bit floats"
+#pragma message "expt for 128-bit floats"
 // @@@@ PENDING.
     
     return QuadFloat(f128_NaN);
@@ -1443,7 +1239,7 @@ QuadFloat qexpt(QuadFloat a, QuadFloat b)
 QuadFloat qasinh(QuadFloat a)
 {   if (a < 0.0_Q) return -qasinh(-a);
     else if (a > 1.0e18_Q)
-        return qln(a) + 0.69314718055994530941723212145817656808_Q;
+        return qln(a) + 0.6931471805599453094172321214581765680755_Q;
 // The accuracy for x < 1 will be poor - I need a special scheme for that
 // and it MAY be that it should depend on atanh?
     else return qln(a + qsqrt(a*a + 1.0_Q));
@@ -1489,7 +1285,7 @@ QuadFloat acoshReduced(QuadFloat a)   // 0 <= a < 0.125
 QuadFloat qacosh(QuadFloat a)
 {   if (a < 1.0_Q) return QuadFloat(f128_NaN);
     else if (a > 1.0e18_Q)
-        return qln(a) + 0.69314718055994530941723212145817656808_Q;
+        return qln(a) + 0.6931471805599453094172321214581765680755_Q;
     else if (a < 1.5_Q)
         return qsqrt(acoshReduced(a - 1.0_Q));
     else return qln(a + qsqrt((a - 1.0_Q)*(a + 1.0_Q)));
@@ -1705,6 +1501,7 @@ float128_t qlog2(float128_t a)
 
 #if 0
 
+% Here is some Reduce code used to generate data for this file.
 % This is going to print a value of 2/pi good to around 5010 decimals
 % (ie 16384 plus some) bits but as a hexadecimal fraction.
 
@@ -1736,7 +1533,5 @@ end;
 #endif // 0
 
 } // end of namespace
-
-#endif // ARITHLIB
 
 // end of arith-quad.cpp

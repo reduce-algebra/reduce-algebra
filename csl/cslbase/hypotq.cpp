@@ -44,7 +44,6 @@ SOFTWARE.
 
 #include "float128_t.h"
 #include "int128_t.h"
-using namespace CSL_LISP;
 
 //- #define _GNU_SOURCE /* to define ...f128 functions */
 
@@ -55,6 +54,9 @@ using namespace CSL_LISP;
 #ifdef __x86_64__
 #include <x86intrin.h>
 #endif
+
+namespace CSL_LISP
+{
 
 //- // Warning: clang also defines __GNUC__
 //- #if defined(__GNUC__) && !defined(__clang__)
@@ -281,7 +283,7 @@ inline uint64_t rsqrt9(uint64_t m){
   uint64_t indx = m>>58; // subrange index
   uint64_t c3 = c[indx][3], c0 = c[indx][0], c1 = c[indx][1], c2 = c[indx][2];
   c0 <<= 31; // to 64 bit with the space for the implicit bit
-  c0 |= 1ull<<63; // add implicit bit
+  c0 |= 1ULL<<63; // add implicit bit
   c1 <<= 25; // to 64 bit format
   uint64_t d = (m<<6)>>32; // local coordinate in the subrange [0, 2^32]
   uint64_t d2 = ((uint64_t)(d*d))>>32; // square of the local coordinate
@@ -369,14 +371,14 @@ float128_t cr_hypotq(float128_t x, float128_t y) {
   }
 
   int dn = xn - yn;
-  a.a <<= 15; a.b[1] |= 1ull<<63;
+  a.a <<= 15; a.b[1] |= 1ULL<<63;
   b128uint128_t_u v, dv;
   if(__builtin_expect(dn>56, 0)){
     // if x or y is too small compare to the other number
     // return the largest number
     v.a = a.a|1;
   } else {
-    b.a <<= 15; b.b[1] |= 1ull<<63;
+    b.a <<= 15; b.b[1] |= 1ULL<<63;
     b128uint128_t_u a2128 = {.a = sqrhU(a.a)}, b2 = {.a = sqrhU(b.a>>dn)};
     uint64_t overflow;
     a2128.a = addUU(&overflow, a2128.a, b2.a);
@@ -385,12 +387,12 @@ float128_t cr_hypotq(float128_t x, float128_t y) {
     int s = 1 - overflow + nz;
     a2128.a <<= s;
     xn += overflow;
-    const uint64_t rsqrt_2[] = {~0ull,0xb504f333f9de6484ull}; // 2^64/sqrt(2)
+    const uint64_t rsqrt_2[] = {~0ULL,0xb504f333f9de6484ULL}; // 2^64/sqrt(2)
     uint64_t rx = a2128.b[1], r = rsqrt9(rx);
     uint128_t r2 = (uint128_t)r*rsqrt_2[i];
     unsigned shft = 2-i;
     a2128.a >>= shft;
-    a2128.b[1] |= 1ull<<(62+i);
+    a2128.b[1] |= 1ULL<<(62+i);
     r = r2>>64;
     uint128_t sx = mhuU(r, a2128.a);
     int128_t h  = mhuU(r, sx)<<2, ds = mhIU(h, sx);
@@ -399,7 +401,7 @@ float128_t cr_hypotq(float128_t x, float128_t y) {
     short dd = v.b[0]<<2;
     if(dd>-37 && dd<13){ // rounding test
       v.a += 1<<13;
-      v.b[0] &= ~0ull<<14;
+      v.b[0] &= ~0ULL<<14;
       overflow = v.a==0;
       uint128_t c = v.a>>13;
       uint128_t c2 = c*c;
@@ -443,14 +445,14 @@ float128_t cr_hypotq(float128_t x, float128_t y) {
       v.a += rnd;
 //-      flagp |= FE_INEXACT;
       // set overflow exception for result which is indeed overflow as well as rounded to infinity
-      if(v.b[1] == 0x7fffull<<48 || over){
+      if(v.b[1] == 0x7fffULL<<48 || over){
 //-	flagp |= FE_OVERFLOW;
 #ifdef CORE_MATH_SUPPORT_ERRNO
 	errno = ERANGE;
 #endif
       }
     } else {
-      unsigned frac = v.b[0]&0x7fffull; // fractional part
+      unsigned frac = v.b[0]&0x7fffULL; // fractional part
       uint64_t rnd;
 //-       if(__builtin_expect(rm==_MM_ROUND_NEAREST, 1)){
 	if(__builtin_expect(frac==0x4000, 0)){  // round to nearest tie to even
@@ -491,7 +493,7 @@ float128_t cr_hypotq(float128_t x, float128_t y) {
     // set inexact and underflow flags only if hypot is really inexact
     if(__builtin_expect(frac, 1)){
 //-       flagp |= FE_INEXACT;
-//-       if(v.b[1]<(1ull<<48)) flagp |= FE_UNDERFLOW;
+//-       if(v.b[1]<(1ULL<<48)) flagp |= FE_UNDERFLOW;
     }
   }
 //-   if(__builtin_expect(oflagp!=flagp, 0)) _mm_setcsr(flagp);
@@ -509,5 +511,7 @@ float128_t cr_hypotq(float128_t x, float128_t y) {
 //-   return hypotf128 (x, y);
 //- #endif
 //- }
+
+} // end of namespace
 
 // end of hypotq.cpp

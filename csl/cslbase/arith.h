@@ -637,11 +637,32 @@ typedef struct CSL_Complex
     double imag;
 } CSL_Complex;
 
+typedef struct LCSL_Complex
+{   float128_t real;
+    float128_t imag;
+} LCSL_Complex;
+
+inline LCSL_Complex pack_complex(float128_t r, float128_t i)
+{   LCSL_Complex w(r, i);
+    return w;
+}
+
+inline LCSL_Complex pack_complex_NaN()
+{   LCSL_Complex w(f128_NaN, f128_NaN);
+    return w;
+}
+
 extern CSL_Complex Cln(CSL_Complex a);
 extern CSL_Complex Ccos(CSL_Complex a);
 extern CSL_Complex Cexp(CSL_Complex a);
 extern CSL_Complex Cpow(CSL_Complex a, CSL_Complex b);
 extern double Cabs(CSL_Complex a);
+
+extern LCSL_Complex LCln(LCSL_Complex a);
+extern LCSL_Complex LCcos(LCSL_Complex a);
+extern LCSL_Complex LCexp(LCSL_Complex a);
+extern LCSL_Complex LCpow(LCSL_Complex a, LCSL_Complex b);
+extern float128_t LCabs(LCSL_Complex a);
 
 // For the parallel variant on Karatsuba I need thread support...
 

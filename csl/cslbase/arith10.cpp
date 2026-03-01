@@ -212,6 +212,17 @@ static CSL_Complex CSLcsin(CSL_Complex z)
     }
 }
 
+LCSL_Complex LCcos(LCSL_Complex z)
+{   return pack_complex_NaN();
+}
+
+LCSL_Complex LCexp(LCSL_Complex z)
+{   return pack_complex_NaN();
+}
+
+LCSL_Complex LCln(LCSL_Complex z)
+{   return pack_complex_NaN();
+}
 
 #define CSL_sqrt_starter 0.7071
 #define CSL_sqrt_iters   6
@@ -352,6 +363,9 @@ static CSL_Complex Cdiv_z(CSL_Complex p, CSL_Complex q)
     }
 }
 
+// There is an issue here - if I am about to return a complex number
+// where the imaginary part is zero ought I to reduce it to a real
+// value?
 
 static LispObject make_complex_float(CSL_Complex v, LispObject a)
 // Here a complex result has been been computed (with double precision values
@@ -375,6 +389,14 @@ static LispObject make_complex_float(CSL_Complex v, LispObject a)
 // make_boxfloat do any overflow checks, and I do not support 128-bit floats.
     a1 = make_boxfloat(v.real, type);
     a2 = make_boxfloat(v.imag, type);
+    a1 = make_complex(a1, a2);
+    return a1;
+}
+
+static LispObject make_complex128_float(LCSL_Complex v)
+{   LispObject a1, a2;
+    a1 = make_boxfloat128(v.real);
+    a2 = make_boxfloat128(v.imag);
     a1 = make_complex(a1, a2);
     return a1;
 }
@@ -1100,7 +1122,8 @@ typedef CSL_Complex complex_arg_fn(CSL_Complex);
 // the first two are used for real arguments, and return the real and
 // imaginary parts of the answer. If the function is always real for
 // real input then the second function is given as nullptr.
-// The final case is for genuine complex arguments.
+// The final case is for genuine complex arguments where the complex
+// values will contain 32 or 64-bit floats.
 
 typedef struct trigfn
 {   double (*real)(double);
@@ -1159,6 +1182,455 @@ static trigfn_record const trig_functions[] =
     {rlog2,  ilog2,  CSLclog2,  "log2"}   // log2   46 log to base 2
 };
 
+// Now the same sort of thing but for 128-bit floats, and where the
+// complex values contain 128-bit floats. Eeek!!!
+
+
+float128_t Lracos(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liacos(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcacos(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lracosd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liacosd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcacosd(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lracosh(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liacosh(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcacosh(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lracot(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcacot(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lracotd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcacotd(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lracoth(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liacoth(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcacoth(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lracsc(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liacsc(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcacsc(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lracscd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liacscd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcacscd(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lracsch(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcacsch(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrasec(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liasec(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcasec(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrasecd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liasecd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcasecd(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrasech(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liasech(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcasech(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrasin(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liasin(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcasin(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrasind(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liasind(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcasind(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t LCSLasinh(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcasinh(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t LCSLatan(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcatan(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lratand(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcatand(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lratanh(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liatanh(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcatanh(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrcbrt(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex Lccbrt(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lmy_cos(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Lrcosd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLccosd(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t LCSLcosh(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLccosh(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrcot(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLccot(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrcotd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLccotd(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrcoth(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLccoth(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrcsc(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLccsc(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrcscd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLccscd(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrcsch(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLccsch(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t LCSLexp(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Lrln(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Liln(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Lrlog10(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Lilog10(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLclog10(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrsec(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcsec(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrsecd(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcsecd(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrsech(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcsech(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lmy_sin(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcsin(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrsind(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcsind(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t LCSLsinh(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcsinh(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t LCSLrsqrt(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Lisqrt(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLcsqrt(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t LCSLtan(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLctan(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrtand(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLctand(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Ltanh(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLctanh(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+float128_t Lrlog2(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+float128_t Lilog2(UNUSED_NAME float128_t a)
+{   return (f128_NaN);
+}
+
+LCSL_Complex LCSLclog2(UNUSED_NAME LCSL_Complex a)
+{   return pack_complex_NaN();
+}
+
+typedef struct trigfn128
+{   float128_t (*real)(float128_t);
+    float128_t (*imag)(float128_t);
+    LCSL_Complex (*complex)(LCSL_Complex);
+    const char *name;
+} trigfn128_record;
+
+static trigfn128_record const trig128_functions[] =
+{   {Lracos,  Liacos,  LCSLcacos,  "acos"},  // acos   0  inverse cos, rads, [0, pi)
+    {Lracosd, Liacosd, LCSLcacosd, "acosd"}, // acosd  1  inverse cos, degs, [0, 180)
+    {Lracosh, Liacosh, LCSLcacosh, "acosh"}, // acosh  2  inverse hyperbolic cosine
+    {Lracot,  nullptr, LCSLcacot,  "acot"},  // acot   3  inverse cot, rads, (0, pi)
+    {Lracotd, nullptr, LCSLcacotd, "acotd"}, // acotd  4  inverse cot, degs, (0, 180)
+    {Lracoth, Liacoth, LCSLcacoth, "acoth"}, // acoth  5  inverse hyperbolic cotangent
+    {Lracsc,  Liacsc,  LCSLcacsc,  "acsc"},  // acsc   6  inverse cosec, [-pi/2, pi/2]
+    {Lracscd, Liacscd, LCSLcacscd, "acscd"}, // acscd  7  inverse cosec, degs, [-90, 90]
+    {Lracsch, nullptr, LCSLcacsch, "acsch"}, // acsch  8  inverse hyperbolic coseCSLcant
+    {Lrasec,  Liasec,  LCSLcasec,  "asec"},  // asec   9  inverse sec, rads, [0, pi)
+    {Lrasecd, Liasecd, LCSLcasecd, "asecd"}, // asecd  10 inverse sec, degs, [0, 180)
+    {Lrasech, Liasech, LCSLcasech, "asech"}, // asech  11 inverse hyperbolic seCSLcant
+    {Lrasin,  Liasin,  LCSLcasin,  "asin"},  // asin   12 inverse sin, rads, [-pi/2, pi/2]
+    {Lrasind, Liasind, LCSLcasind, "asind"}, // asind  13 inverse sin, degs, [-90, 90]
+    {LCSLasinh,nullptr,LCSLcasinh, "asinh"}, // asinh  14 inverse hyperbolic sin
+    {LCSLatan,nullptr, LCSLcatan,  "atan"},  // atan   15 1-arg inverse tan, (-pi/2, pi/2)
+    {Lratand, nullptr, LCSLcatand, "atand"}, // atand  16 inverse tan, degs, (-90, 90)
+    {nullptr, nullptr, nullptr,    "atan2"}, // atan2  17 2-arg inverse tan, [0, 2pi)
+    {nullptr, nullptr, nullptr,    "atan2d"},// atan2d 18 2-arg inverse tan, degs, [0, 360)
+    {Lratanh, Liatanh, LCSLcatanh, "atanh"}, // atanh  19 inverse hyperbolic tan
+    {Lrcbrt,  nullptr, Lccbrt,     "cbrt"},  // cbrt   20 cube root
+    {Lmy_cos, nullptr, LCcos,      "cos"},   // cos    21 cosine, rads
+    {Lrcosd,  nullptr, LCSLccosd,  "cosd"},  // cosd   22 cosine, degs
+    {LCSLcosh,nullptr, LCSLccosh,  "cosh"},  // cosh   23 hyperbolic cosine
+    {Lrcot,   nullptr, LCSLccot,   "cot"},   // cot    24 cotangent, rads
+    {Lrcotd,  nullptr, LCSLccotd,  "cotd"},  // cotd   25 cotangent, degs
+    {Lrcoth,  nullptr, LCSLccoth,  "coth"},  // coth   26 hyperbolic cotangent
+    {Lrcsc,   nullptr, LCSLccsc,   "csc"},   // csc    27 cosecant, rads
+    {Lrcscd,  nullptr, LCSLccscd,  "cscd"},  // cscd   28 cosecant, degs
+    {Lrcsch,  nullptr, LCSLccsch,  "csch"},  // csch   29 hyperbolic cosecant
+    {LCSLexp, nullptr, LCexp,      "exp"},   // exp    30 exp(x) = e^z, e approx 2.71828
+    {nullptr, nullptr, nullptr,    "expt"},  // expt   31 expt(a,b) = a^b
+    {nullptr, nullptr, nullptr,    "hypot"}, // hypot  32 hypot(a,b) = sqrt(a^2+b^2)
+    {Lrln,    Liln,    LCln,       "ln"},    // ln     33 log base e, e approx 2.71828
+    {nullptr, nullptr, nullptr,    "log"},   // log    34 2-arg log
+    {Lrlog10, Lilog10, LCSLclog10, "log10"}, // log10  35 log to base 10
+    {Lrsec,   nullptr, LCSLcsec,   "sec"},   // sec    36 secant, rads
+    {Lrsecd,  nullptr, LCSLcsecd,  "secd"},  // secd   37 secant, degs
+    {Lrsech,  nullptr, LCSLcsech,  "sech"},  // sech   38 hyperbolic secant
+    {Lmy_sin, nullptr, LCSLcsin,   "sin"},   // sin    39 sine, rads
+    {Lrsind,  nullptr, LCSLcsind,  "sind"},  // sind   40 sine, degs
+    {LCSLsinh,nullptr, LCSLcsinh,  "sinh"},  // sinh   41 hyperbolic sine
+    {LCSLrsqrt,Lisqrt, LCSLcsqrt,  "sqrt"},  // sqrt   42 square root
+    {LCSLtan, nullptr, LCSLctan,   "tan"},   // tan    43 tangent, rads
+    {Lrtand,  nullptr, LCSLctand,  "tand"},  // tand   44 tangent, degs
+    {Ltanh,   nullptr, LCSLctanh,  "tanh"},  // tanh   45 hyperbolic tangent
+    {Lrlog2,  Lilog2,  LCSLclog2,  "log2"}   // log2   46 log to base 2
+};
+
 static LispObject trigfn(unsigned int which_one, LispObject a)
 // This one piece of code does the type-dispatch for the main collection
 // of elementary functions.
@@ -1188,7 +1660,15 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
                     d = float_of_number(a);
                     break;
                 case TYPE_COMPLEX_NUM:
-                {   CSL_Complex c1, c2;
+                {   if (is_long_float(real_part(a)) ||
+                        is_long_float(imag_part(a)))
+                    {   LCSL_Complex c1, c2;
+                        c1.real = float128_of_number(real_part(a));
+                        c1.imag = float128_of_number(imag_part(a));
+                        c2 = (*trig128_functions[which_one].complex)(c1);
+                        return make_complex128_float(c2);
+                    }
+                    CSL_Complex c1, c2;
                     c1.real = float_of_number(real_part(a));
                     c1.imag = float_of_number(imag_part(a));
                     c2 = (*trig_functions[which_one].complex)(c1);
@@ -1201,6 +1681,9 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
         }
         case TAG_BOXFLOAT:
             restype = floatWant(flthdr(a));
+            if (restype == WANT_LONG_FLOAT)
+              return aerror(
+                "Elementary functions applied to long floats not supported");
             d = float_of_number(a);
             break;
         default:
