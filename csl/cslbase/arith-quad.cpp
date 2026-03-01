@@ -61,6 +61,25 @@ namespace CSL_LISP
 // All this means that really the only comfortably portable scheme to
 // support 128-bit floats has to do pretty well everything in software!
 
+// *** HOWEVER ***
+// C++23 introduces a <stdfloat> header and then if __CPP_FLOAT128_T__ is
+// nonzero it will provide an extended floating point type called
+// std::float128_t. This will ne optional, but surely will be supported
+// on the platforms I care about.
+// As of February 2026 what I seem to find is
+//   Windows (Cygwin & MIngw32).  <stdfloat> and arithmetic OK but
+//                                elementary functions not available.
+//   Linux/x86_64                 All working
+//   Linux/ARM (Raspberry pi)     All working
+//   Macintosh (Intel and ARM)    Not even <stdfloat> yet.
+
+// So PROBABLY the best thing for me to do is to have this framework in place
+// but not push through real implementation until all those have caught up
+// with C++23. And not waste too mucg of my time preparing software
+// versions just now.
+// But I should probably also worry about emscripten....
+
+
 // The next paragraph is a concept and may not be followed through on!
 // Well some of my code will use a "quad-double" library that represents
 // values as four IEEE doubles. This means it provides over 200 bits of
