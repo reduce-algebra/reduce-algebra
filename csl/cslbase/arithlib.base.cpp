@@ -1,7 +1,6 @@
 // Big Number arithmetic.                             A C Norman, 2019-2026
 
-// To use this, go "#include "arithlib.h" and link against "arithlib.cpp"
-// or as an alternatice #include "arithlib.cpp" as a header-only library.
+// To use this  #include "arithlib.cpp" as a header-only library.
 
 #ifndef __arithlib_cpp
 #define __arithlib_cpp 1
@@ -497,6 +496,7 @@ static constexpr bool isHeader = ([](){
 #include <algorithm>
 #include <filesystem>
 
+#include "float128_t.h"
 #include "bitmaps.h"
 #include "threadloc.h"
 #include "cthread.cpp"
@@ -4245,23 +4245,6 @@ MAYBE_UNUSED static void reseed(Digit n)
 #ifdef softfloat_h
 // Some constants that are useful when I am dealing with float128_t.
 
-#if HAVE_Q_LITERALS
-
-// Observe that use of the "_Q" suffix is somewhat delicate, since the
-// literal generated a QuadFloat and one then needs to access its "v"
-// field to obtain the float128_t value. And the whitespace before ".v"
-// seems to be necessary. Also there are parenthese so that the "-" sign is
-// handled as part of the syntax of the literal.
-
-[[gnu::used]] inline float128_t
-    f128_0      = 0_Q .v,
-    f128_half   = 0.5_Q .v,
-    f128_mhalf  = (-0.5_Q) .v,
-    f128_1      = 1.0_Q .v,
-    f128_m1     = (-1.0_Q) .v,
-    f128_N1     = 1.04438888141315250669175271071662438258e1223_Q .v;// 2^4096
-
-#else // HAVE_Q_LITERALS
 #ifdef LITTLEENDIAN
 [[gnu::used]] inline float128_t
 f128_0      = {{0, INT64_C(0x0000000000000000)}},
@@ -4279,7 +4262,6 @@ f128_1      = {{INT64_C(0x3fff000000000000), 0}},
 f128_m1     = {{INT64_C(0xbfff000000000000), 0}},
 f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
 #endif // !LITTLEENDIAN
-#endif // HAVE_Q_LITERALS
 
 // The following tests are not supported by the version of softfloat that
 // I am using, so I implement them myself.
@@ -4653,7 +4635,8 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
                                      Digit &next,
                                      std::size_t &len,
                                      RoundingMode mode)
-{   if (f128_zero(d))
+{   using namespace CSL_LISP;
+    if (f128_zero(d))
     {   top = mid = next = 0;
         len = 1;
         return;
@@ -5125,7 +5108,8 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 }
 
 [[gnu::used]] inline float128_t Frexp128::op(SignedDigit a, SignedDigit &x)
-{   float128_t d = i64_to_f128(a), d1;
+{   using namespace CSL_LISP;
+    float128_t d = i64_to_f128(a), d1;
     int xi = 0;
     f128_frexp(d, &d1, &xi); // in the CSL sources.
     x = xi;
@@ -5222,7 +5206,8 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 }
 
 [[gnu::used]] inline float128_t Float128::op(std::uint64_t* a)
-{   SignedDigit x = 0;
+{   using namespace CSL_LISP;
+    SignedDigit x = 0;
     float128_t d = Frexp128::op(a, x);
     if (x > 100000) x = 100000;
 // There is an implementation of ldexp() for 128-bit floats in
@@ -5891,18 +5876,6 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // are used in rationalf128 because any 128-bit floating point value that
 // is that large is necessarily an exact integer.
 
-#ifdef HAVE_Q_LITERALS
-
-// Again note ugly parens around negative literal and the whitespace before
-// the ".v".
-
-[[gnu::used]] inline float128_t FP128_INT_LIMIT =
-    5192296858534827628530496329220096.0_Q .v;
-[[gnu::used]] inline float128_t FP128_MINUS_INT_LIMIT =
-    (-5192296858534827628530496329220096.0_Q) .v;
-
-#else // HAVE_Q_LITERALS
-
 #ifdef LITTLEENDIAN
 
 [[gnu::used]] inline float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
@@ -5914,8 +5887,6 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 [[gnu::used]] inline float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
 
 #endif // !LITTLEENDIAN
-#endif // HAVE_Q_LITERALS
-
 
 [[gnu::used]] inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, float128_t b)
 {   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
@@ -9957,7 +9928,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t SetModulus::op(SignedDigit n)
-{   if (n < 1)
+{   using namespace CSL_LISP;
+    if (n < 1)
         UNLIKELY
         return (std::intptr_t)aerror1("Invalid arg to set-modulus",
                                       intToHandle(n));
@@ -9969,7 +9941,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t SetModulus::op(std::uint64_t* n)
-{   if (!Plusp::op(n))
+{   using namespace CSL_LISP;
+    if (!Plusp::op(n))
         UNLIKELY
         return (std::intptr_t)aerror1("Invalid arg to set-modulus",
                                       vectorToHandle(n));
@@ -10030,6 +10003,7 @@ thread_local inline Digit smallModulus = 2;
 {
 // One of the inputs here is a bignum, and that can only be valid if we
 // have a large modulus.
+    using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
@@ -10050,7 +10024,8 @@ thread_local inline Digit smallModulus = 2;
 
 [[gnu::used]] inline std::intptr_t ModularPlus::op(std::uint64_t* a,
                                      std::uint64_t* b)
-{   if (modulusSize != modulus_big)
+{   using namespace CSL_LISP;
+    if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(a));
@@ -10071,7 +10046,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t ModularDifference::op(SignedDigit a, std::uint64_t* b)
-{   if (modulusSize != modulus_big)
+{   using namespace CSL_LISP;
+    if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(b));
@@ -10083,7 +10059,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t ModularDifference::op(std::uint64_t* a, SignedDigit b)
-{   if (modulusSize != modulus_big)
+{   using namespace CSL_LISP;
+    if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(a));
@@ -10091,7 +10068,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t ModularDifference::op(std::uint64_t* a, std::uint64_t* b)
-{   if (modulusSize != modulus_big)
+{   using namespace CSL_LISP;
+    if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(a));
@@ -10151,19 +10129,23 @@ thread_local inline Digit smallModulus = 2;
 
 
 [[gnu::used]] inline std::intptr_t ModularExpt::op(SignedDigit a, SignedDigit b)
-{   return (std::intptr_t)aerror("incomplete ModularExpt");
+{   using namespace CSL_LISP;
+    return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 [[gnu::used]] inline std::intptr_t ModularExpt::op(SignedDigit a, std::uint64_t* b)
-{   return (std::intptr_t)aerror("incomplete ModularExpt");
+{   using namespace CSL_LISP;
+    return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 [[gnu::used]] inline std::intptr_t ModularExpt::op(std::uint64_t* a, SignedDigit b)
-{   return (std::intptr_t)aerror("incomplete ModularExpt");
+{   using namespace CSL_LISP;
+    return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 [[gnu::used]] inline std::intptr_t ModularExpt::op(std::uint64_t* a, std::uint64_t* b)
-{   return (std::intptr_t)aerror("incomplete ModularExpt");
+{   using namespace CSL_LISP;
+    return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 
@@ -10216,7 +10198,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t ModularMinus::op(std::uint64_t* a)
-{   if (modulusSize != modulus_big)
+{   using namespace CSL_LISP;
+    if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad argument for modular-minus",
                                       vectorToHandle(a));
@@ -10231,6 +10214,7 @@ thread_local inline Digit smallModulus = 2;
 // GCD code. Also it could save memory turnover by re-using the space
 // from intermediate results. At least for now I will be happy if I just
 // implement a version that actually works!
+    using namespace CSL_LISP;
     intptr_t a = vectorToHandle(largeModulus());
     intptr_t b = aa;
     intptr_t x = intToHandle(0);
@@ -10257,7 +10241,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t ModularReciprocal::op(SignedDigit aa)
-{   if (aa <= 0)
+{   using namespace CSL_LISP;
+    if (aa <= 0)
         UNLIKELY
         return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
                                       intToHandle(aa));
@@ -10292,7 +10277,8 @@ thread_local inline Digit smallModulus = 2;
 }
 
 [[gnu::used]] inline std::intptr_t SafeModularReciprocal::op(SignedDigit aa)
-{   if (aa <= 0)
+{   using namespace CSL_LISP;
+    if (aa <= 0)
         UNLIKELY
         return (std::intptr_t)aerror1(
             "bad argument to safe-modular-reciprocal",

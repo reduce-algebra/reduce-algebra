@@ -74,8 +74,12 @@ LispObject make_complex(LispObject r, LispObject i)
 // Here r and i are expected to be either both rational (which in this
 // context includes the case of integer values) or both of the same
 // floating point type.  It is assumed that this has already been
-// arranged by here.
-    if (i == fixnum_of_int(0)) return r;
+// arranged by here. If the imaginary part is zero I return just the real part.
+    if (i == fixnum_of_int(0) ||
+        ((is_short_float(i) || is_single_float(i) || is_double_float(i)) &&
+         float_of_number(i) == 0.0) ||
+        (is_long_float(i) && f128_zerop(long_float_val(i))))
+        return r;
     stackcheck();
     v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM, sizeof(Complex_Number));
     errexit();

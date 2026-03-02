@@ -44,7 +44,6 @@ SOFTWARE.
 
 #include "float128_t.h"
 #include "int128_t.h"
-using namespace CSL_LISP;
 
 //- #define _GNU_SOURCE /* to define ...f128 functions */
 
@@ -62,6 +61,9 @@ using namespace CSL_LISP;
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #endif
+
+namespace CSL_LISP
+{
 
 #pragma STDC FENV_ACCESS ON
 
@@ -640,7 +642,7 @@ static void __attribute__((noinline)) as_expq_superaccurate(int *el, u2x64 m, ui
   arsu7(x, 0x402e - ((x0 >> 112)&0x7fff));
   *el = x[6];
   int jt = x[5]>>60;
-  x[5] &= ~0ull>>4;
+  x[5] &= ~0ULL>>4;
   u6x64 f,f1,f2,ft;
   pol6(f, x[5], sizeof(c)/sizeof(c[0]), c);
   pol6red(f1, x[4], c);
@@ -712,7 +714,7 @@ static void __attribute__((noinline)) as_expq_accurate(int *el, u2x64 m, uint128
   arsu4(x, 0x402e - ((x0 >> 112)&0x7fff));
   *el = x[3];
   int jt0 = x[2]>>60, jt1 = (x[2]>>56)&15;
-  x[2] &= ~0ull>>8;
+  x[2] &= ~0ULL>>8;
   u3x64 f,f1,ft;
   mhu3u3u3(ft, tbl0[jt0], tbl1[jt1]);
   pol3(f, x[2], sizeof(c)/sizeof(c[0]), c);
@@ -738,10 +740,10 @@ static void __attribute__((noinline)) as_expq_accurate(int *el, u2x64 m, uint128
     f[1] = add_with_carry(f[1],0,k,k);
     f[2] = add_with_carry(f[2],0,k,k);
     if(s<64){
-      f[1] &= (1ul<<s)-1;
+      f[1] &= (1ULL<<s)-1;
       f[2] = 0;
     } else if(s<128){
-      f[2] &= (1ul<<(s-64))-1;
+      f[2] &= (1ULL<<(s-64))-1;
     }
     rndfail = (f[0]<=16) && ((f[1] | f[2]) == 0);
   }
@@ -833,8 +835,8 @@ float128_t cr_expq(float128_t x) {
 
 //-  unsigned flagp = _mm_getcsr(), oflagp = flagp, rm = flagp&_MM_ROUND_MASK;
   b128u128_u u = {.a = reinterpret_f128_as_uint128_t(x)};
-  uint64_t b1 = u.b[1]&~0ull>>1; // strip the sign
-  if(__builtin_expect(b1<((16383ull-114)<<48), 0)){ // x is small
+  uint64_t b1 = u.b[1]&~0ULL>>1; // strip the sign
+  if(__builtin_expect(b1<((16383ULL-114)<<48), 0)){ // x is small
     static const float128_t
         sa[] = {f128_1minus,
                 f128_1,
@@ -845,16 +847,16 @@ float128_t cr_expq(float128_t x) {
 //-    return sa[1 + (rm == _MM_ROUND_UP) - ((u.b[1]>>63)&(rm != _MM_ROUND_NEAREST))];
     return sa[1];
   }
-  if(__builtin_expect(b1>=0x400c62e42fefa39eull, 0)){// other special cases: nan, inf, overflow, underflow
-    if(b1==0x7fffull<<48&&u.b[0]==0){
+  if(__builtin_expect(b1>=0x400c62e42fefa39eULL, 0)){// other special cases: nan, inf, overflow, underflow
+    if(b1==0x7fffULL<<48&&u.b[0]==0){
       if(!(u.b[1]>>63))
 	return x; // x = +Inf
       else
 	return f128_0; // x = -Inf
     }
-    if(b1>0x7fffull<<48 || (b1==0x7fffull<<48 && u.b[0])){
-//-       if(!(b1&(1ull<<47))) flagp |= FE_INVALID; // complain about the snan argument by the invalid exception
-      u.b[1] |= 1ull<<47; // snan -> qnan
+    if(b1>0x7fffULL<<48 || (b1==0x7fffULL<<48 && u.b[0])){
+//-       if(!(b1&(1ULL<<47))) flagp |= FE_INVALID; // complain about the snan argument by the invalid exception
+      u.b[1] |= 1ULL<<47; // snan -> qnan
 //-       if(__builtin_expect(oflagp!=flagp, 0)) _mm_setcsr(flagp);
       return reinterpret_uint128_t_as_f128(u.a); // qNaN
     }
@@ -864,7 +866,7 @@ float128_t cr_expq(float128_t x) {
 #ifdef CORE_MATH_SUPPORT_ERRNO
       errno = ERANGE;
 #endif
-      b128u128_u kinf = {.b = {0,0x7fffull<<48}};
+      b128u128_u kinf = {.b = {0,0x7fffULL<<48}};
 //-       kinf.a -= rm != _MM_ROUND_UP && rm != _MM_ROUND_NEAREST;
       kinf.a -= 0;
 //-       flagp |= FE_OVERFLOW|FE_INEXACT;
@@ -883,7 +885,7 @@ float128_t cr_expq(float128_t x) {
   }
   b128u128_u gf = {.f = x}, m = gf, res;
   int64_t sm = gf.bs[1]>>63;
-  m.b[1] = (m.b[1]&~0ull>>16)|1ull<<48;
+  m.b[1] = (m.b[1]&~0ULL>>16)|1ULL<<48;
   u3x64 fs; mhu3xu2(fs, iln2+4, m.a);
   fs[0] ^= sm; fs[1] ^= sm; fs[2] ^= sm;
   arsu3(fs, 0x401a - ((gf.b[1] >> 48)&0x7fff));
@@ -946,5 +948,7 @@ float128_t cr_expq(float128_t x) {
 //-   return expf128 (x);
 //- #endif
 //- }
+
+} // eof of namespace
 
 // end of expq.cpp

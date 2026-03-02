@@ -44,7 +44,6 @@ SOFTWARE.
 
 #include "float128_t.h"
 #include "int128_t.h"
-using namespace CSL_LISP;
 
 //- #define _GNU_SOURCE /* to define ...f128 functions */
 
@@ -60,6 +59,9 @@ using namespace CSL_LISP;
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #endif
+
+namespace CSL_LISP
+{
 
 //#pragma STDC FENV_ACCESS ON
 
@@ -237,7 +239,7 @@ inline uint64_t rsqrt9(uint64_t m){
   uint64_t indx = m>>58; // subrange index
   uint64_t c3 = c[indx][3], c0 = c[indx][0], c1 = c[indx][1], c2 = c[indx][2];
   c0 <<= 31; // to 64 bit with the space for the implicit bit
-  c0 |= 1ull<<63; // add implicit bit
+  c0 |= 1ULL<<63; // add implicit bit
   c1 <<= 25; // to 64 bit format
   uint64_t d = (m<<6)>>32; // local coordinate in the subrange [0, 2^32]
   uint64_t d2 = ((uint64_t)(d*d))>>32; // square of the local coordinate
@@ -283,23 +285,23 @@ float128_t cr_sqrtq(float128_t x) {
       feraiseexcept (FE_INVALID);
       return f128_NaN; // __builtin_nanf128("<0");
     } else{
-      if(!(u.b[1]&(1ull<<47))) feraiseexcept (FE_INVALID); // complain about the snan argument by the invalid exception
-      u.b[1] |= 1ull<<47; // snan -> qnan
+      if(!(u.b[1]&(1ULL<<47))) feraiseexcept (FE_INVALID); // complain about the snan argument by the invalid exception
+      u.b[1] |= 1ULL<<47; // snan -> qnan
       return reinterpret_uint128_t_as_f128(u.a); // qNaN
     }
   }
   e+=1; // adjust parity
   int32_t q2 = e>>1, i = e&1;
   // exponent of the final result
-  int64_t e2 = (q2+8191ull-1)<<48;
+  int64_t e2 = (q2+8191ULL-1)<<48;
 
   u.a <<= 16;
-  const uint64_t rsqrt_2[] = {~0ull,0xb504f333f9de6484ull}; // 2^64/sqrt(2)
+  const uint64_t rsqrt_2[] = {~0ULL,0xb504f333f9de6484ULL}; // 2^64/sqrt(2)
   uint64_t rx = u.b[1], r = rsqrt9(rx);
   uint128_t r2 = (uint128_t)r*rsqrt_2[i];// + r;
   unsigned shft = 2-i;
   u.a >>= shft;
-  u.b[1] |= 1ull<<(62+i);
+  u.b[1] |= 1ULL<<(62+i);
   r = r2>>64;
   uint128_t sx = mhuU(r, u.a);
   int128_t h  = mhuU(r, sx)<<2, ds = mhIU(h, sx);
@@ -315,12 +317,12 @@ float128_t cr_sqrtq(float128_t x) {
     uint128_t m = v.a>>14, m2 = m*m;
     // the difference of the squared result and the argument
     int128_t dm2 = m2 - (u.a<<100);
-    v.b[0] &= ~0x3fffull;
+    v.b[0] &= ~0x3fffULL;
     if(dm2>0) v.a --;
     if(dm2<0) v.a ++;
   }
 
-  unsigned frac = v.b[0]&0x7fffull; // fractional part
+  unsigned frac = v.b[0]&0x7fffULL; // fractional part
   uint64_t rnd;
 //-   if(__builtin_expect(nrst, 1)){
     rnd = frac>>14;  // round to nearest tie to even
@@ -353,5 +355,7 @@ float128_t cr_sqrtq(float128_t x) {
 //-   return sqrtf128 (x);
 //- #endif
 //- }
+
+} // end of namespace
 
 // end of sqrtq.cpp

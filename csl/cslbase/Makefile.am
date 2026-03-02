@@ -1453,7 +1453,7 @@ endif !wx
 # The file arithlib.cpp is maintained in the form of a top level file
 # arithlib.base.cpp and a collection of files that it uses "#include" to
 # get merged in. The utility flatten performs the expansion for me. The
-# consequence of this is that arithlib.hpp is a single free-standing
+# consequence of this is that arithlib.cpp is a single free-standing
 # header-only library, but if you also #include one of the things it
 # incorporates (eg threadloc.h or lvector.h) then there will be no clash.
 
@@ -1470,12 +1470,13 @@ $(cslbase)/multiply.cpp:	$(cslbase)/flatten \
 		$(cslbase)/fftmod.cpp
 	cd $(cslbase) && ./flatten multiply.base.cpp multiply.cpp
 
-$(cslbase)/arithlib.hpp:	$(cslbase)/flatten \
-		$(cslbase)/arithlib.base.hpp $(cslbase)/lvector.h \
+$(cslbase)/arithlib.cpp:	$(cslbase)/flatten \
+		$(cslbase)/arithlib.base.cpp $(cslbase)/lvector.h \
 		$(cslbase)/acnutil.h $(cslbase)/multiply.base.cpp \
-		$(cslbase)/fftutils.cpp $(cslbase)/fftmod.cpp
+		$(cslbase)/fftutils.cpp $(cslbase)/fftmod.cpp \
+		$(cslbase)/float128_t.h $(cslbase)/cthread.cpp
 	printf "\n\n=== Prepare arithlib source\n\n";
-	cd $(cslbase) && ./flatten arithlib.base.hpp arithlib.hpp
+	cd $(cslbase) && ./flatten arithlib.base.cpp arithlib.cpp
 
 $(cslbase)/arithlib.h:	$(cslbase)/arithlib.cpp
 

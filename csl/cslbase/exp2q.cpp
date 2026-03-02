@@ -547,7 +547,7 @@ static void __attribute__((noinline)) as_exp2q_superaccurate(int *el, u2x64 m, u
   arsu7(x, 0x402f - ((x0 >> 112)&0x7fff));
   *el = x[6];
   int jt = x[5]>>60;
-  x[5] &= ~0ull>>4;
+  x[5] &= ~0ULL>>4;
   u6x64 f,f1,f2,ft;
   pol6(f, x[5], sizeof(c)/sizeof(c[0]), c);
   pol6red(f1, x[4], c);
@@ -620,7 +620,7 @@ static void __attribute__((noinline)) as_exp2q_accurate(int *el, u2x64 m, uint12
   arsu4(x, 0x402f - ((x0 >> 112)&0x7fff));
   *el = x[3];
   int jt0 = x[2]>>60, jt1 = (x[2]>>56)&15;
-  x[2] &= ~0ull>>8;
+  x[2] &= ~0ULL>>8;
   u3x64 f,f1,ft;
   mhu3u3u3(ft, tbl0[jt0], tbl1[jt1]);
   pol3(f, x[2], sizeof(c)/sizeof(c[0]), c);
@@ -646,10 +646,10 @@ static void __attribute__((noinline)) as_exp2q_accurate(int *el, u2x64 m, uint12
     f[1] = add_with_carry(f[1],0,k,k);
     f[2] = add_with_carry(f[2],0,k,k);
     if(s<64){
-      f[1] &= (1ul<<s)-1;
+      f[1] &= (1ULL<<s)-1;
       f[2] = 0;
     } else if(s<128){
-      f[2] &= (1ul<<(s-64))-1;
+      f[2] &= (1ULL<<(s-64))-1;
     }
     rndfail = (f[0]<=16) && ((f[1] | f[2]) == 0);
   }
@@ -741,8 +741,8 @@ float128_t cr_exp2q(float128_t x) {
 
 //-  unsigned flagp = _mm_getcsr(), oflagp = flagp, rm = flagp&_MM_ROUND_MASK;
   b128u128_u u = {.a = reinterpret_f128_as_uint128_t(x)};
-  uint64_t b1 = u.b[1]&~0ull>>1; // strip the sign
-  if(__builtin_expect(b1<=0x3f8d71547652b82full, 0)){ // x is small so 2^x always rounds to 1 in the nearest mode
+  uint64_t b1 = u.b[1]&~0ULL>>1; // strip the sign
+  if(__builtin_expect(b1<=0x3f8d71547652b82fULL, 0)){ // x is small so 2^x always rounds to 1 in the nearest mode
     b128u128_u r = {.f = f128_1};
     if(!(u.b[1]<<1|u.b[0])) return r.f; // exact result
 //-     r.a += (rm==_MM_ROUND_UP) - (int)(u.b[1]>>63)*(rm!=_MM_ROUND_NEAREST);
@@ -750,16 +750,16 @@ float128_t cr_exp2q(float128_t x) {
 //-     if(__builtin_expect(oflagp!=flagp, 0)) _mm_setcsr(flagp);
     return r.f;
   }
-  if(__builtin_expect(b1>=0x400d000000000000ull, 0)){// other special cases: nan, inf, overflow, underflow
-    if(b1==0x7fffull<<48&&u.b[0]==0){
+  if(__builtin_expect(b1>=0x400d000000000000ULL, 0)){// other special cases: nan, inf, overflow, underflow
+    if(b1==0x7fffULL<<48&&u.b[0]==0){
       if(!(u.b[1]>>63))
 	return x; // x = +Inf
       else
 	return f128_0; // x = -Inf
     }
-    if(b1>0x7fffull<<48 || (b1==0x7fffull<<48 && u.b[0])){
-//-       if(!(b1&(1ull<<47))) flagp |= FE_INVALID; // complain about the snan argument by the invalid exception
-      u.b[1] |= 1ull<<47; // snan -> qnan
+    if(b1>0x7fffULL<<48 || (b1==0x7fffULL<<48 && u.b[0])){
+//-       if(!(b1&(1ULL<<47))) flagp |= FE_INVALID; // complain about the snan argument by the invalid exception
+      u.b[1] |= 1ULL<<47; // snan -> qnan
 //-       if(__builtin_expect(oflagp!=flagp, 0)) _mm_setcsr(flagp);
       return reinterpret_uint128_t_as_f128(u.a); // qNaN
     }
@@ -768,7 +768,7 @@ float128_t cr_exp2q(float128_t x) {
 #ifdef CORE_MATH_SUPPORT_ERRNO
       errno = ERANGE;
 #endif
-      b128u128_u kinf = {.b = {0,0x7fffull<<48}};
+      b128u128_u kinf = {.b = {0,0x7fffULL<<48}};
 //-       kinf.a -= rm != _MM_ROUND_UP && rm != _MM_ROUND_NEAREST;
 //-       flagp |= FE_OVERFLOW|FE_INEXACT;
 //-       if(__builtin_expect(oflagp!=flagp, 0)) _mm_setcsr(flagp);
@@ -787,7 +787,7 @@ float128_t cr_exp2q(float128_t x) {
   b128u128_u m = u, res;
   int64_t e = (u.b[1] >> 48)&0x7fff;
   int64_t sm = u.bs[1]>>63;
-  m.b[1] = (m.b[1]&~0ull>>16)|1ull<<48;
+  m.b[1] = (m.b[1]&~0ULL>>16)|1ULL<<48;
   int64_t es = e-16367;
   if(__builtin_expect((u.b[0]|u.b[1]<<es|(e-16383)>>63)==0, 0)){ // detect exact results
     int64_t er = m.b[1]>>(16431-e);
@@ -797,7 +797,7 @@ float128_t cr_exp2q(float128_t x) {
     if(__builtin_expect(er>0, 1)){
       res.b[1] = er<<48;
     } else {
-      res.b[1] = 1ul<<47;
+      res.b[1] = 1ULL<<47;
       res.a >>= -er;
 #ifdef CORE_MATH_SUPPORT_ERRNO
       errno = ERANGE;

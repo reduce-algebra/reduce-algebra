@@ -44,7 +44,6 @@ SOFTWARE.
 
 #include "float128_t.h"
 #include "int128_t.h"
-using namespace CSL_LISP;
 
 #ifdef CORE_MATH_SUPPORT_ERRNO
 #include <errno.h>
@@ -54,6 +53,9 @@ using namespace CSL_LISP;
 //- #ifdef __x86_64__
 //- #include <x86intrin.h>
 //- #endif
+
+namespace CSL_LISP
+{
 
 typedef uint64_t u2x64[2];
 typedef uint64_t u3x64[3];
@@ -453,7 +455,7 @@ static uint64_t __attribute__((noinline)) as_logq_refine(int64_t el, u2x64 m, fl
   arsu7(x, 0x402e - (el&0x7fff));
 
   int jt = x[5]>>60;
-  x[5] &= ~0ull>>4;
+  x[5] &= ~0ULL>>4;
   u6x64 f,f1,f2,ft;
   pol6(f, x[5], sizeof(c)/sizeof(c[0]), c);
   pol6red(f1, x[4], c);
@@ -583,7 +585,7 @@ static float128_t as_logq_nearone(b128u128_u x){
 //-  uint64_t tr = rm == _MM_ROUND_NEAREST, crnd = 0;
    uint64_t tr = 1, crnd = 0;
   int64_t e, neg;
-  b128u128_u u = x, res, one = {.b = {0, 0x3ffful<<48}};
+  b128u128_u u = x, res, one = {.b = {0, 0x3fffULL<<48}};
   if(u.b[1]>=one.b[1]){ // x>=1
     neg = 0;
     u.b[1] -= one.b[1];
@@ -668,7 +670,7 @@ static float128_t as_logq_nearone(b128u128_u x){
   uint64_t rnd = (res.b[0]>>14)&1;
   e = 16381-e;
   if(__builtin_expect(crnd, 0)){
-    res.a += 1ul<<13;
+    res.a += 1ULL<<13;
     res.a >>= 14;
     rnd = as_logq_refine(e|neg<<15, res.b, x.f);
   } else
@@ -792,15 +794,15 @@ float128_t cr_logq(float128_t x) {
 
 //-  unsigned flagp = _mm_getcsr(), oflagp = flagp, rm = flagp&_MM_ROUND_MASK;
   b128u128_u u = {.a = reinterpret_f128_as_uint128_t(x)}, m, res;
-  if(__builtin_expect(u.b[1]>=0x7fffull<<48, 0)){
-    uint64_t b1 = u.b[1]&~0ull>>1; // strip the sign
-    if(b1>0x7fffull<<48 || (b1==0x7fffull<<48 && u.b[0])){
-//-      if(!(b1&(1ull<<47))) flagp |= FE_INVALID; // complain about the snan argument by the invalid exception
-      u.b[1] |= 1ull<<47; // snan -> qnan
+  if(__builtin_expect(u.b[1]>=0x7fffULL<<48, 0)){
+    uint64_t b1 = u.b[1]&~0ULL>>1; // strip the sign
+    if(b1>0x7fffULL<<48 || (b1==0x7fffULL<<48 && u.b[0])){
+//-      if(!(b1&(1ULL<<47))) flagp |= FE_INVALID; // complain about the snan argument by the invalid exception
+      u.b[1] |= 1ULL<<47; // snan -> qnan
 //-      if(__builtin_expect(oflagp!=flagp, 0)) _mm_setcsr(flagp);
       return reinterpret_uint128_t_as_f128(u.a); // qNaN
     }
-    if(u.b[1]==0x7fffull<<48&&u.b[0]==0) return x; // x = +Inf
+    if(u.b[1]==0x7fffULL<<48&&u.b[0]==0) return x; // x = +Inf
     if(b1==0&&u.b[0]==0){
 #ifdef CORE_MATH_SUPPORT_ERRNO
       errno = ERANGE;
@@ -808,7 +810,7 @@ float128_t cr_logq(float128_t x) {
 //-      flagp |= FE_DIVBYZERO;
 //-      if(__builtin_expect(oflagp!=flagp, 0)) _mm_setcsr(flagp);
       res.b[0] = 0;
-      res.b[1] = 0xfffful<<48;
+      res.b[1] = 0xffffULL<<48;
       return res.f; // x = -0
     }
 #ifdef CORE_MATH_SUPPORT_ERRNO
@@ -817,17 +819,17 @@ float128_t cr_logq(float128_t x) {
 //-    flagp |= FE_INVALID;
 //-    if(__builtin_expect(oflagp!=flagp, 0)) _mm_setcsr(flagp);
     res.b[0] = 11;
-    res.b[1] = 0xffff8ul<<44;
+    res.b[1] = 0xffff8ULL<<44;
     return res.f; // x<0
   }
 
-  if(0x3ffefffff0000040ull <= u.b[1] && u.b[1] <= 0x3fff000008000020ull){ // too close to 1 so we need specific treatment
+  if(0x3ffefffff0000040ULL <= u.b[1] && u.b[1] <= 0x3fff000008000020ULL){ // too close to 1 so we need specific treatment
 //-    return as_logq_nearone(u, flagp);
     return as_logq_nearone(u);
   }
 
   m = u;
-  uint64_t e = u.b[1]&(0xfffful<<48);
+  uint64_t e = u.b[1]&(0xffffULL<<48);
   if(__builtin_expect(e==0,0)){ // denormal argument
     if(u.a==0){
 #ifdef CORE_MATH_SUPPORT_ERRNO
@@ -836,19 +838,19 @@ float128_t cr_logq(float128_t x) {
 //-      flagp |= FE_DIVBYZERO;
 //-      if(__builtin_expect(oflagp!=flagp, 0)) _mm_setcsr(flagp);
       res.b[0] = 0;
-      res.b[1] = 0xfffful<<48;
+      res.b[1] = 0xffffULL<<48;
       return res.f; // x = +0
     }
     int nz = __builtin_clzl(u.b[1]) + __builtin_clzl(u.b[0])*!u.b[1];
     m.a <<= nz-15;
-    e -= (nz-16ul)<<48;
+    e -= (nz-16ULL)<<48;
   }
-  e += 112ul<<48;
+  e += 112ULL<<48;
 
   uint64_t l = as_log2(m.b[1]); // crude approximation
   int j0 = l>>59, j1 = (l>>54)&31, j2 = (l>>49)&31, j3 = (l>>44)&31;
-  m.b[1] &= ~0ull>>16;
-  m.b[1] |= 1ull<<48;
+  m.b[1] &= ~0ULL>>16;
+  m.b[1] |= 1ULL<<48;
   uint64_t r0 = rt0[j0], r1 = rt1[j1], r01 = r1*r0, r2 = rt2[j2], r3 = rt3[j3], r23 = r2*r3;
   uint128_t rl, rh = mUUp(&rl, m.a, (uint128_t)r01*r23);
   uint64_t rhh = rh>>64, rhl = rh, rlh = rl>>64;
@@ -894,5 +896,7 @@ float128_t cr_logq(float128_t x) {
 //-  if(__builtin_expect(oflagp != flagp, 0)) _mm_setcsr(flagp);
   return reinterpret_uint128_t_as_f128(res.a); // put into xmm register
 }
+
+} // end of namespace
 
 // end of logq.cpp
