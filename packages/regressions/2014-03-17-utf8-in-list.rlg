@@ -11,16 +11,15 @@
 % At present this is only expected to give even partly sensible
 % results with CSL.
 
-lisp;
+lisp$
 
 
-nil
-
-on echo;
+on echo$
 
 
-nil
+fluid '(y)$
 
+                             % for REDUCE on Common Lisp
 
 % test line overflow
 
@@ -86,7 +85,7 @@ nil
 % characters. Note that this means that multi-byte sequences in the data will
 % need to be rendered as single multi-byte character objects. E.g.
 % explode2 "#alpha;" => (#alpha;), a list of length 1.
-% spaces) it must explode2 as 
+% spaces) it must explode2 as
      prin2 "explode2: "; prin1 explode2 x; print posn();
 
 % explode is like prin1 except that it can end up with extended characters...
@@ -115,7 +114,59 @@ nil
 % by case folding...
      princ "explode2uc: "; prin1 explode2uc x; print posn();
      princ "explode2lc: "; prin1 explode2lc x; print posn() >>;
-  terpri() >>;
+
+% Self-consistency checks:
+  foreach x in list(w1, intern w1) do <<
+     terpri();
+     prin2 "Self-consistency tests using ";
+     prin2t if stringp x then "strings" else "symbols";
+
+     prin2t "These lengths should be equal:";
+     prin2 "length explode  = "; prin2t length explode x;
+     prin2 "length exploden = "; prin2t length exploden x;
+
+     prin2t "These lengths should be equal:";
+     prin2 "length explode2   = "; prin2t length explode2 x;
+     prin2 "length explodecn  = "; prin2t length explodecn x;
+     prin2 "length explode2uc = "; prin2t length explode2uc x;
+     prin2 "length explode2lc = "; prin2t length explode2lc x;
+
+     prin2 "compress explode = identity is ";
+     % intern necessary for symbols (and works with strings):
+     prin2t if intern compress explode x eq intern x
+     then "true" else "*FALSE*";
+     prin2 "compress int2id exploden = identity is ";
+     prin2t if intern compress mapcar(exploden x, function int2id) eq intern x
+     then "true" else "*FALSE*";
+
+     % Lisp read prin1 = identity test:
+     % No version of REDUCE currently passes this test!
+     % begin scalar !*echo, y;
+     %    wrs open("2014-03-17-utf8-in-list.tmp", 'output);
+     %    print x;
+     %    close wrs nil;
+     %    rds open("2014-03-17-utf8-in-list.tmp", 'input);
+     %    y := read();
+     %    close rds nil;
+     %    prin2 "read prin1 = identity is ";
+     %    prin2t if intern y eq intern x then "true" else "*FALSE*";
+     % end;
+
+     % REDUCE in prin1 = identity test:
+     begin scalar y, tmpfile := "2014-03-17-utf8-in-list.tmp";
+        out tmpfile;
+        prin2 "y := "; if idp x then prin2 "'"; prin1 x; prin2t "$";
+        prin2t "end$";
+        shut tmpfile;
+        in tmpfile;
+        prin2 "in prin1 = identity is ";
+        prin2t if intern y eq intern x then "true" else "*FALSE*";
+        system concat2("rm ", tmpfile);
+     end;
+  >>;
+
+  % Final $ here to suppress echo from in:
+>>$
 
 
 
@@ -145,16 +196,16 @@ Raw: 2AbCd π ∀ 𝔹 #pi; " γ Γ27
 prin1: "2AbCd #03c0; #2200; #01d539; #hash;pi; "" #03b3; #0393;"64
 explode2: (!2 !A b !C d !  !#03c0; !  !#2200; !  !#01d539; !  !# p i !;
 !  !" !  !#03b3; !  !#0393;)28
-explode: (!" !2 !A b !C d !  !#03c0; !  !#2200; !  !#05d539; !  !# h a s
+explode: (!" !2 !A b !C d !  !#03c0; !  !#2200; !  !#01d539; !  !# h a s
 h !; p i !; !  !" !" !  !#03b3; !  !#0393; !")46
 explodecn: (50 65 98 67 100 32 960 32 8704 32 120121 32 35 112 105 59 32
 34 32 947 32 915)17
-exploden: (34 50 65 98 67 100 32 960 32 8704 32 382265 32 35 104 97 115
+exploden: (34 50 65 98 67 100 32 960 32 8704 32 120121 32 35 104 97 115
 104 59 112 105 59 32 34 34 32 947 32 915 34)44
-explode2uc: (!2 !A !B !C !D !  !#03c0; !  !#2200; !  !#05d539; !  !# h a
-s h !; !P !I !; !  !" !  !#03b3; !  !#0393;)44
-explode2lc: (!2 a b c d !  !#03c0; !  !#2200; !  !#05d539; !  !# h a s h
-!; p i !; !  !" !  !#03b3; !  !#0393;)38
+explode2uc: (!2 !A !B !C !D !  !#03c0; !  !#2200; !  !#01d539; !  !# !P
+!I !; !  !" !  !#03b3; !  !#0393;)34
+explode2lc: (!2 a b c d !  !#03c0; !  !#2200; !  !#01d539; !  !# p i !;
+!  !" !  !#03b3; !  !#0393;)28
 
 Test using symbols
 Raw: 2AbCd π ∀ 𝔹 #pi; " γ Γ27
@@ -163,29 +214,43 @@ prin1:
 explode2: (!2 !A b !C d !  !#03c0; !  !#2200; !  !#01d539; !  !# p i !;
 !  !" !  !#03b3; !  !#0393;)28
 explode: (!! !2 !! !A b !! !C d !! !  !! !#03c0; !! !  !! !#2200; !! ! 
-!! !#05d539; !! !  !! !# p i !! !; !! !  !! !" !! !  !! !#03b3; !! !  !!
+!! !#01d539; !! !  !! !# p i !! !; !! !  !! !" !! !  !! !#03b3; !! !  !!
 !#0393;)8
 explodecn: (50 65 98 67 100 32 960 32 8704 32 120121 32 35 112 105 59 32
 34 32 947 32 915)17
 exploden: (33 50 33 65 98 33 67 100 33 32 33 960 33 32 33 8704 33 32 33
-382265 33 32 33 35 112 105 33 59 33 32 33 34 33 32 33 947 33 32 33 915)
+120121 33 32 33 35 112 105 33 59 33 32 33 34 33 32 33 947 33 32 33 915)
 71
-explode2uc: (!! !2 !A !B !C !D !  !#03c0; !  !#2200; !  !#05d539; !  !#
-!P !I !; !  !" !  !#03b3; !  !#0393;)37
-explode2lc: (!! !2 a b c d !  !#03c0; !  !#2200; !  !#05d539; !  !# p i
-!; !  !" !  !#03b3; !  !#0393;)31
+explode2uc: (!2 !A !B !C !D !  !#03c0; !  !#2200; !  !#01d539; !  !# !P
+!I !; !  !" !  !#03b3; !  !#0393;)34
+explode2lc: (!2 a b c d !  !#03c0; !  !#2200; !  !#01d539; !  !# p i !;
+!  !" !  !#03b3; !  !#0393;)28
+
+Self-consistency tests using strings
+These lengths should be equal:
+length explode  = 30
+length exploden = 30
+These lengths should be equal:
+length explode2   = 22
+length explodecn  = 22
+length explode2uc = 22
+length explode2lc = 22
+compress explode = identity is true
+compress int2id exploden = identity is true
+in prin1 = identity is true
+
+Self-consistency tests using symbols
+These lengths should be equal:
+length explode  = 40
+length exploden = 40
+These lengths should be equal:
+length explode2   = 22
+length explodecn  = 22
+length explode2uc = 22
+length explode2lc = 22
+compress explode = identity is true
+compress int2id exploden = identity is true
+in prin1 = identity is true
 
 
-nil
-
-
-end;
-
-nil
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
-
-End of Lisp run after 0.00+0.04 seconds
-real 0.23
-user 0.00
-sys 0.04
+end$
