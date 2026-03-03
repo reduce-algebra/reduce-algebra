@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-02-21 16:05:48 franc>
+Time-stamp: <2026-03-02 16:14:15 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -173,7 +173,7 @@ I performed all testing on the same computer using Windows 11, a recent version 
 
 "LispMath" below means the floating-point math (elementary transcendental) functions provided by Common Lisp, which I use if they appear to work well.  This is the case for SBCL and CCL, but not for CLISP.
 
-### Windows
+### REDUCE 7312 on Windows
 
 Lisp  | Total CPU Time (s) | Total GC Time (s)
 ------|--------------------|------------------
@@ -187,14 +187,11 @@ ccl   | 1129               | 345
 
 Regression Test               | Comment / To Do
 ------------------------------|----------------
-2011-08-31-linelength         | CSL and PSL printing overflows visibly; SL-on-CL printing designed not to!
-2014-03-17-utf8-in-list       | Needs more work.  (PSL also differs.)  Might be fixable.
+2011-08-31-linelength         | CSL and PSL printing overflows visibly; SL-on-CL printing does not.
 2019-07-30-sub-with-df        | Generic REDUCE issue?
 2023-05-27-lambda-expressions | Algebraic lambda mostly works but freestanding lambda expressions not handled correctly.  Might be fixable.
 
-#### Steel Bank Common Lisp (SBCL)
-
-REDUCE 7298 on native Windows SBCL 2.6.1 (using LispMath)
+#### Steel Bank Common Lisp (SBCL): native Windows version 2.6.2 (using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
@@ -206,9 +203,7 @@ Regression Test                    | Comment / To Do
 2013-06-30-rounding                | Expected numerical discrepancies, but only for sin and in the lowest-order bit.
 2014-11-09-accuracy-elementary-fns | Expected numerical discrepancies, but only in the lowest-order bit.
 
-#### GNU CLISP
-
-REDUCE 7298 on Cygwin CLISP 2.49 (**not** using LispMath)
+#### GNU CLISP: Cygwin version 2.49 (_not_ using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
@@ -224,9 +219,7 @@ Regression Test                    | Comment / To Do
 2014-11-09-accuracy-elementary-fns | Expected numerical discrepancies; 2 large arguments invalid for sin.
 2024-02-23-error-in-matrix-svd-computation | Expected numerical discrepancies.
 
-#### Clozure Common Lisp (CCL)
-
-REDUCE 7298 on native Windows CCL 1.13 (using LispMath)
+#### Clozure Common Lisp (CCL): native Windows version 1.13 (using LispMath)
 
 Package Test | Comment / To Do
 -------------|----------------
@@ -237,7 +230,7 @@ ofsf         | Output truncated; presumably timed out!
 
 Regression test results as for SBCL.
 
-### Ubuntu 24 (on WSL)
+### REDUCE 7299 on Ubuntu 24 (on WSL)
 
 Lisp  | Total CPU Time (s) | Total GC Time (s)
 ------|--------------------|------------------
@@ -247,28 +240,22 @@ sbcl  | 188                | 4
 clisp | 1384               | 401
 ccl   | 1197               | 31
 
-#### Steel Bank Common Lisp (SBCL)
-
-REDUCE 7299 on SBCL 2.6.1 (using LispMath)
+#### Steel Bank Common Lisp (SBCL): version 2.6.2 (using LispMath)
 
 All test results very similar to those for Windows, except no differences for numeric package or 2013-06-30-rounding regression test.
 
-### GNU CLISP
-
-REDUCE 7299 on CLISP 2.49 (**not** using LispMath)
+#### GNU CLISP: version 2.49 (_not_ using LispMath)
 
 All test results very similar to those for Windows.
 
-#### Clozure Common Lisp (CCL)
-
-REDUCE 7299 on CCL 1.13 (using LispMath)
+#### Clozure Common Lisp (CCL): version 1.13 (using LispMath)
 
 All test results very similar to those for Windows, except no differences for numeric package or 2013-06-30-rounding regression test.
 
 
 ## Known limitations
 
-I cannot see any way to support the facilities for restricting execution time on CLISP or CCL.  In more detail: the file `rlisp/inter.red` defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no garbage collection hooks exist in CLISP or CCL.  The procedures `with!-timeout` and similar just run without any restriction so don't use CLISP or CCL REDUCE is you need this facility!  It works on SBCL.
+I cannot see any way to support the REDUCE facilities for restricting execution time on CLISP or CCL.  In more detail: the file `rlisp/inter.red` defines procedures `with!-timeout` and similar that use a Lisp timer or garbage collection hook, but neither exists in CLISP or CCL.  Therefore, the procedures `with!-timeout` and similar just run without any restriction, so don't use CLISP or CCL REDUCE is you need this facility!  It works on SBCL.
 
 
 ## To do
