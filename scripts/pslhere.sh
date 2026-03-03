@@ -9,7 +9,7 @@ here=`cd "$here"; pwd -P`
 STORE=16000000
 if test -f $here/psl/psl/64
 then
-  STORE=1000
+  STORE=2000
 fi
 export fasl="$here/psl/red"
 export reduce="$here"
