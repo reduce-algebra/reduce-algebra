@@ -50,8 +50,10 @@
 %   Translated from Rlisp to Lisp.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%
 % $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load fasl-decls))
 
@@ -166,7 +168,6 @@
 	      ))))
 		    
 		     
-%%%%%%%%%% TOBEDONE!!!!!!
 (de relocate-word (code-location code-base id-table)
   (let ((reloc-tag (reloc-word-tag (get_a_halfword code-location)))
 	(reloc-inf (reloc-word-inf (get_a_halfword code-location))
@@ -210,14 +211,14 @@
 (de compute-relocation (reloc-tag reloc-inf code-base id-table)
   (cond
     ((eq reloc-tag reloc-code-offset) 
-      (wplus2 code-base reloc-inf))
+     (wplus2 code-base reloc-inf))
     ((eq reloc-tag reloc-value-cell) 
      (cond ((extraargumentp reloc-inf) 
 	    (loc (wgetv argumentblock
 			(makeextraargument reloc-inf))))
 	   ((local-id-number? reloc-inf)
 	      (setq reloc-inf (local-to-global-id reloc-inf id-table))
-              (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf))) 
+              (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)))
 	   (t (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)))))
     ((eq reloc-tag reloc-function-cell)
      (progn
@@ -225,7 +226,7 @@
 	(setq reloc-inf (local-to-global-id reloc-inf id-table)))
       (wplus2 symfnc                        %%% Should be (LOC (SYMFNC xxx)) ???
 	      (wtimes2 addressingunitsperfunctioncell
-		       reloc-inf)))) 
+		       reloc-inf))))
     ((eq reloc-tag reloc-id-number)
      (if (local-id-number? reloc-inf)
        (local-to-global-id reloc-inf id-table)
@@ -268,5 +269,3 @@
   )
 
 (off fast-integers)
-
-)

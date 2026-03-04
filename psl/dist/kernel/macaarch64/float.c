@@ -1,56 +1,54 @@
 /*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% File:         PXK:FLOAT.C
-% Description:  Miscellaneous floating point support routines.
-% Author:       Leigh Stoller
-% Created:      29-Oct-86 
-% Modified:     
-% Mode:         Text
-% Package:      
-% Status:       Open Source: BSD License
-%
-% (c) Copyright 1982, University of Utah
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Revisions:
-%  
-% 05-May-87 (Leigh Stoller)
-%  Added C defintions for external float routines used in fast-math.sl.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-*
-* $Id$
-*
-*/
+ * File:         PXK:FLOAT.C
+ * Description:  Miscellaneous floating point support routines.
+ * Author:       Leigh Stoller
+ * Created:      29-Oct-86 
+ * Modified:     
+ * Mode:         Text
+ * Package:      
+ * Status:       Open Source: BSD License
+ *
+ * (c) Copyright 1982, University of Utah
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *    * Redistributions of source code must retain the relevant copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+ * CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ *******************************************************************************
+ *
+ * Revisions:
+ *  
+ * 05-May-87 (Leigh Stoller)
+ *  Added C defintions for external float routines used in fast-math.sl.
+ *
+ *******************************************************************************
+ *
+ * $Id$
+ *
+ */
 
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <fenv.h>
-#include <stdio.h>
 
 #ifdef USE_CRLIBM
 #include "crlibm.h"
@@ -63,24 +61,23 @@
 #define atan	atan_rn
 #define exp	exp_rn
 #define log	log_rn
+#define sinh	sinh_rn
+#define cosh	cosh_rn
+#define pow     pow_rn
 
 #endif
-
 
 /* Tag( uxfloat )
  */
 void
-uxfloat(f,i)
-     double *f;
-     long long i;
+uxfloat(double *f,long long i)
 {
   *f = i;
 }
 
 /* Tag( uxfix )
  */
-long long uxfix(f)
-     double *f;
+long long uxfix(double *f)
 {
   return *f;
 }
@@ -88,17 +85,16 @@ long long uxfix(f)
 /* Tag( uxassign )
  */
 void
-uxassign(f1,f2)
-     double *f1, *f2;
+uxassign(double *f1, double *f2)
 {
   *f1 = *f2;
 }
 
+
 fexcept_t flagp;
 
 int
-uxminus(f1,f2)
-     double *f1, *f2;
+uxminus(double *f1,double *f2)
 {
   feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
   *f1 = -*f2;
@@ -107,12 +103,10 @@ uxminus(f1,f2)
   return (1);
 }
 
-
 /* Tag( uxplus2 )
  */
 int
-uxplus2(f1,f2,f3)
-     double *f1, *f2, *f3;
+uxplus2(double *f1,double *f2,double *f3)
 {
   feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
   *f1 = *f2 + *f3;
@@ -124,8 +118,7 @@ uxplus2(f1,f2,f3)
 /* Tag( uxdifference )
  */
 int
-uxdifference(f1,f2,f3)
-     double *f1, *f2, *f3;
+uxdifference(double *f1,double *f2,double *f3)
 {
   feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
   *f1 = *f2 - *f3;
@@ -137,8 +130,7 @@ uxdifference(f1,f2,f3)
 /* Tag( uxtimes2 )
  */
 int
-uxtimes2(f1,f2,f3)
-     double *f1, *f2, *f3;
+uxtimes2(double *f1,double *f2,double *f3)
 {
   feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
   *f1 = *f2 * *f3;
@@ -150,8 +142,7 @@ uxtimes2(f1,f2,f3)
 /* Tag( uxquotient )
  */
 int
-uxquotient(f1,f2,f3)
-     double *f1, *f2, *f3;
+uxquotient(double *f1,double *f2,double *f3)
 {
   feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
   *f1 = *f2 / *f3;
@@ -162,9 +153,7 @@ uxquotient(f1,f2,f3)
 
 /* Tag( uxgreaterp )
  */
-long long uxgreaterp(f1,f2,val1,val2)
-     double *f1, *f2;
-     long long val1, val2;
+long long uxgreaterp(double *f1,double *f2,long long val1,long long val2)
 {
   if (*f1 > *f2)
     return val1;
@@ -174,9 +163,7 @@ long long uxgreaterp(f1,f2,val1,val2)
 
 /* Tag( uxlessp )
  */
-long long uxlessp(f1,f2,val1,val2)
-     double *f1, *f2;
-     long long val1, val2;
+long long uxlessp(double *f1,double *f2,long long val1,long long val2)
 {
   if (*f1 < *f2)
     return val1;
@@ -187,45 +174,48 @@ long long uxlessp(f1,f2,val1,val2)
 /* Tag( uxwritefloat )
  */
 void
-uxwritefloat(buf, flt, convstr)
-     char *buf;          /* String buffer to return float int */
-     double *flt;        /* Pointer to the float */
-     char *convstr;      /* String containing conversion field for sprintf */
+uxwritefloat(char *buf, double *flt, char *convstr)
+//     char *buf;          /* String buffer to return float int */
+//     double *flt;        /* Pointer to the float */
+//     char *convstr;      /* String containing conversion field for sprintf */
 {
   char *temps, *dot, *e;
-  char tempbuf [100]; /* reasonable size limit */
-  float  tempf;
+  char tempbuf[102]; /* reasonable size limit */
 
   temps = buf + 8;       /* Skip over lisp string length to write data */
 
-  sprintf(temps,convstr, *flt);
+  snprintf(temps, 99, convstr, *flt);
 
   if (isfinite(*flt))
     {
 
     /* Make sure that there is a trailing .0
      */
-    dot = rindex(temps, '.');
-    if (dot == NULL)
-      {
-      /* Check to see if the number is in scientific notation. If so, we need
-       *  add the .0 into the middle of the string, just before the e.
-       */
-      if ((e = rindex(temps, 'e')) || (e = rindex(temps, 'E')))
+      dot = rindex(temps, '.');
+      if (dot == NULL)
 	{
-	  strcpy(tempbuf, e);       /* save save exponent part */
-	  *e = '\0'; 
-	  strcat(temps, ".0");     /* Add .0 ono original string */
-	  strcat(temps, tempbuf);  /* add the exponent part onto the end */
+	  /* Check to see if the number is in scientific notation. If so,
+	   *  we must add the .0 into the middle of the string,
+	   *  just before the "e".
+	   */
+	  if ((e = rindex(temps, 'e')) || (e = rindex(temps, 'E')))
+	    {
+	      /* save exponent part */
+	      strcpy(tempbuf, e);
+	      // Now splice in ".0" before the exponent part
+	      *e = '\0'; 
+	      strcat(temps, ".0");     /* Add .0 onto original string */
+	      strcat(temps, tempbuf);  /* add the exponent part onto the end */
+	    }
+	  else
+	    {
+	      strcat(temps, ".0");
+	    }
 	}
-      else
-	{
-	  strcat(temps, ".0");
-	}
-      }
-  }
-
-  /* Install the length of the string into the Lisp header word
+    }
+  /* Install the length of the string into the Lisp header word.
+     Note that the header word is the 0-based index of the last character,
+     e.g. length - 1 .
    */
   *((long long *)buf) = strlen(temps) - 1;
 }
@@ -244,88 +234,74 @@ uxwritefloat8(buf, flt, convstr,dummy)
 /* Tag( uxdoubletofloat )
  */
 void
-uxdoubletofloat (dbl,flt)
-     double *dbl;
-     float  *flt;
+uxdoubletofloat (double *dbl,float *flt)
 {
   *flt = (float) *dbl;
 }
 
 void
-uxfloattodouble (flt,dbl)
-     float  *flt;             
-     double *dbl;             
+uxfloattodouble (float *flt, double *dbl)
 {
   *dbl = (double) *flt;
 }
 
 /* Functions for fast-math.sl (Unix C replacement for mathlib.) */
 void
-uxsin (r, x)
-     double *r, *x;
+uxsin (double *r, double *x)
 {
-    *r = sin( *x );
+  *r = sin( *x );
 }
 
 void
-uxcos (r, x)
-     double *r, *x;
+uxcos (double *r, double *x)
 {
-    *r = cos( *x );
+  *r = cos( *x );
 }
 
 void
-uxtan (r, x)
-     double *r, *x;
+uxtan (double *r, double *x)
 {
-    *r = tan( *x );
+  *r = tan( *x );
 }
 
 void
-uxasin (r, x)
-     double *r, *x;
+uxasin (double *r, double *x)
 {
-    *r = asin( *x );
+  *r = asin( *x );
 }
 
 void
-uxacos (r, x)
-     double *r, *x;
+uxacos (double *r, double *x)
 {
-    *r = acos( *x );
+  *r = acos( *x );
 }
 
 void
-uxatan (r, x)
-     double *r, *x;
+uxatan (double *r, double *x)
 {
-    *r = atan( *x );
+  *r = atan( *x );
 }
 
 void
-uxsqrt (r, x)
-     double *r, *x;
+uxsqrt (double *r, double *x)
 {
-    *r = sqrt( *x );
+  *r = sqrt( *x );
 }
 
 void
-uxexp (r, x)
-     double *r, *x;
+uxexp (double *r, double *x)
 {
-    *r = exp( *x );
+  *r = exp( *x );
 }
 
 void
-uxlog (r, x)
-     double *r, *x;
+uxlog (double *r, double *x)
 {
-    *r = log( *x );
+  *r = log( *x );
 }
 
 void
-uxatan2 (r, y, x)
-     double *r, *y, *x;
+uxatan2 (double *r, double *y, double *x)
 {
-    *r = atan2( *y, *x );
+  *r = atan2( *y, *x );
 }
