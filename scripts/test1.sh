@@ -773,7 +773,7 @@ do
   psl=*)
     if test -f "$here/pslbuild/${pp#psl=}/psl/64"
     then
-      mem=1000
+      mem=2000
     else
       mem=256000000
     fi

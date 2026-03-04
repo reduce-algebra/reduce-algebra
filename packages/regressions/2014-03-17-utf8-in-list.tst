@@ -11,8 +11,9 @@
 % At present this is only expected to give even partly sensible
 % results with CSL.
 
-lisp;
-on echo;
+lisp$
+on echo$
+fluid '(y)$                             % for REDUCE on Common Lisp
 
 % test line overflow
 
@@ -78,7 +79,7 @@ on echo;
 % characters. Note that this means that multi-byte sequences in the data will
 % need to be rendered as single multi-byte character objects. E.g.
 % explode2 "#alpha;" => (#alpha;), a list of length 1.
-% spaces) it must explode2 as 
+% spaces) it must explode2 as
      prin2 "explode2: "; prin1 explode2 x; print posn();
 
 % explode is like prin1 except that it can end up with extended characters...
@@ -107,6 +108,58 @@ on echo;
 % by case folding...
      princ "explode2uc: "; prin1 explode2uc x; print posn();
      princ "explode2lc: "; prin1 explode2lc x; print posn() >>;
-  terpri() >>;
 
-end;
+% Self-consistency checks:
+  foreach x in list(w1, intern w1) do <<
+     terpri();
+     prin2 "Self-consistency tests using ";
+     prin2t if stringp x then "strings" else "symbols";
+
+     prin2t "These lengths should be equal:";
+     prin2 "length explode  = "; prin2t length explode x;
+     prin2 "length exploden = "; prin2t length exploden x;
+
+     prin2t "These lengths should be equal:";
+     prin2 "length explode2   = "; prin2t length explode2 x;
+     prin2 "length explodecn  = "; prin2t length explodecn x;
+     prin2 "length explode2uc = "; prin2t length explode2uc x;
+     prin2 "length explode2lc = "; prin2t length explode2lc x;
+
+     prin2 "compress explode = identity is ";
+     % intern necessary for symbols (and works with strings):
+     prin2t if intern compress explode x eq intern x
+     then "true" else "*FALSE*";
+     prin2 "compress int2id exploden = identity is ";
+     prin2t if intern compress mapcar(exploden x, function int2id) eq intern x
+     then "true" else "*FALSE*";
+
+     % Lisp read prin1 = identity test:
+     % No version of REDUCE currently passes this test!
+     % begin scalar !*echo, y;
+     %    wrs open("2014-03-17-utf8-in-list.tmp", 'output);
+     %    print x;
+     %    close wrs nil;
+     %    rds open("2014-03-17-utf8-in-list.tmp", 'input);
+     %    y := read();
+     %    close rds nil;
+     %    prin2 "read prin1 = identity is ";
+     %    prin2t if intern y eq intern x then "true" else "*FALSE*";
+     % end;
+
+     % REDUCE in prin1 = identity test:
+     begin scalar y, tmpfile := "2014-03-17-utf8-in-list.tmp";
+        out tmpfile;
+        prin2 "y := "; if idp x then prin2 "'"; prin1 x; prin2t "$";
+        prin2t "end$";
+        shut tmpfile;
+        in tmpfile;
+        prin2 "in prin1 = identity is ";
+        prin2t if intern y eq intern x then "true" else "*FALSE*";
+        system concat2("rm ", tmpfile);
+     end;
+  >>;
+
+  % Final $ here to suppress echo from in:
+>>$
+
+end$
