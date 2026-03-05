@@ -109,7 +109,7 @@
    (defcmacro *symflag  ((*move argone (reg t1))
 			 (*move ($fluid &symflag&) (reg t2))
 			 (*wshift (reg t1) 8)  % inf
-			 (*wshift (reg t1) -5) % and * 4
+			 (*wshift (reg t1) -5) % and * 8
 			 (*wplus2 (reg t1) (reg t2))
 			 (*wshift (reg t1) 8) % inf
 			 (*wshift (reg t1) -8) % inf
@@ -148,7 +148,7 @@
 
 (dm symflagp (u)
   (cond ((not (get (cadr (caddr u)) 'symflag?)) nil)
-      (t `(weq (symflag ,(cadr u) ,(get (cadr(caddr u)) 'symflagval))1)
+        (t `(weq (symflag ,(cadr u) ,(get (cadr (caddr u)) 'symflagval)) 1)
       )))
 
 (fluid '(&symflag& symget &symgetsize&))
