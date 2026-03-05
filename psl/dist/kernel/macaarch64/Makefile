@@ -3,9 +3,9 @@
 # File:		 PXK:Makefile
 # Description:  Makefile for bpsl (microkernel).
 # Author:	   Harold Carr and Leigh Stoller.
-# Created:	  29-Sep-86
-# Modified:	06-Oct-87 (Harold Carr)
-# Mode:		 Text
+# Created:      29-Sep-86
+# Modified:   06-Oct-87 (Harold Carr)
+# Mode:                Text
 # Package:
 # Status:        Open Source: BSD License
 #
@@ -61,9 +61,9 @@
 # $Id$
 #
 ##############################################################################
-
-### PROOT   = /silo/cons/verkaufpsl
-PROOT = $(proot)
+ 
+###PROOT   = /silo/cons/verkaufpsl
+PROOT	= $(proot)
  
 #### MACHINE = macaarch64
 PSL	= $(PROOT)/dist
@@ -181,7 +181,7 @@ CRT1  =
 $(USERDIR)/bpsl: $(CFILES)  \
 		$(USERDIR)/main.o $(USERDIR)/dmain.o \
 	$(USERDIR)/cclnk
-
+ 
 $(USERDIR)/dmain.o: $(USERDIR)/dmain.s 
 	gcc -c $(ASARGS) -o $(USERDIR)/dmain.o $(USERDIR)/dmain.s
 

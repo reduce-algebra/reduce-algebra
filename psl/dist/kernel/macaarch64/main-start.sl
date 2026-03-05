@@ -76,8 +76,10 @@
 %  loader as part of its startup.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%
 % $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (commentoutcode
 (compiletime    %% Move this hack somewhere else later.
@@ -145,7 +147,7 @@
  (tokenbuffer       #.(compiler-constant 'maxtokensize))
  (bndstk            #.(compiler-constant 'bndstksize))
  (catchstack        #.(times2 (compiler-constant 'catchstacksize) 4))
- (hashtable         5000000 ) %%%%#.(quotient (compiler-constant 'hash-table-size) 2))
+ (hashtable         #.(quotient (compiler-constant 'hash-table-size) 2))
  (onewordbuffer     1)
  (saveargc          1)
  (saveargv          1)
@@ -264,15 +266,15 @@
 
 (compiletime
   (setq mainentrypointname* '!_!p!s!l!_!m!a!i!n))
- 
+
 (lap '((*entry !_!p!s!l!_!m!a!i!n expr 0)
 
        (*alloc 3) % changes Stack pointer
 
-       (*move (reg 1) (frame 1))      % argc
-       (*move (reg 2) (frame 2))      % argv
+       (*move (reg 1) (frame 1))	% argc
+       (*move (reg 2) (frame 2))	% argv
        (*move (reg fp) (frame 3)) % have to save frame pointer
-       (*move (reg 3) (reg symval))   % pointer to symval array
+       (*move (reg 3) (reg symval))	% pointer to symval array
 
        (*MOVE (reg symval) ($global symval))
        (*MOVE ($global symfnc) (reg symfnc))

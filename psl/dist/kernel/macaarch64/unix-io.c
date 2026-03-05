@@ -1,76 +1,74 @@
 /*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% File:         PXCC:UNIX-IO.C
-% Description:  Unix PSL FileDescriptors are implemented as stdio streams
-%                 ("FILE *".)
-% Author:       Russell D. Fish
-% Created:      Thu Feb 16 1984
-% Modified:     17-Jul-84 22:49:12 (RAM)
-% Mode:         Text
-% Package:
-% Status:       Open Source: BSD License
-%
-% (c) Copyright 1983, Hewlett-Packard Company, see the file
-%            HP_disclaimer at the root of the PSL file tree
-%
-% (c) Copyright 1982, University of Utah
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Revisions:
-%
-% 15-Sep-88 (T. Yamamoto and C. Burdorf)
-%  Moved collect out of expand_file_name so it won't be overwritten as a
-%  local before it is referenced.
-% 20-Sep-86 (Leigh Stoller)
-%  Removed assembler alias statements because they are not portable. Instead,
-%  a sed script will be used to convert the _variables of C to VARIABLES of
-%  PSL.
-% 17-Jul-84 22:48:32 (RAM)
-%  Added unixcd, a routine that calls expand_file_name before calling chdir.
-% 3-Jul-84 10:45:57 (RAM)
-%  Added expand_file_name (called from unixopen) to expand shell variable
-%  references and ~ home directory syntax.
-% 29-Jun-84 14:21:21 (RAM)
-%  Added unixputs and unixopen.
-% 21-May-84 17:41:41 (Vicki O'Day)
-%  Added unixcleario.  It is called by syscleario.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-*
-* $Id$
-*
-*/
+ *
+ * File:         PXK:UNIX-IO.C
+ * Description:  Unix PSL FileDescriptors are implemented as stdio streams
+ *                 ("FILE *".)
+ * Author:       Russell D. Fish
+ * Created:      Thu Feb 16 1984
+ * Modified:     17-Jul-84 22:49:12 (RAM)
+ * Mode:         Text
+ * Package:
+ * Status:       Open Source: BSD License
+ *
+ * (c) Copyright 1983, Hewlett-Packard Company, see the file
+ *            HP_disclaimer at the root of the PSL file tree
+ *
+ * (c) Copyright 1982, University of Utah
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *    * Redistributions of source code must retain the relevant copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+ * CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ *****************************************************************************
+ *
+ * Revisions:
+ *
+ * 15-Sep-88 (T. Yamamoto and C. Burdorf)
+ *  Moved collect out of expand_file_name so it won't be overwritten as a
+ *  local before it is referenced.
+ * 20-Sep-86 (Leigh Stoller)
+ *  Removed assembler alias statements because they are not portable. Instead,
+ *  a sed script will be used to convert the _variables of C to VARIABLES of
+ *  PSL.
+ * 17-Jul-84 22:48:32 (RAM)
+ *  Added unixcd, a routine that calls expand_file_name before calling chdir.
+ * 3-Jul-84 10:45:57 (RAM)
+ *  Added expand_file_name (called from unixopen) to expand shell variable
+ *  references and ~ home directory syntax.
+ * 29-Jun-84 14:21:21 (RAM)
+ *  Added unixputs and unixopen.
+ * 21-May-84 17:41:41 (Vicki O'Day)
+ *  Added unixcleario.  It is called by syscleario.
+ *
+ *******************************************************************************
+ *
+ * $Id$
+ *
+ */
  
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
+#include <pwd.h>
 
- 
 /* There is an assumption here that coercing addresses into ints is OK */
 /*
 asm("   alias   _unix_stdin,UNIXSTDIN");
@@ -82,13 +80,12 @@ asm("   alias   _unix_tty,UNIXTTY");
 */
 /* Initialize some PSL external variables with FileDescriptors for SysClearIO.
  */
-
 extern FILE * unixstdin, * unixstdout, * unixstderr, * unixtty;
-
+ 
 /* Import NULL and EOF constants for error returns from stdio fns.
  */
-extern int unixnull[2], unixeof[2];
-
+extern unsigned long long unixnull, unixeof;
+ 
 /* Tag( unixinitio )
  */
 void
@@ -97,10 +94,8 @@ unixinitio()
     unixstdin = stdin;
     unixstdout = stdout;
     unixstderr = stderr;
-    unixnull[0] = (long) NULL;
-    unixnull[1] = (long) NULL;
-    unixeof[0] = EOF;
-    unixeof[1] = EOF;
+    unixnull = (long)NULL;
+    unixeof = EOF;
     unixtty = fopen("/dev/tty", "r");
 }
  
@@ -108,8 +103,7 @@ unixinitio()
  * Used by kernel routines that write to the console
  */
 void
-unixputc(c)
-char c;
+unixputc(char c)
 {
     fputc(c, stdout);
 }
@@ -117,8 +111,7 @@ char c;
 /* Tag( unixputs )
  */
 void
-unixputs(str)
-char *str;
+unixputs(char *str)
 {
     fputs(str, stdout);
 }
@@ -126,8 +119,7 @@ char *str;
 /* Tag( unixputn )
  */
 void
-unixputn(n)
-long long n;
+unixputn(unsigned long long n)
 {
     fprintf(stdout, "%llx", n);
 }
@@ -177,17 +169,12 @@ unixcleario()
    string is returned.
 */
  
-#include <pwd.h>
-struct passwd *getpwuid();
-struct passwd *getpwnam();
-char *getenv();
 char collect[255], copy[255];  /* Made global so it won't be overwritten
                   Used to be local to expand_file_name */
  
 /* Tag( expand_file_name )
  */
-char *expand_file_name(fname)
-char *fname;
+char *expand_file_name(char *fname)
 {
   register char *c, *t, *e, *s, save;
   struct passwd *p;
@@ -215,7 +202,7 @@ char *fname;
               *e = '\0';
               if (tilde)
                 {
-          if ((p = getpwnam(s)))  t = (p -> pw_dir);
+		  if ((p = getpwnam(s)))  t = (p -> pw_dir);
         }
               else
                 t = getenv(s);
@@ -223,7 +210,7 @@ char *fname;
               s = e;
             }
           if (t)
-        while ((*c++ = *t++))
+	    while ((*c++ = *t++))
           ;
           else
         return(fname);   /* name not found, just return original fname */
@@ -236,64 +223,31 @@ char *fname;
   return (collect);
 }
  
-extern int errno;
  
-
-FILE* unixopen(filename, type)
-     char *filename, *type;
+FILE *
+unixopen(char *filename, char *type)
 {
-  FILE* fptr;
+  FILE * fptr;
  
   fptr = fopen(expand_file_name(filename), type);
   return(fptr);
 }
-
-/*
-FILE* unixopen(filename, type)
-     char *filename, *type;
-{
-  FILE* fptr;
- 
-  //  printf("open %s %s ",filename,type);    
-  fptr = fopen(expand_file_name(filename), type);
-  if(fptr==(int)NULL)
-  { // try file name in dos syntax * /
-    char c,nfname[255];
-    int i,j,k,kmax;
-    //  printf("open failed %s %s ",filename,type); 
-    k=0;kmax=8;j=0;
-    for(i=0;filename[i];i++)
-    { c=filename[i]; nfname[j++]=c; k++; 
-      if(c == '\\')     {k=0; kmax=8;}
-      else if(c == '.') {k=0; kmax=3;}
-      else if(k > kmax) j--;
-    };
-    nfname[j]='\0';
-    //   printf(" reformatted  %s  ",nfname);
-    fptr = (int) fopen(expand_file_name(nfname), type);
-    //   printf(" --> %x\n",fptr);
-  };
-  return(fptr);
-}
-*/
 
 
 void
-unixcd(filename)
-     char *filename;
+unixcd(char *filename)
 {
   chdir(expand_file_name(filename));
 }
- 
-int
-unixfclose (ix)
-FILE* ix;
-
-{ return fclose (ix); }
 
 int
-external_system(command)
-     char *command;
+unixfclose (FILE *ix)
+{
+  return fclose (ix);
+}
+
+int
+external_system(char *command)
 {
   int value;
   value = system(command);
@@ -303,41 +257,35 @@ external_system(command)
 /* Tag( external_exit )
  */
 int
-external_exit(status)
-     int status;
+external_exit(int status)
 {
   exit(status);
 }
  
 char *static_argv[20];  /* static place to hold argv so it doesn't get gc'd */
- 
-long long int copy_argv(argc,argv)    /* copy argv into static space. */
-int argc;
-char *argv[];
+
+char **
+copy_argv(int argc,char *argv[])    /* copy argv into static space. */
 {
   int i;
  
   for (i=0; i < argc; i++)
      static_argv[i]=argv[i];
  
-  return((long long int)static_argv);
+  return(static_argv);
 }
 
 /* convert a pathname to canonical form */
 char *
-external_fullpath(relpath)
-     char * relpath;
+external_fullpath(char *relpath)
 {
   return realpath(relpath,NULL);
 }
 
-long long xgetw (f)
-FILE* f;
+long long xgetw (FILE *f)
 { long long a1,a2;
 
   a1 = (long long) getw(f);
   a2 = (long long) getw(f);
   return (a2 << 32 | a1);
 }
-
-
