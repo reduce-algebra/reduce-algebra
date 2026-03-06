@@ -118,7 +118,7 @@
      (gc-trap)
      (gtheap number-of-items)
      )
-    (if (wlessp heaplast heaptrapbound)
+    (if (wlessp heaplast heaptrapbound ) %%%%%%%%%%%%heapupperbound)
       pointer
       (get-heap-try-reclaim number-of-items)
       )

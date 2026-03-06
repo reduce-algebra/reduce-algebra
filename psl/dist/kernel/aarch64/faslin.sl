@@ -13,7 +13,7 @@
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
-% 
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 %
@@ -93,7 +93,7 @@
 
     % Read in the ID table.
     (setf local-id-table (read-id-table fid))
-    
+
     % Read the code.
     (setf code-size (binaryread fid)) % Size of code segment in words
     (setf code-base (gtbps code-size)) % Allocate space in BPS
@@ -110,7 +110,7 @@
     (binaryclose fid)
 
     % Twiddle the bits.
-    (if (weq (wand mode 1) 1) 
+    (if (weq (wand mode 1) 1)
 	(do-relocation-new code-base code-size bit-table local-id-table)
 	(do-relocation code-base code-size bit-table local-id-table))
 
@@ -204,7 +204,7 @@
 %           (loc (symval reloc-inf)))))
 	   ((local-id-number? reloc-inf)
 	      (setq reloc-inf (local-to-global-id reloc-inf id-table))
-              (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)) )
+              (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)))
 	   (t (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)))))
     ((eq reloc-tag reloc-function-cell)
      (progn

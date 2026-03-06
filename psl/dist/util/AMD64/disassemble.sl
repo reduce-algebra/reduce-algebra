@@ -46,7 +46,7 @@
 
 (fluid '(*gassyntax))
 
-(fluid '(bytes* lth* reg* xreg* regnr* segment*  symvalhigh symfnchigh *curradr* *currinst*))
+(fluid '(bytes* lth* reg* xreg* regnr* segment* symvalhigh symfnchigh *curradr* *currinst*))
 
           (de getwrd(a)(getmem a))
 
