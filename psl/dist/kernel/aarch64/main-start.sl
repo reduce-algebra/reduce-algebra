@@ -327,18 +327,10 @@ panic-exit                      % need to do UNIX cleanup after
 % C-callable subroutine (two strings and two length supplied)
 % input from 1st argument, output into second
 %
-(lap '((*entry !_reduceup expr 0)
-       (*move (displacement (reg st) 16) (reg 1))
-       (*move (displacement (reg st) 24) (reg 2))
-       (*move (displacement (reg st) 32) (reg 3))
-       (*move (displacement (reg st) 40) (reg 4))
-       (*linke 0 reduceup expr 4)))
-
-(de reduceup (str1 str2 len1 len2)
+(de _reduceup (str1 str2 len1 len2)
   (prog (ch1 ch2)
   (setq ch1 (stringopen str1 len1)) 
   (setq ch2 (stringopen str2 len2)) 
-  (setq !*lisp_hook t)
   (rds ch1)
   (wrs ch2)
   (begin1)

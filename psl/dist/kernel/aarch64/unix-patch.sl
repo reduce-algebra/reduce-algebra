@@ -24,7 +24,10 @@
 % POSSIBILITY OF SUCH DAMAGE.
 
 % for kernel: halfword and byte instructions generated in MIT syntax
-
+%
+% $Id: unix-patch.sl 5984 2021-08-28 12:31:27Z schoepf $
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (deflist '(
          (Byte    ((*wor  (reg 1) 16#8000000)
