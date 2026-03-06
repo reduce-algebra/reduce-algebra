@@ -183,17 +183,88 @@ omitted := '(
     update!-fasl2           % ditto
     upd!-fasl1              % ditto
     update_prompt           % ditto
-    prinl                   % ditto
-    printl
-    princl
-    printcl
-    s!:prinl0
-    s!:prinl1
-    s!:prinl2
-    fluid                   % the env cells of these get out of step during..
-    global                  % a bootstrap build if they are compiled here.
     aftergcsystemhook       % On slow machines the C code may not end up
                             % fully usable quite early enough?
+% The next bl;ock of things are defined in compat.lsp and extras.lsp,
+% and those get forcibly loaded during the build of Reduce in ways
+% that means that if any of these are turned into C++ there can be clashes
+% between the initial and optimised versions. Well when I look at this
+% list I end up thinking that several of theae should be migrated into
+% the CSL basic code rather than put in as Lisp-coded stuff!
+    binopen
+    bldmsg_temp_internal
+    break!-loop
+    carcheck
+    copy
+    deflist
+    expand
+    fetch!-url
+    fluid
+    global
+    hashtagged!-name
+    keyword
+    lastcar
+    map
+    mapc
+    mapcan
+    mapcar
+    mapcon
+    maplist
+    mapobl
+    newbig
+    oblist
+    oem!-supervisor
+    open
+    pipe!-open
+    prettyprint
+    princl
+    prinl
+    printcl
+    printl
+    printprompt
+    putc
+    putd
+    rassoc
+    rplacw
+    s!:do!-bindings
+    s!:do!-endtest
+    s!:do!-result
+    s!:do!-updates
+    s!:endlist
+    s!:expand!-do
+    s!:expand!-dolist
+    s!:expand!-dotimes
+    s!:explodes
+    s!:finishpending
+    s!:format
+    s!:make!-psetq!-assignments
+    s!:make!-psetq!-bindings
+    s!:make!-psetq!-vars
+    s!:overflow
+    s!:prid
+    s!:pridc
+    s!:prindent
+    s!:prinl0
+    s!:prinl1a
+    s!:prinl1b
+    s!:prinl2
+    s!:prstring
+    s!:prstringc
+    s!:prvector
+    s!:putblank
+    s!:putch
+    s!:quotep
+    sassoc
+    sort
+    sortip
+    stable!-sort
+    stable!-sortip
+    superprinm
+    superprintm
+    tprettyprint
+    unfluid
+    unglobal
+    unkeyword
 
 % Some items in the CSL code use the Common Lisp &optional scheme and I
 % have not arranged for the conversion into C++ to deal with that, I could
