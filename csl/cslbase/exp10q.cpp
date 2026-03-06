@@ -58,13 +58,6 @@ using namespace CSL_LISP;
 //- #include <x86intrin.h>
 //- #endif
 
-// Warning: clang also defines __GNUC__
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#endif
-
-#pragma STDC FENV_ACCESS ON
-
 typedef __int128 int128_t;
 typedef unsigned __int128 uint128_t;
 typedef uint64_t uint64_t;

@@ -278,98 +278,15 @@ LispObject Lsystem(LispObject env, LispObject a)
     return fixnum_of_int(w);
 }
 
-#ifdef WIN32
-// On Windows this version takes the trouble to avoid letting the
-// application that you are running pop up a visible console window.
-
-static LispObject Lsilent_system(LispObject env, LispObject a)
-{   SingleValued fn;
-    char cmd[LONGEST_LEGAL_FILENAME];
-#ifdef SHELL_EXECUTE
-    char args[LONGEST_LEGAL_FILENAME];
-#endif
-    Header h;
-    std::memset(cmd, 0, sizeof(cmd));
-#ifdef SHELL_EXECUTE
-    std::memset(args, 0, sizeof(args));
-#endif
-    if (a == nil)            // enquire if command processor is available
-        return lisp_true; // always is on Windows!
-    ensure_screen();
-#ifdef COMMON
-    if (complex_stringp(a)) a = simplify_string(a);
-#endif
-    if (symbolp(a))
-    {   a = get_pname(a);
-        h = vechdr(a);
-    }
-    else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-        return aerror1("system", a);
-    ensure_screen();
-    size_t len = length_of_byteheader(h) - CELL;
-    std::memcpy(cmd, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),
-                (size_t)len);
-    cmd[len] = 0;
-#ifdef SHELL_EXECUTE
-// ShellExecute works for me and allows me to launch an application with
-// its console hidden - but it does not give an opportunity to wait until
-// the command that was executed has completed. I will leave this code
-// here for now since I may find I want to re-use it (eg for opening
-// documents). But the code below that explicitly creates a process is
-// what I really need here.
-    size_t i = 0;
-    while (cmd[i]!=' ' && cmd[i]!=0) i++;
-    if (cmd[i]==0) args[0] = 0;
-    else
-    {   cmd[i] = 0;
-        std::strcpy(args, &cmd[i+1]);
-    }
-    int rc = ShellExecute(nullptr,
-                          "open",
-                          cmd,
-                          args,
-                          ".",
-                          SW_HIDE);
-    ensure_screen();
-    return fixnum_of_int(rc);
-#else
-    {   STARTUPINFO startup;
-        PROCESS_INFORMATION process;
-        DWORD rc;
-        std::memset(&startup, 0, sizeof(startup));
-        startup.cb = sizeof(startup);
-        startup.dwFlags = STARTF_USESHOWWINDOW;
-        startup.wShowWindow = SW_HIDE;
-        std::memset(&process, 0, sizeof(process));
-        if (!CreateProcess(nullptr, cmd, nullptr, nullptr, FALSE,
-                           CREATE_NEW_CONSOLE,
-                           nullptr, nullptr, &startup, &process))
-        {   return nil;
-        }
-        WaitForSingleObject(process.hProcess, INFINITE);
-// If I fail to retrieve a true exit code I will return the value 1000. This
-// is pretty arbitrary, but I expect 0 to denote success and 1000 to be an
-// unusual "genuine" return code
-        if (!GetExitCodeProcess(process.hProcess, &rc)) rc = 1000;
-        CloseHandle(process.hProcess);
-        CloseHandle(process.hThread);
-        ensure_screen();
-        return fixnum_of_int(rc);
-    }
-#endif
-}
-
-#else
-
-static LispObject Lsilent_system(LispObject env, LispObject a)
+#ifndef WIN32
+LispObject Lsilent_system(LispObject env, LispObject a)
 {   SingleValued fn;
 // Other than on Windows I do not see any risk of "consoles" getting created
 // when I do not want them, so this just does what the normal execution code
 // does.
     return Lsystem(nil, a);
 }
-
-#endif
+#endif // WIN32
 
 // This will only hash basic strings, not extended ones.
 

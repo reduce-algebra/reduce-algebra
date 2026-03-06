@@ -58,11 +58,6 @@ using namespace CSL_LISP;
 //- #include <x86intrin.h>
 //- #endif
 
-// Warning: clang also defines __GNUC__
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#endif
-
 typedef uint64_t u2x64[2];
 typedef uint64_t u3x64[3];
 typedef uint64_t u4x64[4];
@@ -1081,7 +1076,7 @@ float128_t cr_expm1q(float128_t x) {
 //-     if(__builtin_expect(rm != _MM_ROUND_NEAREST, 0))
 //-       rnd = (sm&(rm == _MM_ROUND_DOWN)) | ((sm^1)&(rm == _MM_ROUND_UP));
 
-    b128u128_u dres = {.b = {rnd, sm<<63|(16382ul+eout)<<48}};
+    b128u128_u dres = {.b = {rnd, sm<<63|(16382ULL+eout)<<48}};
     res.a += dres.a;
 
 //-     flagp |= FE_INEXACT;

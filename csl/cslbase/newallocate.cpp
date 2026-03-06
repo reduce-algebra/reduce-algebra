@@ -100,7 +100,6 @@ uintptr_t consCounter = 0;
 // numeric value give. Note that I hope the two "gap" values are both 0.
 // This works in an interesting way with gcc but less so with clang.
 
-#pragma message ("ConsN ChunkN and 2 gaps at end of a Page")
 static_print(ConsN);
 static_print(ChunkN);
 static_print(offsetof(Page,consData)+sizeof(Page::consData) - pageSize);

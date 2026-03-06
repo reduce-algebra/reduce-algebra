@@ -259,8 +259,6 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #define __STDC_FORMAT_MACROS 1
 #endif // define PRId32 etc
 
-#include "winsupport.h"
-
 #ifndef WIN32
 #define unix_posix 1        // Assume all non-windows systems are Unix-like!
 #include <unistd.h>
@@ -329,6 +327,7 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 // can arrange that for me.
 
 #include "int128_t.h"
+#include "winsupport.h"
 
 #if !defined EMBEDDED || defined USE_SOFTFLOAT
 extern "C"

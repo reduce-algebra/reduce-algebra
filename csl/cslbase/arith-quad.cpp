@@ -1246,13 +1246,11 @@ QuadFloat qexpt(QuadFloat a, QuadFloat b)
 // can then be separated and converted back to QuadFloat where the
 // power of 2 can be calculated.
 
-#pragma message "expt for 128-bit floats"
 // @@@@ PENDING.
     
     return QuadFloat(f128_NaN);
 }
 
-#pragma message "inverse hyperbolics for 128-bit floats"
 // Inverse hyperbolic are not yet sorted out! @@@@@@@@@@@@@@@@@@@@@
 
 QuadFloat qasinh(QuadFloat a)

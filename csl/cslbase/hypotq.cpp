@@ -58,11 +58,6 @@ SOFTWARE.
 namespace CSL_LISP
 {
 
-//- // Warning: clang also defines __GNUC__
-//- #if defined(__GNUC__) && !defined(__clang__)
-//- #pragma GCC diagnostic ignored "-Wunknown-pragmas"
-//- #endif
-
 //- // This code emulates the _mm_getcsr SSE intrinsic by reading the FPCR register.
 //- // fegetexceptflag accesses the FPSR register, which seems to be much slower
 //- // than accessing FPCR, so it should be avoided if possible.

@@ -684,7 +684,11 @@ public:
 // swamp this overhead or if I am in a debugging context where absolute
 // performance does not matter much.
 
-//@@@@#define ABANDON_THREAD_SAFETY 1
+// Well rather worse, in some Windows cases an attempt to use
+// "inline thread_local" with an initializer leads to multiply defined
+// symbols for ther TLS initializer.
+
+#define ABANDON_THREAD_SAFETY 1
 
 #ifndef ABANDON_THREAD_SAFETY
 constexpr inline int TL_allocationInfoPtr=63;

@@ -55,15 +55,8 @@ SOFTWARE.
 //- #include <x86intrin.h>
 //- #endif
 
-// Warning: clang also defines __GNUC__
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#endif
-
 namespace CSL_LISP
 {
-
-//#pragma STDC FENV_ACCESS ON
 
 //- // This code emulates the _mm_getcsr SSE intrinsic by reading the FPCR register.
 //- // fegetexceptflag accesses the FPSR register, which seems to be much slower

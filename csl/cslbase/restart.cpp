@@ -42,13 +42,11 @@
 #include "version.h"
 #include "bytes.h"
 
-#ifdef WIN32
-#include <windows.h>
-#else
+#ifndef WIN32
 #ifndef EMBEDDED
 #include <dlfcn.h>
-#endif
-#endif
+#endif // EMBEDDED
+#endif // WIN32
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>

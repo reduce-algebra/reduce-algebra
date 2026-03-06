@@ -6516,7 +6516,11 @@ public:
 // swamp this overhead or if I am in a debugging context where absolute
 // performance does not matter much.
 
-//@@@@#define ABANDON_THREAD_SAFETY 1
+// Well rather worse, in some Windows cases an attempt to use
+// "inline thread_local" with an initializer leads to multiply defined
+// symbols for ther TLS initializer.
+
+#define ABANDON_THREAD_SAFETY 1
 
 #ifndef ABANDON_THREAD_SAFETY
 constexpr inline int TL_allocationInfoPtr=63;
@@ -20626,8 +20630,10 @@ static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
     {   carry = addWithCarry(a[i], b[i], carry, result[i]);
         i++;
     }
-    for (; i<lenA; i++)
-        carry = addWithCarry(a[i], carry, result[i]);
+    while (i<lenA && i<0x100000000)
+    {   carry = addWithCarry(a[i], carry, result[i]);
+        i++;
+    }
     return carry;
 }
 
@@ -20659,8 +20665,10 @@ static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
     {   borrow = subtractWithBorrow(a[i], b[i], borrow, result[i]);
         i++;
     }
-    for (; i<lenA; i++)
-        borrow = subtractWithBorrow(a[i], 0, borrow, result[i]);
+    while (i<lenA && i < 0x100000000)
+    {   borrow = subtractWithBorrow(a[i], 0, borrow, result[i]);
+        i++;
+    }
     return borrow;
 }
 
@@ -20683,8 +20691,14 @@ static Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
     {   borrow = subtractWithBorrow(b[i], a[i], borrow, result[i]);
         i++;
     }
-    for (; i<lenA; i++)
-        borrow = subtractWithBorrow(0, a[i], borrow, result[i]);
+// The extra check "i<0x10000000" is to avoid triggering a warninng about
+// undefined behaviour that certain versions of g++ generate and that
+// while probably spurious they are most alarming. The same hack is
+// applied in two further places...
+    while (i<lenA && i<0x10000000)
+    {   borrow = subtractWithBorrow(0, a[i], borrow, result[i]);
+        i++;
+    }
     return borrow;
 }
 
@@ -24368,8 +24382,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 [[gnu::used]] inline std::intptr_t Quotient::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -24398,8 +24412,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
         return Minus::op(a);
     }
     std::size_t lena = numberSize(a);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
@@ -24429,8 +24443,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 [[gnu::used]] inline std::intptr_t Remainder::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              false, q, olenq, lenq,
@@ -24446,8 +24460,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
         return intToHandle(0);
     }
     std::size_t lena = numberSize(a);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
@@ -24469,8 +24483,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 [[gnu::used]] inline std::intptr_t Mod::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              false, q, olenq, lenq,
@@ -24498,8 +24512,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
         return intToHandle(0);
     }
     std::size_t lena = numberSize(a);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
@@ -24540,8 +24554,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     std::size_t lenb = numberSize(b);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = negative(b[lenb-1]);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -24563,8 +24577,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     std::size_t lena = numberSize(a);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = b < 0;
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
@@ -24606,8 +24620,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     std::size_t lenb = numberSize(b);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = negative(b[lenb-1]);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -24629,8 +24643,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     std::size_t lena = numberSize(a);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = b < 0;
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
@@ -24671,8 +24685,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 [[gnu::used]] inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -24691,8 +24705,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
         return cons(Minus::op(a), intToHandle(0));
     }
     std::size_t lena = numberSize(a);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit b[1] = {static_cast<Digit>(bb)};
     division(a, lena, b, 1,
@@ -24705,8 +24719,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 
 [[gnu::used]] inline std::intptr_t Divide::op(SignedDigit aa, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit a[1] = {static_cast<Digit>(aa)};
     division(a, 1, b, lenb,
@@ -24718,8 +24732,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 }
 
 [[gnu::used]] inline std::intptr_t Divide::op(SignedDigit aa, SignedDigit bb)
-{   std::uint64_t* q;
-    std::uint64_t* r;
+{   std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit a[1] = {static_cast<Digit>(aa)};
     Digit b[1] = {static_cast<Digit>(bb)};
@@ -24737,8 +24751,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
                                 std::intptr_t &rem)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,

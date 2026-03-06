@@ -8860,8 +8860,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 [[gnu::used]] inline std::intptr_t Quotient::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -8890,8 +8890,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
         return Minus::op(a);
     }
     std::size_t lena = numberSize(a);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
@@ -8921,8 +8921,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 [[gnu::used]] inline std::intptr_t Remainder::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              false, q, olenq, lenq,
@@ -8938,8 +8938,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
         return intToHandle(0);
     }
     std::size_t lena = numberSize(a);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
@@ -8961,8 +8961,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 [[gnu::used]] inline std::intptr_t Mod::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              false, q, olenq, lenq,
@@ -8990,8 +8990,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
         return intToHandle(0);
     }
     std::size_t lena = numberSize(a);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
@@ -9032,8 +9032,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     std::size_t lenb = numberSize(b);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = negative(b[lenb-1]);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -9055,8 +9055,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     std::size_t lena = numberSize(a);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = b < 0;
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
@@ -9098,8 +9098,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     std::size_t lenb = numberSize(b);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = negative(b[lenb-1]);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -9121,8 +9121,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     std::size_t lena = numberSize(a);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = b < 0;
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
@@ -9163,8 +9163,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 [[gnu::used]] inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -9183,8 +9183,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
         return cons(Minus::op(a), intToHandle(0));
     }
     std::size_t lena = numberSize(a);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit b[1] = {static_cast<Digit>(bb)};
     division(a, lena, b, 1,
@@ -9197,8 +9197,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 [[gnu::used]] inline std::intptr_t Divide::op(SignedDigit aa, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit a[1] = {static_cast<Digit>(aa)};
     division(a, 1, b, lenb,
@@ -9210,8 +9210,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 }
 
 [[gnu::used]] inline std::intptr_t Divide::op(SignedDigit aa, SignedDigit bb)
-{   std::uint64_t* q;
-    std::uint64_t* r;
+{   std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     Digit a[1] = {static_cast<Digit>(aa)};
     Digit b[1] = {static_cast<Digit>(bb)};
@@ -9229,8 +9229,8 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
                                 std::intptr_t &rem)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q;
-    std::uint64_t* r;
+    std::uint64_t* q = nullptr;
+    std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,

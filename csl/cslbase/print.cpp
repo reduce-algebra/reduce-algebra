@@ -1,4 +1,4 @@
-//  print.cpp                              Copyright (C) 1990-2026 Codemist
+// print.cpp                               Copyright (C) 1990-2026 Codemist
 
 //
 // Printing, plus some file-related operations.
@@ -1646,15 +1646,15 @@ LispObject Lfind_gnuplot(LispObject env)
     return make_string(filename);
 }
 
+#ifndef WIN32
+
 LispObject Lgetpid(LispObject env)
 {   SingleValued fn;
  
-#ifdef WIN32
-    return fixnum_of_int(windowsGetPid());
-#else
     return fixnum_of_int(getpid());
-#endif
 }
+
+#endif // WIN32
 
 LispObject Lrename_file(LispObject env, LispObject from,
                         LispObject to)
@@ -4788,14 +4788,13 @@ static LispObject Llibrary_name(LispObject env, LispObject lib)
     return a;
 }
 
+#ifndef WIN32
 #ifdef SOCKETS
 
 // If a Winsock function fails it leaves an error code that
 // WSAGetLastError() can retrieve. This function converts the numeric
 // codes to some printable text. Still cryptic, but maybe better than
 // the raw numbers!
-
-#ifndef WIN32
 
 static char error_name[32];const char *WSAErrName(int i)
 {   switch (i)
@@ -4852,19 +4851,10 @@ static char error_name[32];const char *WSAErrName(int i)
     }
 }
 
-#endif // WIN32
-
-
 bool sockets_ready = false;
 
 int ensure_sockets_ready()
-{   if (!sockets_ready)
-    {
-#ifdef WIN32
-        if (windowsPrepareSockets() != 0) return 1;
-#endif
-        sockets_ready = true;
-    }
+{   if (!sockets_ready) sockets_ready = true;
     return 0;
 }
 
@@ -4955,7 +4945,7 @@ int fetch_response(char *buffer, LispObject r)
     return 1; // fail if response was over-long
 }
 
-static LispObject Lopen_url(LispObject env, LispObject url)
+LispObject Lopen_url(LispObject env, LispObject url)
 {   SingleValued fn;
     char filename[LONGEST_LEGAL_FILENAME],
     filename1[LONGEST_LEGAL_FILENAME], *p;
@@ -5294,6 +5284,7 @@ start_again:
 }
 
 #endif // SOCKETS
+#endif // WIN32
 
 int window_heading = 0;
 
