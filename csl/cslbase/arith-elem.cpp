@@ -1449,7 +1449,6 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
 #ifdef COMMON
 // CLquot2 has to generate a ratio when the quotient generated is
 // not a whole number.
-#pragma message ("CLquot2 not sorted out yet")
             a = CLquot2(fixnum_of_int(1), a);
 #else
             a = Quotient::op(fixnum_of_int(1), a);

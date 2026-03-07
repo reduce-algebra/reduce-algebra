@@ -39,10 +39,6 @@
 #include "headers.h"
 #include "version.h"
 
-#ifndef WIN32
-#include <dlfcn.h>
-#endif
-
 namespace CSL_LISP
 {
 
@@ -2181,13 +2177,13 @@ LispObject Lcallf_2(LispObject env, LispObject entry, LispObject a1)
 // I will not (for now) provide a call to close the library - it should be
 // closed when the system exits.
 
+#ifndef WIN32
+
+#include <dlfcn.h>
+
 LispObject Lopen_foreign_library(LispObject env, LispObject name)
 {   SingleValued fn;
-#ifdef WIN32
-    HANDLE a;
-#else
     void *a;
-#endif
     LispObject r;
     char libname[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
@@ -2205,34 +2201,6 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
 // a whole despite the embedded dots.
 // On Windows if no suffix is provided a ".dll" will be appended, while
 // on other systems ".so" is used.
-#ifdef WIN32
-    if (w1 == nullptr) std::strcat(libname, ".dll");
-    for (w1=libname; *w1!=0; w1++)
-        if (*w1 == '/') *w1 = '\\';
-// For now I will leave the trace print of the library name here, since
-// it should only appear once per run so ought not to cause over-much grief.
-// eventually I will remove it!
-#ifdef DEBUG
-    std::printf("open-library Windows %s\n", libname);
-#endif
-    a = LoadLibrary(libname);
-    if (a == 0)
-    {
-#ifdef DEBUG
-        DWORD err = GetLastError();
-        char errbuf[80];
-// The printf calls here to report errors will not be useful in some
-// windowed contexts, so I will need to rework them in due course.
-        std::printf("Error code %ld = %lx\n", static_cast<long>(err),
-                    static_cast<long>(err));
-        err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
-                            FORMAT_MESSAGE_IGNORE_INSERTS,
-                            nullptr, err, 0, errbuf, 80, nullptr);
-        if (err != 0) std::printf("%s", errbuf);
-#endif
-        return nil;
-    }
-#else
     if (w1 == nullptr) std::strcat(libname, ".so");
 #ifdef DEBUG
 // For now I will leave the trace print of the library name here, since
@@ -2252,7 +2220,6 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
 #endif
         return nil;
     }
-#endif
     r = encapsulate_pointer(reinterpret_cast<void *>(a));
     return r;
 }
@@ -2269,34 +2236,18 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
     const char *w;
     char sname[100];
     size_t len = 0;
-#ifdef WIN32
-    HMODULE a;
-#else
     void *a;
-#endif
     if (Lencapsulatedp(nil, lib) == nil)
         return aerror("find-foreign-function");
-#ifdef WIN32
-    a = (HMODULE)extract_pointer(lib);
-#else
     a = extract_pointer(lib);
-#endif
     w = get_string_data(name, "find-foreign-function", len);
     if (len > sizeof(sname)-2) len = sizeof(sname)-2;
     std::snprintf(sname, sizeof(sname), "%.*s", static_cast<int>(len), w);
-//=== #ifdef __CYGWIN__
-//===     printf("name to look up = %s\r\n", sname);
-//=== #else
 //===     printf("name to look up = %s\n", sname);
-//=== #endif
 #ifdef EMBEDDED
     b = nullptr;
 #else
-#ifdef WIN32
-    b = reinterpret_cast<void *>(GetProcAddress(a, sname));
-#else
     b = dlsym(a, sname);
-#endif
 #endif
     if (b == nullptr) return nil;
     r = encapsulate_pointer(b);
@@ -2304,6 +2255,8 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
 // function that you are interested in.
     return r;
 }
+
+#endif // WIN32
 
 // (call!-foreign!-function fnptr)
 // call the function as found by find!-foreign!-function not passing it

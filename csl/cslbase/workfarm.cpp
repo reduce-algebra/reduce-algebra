@@ -99,8 +99,6 @@ static HANDLE thread[MAX_CPU_COUNT];
 
 #else // Now for the pthreads version for Linux, Unix, BSD, OS/X etc.
 
-#pragma message "Using pthread mutex"
-
 static pthread_mutex_t mutex;
 #define CREATEMUTEX_FAILED pthread_mutex_init(&mutex, nullptr)
 #define LOCKMUTEX          pthread_mutex_lock(&mutex)

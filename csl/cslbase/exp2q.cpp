@@ -58,11 +58,6 @@ using namespace CSL_LISP;
 //- #include <x86intrin.h>
 //- #endif
 
-// Warning: clang also defines __GNUC__
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#endif
-
 typedef uint64_t u2x64[2];
 typedef uint64_t u3x64[3];
 typedef uint64_t u4x64[4];

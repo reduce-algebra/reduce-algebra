@@ -108,18 +108,30 @@
 
 namespace CSL_LISP
 {
+
+#ifndef WIN32
 bool valid_address(uintptr_t x)
 {   return FX::valid_address(x);
 }
 bool valid_address(void* x)
 {   return FX::valid_address(x);
 }
+#endif // WIN32
+
 } // end of namespace
+
+
 
 using namespace CSL_LISP;
 
 namespace FX
 {
+
+#ifdef WIN32
+bool valid_address(void* x)
+{   return CSL_LISP::valid_address(x);
+}
+#endif // WIN32
 
 // Jollies re GC statistics...
 
@@ -576,8 +588,7 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
 // generated file-name so that (with luck) clashes are at least not
 // incredibly probable. I will also use my source of random numbers, which
 // adds variation that changes each time I call this function.
-    taskid = static_cast<unsigned long>(GetCurrentThreadId())*169 +
-             static_cast<unsigned long>(GetCurrentProcessId());
+    taskid = 169*windowsThreadId() + windowsProcessId();
 #else
     std::memset(fname, 0, sizeof(fname));
     std::strcpy(tempname, "/tmp/");
@@ -674,23 +685,7 @@ bool valid_address(void *pointer)
     else return true;
 }
 
-#elif defined WIN32
-
-// On Windows I can query the page that the address is within, and accept
-// it if there is read/write access and if it is not a guard page.
-
-bool valid_address(void *pointer)
-{   MEMORY_BASIC_INFORMATION mbi = {0};
-    if (::VirtualQuery(pointer, &mbi, sizeof(mbi)))
-    {   if (mbi.State != MEM_COMMIT) return false;
-        // check the page is not a guard page
-        if (mbi.Protect & (PAGE_GUARD|PAGE_NOACCESS)) return false;
-        return ((mbi.Protect & (PAGE_NOACCESS)) == 0);
-    }
-    return false;  // ::VirtualQuery failed.
-}
-
-#else
+#elif !defined WIN32
 
 bool valid_address(void *pointer)
 {   return true;

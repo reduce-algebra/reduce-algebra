@@ -1294,7 +1294,6 @@ LispObject Expt::op(Fixnum a, Rat b)
 // not for today. I will however leave a message to myself in to tend to
 // remind me to come back to it!
 //
-#pragma message ("all sorts of cases of ** need attention")
 LispObject Expt::op(std::uint64_t* a, Rat b)
 {   return make_boxfloat(std::pow(RawFloat::op(a), RawFloat::op(b)));
 }
@@ -5173,7 +5172,6 @@ LispObject Floor::op(LFlt a, Rat b)
 // fixnum floor complex
 LispObject Floor::op(Fixnum a, Cpx b)
 {   arithlib_abort("not done yet");
-#pragma message ("2 arg floor and friends incomplete code")
 }
 
 // bignum floor complex

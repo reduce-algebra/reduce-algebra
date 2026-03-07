@@ -72,10 +72,6 @@
 (flag '(Immediate UnImmediate Indirect deferred label extrareg Indexed
                   displacement unindirect) 'TerminalOperand)
 
-% MkItem may be used when evaluating WConst expressions.
-
-%(de MkItem (TagPart InfPart)
-%  (lor (lsh TagPart 27) (land InfPart 16#7ffffff)))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % REGISTER HANDLING PREDICATES%
@@ -343,15 +339,15 @@
 
 
 (DefAnyreg FRAME
-  AnyregFRAME
+           AnyregFRAME
 %           ((zerop)  (Indirect (reg st)))
            (         (Displacement (REG st) (plus2 (times2 2 8) SOURCE))))
 
 % The compiler will tag expressions immediate in the procedure ResolveWConst.
 % Only expressions are tagged immediate, not numbers.
- 
- 
-(De AnyRegImmediate(REGISTER SOURCE)
+
+
+(De AnyRegImmediate (REGISTER SOURCE)
    (cond ((InumP  SOURCE)               SOURCE)
          ((Eqcar SOURCE 'Unimmediate)   SOURCE)
          (T                            (list 'immediate SOURCE) )
@@ -362,7 +358,6 @@
  
 (Defanyreg QUOTE
            AnyregQUOTE
-%          ((Int32P)  (quote SOURCE))  % more that 32 bits
            ((INumP)  SOURCE)    %?
            ((Null) (REG NIL))
            (       (QUOTE SOURCE)))   %? Recursivly expand??
@@ -485,7 +480,6 @@
 
 (de quotedstringp (x) (and (quotep x) (stringp (cadr x))))
 
-%% optimize (*Move nil (fluid something))
 (DefCMacro *Move
        (Equal)
        ((regp regp)              (MOV ArgTwo ArgOne))
@@ -915,8 +909,8 @@
         ((regp Anyp)  (*Move ArgTwo ArgOne)
                       (NEG ArgOne ArgOne))
         (             (*Move ArgTwo (reg t2))
-                        (*wminus (reg t2) (reg t2))
-                        (*Move (reg t2) ArgOne)))
+                      (*wminus (reg t2) (reg t2))
+                      (*Move (reg t2) ArgOne)))
 
 (put 'wtimes2 'opencode '((MUL (reg 1) (reg 1) (reg 2))))
 
@@ -1099,19 +1093,19 @@
 			(BFI ArgOne (reg t3) 56 8))
        ((regp regp)     (BFI ArgOne ArgTwo 56 8))
        ((regp anyp)     (*Move ArgTwo (reg t2))
-                         (*Mkitem ArgOne (reg t2)))
+                        (*MkItem ArgOne (reg t2)))
        (                (*Move ArgOne (reg t1))
-                         (*mkitem (reg t1) ArgTwo)
-                         (*Move (reg t1) ArgOne)))
+                        (*MkItem (reg t1) ArgTwo)
+                        (*Move (reg t1) ArgOne)))
 
 (DefCMacro *Tag
       ((regp regp) (UBFX ArgOne ArgTwo 56 8))
       ((Anyp regp) (UBFX (reg t1) ArgTwo 56 8)
-                    (*Move (reg t1) ArgOne))
+                   (*Move (reg t1) ArgOne))
       ((regp anyp) (*Move ArgTwo ArgOne)
-                    (UBFX ArgOne ArgOne 56 8))
-      (             (*Move ArgTwo (reg t1))
-                    (*Tag ArgOne (reg t1))))
+                   (UBFX ArgOne ArgOne 56 8))
+      (            (*Move ArgTwo (reg t1))
+                   (*Tag ArgOne (reg t1))))
 
 (de *Tag (ar1 ar2)
      (Expand2OperandCMacro ar1 ar2 '*Tag))
@@ -1216,7 +1210,7 @@
 
 (DefCMacro *JumpWleq)
 
-(de  *JumpWleq(Lbl ArgOne ArgTwo)
+(de *JumpWleq(Lbl ArgOne ArgTwo)
         (*JumpIF ArgOne ArgTwo Lbl '(b!.le . b!.ge)))
 
 (DefCMacro *JumpWgeq)

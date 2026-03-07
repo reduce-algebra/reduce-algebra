@@ -97,7 +97,6 @@
 // if <unistd.h> seems not to be available and in that case I just
 // HOPE there is a getcwd() with this signature.
 extern "C" char* getcwd(char* s, int n);
-#pragma message "without unistd.h"
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>

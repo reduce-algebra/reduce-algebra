@@ -427,8 +427,10 @@ static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
     {   carry = addWithCarry(a[i], b[i], carry, result[i]);
         i++;
     }
-    for (; i<lenA; i++)
-        carry = addWithCarry(a[i], carry, result[i]);
+    while (i<lenA && i<0x100000000)
+    {   carry = addWithCarry(a[i], carry, result[i]);
+        i++;
+    }
     return carry;
 }
 
@@ -460,8 +462,10 @@ static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
     {   borrow = subtractWithBorrow(a[i], b[i], borrow, result[i]);
         i++;
     }
-    for (; i<lenA; i++)
-        borrow = subtractWithBorrow(a[i], 0, borrow, result[i]);
+    while (i<lenA && i < 0x100000000)
+    {   borrow = subtractWithBorrow(a[i], 0, borrow, result[i]);
+        i++;
+    }
     return borrow;
 }
 
@@ -484,8 +488,14 @@ static Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
     {   borrow = subtractWithBorrow(b[i], a[i], borrow, result[i]);
         i++;
     }
-    for (; i<lenA; i++)
-        borrow = subtractWithBorrow(0, a[i], borrow, result[i]);
+// The extra check "i<0x10000000" is to avoid triggering a warninng about
+// undefined behaviour that certain versions of g++ generate and that
+// while probably spurious they are most alarming. The same hack is
+// applied in two further places...
+    while (i<lenA && i<0x10000000)
+    {   borrow = subtractWithBorrow(0, a[i], borrow, result[i]);
+        i++;
+    }
     return borrow;
 }
 

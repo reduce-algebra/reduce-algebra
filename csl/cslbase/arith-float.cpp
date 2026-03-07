@@ -1067,8 +1067,7 @@ LispObject Floor::op(uint64_t *a)
 
 LispObject Floor::op(Rat a)
 {   return Quotient::op(a.numerator(), a.denominator());
-#pragma message ("Floor(Rat)")
-// Need tp round towards -infinity here.
+// Need to round towards -infinity here.
 }
 
 LispObject Floor::op(Cpx a)
@@ -1106,8 +1105,7 @@ LispObject Ceiling::op(uint64_t *a)
 
 LispObject Ceiling::op(Rat a)
 {   return Quotient::op(a.numerator(), a.denominator());
-#pragma message ("Ceiling(Rat)")
-// noot to truncate towards +infinity here
+// need to truncate towards +infinity here
 }
 
 LispObject Ceiling::op(Cpx a)
@@ -1145,7 +1143,6 @@ LispObject Ftruncate::op(uint64_t *a)
 
 LispObject Ftruncate::op(Rat a)
 {   return Quotient::op(a.numerator(), a.denominator());
-#pragma message ("Ftruncate(Rat)")
 }
 
 LispObject Ftruncate::op(Cpx a)
@@ -1182,7 +1179,6 @@ LispObject Ffloor::op(uint64_t *a)
 
 LispObject Ffloor::op(Rat a)
 {   return Quotient::op(a.numerator(), a.denominator());
-#pragma message ("Ffloor(Rat)")
 }
 
 LispObject Ffloor::op(Cpx a)
@@ -1219,7 +1215,6 @@ LispObject Fceiling::op(uint64_t *a)
 
 LispObject Fceiling::op(Rat a)
 {   return Quotient::op(a.numerator(), a.denominator());
-#pragma message ("Fceiling(Rat)")
 }
 
 LispObject Fceiling::op(Cpx a)

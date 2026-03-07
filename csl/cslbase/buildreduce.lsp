@@ -1029,7 +1029,7 @@ symbolic procedure profile_compare_fn(p, q);
 
 symbolic procedure profile_a_package names;
   begin
-    scalar packge, oll, w, w1, w2, quitfn, !*errcont, rr;
+    scalar packge, oll, w, w1, w2, quitfn, !*errcont, rr, k;
     if not boundp 'cpulimit or
        not fixp (cpulimit := compress explodec cpulimit) or
        cpulimit < 1 then
@@ -1098,16 +1098,19 @@ symbolic procedure profile_a_package names;
        princ ": "; print !*resources!*;
        princ"%  name                                     code size";
        printc "  bytecodes used  ratio";
+       k := 1;
        for each n in w do <<
-           princ "  ("; prin car n; princ " ";
-           if posn() > 47 then terpri();
-           ttab(52-length explodec cadr n);
-           prin cadr n; princ " ";
-           ttab(64-length explodec caddr n); princ caddr n;
-           ttab(77-length explodec cadddr n); princ cadddr n;
-           printc ")" >>;
+           k := k + 1;
+           if k < 1000 then <<
+               princ "  ("; prin car n; princ " ";
+               if posn() > 47 then terpri();
+               ttab(52-length explodec cadr n);
+               prin cadr n; princ " ";
+               ttab(64-length explodec caddr n); princ caddr n;
+               ttab(77-length explodec cadddr n); princ cadddr n;
+               printc ")" >> >>;
        printc "  )";
-       terpri();
+       terpri() ;
        close wrs w1;
        linelength oll >>;
     names := cdr names;

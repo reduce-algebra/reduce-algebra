@@ -55,11 +55,11 @@
 #define __USE_MINGW_ANSI_STDIO 1
 #endif
 
-#include <windows.h>
-#include <winsock.h>
-#include <process.h>
+// #include <windows.h>
+// #include <winsock.h>
+// #include <process.h>
 
-#endif // WINDOWS
+#endif // WIN32
 
 namespace CSL_LISP
 {
@@ -72,21 +72,6 @@ extern size_t getMemorySize();
 extern int windowsGetPid();
 extern const char *WSAErrName(int i);
 extern int windowsPrepareSockets();
-extern HANDLE gnuplot_process;
-extern HWND gnuplot_handle;
-extern bool gnuplotActive;
-class GnuplotClass
-{
-public:
-    GnuplotClass()
-    {   gnuplotActive = false;
-    }
-    ~GnuplotClass()
-    {   if (gnuplotActive)
-            TerminateProcess(gnuplot_process, 0);
-    }
-};
-extern BOOL CALLBACK find_text(HWND h, LPARAM);
 extern FILE *windowsFindGnuplot(const char *command, const char *direction);
 extern int my_pipe_putc(int c, std::FILE *f);
 extern int my_pipe_flush(std::FILE *f);
@@ -109,6 +94,9 @@ extern const char *fullProgramName;
 extern "C" const char *programName;
 extern bool programNameDotCom;
 extern const char *programDir;
+
+extern unsigned long windowsThreadId();
+extern unsigned long windowsProcessId();
 
 } // end namespace
 

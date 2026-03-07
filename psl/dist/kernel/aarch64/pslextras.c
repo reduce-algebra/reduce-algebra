@@ -196,25 +196,8 @@ void unixwriterecord(FILE *fp, char *buf, int count)
   for (i=0; i<count; i++, buf++)
     fputc(*buf, fp);
 }
- 
+
 #endif
-
-int wquotient(long long x, long long y)
-{
-	return (x / y);
-}
-
-int wremainder(long long x, long long y)
-{
-	return (x % y);
-}
-
-int wxdivide(long long x, long long y, long long * rem)
-{
-        int q = x / y;
-        *rem = x - y * q;
-	return q;
-}
 
 unsigned int wxquotientdouble(unsigned __int128 dividend,unsigned long long divisor,unsigned long long *rem)
 {
@@ -223,5 +206,3 @@ unsigned int wxquotientdouble(unsigned __int128 dividend,unsigned long long divi
         return q;
 }
 
-
- 
