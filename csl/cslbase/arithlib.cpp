@@ -21736,7 +21736,7 @@ static void inverse_slow_ft(DigitPtr32 a, size_t N)
 //*************************************************************************
 //*************************************************************************
 
-#if defined __x86_64__ && defined __GNUC__
+#if defined __x86_64__ && defined __GNUC__ && !defined __APPLE__
 #pragma GCC push_options
 
 #define DIF_FT generic_dif_ft
