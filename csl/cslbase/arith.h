@@ -643,12 +643,12 @@ typedef struct LCSL_Complex
 } LCSL_Complex;
 
 inline LCSL_Complex pack_complex(float128_t r, float128_t i)
-{   LCSL_Complex w(r, i);
+{   LCSL_Complex w{r, i};
     return w;
 }
 
 inline LCSL_Complex pack_complex_NaN()
-{   LCSL_Complex w(f128_NaN, f128_NaN);
+{   LCSL_Complex w{f128_NaN, f128_NaN};
     return w;
 }
 
