@@ -297,14 +297,14 @@ inline const size_t Ofunction4up = offsetof(Symbol_Head, function4up);
 /* 8 -196   */ FF(LispObject,  JITarg3,          TAG_FIXNUM) \
 /* 9 -188   */ FF(LispObject,  JITarg4,          TAG_FIXNUM) \
 /*10 -180   */ FF(func0,       JITthrow,         jitthrow) \
-/*11 -172   */ FF(shim0,       XJITshim0,         JITshim0) \
-/*12 -164   */ FF(shim1,       XJITshim1,         JITshim1) \
-/*13 -156   */ FF(shim2,       XJITshim2,         JITshim2) \
-/*14 -148   */ FF(shim3,       XJITshim3,         JITshim3) \
-/*15 -140   */ FF(shim4,       XJITshim4,         JITshim4) \
-/*16 -132   */ FF(shim5,       XJITshim5,         JITshim5) \
-/*17 -124   */ FF(boolshim1,   XJITshim1B,        JITshim1B) \
-/*18 -116   */ FF(boolshim2,   XJITshim2B,        JITshim2B) \
+/*11 -172   */ FF(shim0,       XJITshim0,        JITshim0) \
+/*12 -164   */ FF(shim1,       XJITshim1,        JITshim1) \
+/*13 -156   */ FF(shim2,       XJITshim2,        JITshim2) \
+/*14 -148   */ FF(shim3,       XJITshim3,        JITshim3) \
+/*15 -140   */ FF(shim4,       XJITshim4,        JITshim4) \
+/*16 -132   */ FF(shim5,       XJITshim5,        JITshim5) \
+/*17 -124   */ FF(boolshim1,   XJITshim1B,       JITshim1B) \
+/*18 -116   */ FF(boolshim2,   XJITshim2B,       JITshim2B) \
 /*19 -108   */ FF(func2b,      JITlessp2,        JITlessp2Val) \
 /*10 -100   */ FF(func2b,      JITleq2,          JITleq2Val) \
 /*21  -92   */ FF(func2,       JITplus2,         JITplus2Val) \
@@ -312,7 +312,7 @@ inline const size_t Ofunction4up = offsetof(Symbol_Head, function4up);
 /*23  -76   */ FF(func2,       JITtimes2,        JITtimes2Val) \
 /*24  -68   */ FF(func2,       JITquotient2,     JITquotient2Val) \
 /*25  -60   */ FF(func2,       JITremainder,     JITremainderVal) \
-/*26  -52   */ FF(func1,       JITint_from_ptr,  JITint_from_ptrVal) \
+/*26  -52   */ FF(func1,       JITint_from_ptr,  (func1&)JITint_from_ptrVal) \
 /*27  -44   */ FF(func0,       JITcar_fails,     car_fails) \
 /*28  -36   */ FF(func0,       JITcdr_fails,     cdr_fails) \
 /*29  -28   */ FF(func0,       JITtoofew,        toofew) \

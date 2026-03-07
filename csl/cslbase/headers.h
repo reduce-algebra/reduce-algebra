@@ -246,15 +246,14 @@ typedef bool boolFn2(LispObject, LispObject);
 typedef LispObject lispFn2(LispObject, LispObject);
 typedef std::intptr_t makebigFn(arithlib_implementation::SignedDigit);
 
-inline const boolFn2& JITlessp2Val = Lessp::op;
-inline const boolFn2& JITleq2Val = Leq::op;
-inline const lispFn2& JITplus2Val = Plus::op;
-inline const lispFn2& JITdifference2Val = Difference::op;
-inline const lispFn2& JITtimes2Val = Times::op;
-inline const lispFn2& JITquotient2Val = Quotient::op;
-inline const lispFn2& JITremainderVal = Remainder::op;
-inline const makebigFn& JITint_from_ptrVal =
-                      arithlib_implementation::intToBignum;
+inline boolFn2& JITlessp2Val = Lessp::op;
+inline boolFn2& JITleq2Val = Leq::op;
+inline lispFn2& JITplus2Val = Plus::op;
+inline lispFn2& JITdifference2Val = Difference::op;
+inline lispFn2& JITtimes2Val = Times::op;
+inline lispFn2& JITquotient2Val = Quotient::op;
+inline lispFn2& JITremainderVal = Remainder::op;
+inline makebigFn& JITint_from_ptrVal = arithlib_implementation::intToBignum;
 
 #else // ARITHLIB
 
