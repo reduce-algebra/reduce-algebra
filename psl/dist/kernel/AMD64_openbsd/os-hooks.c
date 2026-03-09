@@ -86,25 +86,40 @@ int
 main(int argc,char *argv[])
 {
   int val;
+  char *bpsl_debug;
+  int debug_val = 0;
  
   clear_iob();             /* clear garbage pointer in _iob[]    */
   clear_dtabsize();
   /* fpsetround(FP_RZ);  */
-/*  init_malloc_param(); */       /* reset malloc parameters.        */
-    setvbuf(stdout,NULL,_IOLBF,BUFSIZ);
-    /* Record path to exec file */
+  /*  init_malloc_param(); */       /* reset malloc parameters.        */
+  setvbuf(stdout,NULL,_IOLBF,BUFSIZ);
+  /* Record path to exec file */
   if (argc > 0)
     abs_execfilepath = realpath(argv[0],NULL);
 
- if (getenv("BPSL_DEBUG") != NULL) 
-     Debug = 1;
-
- val=setjmp(mainenv);        /* set non-local return point for exit    */
+  // Check the value of the environment variable BPSL_DEBUG.
+  // If its value is a positive integer, set Debug to this integer.
+  // If its value is anything else, set Debug = 1.
+  bpsl_debug = getenv("BPSL_DEBUG");
+  if (bpsl_debug != NULL)
+    {
+      if ((sscanf(bpsl_debug,"%d",&debug_val) == 1) && (debug_val > 0))
+	{
+	  Debug = debug_val;
+	}
+      else
+	{
+	  Debug = 1;
+	}
+    }
+      
+  val=setjmp(mainenv);        /* set non-local return point for exit    */
  
   if (val == 0)
     psl_main(argc,copy_argv(argc,argv),&symval);
  
-exit(0);
+  exit(0);
  
 }
  

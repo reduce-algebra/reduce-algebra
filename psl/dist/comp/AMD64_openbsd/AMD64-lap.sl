@@ -690,10 +690,10 @@
 	   (st    4)        % LISP stack register
 	   (T1    7) % RDI
 	   (T2    6) % RSI
-	   (T3    8) 
-	   (staticlisp 9) 
+	   (T3    8)
+	   (T4    9)
 	   (heaplast 10) (heaptrapbound 11)
-           (bndstkptr 12) (nil 13) (symval 14) (symfnc 15)
+           (staticlisp 12) (nil 13) (symval 14) (symfnc 15)
 
            (r8 8) (r9 9) (r10 10) (r11 11)
            (r12 12) (r13 13) (r14 14) (r15 15)

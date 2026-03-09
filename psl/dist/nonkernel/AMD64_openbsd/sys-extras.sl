@@ -349,27 +349,29 @@
 
 % misusing ieeeflags!!
 
-(de flock (a1 a2)
-   (ieee_flags 1 a1 a2))
+(de flock (fd op)
+   (external_flock fd op))
 
-(de fcntl (a1 a2 a3)
-   (ieee_flags 2 a1 a2 a3))
+(de fcntl (fd op arg)
+   (external_fcntl fd op arg))
 
-(de Linux_read (a1 a2 a3) % all following expect an int fd
-   (ieee_flags 5 a1 (strbase (strinf a2)) a3))
+% all following expect an int fd as first parameter
 
-(de Linux_write (a1 a2 a3)
-   (ieee_flags 6 a1 (strbase (strinf a2)) a3))
+(de Linux_read (fd buffer count)
+   (external_read fd (strbase (strinf buffer)) (int2sys count)))
 
-(de lseek (a1 a2 a3)
-   (ieee_flags 7 a1 (strbase (strinf a2)) a3))
+(de Linux_write (fd buffer count)
+    (external_write fd (strbase (strinf buffer)) (int2sys count)))
 
-(de Linux_open(a1 a2 a3) % uses open in Linux sense, returns an int fd
- (ashift (wshift (ieee_flags 3 (strbase (strinf a1)) a2 a3)
+(de lseek (fd offset whence)
+   (external_lseek fd (int2sys offset) whence))
+
+(de Linux_open (path flags mode) % uses open in Linux sense, returns an int fd
+ (ashift (wshift (external_open (strbase (strinf path)) flags mode)
            32 ) -32)) % sign extended
 
-(de Linux_close(a1)    % expects an int fd
-    (ieee_flags 4 a1))
+(de Linux_close (fd)    % expects an int fd
+    (external_close fd))
 
 (define-constant O_ACCMODE         8#003 )
 (define-constant O_RDONLY            8#0 )
