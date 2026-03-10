@@ -44,7 +44,7 @@
  */
 
 #include <stdio.h> 
-#include <unistd.h> 
+#include <unistd.h>
 #include <strings.h>
 #include <sys/types.h> 
 #include <sys/socket.h> 
@@ -56,19 +56,12 @@
 //                               Must be the same as in client!!!! */ 
 
 int
-unixsocketopen(name , number)
-
-char * name;
-int number;
-
+unixsocketopen(char* name, int number)
 {  struct hostent *host_info;
    struct sockaddr_in mail_addr;   /* Address structure */ 
    unsigned int mail_len = sizeof(struct sockaddr_in); 
    int port_fd, conn_fd; 
    int mail_fd;
-   //   int continue1;
-   //   char message[80]; 
-   char *getlogin();
  
   if (name == (char *) 0)
   {
@@ -122,29 +115,32 @@ int number;
 }
 
 int
-getsocket (mail_fd , string , length)
-
-int mail_fd,length;
-char * string;
-
-{ int len;
+getsocket (int mail_fd , char* string , int length)
+{
+  int len;
   while(1)
-  {
-  if((len = recv (mail_fd, string, length, 0)) <=0) sleep (1); 
-  else { string[len] = (char) 0x00;
-         return(len);}}}
+    {
+      if((len = recv (mail_fd, string, length, 0)) <=0)
+	{
+	  sleep (1);
+	}
+      else
+	{
+	  string[len] = (char) 0x00;
+	  return(len);
+	}
+    }
+}
 
 ssize_t
-writesocket (mail_fd , string , length) 
-
-int mail_fd,length; 
-char * string; 
- 
-{ return send (mail_fd, string, length, 0); }
+writesocket (int mail_fd, char *string, int length) 
+{
+  return send (mail_fd, string, length, 0);
+}
 
 int
-unixclosesocket (conn_fd)
-int conn_fd;
-
-{ return close (conn_fd); }
+unixclosesocket (int conn_fd)
+{
+  return close (conn_fd);
+}
 

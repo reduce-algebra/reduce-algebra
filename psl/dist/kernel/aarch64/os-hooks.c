@@ -63,26 +63,24 @@
 #include <setjmp.h>
 
 #ifndef LINUX
-#include <ieeefp.h> 
+//#include <ieeefp.h> 
 #endif
 
 jmp_buf mainenv;
 char *abs_execfilepath;
 
-void clear_iob(), clear_dtabsize();
-
+void clear_iob(void);
+void clear_dtabsize(void);
 void _psl_main(int argc, char *argv[], long long *symvalptr);
 
-char ** copy_argv();
+char ** copy_argv(int argc, char *argv[]);
 
 int Debug = 0;
 
 extern long long symval;
 
 int
-main(argc,argv)
-int argc;
-char *argv[];
+main(int argc,char *argv[])
 {
   int val;
  
@@ -110,9 +108,7 @@ exit(0);
 int setupbpsandheap(int argc, char *argv[]);
 
 void
-os_startup_hook(argc, argv)
-     int argc;
-     char *argv[];
+os_startup_hook(int argc, char *argv[])
 {
   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
