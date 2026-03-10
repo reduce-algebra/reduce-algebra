@@ -70,6 +70,8 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/file.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/times.h>
@@ -149,15 +151,58 @@ char *external_getenv (char *name)
   return getenv(name);
 }
 
-int external_setenv (char *var, char *val)
+long int
+external_setenv (char *var, char *val)
 {
   return setenv(var,val,1);
 }
 
-int
+long int
 external_mkfifo(char *x,int y)
 {
   return mkfifo(x,y);
+}
+
+long int
+external_flock(int fd, int op)
+{
+  return flock(fd,op);
+}
+
+long int
+external_fcntl(int fd, int op, void *arg)
+{
+  return fcntl(fd, op, arg);
+}
+
+long int
+external_read(int fd, char *buff, size_t count)
+{
+  return read(fd, buff, count);
+}
+
+long int
+external_write(int fd, char *buff, size_t count)
+{
+  return write(fd, buff, count);
+}
+
+long int
+external_lseek(int fd, int offset, int whence)
+{
+  return lseek(fd, offset, whence);
+}
+
+long int
+external_open(char* path, int flags, int mode)
+{
+  return open(expand_file_name(path), flags, mode);
+}
+
+long int
+external_close(int fd)
+{
+  return close (fd);
 }
 
 #if 0

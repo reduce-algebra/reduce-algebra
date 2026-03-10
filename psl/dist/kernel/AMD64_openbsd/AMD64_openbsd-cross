@@ -1,6 +1,6 @@
-# /bin/csh
+# /bin/sh
 echo "cross"
-setenv bl `dirname $pl`/AMD64_openbsd-cross 
+bl=`dirname $pl`/AMD64_openbsd-cross ; export bl
 $psys/pslcomp <<EOF
 (off redefmsg verboseload)
 (load debug)

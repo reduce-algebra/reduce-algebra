@@ -78,13 +78,13 @@
 
 (deflist 
       '(
-        (Hashtab-HalfWord ((shl 2 (reg 2))
+        (Hashtab-Halfword ((shl 2 (reg 2))
                 (movl (indexed (reg 1) (displacement (reg 2) 0)) (reg EAX))))
-        (PutHashtab-HalfWord ((shl 2 (reg 2))
+        (PutHashtab-Halfword ((shl 2 (reg 2))
                 (movl (reg ECX) (indexed (reg 1)(displacement (reg 2) 0)))))) 
  'OpenCode)
 
-(put 'Hashtab-HalfWord 'assign-op 'PutHashtab-HalfWord)
+(put 'Hashtab-Halfword 'assign-op 'PutHashtab-Halfword)
 
 %
 % Assorted macros:
@@ -102,6 +102,8 @@
 
 (ds hash-table-entry (i) 
   % Access to an element of the hash table.
+  % Mask the upper 32 bits to prevent sign extension (probably not
+  %  necessary as 32 bit moves to register set the upper 32 bit to 0)
   (wshift (wshift (Hashtab-Halfword hashtable i) 32) -32) )
 
  % (signedfield (halfword hashtable i) 

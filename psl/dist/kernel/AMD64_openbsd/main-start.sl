@@ -225,7 +225,6 @@
 (lap '((*entry move-regs-to-mem expr 0)
        (*MOVE (reg r10) ($fluid heaplast))
        (*MOVE (reg r11) ($fluid heaptrapbound))
-       (*MOVE (reg bndstkptr) ($fluid bndstkptr))
        (*exit 0)
 ))
 
@@ -304,10 +303,9 @@
        %  Do OS specific initializations (uses argc and argv)
        (*link os_startup_hook expr 2)
 
-       (*MOVE ($global staticlisp) (reg R9))
+       (*MOVE ($global staticlisp) (reg R12))
        (*MOVE ($fluid heaplast) (reg R10))
        (*MOVE ($fluid heaptrapbound) (reg R11))
-       (*MOVE ($fluid bndstkptr) (reg bndstkptr))
 
        % initialize NIL register
        (*move 256 (reg NIL))
@@ -331,19 +329,18 @@ panic-exit                      % need to do UNIX cleanup after
                                 % a fatal error, so jump here
        (*move (wconst 0) (reg 1))
        (*linke 3 exit-with-status expr 1)
-       (*exit 3)
 
        (*entry exit-with-status expr 1)
        (*push (reg 1))
        (*link os_cleanup_hook expr 0)
-       (*pop (reg rdi))
+       (*pop (reg 1))
        (*link external_exit expr 1)
        (*exit 0)
        ))
 
 (compiletime (remflag '($fluid fluid global $global) 'terminaloperand))
 
-(de init-gcarray() nil) % hook for garbage collector initialization 
+(de init-gcarray () nil) % hook for garbage collector initialization 
 
 (de pre-main ()
   (unixcleario)

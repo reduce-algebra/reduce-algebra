@@ -146,6 +146,15 @@
 (external-function external_setenv     (varstring valstring))
 (external-function external_mkfifo     (path mode))
 
+(external-function external_flock      (fd op))
+(external-function external_fcntl      (fd op arg))
+(external-function external_read       (fd buff count))
+(external-function external_write      (fd buff count))
+(external-function external_lseek      (fd offset whence))
+(external-function external_open       (path flags mode))
+(external-function external_close      (fd))
+
+
 % Defined in float.c
 %
 (external-function uxfloat             (buffer integer))

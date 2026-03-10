@@ -65,6 +65,7 @@
 (compiletime (load addr2id))
 
 (fluid '(*writingfaslfile
+	 *writingasmfile
          *lower
          *quiet_faslout
          *NewMemoryModel
@@ -418,7 +419,7 @@
 			   (setq LabelOfContents (SaveContents Expression))
 			   (MakeMkItem
 			    (TagNumber Expression)
-			    (cond (!*NewMemoryModel (list 'SLLoc LabelOfContents))
+			    (cond % (!*NewMemoryModel (list 'SLLoc LabelOfContents))
 				  (t LabelOfContents)))))))))
 
 (de SaveContents (Expression)
@@ -485,14 +486,16 @@
 
 
 (de AppendStaticLisp ()
-    (let* ((sl-size (plus2 (cdr (cdr GlobalStaticLispList*)) nextstaticlisp))
-	   (oldslbase (gtstaticlisp 0))
-	   (newslbase (gtstaticlisp sl-size)))
-      (foreach sl-item in (car GlobalStaticLispList*) do
-	(DepositInstruction sl-item)
-	(rplacd sl-item (plus2 (cdr sl-item) oldslbase))
+    (if (not *writingasmfile)
+	(let* ((sl-size (plus2 (cdr (cdr GlobalStaticLispList*)) nextstaticlisp))
+	       (oldslbase (gtstaticlisp 0))
+	       (newslbase (gtstaticlisp sl-size)))
+	  (foreach sl-item in (car GlobalStaticLispList*) do
+		   (DepositInstruction sl-item)
+		   (rplacd sl-item (plus2 (cdr sl-item) oldslbase))
+		   )
+	  )
 	)
-      )
     )
 
 (de AppendContents (ExpressionLabelPair)
@@ -536,7 +539,7 @@
 	))
 
 (de get-sl-offset nil
-    (cond (WritingFaslFile staticlispcount*)
+    (cond ((or *WritingFaslFile *WritingAsmFile) staticlispcount*)
 	  (t (plus2 CurrentStaticOffset* staticlispcount*))))
 
 (de SLLabelOffset (label)
@@ -623,7 +626,7 @@
 	     (cond
 	      ((greaterp (Remainder (plus n 2) 8) 0)
 	       (for (from i (Remainder (plus n 2) 8) 7)
-		    (do (PrintByte!, 0)))	% fill with 0 bytes to multiple of 8
+		    (do (PrintByte!, 0))) % fill with 0 bytes to multiple of 8
 	       ))
 	     (Terpri)
 	     nil))
@@ -640,10 +643,12 @@
 
 (remprop 'bndstklowerbound 'registercode)
 (remprop 'bndstkupperbound 'registercode)
-(put 'symval 'registercode 13)
-(put 'symfnc 'registercode 14)
-(put 'symval 'RegisterName "%r13")
-(put 'symfnc 'RegisterName "%r14")
+(put 'nil 'registercode 13)
+(put 'symval 'registercode 14)
+(put 'symfnc 'registercode 15)
+(put 'nil 'RegisterName "%r13")
+(put 'symval 'RegisterName "%r14")
+(put 'symfnc 'RegisterName "%r15")
 
 (de RegP (RegName)
     (AND (eqcar Regname 'reg)
@@ -897,23 +902,66 @@
   (updatebittable 4 (const reloc_word))
   (setq currentoffset* (plus currentoffset* 4)))
 
+(fluid '(*comment))
+
+(de asmoutlap1 (x)
+  (prog (fn)
+        (return (cond ((stringp x) (printlabel x))
+                      ((atom x) (printlabel (findlocallabel x)))
+                      ((setq fn (get (car x) 'asmpseudoop))
+                       (apply fn (list x)))
+                      (t
+                       % instruction output form is:
+      % "space" <opcode> [ "space" <operand> { "comma" <operand> } ] "newline"
+
+      (progn (prin2 '! )
+             % Space
+             (printopcode (car x))
+             (setq x (cdr x))
+             (unless (null x)
+                     (prin2 '! )
+                     % SPACE
+                     (printoperand (car x))
+                     (foreach u in (cdr x) do
+                              (progn (prin2 '!,)
+                                     % COMMA
+                                     (printoperand u))))
+	     (when *comment
+	       (tab 35) (prin2 "# ") (prin2 *comment)
+	       (setq *comment nil))
+             (prin2 !$eol!$)))))))
+
 (fluid '(*asmprintids))
 (setq *asmprintids t)
 
 (de asmprintvaluecell (x)
   (printexpression (list 'times (compiler-constant 'addressingunitsperitem) 
                          (list 'idloc (cadr x))))
-  (prin2 "(%r13)")
-%  (when *asmprintids (setq *comment (cadr x)))
-  )
+  (prin2 "(") (prin2 (get 'symval 'RegisterName)) (prin2 ")")
+  (when *asmprintids (setq *comment (cadr x)))
+)
+
+(de asmprintcall (x)
+  (prin2 '! )
+  (printopcode (car x))
+  (prin2 '! )
+  (if (eqcar (cadr x) 'reg) (prin2 '!*))
+  (cond ((stringp (cadr x)) (prin2 (cadr x)))
+        ((idp (cadr x)) (prin2 (findlabel (cadr x))))
+        (t (printoperand (cadr x))))
+  (when *comment
+    (tab 35) (prin2 "# ") (prin2 *comment)
+    (setq *comment nil))
+  (prin2 !$eol!$)                                                               
+)
 
 (de asmentry (x)
   (printexpression
    (list 'times2 
          (compiler-constant 'addressingunitsperfunctioncell) 
          (list 'idloc (cadr x))))
-  (prin2 "(%r14)")
-%  (when *asmprintids (setq *comment (cadr x)))
+  (prin2 "(") (prin2 (get 'symfnc 'RegisterName)) (prin2 ")")
+  (when *asmprintids (setq *comment (cadr x)))
   )
 
 (remprop 'nil-t-diff* 'constant?)
