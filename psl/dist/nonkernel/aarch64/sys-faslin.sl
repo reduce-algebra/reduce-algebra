@@ -74,7 +74,7 @@
 (fluid '(argumentblock))
 
 (compiletime (put 'put_a_halfword 'opencode '(
-   (STR (reg w1) (displacement (reg x0) 0)))))) 
+   (STR (reg w1) (displacement (reg x0) 0))))) 
 
 (de depositvaluecelllocation (x)
   (if (not *writingfaslfile)
@@ -93,7 +93,7 @@
                        (wdifference x (wplus2 maxrealregs 1)))))
            (setf currentoffset* (iplus2 currentoffset* 4)))
     (progn (put_a_halfword (iplus2 codebase* currentoffset*)
-                 (makerelocword reloc-value-cell (wplus2 x 8150)))
+                 (makerelocword reloc-value-cell (wplus2 x first-extraargument-number)))
            (setf currentoffset* (iplus2 currentoffset* 4))
            (updatebittable 4 reloc-word))))
 

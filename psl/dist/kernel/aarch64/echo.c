@@ -50,11 +50,12 @@
 /*#include <sgtty.h> */
 #include <sys/ioctl.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <pwd.h>
 
 
 /* TAG( EchoOff )
- * Enter charcter-at-a-time mode.
+ * Enter character-at-a-time mode.
  */
 void
 echooff()		/* (Note names lowercased by PSL compiler... */
@@ -88,9 +89,6 @@ flushstdoutputbuffer()
     fflush( stdout );
 }
 
-int             getuid();
-struct passwd   *getpwuid(), *getpwnam();
-
 char *external_user_homedir_string()
 {
   struct passwd *ptr;
@@ -103,8 +101,7 @@ char *external_user_homedir_string()
   }
 }
 
-char *external_anyuser_homedir_string(username)
-char *username;
+char *external_anyuser_homedir_string(char *username)
 {
   struct passwd *ptr;
   if ((ptr = getpwnam(username)))
