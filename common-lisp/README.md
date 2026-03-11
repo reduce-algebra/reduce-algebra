@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-03-02 16:14:15 franc>
+Time-stamp: <2026-03-11 17:20:12 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -189,7 +189,6 @@ Regression Test               | Comment / To Do
 ------------------------------|----------------
 2011-08-31-linelength         | CSL and PSL printing overflows visibly; SL-on-CL printing does not.
 2019-07-30-sub-with-df        | Generic REDUCE issue?
-2023-05-27-lambda-expressions | Algebraic lambda mostly works but freestanding lambda expressions not handled correctly.  Might be fixable.
 
 #### Steel Bank Common Lisp (SBCL): native Windows version 2.6.2 (using LispMath)
 
