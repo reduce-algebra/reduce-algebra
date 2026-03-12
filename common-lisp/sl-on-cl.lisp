@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-02-26 15:03:39 franc>
+;; Time-stamp: <2026-03-11 17:22:21 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -114,13 +114,15 @@
 ;;; System GLOBAL Variables
 ;;; =======================
 
-(defvar *comp nil
-  "*COMP = NIL global
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  ;; Needed in order to call dm in this file!
+  (defvar *comp nil
+    "*COMP = NIL global
 The value of !*COMP controls whether or not PUTD compiles the
 function defined in its arguments before defining it. If !*COMP is
 NIL the function is defined as an EXPR. If !*COMP is something
 else the function is first compiled. Compilation will produce certain
-changes in the semantics of functions particularly FLUID type access.")
+changes in the semantics of functions particularly FLUID type access."))
 
 (defvar emsg* nil
   "EMSG* = NIL global
@@ -1734,13 +1736,15 @@ Returns -U.
 EXPR PROCEDURE MINUS(U);
    DIFFERENCE(0, U);")
 
-(declaim (ftype (cl:function (&rest number) number) sl::plus))
-
-(%defalias sl::plus cl:+
-  "PLUS([U:number]):number noeval, nospread, or macro
-Forms the sum of all its arguments.
-MACRO PROCEDURE PLUS(U);
-   EXPAND(CDR U, 'PLUS2);")
+(dm sl::plus (u)
+    ;;   "PLUS([U:number]):number noeval, nospread, or macro
+    ;; Forms the sum of all its arguments.
+    ;; MACRO PROCEDURE PLUS(U);
+    ;;    EXPAND(CDR U, 'PLUS2);"
+    ;; Implemented this way to fully emulate Standard Lisp,
+    ;; cf. "regressions/2023-05-27-lambda-expressions".
+    ;; Must be a SL macro to be recognised by REDUCE!
+    (expand (cdr u) 'sl::plus2))
 
 (declaim (ftype (cl:function (number number) number)
                 sl::plus2 sl::quotient sl::remainder))
@@ -1786,27 +1790,26 @@ value returned is U less 1.0.
 EXPR PROCEDURE SUB1(U);
    DIFFERENCE(U, 1);")
 
-(declaim (ftype (cl:function (&rest number) number) sl::times))
-
-#+CLISP
-(progn
-  (declaim (inline sl::times))
-  (defun sl::times (&rest args)
-    "TIMES([U:number]):number noeval, nospread, or macro
-Returns the product of all its arguments.
-MACRO PROCEDURE TIMES(U);
-   EXPAND(CDR U, 'TIMES2);"
-    (ext:without-floating-point-underflow (cl:apply #'* args))))
-
-#-CLISP
-(%defalias sl::times cl:*
-  "TIMES([U:number]):number noeval, nospread, or macro
-Returns the product of all its arguments.
-MACRO PROCEDURE TIMES(U);
-   EXPAND(CDR U, 'TIMES2);")
+(dm sl::times (u)
+    ;;   "TIMES([U:number]):number noeval, nospread, or macro
+    ;; Returns the product of all its arguments.
+    ;; MACRO PROCEDURE TIMES(U);
+    ;;    EXPAND(CDR U, 'TIMES2);"
+    ;; Implemented this way to fully emulate Standard Lisp, cf. plus
+    ;; Must be a SL macro to be recognised by REDUCE!
+    (expand (cdr u) 'sl::times2))
 
 (declaim (ftype (cl:function (number number) number) sl::times2))
 
+#+CLISP
+(progn
+  (declaim (inline sl::times2))
+  (defun sl::times2 (u v)
+    "TIMES2(U:number, V:number):number eval, spread
+Returns the product of U and V."
+    (ext:without-floating-point-underflow (* u v))))
+
+#-CLISP
 (%defalias sl::times2 cl:*
   "TIMES2(U:number, V:number):number eval, spread
 Returns the product of U and V.")
@@ -2359,10 +2362,18 @@ EXPR PROCEDURE EVLIS(U);
 (export 'eval)                          ; used internally
 
 (defun eval (u)
-  "Treat (function foo) the same as the operator foo.
-Otherwise revert to the Common Lisp eval."
-  (if (and (consp u) (functionp (car u)))
-      (cl:apply (car u) (evlis (cdr u)))
+  "Treat a lambda expression as a constant.
+Do this both on its own and as a function argument.
+Otherwise call Common Lisp eval."
+  (if (consp u)
+      (let ((caru (car u)))
+        (cond ((eq caru 'quote) (cadr u))
+              ((eq caru 'lambda) u)
+              ((or (consp caru)         ; lambda form
+                   (macro-function caru)
+                   (special-operator-p caru))
+               (cl:eval u))
+              (t (cl:apply caru (evlis (cdr u))))))
       (cl:eval u)))
 
 ;; EVAL(U:any):any eval, spread
