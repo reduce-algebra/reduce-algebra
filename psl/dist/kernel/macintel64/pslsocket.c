@@ -1,46 +1,47 @@
 /*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% File:         PXK:PSLSOCKET.C
-% Description:  Interface to *ix sockets
-% Author:       
-% Created:      
-% Modified:     
-% Mode:         Text
-% Package:
-% Status:       Open Source: BSD License
-%
-% (c) Copyright 1983, Hewlett-Packard Company, see the file
-%            HP_disclaimer at the root of the PSL file tree
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% $Id$
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-*/
+ * File:         PXK:PSLSOCKET.C
+ * Description:  Interface to *ix sockets
+ * Author:       
+ * Created:      
+ * Modified:     
+ * Mode:         Text
+ * Package:
+ * Status:       Open Source: BSD License
+ *
+ * (c) Copyright 1983, Hewlett-Packard Company, see the file
+ *            HP_disclaimer at the root of the PSL file tree
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *    * Redistributions of source code must retain the relevant copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+ * CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************
+ *
+ * Revisions:
+ *
+ ******************************************************************************
+ *
+ * $Id$
+ *
+ */
 
 #include <stdio.h> 
 #include <unistd.h>
@@ -81,7 +82,7 @@ unixsocketopen(char* name, int number)
  *   Open up a socket for us to accept connections on and
  *   bind an address to it which other systems can see.
  */
-   if (bind (port_fd, (struct sockaddr *) &mail_addr, mail_len) != 0) 
+   if (bind (port_fd, (struct sockaddr *)&mail_addr, mail_len) != 0) 
    { perror ("bind"); close (port_fd); return(-1); } 
 /* 
  *   Allow for up to 5 connection requests to be pending at one time. 
@@ -89,7 +90,7 @@ unixsocketopen(char* name, int number)
    if (listen (port_fd, 5) != 0) 
    { perror ("listen"); close (port_fd); return(-1); } 
  
-  conn_fd = accept (port_fd, (struct sockaddr *) &mail_addr, &mail_len);
+  conn_fd = accept (port_fd, (struct sockaddr *)&mail_addr, &mail_len);
   return(conn_fd);
   }
   else
@@ -107,7 +108,7 @@ unixsocketopen(char* name, int number)
    mail_addr.sin_family = AF_INET;
    mail_addr.sin_port = number;
    bcopy (host_info->h_addr, (char *) &mail_addr.sin_addr, host_info->h_length); 
-   if (connect (mail_fd, (struct sockaddr *) &mail_addr, sizeof (mail_addr)) != 0)
+   if (connect (mail_fd, (struct sockaddr *)&mail_addr, sizeof (mail_addr)) != 0)
    { perror ("connect"); return(-1); }
    return (mail_fd);   
   }
@@ -115,18 +116,31 @@ unixsocketopen(char* name, int number)
 
 int
 getsocket (int mail_fd , char* string , int length)
-{ int len;
+{
+  int len;
   while(1)
-  {
-  if((len = recv (mail_fd, string, length, 0)) <=0) sleep (1); 
-  else { string[len] = (char) 0x00;
-         return(len);}}}
+    {
+      if((len = recv (mail_fd, string, length, 0)) <=0)
+	{
+	  sleep (1);
+	}
+      else
+	{
+	  string[len] = (char) 0x00;
+	  return(len);
+	}
+    }
+}
 
 ssize_t
 writesocket (int mail_fd, char *string, int length) 
-{ return send (mail_fd, string, length, 0); }
+{
+  return send (mail_fd, string, length, 0);
+}
 
 int
 unixclosesocket (int conn_fd)
-{ return close (conn_fd); }
+{
+  return close (conn_fd);
+}
 

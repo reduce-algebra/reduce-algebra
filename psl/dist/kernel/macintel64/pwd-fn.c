@@ -1,5 +1,6 @@
 /* 
- * pwd-fn.c - System-independent hack for returning current wrking directory.
+ * File:        PXK:pwd-fn.c
+ * Description: System-independent hack for returning current wrking directory.
  * 
  * Author:	Russell D. Fish
  * 		Computer Science Dept.

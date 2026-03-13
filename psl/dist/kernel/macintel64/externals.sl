@@ -189,7 +189,7 @@
 (external-function sun3_sigset         (signame handler))
 (external-function sigrelse            (signame))
 (external-function mask_signal         (signo block))
- 
+
  
 % Defined in unix-io.c
 %

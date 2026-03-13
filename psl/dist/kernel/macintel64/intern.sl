@@ -48,8 +48,10 @@
 %  Minor cleanup.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%
 % $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 (compiletime (load hash-decls f-strings))
@@ -179,7 +181,7 @@
 	 (len     (strlen inf))
 	 (result  0))
     (when (> len 20) %% (- bitsperword 8))
-      (setq len  20))%%(- bitsperword 8)))
+      (setq len 20)) %% (- bitsperword 8)))
     (for (from i 0 len) 
 	 (do (setf result 
 	       (^ result (<< (strbyt inf i) 
