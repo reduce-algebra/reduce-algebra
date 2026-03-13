@@ -1,4 +1,3 @@
-s/ psl_main$/ _psl_main/g
 s/ lastbps$/ _lastbps/g
 s/^lastbps:/_lastbps:/g
 s/ nextbps$/ _nextbps/g

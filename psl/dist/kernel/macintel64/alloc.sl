@@ -43,8 +43,10 @@
 %  of alternate bps sections on the DEC20
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%
 % $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (fluid
  '(lastbps
@@ -63,7 +65,7 @@
 % Returns the number of items left in BPS if N is NIL.
 
 (de gtbps (number-of-items)
-  (when (null number-of-items)(gtbps-nil-error))
+  (when (null number-of-items) (gtbps-nil-error))
 
       % adjust to multiple of 16 for faslin objects 
   (when (and (wgreaterp number-of-items 10)
@@ -119,7 +121,7 @@
       )))
 
 
-(de get-heap-trap (number-of-items) % To be redefined
+(de get-heap-trap (pointer number-of-items) % To be redefined
   (kernel-fatal-error "Garbage collection required.")
   )
 

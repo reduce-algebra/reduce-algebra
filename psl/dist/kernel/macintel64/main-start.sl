@@ -76,8 +76,10 @@
 %  loader as part of its startup.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%
 % $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (commentoutcode
 (compiletime    %% Move this hack somewhere else later.
@@ -263,7 +265,7 @@
 
 (compiletime
   (setq mainentrypointname* '!_!p!s!l!_!m!a!i!n))
- 
+
 (lap '((*entry !_!p!s!l!_!m!a!i!n expr 0)
 
        (*move (reg rdi) (reg 1))

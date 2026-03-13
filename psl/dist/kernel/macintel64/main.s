@@ -1181,8 +1181,6 @@ l0086:
  mov _symfnc@GOTPCREL(%rip),%rsi
  mov $363,%rdi
  call *2904(%rsi)
- mov _symval@GOTPCREL(%rip),%r8
- mov %rax,2912(%r8)
  mov %rax,8(%rsp)
  mov 16(%rsp),%rsi
  mov (%rsi),%rax
@@ -1533,8 +1531,8 @@ l0119:
  .byte 71,97,114,98,97,103,101,32,99,111,108
  .byte 108,101,99,116,105,111,110,32,114,101
  .byte 113,117,105,114,101,100,46,0,0
- .quad 1
-// (*entry get-heap-trap expr 1)
+ .quad 2
+// (*entry get-heap-trap expr 2)
  .globl l0120
 l0120:
  mov l0118@GOTPCREL(%rip),%rax

@@ -1,0 +1,54 @@
+
+Comment Test of various substitutions in df expressions;
+
+operator f,g;
+
+% should be returned unchanged
+sub(y=x,df(f(x-y),x));
+
+% should be returned unchanged
+sub(y=g(x),df(f(x-y),x));
+
+% should return df(f(x-y),x)
+sub(z=x,df(f(x-y),x));
+
+% should return df(f(x-g(u),x)
+sub(y=g(u),df(f(x-y),x));
+
+depend u,x;
+
+% should be returned unchanged
+sub(y=g(u),df(f(x-y),x));
+
+nodepend u,x;
+
+%Expressions encountered in odesolve:
+depend y,x;
+% This should evaluate to a*e^(a*x)
+sub(y=e^(a*x),df(y,x));
+sub(odesolve!-df = df, df(y,x));
+nodepend y,x;
+
+% Example from the ztrans test file
+load_package ztrans;
+equation :=  - (df(ztrans(f(n),n,z),z)*z^2 + ztrans(f(n),n,z));
+operator tmp;
+sub(ztrans(f(n),n,z)=tmp(z),equation);
+
+% Example from the sstools test file
+operator b;
+depend b,x;
+sub(b(2)=b(2)*lin_test_const**2,df(b(2),x));
+nodepend b,x;
+
+% Examples from the spde test file
+operator xi,eta,x,c;
+depend xi, {x(1),x(2)};
+depend eta, {x(1),x(2)};
+sub(xi(2)=(df(xi(1),x(1))*x(2)-c(3))/2,df(xi(2),x(2)));
+sub(eta(1)=c(2) +c(1),df(eta(1),u(1),x(3)));
+sub(eta(1)=c(2) +c(1),df(eta(1),u(1),x(2),2));
+nodepend eta, {x(1),x(2)};
+nodepend xi, {x(1),x(2)};
+
+end;

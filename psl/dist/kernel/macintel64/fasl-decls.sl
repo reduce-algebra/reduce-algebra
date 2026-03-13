@@ -76,6 +76,13 @@
 % local ID's.
 
 (define-constant first-local-id-number 2048)
+
+%
+% Extra function arguments (beyond maxrealregs) are passed via a static argumentblock.
+% The necessary relocation has an index number >= first-extraargument-number.
+% This used to be the explicit constant 8150, but this means that a fasl file cannot 
+% reference more than about 6100 IDs. With 65450 it can reference up to 63400 IDs.
+
 (define-constant first-extraargument-number 8150)
 
 (ds local-id-number? (u)
@@ -105,4 +112,3 @@
 (ds reloc-word-tag (x) (field x 0 2))
 (ds reloc-word-inf (x) (field x 2 62))
 
-  

@@ -1,11 +1,12 @@
 /*
- * sigs.c - External routines to deal with signals
+ * File:         PXK:sigs.c
+ * Description:  External routines to deal with signals
  *
- * Author:    Leigh Stoller
- *         Computer Science Dept.
- *         University of Utah
- * Date:    18-Aug-1986
- * Status:    Open Source: BSD License
+ * Author:       Leigh Stoller
+ *               Computer Science Dept.
+ *               University of Utah
+ * Date:         18-Aug-1986
+ * Status:       Open Source: BSD License
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,16 +32,15 @@
  *
  ******************************************************************************
  *
- *  $Id$
- *
- ******************************************************************************
- *
  * Revisions:
  *
  *           Modified by Chris Burdorf (2/17/89)
  *           renamed sigset to sun3_sigset for sun os 4.
  *
  ******************************************************************************
+ *
+ *  $Id$
+ *
  */
 
 #include <unistd.h>

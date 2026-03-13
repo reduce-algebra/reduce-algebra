@@ -59,10 +59,12 @@
 ##############################################################################
 #
 # $Id$
+#
+##############################################################################
 
 ### PROOT   = /newsilo/silo/cons/verkaufpsl
  
-#### MACHINE = unix386
+#### MACHINE = macintel64
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin
 PK	= $(PSL)/kernel
@@ -127,7 +129,6 @@ OFILES=	\
 	$(PXK)/float.o \
 	$(PXK)/pwd-fn.o \
 	$(PXK)/sigs.o \
-	$(PXK)/unexec.o \
 	$(PXK)/unix-io.o \
 	$(OTHEROFILES)
 CFILES=	\
@@ -138,7 +139,6 @@ CFILES=	\
 	$(PXK)/float.c \
 	$(PXK)/pwd-fn.c \
 	$(PXK)/sigs.c \
-	$(PXK)/unexec.c \
 	$(PXK)/unix-io.c \
 	$(OTHERCFILES)
  
@@ -177,7 +177,8 @@ CRT1  =
  
 # Use -n for shared text, -q for demand paged (on some unixes).
 
-$(USERDIR)/bpsl: $(CCFILES)  \
+
+$(USERDIR)/bpsl: $(CFILES)  \
 		$(USERDIR)/main.o $(USERDIR)/dmain.o \
 		$(PXK)/Makefile
 	$(USERDIR)/cclnk
