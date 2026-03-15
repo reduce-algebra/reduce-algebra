@@ -61,7 +61,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <setjmp.h>
+//#include <setjmp.h>
 #include <stdlib.h>
 
 #ifdef USE_CRLIBM
@@ -74,7 +74,7 @@
 #include <float.h>
 #include <fenv.h>
 
-jmp_buf mainenv;
+//jmp_buf mainenv;
 char * abs_execfilepath;
  
 int Debug = 0;
@@ -153,13 +153,12 @@ main(int argc,char *argv[])
   if (getenv("BPSL_DEBUG") != NULL) 
      Debug = 1;
  
-  val=setjmp(mainenv);        /* set non-local return point for exit    */
+  //  val=setjmp(mainenv);        /* set non-local return point for exit    */
  
-  if (val == 0) {
-    /*    init_fp();*/
+  //  if (val == 0) {
     AddVectoredExceptionHandler(1,GlobalVectoredHandler1);
     psl_main(argc,copy_argv(argc,argv));
-  }
+    //  }
  
   exit(0);
 }
@@ -193,7 +192,7 @@ os_startup_hook(int argc, char *argv[])
 void
 os_cleanup_hook()
 {
-longjmp(mainenv,1);
+  //longjmp(mainenv,1);
 }
 
 char * get_execfilepath ()
