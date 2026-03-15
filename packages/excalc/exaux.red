@@ -40,7 +40,9 @@ symbolic procedure memblp(u,v);
     else memblp(car u,v) or memblp(cdr u,v);
 
 symbolic procedure displayframe;
-   begin scalar x,scoord;
+   begin scalar x,y,scoord;
+     terpri!* t;
+     prin2t "*** COFRAME in use:";
      terpri!* t;
      scoord := coord!*;
      coord!* := nil;
@@ -50,9 +52,23 @@ symbolic procedure displayframe;
          prin2!* " = ";
          maprin reval cdr x;
          terpri!* t>>;
+    coord!* := scoord;
+    if basisvectorl!* then
+    <<terpri!* t;
+      prin2t "*** Corresponding FRAME in use:";
+      terpri!* t;
+    for each j in basisvectorl!* do
+      <<maprin j;
+        prin2!* " = ";
+        maprin ('plus .
+        for each k in coord!* conc
+          if (y := reval {'innerprod, j, {'d, k}}) neq 0
+             then if y = 1 then {{'partdf, k}}
+                   else  {{'times, y, {'partdf, k}}}
+           else nil);
+        terpri!* t>>>>;
 %was     varpri(reval cdr x,list mkquote car x,t)>>;
      if !*nat then terpri!* t;
-     coord!* := scoord
    end;
 
 put('displayframe,'stat,'endstat);
