@@ -1,5 +1,9 @@
 
-Comment Test of various substitutions in df expressions;
+Comment Test of various substitutions in df expressions.
+        Prompted by a discussion on the reduce-algebra-developer mailing list:
+	https://sourceforge.net/p/reduce-algebra/mailman/search/?q=%22derivative%20vs%20substitution%22&mail_list=all
+
+	It is unclear how sub with df should behave;
 
 operator f,g;
 
