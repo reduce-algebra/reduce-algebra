@@ -212,9 +212,11 @@ symbolic procedure frame u;
          for each j in indxl!* collect !*a2k list(car u,lowerind j);
      if null dbaseform2base2form then return;
      commutator!-of!-framevectors :=
-       for each j in pickupwedges dbaseform2base2form collect
-         list(cadadr j,cadadr cdr j) . mk!*sqpf mkcommutatorfv(j,
-                                                 dbaseform2base2form);
+       for each j in pickupwedges dbaseform2base2form conc
+         {list(cadadr j,cadadr cdr j) . mk!*sqpf mkcommutatorfv(j,
+                                                 dbaseform2base2form),
+          list(cadadr cdr j,cadadr j) . mk!*sqpf negpf mkcommutatorfv(j,
+                                                  dbaseform2base2form)};
      y := pair(basisvectorl!*,
                naturalvector2framevector);
      naturalvector2framevector := for each j in coord!* collect
