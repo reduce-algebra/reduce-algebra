@@ -285,14 +285,14 @@ par2)))
  (defopcode call (par1 par2) ((indirectadrp par1) (op-jump-effa '(255 16) par1))
             ((regp par1) (op-jump-effa '(255 16) par1)) ((adrp par1) (op-jump '(
 232)                                                                          
-par1)))
+par1))      ((effap par1) (op-jump-effa '(255 16) par1)))
  (defoplength call (par1 par2) ((indirectadrp par1) (lth-jump-effa '(255 16) 
 par1))        ((regp par1) (lth-jump-effa '(255 16) par1)) ((adrp par1) (
 lth-jump                                                                          
 '                                                                                  
 (                                                                                   
 232)                                                                              
-par1)))
+par1))        ((effap par1) (lth-jump-effa '(255 16) par1)))
 
  (defopcode cbw (par1 par2) (t (op-byte '(102 152))) (t (op-byte '(152))))
  (defoplength cbw (par1 par2) (t (lth-byte '(102 152))) (t (lth-byte '(152))))
@@ -778,7 +778,7 @@ op-jump-effa
 32)                                                                                         
 par1))      ((regp par1) (op-jump-effa '(255 32) par1)) ((adrp par1) (op-jump '(
 233)                                                                          
-par1)))
+par1))      ((effap par1) (op-jump-effa '(255 32) par1)))
  (defoplength jmp (par1 par2) ((shortlabelp par1) (lth-jump-short '(235) par1)) 
 (                                                                                
 (                                                                                 
@@ -795,7 +795,7 @@ lth-jump
 '                                                                                  
 (                                                                                   
 233)                                                                              
-par1)))
+par1))        ((effap par1) (lth-jump-effa '(255 32) par1)))
 
  (defopcode jmpl (par1 par2) ((adrp par1) (op-jump '(233) par1)))
  (defoplength jmpl (par1 par2) ((adrp par1) (lth-jump '(233) par1)))
