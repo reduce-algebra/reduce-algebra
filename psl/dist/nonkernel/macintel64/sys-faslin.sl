@@ -76,7 +76,7 @@
 (fluid '(argumentblock))
 
 (compiletime (put 'put_a_halfword 'opencode '(
-   (mov (reg ebx) (displacement (reg eax) 0))))) 
+   (mov (reg ebx) (displacement (reg eax) 0)))))
 
 (de depositvaluecelllocation (x)
   (if (not *writingfaslfile)

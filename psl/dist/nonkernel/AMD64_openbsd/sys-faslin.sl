@@ -1,4 +1,3 @@
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:           PXNK:SYSTEM-FASLIN.SL
@@ -79,7 +78,8 @@
 
 (de depositvaluecelllocation (x)
   (if (not *writingfaslfile)
-    (progn (put_a_halfword (iplus2 codebase* currentoffset*) (itimes2 8 (idinf x)))
+    (progn (put_a_halfword (iplus2 codebase* currentoffset*) 
+                 (iplus2 symval (itimes2 8 (idinf x))))
            (setf currentoffset* (iplus2 currentoffset* 4)))
     (progn (put_a_halfword (iplus2 codebase* currentoffset*) 
                  (makerelocword reloc-value-cell (findidnumber x)))
@@ -93,7 +93,7 @@
                        (wdifference x (wplus2 maxrealregs 1)))))
            (setf currentoffset* (iplus2 currentoffset* 4)))
     (progn (put_a_halfword (iplus2 codebase* currentoffset*)
-                 (makerelocword reloc-value-cell (wplus2 x 8150)))
+                 (makerelocword reloc-value-cell (wplus2 x first-extraargument-number)))
            (setf currentoffset* (iplus2 currentoffset* 4))
            (updatebittable 4 reloc-word))))
 
