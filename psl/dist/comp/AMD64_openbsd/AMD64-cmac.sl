@@ -53,11 +53,11 @@
 % those outlined in the Motorola manuals.
  
 (flag '(Immediate                        % #xxx
-	UnImmediate                      % used for (unimmediate (immediate x))
+	UnImmediate                      % used for (UnImmediate (Immediate x))
 	Indirect                         % (An)
-	displacement                     % d(An)
-	predecrement                     % -(An)
-	postincrement                    % (An)+
+%	displacement                     % d(An)
+%	predecrement                     % -(An)
+%	postincrement                    % (An)+
 	Indexed                          % d(An,Dn)
 	absolute                         % absolute.long
 	extrareg                         % Regs 5 .. 15
@@ -377,7 +377,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (DefCMacro *Loc                           % This needs more study    scs
-	  ((regP ImmediateP)(lea (unimmediate ARGTWO) ARGONE))
+	  ((regP ImmediateP)(lea (UnImmediate ARGTWO) ARGONE))
 	  ((RegP AnyP)      (lea              ARGTWO  ARGONE))
 	  ((AnyP  ImmediateP)(*MOVE           ARGTWO  ARGONE))
 	  (                  (lea              ARGTWO (Reg T2))
@@ -403,8 +403,8 @@
       (get '*Move 'CMacroPatternTable)))))
 ) 
 
-%modification of *move (HM):
-%   (*move (car (cdr ... )) (reg x))
+%modification of *Move (HM):
+%   (*Move (car (cdr ... )) (reg x))
 %   use (reg x) as intermediate aux register in order
 %   to get parallelized car/cdr loads 
 
@@ -437,8 +437,8 @@
    ((regp       anyp) (mov argone argtwo))
 %   ((quotep     anyp) (movq argone argtwo))
    ((inump      anyp) (movq argone argtwo)) 
-   (                  (*move argone (reg t1))
-		      (*move (reg t1) argtwo))
+   (                  (*Move argone (reg t1))
+		      (*Move (reg t1) argtwo))
    )
  
 (DefCMacro *Pop
@@ -485,23 +485,23 @@
                     (movw (reg CX) (indexed (reg 1)(displacement (reg 2) 0))))))
   'OpenCode)
 
-(put 'wtimes2 'opencode '((imul (reg 2) (reg 1))))
+(put 'wtimes2 'OpenCode '((imul (reg 2) (reg 1))))
 
-(put 'wquotient 'opencode '(%(*move (reg 1) (reg eax))
+(put 'wquotient 'OpenCode '(%(*Move (reg 1) (reg eax))
 			    (cqto)
 			    (idiv (reg 2))
-			    ))%%%%(*move (reg eax) (reg 1))))
+			    ))%%%%(*Move (reg eax) (reg 1))))
 
-(put 'wremainder 'opencode '(%(*move (reg 1) (reg eax))
+(put 'wremainder 'OpenCode '(%(*Move (reg 1) (reg eax))
 			    (cqto)
 			    (idiv (reg 2))
-			    (*move (reg rdx) (reg 1))))
+			    (*Move (reg rdx) (reg 1))))
 
-(put 'wdivide 'opencode '(%%(*move (reg 1) (reg eax))
+(put 'wdivide 'OpenCode '(%%(*Move (reg 1) (reg eax))
 			    (cqto)
 			    (idiv (reg 2))
-			   %(*move (reg eax) (reg 1))
-			    (*move (reg rdx) ($fluid *second-value*))))
+			   %(*Move (reg eax) (reg 1))
+			    (*Move (reg rdx) ($fluid *second-value*))))
 
 (de *WNegate(ARG1)
  (Expand1OperandCMacro ARG1 '*WNegate))
@@ -845,18 +845,18 @@
 (DefCMacro *MkItem
      ((regp fixp)   (shl 8 Argone)
 		    (shr 8 Argone)
-		    (*move Argtwo (reg t1))
+		    (*Move Argtwo (reg t1))
 		    (shl 56 (reg t1))
                     (*wor argone (Reg t1)))
      ((regp regp)   (shl 8 Argone)
 		    (shr 8 Argone)
 		    (shl 56 Argtwo)
 		    (*wor Argone Argtwo))
-     ((regp anyp)   (*move Argtwo (reg t1))		
+     ((regp anyp)   (*Move Argtwo (reg t1))		
 		    (*MkItem Argone (reg t1)))
-     (		    (*move argone (reg t1))
+     (		    (*Move argone (reg t1))
 		    (*mkitem (reg t1) argtwo)
-		    (*move (reg t1) argone)))
+		    (*Move (reg t1) argone)))
 %%     (              (*PUTFIELD ARGTWO ARGONE 0 8))
 %% )
  
@@ -876,14 +876,14 @@
                               (*WShift argTwo 8)
                               (*WShift argtwo -8)
                               (*wor  argtwo ARGone))
- ((inump regp Zerop eightp)   (*move  argone (reg t2))
+ ((inump regp Zerop eightp)   (*Move  argone (reg t2))
                               (*WShift (reg t2) 56)
                               (*WShift argTwo 8)
                               (*WShift argtwo -8)
                               (*wor  argtwo (reg t2)))
  ((inump Anyp AnyP AnyP)	(*MOVE ARGtwo (reg t1))
             			(*PUTFIELD  ARGOne (reg t1) ARGTHREE ARGFOUR)
-		                (*move (reg t1) argtwo))
+		                (*Move (reg t1) argtwo))
  ((regp  regP AnyP AnyP)
   		(mov -1  (reg t3))
 	        (shl     (difference 64 argfour) (reg t3))
@@ -901,7 +901,7 @@
  ((AnyP  regP AnyP AnyP) (*MOVE ARGONE (reg t1))
 			 (*PUTFIELD    (Reg T1) ARGTWO ARGTHREE ARGFOUR))
 (		(mov -1  (reg t3))
-	        (*move   argone (reg t1))
+	        (*Move   argone (reg t1))
 	        (shl     (difference 64 argfour) (reg t3))
 		% Use *WShift instead of shl to optimize argthree=0
 	        (*WShift (reg t3) (minus argthree))
@@ -909,13 +909,13 @@
 		% shift and mask the source
        		(shl (difference 64 (plus argthree argfour)) (reg t1))
 	        (and   (reg t1) (reg t3))
-	        (*move argtwo (reg t2))
+	        (*Move argtwo (reg t2))
 		% invert mask and mask destination
 		(neg (reg t3))
 	        (and (reg t2) (reg t3))
 		% merge
 	        (or   (reg t2) (reg t1))
-	        (*move (reg t2) argtwo)))
+	        (*Move (reg t2) argtwo)))
 
  %
 (DefCMacro *SignedField
@@ -932,7 +932,7 @@
   ((regp anyp zerop anyp) (*MOVE   ARGTWO ARGONE)
 			  (*WSHIFT ARGONE (DIFFERENCE ARGFOUR 64)))
   ((regp anyp eightp fiftysixp)
-			   (*move ARGTWO ARGONE)
+			   (*Move ARGTWO ARGONE)
 			   (*WShift Argone 8)
 			   (*WShift Argone -8))
   ((regp anyp anyp anyp) (*MOVE   ARGTWO ARGONE)
@@ -964,7 +964,7 @@
 % Declare *ALLOC to be a "cmacro".
 % *ALLOC function handles its expansion.
  
-(defcmacro *ALLOC)
+(DefCMacro *ALLOC)
  
 % FastCallableP function dont need a link register to be set
 
@@ -985,8 +985,8 @@
    ((RegP)                (CALL ARGONE))
    ((InternallyCallableP) (call (InternalEntry ARGONE)))
    ((FastCallableP)       (call (indirect (entry ARGONE))))
-   (                      (*move (idloc argone) (reg t1))
-			  (call (indirect (entry ARGONE)))))
+   (                      (*Move (idloc ARGONE) (reg t1))
+                          (call (indexed (times (reg t1) 8) (displacement (reg symfnc) 0)))))
  
 (DefCMacro *DeAlloc
    ((ZeroP))
@@ -1001,15 +1001,15 @@
    ((RegP)                (JMP ARGONE))
    ((InternallyCallableP) (jmp (InternalEntry ARGONE)))
    ((FastCallableP)       (JMP (indirect (entry ARGONE))))
-	   (              (*move (idloc argone) (reg t1))
-			  (call (indirect (entry ARGONE)))))
+   (                      (*Move (idloc argone) (reg t1))
+			  (JMP (indexed (times (reg t1) 8) (displacement (reg symfnc) 0)))))
 
  
  
 (DefCMacro *Jump
    ((Atom)        (jmp ARGONE))% internal labels before compile
    ((TaggedLabel) (jmp ARGONE))% compiler generated labels
-   ((ImmediateP)  (jmp  (unimmediate ARGONE)))
+   ((ImmediateP)  (jmp  (UnImmediate ARGONE)))
    (              (jmp ARGONE)))
  
  
@@ -1064,7 +1064,7 @@
 preload  (setq initload
 	   (progn (setq cadrcfluids
 		    (nconc cadrcfluids (cons (car freeregs) nil)))
-	    (nconc initload `((*move ,(car cfluids) ,(car freeregs))))
+	    (nconc initload `((*Move ,(car cfluids) ,(car freeregs))))
        )   )
        (setq freeregs (cdr freeregs))
        (setq cfluids (cdr cfluids))
@@ -1076,12 +1076,12 @@ preload  (setq initload
        % freeregs contains the list of preloaded regs
        % and not preloaded fluids if those exist
 nopreload
-      (setq list `((*move ($fluid BndStkPtr) (Reg t1))
-		   (*move (reg t1) (reg t2))
+      (setq list `((*Move ($fluid BndStkPtr) (Reg t1))
+		   (*Move (reg t1) (reg t2))
 		   (*wplus2 (Reg t2) ,lng)
 		   (cmp   (reg t2) (reg BndstkUpperBound))
                    (jle (indirect(entry Bstackoverflow)))
-		   (*move (Reg t2) ($fluid BndstkPtr))  )) %start of code
+		   (*Move (Reg t2) ($fluid BndstkPtr))  )) %start of code
  
       (setq list (append initload list))
  
@@ -1093,12 +1093,12 @@ nopreload
 	       (stderror "T and NIL cannot be rebound"))
       (setq n (wplus2 n 16))
       (Setq list (append list
-	 `((*move ,(car freeregs)(reg t2))
-	   (*move (reg t2) (displacement (Reg t1) ,n))
-	   (*move (quote ,Cadrcfluids) (reg t2))
-	   (*move (reg t2) (displacement (reg t1) ,(wplus2 n -8)))
-	   (*move ,cregs (reg t2))
-	   (*move (reg t2) ,cfluids)
+	 `((*Move ,(car freeregs)(reg t2))
+	   (*Move (reg t2) (displacement (Reg t1) ,n))
+	   (*Move (quote ,Cadrcfluids) (reg t2))
+	   (*Move (reg t2) (displacement (reg t1) ,(wplus2 n -8)))
+	   (*Move ,cregs (reg t2))
+	   (*Move (reg t2) ,cfluids)
       )          ))
       (setq fluids (cdr Fluids))
       (setq freeregs (cdr freeregs))
@@ -1106,7 +1106,7 @@ nopreload
       (return list)
 )    )
 
-(defcmacro !*lambind)
+(DefCMacro !*lambind)
 
 (De *ProgBind (Fluids)
  
@@ -1125,7 +1125,7 @@ nopreload
 preload  (setq initload
 	   (progn (setq cadrcfluids
 		    (nconc cadrcfluids (cons (car freeregs) nil)))
-	    (nconc initload `((*move ,(car cfluids) ,(car freeregs))))
+	    (nconc initload `((*Move ,(car cfluids) ,(car freeregs))))
        )   )
        (setq freeregs (cdr freeregs))
        (setq cfluids (cdr cfluids))
@@ -1138,12 +1138,12 @@ preload  (setq initload
        % and not preloaded fluids if those exist
  
 
-      (setq list `((*move ($fluid BndStkPtr) (Reg t1))
-		   (*move (reg t1) (reg t2))
+      (setq list `((*Move ($fluid BndStkPtr) (Reg t1))
+		   (*Move (reg t1) (reg t2))
 		   (*wplus2 (Reg t2) ,lng)
 		   (cmp  (reg t2) (reg BndstkUpperBound))
                    (jle (indirect(entry Bstackoverflow)))
-		   (*move (Reg t2) ($fluid BndstkPtr))  )) %start of code
+		   (*Move (Reg t2) ($fluid BndstkPtr))  )) %start of code
 
      (setq list (append initload list))
  
@@ -1154,18 +1154,18 @@ preload  (setq initload
 	       (stderror "T and NIL cannot be rebound"))
       (setq n (wplus2 n 16))
       (Setq list (append list
-		 `((*move ,(car freeregs)(reg t2))
-		   (*move (reg t2) (displacement (Reg t1) ,n))
-		   (*move (quote ,Cadrcfluids) (reg t2)) 
-		   (*move (reg t2) (displacement (reg t1) ,(wplus2 n -8)))
-		   (*move (quote nil) (reg t2))
-		   (*move (reg t2) ,cfluids)
+		 `((*Move ,(car freeregs)(reg t2))
+		   (*Move (reg t2) (displacement (Reg t1) ,n))
+		   (*Move (quote ,Cadrcfluids) (reg t2)) 
+		   (*Move (reg t2) (displacement (reg t1) ,(wplus2 n -8)))
+		   (*Move (quote nil) (reg t2))
+		   (*Move (reg t2) ,cfluids)
       )          ))
       (setq freeregs (cdr freeregs))
       (cond ((setq Fluids (cdr Fluids)) (go loop)))
       (return list)
 )    )
-(defcmacro *progbind)
+(DefCMacro *progbind)
  
 (De *FreeRstr (Fluids)
  
@@ -1179,7 +1179,7 @@ preload  (setq initload
       (setq cfluids fluids) % copy of fluids
       (setq n (wtimes2 8 (wdifference 2 lng)))
       (setq lng (wtimes2 lng 8)) % * addressingunitperitem
-      (setq initload (list '(*move ($fluid Bndstkptr) (reg t1))))
+      (setq initload (list '(*Move ($fluid Bndstkptr) (reg t1))))
  
 preload  (setq initload
 	   (progn (setq listfluids
@@ -1188,7 +1188,7 @@ preload  (setq initload
 		    (nconc listfluids (cons nil nil))) )
 	    (nconc initload
 	     (if freeregs
-	 `((*move (displacement (reg t1) ,n) ,(car freeregs))) nil)
+	 `((*Move (displacement (reg t1) ,n) ,(car freeregs))) nil)
        )   ))
        (setq n (wplus2 n 16))
        (when freeregs (setq freeregs (cdr freeregs)))
@@ -1201,11 +1201,11 @@ preload  (setq initload
        % freeregs contains the list of preloaded regs
        % and nil if not enough regs available
  
-      (setq list `((*move (reg t1) (reg t2))
+      (setq list `((*Move (reg t1) (reg t2))
 		   (sub   ,lng (reg t2))
 		   (cmp   (reg t2) (reg BndstkLowerBound))
                    (jg    (indirect (entry Bstackunderflow)))
-		   (*move (Reg t2) ($fluid BndstkPtr))  )) %start of code
+		   (*Move (Reg t2) ($fluid BndstkPtr))  )) %start of code
  
      (setq list (append initload list))
      (setq n 0)
@@ -1217,15 +1217,15 @@ preload  (setq initload
   % insert reloaded register or memory reference
  
       (setq list (append list
-	       (if (car freeregs) `((*move ,(car freeregs) ,cfluids ))
-		    `((*move (displacement (Reg t2) ,n) ,cfluids )))
+	       (if (car freeregs) `((*Move ,(car freeregs) ,cfluids ))
+		    `((*Move (displacement (Reg t2) ,n) ,cfluids )))
 
       )          )
       (setq freeregs (cdr freeregs))
       (cond ((setq Fluids (cdr Fluids)) (go loop)))
       (return list)
 )    )
-(defcmacro *freerstr)
+(DefCMacro *freerstr)
  
 (setq *unsafebinder t)   % has to save Registers across calls
  
@@ -1260,15 +1260,15 @@ preload  (setq initload
 	    (return x) 
 )  )
 
-(defcmacro !*jumpon)
+(DefCMacro !*jumpon)
 
-(defcmacro *fast-apply-load
-   (       (*move argone (reg t2)))
+(DefCMacro *fast-apply-load
+   (       (*Move argone (reg t2)))
    )
  
 (put 'fast-idapply
-     'opencode
-     '((*move (reg t2) (reg t1))        % save  idnumber
+     'OpenCode
+     '((*Move (reg t2) (reg t1))        % save  idnumber
        (*wand (reg t2)(wconst 16#7ffffff)) % remove what's left of the tag
        (*WShift (reg t2) (wconst 3))    % 
        (*wplus2 (reg t2) ($fluid SYMFNC)) % 
@@ -1276,8 +1276,8 @@ preload  (setq initload
        ))
  
 (put 'fast-idapply
-     'exitopencode
-     '((*move (reg t2) (reg t1))        % save  idnumber
+     'ExitOpenCode
+     '((*Move (reg t2) (reg t1))        % save  idnumber
        (*wand (reg t2)(wconst 16#7ffffff)) % remove what's left of the tag 
        (*WShift (reg t2) (wconst 3))    % double ID number (ignore tag for now)
        (*wplus2 (reg t2) ($fluid SYMFNC)) % add base address to 6 times ID.
@@ -1288,16 +1288,16 @@ preload  (setq initload
 % Need to do tag stripping before doing the jsr. /LBS
 %
 (put 'fast-codeapply
-     'opencode
+     'OpenCode
      '((*field (reg t2) (reg t2) (wconst infstartingbit)
 	   (wconst infbitlength))
-       (*move ($fluid onewordbuffer)(reg t1))
-       (*move (reg t2)(indirect (reg t1)))
+       (*Move ($fluid onewordbuffer)(reg t1))
+       (*Move (reg t2)(indirect (reg t1)))
        (call (indirect (reg t1))))
      )
  
 (put 'fast-codeapply
-     'exitopencode
+     'ExitOpenCode
      '((*field (reg t2) (reg t2) (wconst infstartingbit)
 	   (wconst infbitlength))
        (jmp (reg t2)))
@@ -1315,41 +1315,45 @@ preload  (setq initload
 	     (!*PUSH (REG  2)) (!*PUSH (REG  1)))
 	   (difference 15  NumberOfArguments))
      (append (PNTH '(
-		(!*move (displacement (reg st) 88) (reg error))
-		(!*move (displacement (reg st) 88) (reg error))
-		(!*move (displacement (reg st) 88) (reg error))
-		(!*move (displacement (reg st) 80) (reg r14))
-		(!*move (displacement (reg st) 72) (reg r13))
-		(!*move (displacement (reg st) 64) (reg r12))
-		(!*move (displacement (reg st) 56) (reg r11))
-		(!*move (displacement (reg st) 48) (reg r10))
-		(!*move (displacement (reg st) 40) (reg r9))
-		(!*move (displacement (reg st) 32) (reg r8))
-		(!*move (displacement (reg st) 24) (reg rcx))
-		(!*move (displacement (reg st) 16) (reg rdx))
-		(!*move (displacement (reg st) 8) (reg rsi))
-		(!*move (displacement (reg st) 0) (reg rdi)))
+		(!*Move (displacement (reg st) 88) (reg error))
+		(!*Move (displacement (reg st) 88) (reg error))
+		(!*Move (displacement (reg st) 88) (reg error))
+		(!*Move (displacement (reg st) 80) (reg r14))
+		(!*Move (displacement (reg st) 72) (reg r13))
+		(!*Move (displacement (reg st) 64) (reg r12))
+		(!*Move (displacement (reg st) 56) (reg r11))
+		(!*Move (displacement (reg st) 48) (reg r10))
+		(!*Move (displacement (reg st) 40) (reg r9))
+		(!*Move (displacement (reg st) 32) (reg r8))
+		(!*Move (displacement (reg st) 24) (reg rcx))
+		(!*Move (displacement (reg st) 16) (reg rdx))
+		(!*Move (displacement (reg st) 8) (reg rsi))
+		(!*Move (displacement (reg st) 0) (reg rdi)))
 	   (difference 15  NumberOfArguments))
 	  (append
-	   (list (list '!*move '(fluid ebxsave!*) '(reg 2))
-		 '(*push (reg nil)) '(*push (reg heaplast)) 
-		 '(*push (reg heaptrapbound)) '(*push (reg bndstkptr)) 
-		 '(*push (reg symval)) '(*push (reg symfnc))
+	   (list (list '!*Move '(fluid ebxsave!*) '(reg 2))
+		 '(*push (reg nil))
+		 '(*push (reg heaplast)) 
+		 '(*push (reg heaptrapbound))
+		 '(*push (reg symval))
+		 '(*push (reg symfnc))
 		 '(*push (reg staticlisp))
 % stack has to be aligned for SSE instructions in dyn. linking in C
-                 '(!*move  (reg st) (reg 1))
+                 '(!*Move  (reg st) (reg 1))
                  '(sub 64 (reg st))
 		 '(!*WShift (reg st) -5)
                  '(!*WShift (reg st) 5)
-                 '(!*move  (reg 1) (displacement (reg st) 40))
-                %% '(!*move  (displacement (reg rdi) 0) (reg rdi))
+                 '(!*Move  (reg 1) (displacement (reg st) 40))
+                %% '(!*Move  (displacement (reg rdi) 0) (reg rdi))
 		 (list 'call (list 'ForeignEntry FunctionName))
-                 '(!*move  (displacement (reg st) 40) (reg st))
+                 '(!*Move  (displacement (reg st) 40) (reg st))
                  '(*pop (reg staticlisp))
-		 '(*pop (reg symfnc))'(!*pop (reg symval))
-		 '(*pop (reg  bndstkptr)) '(*pop (reg heaptrapbound)) 
-		 '(*pop (reg heaplast)) '(*pop (reg nil)) 
-		 (list '!*move '(reg 2) '(fluid ebxsave!*)))
+		 '(*pop (reg symfnc))
+		 '(!*pop (reg symval))
+		 '(*pop (reg heaptrapbound)) 
+		 '(*pop (reg heaplast))
+		 '(*pop (reg nil)) 
+		 (list '!*Move '(reg 2) '(fluid ebxsave!*)))
 	   (cond
 	((eq NumberOfArguments 0) nil)
 	((lessp NumberOfArguments 3)
@@ -1378,7 +1382,7 @@ preload  (setq initload
 			(fcomp (indirect (reg 1)))
 			(fstsw  (reg ax))
 			(sahf)
-			(*move (quote t) (reg 1))
+			(*Move (quote t) (reg 1))
 			(jb *donefgreaterp*)
 			(mov (quote nil) (reg 1))
 			*donefgreaterp*))
@@ -1386,7 +1390,7 @@ preload  (setq initload
 		     (fcomp (indirect (reg 2)))
 		     (fstsw  (reg ax))
 		     (sahf)
-		     (*move (quote t) (reg 1))
+		     (*Move (quote t) (reg 1))
 		     (jb *doneflessp*)
 		     (mov (quote nil) (reg 1))
 		     *doneflessp*))
@@ -1406,7 +1410,7 @@ preload  (setq initload
 		     (fdiv (displacement (reg 3) 0))
 		     (fstp (indirect (reg 1)))
 		     (wait)))) 
-	 'opencode)
+	 'OpenCode)
 
 %% *Alloc sets the variable NAlloc*. Define a new CMacro *SetNAlloc* to
 %%  be used when *Alloc is optimized away.
@@ -1425,7 +1429,7 @@ preload  (setq initload
 %RmS
                              (*SetNAlloc* 1))
 			   (cddr u))))
-	((and (equal (caadr u) '*move) (equal (caaddr u) '*alloc)
+	((and (equal (caadr u) '*Move) (equal (caaddr u) '*alloc)
 	      (equal llngth& 2) (equal (cddar u) '((frame 2)))
 	      (equal (cddadr u) '((frame 1))))
 	 (rplacw u
@@ -1440,9 +1444,9 @@ preload  (setq initload
 
 (deflist
   '((*get-stack ((halfword 16#3636)   % SS segment override prefix
-		 (*move (indexed (reg 1) 0) (reg 1))))
+		 (*Move (indexed (reg 1) 0) (reg 1))))
     (*put-stack ((halfword 16#3636)
-		 (*move (reg 2) (indexed (reg 1) 0)))))
-  'opencode)
+		 (*Move (reg 2) (indexed (reg 1) 0)))))
+  'OpenCode)
 
 % End of file.

@@ -45,7 +45,7 @@
 %  $Id: AMD64-lap.sl 6307 2022-05-11 15:35:54Z schoepf $
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
+
 
 % ------------------------------------------------------------
 % Fluid declarations:
@@ -255,33 +255,33 @@
 
 (de DepositLabel (x) nil)
 
-(fluid '(*testlap REX-Prefix REX? allowextrarexprefix))
+(fluid '(*testlap REX-Prefix REX? allowextrarexprefix*))
 
-(de DepositInstruction (X) 
+(de DepositInstruction (x) 
 % This actually dispatches to the procedures to assemble the instrucitons
 % version with address calculation test
-(prog (Y offs allowextrarexprefix REX?) 
+(prog (Y offs allowextrarexprefix* REX?) 
 
     (when *testlap (prin2 currentoffset*) (tab 10) (print x))
-    (setq allowextrarexprefix 0)
+    (setq allowextrarexprefix* 0)
     (setq REX-Prefix 16#48)
     (when *WritingFaslFile (setq offs currentoffset*))
     (cond ((and (eqcar x 'movq) (not (xmmregp (cadr x))) (not (xmmregp (caddr x))))
                           (Depositbyte  16#48)  % REX Prefix
                           (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix 0)
+                          (setq allowextrarexprefix* 0)
                           (rplaca x 'mov))
           ((eqcar x 'addq) (Depositbyte  16#48)  % REX Prefix
                           (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix 0)
+                          (setq allowextrarexprefix* 0)
                           (rplaca x 'add))
           ((eqcar x 'subq) (Depositbyte  16#48)  % REX Prefix
                           (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix 0)
+                          (setq allowextrarexprefix* 0)
                           (rplaca x 'sub))
           ((eqcar x 'cmpq) (Depositbyte  16#48)  % REX Prefix
                           (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix 0)
+                          (setq allowextrarexprefix* 0)
                           (rplaca x 'cmp))
           ((and (pairp x) (flagp (car x) 'norexprefix)) NIL)
           ((and (pairp x) (flagp (car x) 'onlyupperregrexprefix))
@@ -289,7 +289,7 @@
                   (setq REX-prefix 16#40)
                   (Depositbyte 16#40)
                   (SETQ REX? (plus codebase!* currentoffset* -1))
-                  (setq allowextrarexprefix 0))))
+                  (setq allowextrarexprefix* 0))))
           ((reg64bitp x) (Depositbyte  16#48)    % REX Prefix
                          (SETQ REX? (plus codebase!* currentoffset* -1))))
     (cond ((setq Y (get (first X) 'InstructionDepositFunction)) 
@@ -299,9 +299,9 @@
           (t (StdError (BldMsg "Unknown x86_64 instruction %p" X))))
     (when REX? (putbyte REX? 0 REX-Prefix)) %overwrite REX-Prefix
 
-    (when (and (not (eq 0 allowextrarexprefix))
+    (when (and (not (eq 0 allowextrarexprefix*))
                offs (not (equal currentoffset*
-                         (plus allowextrarexprefix offs
+                         (plus allowextrarexprefix* offs
                                  (instructionlength x)))))
           (StdError (BldMsg "length error with instruction %p: %p"
                   x (difference (difference currentoffset* offs)
@@ -571,7 +571,7 @@
 		  (depositbyte (lor factor (lor (lsh (reg2int index 'REXX) 3) base))))))
           ((labelp base)
            (depositbyte modr/m)
-           (depositbyte (lor factor (lor (lsh (reg2int index 'REXX) 3) 2#101 )))
+           (depositbyte (lor factor (lor (lsh (reg2int index 'REXX) 3) 2#101)))
            (depositextension base))
           (t (modR/Merror op2)))))
 
@@ -590,11 +590,10 @@
     % calculate the length of the address part by modR/M
     (prog (OpFn mode base ireg n)
 
-          (when (or (regp op1) (xmmregp op1)) (setq op1 (lsh (reg2int op1 'REXR) 3)))
           (when (pairp op2) (setq mode (car op2)))
 
           % case: reg - reg
-          (when (regp op2) (return 1))
+          (when (or (regp op2) (xmmregp op2)) (return 1))
 
           % case: reg - (indirect (reg RSP/R12) ) 
           (when (and (eq mode 'indirect) 
@@ -662,7 +661,7 @@
 
 (fluid '(numericRegisterNames REX-Prefix))
 
-(setq numericRegisterNames [nil EAX EBX ECX EDX EBP])
+(setq numericRegisterNames [nil RAX RBX RCX RDX RBP])
 
 (put 'REXR 'prefixcode 2#100)
 (put 'REXX 'prefixcode 2#010)
@@ -685,14 +684,14 @@
 
 (deflist '((EAX   0) (ECX   1) (EDX   2) (EBX   3) 
            (rAX   0) (rCX   1) (rDX   2) (rBX   3) 
-	   (ESP   4) (EBP   5) (ESI   6) (EDI   7)
-	   (rSP   4) (rBP   5) (rSI   6) (rDI   7)
-	   (st    4)        % LISP stack register
-	   (T1    7) % RDI
-	   (T2    6) % RSI
-	   (T3    8)
-	   (T4    9)
-	   (heaplast 10) (heaptrapbound 11)
+           (ESP   4) (EBP   5) (ESI   6) (EDI   7)
+           (rSP   4) (rBP   5) (rSI   6) (rDI   7)
+           (st    4)        % LISP stack register
+           (T1    7) % RDI
+           (T2    6) % RSI
+           (T3    8)
+           (T4    9)
+           (heaplast 10) (heaptrapbound 11)
            (staticlisp 12) (nil 13) (symval 14) (symfnc 15)
 
            (r8 8) (r9 9) (r10 10) (r11 11)
@@ -723,24 +722,6 @@
     (if (eqcar u 'immediate) (cadr u) u))
 
 %------------------------------------------------------------------------
-% (displacement (reg 5) ...) has to be prefixed in order to address
-% the DS segment rather than the SS segment
-%% (de indexed-reg-5-p(op)
-%%     (and (pairp op) NIL % not useful in 64 bit mode
-%% 	 (or (eq (car op) 'indexed)
-%% 	     (eq (car op) 'displacement)
-%% 	     (eq (car op) 'indirect))
-%% 	 (equal (cadr op) '(reg 5))) )
-(de indexed-reg-5-p (op) nil)
-
-(de lth-reg-5-prefix(op)
-    (if (indexed-reg-5-p op) 1 0))
-
-(de reg-5-prefix(op)
-    (when (indexed-reg-5-p op)
-      (depositbyte 16#3e) ))  % DS segment override prefix
-
-%------------------------------------------------------------------------
 %  special format for EAX-instructions
 
 (de OP-mem-eax (code op1 op2) 
@@ -753,41 +734,39 @@
 %------------------------------------------------------------------------
 % code is one byte, op1 is a register, op2 is an effective address
 (de OP-reg-effa (code op1 op2)
-    (reg-5-prefix op2)
     (depositbyte (car code))
     (modR/M op1 op2))
 
 (de LTH-reg-effa (code op1 op2) 
-    (plus 1 (lth-reg-5-prefix op2) (lthmodR/M op1 op2)))
+    (plus 1 (lthmodR/M op1 op2)))
 
 %------------------------------------------------------------------------
 % op1 is an immediate, op2 is an effective address which patches into
 % the second byte of the code
 (de OP-imm-effa (code op1 op2)
-    (reg-5-prefix op2)
     (depositbyte (car code))
     (modR/M (cadr code) op2)
     (depositextension (unimmediate op1)))
 
-(de lth-imm-effa (code op1 op2)
-    (plus 5 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
+(de LTH-imm-effa (code op1 op2)
+    (plus 5 (lthmodR/M (cadr code) op2)))
 
 (de OP-imm8-effa (code op1 op2)
-    (reg-5-prefix op2)
     (depositbyte (car code))
     (modR/M (cadr code) op2)
     (depositbyte (unimmediate op1)))
-(de lth-imm8-effa (code op1 op2)
-    (plus 2 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
+
+(de LTH-imm8-effa (code op1 op2)
+    (plus 2 (lthmodR/M (cadr code) op2)))
 
 (de OP2-imm8-effa (code op1 op2)
-    (reg-5-prefix op2)
     (depositbyte (car code))
     (depositbyte (cadr code))
     (modR/M (caddr code) op2)
     (depositbyte (unimmediate op1)))
-(de lth2-imm8-effa (code op1 op2)
-   (plus 3 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
+
+(de LTH2-imm8-effa (code op1 op2)
+   (plus 3 (lthmodR/M (cadr code) op2)))
 
 %------------------------------------------------------------------------
 % code is two bytes (prefix+opcode) with an optional rex prefix in between,
@@ -806,7 +785,7 @@
                    (setq REX-prefix 16#48)
                    (depositbyte 16#48)
                    (SETQ REX? (plus codebase!* currentoffset* -1))
-                   (setq allowextrarexprefix (if (eqcar code 'rex) 0 1) )))
+                   (setq allowextrarexprefix* (if (eqcar code 'rex) 0 1) )))
                 ))
           (depositbyte (car code)))
     (modR/M op1 op2))
@@ -833,7 +812,7 @@
           (setq REX-prefix (if (eqcar code 'rex) 16#48 16#40))
           (depositbyte REX-prefix)
           (SETQ REX? (plus codebase!* currentoffset* -1))
-          (setq allowextrarexprefix (if (eqcar code 'rex) 0 1) )
+          (setq allowextrarexprefix* (if (eqcar code 'rex) 0 1) )
           (if (eqcar code 'rex) (setq code (cdr code)))))
     (depositbyte (car code)))
     (depositbyte (cadr code))
@@ -850,13 +829,14 @@
 %-----------------------------------------------------------------------
 % format: fixed modR/M byte
 (de OP-effa (code op1) (OP-reg-effa code (cadr code) op1))
-(de lth-effa (code op1) (LTH-reg-effa code (cadr code) op1))
+
+(de LTH-effa (code op1) (LTH-reg-effa code (cadr code) op1))
 
 (de OP2-effa(code op1)
     (depositbyte (car code))
     (OP-effa (cdr code) op1))
 
-(de lth2-effa(code op1) (add1 (lth-effa(cdr code) op1)))
+(de LTH2-effa(code op1) (add1 (LTH-effa(cdr code) op1)))
 
 %-----------------------------------------------------------------------
 % immediate to EAX
@@ -898,7 +878,8 @@
 % absolute n-byte instruction
 (de OP-byte (code)
         (foreach x in code do (depositbyte x)))
-(de lth-byte (code) (length code))
+
+(de LTH-byte (code) (length code))
 
 %---------------------------------------------------------------------
 % push/pop with register: code is one byte modified with reg number
@@ -919,7 +900,7 @@
          (prin2 n) (prin2 " rel = ")
          (prin2 (plus currentoffset* n))(prin2t " abs"))))
 
-(de lth-jump (code op1) (if (cdr code) 6 5))
+(de LTH-jump (code op1) (if (cdr code) 6 5))
 
 %jump short (8-bit displacement)
 (de OP-jump-short (code op1)
@@ -933,28 +914,28 @@
          (prin2 n) (prin2 " rel = ")
          (prin2 (plus currentoffset* n))(prin2t " abs"))))
 
-(de lth-jump-short (code op1) 2)
+(de LTH-jump-short (code op1) 2)
  
 % indirect jump to effective address
 (de OP-jump-effa (code op1)
-              % a tag "indirect" contained already in the operation if not
-              % explicit reg reference
-           (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
-                 (setq op1 (cadr op1)))
-           % need REX byte if upper 8 register
-           (if (upperreg64p op1)
-               (progn
-                 (setq REX-prefix 16#40)
-                 (depositbyte REX-prefix)
-                 (SETQ REX? (plus codebase!* currentoffset* -1))
-                 (setq allowextrarexprefix 1)))
-           (OP-reg-effa code (cadr code) op1))
+    %% a tag "indirect" contained already in the operation if not
+    %% explicit reg reference
+    (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
+      (setq op1 (cadr op1)))
+    %% need REX byte if upper 8 register
+    (if (upperreg64p op1)
+        (progn
+          (setq REX-prefix 16#40)
+          (depositbyte REX-prefix)
+          (setq REX? (plus codebase!* currentoffset* -1))
+          (setq allowextrarexprefix* 1)))
+    (OP-reg-effa code (cadr code) op1))
 
-(de lth-jump-effa (code op1) 
+(de LTH-jump-effa (code op1) 
            (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
                  (setq op1 (cadr op1)))
-           (if (upperreg64p op1) (add1 (lth-reg-effa code (cadr code) op1))
-             (lth-reg-effa code (cadr code) op1)))
+           (if (upperreg64p op1) (add1 (LTH-reg-effa code (cadr code) op1))
+             (LTH-reg-effa code (cadr code) op1)))
  
 
 (commentoutcode
@@ -964,7 +945,8 @@
     (setq op1 (saniere-Sprungziel op1))
     (when (cdr code) (depositbyte (cadr code))) %conditional jumps
     (depositExtension op1))
-(de lth-jump-long(code op1) (if (cdr code) 6 5))
+
+(de LTH-jump-long(code op1) (if (cdr code) 6 5))
 )
 
 (de saniere-Sprungziel(l)
@@ -973,10 +955,11 @@
           ((eqcar l 'LABEL) (saniere-Sprungziel (cadr l)))
           (T l)))
 % RET n
-(de OP-RET-n (code op1) 
+(de OP-ret-n (code op1) 
    (depositbyte (car code)) 
    (deposithalfword (halfwordp (unimmediate op1))))
-(de lth-RET-n (code op1) 3) 
+
+(de LTH-ret-n (code op1) 3) 
   
 %-------------------------------------------------------------
 %enter 
@@ -984,14 +967,16 @@
    (depositbyte (car code)) 
    (deposithalfword (unimmediate op1))
    (depositbyte 0))  % support for level 0 only
-(de lth-enter (code op1) 4)
+
+(de LTH-enter (code op1) 4)
 
 %-------------------------------------------------------------
 % PUSH imm32
 (de OP-imm   (code op1)
    (depositbyte (car code))
    (depositextension (unimmediate op1)))
-(de lth-imm   (code op1) 5)
+
+(de LTH-imm   (code op1) 5)
  
 
 %-------------------------------------------------------------
@@ -1000,7 +985,7 @@
     (depositbyte (car code))
     (modR/M (cadr code) op1))
 
-(de lth-shift (code op1) (add1 (lthmodR/M (cadr code) op1)))
+(de LTH-shift (code op1) (add1 (lthmodR/M (cadr code) op1)))
  
 %shift with immediate amount
 (de OP-shiftimm (code op2 op1)
@@ -1008,25 +993,27 @@
     (depositbyte (lor 2#11000000 (lor (cadr code) (reg2int op1 'REXB))))
     (depositbyte (bytep (unimmediate op2))))
 
-(de lth-shiftimm (code op1 op2) 3)
+(de LTH-shiftimm (code op1 op2) 3)
  
 % double shifts
 (de OP-dshift (code dummy op1) 
     (depositbyte (cadr code)) 
     (modR/M op1 0)) 
-(de lth-dshift (code op1) (plus 2 (lthmodR/M op1 0)))
+
+(de LTH-dshift (code op1) (plus 2 (lthmodR/M op1 0)))
  
 (de OP-dshiftimm (code op2 op1)  
     (depositbyte (cadr code))  
     (modR/M op1 0)  
     (depositbyte (bytep (unimmediate op2))))
-(de lth-dshiftimm (code op1) (plus 3 (lthmodR/M op1 0)))
+
+(de LTH-dshiftimm (code op1) (plus 3 (lthmodR/M op1 0)))
 
 %-------------------------------------------------------------
 % MUL and DIV
 (de OP-mul (code op1) (op-reg-effa code (cadr code) op1))
 
-(de lth-mul (code op1) (lth-reg-effa code (cadr code) op1))
+(de LTH-mul (code op1) (LTH-reg-effa code (cadr code) op1))
 
 % special: IMUL
 (de OP-imul (code op1 op2)
@@ -1034,7 +1021,7 @@
     (depositbyte (cadr code))
     (modR/M op1 op2))
 
-(de lth-imul (code op1 op2) 3)
+(de LTH-imul (code op1 op2) 3)
 
 % ------------------------------------------------------------
 % standard operand tags
@@ -1528,7 +1515,7 @@
     (setq CurrentOffset* (plus CurrentOffset* 2))))
 
 (compiletime (put 'put_a_halfword 'opencode '(
-   (mov (reg ebx) (displacement (reg eax) 0))))) %% (reg 2) (displacement (reg eax) 0)))))
+   (mov (reg ebx) (displacement (reg rax) 0)))))
 
 (de deposit32bitword (x) %% cross
   (put_a_halfword (wplus2 codebase* currentoffset*) x)
@@ -1547,7 +1534,7 @@
 
 (de deposit-relocated-word (offset)
   % Given an OFFSET from CODEBASE*, deposit a word containing the
-  % absolute address of that offset.
+  % relative address of that offset.
   (put_a_halfword (wplus2 codebase* currentoffset*)
           (if *WritingFaslFile  offset
                (wdifference offset (wplus2 currentoffset* 4)))) 
@@ -1558,7 +1545,7 @@
   % Given an OFFSET from CODEBASE*, deposit a word containing the
   % absolute address of that offset.
   (put_a_halfword (wplus2 codebase* currentoffset*)
-	   (iplus2 offset (if *WritingFaslFile 0 codebase*)))
+           (iplus2 offset (if *WritingFaslFile 0 codebase*)))
   (updatebittable 4 (const reloc_word))
   (setq currentoffset* (plus currentoffset* 4)))
   
@@ -1597,10 +1584,10 @@
                            forwardinternalreferences*))
                (deposit-relocated-word 0)))))
       ((and (eq (car x) 'mkitem)
-	    (eq (cadr x) id-tag)
-	    (eqcar (setq y (caddr x)) 'idloc)
-	    (wlessp (id2int(cadr y)) 257))
-	(depositword (cadr y)))
+            (eq (cadr x) id-tag)
+            (eqcar (setq y (caddr x)) 'idloc)
+           (wlessp (id2int(cadr y)) 257))
+        (depositword (cadr y)))
       ((equal (first x) 'idloc) (depositwordidnumber (second x)))
       ((equal (first x) 'mkitem) (deposititem (second x) (third x)))
       ((equal (first x) 'entry) (depositentry x))
@@ -1668,12 +1655,12 @@
 
 (de DepositHalfWordIDNumber (X) 
     (cond ((or (not *WritingFaslFile) (LEQ (IDInf X) 256)) 
-	(DepositHalfWord (IDInf X))) (t 
-    
-    (progn (puthalfword (wplus2 codebase* currentoffset*) 0 
-                    (makerelochalfword (const reloc_id_number) (findidnumber x))) 
-        (setq currentoffset* (plus currentoffset* 2)) 
-        (updatebittable 2 (const reloc_halfword))))))
+           (DepositHalfWord (IDInf X)))
+          (t
+           (progn (puthalfword (wplus2 codebase* currentoffset*) 0 
+			       (makerelochalfword (const reloc_id_number) (findidnumber x))) 
+		  (setq currentoffset* (plus currentoffset* 2)) 
+		  (updatebittable 2 (const reloc_halfword))))))
 
 % ------------------------------------------------------------
 % this procedure was "inserted" to eliminate the problem with the compiler
@@ -1883,18 +1870,18 @@
 
 (setq !64bitregs '((reg 1) (reg 2) (reg 3) (reg 4) (reg 5) (reg st)
                   (reg rax) (reg rbx) (reg rcx) (reg rdx)
-                  (reg t3) (reg NIL) (reg heaplast) 
+                  (reg t3) (reg t4) (reg NIL) (reg heaplast) 
                   (reg bndstkptr) (reg symval) (reg staticlisp)
-                  (reg symfnc)  (reg heaptrapbound) 
+                  (reg symfnc) (reg heaptrapbound) 
                   (reg t1) (reg t2) (reg esp) (reg rdi) (reg rsi)
                   (reg r8) (reg r9) (reg r10) (reg r11)
                   (reg r12) (reg r13)(reg r14) (reg r15)
                   ))
 
 (setq upper64bitregs '(
-                  (reg t3) (reg NIL) (reg heaplast) 
+                  (reg t3) (reg t4) (reg NIL) (reg heaplast) 
                   (reg bndstkptr) (reg symval) (reg staticlisp) 
-                  (reg symfnc)  (reg heaptrapbound)
+                  (reg symfnc) (reg heaptrapbound)
                   (reg r8) (reg r9) (reg r10) (reg r11)
                   (reg r12) (reg r13)(reg r14) (reg r15)
                   (reg xmm8) (reg xmm9) (reg xmm10) (reg xmm11)

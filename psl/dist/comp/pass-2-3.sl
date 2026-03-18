@@ -488,7 +488,7 @@
 (de &ireg (n)
   % returns form ('IREG n)
   % Generates initial VALUES for REGISTERs to see if they are changed
-  % changed by compialtion. Support for INSTALLDESTROY
+  % changed by compilation. Support for INSTALLDESTROY
   %/ Use of vector for efficiency, or for UNIQUE forms?
   (if (and (greaterp n 0) (leq n 15))
     (getv '[nil (ireg 1) (ireg 2) (ireg 3) (ireg 4) (ireg 5) (ireg 6) 
