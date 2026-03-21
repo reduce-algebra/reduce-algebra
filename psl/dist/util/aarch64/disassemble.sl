@@ -43,8 +43,9 @@
 
 (compiletime (load common))
 
+(fluid '(*stoponunknown))
 
-(fluid '(bytes* lth* reg* regnr* segment*  symvalhigh symfnchigh *curradr* *currinst* *big-endian*
+(fluid '(bytes* lth* reg* regnr* segment* symvalhigh symfnchigh *curradr* *currinst* *big-endian*
 	 labels* *largest-target-addr* targetaddr* targetaddr-is-load*
 	 return-seen* genlbl-pname* gensympname))
 
@@ -73,7 +74,9 @@
       
 
 (de unknown-instr-error (pp)
-    (stderror (bldmsg "Unknown aarch64 instruction %x" pp)))
+    (if *stoponunknown
+	(continuableerror (bldmsg "Unknown aarch64 instruction %x" pp)))
+    (list ".word" (bldmsg "0x%x" pp)))
 
 (de word2addr (n) (times n 4))
 %(de addr2word (n) (quotient n 4))
@@ -308,7 +311,7 @@
 		 
 		 )
 		((and (weq p1 2#11010101) (wand 2#11 (wshift pp -22) 0)) % System
-		 (decode-system p1 pp sf))
+		 (return (decode-system p1 pp sf)))
 		((weq (wand p1 2#11111110) 2#11010110) % Uncond. branch register
 		 (setq op1 (wand 2#1111 (wshift pp -21)))
 		 (let ((op2 (wand 2#11111 (wshift pp -16)))
@@ -393,16 +396,29 @@
 			  (t (unknown-instr-error pp)))))
 	       (list 'msr pstatefield (prefix!# crm))))
 	    ((and (weq !L 0) (weq op1 2#011))
-	     (list
-	      (cond ((or (wneq crm 2#0000) (weq op2 2#000)) 'nop)
-		    ((weq op2 2#101) 'sevl)
-		    ((weq op2 2#100) 'sev)
-		    ((weq op2 2#011) 'wfi)
-		    ((weq op2 2#010) 'wfe)
-		    ((weq op2 2#001) 'yield)
-		    (t (unknown-instr-error pp)))))
+	     (cond ((and (weq crm 2#0000) (weq crn 2#0001))
+		    (list
+		     (cond ((weq op2 2#000) 'wfet)
+			   ((weq op2 2#001) 'wfit)
+			   (t (unknown-instr-error pp)))
+		     (regnum-to-regname regt 1 nil)))
+		   ((and (weq crm 2#0000) (weq crn 2#0010))
+		    (list
+		     (cond ((weq op2 2#000) 'nop)
+			   ((weq op2 2#001) 'yield)
+			   ((weq op2 2#101) 'sevl)
+			   ((weq op2 2#100) 'sev)
+			   ((weq op2 2#011) 'wfi)
+			   ((weq op2 2#010) 'wfe)
+			   (t (unknown-instr-error pp)))))
+		   ((and (weq crm 2#0010) (weq crn 2#0010))
+		    (cond ((weq op2 2#111) '(pacm))
+			  ((weq 0 (wand 1 op2))
+			   (list 'bti (cdr (assoc (wshift op2 -1) '((2#00 . "") (2#01 . "c") (2#10 . "j") (2#11 . "jc"))))))
+			  (t (unknown-instr-error pp))))
+		   (t (unknown-instr-error pp))))
 	    (t (unknown-instr-error pp)))
-      ))	       
+      ))
 
 
 (de decode-dataproc-pcrel (p1 pp sf opc)
@@ -946,7 +962,7 @@
 	     (case rmode
 		   ((2#01) (setq instr (if (weq opcode 0) 'fcvtps 'fcvtpu)))
 		   ((2#10) (setq instr (if (weq opcode 0) 'fcvtms 'fcvtmu)))
-		   ((2#11) (setq instr (if (weq opcode 0) 'fcvtZs 'fcvtzu))))
+		   ((2#11) (setq instr (if (weq opcode 0) 'fcvtzs 'fcvtzu))))
 	     (list instr (regnum-to-regname regd sf nil) (regnum-to-simd-regname2 regn type)))
 	    ((and (weq !S 0) (weq type 2#10) (weq rmode 2#01) (wgeq opcode 2#110))
 	     (cond((weq opcode 2#110)
@@ -994,17 +1010,22 @@
 	  (instr))
       (case type
 	    ((2#00)
-	     (setq instr (assoc opcode '((2#000000 fmov)   (2#000001 fabs) (2#000010 rev) (2#000011 fneg) (2#000100 fsqrt)
+	     (setq instr (assoc opcode '((2#000000 fmov)   (2#000001 fabs) (2#000010 fneg) (2#000011 fsqrt)
 					 (2#000101 fcvt)   (2#000111 fcvt)
 					 (2#001000 frintn) (2#001001 frintp) (2#001010 frintm) (2#001011 frintz)
-					 (2#001100 frinta) (2#001110 frintx) (2#001111 frinti)))))
+					 (2#001100 frinta) (2#001110 frintx) (2#001111 frinti)
+					 (2#010000 frint32z) (2#010001 frint32x) (2#010010 frint64z) (2#010011 frint64x)))))
 	    ((2#01)
-	     (setq instr (assoc opcode '((2#000000 fmov)   (2#000001 fabs) (2#000010 rev) (2#000011 fneg) (2#000100 fsqrt)
-					 (2#000100 fcvt)   (2#000111 fcvt)
+	     (setq instr (assoc opcode '((2#000000 fmov)   (2#000001 fabs) (2#000010 fneg) (2#000011 fsqrt)
+					 (2#000100 fcvt)   (2#000110 bfcvt) (2#000111 fcvt)
 					 (2#001000 frintn) (2#001001 frintp) (2#001010 frintm) (2#001011 frintz)
-					 (2#001100 frinta) (2#001110 frintx) (2#001111 frinti)))))
+					 (2#001100 frinta) (2#001110 frintx) (2#001111 frinti)
+					 (2#010000 frint32z) (2#010001 frint32x) (2#010010 frint64z) (2#010011 frint64x)))))
 	    ((2#11)
-	     (setq instr (assoc opcode '((2#000100 fcvt)   (2#000101 fcvt))))))
+	     (setq instr (assoc opcode '((2#000000 fmov)   (2#000001 fabs) (2#000010 fneg) (2#000011 fsqrt)
+					 (2#000100 fcvt)   (2#000101 fcvt)
+					 (2#001000 frintn) (2#001001 frintp) (2#001010 frintm) (2#001011 frintz)
+					 (2#001100 frinta) (2#001110 frintx) (2#001111 frinti))))))
 	     
 
       (when (or (weq sf 1) (weq !S 1) (null instr)) (unknown-instr-error pp))
