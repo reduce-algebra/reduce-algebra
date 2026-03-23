@@ -858,7 +858,8 @@
     )
 
 (de streg-p (x)
-    (or (eq x 'cpsr) (eq x 'spsr)))
+    (and (eqcar x 'reg)
+	 (memq (cadr x) '(nzcv fpsr fpcr))))
 
 (de writeback-p (x)
     t)
@@ -1523,19 +1524,22 @@
 (de lth-clz (code regd regm) 4)
 
 %% ToDo
-(de OP-streg (code regd cpsr-or-spsr)
-    (prog (cc opcode1 opcode2 reg3 reg4 shift-op shift-amount set-bit r)
-	  (cond ((eq cpsr-or-spsr 'cpsr) (setq r 0))
-		((eq cpsr-or-spsr 'spsr) (setq r 1))
-		(t (stderror (bldmsg "Invalid MRS operand: %w" cpsr-or-spsr))))
-	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) opcode2 (cadddr code))
-	  (DepositInstructionBytes
-	   (lsh cc -4)
-	   (lor (lsh r 6) 2#01111)
-	   (lor (lsh (reg2int regd) 4) 2#0000)
-	   (lsh opcode2 4))
-	  )
-    )
+(de OP-streg (code regd systemreg)
+    (prog (cc op0 op1 CRn CRm op2 reg3 reg4 shift-op shift-amount set-bit r)
+       (setq cc (car code) op0 2#11 op1 2#011 CRn 2#0100)
+       (setq systemreg (cadr systemreg))
+       (cond ((eq systemreg 'nzcv) (setq CRm 2#0010 op2 2#000))
+	     ((eq systemreg 'fpcr) (setq CRm 2#0100 op2 2#000))
+	     ((eq systemreg 'fpsr) (setq CRm 2#0100 op2 2#001)) 
+	     (t (stderror (bldmsg "Invalid MRS system register operand: %w" systemreg))))
+       (DepositInstructionBytes
+	(lsh cc -3)
+	(lor (lsh (land cc 2#111) 5) (lor (lsh op0 3) op1))
+	(lor (lsh CRn 4) CRm)
+	(lor (lsh op2 5) (reg2int regd))
+	)))
+
+(de OP-streg-rev (code regd systemreg) (OP-streg code systemreg regd))
 
 (de lth-streg (code regd regm) 4)
 
@@ -1753,7 +1757,7 @@
     (DepositInstructionBytes
      (lsh (car code) -14)
      (land 16#ff (lsh (car code) -6))
-     (lor (lsh (land code 2#111111) 2) (lsh (reg2int regn) -3))
+     (lor (lsh (land (car code) 2#111111) 2) (lsh (reg2int regn) -3))
      (lor (reg2int regd) (lsh (land (reg2int regn) 2#111) 5)))
     ))
 
