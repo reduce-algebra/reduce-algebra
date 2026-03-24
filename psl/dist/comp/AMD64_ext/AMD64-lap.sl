@@ -287,8 +287,10 @@
                   (Depositbyte 16#40)
                   (SETQ REX? (plus codebase!* currentoffset* -1))
                   (setq allowextrarexprefix* 0))))
-          ((reg64bitp x) (Depositbyte  16#48)    % REX Prefix
-                         (SETQ REX? (plus codebase!* currentoffset* -1))))
+          ((reg64bitp x)
+	   %% requires REX Prefix
+	   (Depositbyte  16#48)
+           (setq REX? (plus codebase!* currentoffset* -1))))
     (cond ((setq Y (get (first X) 'InstructionDepositFunction)) 
            (Apply Y (list X))) 
           ((setq Y (get (first X) 'InstructionDepositMacro))
@@ -320,7 +322,7 @@
         ) 'norexprefix)
 
 % Instructions that need a REX.B prefix only if using upper 8 registers
-(flag '(push pop movl movb) 'onlyupperregrexprefix)
+(flag '(push pop movl movb andl) 'onlyupperregrexprefix)
 (flag '(setc) 'onlyupperregrexprefix)
 
 (de DepositLabel (x) 

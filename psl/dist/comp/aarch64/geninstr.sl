@@ -71,6 +71,7 @@
 %	(OP-ld-st-misc . lth-ld-st-misc)
 %	(OP-ldm-stm . lth-ldm-stm)
 	(OP-streg . lth-streg)
+	(OP-streg-rev . lth-streg)
 	(OP-clz . lth-clz)
 	(OP-branch-imm . lth-branch-imm)
 	(OP-branch-imm19 . lth-branch-imm19)
@@ -724,10 +725,8 @@
 (instr REV    (reg reg)                 OP-reg2      2#11011010110)
 
 
-%% ToDo
-%%(instr MRS (reg streg)   OP-streg 2#110101010011)
-%(instr MSR (MSR *cond*) (streg imm8-rotated) OP-MSR 2#0011001 0  ... ) 
-%(instr MSR (MSR *cond*) (streg reg)      OP-MSR 2#0001001 0 2#0000)
+(instr MRS (reg streg)           OP-streg 2#11010101001)
+(instr MSR (streg reg)           OP-streg-rev 2#11010101000)
 
 (instr LDRB (reg32 reg-or-sp-simm9-post)  OP-ld-st 2#00111000010 2#01)
 (instr STRB (reg32 reg-or-sp-simm9-post)  OP-ld-st 2#00111000000 2#01)

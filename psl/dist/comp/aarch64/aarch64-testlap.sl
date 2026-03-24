@@ -56,20 +56,29 @@
 %%   E00303AA 		mov	X0, X3
 %%   BF030091 		add	sp, fp, #0
 %%   FD4740F8 		ldr	fp, [sp], #4
+%%   20443BD5 		mrs	x0, fpsr
+%%   00443BD5 		mrs	x0, fpcr
+%%   29443BD5 		mrs	x9, fpsr
+%%   09423BD5 		mrs	x9, nzcv
+%%   20441BD5 		msr	fpsr, x0
+%%   09441BD5 		msr	fpcr, x9
+%%   09421BD5 		msr	nzcv, x9
 %%   C0031FD6 		br	lr
 %%
 
 (compiletime
 (off usermode)
+(copyd 'orig-DepositInstructionBytes 'DepositInstructionBytes)
 (de DepositInstructionBytes (byte1 byte2 byte3 byte4)
     (printf "%x %x %x %x%n"
 	    (land byte4 16#ff)
 	    (land byte3 16#ff)
 	    (land byte2 16#ff)
-	    (land byte1 16#ff)))
+	    (land byte1 16#ff))
+    (orig-DepositInstructionBytes byte1 byte2 byte3 byte4))
 )
 
-(tr reg-or-sp-simm9)
+%(tr reg-or-sp-simm9)
 (lap '(
        (!*entry testaarch64 expr 0)
        (ldr (reg X0) (displacement (reg X1) 16))
@@ -97,6 +106,14 @@
        (mov (reg X0) (reg X3))
        (add (reg sp) (reg fp) 0)
        (ldr (reg fp) (preindexed (reg sp) 4))
+
+       (mrs (reg x0) (reg fpsr))
+       (mrs (reg x0) (reg fpcr))
+       (mrs (reg x9) (reg fpsr))
+       (mrs (reg x9) (reg nzcv))
+       (msr (reg fpsr) (reg x0))
+       (msr (reg fpcr) (reg x9))
+       (msr (reg nzcv) (reg x9))
 
        (br (reg lr))
 ))

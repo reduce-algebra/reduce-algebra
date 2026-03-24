@@ -510,8 +510,8 @@
              (bldmsg "%w(%%rip)" w)
            (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
         ((eq mod 0) (if *gassyntax
-			(bldmsg "(%%%w)" (reg-m rm))
-		      (bldmsg "[%w]" (reg-m rm) )))
+			(bldmsg "(%%%w)" (reg-m64 rm))
+		      (bldmsg "[%w]" (reg-m64 rm) )))
         ((eq mod 1) 
               (setq  lth* (add1 lth*))
 	      (let ((b (pop bytes*)))
@@ -519,13 +519,13 @@
 		(if (greaterp b 127)
 		    (setq b (wdifference b 256)))
 		(if *gassyntax 	     
-		    (bldmsg "%w(%%%w)" b (reg-m rm))
-		  (bldmsg "[%w%w%w]" (reg-m rm) (if (wlessp b 0) "" "+") b))))
+		    (bldmsg "%w(%%%w)" b (reg-m64 rm))
+		  (bldmsg "[%w%w%w]" (reg-m64 rm) (if (wlessp b 0) "" "+") b))))
         ((eq mod 2) 
               (setq  lth* (plus 4 lth*))
 	      (if *gassyntax
-		  (bldmsg "%w(%%%w)" (bytes2word) (reg-m rm))
-		(bldmsg "[%w+%w]" (reg-m rm) (bytes2word))))
+		  (bldmsg "%w(%%%w)" (bytes2word) (reg-m64 rm))
+		(bldmsg "[%w+%w]" (reg-m64 rm) (bytes2word))))
         ((eq mod 3)
 	 (setq mod-is-3* t)
 	 (bldmsg (if *gassyntax "%%%w" "%w") (if usexmm (reg-xmm rm) (reg-m rm)))

@@ -2634,6 +2634,20 @@ par1
 par2))        ((and (regp par1) (imm16-shiftedp par2)) (lth-reg-imm16 '(421) 
 par1                                                                  par2)))
 
+ (defopcode mrs (par1 par2) ((and (regp par1) (streg-p par2)) (op-streg '(1705) 
+par1                                                                    par2)))
+ (defoplength mrs (par1 par2) ((and (regp par1) (streg-p par2)) (lth-streg '(
+1705)                                                                      par1 
+par2)))
+
+ (defopcode msr (par1 par2) ((and (streg-p par1) (regp par2)) (op-streg-rev '(
+1704)                                                                       par1
+                                                                            par2
+)))
+ (defoplength msr (par1 par2) ((and (streg-p par1) (regp par2)) (lth-streg '(
+1704)                                                                      par1 
+par2)))
+
  (defopcode msub (par1 par2 par3 par4) ((and (reg32p par1) (reg32p par2) (reg32p
                                                                                  
 par3)                                        (reg32p par4)) (op-mul4 '(216 1) 

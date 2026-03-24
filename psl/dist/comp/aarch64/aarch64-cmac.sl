@@ -189,7 +189,7 @@
 %  inside MEMORY. The tagging means that the following expression
 %  is to be used as an immediate value. For example, if WArray
 %  SYMFNC is the base of some table, the expression
-%       (*WPLUS2 (Reg 1) (immediate (WArray SYMFNC)))
+%       (*WPlus2 (Reg 1) (immediate (WArray SYMFNC)))
 %  means to add the address of SYMFNC to (Reg 1) and not the contents
 %  of the SYMFNC location. Another immediate expression example would be
 %  (*MOVE (postincrement (Reg st)) (immediate (plus2 (WArray ArgumentBlock) 32))'
@@ -495,7 +495,7 @@
        ((regp indirectp)         (STR ArgOne ArgTwo))
        ((regp extraregp)         (!*StoreIntoExtraReg ArgOne ArgTwo))
        ((regp anyp)              (STR ArgOne ArgTwo))
-       ((extraregp regp)         (!*LOADExtraReg ArgOne ArgTwo))
+       ((extraregp regp)         (!*LoadExtraReg ArgOne ArgTwo))
        ((anyp regp)              (LDR ArgTwo ArgOne))
        (                         (*Move ArgOne (reg t1))
                                  (*Move (reg t1) ArgTwo)))
@@ -656,7 +656,7 @@
 	  (MOV (reg fp) (reg sp))
 	  ,@ll))))
 
-(DefCmacro *ALLOC)
+(DefCMacro *Alloc)
 
 (de *DeAlloc (DeAllocCount)
   (if (not (evenp DeAllocCount)) (setq DeAllocCount (plus2 DeAllocCount 1)))
@@ -666,7 +666,7 @@
    (times2 DeAllocCount (compiler-constant 'AddressingUnitsPerItem))
    '*DeAlloc))
 
-(DefCmacro *DeAlloc
+(DefCMacro *DeAlloc
   ((imm10-p) (LDP (reg fp) (reg lr) (postindexed (reg sp) ARGONE)))
   (          (LDP (reg fp) (reg lr) (indirect (reg sp)))
 	     (ADD (reg sp) (reg sp) ARGONE))
@@ -769,36 +769,36 @@
        ((regp regp) (ArgThree ArgOne ArgOne ArgTwo ))
        ((regp imm8-rotatedp)
                       (ArgThree ArgOne ArgOne ArgTwo ))
-       ((regp INumP) (LDR (reg t2) (sysint ArgTwo))
-                      (*3op ArgOne (reg t2) ArgThree))  
-       ((regp AnyP)  (*Move ArgTwo (reg t2))
-                      (*3op ArgOne (reg t2) ArgThree))
-       ((Anyp regp)  (*Move ArgOne (reg t2))
-                      (ArgThree (reg t2) ArgTwo (reg t2))
-                      (*Move (reg t2) ArgOne))
+       ((regp INumP) (LDR (reg t4) (sysint ArgTwo))
+                      (*3op ArgOne (reg t4) ArgThree))  
+       ((regp AnyP)  (*Move ArgTwo (reg t4))
+                      (*3op ArgOne (reg t4) ArgThree))
+       ((Anyp regp)  (*Move ArgOne (reg t4))
+                      (ArgThree (reg t4) ArgTwo (reg t4))
+                      (*Move (reg t4) ArgOne))
        ((Anyp imm8-rotatedp)
-                      (*Move ArgOne (reg t2))
-                      (ArgThree (reg t2) (reg t2) ArgTwo)
-                      (*Move (reg t2) ArgOne))
-       (              (*Move ArgTwo (reg t2))
-                      (*Move ArgOne (reg t1))
-                      (ArgThree (reg t1) (reg t1) (reg t2))
-                      (*Move (reg t1) ArgOne)))
+                      (*Move ArgOne (reg t4))
+                      (ArgThree (reg t4) (reg t4) ArgTwo)
+                      (*Move (reg t4) ArgOne))
+       (              (*Move ArgTwo (reg t5))
+                      (*Move ArgOne (reg t4))
+                      (ArgThree (reg t4) (reg t4) (reg t5))
+                      (*Move (reg t4) ArgOne)))
 
 (DefCMacro *WPlus2
            ((anyp zerop))
            ((anyp negp) (*WDifference ArgOne (minus ArgTwo)))
            ((regp regp) (ADD ArgOne ArgOne ArgTwo))
            ((regp imm12-shiftedp) (ADD ArgOne ArgOne ArgTwo))
-           ((regp anyp) (*Move ArgTwo (reg t3))
-                        (ADD ArgOne ArgOne (reg t3)))
-           ((anyp imm12-shiftedp) (*Move ArgOne (reg t2))
-                        (ADD (reg t2) (reg t2) ArgTwo)
-                        (*Move (reg t2) ArgOne))
-           (            (*Move ArgOne (reg t2))
-                        (*Move ArgTwo (reg t3))
-                        (ADD (reg t2) (reg t2) (reg t3))
-                        (*Move (reg t2) ArgOne)))
+           ((regp anyp) (*Move ArgTwo (reg t5))
+                        (ADD ArgOne ArgOne (reg t5)))
+           ((anyp imm12-shiftedp) (*Move ArgOne (reg t4))
+                        (ADD (reg t4) (reg t4) ArgTwo)
+                        (*Move (reg t4) ArgOne))
+           (            (*Move ArgOne (reg t4))
+                        (*Move ArgTwo (reg t5))
+                        (ADD (reg t4) (reg t4) (reg t5))
+                        (*Move (reg t4) ArgOne)))
             
 
 %(de *WPlus2 (arg1 arg2)
@@ -834,32 +834,32 @@
                                (ADD ArgOne ArgTwo (reg t3)))
            ((regp anyp regp)  (*Move ArgTwo (reg t3))
                                (ADD ArgOne (reg t3) ArgThree))
-           ((regp anyp anyp)  (*Move ArgTwo (reg t2)) % *Move may clobber t3
-                               (*Move ArgThree (reg t3))
-                               (ADD ArgOne (reg t2) (reg t3)))
+           ((regp anyp anyp)  (*Move ArgTwo (reg t4))
+                               (*Move ArgThree (reg t5))
+                               (ADD ArgOne (reg t4) (reg t5)))
            ((anyp regp imm12-shiftedp) (ADD (reg t1) ArgTwo ArgThree)
                                (*Move (reg t1) ArgOne))
-           ((anyp regp anyp)  (*Move ArgThree (reg t3))
-                               (ADD (Reg t2) ArgTwo (reg t3))
-                               (*Move (reg t2) ArgOne))
-           ((anyp anyp imm12-shiftedp) (*Move ArgTwo (reg t2))
-                               (ADD (reg t2) (reg t2) ArgThree)
-                               (*Move (reg t2) ArgOne))
-           (                   (*Move ArgTwo (reg t2))
-                               (*Move ArgThree (reg t3))
-                               (ADD (reg t2) (reg t2) (reg t3))
-                               (*Move (reg t2) ArgOne)))
+           ((anyp regp anyp)  (*Move ArgThree (reg t5))
+                               (ADD (Reg t4) ArgTwo (reg t5))
+                               (*Move (reg t4) ArgOne))
+           ((anyp anyp imm12-shiftedp) (*Move ArgTwo (reg t4))
+                               (ADD (reg t4) (reg t4) ArgThree)
+                               (*Move (reg t4) ArgOne))
+           (                   (*Move ArgTwo (reg t4))
+                               (*Move ArgThree (reg t5))
+                               (ADD (reg t4) (reg t4) (reg t5))
+                               (*Move (reg t5) ArgOne)))
 
 (DefCMacro *WDifference
        ((*WDifference3 ArgOne ArgOne ArgTwo)))
 
 (de *WDifference3 (arg1 arg2 arg3)
-    (expand3operandcmacro arg1 arg2 arg3 '*wdifference3))
+    (Expand3OperandCMacro arg1 arg2 arg3 '*wdifference3))
 
 % format ArgOne = ArgTwo - ArgThree
 
 (DefCMacro *WDifference3
-           ((regp zerop regp) (NEG ArgOne 0))
+           ((regp zerop regp) (NEG ArgOne ArgThree))
            ((regp regp zerop) (*Move ArgOne ArgTwo))
            ((regp regp negp) (*WPlus3 ArgOne ArgTwo (minus ArgThree)))
            ((regp regp regp) (SUB ArgOne ArgTwo ArgThree))
@@ -869,9 +869,9 @@
            ((regp regp imm12-shiftedp)
                                 (SUB ArgOne ArgTwo ArgThree))
            ((regp imm12-shiftedp anyp)
-	   	   		(*Move ArgTwo (reg t2))
+	   	   		(*Move ArgTwo (reg t4))
                                 (*Move ArgThree (reg t3))
-                                (SUB ArgOne (reg t2) (reg t3)))
+                                (SUB ArgOne (reg t4) (reg t3)))
            ((regp anyp imm12-shiftedp)
                                (*Move ArgTwo (reg t3))
                                (SUB ArgOne (reg t3) ArgThree))
@@ -879,21 +879,21 @@
                                (SUB ArgOne ArgTwo (reg t3)))
            ((regp anyp regp) (*Move ArgTwo (reg t3))
                                (SUB ArgOne (reg t3) ArgThree))
-           ((regp anyp anyp)  (*Move ArgTwo (reg t2))
+           ((regp anyp anyp)  (*Move ArgTwo (reg t4))
                                (*Move ArgThree (reg t3))
-                               (SUB ArgOne (reg t2) (reg t3)))
+                               (SUB ArgOne (reg t4) (reg t3)))
            ((anyp regp imm12-shiftedp) (SUB (Reg t1) ArgTwo ArgThree)
                                (*Move (reg t1) ArgOne))
            ((anyp regp anyp)  (*Move ArgThree (reg t3))
                                (SUB (Reg t2) ArgTwo (reg t3))
-                               (*Move (reg t2) ArgOne))
-           ((anyp anyp imm12-shiftedp) (*Move ArgTwo (reg t2))
-                               (SUB (reg t2) (reg t2) ArgThree)
-                               (*Move (reg t2) ArgOne))
-           (                   (*Move ArgTwo (reg t2))
-                               (*Move ArgThree (reg t3))
-                               (SUB (reg t2) (reg t2) (reg t3))
-                               (*Move (reg t2) ArgOne)))
+                               (*Move (reg t4) ArgOne))
+           ((anyp anyp imm12-shiftedp) (*Move ArgTwo (reg t4))
+                               (SUB (reg t4) (reg t4) ArgThree)
+                               (*Move (reg t4) ArgOne))
+           (                   (*Move ArgTwo (reg t4))
+                               (*Move ArgThree (reg t5))
+                               (SUB (reg t4) (reg t4) (reg t5))
+                               (*Move (reg t4) ArgOne)))
 
 
 
@@ -908,31 +908,31 @@
         ((regp regp)  (NEG ArgOne ArgTwo))
         ((regp Anyp)  (*Move ArgTwo ArgOne)
                       (NEG ArgOne ArgOne))
-        (             (*Move ArgTwo (reg t2))
-                      (*wminus (reg t2) (reg t2))
-                      (*Move (reg t2) ArgOne)))
+        (             (*Move ArgTwo (reg t4))
+                      (*WMinus (reg t4) (reg t4))
+                      (*Move (reg t4) ArgOne)))
 
 (put 'wtimes2 'opencode '((MUL (reg 1) (reg 1) (reg 2))))
 
-(defcmacro *wtimes2)
+(DefCMacro *wtimes2)
 
 (de *wtimes2 (arg1 arg2) (*wtimes3 arg1 arg1 arg2))
 
 (de *wtimes3 (arg1 arg2 arg3)
-    (expand3operandcmacro arg1 arg2 arg3 '*wtimes3))
+    (Expand3OperandCMacro arg1 arg2 arg3 '*wtimes3))
 
 % format ArgOne = ArgTwo * ArgThree
 
 (DefCMacro *wtimes3
            ((regp regp regp) (MUL ArgOne ArgTwo ArgThree))
-           ((regp anyp regp) (*Move ArgTwo (reg t1))
-                             (MUL ArgOne (reg t1) Argthree))
-           ((regp regp anyp) (*Move argthree (reg t1))
-                             (*wtimes3 ArgOne ArgTwo (reg t1)))
-           (        (*Move ArgTwo (Reg t1))
-                    (*Move ArgThree (reg t2))
-                    (MUL (reg t1) (Reg t1) (reg t2))
-                    (*Move (reg t1) ArgOne)))
+           ((regp anyp regp) (*Move ArgTwo (reg t4))
+                             (MUL ArgOne (reg t4) Argthree))
+           ((regp regp anyp) (*Move argthree (reg t4))
+                             (*wtimes3 ArgOne ArgTwo (reg t4)))
+           (        (*Move ArgTwo (Reg t4))
+                    (*Move ArgThree (reg t5))
+                    (MUL (reg t4) (Reg t4) (reg t5))
+                    (*Move (reg t4) ArgOne)))
 
 
 (put 'wquotient 'opencode '((SDIV (reg x0) (reg x0) (reg x1))))
@@ -954,7 +954,7 @@
 (de *Wcmp (arg1 arg2)
   (Expand2OperandCMacro arg1 arg2 '*Wcmp))
 
-(DefCmacro *Wcmp
+(DefCMacro *Wcmp
        ((regp regp) (CMP ArgOne ArgTwo))
        ((regp imm12-shiftedp) (CMP ArgOne ArgTwo))
        ((Anyp Regp) (*Move ArgOne (reg t1))
@@ -1045,7 +1045,7 @@
  
 (DefCMacro *WLShift                     %Logical shift to the left.
            ((AnyP ZeroP)           )
-           ((RegP OneP)       (*WPLUS2 ARGONE ARGONE))
+           ((RegP OneP)       (*WPlus2 ARGONE ARGONE))
            ((RegP NegP)       (*Cerror "*WLshift with negative shift amount"))
            ((RegP InumP)      (*lsl ArgOne ArgOne ArgTwo))
            ((RegP regP)       (*lsl ArgOne ArgOne ArgTwo))
@@ -1351,30 +1351,127 @@
 
 (on fast-integers)
 
+%% the floating point part
 
-% *feq, *fgreaterp and *flessp can only occur once in a function.
+(define-constant FE-INVALID    1)
+(define-constant FE-DIVBYZERO  2)
+(define-constant FE-OVERFLOW   4)
+(define-constant FE-UNDERFLOW  8)
+(define-constant FE-INEXACT    16)
+(define-constant FE-ALL-EXCEPT 31)
+
+%%
+%% Implementation of fetestexcept in libc:
+%%
+%%   0x7ff7f0e044 <__GI_fetestexcept+4>:	mrs	x1, fpsr
+%%   0x7ff7f0e048 <__GI_fetestexcept+8>:	and	w0, w1, w0
+%%   0x7ff7f0e04c <__GI_fetestexcept+12>:	and	w0, w0, #0x1f
+%%   0x7ff7f0e050 <__GI_fetestexcept+16>:	ret
+%%
+%%
+%% Implementation of feclearexcept in libc:                                                                                                                                                  %%
+%%   0x7ff7f0db44 <__GI_feclearexcept+4>:	mrs	x1, fpsr
+%%   0x7ff7f0db48 <__GI_feclearexcept+8>:	and	w0, w0, #0x1f
+%%   0x7ff7f0db4c <__GI_feclearexcept+12>:	bic	w2, w1, w0
+%%   0x7ff7f0db50 <__GI_feclearexcept+16>:	tst	w0, w1
+%%
+%% Implementation of fegetexceptflag in libc
+%%
+%%   0x7ff7f0dee4 <fegetexceptflag+4>:	mov	x3, x0
+%%   0x7ff7f0dee8 <fegetexceptflag+8>:	mrs	x2, fpsr
+%%   0x7ff7f0deec <fegetexceptflag+12>:	and	w1, w2, w1
+%%   0x7ff7f0def0 <fegetexceptflag+16>:	mov	w0, #0x0                   	// #0
+%%   0x7ff7f0def4 <fegetexceptflag+20>:	and	w1, w1, #0x1f
+%%   0x7ff7f0def8 <fegetexceptflag+24>:	str	w1, [x3]
+%%   0x7ff7f0defc <fegetexceptflag+28>:	ret
+%%
 
 (commentoutcode
- deflist '((*wfix ((ldr (reg d0) (indirect (reg 1)))
+(put '*float-get-except-flags 'opencode
+  '((mrs (reg x9) (reg fpsr))
+    (and (reg w0) (reg w9) (reg w0))
+    (and (reg w0) (reg w0) (wconst FE-ALL-EXCEPT)))
+)
+
+(put '*float-get-all-except-flags 'opencode
+  '((mrs (reg w0) (reg fpsr))
+    (and (reg w0) (reg w0) (wconst FE-ALL-EXCEPT)))
+)
+
+(put '*float-clear-all-except 'opencode
+  '((mrs (reg x9) (reg fpsr))
+    (and (reg w9) (reg w9) (wnot (wconst FE-ALL-EXCEPT)))
+    (msr (reg fpsr) (reg x9)))
+)
+
+(put '*float-clear-except 'opencode
+  '((mrs (reg x9) (reg fpsr))
+    (and (reg w0) (reg w0) (wconst FE-ALL-EXCEPT))
+    (mvn (reg w0) (reg w0))
+    (and (reg w0) (reg w0) (reg w9))
+    (msr (reg fpsr) (reg x9)))
+)
+
+(put '*float-get-and-clear-except-flags 'opencode
+  '((mrs (reg x9) (reg fpsr))
+    (and (reg w0) (reg w0) (wconst FE-ALL-EXCEPT))
+    (and (reg w0) (reg w0) (reg w9))
+    (and (indirect (reg T1)) (reg 1))
+    (and (reg w9) (reg w9) (wnot (wconst FE-ALL-EXCEPT)))
+    (msr (reg fpsr) (reg x9)))
+)
+
+)
+
+
+(commentoutcode
+
+(de **feq ()
+    (subst (gensym)
+	   '*donefeq*
+	   '((LDR (reg d0) (indirect (reg 1)))
+             (LDR (reg d1) (indirect (reg 2)))
+             (*Move (reg nil) (reg 1))
+	     (FCMP (reg d0) (reg d1))
+             (B!.NE *donefeq*)
+             (SUB (reg 1) (reg 1) (WConst nil-t-diff*))
+             *donefeq*)))
+
+(DefCMacro **feq)
+
+(de **fgreaterp ()
+    (subst (gensym)
+	   '*donefgreaterp*
+	   '((LDR (reg d0) (indirect (reg 1)))
+             (LDR (reg d1) (indirect (reg 2)))
+             (*Move (reg nil) (reg 1))
+	     (FCMP (reg d0) (reg d1))
+             (B!.LE *donefgreaterp*)
+             (SUB (reg 1) (reg 1) (WConst nil-t-diff*))
+             *donefgreaterp*)))
+
+(DefCMacro **fgreaterp)
+
+(de **flessp ()
+    (subst (gensym)
+	   '*doneflessp*
+	   '((LDR (reg d0) (indirect (reg 1)))
+             (LDR (reg d1) (indirect (reg 2)))
+             (*Move (reg nil) (reg 1))
+	     (FCMP (reg d0) (reg d1))
+             (B!.GE *doneflessp*)
+             (SUB (reg 1) (reg 1) (WConst nil-t-diff*))
+             *doneflessp*)))
+
+(DefCMacro **flessp)
+
+(deflist '((*feq ((**feq)))
+	   (*fgreaterp ((**fgreaterp)))
+	   (*flessp ((**flessp)))
+           (*wfix ((ldr (reg d0) (indirect (reg 1)))
                    (fcvtas (reg x0) (reg d0))))
            (*wfloat ((scvtf (reg d0) (reg 1))
                      (str (reg d0) (indirect (reg 2)))))
-           (*fgreaterp
-                    ((ldr (reg d0) (indirect (reg 1)))
-                     (ldr (reg d1) (indirect (reg 2)))
-                     (*Move (quote t) (reg 1))
-		     (fcmp (reg d0) (reg d1))
-                     (b!.gt *donefgreaterp*)
-                     (*Move (reg nil) (reg 1))
-                *donefgreaterp*))
-           (*flessp
-	            ((ldr (reg d0) (indirect (reg 1)))
-                     (ldr (reg d1) (indirect (reg 2)))
-                     (*Move (quote t) (reg 1))
-		     (fcmp (reg d0) (reg d1))
-                     (b!.lt *doneflessp*)
-                     (*Move (reg nil) (reg 1))
-                *doneflessp*))
            (*fplus2 ((ldr (reg d0) (indirect (reg 2)))
                      (ldr (reg d1) (indirect (reg 3)))
 		     (fadd (reg d0) (reg d0) (reg d1))
@@ -1394,7 +1491,8 @@
                      (ldr (reg d1) (indirect (reg 3)))
 		     (fdiv (reg d0) (reg d0) (reg d1))
                      (str (reg d0) (indirect (reg 1))))))
-         'opencode)
+    'opencode)
+)
 
 (DefCMacro *fast-apply-load
    ( (*Move ArgOne (reg t1)) ))

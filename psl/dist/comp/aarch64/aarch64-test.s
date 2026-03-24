@@ -22,5 +22,12 @@
 	mov	X0, X3
 	add	sp, fp, #0
 	ldr	fp, [sp], #4
+	mrs	x0, fpsr
+	mrs	x0, fpcr
+	mrs	x9, fpsr
+	mrs	x9, nzcv
+	msr	fpsr, x0
+	msr	fpcr, x9
+	msr	nzcv, x9
 	br	lr
 

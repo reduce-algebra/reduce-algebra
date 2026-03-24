@@ -172,18 +172,20 @@ par2))      ((and (smallimmediatep par1) (regp par2)) (op-imm8-effa '(131 32)
 par1                                                                par2)) ((and
                                                                                  
 (                                                                                 
-stdimmediatep                                                                                   
+smallimmediatep                                                                                   
 par1)                                                                            
 (                                                                                 
-regp                                                                                   
+effap                                                                                   
 par2))                                                                      (
-op-imm-effa                                                                              
-'                                                                                         
-(                                                                                          
-129                                                                                            
-32)                                                                                      
-par1                                                                                     
-par2)))
+op-imm8-effa                                                                              
+'                                                                                          
+(                                                                                           
+131                                                                                             
+32)                                                                                       
+par1                                                                                      
+par2))      ((and (stdimmediatep par1) (regp par2)) (op-imm-effa '(129 32) par1 
+par2))      ((and (stdimmediatep par1) (effap par2)) (op-imm-effa '(129 32) par1
+                                                                  par2)))
  (defoplength and (par1 par2) ((and (regp par1) (regp par2)) (lth-reg-effa '(35)
                                                                            par2 
 par1))        ((and (regp par1) (effap par2)) (lth-reg-effa '(33) par1 par2)) ((
@@ -202,8 +204,44 @@ par2
 par1))        ((and (stdimmediatep par1) (eaxp par2)) (lth-imm-eax '(37) par1 
 par2))        ((and (smallimmediatep par1) (regp par2)) (lth-imm8-effa '(131 32)
                                                                        par1 par2
-))            ((and (stdimmediatep par1) (regp par2)) (lth-imm-effa '(129 32) 
-par1                                                                par2)))
+))            ((and (smallimmediatep par1) (effap par2)) (lth-imm8-effa '(131 32
+)                                                                       par1 
+par2))        ((and (stdimmediatep par1) (regp par2)) (lth-imm-effa '(129 32) 
+par1                                                                par2)) ((and
+                                                                                 
+(                                                                                 
+stdimmediatep                                                                                   
+par1)                                                                            
+(                                                                                 
+effap                                                                                   
+par2))                                                                      (
+lth-imm-effa                                                                              
+'                                                                                          
+(                                                                                           
+129                                                                                             
+32)                                                                                       
+par1                                                                                      
+par2)))
+
+ (defopcode andl (par1 par2) ((and (smallimmediatep par1) (regp par2)) (
+op-imm8-effa                                                                         
+'                                                                                     
+(                                                                                      
+131                                                                                        
+32)                                                                                  
+par1                                                                                 
+par2))      ((and (smallimmediatep par1) (effap par2)) (op-imm8-effa '(131 32) 
+par1                                                                 par2)))
+ (defoplength andl (par1 par2) ((and (smallimmediatep par1) (regp par2)) (
+lth-imm8-effa                                                                           
+'                                                                                        
+(                                                                                         
+131                                                                                           
+32)                                                                                     
+par1                                                                                    
+par2))        ((and (smallimmediatep par1) (effap par2)) (lth-imm8-effa '(131 32
+)                                                                       par1 
+par2)))
 
  (defopcode andnpd (par1 par2) ((and (effap par1) (xmmregp par2)) (
 op-xmmreg-effa                                                                    
