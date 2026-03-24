@@ -374,13 +374,13 @@
 (instr ADD (reg effa) OP-reg-effa  2#00000001)
 (instI ADD (effa reg) OP-reg-effa  2#00000011)
 (instr ADD (imm  EAX) OP-imm-EAX   2#00000101)
-(instr ADD (!n  reg ) OP-imm8-effa 2#10000011 2#00000000)  % r32 + byte
+(instr ADD (!n  effa) OP-imm8-effa 2#10000011 2#00000000)
 (instr ADD (imm effa) OP-imm-effa  2#10000001 2#00000000)  % r32 + imm32
  
 (instr ADC (reg effa) OP-reg-effa  2#00010001) 
 (instI ADC (effa reg) OP-reg-effa  2#00010011) 
 (instr ADC (imm  EAX) OP-imm-EAX   2#00010101)
-(instr ADC (!n  reg ) OP-imm8-effa 2#10000011 2#00010000)   
+(instr ADC (!n  effa) OP-imm8-effa 2#10000011 2#00010000)   
 (instr ADC (imm effa) OP-imm-effa  2#10000001 2#00010000)
   
 (instr INC (reg)      OP-push-reg  16#ff 2#11000000)
@@ -389,13 +389,13 @@
 (instr SUB (reg effa) OP-reg-effa  2#00101001) 
 (instI SUB (effa reg) OP-reg-effa  2#00101011) 
 (instr SUB (imm  EAX) OP-imm-EAX   2#00101101)
-(instr SUB (!n  reg)  OP-imm8-effa 2#10000011 2#00101000)  % r32 - byte
+(instr SUB (!n  effa) OP-imm8-effa 2#10000011 2#00101000)  % r32 - byte
 (instr SUB (imm effa) OP-imm-effa  2#10000001 2#00101000)  % r32 - imm32
  
 (instr SBB (reg effa) OP-reg-effa  2#00011001)
 (instI SBB (effa reg) OP-reg-effa  2#00011011)
 (instr SBB (imm  EAX) OP-imm-EAX   2#00011101)
-(instr SBB (!n  reg ) OP-imm8-effa 2#10000011 2#00011000) 
+(instr SBB (!n  effa) OP-imm8-effa 2#10000011 2#00011000) 
 (instr SBB (imm effa) OP-imm-effa  2#10000001 2#00011000)
   
 (instr DEC (reg)      OP-push-reg  2#01001000) 
@@ -462,22 +462,25 @@
 (instr AND  (reg effa) OP-reg-effa  2#00100001)
 (instI AND  (effa reg) OP-reg-effa  2#00100011)
 (instr AND  (imm  EAX) OP-imm-EAX   2#00100101)
-(instr AND  (!n  reg)  OP-imm8-effa 2#10000011 2#00100000)
-(instr AND  (imm reg)  OP-imm-effa  2#10000001 2#00100000)
-    
+(instr AND  (!n  effa) OP-imm8-effa 2#10000011 2#00100000)
+(instr AND  (imm effa) OP-imm-effa  2#10000001 2#00100000)
+
+(instr ANDL (!n  reg)  OP-imm8-effa 2#10000011 2#00100000)
+(instr ANDL (!n  effa) OP-imm8-effa 2#10000011 2#00100000)
+
 (instI OR   (reg reg)  OP-reg-effa  2#00001011) 
 (instr OR   (reg effa) OP-reg-effa  2#00001001) 
 (instI OR   (effa reg) OP-reg-effa  2#00001011) 
 (instr OR   (imm EAX)  OP-imm-EAX  2#00001101)
-(instr OR   (!n  reg)  OP-imm8-effa 2#10000011 2#00001000) 
-(instr OR   (imm reg)  OP-imm-effa  2#10000001 2#00001000)
+(instr OR   (!n  effa) OP-imm8-effa 2#10000011 2#00001000) 
+(instr OR   (imm effa) OP-imm-effa  2#10000001 2#00001000)
     
 (instI XOR  (reg reg)  OP-reg-effa  2#00110011)  
 (instr XOR  (reg effa) OP-reg-effa  2#00110001)  
 (instI XOR  (effa reg) OP-reg-effa  2#00110011)  
 (instr XOR  (imm EAX)  OP-imm-EAX  2#00110101)
-(instr XOR  (!n  reg)  OP-imm8-effa 2#10000011 2#00110000)  
-(instr XOR  (imm reg)  OP-imm-effa  2#10000001 2#00110000)
+(instr XOR  (!n  effa) OP-imm8-effa 2#10000011 2#00110000)  
+(instr XOR  (imm effa) OP-imm-effa  2#10000001 2#00110000)
      
 (instr NOT  (reg)      OP-effa       2#11110111 2#00010000)
      
