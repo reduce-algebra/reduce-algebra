@@ -112,7 +112,7 @@
 
     % Twiddle the bits.
 
-    (if (weq (wand mode 1) 1) 
+    (if (weq (wand mode 1) 1)
 	(do-relocation-new code-base code-size bit-table local-id-table)
 	(do-relocation code-base code-size bit-table local-id-table))
 
@@ -187,7 +187,7 @@
 	(reloc-inf (reloc-inf-inf (getmem code-location))))
 
     (setf (getmem code-location)
-     (wor  (wshift (tag (getmem code-location)) 56)
+     (wor (wshift (tag (getmem code-location)) 56)
       (compute-relocation reloc-tag reloc-inf code-base id-table)
       )))
 )
@@ -203,14 +203,14 @@
 (de compute-relocation (reloc-tag reloc-inf code-base id-table)
   (cond
     ((eq reloc-tag reloc-code-offset) 
-      (wplus2 code-base reloc-inf))
+     (wplus2 code-base reloc-inf))
     ((eq reloc-tag reloc-value-cell) 
      (cond ((extraargumentp reloc-inf) 
 	    (loc (wgetv argumentblock
 			(makeextraargument reloc-inf))))
 	   ((local-id-number? reloc-inf)
 	      (setq reloc-inf (local-to-global-id reloc-inf id-table))
-              (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)) )
+              (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)))
 	   (t (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)))))
     ((eq reloc-tag reloc-function-cell)
      (progn
@@ -218,7 +218,7 @@
 	(setq reloc-inf (local-to-global-id reloc-inf id-table)))
       (wplus2 symfnc                        %%% Should be (LOC (SYMFNC xxx)) ???
 	      (wtimes2 addressingunitsperfunctioncell
-		       reloc-inf)))) 
+                       reloc-inf))))
     ((eq reloc-tag reloc-id-number)
      (if (local-id-number? reloc-inf)
        (local-to-global-id reloc-inf id-table)
