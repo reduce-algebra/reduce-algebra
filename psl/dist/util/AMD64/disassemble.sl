@@ -152,8 +152,6 @@
               (AL   (I b))
               (eAX  (I v)))
 
-%% not present in 64bit mode
-%(fi 16#40 inc (rax) (rcx) (rdx) (rbx) (rsp) (rbp) (rsi) (rdi))
 
 (fi 16#40 rex   (" ") (b) (x) (xb) (r) (rb) (rx) (rxb)
                 (" ") (b) (x) (xb) (r) (rb) (rx) (rxb))
@@ -162,9 +160,13 @@
 
 (fi 16#58 pop  (rax) (rcx) (rdx) (rbx) (rsp) (rbp) (rsi) (rdi))
 
-(fi 16#60 pusha nil)
+(fi 16#68 push ((I v)))
 
-(fi 16#61 popa  nil)
+(fi 16#69 imul ((G v) (E v) (I v)))
+
+(fi 16#6a push ((I b)))
+
+(fi 16#6b imul ((G v) (E v) (I b)))
 
 (fi 16#70 jo ((j b)))
 (fi 16#71 jno ((j b)))
@@ -195,6 +197,8 @@
 (fi 16#8b mov  ((G v) (E v)))
 
 (fi 16#8d lea  ((G v) (M)))
+
+(fi 16#8f pop  ((E v)))
 
 (fi 16#90 nop (nil))
 
@@ -228,7 +232,16 @@
 
 (fi 16#e9 jmp ((J v)) ((A p)) ((J b)))
 
+(fi 16#f5 cmc (nil))
+
 (fi 16#f6  Grp3 ((E b)) ((E v)))
+
+(fi 16#f8 clc (nil))
+(fi 16#f9 stc (nil))
+(fi 16#fa cli (nil))
+(fi 16#fb sti (nil))
+(fi 16#fc cld (nil))
+(fi 16#fd std (nil))
 
 (fi 16#ff  Grp5 ((E v)))   % grp5
 
@@ -248,6 +261,25 @@
 (fi 16#2d (sse cvt2i) ((G) (W)))
 (fi 16#2e (sse ucomis) ((V) (W)))
 (fi 16#2f (sse comis) ((V) (W)))
+
+%% Conditional moves
+
+(fi 16#40 cmovo   ((G) (E)))
+(fi 16#41 cmovno  ((G) (E)))
+(fi 16#42 cmovb   ((G) (E)))
+(fi 16#43 cmovae  ((G) (E)))
+(fi 16#44 cmovz   ((G) (E)))
+(fi 16#45 cmovne  ((G) (E)))
+(fi 16#46 cmovbe  ((G) (E)))
+(fi 16#47 cmova   ((G) (E)))
+(fi 16#48 cmovs   ((G) (E)))
+(fi 16#49 cmovns  ((G) (E)))
+(fi 16#4a cmovp   ((G) (E)))
+(fi 16#4b cmovnp  ((G) (E)))
+(fi 16#4c cmovl   ((G) (E)))
+(fi 16#4d cmovge  ((G) (E)))
+(fi 16#4e cmovle  ((G) (E)))
+(fi 16#4f cmovg   ((G) (E)))
 
 (fi 16#51 (sse sqrt) ((V) (W)))
 (fi 16#52 (sse rsqrt) ((V) (W)))
@@ -478,7 +510,8 @@
            (stderror "disassemble")))))
 
 (de decode-modrm(p)
-   (prog(mod rm b w wabs usexmm)
+  (prog(mod rm b w wabs usexmm size)
+     (if (and (cdr p) (not (atom (cdr p)))) (setq size (cadr p)))
      (setq b (pop bytes*)) (setq lth* (add1 lth*))
      (setq mod (wshift b -6))
      (setq regnr* (wand 7 (wshift b -3)))
@@ -528,9 +561,9 @@
 		(bldmsg "[%w+%w]" (reg-m64 rm) (bytes2word))))
         ((eq mod 3)
 	 (setq mod-is-3* t)
-	 (bldmsg (if *gassyntax "%%%w" "%w") (if usexmm (reg-xmm rm) (reg-m rm)))
+	 (bldmsg (if *gassyntax "%%%w" "%w") (if usexmm (reg-xmm rm) (reg-m1 rm size)))
 	 )) )))
-              
+
 (de decode-sib(p mod)
    (prog(scale index base offset seg b w)
      (setq b (pop bytes*))
@@ -585,6 +618,12 @@
 			 (bldmsg "+%w*%w" (reg-m64 index) scale))
 		       offset))))
    )
+
+(de reg-m1 (n size)
+    (cond ((eq size 'b) (reg-m8 n))
+	  ((eq size 'w) (reg-m16 n))
+	  ((eq size 'q) (reg-m64 n))
+	  (t (reg-m n))))
 
 (de reg-m(n)
   (if (or rex_w (wgreaterp n 7) !0f-prefix*) (reg-m64 n)
@@ -901,8 +940,11 @@
 
 (de namegrp5()
  (cond 
+       ((eq regnr* 2#000) 'inc)
+       ((eq regnr* 2#001) 'dec)
        ((eq regnr* 2#010) 'call)
        ((eq regnr* 2#100) 'jump)
+       ((eq regnr* 2#110) 'push)
        ))
 
 (de namegrp3()
@@ -928,9 +970,13 @@
 
 (de nameshift()
  (cond
+       ((eq regnr* 0) 'rol)
+       ((eq regnr* 1) 'ror)
+       ((eq regnr* 2) 'rcl)
+       ((eq regnr* 3) 'rcr)
        ((eq regnr* 4) 'shl)
-       ((eq regnr* 7) 'sar)
-       ((eq regnr* 5) 'shr)))
+       ((eq regnr* 5) 'shr)
+       ((eq regnr* 7) 'sar)))
 
 (de nameconvert()
  (cond (rex_w 'cdqe)
