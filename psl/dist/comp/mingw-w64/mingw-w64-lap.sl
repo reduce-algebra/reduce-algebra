@@ -264,10 +264,10 @@
     (setq REX-Prefix 16#48)
     (when *WritingFaslFile (setq offs currentoffset*))
     (cond ((and (eqcar x 'movq) (not (xmmregp (cadr x))) (not (xmmregp (caddr x))))
-                          (Depositbyte  16#48)  % REX Prefix
-                          (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix* 0)
-                          (rplaca x 'mov))
+           (Depositbyte 16#48)  % REX Prefix
+           (setq REX? (plus codebase!* currentoffset* -1))
+           (setq allowextrarexprefix* 0)
+           (rplaca x 'mov))
           ((eqcar x 'addq) (Depositbyte  16#48)  % REX Prefix
                           (SETQ REX? (plus codebase!* currentoffset* -1))
                           (setq allowextrarexprefix* 0)
@@ -277,7 +277,7 @@
                           (setq allowextrarexprefix* 0)
                           (rplaca x 'sub))
           ((eqcar x 'cmpq) (Depositbyte  16#48)  % REX Prefix
-                          (SETQ REX? (plus codebase!* currentoffset* -1))
+                          (setq REX? (plus codebase!* currentoffset* -1))
                           (setq allowextrarexprefix* 0)
                           (rplaca x 'cmp))
           ((and (pairp x) (flagp (car x) 'norexprefix)) NIL)
@@ -285,10 +285,12 @@
            (cond ((upperreg64p x)
                   (setq REX-prefix 16#40)
                   (Depositbyte 16#40)
-                  (SETQ REX? (plus codebase!* currentoffset* -1))
+                  (setq REX? (plus codebase!* currentoffset* -1))
                   (setq allowextrarexprefix* 0))))
-          ((reg64bitp x) (Depositbyte  16#48)    % REX Prefix
-                         (SETQ REX? (plus codebase!* currentoffset* -1))))
+          ((reg64bitp x)
+	   %% requires REX Prefix
+	   (Depositbyte  16#48)
+           (setq REX? (plus codebase!* currentoffset* -1))))
     (cond ((setq Y (get (first X) 'InstructionDepositFunction)) 
            (Apply Y (list X))) 
           ((setq Y (get (first X) 'InstructionDepositMacro))
@@ -320,8 +322,11 @@
         ) 'norexprefix)
 
 % Instructions that need a REX.B prefix only if using upper 8 registers
-(flag '(push pop movl movb) 'onlyupperregrexprefix)
-(flag '(setc) 'onlyupperregrexprefix)
+(flag '(push pop movl movb andl) 'onlyupperregrexprefix)
+(flag '(seta setae setb setbe setc sete setg setge setl setle
+	setna setnae setnb setnbe setnc setne setng setnge setnl setnle
+	setno setnp setns setnz seto setp setpe setpo sets setz)
+      'onlyupperregrexprefix)
 
 (de DepositLabel (x) 
     (when *testlap (prin2 currentoffset*) (tab 10) (print x))
@@ -589,6 +594,7 @@
     % calculate the length of the address part by modR/M
     (prog (OpFn mode base ireg n)
 
+          (when (or (regp op1) (xmmregp op1)) (setq op1 (lsh (reg2int op1 'REXR) 3)))
           (when (pairp op2) (setq mode (car op2)))
 
           % case: reg - reg
@@ -969,6 +975,15 @@
    (depositbyte 0))  % support for level 0 only
 
 (de LTH-enter (code op1) 4)
+
+%-------------------------------------------------------------
+% PUSH imm8
+(de OP-imm8  (code op1)
+   (depositbyte (car code))
+   (depositbyte (bytep op1)))
+
+(de LTH-imm8  (code op1) 2)
+ 
 
 %-------------------------------------------------------------
 % PUSH imm32

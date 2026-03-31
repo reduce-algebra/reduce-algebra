@@ -145,7 +145,7 @@
                        ('!*lbl l1))))
 
 
-% transform *JUMPTYPE/*JUMPEQ to JE, *JUMPNOTTYPE/*JUMPNOTEQ to JNE
+% transform *JUMPTYPE/*JUMPEQ to b.eq, *JUMPNOTTYPE/*JUMPNOTEQ to b.ne
 
 (put '&convert-mac 'substfn '&convert-mac)
 
