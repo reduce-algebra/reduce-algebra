@@ -1,4 +1,27 @@
 #!/bin/bash
-# Start Cygwin, Linux or macOS CLISP REDUCE.
+
+# Start CLISP REDUCE on Cygwin, Linux or macOS.
+# Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
+# Time-stamp: <2026-03-31 16:11:05 franc>
+
+for arg do
+    case $arg in
+        -h|--help)
+            echo 'Start CLISP REDUCE on Cygwin, Linux or macOS.'
+            echo 'Usage: redclisp <options>'
+            echo 'Useful options:'
+            echo '  -h, --help   Print this message and exit.'
+            echo '  -m <size>    Set memory size (<size> = nB or nKB or nMB).'
+            echo '  --no-rcfile  Inhibit REDUCE startup file.'
+            exit;;
+        --no-rcfile) norcfile='-- --no-rcfile';;
+        *) args="$args $arg";;
+    esac
+done
+args="$args $norcfile"
+
 cl=$(realpath $(dirname $0)) # common-lisp directory
-exec clisp -ansi -norc -E utf-8 -M $cl/fasl.clisp/reduce.mem $*
+exec clisp -ansi -norc -E utf-8 -M $cl/fasl.clisp/reduce.mem $args
+
+# CLISP REDUCE options (currently only --no-rcfile) must appear after
+# any CLISP options and *must* follow the option separator --.

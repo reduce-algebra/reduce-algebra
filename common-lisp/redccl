@@ -1,7 +1,31 @@
 #!/bin/bash
-# Start Cygwin, Linux or macOS CCL REDUCE.
+
+# Start CCL REDUCE on Cygwin, Linux or macOS.
+# Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
+# Time-stamp: <2026-04-01 12:48:46 franc>
+
+for arg do
+    case $arg in
+        -h|--help)
+            echo 'Start CCL REDUCE on Cygwin, Linux or macOS.'
+            echo 'Usage: redccl <options>'
+            echo 'Useful options:'
+            echo '  -h, --help            Print this message and exit.'
+            echo '  -S, --stack-size n    Set initial control stack to n bytes.'
+            echo '  -R, --heap-reserve n  Reserves n bytes for heap expansion.'
+            echo '  --no-rcfile           Inhibit REDUCE startup file.'
+            exit;;
+        --no-rcfile) norcfile='-- --no-rcfile';;
+        *) args="$args $arg";;
+    esac
+done
+args="$args $norcfile"
+
 cl=$(realpath $(dirname $0)) # common-lisp directory
 if [ "$OSTYPE" == 'cygwin' ]; then cl=$(cygpath -m $cl); fi
 if [ "$(type -ft ccl64)" ]; then CCL='ccl64'; else CCL='ccl'; fi
 if [ -t 0 ]; then export interactive=true; else batch='--batch'; fi
-exec $CCL -I $cl/fasl.ccl/reduce.image $batch
+exec $CCL -I $cl/fasl.ccl/reduce.image $batch $args
+
+# CCL REDUCE options (currently only --no-rcfile) must appear after
+# any CCL options and *must* follow the option separator --.

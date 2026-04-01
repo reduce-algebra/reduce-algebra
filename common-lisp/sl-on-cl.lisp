@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-03-11 17:22:21 franc>
+;; Time-stamp: <2026-03-31 17:51:59 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -4350,6 +4350,9 @@ When all done, execute FASLEND;~2%" name))
 
 (defun begin ())                        ; redefined in "clrend.red"
 
+(defvar sl::no_init_file nil
+  "If non-nil then ignore REDUCE initialisation file.")
+
 ;; From: Common Lisp the Language, 2nd Edition
 ;; https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node341.html
 
@@ -4389,6 +4392,8 @@ When all done, execute FASLEND;~2%" name))
   ;; Enable compilation only if *comp is true:
   (setq sb-ext:*evaluator-mode*
         (if *comp :compile :interpret))
+  (when (member "--no-rcfile" (rest sb-ext:*posix-argv*) :test #'string=)
+    (setq sl::no_init_file t))
   (standard-lisp)
   (with-simple-restart
       (abort "Exit REDUCE.")
@@ -4403,6 +4408,8 @@ When all done, execute FASLEND;~2%" name))
 ;; "clisp-2.49-6.20150312hg15611.src/clisp/src/reploop.lisp".
 (defun %reduce-init-function ()
   "The function executed at startup of the saved REDUCE memory image."
+  (when (member "--no-rcfile" ext:*args* :test #'string=)
+    (setq sl::no_init_file t))
   (standard-lisp)
   (if  (or (interactive-stream-p *standard-output*)
            (getenv "INSIDE_EMACS"))
@@ -4426,6 +4433,10 @@ When all done, execute FASLEND;~2%" name))
 
 #+CCL
 (defun %reduce-init-function ()
+  "The function executed at startup of the saved REDUCE memory image."
+  (when (member "--no-rcfile" (cdr ccl:*command-line-argument-list*)
+                :test #'string=)
+    (setq sl::no_init_file t))
   (standard-lisp)
   (if  (or (getenv "interactive")
            (getenv "INSIDE_EMACS"))
