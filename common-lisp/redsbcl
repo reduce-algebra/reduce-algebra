@@ -1,14 +1,31 @@
 #!/bin/bash
-# Start Cygwin, Linux or macOS SBCL REDUCE.
+
+# Start SBCL REDUCE on Cygwin, Linux or macOS.
+# Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
+# Time-stamp: <2026-03-31 17:43:17 franc>
+
+for arg do
+    case $arg in
+        -h|--help)
+            echo 'Start SBCL REDUCE on Cygwin, Linux or macOS.'
+            echo 'Usage: redsbcl <options>'
+            echo 'Useful options:'
+            echo '  --help                      Print this message and exit.'
+            echo '  --version                   Print SBCL version information and exit.'
+            echo '  --control-stack-size <MiB>  Size of reserved control stack; default 2.'
+            echo '  --dynamic-space-size <MiB>  Size of reserved dynamic space.'
+            echo '  --no-rcfile                 Inhibit REDUCE startup file.'
+            exit;;
+        --no-rcfile) norcfile='--no-rcfile';;
+        *) args="$args $arg";;
+    esac
+done
+args="$args $norcfile"
+
 cl=$(realpath $(dirname $0)) # common-lisp directory
 if [ "$OSTYPE" == 'cygwin' ]; then cl=$(cygpath -m $cl); fi
-exec sbcl --noinform --core $cl/fasl.sbcl/reduce.img $*
-# Useful command-line arguments:
-#   --control-stack-size megabytes
-#     Size of control stack reserved for each thread in megabytes.
-#     Default value is 2
-#   --dynamic-space-size megabytes
-#     Size of the dynamic space reserved on startup in megabytes.
-#     Default value is platform dependent.
-#   --disable-debugger
-#     Disable interactive debugger; useful in batch mode.
+exec sbcl --noinform --core $cl/fasl.sbcl/reduce.img $args
+
+# SBCL runtime options should all work but not SBCL toplevel options,
+# which are replaced by REDUCE options.  These are currently only
+# --no-rcfile, which must appear after any runtime options.

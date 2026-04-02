@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-03-11 17:20:12 franc>
+Time-stamp: <2026-04-01 12:52:35 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -16,8 +16,6 @@ From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Gu
 
 > The goals of Common Lisp are thus very close to those of Standard Lisp and Portable Standard Lisp. Common Lisp differs from Standard Lisp primarily in incorporating more features, including a richer and more complicated set of data types and more complex control structures.
 
-**This code is currently experimental!**
-
 The files in this directory are intended to build and run recent versions of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support [Steel Bank Common Lisp](http://www.sbcl.org/) (SBCL), [CLISP](https://clisp.sourceforge.io/) and [Clozure Common Lisp](https://ccl.clozure.com/) (CCL) on MS Windows 11 and Ubuntu 24.  I understand that REDUCE builds and runs on SBCL, CLISP and CCL on macOS, although I don't run macOS myself.  The support for CCL is based on code provided by Marco Ferraris.  See [Status](#status) below for build and test details.
 
 I recommend SBCL because in my experience it is the fastest, it is easy to install and set up, binary distributions are readily available, and it is well maintained and frequently updated.  CLISP is slow, and I find CCL tricky to install and set up.
@@ -31,7 +29,7 @@ You need to obtain, build if necessary and install the version(s) of Common Lisp
 
 You need to use a minimal Unix-like environment including [**fairly recent** versions of `bash`](#required-version-of-bash) and `grep`; on MS Windows I use [Cygwin](https://cygwin.com/).  (The `grep` command is used only for reporting an error summary, which could be commented out without affecting the build process.)
 
-Make the `common-lisp` directory current and run then the build script by executing the `bash` command
+Make the `common-lisp` directory current and then run the build script by executing the `bash` command
 
 ```sh
 ./build.sh <lisp>
@@ -67,6 +65,8 @@ On Linux or Cygwin, open a terminal window with the build directory current and 
 Beware that input editing may not work using the shell interface; possible solutions are to use [Run-REDUCE](https://fjwright.github.io/Run-REDUCE/) or [REDUCE IDE](https://reduce-algebra.sourceforge.io/reduce-ide/).
 
 REDUCE should run from any directory and the command to start it can be specified by using either an absolute or a relative file path.  **But note that neither a hard nor a symbolic link will work!**  Alternatively, you can add the `common-lisp` directory to your command search path and then run REDUCE via the appropriate command from any directory.
+
+At the start of a REDUCE session, the system checks for the existence of a user's startup file, and if possible executes the REDUCE statements in it; see [REDUCE Startup File](https://reduce-algebra.sourceforge.io/manual-lookup.php?REDUCE%20Startup%20File) in the REDUCE Manual.  This can be inhibited by using the command-line argument `--no-rcfile`, e.g. `redsbcl --no-rcfile` (which is a standard option for PSL and CSL REDUCE).  The Common Lisp `red<lisp>` commands also accept the command-line arguments `-h` and `--help`, which both cause the commands to display a brief help message and exit.  The help message lists useful options, which depend on the Lisp;  for details, please see the documentation available with the Lisp.
 
 Interrupting REDUCE (with Control-C) invokes a Lisp break loop and aborting that should return you to REDUCE.  Within the break loop you can run arbitrary Lisp code, but remember that you are running Common Lisp and in particular Lisp output uses Common Lisp syntax, although you are initially in the Standard Lisp package.  However, package prefixes are recognised (which they are not from within REDUCE) so you can access most of Common Lisp, but beware that you might break REDUCE so that you cannot return to it!  Evaluating the Lisp expression `(exit)` from a Lisp break loop should completely terminate REDUCE.
 
@@ -188,7 +188,6 @@ ccl   | 1129               | 345
 Regression Test               | Comment / To Do
 ------------------------------|----------------
 2011-08-31-linelength         | CSL and PSL printing overflows visibly; SL-on-CL printing does not.
-2019-07-30-sub-with-df        | Generic REDUCE issue?
 
 #### Steel Bank Common Lisp (SBCL): native Windows version 2.6.2 (using LispMath)
 
@@ -260,11 +259,8 @@ I cannot see any way to support the REDUCE facilities for restricting execution 
 ## To do
 
 * Re-implement the sparse package to use hash tables as a test?
-* Command-line option to suppress reading the REDUCE Startup File.
 * Revise interaction between SL-on-CL `readch` and RLISP `readch1`.
-* Check that command-line options to redsbcl etc. work; the preserved REDUCE executable may not handle them!
 * Review my hacked version of `gnuintfc.red` for Common Lisp.
-
 * Make faslout/faslend more robust by using a single function that calls begin internally (cf. infile) and make faslend generate a throw.  (See also the old mkfasl code?)
 * Implement a genuinely lower-case Standard Lisp, perhaps using case-inversion for a few special symbols such as `lambda`, `nil`, `t`?
 
