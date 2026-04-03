@@ -1,9 +1,12 @@
 @echo off
 rem Start SBCL REDUCE on Windows.
 rem Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-rem Time-stamp: <2026-03-31 17:46:16 franc>
+rem Time-stamp: <2026-04-03 11:22:15 franc>
 
 setlocal
+rem Process args in a loop, starting with arg 0.
+rem common-lisp directory:
+set cl=%~dp0
 :loop
 if "%1" equ "" goto done
 if "%1" equ "-h" goto help
@@ -32,7 +35,7 @@ exit /b
 
 :doit
 rem See "help call" for expansion of batch script argument references.
-sbcl --noinform --core %~dp0fasl.sbcl\reduce.img %args%
+sbcl --noinform --core %cl%fasl.sbcl\reduce.img %args%
 
 rem SBCL runtime options should all work but not SBCL toplevel options,
 rem which are replaced by REDUCE options.  These are currently only
