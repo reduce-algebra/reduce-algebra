@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:         GENINSTR
 % Description:  armv8/aarch64 Generate instruction set
@@ -105,6 +105,7 @@
         (OP-freg-freg . lth-freg-freg)
 	(OP-fcmp . lth-fcmp)
 	(OP-csinc . lth-csinc)
+	(OP-cinc . lth-csinc)
 	(OP-cset . lth-csinc)
       ))
  
@@ -260,6 +261,7 @@
 	  ((eq op 'five-bit) '(five-bit-p))
 	  ((eq op 'six-bit) '(six-bit-p))
 	  ((eq op 'cond) '(cond-p))
+	  ((eq op 'cond2) '(cond2-p))
 	  (t (prin2t "unknown operand type during instruction generation:")
 	     (prin2t op)
 	     (prin2t instr*)
@@ -482,23 +484,37 @@
 (instr CMP   (reg32 reg32-shifter)         OP-reg-xzr-shifter 2#01101011000)
 (instr CMP   (reg reg-shifter)         OP-reg-xzr-shifter 2#11101011000)
 
-% CMPP
 % CNEG
+(instr CNEG (reg32 reg32 cond2)        OP-cinc  2#01011010100 2#01)
+(instr CNEG (reg reg cond2)            OP-cinc  2#11011010100 2#01)
 
 % CSEL
+(instr CSEL  (reg32 reg32 reg32 cond)  OP-csinc 2#00011010100 2#00)
+(instr CSEL  (reg reg reg cond)        OP-csinc 2#10011010100 2#00)
 
 % CSET
-(instr CSET  (reg32 cond)              OP-cset  2#00011010100 Wzr 2#01 Wzr)
-(instr CSET  (reg cond)                OP-cset  2#10011010100 Xzr 2#01 Xzr)
+(instr CSET  (reg32 cond2)             OP-cset  2#00011010100 2#01 Wzr Wzr)
+(instr CSET  (reg cond2)               OP-cset  2#10011010100 2#01 Xzr Xzr)
 
 % CSETM
+(instr CSETM (reg32 cond2)             OP-cset  2#01011010100 2#00 Wzr Wzr)
+(instr CSETM (reg cond2)               OP-cset  2#11011010100 2#00 Xzr Xzr)
 
 % CSINC
 (instr CSINC (reg32 reg32 reg32 cond)  OP-csinc 2#00011010100 2#01)
 (instr CSINC (reg reg reg cond)        OP-csinc 2#10011010100 2#01)
 
+% CINC
+(instr CINC (reg32 reg32 cond2)        OP-cinc  2#00011010100 2#01)
+(instr CINC (reg reg cond2)            OP-cinc  2#10011010100 2#01)
+
 % CSINV
+(instr CSINV (reg32 reg32 reg32 cond)  OP-csinc 2#01011010100 2#00)
+(instr CSINV (reg reg reg cond)        OP-csinc 2#11011010100 2#00)
+
 % CSNEG
+(instr CSNEG (reg32 reg32 reg32 cond)  OP-csinc 2#01011010100 2#01)
+(instr CSNEG (reg reg reg cond)        OP-csinc 2#11011010100 2#01)
 
 (instr EON  (reg32 reg32 reg32-shifter)     OP-reg-shifter 2#01001010001)
 (instr EON  (reg reg reg-shifter)     OP-reg-shifter 2#11001010001)
@@ -643,10 +659,14 @@
 (instr SUBS  (reg32 reg32-or-sp imm12-shifted) OP-reg-imm12     2#011100010)
 (instr SUBS  (reg reg-or-sp imm12-shifted)     OP-reg-imm12     2#111100010)
 
-(instr SBC   (reg32 reg32 reg-shifter)     OP-reg-shifter  2#01011010000)
-(instr SBC   (reg reg reg-shifter)         OP-reg-shifter  2#11011010000)
-(instr SBCS  (reg32 reg32 reg-shifter)     OP-reg-shifter  2#01111010000)
-(instr SBCS  (reg reg reg-shifter)         OP-reg-shifter  2#11111010000)
+(instr SBC   (reg32 reg32 reg32)   OP-reg3       2#01011010000)
+(instr SBC   (reg reg reg)         OP-reg3       2#11011010000)
+(instr SBCS  (reg32 reg32 reg32)   OP-reg3       2#01111010000)
+(instr SBCS  (reg reg reg)         OP-reg3       2#11111010000)
+
+%% SUBP and SUBPS depend on feature FEAT_MTE
+%%(instr SUBP  (reg reg-or-sp reg-or-sp)  OP-reg3  2#10011010110)
+%%(instr SUBPS (reg reg-or-sp reg-or-sp)  OP-reg3  2#10111010110)
 
 (instr TST   (reg reg-shifter)         OP-reg-shifter 2#1101010000)
 (instr TST   (reg imm-logical)         OP-reg-logical   2#11100100)
