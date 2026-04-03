@@ -759,6 +759,41 @@ par1
 par2))        ((and (regp par1) (offset19-p par2)) (lth-branch-imm19 '(180) par1
                                                                      par2)))
 
+ (defopcode cinc (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (cond2-p 
+par3))                             (op-cinc '(212 1) par1 par2 par3)) ((and (
+regp                                                                              
+par1)                                                                       (
+regp                                                                              
+par2)                                                                       (
+cond2-p                                                                              
+par3))                                                                 (op-cinc 
+'                                                                                
+(                                                                                 
+1236                                                                                   
+1)                                                                              
+par1                                                                            
+par2                                                                            
+par3)))
+ (defoplength cinc (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (cond2-p 
+par3))                               (lth-csinc '(212 1) par1 par2 par3)) ((and 
+(                                                                                
+regp                                                                                  
+par1)                                                                           
+(                                                                                
+regp                                                                                  
+par2)                                                                           
+(                                                                                
+cond2-p                                                                                  
+par3))                                                                     (
+lth-csinc                                                                             
+'                                                                                      
+(                                                                                       
+1236                                                                                         
+1)                                                                                    
+par1                                                                                  
+par2                                                                                  
+par3)))
+
  (defopcode cls (par1 par2) ((and (reg32p par1) (reg32p par2)) (op-clz '(726 0 5
 )                                                                      par1 par2
 ))          ((and (regp par1) (regp par2)) (op-clz '(1750 0 5) par1 par2)))
@@ -873,20 +908,100 @@ par2))        ((and (reg32p par1) (reg32-shifter-p par2)) (lth-reg-shifter '(856
 par2))        ((and (regp par1) (reg-shifter-p par2)) (lth-reg-shifter '(1880) 
 par1                                                                   par2)))
 
- (defopcode cset (par1 par2) ((and (reg32p par1) (cond-p par2)) (op-cset '(212 
-wzr                                                                            1
-                                                                               
-wzr)                                                                     par1 
-par2))      ((and (regp par1) (cond-p par2)) (op-cset '(1236 xzr 1 xzr) par1 
+ (defopcode cneg (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (cond2-p 
+par3))                             (op-cinc '(724 1) par1 par2 par3)) ((and (
+regp                                                                              
+par1)                                                                       (
+regp                                                                              
+par2)                                                                       (
+cond2-p                                                                              
+par3))                                                                 (op-cinc 
+'                                                                                
+(                                                                                 
+1748                                                                                   
+1)                                                                              
+par1                                                                            
+par2                                                                            
+par3)))
+ (defoplength cneg (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (cond2-p 
+par3))                               (lth-csinc '(724 1) par1 par2 par3)) ((and 
+(                                                                                
+regp                                                                                  
+par1)                                                                           
+(                                                                                
+regp                                                                                  
+par2)                                                                           
+(                                                                                
+cond2-p                                                                                  
+par3))                                                                     (
+lth-csinc                                                                             
+'                                                                                      
+(                                                                                       
+1748                                                                                         
+1)                                                                                    
+par1                                                                                  
+par2                                                                                  
+par3)))
+
+ (defopcode csel (par1 par2 par3 par4) ((and (reg32p par1) (reg32p par2) (reg32p
+                                                                                 
+par3)                                        (cond-p par4)) (op-csinc '(212 0) 
+par1                                                                  par2 par3 
+par4))      ((and (regp par1) (regp par2) (regp par3) (cond-p par4)) (op-csinc '
+(                                                                                
+1236                                                                                  
+0)                                                                             
+par1                                                                           
+par2                                                                           
+par3                                                                           
+par4)))
+ (defoplength csel (par1 par2 par3 par4) ((and (reg32p par1) (reg32p par2) (
+reg32p                                                                             
+par3)                                          (cond-p par4)) (lth-csinc '(212 0
+)                                                                        par1 
+par2                                                                     par3 
+par4))        ((and (regp par1) (regp par2) (regp par3) (cond-p par4)) (
+lth-csinc                                                                         
+'                                                                                  
+(                                                                                   
+1236                                                                                     
+0)                                                                                
+par1                                                                              
+par2                                                                              
+par3                                                                              
+par4)))
+
+ (defopcode cset (par1 par2) ((and (reg32p par1) (cond2-p par2)) (op-cset '(212 
+1                                                                               
+wzr                                                                             
+wzr)                                                                      par1 
+par2))      ((and (regp par1) (cond2-p par2)) (op-cset '(1236 1 xzr xzr) par1 
 par2)))
- (defoplength cset (par1 par2) ((and (reg32p par1) (cond-p par2)) (lth-csinc '(
-212                                                                                
-wzr                                                                                
-1                                                                                  
-wzr)                                                                         
-par1                                                                         
-par2))        ((and (regp par1) (cond-p par2)) (lth-csinc '(1236 xzr 1 xzr) par1
-                                                          par2)))
+ (defoplength cset (par1 par2) ((and (reg32p par1) (cond2-p par2)) (lth-csinc '(
+212                                                                                 
+1                                                                                   
+wzr                                                                                 
+wzr)                                                                          
+par1                                                                          
+par2))        ((and (regp par1) (cond2-p par2)) (lth-csinc '(1236 1 xzr xzr) 
+par1                                                       par2)))
+
+ (defopcode csetm (par1 par2) ((and (reg32p par1) (cond2-p par2)) (op-cset '(724
+                                                                                 
+0                                                                                
+wzr                                                                              
+wzr)                                                                       par1 
+par2))      ((and (regp par1) (cond2-p par2)) (op-cset '(1748 0 xzr xzr) par1 
+par2)))
+ (defoplength csetm (par1 par2) ((and (reg32p par1) (cond2-p par2)) (lth-csinc '
+(                                                                                
+724                                                                                  
+0                                                                                    
+wzr                                                                                  
+wzr)                                                                           
+par1                                                                           
+par2))        ((and (regp par1) (cond2-p par2)) (lth-csinc '(1748 0 xzr xzr) 
+par1                                                       par2)))
 
  (defopcode csinc (par1 par2 par3 par4) ((and (reg32p par1) (reg32p par2) (
 reg32p                                                                            
@@ -925,6 +1040,92 @@ lth-csinc
 '                                                                                  
 (                                                                                   
 1236                                                                                     
+1)                                                                                
+par1                                                                              
+par2                                                                              
+par3                                                                              
+par4)))
+
+ (defopcode csinv (par1 par2 par3 par4) ((and (reg32p par1) (reg32p par2) (
+reg32p                                                                            
+par3)                                         (cond-p par4)) (op-csinc '(724 0) 
+par1                                                                   par2 par3
+                                                                       par4)) ((
+and                                                                                 
+(                                                                                    
+regp                                                                                      
+par1)                                                                               
+(                                                                                    
+regp                                                                                      
+par2)                                                                               
+(                                                                                    
+regp                                                                                      
+par3)                                                                               
+(                                                                                    
+cond-p                                                                                      
+par4))                                                                         (
+op-csinc                                                                                 
+'                                                                                         
+(                                                                                          
+1748                                                                                            
+0)                                                                                       
+par1                                                                                     
+par2                                                                                     
+par3                                                                                     
+par4)))
+ (defoplength csinv (par1 par2 par3 par4) ((and (reg32p par1) (reg32p par2) (
+reg32p                                                                              
+par3)                                           (cond-p par4)) (lth-csinc '(724 
+0)                                                                        par1 
+par2                                                                      par3 
+par4))        ((and (regp par1) (regp par2) (regp par3) (cond-p par4)) (
+lth-csinc                                                                         
+'                                                                                  
+(                                                                                   
+1748                                                                                     
+0)                                                                                
+par1                                                                              
+par2                                                                              
+par3                                                                              
+par4)))
+
+ (defopcode csneg (par1 par2 par3 par4) ((and (reg32p par1) (reg32p par2) (
+reg32p                                                                            
+par3)                                         (cond-p par4)) (op-csinc '(724 1) 
+par1                                                                   par2 par3
+                                                                       par4)) ((
+and                                                                                 
+(                                                                                    
+regp                                                                                      
+par1)                                                                               
+(                                                                                    
+regp                                                                                      
+par2)                                                                               
+(                                                                                    
+regp                                                                                      
+par3)                                                                               
+(                                                                                    
+cond-p                                                                                      
+par4))                                                                         (
+op-csinc                                                                                 
+'                                                                                         
+(                                                                                          
+1748                                                                                            
+1)                                                                                       
+par1                                                                                     
+par2                                                                                     
+par3                                                                                     
+par4)))
+ (defoplength csneg (par1 par2 par3 par4) ((and (reg32p par1) (reg32p par2) (
+reg32p                                                                              
+par3)                                           (cond-p par4)) (lth-csinc '(724 
+1)                                                                        par1 
+par2                                                                      par3 
+par4))        ((and (regp par1) (regp par2) (regp par3) (cond-p par4)) (
+lth-csinc                                                                         
+'                                                                                  
+(                                                                                   
+1748                                                                                     
 1)                                                                                
 par1                                                                              
 par2                                                                              
@@ -2912,85 +3113,54 @@ par1)))
  (defoplength rev (par1 par2) ((and (regp par1) (regp par2)) (lth-reg2 '(1750) 
 par1                                                                   par2)))
 
- (defopcode sbc (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (
-reg-shifter-p                                                                     
-par3))                            (op-reg-shifter '(720) par1 par2 par3)) ((and 
-(                                                                                
-regp                                                                                  
-par1)                                                                           
-(                                                                                
-regp                                                                                  
-par2)                                                                           
-(                                                                                
-reg-shifter-p                                                                                  
-par3))                                                                     (
-op-reg-shifter                                                                             
-'                                                                                           
-(                                                                                            
-1744)                                                                                      
-par1                                                                                       
-par2                                                                                       
+ (defopcode sbc (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (reg32p par3)
+)                                 (op-reg3 '(720) par1 par2 par3)) ((and (regp 
+par1)                                                                    (regp 
+par2)                                                                    (regp 
+par3))                                                              (op-reg3 '(
+1744)                                                                        
+par1                                                                         
+par2                                                                         
 par3)))
- (defoplength sbc (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (
-reg-shifter-p                                                                       
-par3))                              (lth-reg-shifter '(720) par1 par2 par3)) ((
-and                                                                                
-(                                                                                   
-regp                                                                                     
-par1)                                                                              
-(                                                                                   
-regp                                                                                     
-par2)                                                                              
-(                                                                                   
-reg-shifter-p                                                                                     
-par3))                                                                        (
-lth-reg-shifter                                                                                
-'                                                                                               
-(                                                                                                
-1744)                                                                                          
-par1                                                                                           
-par2                                                                                           
+ (defoplength sbc (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (reg32p 
+par3))                              (lth-reg3 '(720) par1 par2 par3)) ((and (
+regp                                                                              
+par1)                                                                       (
+regp                                                                              
+par2)                                                                       (
+regp                                                                              
+par3))                                                                 (lth-reg3
+                                                                                 
+'                                                                                 
+(                                                                                  
+1744)                                                                            
+par1                                                                             
+par2                                                                             
 par3)))
 
- (defopcode sbcs (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (
-reg-shifter-p                                                                      
-par3))                             (op-reg-shifter '(976) par1 par2 par3)) ((and
-                                                                                 
-(                                                                                 
-regp                                                                                   
-par1)                                                                            
-(                                                                                 
-regp                                                                                   
-par2)                                                                            
-(                                                                                 
-reg-shifter-p                                                                                   
-par3))                                                                      (
-op-reg-shifter                                                                              
-'                                                                                            
-(                                                                                             
-2000)                                                                                       
-par1                                                                                        
-par2                                                                                        
+ (defopcode sbcs (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (reg32p par3
+))                                 (op-reg3 '(976) par1 par2 par3)) ((and (regp 
+par1)                                                                     (regp 
+par2)                                                                     (regp 
+par3))                                                               (op-reg3 '(
+2000)                                                                         
+par1                                                                          
+par2                                                                          
 par3)))
- (defoplength sbcs (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (
-reg-shifter-p                                                                        
-par3))                               (lth-reg-shifter '(976) par1 par2 par3)) ((
-and                                                                                 
-(                                                                                    
-regp                                                                                      
-par1)                                                                               
-(                                                                                    
-regp                                                                                      
-par2)                                                                               
-(                                                                                    
-reg-shifter-p                                                                                      
-par3))                                                                         (
-lth-reg-shifter                                                                                 
-'                                                                                                
-(                                                                                                 
-2000)                                                                                           
-par1                                                                                            
-par2                                                                                            
+ (defoplength sbcs (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (reg32p 
+par3))                               (lth-reg3 '(976) par1 par2 par3)) ((and (
+regp                                                                               
+par1)                                                                        (
+regp                                                                               
+par2)                                                                        (
+regp                                                                               
+par3))                                                                  (
+lth-reg3                                                                          
+'                                                                                  
+(                                                                                   
+2000)                                                                             
+par1                                                                              
+par2                                                                              
 par3)))
 
  (defopcode sbfiz (par1 par2 par3 par4) ((and (reg32p par1) (reg32p par2) (

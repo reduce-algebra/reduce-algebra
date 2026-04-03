@@ -63,6 +63,17 @@
 %%   20441BD5 		msr	fpsr, x0
 %%   09441BD5 		msr	fpcr, x9
 %%   09421BD5 		msr	nzcv, x9
+%%   400005DA 		sbc	X0, X2, X5
+%%   4000055A 		sbc	W0, W2, W5
+%%   400005FA 		sbcs	X0, X2, X5
+%%   40D482DA 		cneg	X0, X2, gt
+%%   40F0859A 		csel	X0, X2, X5, nv
+%%   E1B79F9A 		cset	X1, ge
+%%   E2039FDA 		csetm	x2, ne
+%%   40E4859A 		csinc	X0, X2, X5, al
+%%   81C4849A 		cinc	X1, X4, le
+%%   610088DA 		csinv	x1, x3, x8, eq
+%%   224487DA 		csneg	x2, x1, x7, mi
 %%   C0031FD6 		br	lr
 %%
 
@@ -114,6 +125,18 @@
        (msr (reg fpsr) (reg x0))
        (msr (reg fpcr) (reg x9))
        (msr (reg nzcv) (reg x9))
+
+       (sbc (reg x0) (reg x2) (reg x5))
+       (sbc (reg w0) (reg w2) (reg w5))
+       (sbcs (reg x0) (reg x2) (reg x5))
+       (cneg (reg x0) (reg x2) GT)
+       (csel (reg x0) (reg x2) (reg x5) NV)
+       (cset (reg x1) ge)
+       (csetm (reg x2) ne)
+       (csinc (reg x0) (reg x2) (reg x5) al)
+       (cinc (reg x1) (reg x4) le)
+       (csinv (reg x1) (reg x3) (reg x8) eq)
+       (csneg (reg x2) (reg x1) (reg x7) mi)
 
        (br (reg lr))
 ))

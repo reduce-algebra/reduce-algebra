@@ -29,5 +29,18 @@
 	msr	fpsr, x0
 	msr	fpcr, x9
 	msr	nzcv, x9
+	sbc	X0, X2, X5
+	sbc	W0, W2, W5
+	sbcs	X0, X2, X5
+#	subp	X0, X2, X5
+#	subps	X0, X2, X5
+	cneg	X0, X2, gt
+	csel	X0, X2, X5, nv
+	cset	X1, ge
+	csetm	x2, ne
+	csinc	X0, X2, X5, al
+	cinc	X1, X4, le
+	csinv	x1, x3, x8, eq
+	csneg	x2, x1, x7, mi
 	br	lr
 

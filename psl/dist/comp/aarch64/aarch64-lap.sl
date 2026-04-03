@@ -127,7 +127,7 @@
 (deflist '((EQ 2#0000) (NE 2#0001) (CS 2#0010) (HS 2#0010) (CC 2#0011) (LO 2#0011)
            (MI 2#0100) (PL 2#0101) (VS 2#0110) (VC 2#0111)
            (HI 2#1000) (LS 2#1001) (GE 2#1010) (LT 2#1011)
-           (GT 2#1100) (LE 2#1101) (AL 2#1110))
+           (GT 2#1100) (LE 2#1101) (AL 2#1110) (NV 2#1111))
   'condition-bits)
 
 (deflist '(( EQ NE ) ( NE EQ )
@@ -137,10 +137,12 @@
 	   ( HI LS ) ( LS HI )
 	   ( GE LT ) ( LT GE )
 	   ( GT LE ) ( LE GT )
+	   ( AL NV ) ( NV AL )
 	   )
   'inverted-condition)
 
-(setq *condition-codes* '(EQ NE CS HS CC LO MI PL VS VC HI LS GE LT GT LE AL))
+(setq *condition-codes* '(EQ NE CS HS CC LO MI PL VS VC HI LS GE LT GT LE AL NV))
+(setq *condition-codes2* '(EQ NE CS HS CC LO MI PL VS VC HI LS GE LT GT LE))
 
 (de invert-cond (cond)
     (get cond 'inverted-condition))
@@ -901,6 +903,7 @@
 
 
 (de cond-p (cc) (memq cc *condition-codes*))
+(de cond2-p (cc) (memq cc *condition-codes2*))
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 
@@ -1200,7 +1203,7 @@
 	  (DepositInstructionBytes
 	   (lsh opcode -3)
 	   (lor (lsh (land opcode 2#111) 5) (reg2int regm))
-	   (lor (lor (lsh (get cond 'condition-bits) 4) (lsh (caddr code) 2)) (lsh (reg2int regn) -3))
+	   (lor (lor (lsh (get cond 'condition-bits) 4) (lsh (cadr code) 2)) (lsh (reg2int regn) -3))
 	   (lor (lsh (land (reg2int regn) 2#111) 5) (reg2int regd))
 	   )
 	)
@@ -1209,8 +1212,11 @@
 
 (de lth-csinc (code regd regn regm cond) 4)
 
+(de OP-cinc (code regd regn cond)
+    (OP-csinc code regd regn regn (invert-cond cond)))
+
 (de OP-cset (code regd cond)
-    (OP-csinc code regd (list 'reg (cadr code)) (list 'reg (nth code 4)) (invert-cond cond)))
+    (OP-csinc code regd (list 'reg (caddr code)) (list 'reg (nth code 4)) (invert-cond cond)))
 
 (de saniere-Sprungziel (l)
     (cond ((atom l) l)
@@ -1494,7 +1500,7 @@
 (de lth-mov-imm16 (code reg1 imm16) 4)
 
 (de OP-mul3 (code reg1 reg2 reg3)
-    (op-mul4 code reg1 reg2 reg3 (caddr code)))
+    (OP-mul4 code reg1 reg2 reg3 (caddr code)))
 
 (de lth-mul3 (code reg1 reg2 reg3) 4)
 		       
@@ -2761,7 +2767,7 @@
 %%         --> (ldr (reg k) (indexed (reg n) (reg m))) [from wgetv]
 
 (de LapoptPeepAarch64 (code)
-% peephole optimizer for aarch6 code
+% peephole optimizer for aarch64 code
 % interchanging instructions for dependencies.
  (let (rcode i1 i2 i3 r rb)
   (while code
