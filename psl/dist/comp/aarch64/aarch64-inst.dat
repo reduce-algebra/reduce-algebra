@@ -759,6 +759,158 @@ par1
 par2))        ((and (regp par1) (offset19-p par2)) (lth-branch-imm19 '(180) par1
                                                                      par2)))
 
+ (defopcode ccmn (par1 par2 par3 par4) ((and (reg32p par1) (imm5-p par2) (nzcv-p
+                                                                                 
+par3)                                        (cond-p par4)) (op-ccm '(466 2) 
+par1                                                                par2 par3 
+par4))      ((and (regp par1) (imm5-p par2) (nzcv-p par3) (cond-p par4)) (op-ccm
+                                                                                 
+'                                                                                 
+(                                                                                  
+1490                                                                                    
+2)                                                                               
+par1                                                                             
+par2                                                                             
+par3                                                                             
+par4))      ((and (reg32p par1) (reg32p par2) (nzcv-p par3) (cond-p par4)) (
+op-ccm                                                                             
+'                                                                                   
+(                                                                                    
+466                                                                                      
+0)                                                                                 
+par1                                                                               
+par2                                                                               
+par3                                                                               
+par4))      ((and (regp par1) (regp par2) (nzcv-p par3) (cond-p par4)) (op-ccm '
+(                                                                                
+1490                                                                                  
+0)                                                                             
+par1                                                                           
+par2                                                                           
+par3                                                                           
+par4)))
+ (defoplength ccmn (par1 par2 par3 par4) ((and (reg32p par1) (imm5-p par2) (
+nzcv-p                                                                             
+par3)                                          (cond-p par4)) (lth-ccm '(466 2) 
+par1                                                                   par2 par3
+                                                                       par4)) ((
+and                                                                                 
+(                                                                                    
+regp                                                                                      
+par1)                                                                               
+(                                                                                    
+imm5-p                                                                                      
+par2)                                                                               
+(                                                                                    
+nzcv-p                                                                                      
+par3)                                                                               
+(                                                                                    
+cond-p                                                                                      
+par4))                                                                         (
+lth-ccm                                                                                 
+'                                                                                        
+(                                                                                         
+1490                                                                                           
+2)                                                                                      
+par1                                                                                    
+par2                                                                                    
+par3                                                                                    
+par4))        ((and (reg32p par1) (reg32p par2) (nzcv-p par3) (cond-p par4)) (
+lth-ccm                                                                               
+'                                                                                      
+(                                                                                       
+466                                                                                         
+0)                                                                                    
+par1                                                                                  
+par2                                                                                  
+par3                                                                                  
+par4))        ((and (regp par1) (regp par2) (nzcv-p par3) (cond-p par4)) (
+lth-ccm                                                                           
+'                                                                                  
+(                                                                                   
+1490                                                                                     
+0)                                                                                
+par1                                                                              
+par2                                                                              
+par3                                                                              
+par4)))
+
+ (defopcode ccmp (par1 par2 par3 par4) ((and (reg32p par1) (imm5-p par2) (nzcv-p
+                                                                                 
+par3)                                        (cond-p par4)) (op-ccm '(978 2) 
+par1                                                                par2 par3 
+par4))      ((and (regp par1) (imm5-p par2) (nzcv-p par3) (cond-p par4)) (op-ccm
+                                                                                 
+'                                                                                 
+(                                                                                  
+2002                                                                                    
+2)                                                                               
+par1                                                                             
+par2                                                                             
+par3                                                                             
+par4))      ((and (reg32p par1) (reg32p par2) (nzcv-p par3) (cond-p par4)) (
+op-ccm                                                                             
+'                                                                                   
+(                                                                                    
+978                                                                                      
+0)                                                                                 
+par1                                                                               
+par2                                                                               
+par3                                                                               
+par4))      ((and (regp par1) (regp par2) (nzcv-p par3) (cond-p par4)) (op-ccm '
+(                                                                                
+2002                                                                                  
+0)                                                                             
+par1                                                                           
+par2                                                                           
+par3                                                                           
+par4)))
+ (defoplength ccmp (par1 par2 par3 par4) ((and (reg32p par1) (imm5-p par2) (
+nzcv-p                                                                             
+par3)                                          (cond-p par4)) (lth-ccm '(978 2) 
+par1                                                                   par2 par3
+                                                                       par4)) ((
+and                                                                                 
+(                                                                                    
+regp                                                                                      
+par1)                                                                               
+(                                                                                    
+imm5-p                                                                                      
+par2)                                                                               
+(                                                                                    
+nzcv-p                                                                                      
+par3)                                                                               
+(                                                                                    
+cond-p                                                                                      
+par4))                                                                         (
+lth-ccm                                                                                 
+'                                                                                        
+(                                                                                         
+2002                                                                                           
+2)                                                                                      
+par1                                                                                    
+par2                                                                                    
+par3                                                                                    
+par4))        ((and (reg32p par1) (reg32p par2) (nzcv-p par3) (cond-p par4)) (
+lth-ccm                                                                               
+'                                                                                      
+(                                                                                       
+978                                                                                         
+0)                                                                                    
+par1                                                                                  
+par2                                                                                  
+par3                                                                                  
+par4))        ((and (regp par1) (regp par2) (nzcv-p par3) (cond-p par4)) (
+lth-ccm                                                                           
+'                                                                                  
+(                                                                                   
+2002                                                                                     
+0)                                                                                
+par1                                                                              
+par2                                                                              
+par3                                                                              
+par4)))
+
  (defopcode cinc (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (cond2-p 
 par3))                             (op-cinc '(212 1) par1 par2 par3)) ((and (
 regp                                                                              
@@ -790,6 +942,41 @@ lth-csinc
 (                                                                                       
 1236                                                                                         
 1)                                                                                    
+par1                                                                                  
+par2                                                                                  
+par3)))
+
+ (defopcode cinv (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (cond2-p 
+par3))                             (op-cinc '(724 0) par1 par2 par3)) ((and (
+regp                                                                              
+par1)                                                                       (
+regp                                                                              
+par2)                                                                       (
+cond2-p                                                                              
+par3))                                                                 (op-cinc 
+'                                                                                
+(                                                                                 
+1748                                                                                   
+0)                                                                              
+par1                                                                            
+par2                                                                            
+par3)))
+ (defoplength cinv (par1 par2 par3) ((and (reg32p par1) (reg32p par2) (cond2-p 
+par3))                               (lth-csinc '(724 0) par1 par2 par3)) ((and 
+(                                                                                
+regp                                                                                  
+par1)                                                                           
+(                                                                                
+regp                                                                                  
+par2)                                                                           
+(                                                                                
+cond2-p                                                                                  
+par3))                                                                     (
+lth-csinc                                                                             
+'                                                                                      
+(                                                                                       
+1748                                                                                         
+0)                                                                                    
 par1                                                                                  
 par2                                                                                  
 par3)))

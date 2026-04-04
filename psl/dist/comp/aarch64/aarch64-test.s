@@ -41,6 +41,15 @@
 	csinc	X0, X2, X5, al
 	cinc	X1, X4, le
 	csinv	x1, x3, x8, eq
+	cinv	X2, x6, pl
 	csneg	x2, x1, x7, mi
+
+	ccmn	x2, #5, #8, pl
+	ccmn	x4, x3, #12, gt
+
+	ccmp    W10, #3, #7, eq
+	ccmp    x22, #8, #12, le
+	ccmp    x22, x3, #12, le
+
 	br	lr
 
