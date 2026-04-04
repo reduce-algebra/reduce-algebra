@@ -1,9 +1,12 @@
 @echo off
 rem Start CCL REDUCE on Windows.
 rem Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-rem Time-stamp: <2026-04-01 12:50:11 franc>
+rem Time-stamp: <2026-04-03 11:26:34 franc>
 
 setlocal
+rem Process args in a loop, starting with arg 0.
+rem common-lisp directory:
+set cl=%~dp0
 :loop
 if "%1" equ "" goto done
 if "%1" equ "-h" goto help
@@ -33,9 +36,9 @@ exit /b
 rem See "help call" for expansion of batch script argument references.
 WHERE ccl64 /Q
 IF ERRORLEVEL 1 (
-   ccl -I %~dp0fasl.ccl\reduce.image %args%
+   ccl -I %cl%fasl.ccl\reduce.image %args%
 ) ELSE (
-   ccl64 -I %~dp0fasl.ccl\reduce.image %args%
+   ccl64 -I %cl%fasl.ccl\reduce.image %args%
 )
 
 rem CCL REDUCE options (currently only --no-rcfile) must appear after

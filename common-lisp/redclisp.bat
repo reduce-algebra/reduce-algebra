@@ -1,9 +1,12 @@
 @echo off
 rem Start CLISP REDUCE on Windows.
 rem Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-rem Time-stamp: <2026-03-31 17:56:48 franc>
+rem Time-stamp: <2026-04-03 11:23:51 franc>
 
 setlocal
+rem Process args in a loop, starting with arg 0.
+rem common-lisp directory:
+set cl=%~dp0
 :loop
 if "%1" equ "" goto done
 if "%1" equ "-h" goto help
@@ -29,7 +32,7 @@ echo   --no-rcfile  Inhibit REDUCE startup file.
 exit /b
 
 :doit
-clisp -ansi -norc -E utf-8 -M %~dp0fasl.clisp\reduce.mem %args%
+clisp -ansi -norc -E utf-8 -M %cl%fasl.clisp\reduce.mem %args%
 
 rem CLISP REDUCE options (currently only --no-rcfile) must appear after
 rem any CLISP options and *must* follow the option separator --.
