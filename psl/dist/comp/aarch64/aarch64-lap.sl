@@ -588,6 +588,12 @@
 (de imm10-p (displ)
     (and (fixp displ) (greaterp displ -513) (lessp displ 505) (eq (land displ 2#111) 0)))
 
+(de imm5-p (x)
+    (and (posintp x) (lessp x 32)))
+
+(de nzcv-p (x)
+    (and (posintp x) (lessp x 16)))
+
 (de reg-or-sp-pimm16-p (x)
     (and (eqcar x 'displacement)
 	 (pairp (cdr x)) (reg-or-sp-p (cadr x))
@@ -1778,6 +1784,23 @@
     (DepositInstructionBytes 16#d5 16#03 16#20 16#1f))
 
 (de lth-nop (code) 4)
+
+(de OP-ccm (code regn imm5-or-regm nzcv cond)
+    (progn
+      (if (or (regp imm5-or-regm) (reg32p imm5-or-regm))
+	  (setq imm5-or-regm (reg2int imm5-or-regm)))
+      (setq regn (reg2int regn))
+      (DepositInstructionBytes
+       (lsh (car code) -3)
+       (lor (lsh (land 2#111 (car code)) 5) imm5-or-regm)
+       (lor (lsh (get cond 'condition-bits) 4)
+	    (lor (lsh (cadr code) 2)
+		 (lsh regn -3)))
+       (lor (lsh (land regn 2#111) 5)
+	    (land 2#1111 nzcv))))
+    )
+
+(de lth-ccm (code regn imm5-or-regm nzcv cond) 4)
 
 % ------------------------------------------------------------
 % standard operand tags

@@ -890,7 +890,26 @@
     )
 
 (de decode-cond-compare (p1 pp sf opc)
-    (list 'not-yet-implemented 'decode-cond-compare)
+    (prog (regn regn imm5-or-regm instr nzcv cond)
+       (cond ((eq opc 3) (setq instr 'ccmp))
+	     ((eq opc 1) (setq instr 'ccmn))
+	     (t (unknown-instr-error pp)))
+       (if (eq 1 (wand 1 (wshift pp -10)))
+	   (unknown-instr-error pp))
+       (setq regn (wand 2#11111 (wshift pp -5)))
+       (setq imm5-or-regm (wand 2#11111 (wshift pp -16)))
+       (if (eq 1 (wand 1 (wshift pp -11)))
+	   (setq imm5-or-regm (bldmsg "#%d" imm5-or-regm))
+	   (setq imm5-or-regm (regnum-to-regname imm5-or-regm sf nil)))
+       (setq nzcv (wand 2#1111 pp))
+       (setq cond (wand 2#1111 (wshift pp -12)))
+       (return
+	 (list instr
+	       (regnum-to-regname regn sf nil)
+	       imm5-or-regm
+	       (bldmsg "#%d" nzcv)
+	       (decode-cc cond)))
+       )
     )
     
 (de decode-cond-select (p1 pp sf opc)

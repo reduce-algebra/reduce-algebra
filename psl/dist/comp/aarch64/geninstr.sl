@@ -107,6 +107,7 @@
 	(OP-csinc . lth-csinc)
 	(OP-cinc . lth-csinc)
 	(OP-cset . lth-csinc)
+	(OP-ccm . lth-ccm)
       ))
  
 (load strings compiler)
@@ -204,8 +205,6 @@
 	  ((eq op 'reg32)'(REG32P))	
 	  ((eq op 'reg-nonzero)'(reg-nonzero-p))
 	  ((eq op 'reg32-nonzero)'(reg32-nonzero-P))	
-	  ((eq op 'reg)'(REGP))
-	  ((eq op 'reg32)'(REG32P))	
 	  ((eq op 'reg-or-sp) '(reg-or-sp-p))
 	  ((eq op 'reg32-or-sp) '(reg32-or-sp-p))
 	  ((eq op 'reg-sp) '(reg-sp-p))
@@ -224,7 +223,8 @@
 	  ((eq op 'imm12-shifted) '(imm12-shiftedp))
 	  ((eq op 'imm16-shifted) '(imm16-shiftedp))
 	  ((eq op 'imm-logical) '(imm-logical-p))
-	  ((eq op 'imm7) '(imm7-p))
+	  ((eq op 'imm5) '(imm5-p))
+	  ((eq op 'nzcv) '(nzcv-p))
 	  ((eq op 'reg-or-sp-imm9-post) '(reg-or-sp-imm9-post-p))
 	  ((eq op 'reg-or-sp-imm9-pre) '(reg-or-sp-imm9-pre-p))
 	  ((eq op 'reg-or-sp-imm9) '(reg-or-sp-imm9-p))
@@ -450,20 +450,22 @@
 (instr BLR (reg)            OP-branch-reg 2#11010110001)
 (instr BR (reg)              OP-branch-reg 2#11010110000)
 
-% CBNZ
-% CBZ
 (instr CBNZ (reg32 offset19)     OP-cbz     2#00110101)
 (instr CBNZ (reg offset19)       OP-cbz     2#10110101)
 (instr CBZ (reg32 offset19)      OP-cbz     2#00110100)
 (instr CBZ (reg offset19)        OP-cbz     2#10110100)
        
+(instr CCMN (reg32 imm5 nzcv cond)   OP-ccm  2#00111010010 2#10)
+(instr CCMN (reg imm5 nzcv cond)     OP-ccm  2#10111010010 2#10)
+(instr CCMN (reg32 reg32 nzcv cond)  OP-ccm  2#00111010010 2#00)
+(instr CCMN (reg reg nzcv cond)      OP-ccm  2#10111010010 2#00)
 
-% CCMN
-% CCMP
+(instr CCMP (reg32 imm5 nzcv cond)   OP-ccm  2#01111010010 2#10)
+(instr CCMP (reg imm5 nzcv cond)     OP-ccm  2#11111010010 2#10)
+(instr CCMP (reg32 reg32 nzcv cond)  OP-ccm  2#01111010010 2#00)
+(instr CCMP (reg reg nzcv cond)      OP-ccm  2#11111010010 2#00)
 
-% CFINV
-% CINC
-% CINV
+% CFINV - requires feature FEAT_FlagM
 
 (instr CLS (reg32 reg32) OP-clz 2#01011010110 2#00000 2#000101)
 (instr CLS (reg reg)     OP-clz 2#11011010110 2#00000 2#000101)
@@ -484,35 +486,30 @@
 (instr CMP   (reg32 reg32-shifter)         OP-reg-xzr-shifter 2#01101011000)
 (instr CMP   (reg reg-shifter)         OP-reg-xzr-shifter 2#11101011000)
 
-% CNEG
 (instr CNEG (reg32 reg32 cond2)        OP-cinc  2#01011010100 2#01)
 (instr CNEG (reg reg cond2)            OP-cinc  2#11011010100 2#01)
 
-% CSEL
 (instr CSEL  (reg32 reg32 reg32 cond)  OP-csinc 2#00011010100 2#00)
 (instr CSEL  (reg reg reg cond)        OP-csinc 2#10011010100 2#00)
 
-% CSET
 (instr CSET  (reg32 cond2)             OP-cset  2#00011010100 2#01 Wzr Wzr)
 (instr CSET  (reg cond2)               OP-cset  2#10011010100 2#01 Xzr Xzr)
 
-% CSETM
 (instr CSETM (reg32 cond2)             OP-cset  2#01011010100 2#00 Wzr Wzr)
 (instr CSETM (reg cond2)               OP-cset  2#11011010100 2#00 Xzr Xzr)
 
-% CSINC
 (instr CSINC (reg32 reg32 reg32 cond)  OP-csinc 2#00011010100 2#01)
 (instr CSINC (reg reg reg cond)        OP-csinc 2#10011010100 2#01)
 
-% CINC
 (instr CINC (reg32 reg32 cond2)        OP-cinc  2#00011010100 2#01)
 (instr CINC (reg reg cond2)            OP-cinc  2#10011010100 2#01)
 
-% CSINV
 (instr CSINV (reg32 reg32 reg32 cond)  OP-csinc 2#01011010100 2#00)
 (instr CSINV (reg reg reg cond)        OP-csinc 2#11011010100 2#00)
 
-% CSNEG
+(instr CINV (reg32 reg32 cond2)        OP-cinc  2#01011010100 2#00)
+(instr CINV (reg reg cond2)            OP-cinc  2#11011010100 2#00)
+
 (instr CSNEG (reg32 reg32 reg32 cond)  OP-csinc 2#01011010100 2#01)
 (instr CSNEG (reg reg reg cond)        OP-csinc 2#11011010100 2#01)
 

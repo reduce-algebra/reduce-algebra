@@ -73,13 +73,20 @@
 %%   40E4859A 		csinc	X0, X2, X5, al
 %%   81C4849A 		cinc	X1, X4, le
 %%   610088DA 		csinv	x1, x3, x8, eq
+%%   C24086DA 		cinv	X2, x6, pl
 %%   224487DA 		csneg	x2, x1, x7, mi
+%%   485845BA 		ccmn	x2, #5, #8, pl
+%%   8CC043BA 		ccmn	x4, x3, #12, gt
+%%   4709437A 		ccmp    W10, #3, #7, eq
+%%   CCDA48FA 		ccmp    x22, #8, #12, le
+%%   CCD243FA 		ccmp    x22, x3, #12, le
 %%   C0031FD6 		br	lr
 %%
 
 (compiletime
-(off usermode)
-(copyd 'orig-DepositInstructionBytes 'DepositInstructionBytes)
+ (off usermode)
+ (cond ((null (getd 'orig-DepositInstructionBytes))
+	(copyd 'orig-DepositInstructionBytes 'DepositInstructionBytes)))
 (de DepositInstructionBytes (byte1 byte2 byte3 byte4)
     (printf "%x %x %x %x%n"
 	    (land byte4 16#ff)
@@ -136,7 +143,14 @@
        (csinc (reg x0) (reg x2) (reg x5) al)
        (cinc (reg x1) (reg x4) le)
        (csinv (reg x1) (reg x3) (reg x8) eq)
+       (cinv (reg x2) (reg x6) pl)
        (csneg (reg x2) (reg x1) (reg x7) mi)
+
+       (ccmn (reg x2) (wconst 5) (wconst 8) pl)
+       (ccmn (reg x4) (reg x3) (wconst 12) gt)
+       (ccmp (reg w10) (wconst 3) (wconst 7) eq)
+       (ccmp (reg x22) (wconst 8) (wconst 12) le)
+       (ccmp (reg x22) (reg x3) (wconst 12) le)
 
        (br (reg lr))
 ))
