@@ -228,7 +228,7 @@
 
 (fi 16#d8 x87fpu ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)))
 
-(fi 16#e8 call ((A v)))
+(fi 16#e8 call ((J v)))
 
 (fi 16#e9 jmp ((J v)) ((A p)) ((J b)))
 

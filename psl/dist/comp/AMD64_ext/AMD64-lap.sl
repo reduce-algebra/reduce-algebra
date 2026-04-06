@@ -894,12 +894,12 @@
 %---------------------------------------------------------------------
 % jump to absolute address
 % 386 has only relative jumps
-(de OP-Jump (code op1)
+(de OP-jump (code op1)
   (prog(n)
    (depositbyte (car code))
    (when (cdr code) (depositbyte (cadr code)))
    (setq op1 (saniere-Sprungziel op1))
-   (setq n(MakeExpressionrelative op1 4)) % offset wrt next instr
+   (setq n (MakeExpressionrelative op1 4)) % offset wrt next instr
    (depositliteralword n)
    (when *testlap (tab 15)(prin2 "-> ")
          (prin2 n) (prin2 " rel = ")
@@ -1132,9 +1132,9 @@
                      (difference offset 
                       (plus2 currentoffset* offsetfromhere))))
                   (progn
-                    (setq forwardinternalreferences* 
+                    (setq ForwardInternalReferences* 
                      (cons (cons currentoffset* nam) 
-                      forwardinternalreferences*))
+                      ForwardInternalReferences*))
                     0)))))
         % will be fixed in SystemFasl...
 
@@ -1529,7 +1529,7 @@
     (setq CurrentOffset* (plus CurrentOffset* 2))))
 
 (compiletime (put 'put_a_halfword 'opencode '(
-   (mov (reg ebx) (displacement (reg rax) 0)))))
+   (movl (reg ebx) (displacement (reg rax) 0)))))
 
 (de deposit32bitword (x) %% cross
   (put_a_halfword (wplus2 codebase* currentoffset*) x)
@@ -1565,9 +1565,9 @@
          (if offset
              (deposit-relocated-word offset)
              (progn
-               (setq forwardinternalreferences*
+               (setq ForwardInternalReferences*
                      (cons (cons currentoffset* (second x))
-                           forwardinternalreferences*))
+                           ForwardInternalReferences*))
                (deposit-relocated-word 0)))))
       ((equal (first x) 'idloc) (depositwordidnumber (second x)))
       ((equal (first x) 'entry) (depositentry x))
@@ -1584,9 +1584,9 @@
          (if offset
              (deposit-relocated-word offset)
              (progn
-               (setq forwardinternalreferences*
+               (setq ForwardInternalReferences*
                      (cons (cons currentoffset* (second x))
-                           forwardinternalreferences*))
+                           ForwardInternalReferences*))
                (deposit-relocated-word 0)))))
       ((and (eq (car x) 'mkitem)
             (eq (cadr x) id-tag)
@@ -1681,19 +1681,19 @@
      % THIS VERSION ASSUMES 32 bit RELATIVE ADDESSES, HM.
      (setq x (remainder currentoffset* 16))
      (while (greaterp x 0) (depositbyte 0) (setq x (sub1 x)))
-     (while forwardinternalreferences*
-       (setq x (get (cdr (first forwardinternalreferences*)) 
+     (while ForwardInternalReferences*
+       (setq x (get (cdr (first ForwardInternalReferences*)) 
                     'internalentryoffset))
        (when (null x) 
               (errorprintf "***** %r not defined in this module, call incorrect" 
-                           (cdr (first forwardinternalreferences*))))
+                           (cdr (first ForwardInternalReferences*))))
                % calculate the offset
        (setq x (plus -4             % offset to next word
-             (difference x (car (first forwardinternalreferences*)))))
+             (difference x (car (first ForwardInternalReferences*)))))
                          % insert the fixup
        (put_a_halfword 
-            (iplus2 codebase* (car (first forwardinternalreferences*))) x)
-       (setq forwardinternalreferences* (cdr forwardinternalreferences*)))
+            (iplus2 codebase* (car (first ForwardInternalReferences*))) x)
+       (setq ForwardInternalReferences* (cdr ForwardInternalReferences*)))
               % Now remove the InternalEntry offsets from everyone
    (mapobl 'remove-ieo-property)))
 
