@@ -32,6 +32,9 @@
 
 (compiletime (load unicode-decls io-decls))
 
+(fluid '(utf8-invalid-char-symbol))
+
+
 % The current version of utf8-to-codepoint returns unicode-codepoint-invalid-char (0xfffd)
 % for invalid utf8 characters.
 
@@ -88,3 +91,24 @@
            (do (setf (strbyt tokenbuffer i) (char null)))))
   ))
 
+(de utf8-char-to-string (char)
+  (prog (len new_s)
+    (setq len (utf8-char-length char))
+    %% shift char left so that first byte starts at begin of word
+    (setq char (wshift char (wtimes2 8 (wdifference charactersperword len))))
+    (setq new_s (gtstr (wdifference len 1)))
+    (for (from i 0 (wdifference len 1) 1)
+	 (do (setq (strbyt new_s i) (r_byte char i))))
+    %% add NUL byte at end
+    (setf (strbyt new_s len) 0)
+    (return (mkstr new_s))))
+
+%% Convert x into a lisp string and call intern
+(de mk-unicode-id (x)
+  (intern (utf8-char-to-string x)))
+
+(de mkid-unicode (x)
+  (if (wleq x 255) (mkid x)
+     (mk-unicode-id x)))
+
+(setq utf8-invalid-char-symbol (mk-unicode-id utf8-invalid-char))
