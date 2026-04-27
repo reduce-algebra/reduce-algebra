@@ -33,3 +33,5 @@
 (define-constant utf8-invalid-char 16#efbfbd)
 
 (define-constant unicode-codepoint-invalid-char 16#fffd)
+
+(define-constant unicode-default-tokentype 11)
