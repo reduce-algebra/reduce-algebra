@@ -60,7 +60,7 @@
 
 (fluid '(*unicode))
 
-(compiletime (load io-decls sys-macros))
+(compiletime (load io-decls sys-macros unicode-decls))
 
 (on fast-integers)
 
@@ -89,9 +89,44 @@
     (if (neq char (char null))
       (progn (setf (wgetv unreadbuffer channel) (char null))
 	     char)
-      (idapply (wgetv readfunction channel) (list channel))
+      (if (and *unicode (wneq channel 3) (wneq channel 4))
+	  (channelreadchar-utf8-internal channel)
+        (idapply (wgetv readfunction channel) (list channel)))
       ))
   ))
+
+(de channelreadchar-utf8-internal (channel)
+    (let ((char (idapply (wgetv readfunction channel) (list channel)))
+	  (nextchar)
+	  (nextchar2)
+	  (nextchar3))
+      (cond ((eq char !$eof!$) char)
+	    ((wlessp char 128) char)
+	    ((wlessp char 192) utf8-invalid-char)
+	    ((or (eq char 16#C0) (eq char 16#C1)) utf8-invalid-char) % check for overlong encoding
+	    ((wgeq char 16#F5) utf8-invalid-char) % character out of range U+0000 .. U+10FFFF
+	    (t (setq nextchar (idapply (wgetv readfunction channel) (list channel)))
+	       (cond ((not (eq (wand 2#11000000 nextchar) 2#10000000)) utf8-invalid-char)
+		     %% check for overlong encoding
+		     ((and (eq char 16#E0) (wlessp nextchar 16#A0)) utf8-invalid-char)
+		     %% another overlong encoding
+		     ((and (eq char 16#F0) (wlessp nextchar 16#90)) utf8-invalid-char)
+		     %% character out of range U+0000 .. U+10FFFF
+		     ((and (eq char 16#F4) (wgeq nextchar 16#90)) utf8-invalid-char)
+		     %% range U+0080 .. U+00FF - map to single character ids
+		     ((and (or (weq char 16#C2) (weq char 16#C3))
+			   (weq (wand 16#C0 nextchar) 16#80))
+		      (wor (wshift (wand char 2#10) 6) (wand nextchar 16#3F)))
+		     %% range U+0100 .. U+07FF 
+		     ((wlessp char 224) (wor (wshift char 8) nextchar))
+		     (t (setq nextchar2 (idapply (wgetv readfunction channel) (list channel)))
+			(cond ((not (eq (wand 2#11000000 nextchar2) 2#10000000)) utf8-invalid-char)
+			      ((wlessp char 240) (wor (wshift char 16) (wor (wshift nextchar 8) nextchar2)))
+			      (t (setq nextchar3 (idapply (wgetv readfunction channel) (list channel)))
+				 (cond ((not (eq (wand 2#11000000 nextchar3) 2#10000000)) utf8-invalid-char)
+				       (t (wor (wshift char 24) (wor (wshift nextchar 16) (wor (wshift nextchar2 8) nextchar3))))))))))
+	    ))
+    )
 
 
 (de readchar ()
@@ -135,6 +170,7 @@
       (channelwritechar-utf8-internal channel char)
     (idapply (wgetv writefunction channel) (list channel char)))
  ))
+
 
 (declare-warray utf8-internal-charlis* size charactersperword)
 
