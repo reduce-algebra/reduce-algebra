@@ -30,7 +30,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 
-(compiletime (load unicode-decls io-decls))
+(compiletime (load inum unicode-decls io-decls))
 
 (fluid '(utf8-invalid-char-symbol))
 
@@ -94,11 +94,10 @@
 (de utf8-char-to-string (char)
   (prog (len new_s)
     (setq len (utf8-char-length char))
-    %% shift char left so that first byte starts at begin of word
-    (setq char (wshift char (wtimes2 8 (wdifference charactersperword len))))
     (setq new_s (gtstr (wdifference len 1)))
-    (for (from i 0 (wdifference len 1) 1)
-	 (do (setq (strbyt new_s i) (r_byte char i))))
+    (ifor (from i (wdifference len 1) 0 -1)
+	  (do (setf (strbyt new_s i) (wand 16#ff char))
+	      (setq char (wshift char -8))))
     %% add NUL byte at end
     (setf (strbyt new_s len) 0)
     (return (mkstr new_s))))
