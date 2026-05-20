@@ -1,4 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % Status:         Open Source: BSD License
 %
 % Redistribution and use in source and binary forms, with or without
@@ -32,7 +33,7 @@
 
 (compiletime (load inum unicode-decls io-decls))
 
-(fluid '(utf8-invalid-char-symbol))
+(fluid '(utf8-invalid-char-symbol *unicode))
 
 
 % The current version of utf8-to-codepoint returns unicode-codepoint-invalid-char (0xfffd)
@@ -107,7 +108,11 @@
   (intern (utf8-char-to-string x)))
 
 (de mkid-unicode (x)
-  (if (wleq x 255) (mkid x)
-     (mk-unicode-id x)))
+  (cond ((wleq x 127) (mkid x))
+	((and (not *unicode) (wleq x 255)) (mkid x))
+	((and *unicode (eq 0 (wand x 16#0000)) % two byte sequence...
+	      (eq (wand x 16#f700) 16#c200))   % ... starting with C2/C3
+	 (mkid (wor (wshift (wand x 16#300) -6) (wand x 16#3f)))) % convert to 1 byte
+	(t (mk-unicode-id x))))
 
 (setq utf8-invalid-char-symbol (mk-unicode-id utf8-invalid-char))

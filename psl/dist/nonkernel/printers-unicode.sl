@@ -199,7 +199,7 @@
   %  'doublequote => double doublequote characters
   %  'escape      => print idescape char where necessary
   %
-  (prog (i ch ch2 ch3 ch4 tokentype)
+  (prog (i ch ch2 ch3 ch4)
     (setq i 0)
     (while (wleq i uplim)
       (progn
@@ -210,18 +210,19 @@
 		       (maybemagic strng i uplim))
 		  (channelwritehashstring channel special)
                 (progn
-		  (when (eq special 'escape)
-		    (intrnil)
-		    (if (weq i 1)	% first character
-       			(progn
-                          (when (or (wneq tokentype 10) (charneedsescape ch))
-			    (channelwritechar channel idescapechar*))
-			  (channelwritechar channel ch))
-		      (channelwritechar-optional-escape channel ch)))
+		  (cond ((eq special 'escape)
+			 (intrnil)
+			 (if (weq i 1)	% first character
+       			     (progn
+                               (when (or (wneq (tokentypeofchar ch) 10) (charneedsescape ch))
+				 (channelwritechar channel idescapechar*))
+			       (channelwritechar channel ch))
+			     (channelwritechar-optional-escape channel ch)))
+			(t (channelwritechar channel ch)))
 		  (if (and (weq ch (char !")) (eq special 'doublequote))
  		      (channelwritechar channel (char !"))))))
 	      ((wlessp ch 192)   	% continuation byte at start is invalid, print replacement character
-	       (if special (channelwritechar-optional-escape channel ch)
+	       (if (eq special 'escape) (channelwritechar-optional-escape channel ch)
 		 (channelwritechar channel utf8-invalid-char)))
 	      ((wlessp ch 224)	% two byte sequence expected
                (cond ((or % handle invalid 2nd byte - print replacement character 
@@ -230,7 +231,7 @@
 		       (and (weq 16#C0 (wand ch 16#C0)) (wlessp ch2 16#A0)) % overlong encoding
 		       (wgeq ch2 192) % non-continuation byte
 		       )
-		      (if special (channelwritechar-optional-escape channel ch))
+		      (if (eq special 'escape) (channelwritechar-optional-escape channel ch))
 		      (channelwritechar channel utf8-invalid-char)
 		      (setq i (iadd1 i)))
 		     (t
@@ -246,19 +247,19 @@
 		       (and (weq ch 16#E0) (wlessp ch2 16#A0)) % overlong encoding
 		       (wgeq ch2 192) % non-continuation byte
 		       )
-		      (if special (channelwritechar-optional-escape channel ch))
+		      (if (eq special 'escape) (channelwritechar-optional-escape channel ch))
                       (channelwritechar channel utf8-invalid-char)
 		      (setq i (iadd1 i)))
 		     ((or % handle invalid 3rd byte - print replacement character
 		       (wlessp (setq ch3 (wand 16#ff (strbyt (strinf strng) (wplus2 i 1)))) 128) % low order byte - ignore error
 		       (wgeq ch3 192) % non-continuation byte
 		       )
-                      (if special (channelwritechar-optional-escape channel ch))
+                      (if (eq special 'escape) (channelwritechar-optional-escape channel ch))
 		      (channelwritechar channel utf8-invalid-char)
 		      (setq i (wplus2 i 2)))
                      (t
                       (setq ch (wor (wshift ch 16) (wshift ch2 8) ch3))
-                      (if special (channelwritechar-escaped-utf8-char channel ch special)
+                      (if (eq special 'escape) (channelwritechar-escaped-utf8-char channel ch)
 			(channelwritechar channel ch))
 		      (setq i (wplus2 i 2)))))
 	      ((wlessp ch 245)	% four byte sequence
@@ -269,26 +270,26 @@
 		       (and (weq ch 16#F4) (wgeq ch2 16#90))  % out of range, beyond U+10FFFF
 		       (wgeq ch2 192) % non-continuation byte
 		       )
-                      (if special (channelwritechar-optional-escape channel ch))
+                      (if (eq special 'escape) (channelwritechar-optional-escape channel ch))
 		      (channelwritechar channel utf8-invalid-char)
 		      (setq i (iadd1 i)))
 		     ((or % handle invalid 3rd byte - print replacement character
 		       (wlessp (setq ch3 (wand 16#ff (strbyt (strinf strng) (wplus2 i 1)))) 128) % low order byte - ignore error
 		       (wgeq ch3 192)	% non-continuation byte
 		       )
-		      (if special (channelwritechar-optional-escape channel ch))
+		      (if (eq special 'escape) (channelwritechar-optional-escape channel ch))
                       (channelwritechar channel utf8-invalid-char)
                       (setq i (wplus2 i 2)))
 		     ((or % handle invalid 4th byte - print replacement character
 		       (wlessp (setq ch4 (wand 16#ff (strbyt (strinf strng) (wplus2 i 2)))) 128) % low order byte - ignore error
 		       (wgeq ch4 192) % non-continuation byte
 		       )
-                      (if special (channelwritechar-optional-escape channel ch))
+                      (if (eq special 'escape) (channelwritechar-optional-escape channel ch))
 		      (channelwritechar channel utf8-invalid-char)
 		      (setq i (wplus2 i 3)))
                      (t
                       (setq ch (wor (wshift ch 24) (wshift ch2 16) (wshift ch3 8) ch4))
-                      (if special (channelwritechar-escaped-utf8-char channel ch special)
+                      (if (eq special 'escape) (channelwritechar-escaped-utf8-char channel ch)
 			(channelwritechar channel ch))
 		      (setq i (wplus2 i 3)))))
 	      (t (channelwritechar channel utf8-invalid-char))) % invalid
@@ -444,16 +445,15 @@
 	 (channelwritestring channel (symnam (idinf itm))))
 	%% In unicode mode, print single character ids above 127 as utf8
 	((and *unicode
-	      (wqeq (idinf itm) 128) (wleq (idinf itm) 255)
+	      (wgeq (idinf itm) 128) (wleq (idinf itm) 255)
 	      (wneq (idinf itm) (idinf nil)))
 	 (setq itm (id2int itm))
-	 (channelwritestringorid-utf8
+	 (channelwritechar 
 	    channel
 	    (wor
 	     (wshift (wor 16#C0 (wshift (wand 16#ff itm) -6)) 8)
 	     (wor 16#80 (wand 16#3f itm)))
-	    2
-            nil))
+	    ))
 	(t
     (prog (ch len)
       (setq itm (strinf (symnam (idinf itm))))
@@ -476,17 +476,18 @@
   (prog (len ch tokentype)
      %% In unicode mode, print single character ids above 127 as utf8
      (if (and *unicode
-	      (wqeq (idinf itm) 128) (wleq (idinf itm) 255)
+	      (wgeq (idinf itm) 128) (wleq (idinf itm) 255)
 	      (wneq (idinf itm) (idinf nil)))
        (progn
 	 (setq itm (id2int itm))
-	 (return (channelwritestringorid-utf8
+	 (when (or (wneq (tokentypeofchar itm) 10) (charneedsescape itm))                                                                                                 
+           (channelwritechar channel idescapechar*))
+	 (return (channelwritechar
 	            channel
 		    (wor
 		      (wshift (wor 16#C0 (wshift (wand 16#ff itm) -6)) 8)
 		      (wor 16#80 (wand 16#3f itm)))
-		    2
-                    'escape))))
+                    ))))
     (setq itm (strinf (symnam (idinf itm))))
     (setq len (strlen itm))
     (if *unicode
