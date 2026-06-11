@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2026-06-11 12:54:58 franc>
+# Time-stamp: <2026-06-11 15:48:03 franc>
 
 # Build REDUCE on supported implementations of Common Lisp (CL) that
 # can save a memory image, namely SBCL, CLISP and CCL.
@@ -350,7 +350,7 @@ EOF
     shopt -s extglob
     tail=${lispversion##+([a-zA-z ])+([0-9.])} # to remove
     shopt -u extglob
-    lispversion=${lispversion:0:-${#tail}}
+    if [ $tail ]; then lispversion=${lispversion:0:-${#tail}}; fi
 
     # Start a new invocation of Lisp and load the key modules compiled
     # above.  Then save a final REDUCE image that will be used below to
