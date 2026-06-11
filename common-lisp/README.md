@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-04-01 12:52:35 franc>
+Time-stamp: <2026-05-10 16:50:26 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -258,7 +258,6 @@ I cannot see any way to support the REDUCE facilities for restricting execution 
 
 ## To do
 
-* Re-implement the sparse package to use hash tables as a test?
 * Revise interaction between SL-on-CL `readch` and RLISP `readch1`.
 * Review my hacked version of `gnuintfc.red` for Common Lisp.
 * Make faslout/faslend more robust by using a single function that calls begin internally (cf. infile) and make faslend generate a throw.  (See also the old mkfasl code?)

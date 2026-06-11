@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2026-02-24 14:54:36 franc>
+# Time-stamp: <2026-06-11 12:54:58 franc>
 
 # Build REDUCE on supported implementations of Common Lisp (CL) that
 # can save a memory image, namely SBCL, CLISP and CCL.
@@ -346,6 +346,12 @@ EOF
 
     rm -f fasl.$lisp/reduce.$saveext
 
+    lispversion=`$lisp --version`
+    shopt -s extglob
+    tail=${lispversion##+([a-zA-z ])+([0-9.])} # to remove
+    shopt -u extglob
+    lispversion=${lispversion:0:-${#tail}}
+
     # Start a new invocation of Lisp and load the key modules compiled
     # above.  Then save a final REDUCE image that will be used below to
     # compile the non-core modules.
@@ -388,10 +394,7 @@ EOF
 (defautoload prettyprint pretty)  % since only in entry file for PSL!
 
 (setq date!* (date))
-(setq version!* (cl:format nil "REDUCE (Free ~a version, revision ~a)"
-      (cond ((memq 'sbcl lispsystem!*) "SBCL")
-            ((memq 'clisp lispsystem!*) "CLISP")
-            ((memq 'ccl lispsystem!*) "CCL"))
+(setq version!* (cl:format nil "REDUCE (revision ~a on $lispversion)"
       (or revision!* "???")))
 
 (initreduce)

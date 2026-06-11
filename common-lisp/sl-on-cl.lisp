@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-03-31 17:51:59 franc>
+;; Time-stamp: <2026-06-10 17:46:14 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -426,6 +426,11 @@ EXPR PROCEDURE ZEROP(U);
 ;; CDR(U:dotted-pair):any eval, spread
 ;; CDR(CONS(a, b)) --> b. The right part of U is returned. The type
 ;; mismatch error occurs if U is not a dotted-pair.
+
+;; Common Lisp car and cdr are safe, so...
+(%defalias sl::safe-car cl:car)
+(%defalias sl::safe-cdr cl:cdr)
+;; (flag '(sl::safe-car sl::safe-cdr) 'lose) ; later
 
 ;; The composites of CAR and CDR are supported up to 4 levels:
 (import '(cl:caar cl:cadr cl:cdar cl:cddr cl:caaar cl:caadr cl:cadar
@@ -855,6 +860,7 @@ Returns the removed property or NIL if there was no such indicator."
     (when *defn (%save-plist u))
     (cl:remprop u ind)))
 
+(flag '(sl::safe-car sl::safe-cdr) 'lose)
 (flag '(first second third rest) 'sl::lose)
 (flag '(sl::lastpair sl::lastcar sl::nth sl::pnth) 'sl::lose)
 (flag '(eqcar) 'sl::lose)
@@ -2083,8 +2089,9 @@ Returns T if U is a digit, otherwise NIL.
 EXPR PROCEDURE DIGIT(U);
    IF MEMQ(U, '(!0 !1 !2 !3 !4 !5 !6 !7 !8 !9))
       THEN T ELSE NIL;"
-  (handler-case (not (not (digit-char-p (character u))))
-    (cl:error () nil)))
+  (and (symbolp u)
+       (eql (cl:length (symbol-name u)) 1)
+       (not (not (digit-char-p (character u))))))
 
 (declaim (ftype (cl:function (t) (integer 0)) sl::length))
 
@@ -2115,8 +2122,9 @@ EXPR PROCEDURE LITER(U);
                 !a !b !c !d !e !f !g !h !i !j !k !l !m
                 !n !o !p !q !r !s !t !u !v !w !x !y !z))
       THEN T ELSE NIL;"
-  (handler-case (alpha-char-p (character u))
-    (cl:error () nil)))
+  (and (symbolp u)
+       (eql (cl:length (symbol-name u)) 1)
+       (alpha-char-p (character u))))
 
 (declaim (ftype (cl:function (t t) list) sl::member sl::memq))
 
@@ -3832,16 +3840,16 @@ rather like errorset."
 ;; defined in "rlisp/proc.red".
 
 (defmacro sl::mkhash (size type &optional expansion)
-  "Create and return a new hash table.
+  "Create and return a new hash-table.
 - SIZE is a non-negative integer that determines approximately the
   number of entries that can be inserted without having to enlarge the
   hash table.
 - If TYPE is 0 then the test used is eq, otherwise it is cl:equal.
-- EXPANSION specifies how much to increase the size of the hash table
+- EXPANSION specifies how much to increase the size of the hash-table
   when it becomes full.  This can be an integer greater than zero,
   which is the number of entries to add, or it can be a floating-point
   number greater than 1, which is the ratio of the new size to the old
-  size. The default value for this argument is implementation-dependent."
+  size.  The default value for this argument is implementation-dependent."
   `(make-hash-table
     :test (if (eql ,type 0) 'eq 'cl:equal) ; should this be equalp?
     :size ,size
@@ -3849,16 +3857,12 @@ rather like errorset."
 
 (flag '(sl::mkhash) 'sl::variadic)
 
-(import 'hash-table-p :sl)
-;; hash-table-p is true if its argument is a hash table, and otherwise
-;; is false.
-
 (import 'gethash :sl)
-;; gethash finds the entry in hash-table whose key is key and returns
-;; the associated value.  If there is no such entry, gethash returns
-;; default, which is nil if not specified.
+;; gethash(key, table) finds the entry in hash-table TABLE whose key
+;; is KEY and returns the associated value.  If there is no such
+;; entry, gethash returns default, which is nil if not specified.
 
-(declaim (ftype (cl:function (t t t) t) sl::puthash))
+(declaim (ftype (cl:function (t hash-table t) t) sl::puthash))
 
 (defun sl::puthash (key table val)
   "Make a new entry with the specified key KEY in hash
@@ -3867,9 +3871,9 @@ already exists, it is removed before the new entry is added."
   (setf (gethash key table) val))
 
 (import 'remhash :sl)
-;; remhash removes any entry for key in hash-table. This is a
-;; predicate that is true if there was an entry or false if there was
-;; not.
+;; remhash(key, table) removes any entry for KEY in hash-table
+;; TABLE.  This is a predicate that is true if there was an entry or
+;; false if there was not.
 
 (declaim (ftype (cl:function (hash-table) list) sl::hashcontents))
 
@@ -3884,6 +3888,31 @@ already exists, it is removed before the new entry is added."
 (import 'clrhash :sl)
 ;; This removes all the entries from hash-table and returns the hash
 ;; table itself.
+
+;; These functions are used in my REDUCE SPARSEMATRIX package but not
+;; all implemented in CSL and PSL.  Fall-back versions are defined in
+;; "sparsematrix/sparsematrix.red".
+
+(import 'hash-table-p :sl)
+;; hash-table-p is true if its argument is a hash-table, and otherwise
+;; is false.
+
+(import 'maphash :sl)
+;; (maphash fn hash)
+;; Iterate over all entries in the hash-table HASH and return nil.
+;; For each entry, the function FN is called with two arguments -- the
+;; key and the value of that entry.
+
+(declaim (ftype (cl:function (hash-table) hash-table) sl::copyhash))
+
+(%defalias sl::copyhash cl:copy-structure)
+;; (copyhash hash)
+;; Copy each element of hash-table HASH to a new hash-table.
+;; Return the latter.
+
+(import 'hash-table-count :sl)
+;; (hash-table-count hash)
+;; Return the number of entries in the hash-table HASH.
 
 
 ;;; Operating System Interface
