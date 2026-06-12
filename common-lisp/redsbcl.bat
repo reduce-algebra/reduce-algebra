@@ -1,7 +1,7 @@
 @echo off
 rem Start SBCL REDUCE on Windows.
 rem Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-rem Time-stamp: <2026-04-03 11:22:15 franc>
+rem Time-stamp: <2026-04-06 16:09:22 franc>
 
 setlocal
 rem Process args in a loop, starting with arg 0.
@@ -26,7 +26,7 @@ goto doit
 echo Start SBCL REDUCE on Windows.
 echo Usage: redsbcl ^<options^>
 echo Useful options:
-echo   --help                      Print this message and exit.
+echo   -h, --help                  Print this message and exit.
 echo   --version                   Print SBCL version information and exit.
 echo   --control-stack-size ^<MiB^>  Size of reserved control stack; default 2.
 echo   --dynamic-space-size ^<MiB^>  Size of reserved dynamic space.
