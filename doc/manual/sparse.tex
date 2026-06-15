@@ -1,4 +1,6 @@
-
+%% FJW: This file uses {\tt } instead of \texttt{} in some places
+%% because \texttt{} is redefined when generating HTML for SF in a way
+%% that prevents commands within its argument from running.
 
 \newcommand\sparselineqlist {lin\_eqn$_{1}$,lin\_eqn$_{2}$, \ldots ,lin\_eqn$_{n}$}
 \newcommand\sparsematlist   {mat$_{1}$,mat$_{2}$, \ldots ,mat$_{n}$}
@@ -9,6 +11,12 @@
 \index{Linear Algebra package}
 
 \subsection{Introduction}
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\VerbMath{\makehashletter
+\(
+\newcommand{\f}[1]{\texttt{#1}}
+\)%
+}\fi
 A very powerful feature of \REDUCE{} is the ease with which matrix
 calculations can be performed.
 This package extends the available matrix feature to enable calculations
@@ -33,8 +41,8 @@ declaration. For example,
 \begin{verbatim}
 sparse aa(10,1),bb(200,200);
 \end{verbatim}
-declares \texttt{aa} to be a 10 x 1 (column) sparse matrix and \texttt{y} to
-be a 200 x 200 sparse matrix.
+declares \texttt{aa} to be a $10 \times 1$ (column) sparse matrix and \texttt{y} to
+be a $200 \times 200$ sparse matrix.
 The declaration \texttt{sparse} is similar to the declaration \texttt{matrix}.
 Once a symbol is declared to name a sparse matrix, it can not also be
 used to name an array, operator, procedure, or used as an ordinary
@@ -83,13 +91,13 @@ not defined. See section Operators with Matrix Arguments
 \subsubsection{Examples}
 In the examples the matrix $\mathcal{AA}$ will be
 
-\(
+\[
 \mathcal{AA} = \left( \begin{array}{cccc} 1 & 0 & 0 & 0 \\ 0 & 3 & 0 & 0 \\
 0 & 0 & 5 & 0 \\ 0 & 0 & 0 & 9
-\end{array} \right)
-\)
+\end{array} \right).
+\]
 
-\begin {verbatim}
+\begin{verbatim}
 det aa;
 
 135
@@ -130,8 +138,8 @@ This package is an extension of the Linear Algebra Package for \REDUCE{}
 described in section \ref{LINALG}.
 These functions are described
 alphabetically in section \ref{sec:sparse-available-functions}.
-They can be classified into four sections(n.b: the numbers after
-the dots signify the function label in section 6).
+They can be classified into four sections.  (NB: The numbers after
+the dots signify the function label in section 6.)
 \subsubsection{Basic matrix handling}
 \begin{center}
 \begin{tabular}{l l l l l l}
@@ -213,9 +221,9 @@ symmetricp  & \ldots & \ref{sparse:symmetricp}
 
 In the examples the matrix $\mathcal{A}$ will be
 
-\(
-\mathcal{A} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9 \end{pmatrix}
-\)
+\[
+\mathcal{A} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9 \end{pmatrix}.
+\]
 
 Unfortunately, due to restrictions of size, it is not practical to use
 ``large'' sparse matrices in the examples. As a result the examples
@@ -237,7 +245,7 @@ $\mathcal{A}^T$ to indicate the transpose of the matrix $\mathcal{A}$.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
-\texttt{spadd\_columns($\mathcal{A}$,c1,c2,expr);}
+{\tt spadd\_columns($\mathcal{A}$,c1,c2,expr);}
 
 \begin{tabular}{l l l}
 $\mathcal{A}$ & :- & a sparse matrix. \\
@@ -276,7 +284,7 @@ See: \texttt{spadd\_columns}.
 
 \begin{description}
   \item[Syntax:]\mbox{}\\*
-\texttt{spadd\_to\_columns($\mathcal{A}$,column\_list,expr);}\\[2mm]
+{\tt spadd\_to\_columns($\mathcal{A}$,column\_list,expr);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$   &:-& a sparse matrix. \\
 column\_list &:-& a positive integer or a list of positive integers. \\
@@ -316,7 +324,7 @@ See: \texttt{spadd\_to\_columns}.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
- \texttt{spaugment\_columns($\mathcal{A}$,column\_list);}\\[2mm]
+{\tt spaugment\_columns($\mathcal{A}$,column\_list);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$  &:-& a sparse matrix. \\
 column\_list &:-&  either a positive integer or a list of positive
@@ -406,7 +414,7 @@ filled from the matrix\_list row wise.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
-\texttt{spchar\_matrix($\mathcal{A},\lambda$);}\\[2mm]
+{\tt spchar\_matrix($\mathcal{A},\lambda$);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a square sparse matrix. \\
 $\lambda$  &:-& a symbol or algebraic expression.
@@ -433,7 +441,7 @@ This is $\mathcal{C} = \lambda * \mathcal{I} - \mathcal{A}$.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
-\texttt{spchar\_poly($\mathcal{A},\lambda$);}\\[2mm]
+{\tt spchar\_poly($\mathcal{A},\lambda$);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse square matrix. \\
 $\lambda$ &:-& a symbol or algebraic expression.
@@ -446,7 +454,7 @@ $\lambda$ &:-& a symbol or algebraic expression.
 This is the determinant of $\lambda * \mathcal{I} - \mathcal{A}$.
 
 \item[Examples:]\mbox{}\\
-\texttt{spchar\_poly($\mathcal{A}$,$x$)} $= x^3-15*x^2-59*x-45$
+{\tt spchar\_poly($\mathcal{A}$,$x$)} $= x^3-15*x^2-59*x-45$
 
 \item[Related functions:]\mbox{}\\
 \texttt{spchar\_matrix}.
@@ -459,7 +467,7 @@ This is the determinant of $\lambda * \mathcal{I} - \mathcal{A}$.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
-\texttt{spcholesky($\mathcal{A}$);}\\[2mm]
+{\tt spcholesky($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a positive definite sparse matrix containing numeric entries.
 \end{tabular}
@@ -490,7 +498,7 @@ is a lower matrix, $\mathcal{U}$ is an upper matrix, \\ $\mathcal{A} =
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
-\texttt{spcoeff\_matrix(\{\sparselineqlist{}\});} \\[2mm]
+{\tt spcoeff\_matrix(\{\sparselineqlist{}\});} \\[2mm]
 \begin{tabular}{l l p{.435\linewidth}}
 \sparselineqlist  &:-& linear equations. Can be
 of the form \textit{equation $=$ number} or just \textit{equation} which is
@@ -519,7 +527,7 @@ It returns \{$\mathcal{C,X,B}$\} such that $\mathcal{CX} = \mathcal{B}$.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
-\texttt{column\_dim($\mathcal{A}$);}\\[2mm]
+{\tt column\_dim($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix.
 \end{tabular}
@@ -551,7 +559,7 @@ x    &:-& the variable.
                 of poly.
 
 This is the square matrix of dimension $n$, where $n$ is the degree of poly
-w.r.t. $x$.
+w.r.t.\ $x$.
 The entries of $\mathcal{C}$ are:
                 $\mathcal{C}(i,n) = -\texttt{coeffn}(\texttt{poly},x,i-1)$ for $i = 1
                 \ldots n$, $\mathcal{C}(i,i-1) = 1$ for $i = 2 \ldots n$ and
@@ -575,7 +583,7 @@ The entries of $\mathcal{C}$ are:
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
-\texttt{spcopy\_into($\mathcal{A,B}$,r,c);}\\[2mm]
+{\tt spcopy\_into($\mathcal{A,B}$,r,c);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A,B}$ &:-& matrices of type sparse or matrix. \\
 r,c          &:-& positive integers.
@@ -607,7 +615,7 @@ r,c          &:-& positive integers.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
- \texttt{spdiagonal(\{\sparsematlist{}\});}\sparselazyfootnote{}\\[2mm]
+{\tt spdiagonal(\{\sparsematlist{}\});}\sparselazyfootnote{}\\[2mm]
 \begin{tabular}{l l p{.58\linewidth}}
 \sparsematlist &:-& each can be either a scalar
 expr or a square matrix of sparse or matrix type.
@@ -636,7 +644,7 @@ input on the diagonal.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
- \texttt{spextend($\mathcal{A}$,r,c,expr);}\\[2mm]
+{\tt spextend($\mathcal{A}$,r,c,expr);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix. \\
 r,c        &:-& positive integers. \\
@@ -669,7 +677,7 @@ expr      &:-& algebraic expression or symbol.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
- \texttt{spfind\_companion($\mathcal{A}$,x);}\\[2mm]
+{\tt spfind\_companion($\mathcal{A}$,x);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix. \\
 x          &:-& the variable.
@@ -696,7 +704,7 @@ from which it was made.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{spget\_columns($\mathcal{A}$,column\_list);}\\[2mm]
+{\tt spget\_columns($\mathcal{A}$,column\_list);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix. \\
 c          &:-& either a positive integer or a list of positive
@@ -771,7 +779,7 @@ lists:  \{\{1,0,0,0\},\{1,1,0,0\},\{1,1,1,0\},\{1,1,1,1\}\}.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{sphermitian\_tp($\mathcal{A}$);}\\[2mm]
+{\tt sphermitian\_tp($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix.
 \end{tabular}
@@ -804,7 +812,7 @@ variable\_list &:-& either a single variable or a list of variables.
 \end{tabular}
 
 \item[Synopsis:]\mbox{}\\*
-                \texttt{sphessian} computes the hessian matrix of expr w.r.t.
+                \texttt{sphessian} computes the hessian matrix of expr w.r.t.\
                 the variables in variable\_list.
 
 \item[Examples:]
@@ -830,7 +838,7 @@ variable\_list &:-& either a single variable or a list of variables.
 \end{tabular}
 
 \item[Synopsis:]\mbox{}\\*
-\texttt{spjacobian} computes the jacobian matrix of expr\_list w.r.t.
+\texttt{spjacobian} computes the jacobian matrix of expr\_list w.r.t.\
 variable\_list.
 
 \item[Examples:]\mbox{}\\
@@ -878,7 +886,7 @@ square\_size &:-& a positive integer.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{splu\_decom($\mathcal{A}$);}\\[2mm]
+{\tt splu\_decom($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l p{.848\linewidth}}
 $\mathcal{A}$ &:-& a sparse matrix containing either
 numeric entries or imaginary entries with numeric coefficients.
@@ -895,9 +903,9 @@ The algorithm used can swap the rows of $\mathcal{A}$
                 during the calculation. This means that $\mathcal{LU}$ does
                 not equal $\mathcal{A}$ but a row equivalent of it. Due to
                 this, \texttt{splu\_decom} returns \{$\mathcal{L,U}$,vec\}. The
-                call \texttt{spconvert($\mathcal{A}$,vec)} will return the
+                call {\tt spconvert($\mathcal{A}$,vec)} will return the
                 sparse matrix that has been decomposed, ie: $\mathcal{LU} = $
-                \texttt{spconvert($\mathcal{A}$,vec)}.
+                {\tt spconvert($\mathcal{A}$,vec)}.
 
 \item[Examples:]
 \(
@@ -954,7 +962,7 @@ square\_size &:-& a positive integer.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
- \texttt{spmatrix\_augment(\{\sparsematlist\});}\sparselazyfootnote{}\\[2mm]
+{\tt spmatrix\_augment(\{\sparsematlist\});}\sparselazyfootnote{}\\[2mm]
 \begin{tabular}{l l l}
 \sparsematlist &:-& matrices.
 \end{tabular}
@@ -1019,7 +1027,7 @@ See: \texttt{spmatrix\_augment}.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{spminor($\mathcal{A}$,r,c);}\\[2mm]
+{\tt spminor($\mathcal{A}$,r,c);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix. \\
 r,c        &:-& positive integers.
@@ -1043,7 +1051,7 @@ r,c        &:-& positive integers.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{spmult\_columns($\mathcal{A}$,column\_list,expr);}\\[2mm]
+{\tt spmult\_columns($\mathcal{A}$,column\_list,expr);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$   &:-& a sparse matrix. \\
 column\_list &:-& a positive integer or a list of positive integers. \\
@@ -1082,7 +1090,7 @@ See: \texttt{spmult\_columns}.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{sppivot($\mathcal{A}$,r,c);}\\[2mm]
+{\tt sppivot($\mathcal{A}$,r,c);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix. \\
 r,c        &:-& positive integers such that $\mathcal{A}$(r,c) neq 0.
@@ -1109,7 +1117,7 @@ This means that the c'th column
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{sppseudo\_inverse($\mathcal{A}$);}\\[2mm]
+{\tt sppseudo\_inverse($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix containing only real numeric entries.
 \end{tabular}
@@ -1153,7 +1161,7 @@ This $x$ is $\mathcal{A}^{\dagger} b$.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{spremove\_columns($\mathcal{A}$,column\_list);}\\[2mm]
+{\tt spremove\_columns($\mathcal{A}$,column\_list);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$   &:-& a sparse matrix. \\
 column\_list &:-& either a positive integer or a list of
@@ -1201,7 +1209,7 @@ See: \texttt{spcolumn\_dim}.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{sprows\_pivot($\mathcal{A}$,r,c,\{row\_list\});}\\[2mm]
+{\tt sprows\_pivot($\mathcal{A}$,r,c,\{row\_list\});}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix. \\
 r,c        &:-& positive integers such that $\mathcal{A}$(r,c) neq 0.\\
@@ -1223,7 +1231,7 @@ the pivot only to the rows specified in row\_list.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{sparsematp($\mathcal{A}$);}\\[2mm]
+{\tt sparsematp($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a matrix.
 \end{tabular}
@@ -1247,7 +1255,7 @@ $\mathcal{A}$ &:-& a matrix.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{squarep($\mathcal{A}$);}\\[2mm]
+{\tt squarep($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a matrix.
 \end{tabular}
@@ -1281,7 +1289,7 @@ See: \texttt{spaugment\_columns}.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{spsub\_matrix($\mathcal{A}$,row\_list,column\_list);}\\[2mm]
+{\tt spsub\_matrix($\mathcal{A}$,row\_list,column\_list);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$              &:-& a sparse matrix. \\
 row\_list, column\_list &:-& \parbox[t]{.605\linewidth}{either a
@@ -1309,7 +1317,7 @@ columns specified in column\_list.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{spsvd($\mathcal{A}$);}\\[2mm]
+{\tt spsvd($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix containing only real numeric entries.
 \end{tabular}
@@ -1323,7 +1331,7 @@ is an $m\times n$ real matrix of (column) rank $r$, \texttt{svd} returns the
 \mathcal{U} \Sigma \mathcal{V}^T$.
 
 Let $k=\min(m,n)$.  Then $U$ is $m\times k$,
-$V$ is $n\times k$, and and $\Sigma = \mbox{diag}(\sigma_{1}, \ldots ,\sigma_{k})$,
+$V$ is $n\times k$, and $\Sigma = \mbox{diag}(\sigma_{1}, \ldots ,\sigma_{k})$,
 where $\sigma_{i}\ge 0$ are the singular values of $\mathcal{A}$; only $r$ of
 these are non-zero.  The singular values are the non-negative square roots of
 the eigenvalues of $\mathcal{A}^T \mathcal{A}$.
@@ -1352,7 +1360,7 @@ here, but in others $U$ and $V$ are square, and $\Sigma$ is rectangular.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{spswap\_columns($\mathcal{A}$,c1,c2);}\\[2mm]
+{\tt spswap\_columns($\mathcal{A}$,c1,c2);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a sparse matrix. \\
 c1,c1      &:-& positive integers.
@@ -1379,7 +1387,7 @@ c1,c1      &:-& positive integers.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{spswap\_entries($\mathcal{A}$,\{r1,c1\},\{r2,c2\});}\\[2mm]
+{\tt spswap\_entries($\mathcal{A}$,\{r1,c1\},\{r2,c2\});}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$  &:-& a sparse matrix. \\
 r1,c1,r2,c2 &:-& positive integers.
@@ -1410,7 +1418,7 @@ See: \texttt{spswap\_columns}.
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
-\texttt{symmetricp($\mathcal{A}$);}\\[2mm]
+{\tt symmetricp($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l}
 $\mathcal{A}$ &:-& a matrix.
 \end{tabular}
@@ -1454,7 +1462,7 @@ This package is an extention of the code from the Linear Algebra Package
 for \REDUCE{} by Matt Rebbeck (cf. section \ref{LINALG}).
 
 The algorithms for \texttt{spcholesky}, \texttt{splu\_decom}, and \texttt{spsvd} are
-taken from the book Linear Algebra -- J.H. Wilkinson \& C. Reinsch[3].
+taken from the book Linear Algebra -- J.H. Wilkinson \& C. Reinsch.
 
 The \texttt{spgram\_schmidt} code comes from Karin Gatermann's Symmetry
-package[4] for {\REDUCE}.
+package for {\REDUCE}.
