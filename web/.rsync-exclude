@@ -2,10 +2,10 @@
 *.json
 copy-manual.sh
 rsync-web.sh
-upload-manual.sh
 README*
 LICENSE
-htdocs/manual/
+# Temporarily exclude all web-reduce:
+htdocs/web-reduce/
 htdocs/web-reduce/Notes.md
 htdocs/web-reduce/emscripten/
 htdocs/web-reduce/gnuplot/Makefile
@@ -17,6 +17,7 @@ search/
 sitemap/
 
 # Include only extra-docs/{*.pdf,index.php}:
++ extra-docs/twolf/
 + extra-docs/*.pdf
 + extra-docs/index.php
 - extra-docs/*

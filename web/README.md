@@ -1,6 +1,6 @@
 # Files for the REDUCE web site #
 
-**Francis Wright, January 2025**
+**Francis Wright, June 2026**
 
 The REDUCE web site is hosted at the URL [https://reduce-algebra.sourceforge.io](https://reduce-algebra.sourceforge.io) and can also be accessed using the URLs [http://reduce-algebra.sourceforge.net](http://reduce-algebra.sourceforge.net), [http://www.reduce-algebra.com](http://www.reduce-algebra.com) and [http://reduce-algebra.com](http://reduce-algebra.com), which are DNS aliases. The `reduce-algebra.com` domain is paid for by Tony Hearn.
 
@@ -34,21 +34,6 @@ The search facility uses a [Google Custom Search Engine](https://cse.google.com/
 ## Local development and testing ##
 
 I develop and test updates to the REDUCE web site on a local server that matches the configuration of the SourceForge server as closely as possible.  For this I currently use [XAMPP](https://www.apachefriends.org/index.html) for Windows 7.1.31 (with only Apache and PHP installed).  I normally update the REDUCE web site using `rsync`.  I sometimes also do a little interactive maintenance, such as deleting obsolete files, using `SFTP`, for which I use the [FileZilla](https://filezilla-project.org/) Client for Windows.  The protocols available for maintaining a SourceForge web site are described in the SourceForge [Site Documentation](https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/).
-
-## REDUCE manual ##
-
-The `PDF` and `HTML` versions of the REDUCE manual are built separately and normally uploaded directly to the web server (not using `rsync`).  I currently copy the required manual `HTML` and `PDF` files from the documentation directory (`doc/manual`) to the web directory (`web/htdocs/manual`) and check them using a local web server.  I then zip the manual directory, upload the zip archive to SourceForge using `SFTP` or `scp`, log in to SourceForge using `ssh`, unzip the archive to the directory `manual.new`, move `manual` to `manual.old`, move `manual.new` to `manual`, and then check the web site using a web browser.
-
-This process can be automated by running the following `bash` commands in this directory (actually, the first three locally and the last at SourceForge):
-
-``` bash
-./copy-manual.sh
-./upload-manual.sh
-ssh -t fjwright@shell.sourceforge.net create
-/home/project-web/reduce-algebra/unzip-manual.sh
-```
-
-Replace `fjwright` by your Sourceforge username.  The bash script `copy-manual.sh` copies the required manual `HTML` and `PDF` files from `doc/manual` to `htdocs/manual`.  The bash script `upload-manual.sh` zips and uploads `htdocs/manual` and then displays the instruction to run the last two commands.  This process assumes that your SSH key is posted to SourceForge so that no explicit authentication is required; see <https://sourceforge.net/p/forge/documentation/SSH%20Keys/>.  The final manual step is necessary because it seems that operations at SourceForge can only be done interactively.  Note that the file `unzip-manual.sh` in this directory needs to be (and has been) uploaded to Sourceforge.
 
 <!-- Local Variables: -->
 <!-- fill-column: 1000 -->
