@@ -30,10 +30,11 @@ The size of the matrix may be declared explicitly in the matrix
 declaration, or by default in assigning such a variable to a matrix
 expression. For example,
 \begin{verbatim}
-        matrix x(2,1),y(3,4),z;
+     matrix x(2,1),y(3,4),z;
 \end{verbatim}
-declares \texttt{x} to be a 2 x 1 (column) matrix, \texttt{y} to be a 3 x 4
-matrix and \texttt{z} a matrix whose size is to be declared later.
+declares \texttt{x} to be a $2 \times 1$ (column) matrix, \texttt{y}
+to be a $3 \times 4$ matrix and \texttt{z} a matrix whose size is to
+be declared later.
 
 Matrix declarations can appear anywhere in a program. Once a symbol is
 declared to name a matrix, it can not also be used to name an array,
@@ -52,7 +53,7 @@ result, a matrix element has an \emph{instant evaluation}\index{Instant
 evaluation} property and cannot stand for itself.  If this is required,
 then an operator should be used to name the matrix elements as in:
 \begin{verbatim}
-        matrix m; operator x;  m := mat((x(1,1),x(1,2));
+     matrix m; operator x;  m := mat((x(1,1),x(1,2));
 \end{verbatim}
 
 \section{Matrix Expressions}
@@ -106,7 +107,7 @@ Attention is also drawn to the LINALG
 \hypertarget{operator:DET}{}
 Syntax:
 \begin{syntax}
-        \texttt{det(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\textit{algebraic} .
+  \texttt{det(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\textit{algebraic}
 \end{syntax}
 
 The operator \texttt{det} is used to represent the determinant of a square
@@ -135,7 +136,7 @@ for the determinant itself.
 \hypertarget{operator:MATEIGEN}{}
 Syntax:
 \begin{syntax}
-        \texttt{mateigen(}\meta{exprn:matrix\_expression,id}\texttt{)}\,:\,\meta{list} .
+  \texttt{mateigen(}\meta{exprn:matrix\_expression},\meta{id:identifier}\texttt{)}\,:\,\textit{list}
 \end{syntax}
 
 \texttt{mateigen} calculates the eigenvalue equation and the corresponding
@@ -183,25 +184,25 @@ gives the output
 \hypertarget{operator:TP}{}
 Syntax:
 \begin{syntax}
-        \texttt{tp(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\meta{matrix} .
+  \texttt{tp(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\textit{matrix}
 \end{syntax}
 
 This operator takes a single matrix argument and returns its transpose.
 
-\subsection{Trace Operator}\ttindextype{trace}{operator}
+\subsection{TRACE Operator}\ttindextype{trace}{operator}
 \hypertarget{operator:TRACE}{}
 Syntax:
 \begin{syntax}
-        \texttt{trace(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\meta{algebraic}.
+  \texttt{trace(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\textit{algebraic}
 \end{syntax}
 The operator \texttt{trace} is used to represent the trace of a square matrix.
 
-\subsection{Matrix Cofactors}\ttindextype{cofactor}{operator}
+\subsection{COFACTOR Operator}\ttindextype{cofactor}{operator}
 \hypertarget{operator:COFACTOR}{}
 Syntax:
 \begin{syntax}
-  \texttt{cofactor(}\meta{exprn:matrix\_expression}\texttt{,}\meta{row:integer}\texttt{,}\meta{column:integer}\texttt{)}\,:\,
-           algebraic
+  \texttt{cofactor(}\meta{exprn:matrix\_expression}\texttt{,}\meta{row:integer}\texttt{,}\meta{column:integer}\texttt{)}\,:\\
+  \textit{algebraic}
 \end{syntax}
 
 The operator \texttt{cofactor} returns the cofactor of the element in row
@@ -213,9 +214,9 @@ if \texttt{row} or \texttt{column} do not simplify to integer expressions or if
 \hypertarget{operator:NULLSPACE}{}
 Syntax:
 \begin{syntax}
-        \texttt{nullspace(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\meta{list}
+  \texttt{nullspace(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\textit{list}
 \end{syntax}
-\texttt{nullspace} calculates for a matrix $A$ a list of linear
+\texttt{nullspace} calculates for a matrix $A$ a list of linearly
 independent vectors (a basis) whose linear combinations satisfy the
 equation $A x = 0$.  The basis is provided in a form such that as many
 upper components as possible are isolated.
@@ -251,23 +252,23 @@ be found more directly by the \texttt{rank} operator described below.
          }
 \end{verbatim}
 
-In addition to the {\REDUCE} matrix form, \texttt{nullspace} accepts as input a
-matrix given as a list of lists, that is interpreted as a row matrix.  If
-that form of input is chosen, the vectors in the result will be
-represented by lists as well.  This additional input syntax facilitates
-the use of \texttt{nullspace} in applications different from classical linear
-algebra.
+In addition to the {\REDUCE} matrix form, \texttt{nullspace} accepts
+as input a matrix given as a list of lists that is interpreted as a
+list of matrix rows.  If that form of input is chosen, the vectors in
+the result will be represented by lists as well.  This additional
+input syntax facilitates the use of \texttt{nullspace} in applications
+different from classical linear algebra.
 
 \subsection{RANK Operator}\ttindextype{rank}{operator}
 \hypertarget{operator:RANK}{}
 
 Syntax:
 \begin{syntax}
-        \texttt{rank(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\meta{integer} .
+  \texttt{rank(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\textit{integer}
 \end{syntax}
 \texttt{rank} calculates the rank of its argument, that, like \texttt{nullspace}
-can either be a standard matrix expression, or a list of lists, that can
-be interpreted either as a row matrix or a set of equations.
+can either be a standard matrix expression, or a list of lists that can
+be interpreted either as a list of matrix rows or a set of equations.
 
 \texttt{Example:}
 \begin{verbatim}
@@ -306,7 +307,7 @@ to assign the expression to a variable and then use the syntax
 described above.  Another way is to use the
 \hyperlink{operator:PART}{\texttt{part}} operator: if \emph{M} is
 either a matrix or a matrix-valued expression then
-\texttt{part(\emph{M}, \emph{i})} evaluates to row \emph{i}
-\emph{represented as a list}, and (hence) \texttt{part(\emph{M},
-  \emph{i}, \emph{j})} evaluates to the matrix element in row \emph{i}
-and column \emph{j}.
+\texttt{part(\emph{M},\emph{i})} evaluates to row \emph{i}
+\emph{represented as a list}, and (hence)
+\texttt{part(\emph{M},\emph{i},\emph{j})} evaluates to the matrix
+element in row \emph{i} and column \emph{j}.
