@@ -107,7 +107,9 @@ include './include/begin-body.php';
             // I fail to see why this conversion is necessary, but it is!
             // I think 'manual/manual.html' really is encoded as UTF-8,
             // but without conversion the output is mangled!
-            $sectionAnchorString = mb_convert_encoding($doc->saveHTML($sectionAnchor), 'ISO-8859-1', 'UTF-8');
+            // June 2026: Something has changed and now this conversion mangles the output!
+            // $sectionAnchorString = mb_convert_encoding($doc->saveHTML($sectionAnchor), 'ISO-8859-1', 'UTF-8');
+            $sectionAnchorString =$doc->saveHTML($sectionAnchor);
             // Embolden the package name (before the colon):
             $sectionAnchorString = preg_replace('/>(.*):/', '><b>$1</b>:', $sectionAnchorString);
             echo "&emsp;&emsp;$sectionAnchorString<br/>\n";
