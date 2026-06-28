@@ -198,7 +198,7 @@ uint64_t sixty_four_bits_unsigned(LispObject a)
 //      |___ this start point must be at an address that is 8 mod 16,
 //           so that the float itself is 16 byte aligned.
 
-LispObject make_boxfloat128(FLOAT128 a)
+LispObject make_boxfloat128(FLOAT_128 a)
 {   LispObject r;
     r = get_aligned_basic_vector(TAG_BOXFLOAT, TYPE_FLOAT, SIZEOF_LONG_FLOAT);
     errexit();
@@ -206,7 +206,7 @@ LispObject make_boxfloat128(FLOAT128 a)
     long_float_val(r) = a;
     if (trap_floating_overflow &&
         floating_edge_case128(
-            *reinterpret_cast<FLOAT128 *>(&long_float_val(r))))
+            *reinterpret_cast<FLOAT_128 *>(&long_float_val(r))))
         return aerror("exception with long float");
     return r;
 }
@@ -234,7 +234,7 @@ double float_of_number(LispObject a)
             case DOUBLE_FLOAT_HEADER:
                 return double_float_val(a);
             case LONG_FLOAT_HEADER:
-            {   FLOAT128 w = long_float_val(a);
+            {   FLOAT_128 w = long_float_val(a);
                 return (double)w;
             }
             default:
@@ -452,7 +452,7 @@ LispObject make_five_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
     return w;
 }
 
-LispObject make_boxfloat128(FLOAT128 a)
+LispObject make_boxfloat128(FLOAT_128 a)
 {   LispObject r;
     r = get_aligned_basic_vector(TAG_BOXFLOAT, TYPE_FLOAT, SIZEOF_LONG_FLOAT);
     errexit();
@@ -546,9 +546,9 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
     return r;
 }
 
-static FLOAT128 f128_TWO_31(((uint128_t)0x401e) << 112, 0);
+static FLOAT_128 f128_TWO_31(((uint128_t)0x401e) << 112, 0);
 
-static FLOAT128 bignum_to_float128(LispObject v, int32_t h, int *xp)
+static FLOAT_128 bignum_to_float128(LispObject v, int32_t h, int *xp)
 // Convert a Lisp bignum to get a 128-bit floating point value.
 // This uses at most the top 5 digits of the bignum's representation
 // since that is enough to achieve full accuracy.
@@ -563,29 +563,29 @@ static FLOAT128 bignum_to_float128(LispObject v, int32_t h, int *xp)
     int x = 31*static_cast<int>(n);
     int32_t msd = (int32_t)bignum_digits(v)[n];
 // NB signed conversion on next line
-    FLOAT128 r, w1, w2;
-    r = (FLOAT128)(msd);
+    FLOAT_128 r, w1, w2;
+    r = (FLOAT_128)(msd);
     switch (n)
     {   default:        // for very big numbers combine in 5 digits
-            w1 = (FLOAT128)bignum_digits(v)[--n];
+            w1 = (FLOAT_128)bignum_digits(v)[--n];
             w2 = f128_TWO_31*r;
             r = w1+w2;
             x -= 31;
         // drop through
         case 3:
-            w1 = (FLOAT128)bignum_digits(v)[--n];
+            w1 = (FLOAT_128)bignum_digits(v)[--n];
             w2 = f128_TWO_31*r;
             r = w1+w2;
             x -= 31;
         // drop through
         case 2:
-            w1 = (FLOAT128)bignum_digits(v)[--n];
+            w1 = (FLOAT_128)bignum_digits(v)[--n];
             w2 = f128_TWO_31*r;
             r = w1+w2;
             x -= 31;
         // drop through
         case 1:
-            w1 = (FLOAT128)bignum_digits(v)[--n];
+            w1 = (FLOAT_128)bignum_digits(v)[--n];
             w2 = f128_TWO_31*r;
             r = w1+w2;
             x -= 31;
@@ -625,13 +625,13 @@ int double_to_binary(double d, int64_t &m)
 
 // This does much the same for 128-bit floats.
 
-int float128_to_binary(FLOAT128 d, int64_t &mhi, uint64_t &mlo)
+int float128_to_binary(FLOAT_128 d, int64_t &mhi, uint64_t &mlo)
 {   if (isnan(d))
     {   mhi = mlo = 0;
         return INT_MIN;
     }
     else if (isinf(d))
-    {   if (d < (FLOAT128)0.0)
+    {   if (d < (FLOAT_128)0.0)
         {   mhi = -1;
             mlo = -1;
         }
@@ -641,7 +641,7 @@ int float128_to_binary(FLOAT128 d, int64_t &mhi, uint64_t &mlo)
         }
         return INT_MAX;
     }
-    else if (d == (FLOAT128)0.0)
+    else if (d == (FLOAT_128)0.0)
     {   mhi = mlo = 0;   // I lose information about +0.0 vs -0.0 here
         return 0;
     }
@@ -711,7 +711,7 @@ intptr_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1,
     return q;
 }
 
-intptr_t float128_to_5_digits(FLOAT128 d,
+intptr_t float128_to_5_digits(FLOAT_128 d,
                               int32_t &a4,
                               uint32_t &a3,
                               uint32_t &a2,
@@ -808,15 +808,15 @@ double float_of_number(LispObject a)
     }
 }
 
-FLOAT128 float128_of_number(LispObject a)
+FLOAT_128 float128_of_number(LispObject a)
 // Return a 128-bit floating point value for the given Lisp
 // number, or 0.0 in case of trouble.
-{   if (is_fixnum(a)) return (FLOAT128)(int64_t)int_of_fixnum(a);
+{   if (is_fixnum(a)) return (FLOAT_128)(int64_t)int_of_fixnum(a);
     else if (is_sfloat(a))
     {   float_union w;
         if (SIXTY_FOUR_BIT) w.i = (int32_t)((uint64_t)a>>32);
         else w.i = a - XTAG_SFLOAT;
-        return (FLOAT128)w.f;
+        return (FLOAT_128)w.f;
     }
     else if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -824,19 +824,19 @@ FLOAT128 float128_of_number(LispObject a)
         {   case SINGLE_FLOAT_HEADER:
                 if (SIXTY_FOUR_BIT)
                     aerror("boxed single float on 64-bit system");
-                return (FLOAT128)single_float_val(a);
+                return (FLOAT_128)single_float_val(a);
             case DOUBLE_FLOAT_HEADER:
-                return (FLOAT128)double_float_val(a);
+                return (FLOAT_128)double_float_val(a);
             case LONG_FLOAT_HEADER:
                 return long_float_val(a);
             default:
-                return (FLOAT128)0.0;
+                return (FLOAT_128)0.0;
         }
     }
     else
     {   Header h = numhdr(a);
         int x1;
-        FLOAT128 r1, r2;
+        FLOAT_128 r1, r2;
         switch (type_of_header(h))
         {   case TYPE_BIGNUM:
                 r1 = bignum_to_float128(a, length_of_header(h), &x1);
@@ -858,7 +858,7 @@ FLOAT128 float128_of_number(LispObject a)
 // If the value was non-numeric or a complex number I hand back 0.0,
 // and since I am supposed to have checked the object type already
 // this OUGHT not to arrive - but raising an exception seems over-keen.
-                return (FLOAT128)0.0;
+                return (FLOAT_128)0.0;
         }
     }
 }
@@ -1394,7 +1394,7 @@ inline LispObject plus_i_d(LispObject a1, LispObject a2)
 }
 
 inline LispObject plus_i_l(LispObject a1, LispObject a2)
-{   FLOAT128 x = (FLOAT128)(int64_t)int_of_fixnum(a1);
+{   FLOAT_128 x = (FLOAT_128)(int64_t)int_of_fixnum(a1);
     x = x + long_float_val(a2);
     return make_boxfloat128(x);
 }
@@ -1614,7 +1614,7 @@ inline LispObject plus_b_d(LispObject a1, LispObject a2)
 }
 
 inline LispObject plus_b_l(LispObject a1, LispObject a2)
-{   FLOAT128 z = float128_of_number(a1) + float128_of_number(a2);
+{   FLOAT_128 z = float128_of_number(a1) + float128_of_number(a2);
     return make_boxfloat128(z);
 }
 
@@ -1756,8 +1756,8 @@ inline LispObject plus_s_d(LispObject a1, LispObject a2)
 }
 
 inline LispObject plus_s_l(LispObject a1, LispObject a2)
-{   FLOAT128 x, z;
-    x = (FLOAT128)value_of_immediate_float(a1);
+{   FLOAT_128 x, z;
+    x = (FLOAT_128)value_of_immediate_float(a1);
     z = x + long_float_val(a2);
     return make_boxfloat128(z);
 }
@@ -1793,8 +1793,8 @@ inline LispObject plus_f_d(LispObject a1, LispObject a2)
 }
 
 inline LispObject plus_f_l(LispObject a1, LispObject a2)
-{   FLOAT128 x, z;
-    x = (FLOAT128)single_float_val(a1);
+{   FLOAT_128 x, z;
+    x = (FLOAT_128)single_float_val(a1);
     z = x + long_float_val(a2);
     return make_boxfloat128(z);
 }
@@ -1829,8 +1829,8 @@ inline LispObject plus_d_d(LispObject a1, LispObject a2)
 }
 
 inline LispObject plus_d_l(LispObject a1, LispObject a2)
-{   FLOAT128 x, z;
-    x = (FLOAT128)double_float_val(a1);
+{   FLOAT_128 x, z;
+    x = (FLOAT_128)double_float_val(a1);
     z = x + long_float_val(a2);
     return make_boxfloat128(z);
 }
@@ -1864,7 +1864,7 @@ inline LispObject plus_l_d(LispObject a1, LispObject a2)
 }
 
 inline LispObject plus_l_l(LispObject a1, LispObject a2)
-{   FLOAT128 z = long_float_val(a1) + long_float_val(a2);
+{   FLOAT_128 z = long_float_val(a1) + long_float_val(a2);
     return make_boxfloat128(z);
 }
 
@@ -2206,14 +2206,14 @@ inline LispObject difference_d_l(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_l_i(LispObject a1, LispObject a2)
-{   FLOAT128 x, z;
-    x = (FLOAT128)(int64_t)int_of_fixnum(a2);
+{   FLOAT_128 x, z;
+    x = (FLOAT_128)(int64_t)int_of_fixnum(a2);
     z = long_float_val(a1) - x;
     return make_boxfloat128(z);
 }
 
 inline LispObject difference_l_b(LispObject a1, LispObject a2)
-{   FLOAT128 x, z;
+{   FLOAT_128 x, z;
     x = float128_of_number(a2);
     z = long_float_val(a1) - x;
     return make_boxfloat128(z);

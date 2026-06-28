@@ -212,7 +212,7 @@ LispObject negate(LispObject a)
                     return make_boxfloat(-double_float_val(a),
                                          WANT_DOUBLE_FLOAT);
                 case LONG_FLOAT_HEADER:
-                {   FLOAT128 aa = -long_float_val(a);
+                {   FLOAT_128 aa = -long_float_val(a);
                     return make_boxfloat128(aa);
                 }
             }

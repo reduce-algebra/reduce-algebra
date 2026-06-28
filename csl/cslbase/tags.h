@@ -870,8 +870,7 @@ inline constexpr uintptr_t TYPE_INTPTR       =
 
 inline constexpr uintptr_t TYPE_VECFLOAT32   = 0x53<<Tw; // contains single-precision floats
 inline constexpr uintptr_t TYPE_VECFLOAT64   = 0x57<<Tw; // contains double-precision floats
-// Note that "128-bit" floats may be of some lever precision!
-inline constexpr uintptr_t TYPE_VECFLOAT128  = 0x5b<<Tw; // contains FLOAT128 floats
+inline constexpr uintptr_t TYPE_VECFLOAT128  = 0x5b<<Tw; // contains FLOAT_128 floats
 
 // The next items live amongst the vectors that hold Lisp pointers, but only
 // the first three items are pointers - the rest of the stuff is binary
@@ -1135,7 +1134,7 @@ inline bool is_array_header(Header h)
 //   11:101 1:1 010  (spare: 1 code)                X
 //   11:110 1:1 010  padder vector                  X
 // Note that "128-bit" floats may be of some lever precision!
-//   11:111 1:1 010  FLOAT128 (using 128 bits)   F128
+//   11:111 1:1 010  FLOAT_128 (using 128 bits)   F128
 
 // I have tests that let me discern the size of storage units within a
 // vector. This matters for serialization and deserialization because the
@@ -2336,8 +2335,8 @@ inline void incCount(LispObject p, uint32_t m=1)
 // From C++23 onwards there will be fixed width floating point types
 // float32_t, float64_t and float128_t. However it will be some while before
 // I can properly use those. So for now I will ASSUME that float denotes
-// 32-bit IEEE and double is 64-bit IEEE. I provide a type FLOAT128
-// (and also COMPLEX128) that I make as cross-platform as I can.
+// 32-bit IEEE and double is 64-bit IEEE. I provide a type FLOAT_128
+// (and also COMPLEX_128) that I make as cross-platform as I can.
 
 typedef union _float_union
 {   float f;
@@ -2350,7 +2349,7 @@ typedef union _double_union
 } double_union;
 
 typedef union _longDouble_union
-{   FLOAT128 f;
+{   FLOAT_128 f;
     uint128_t i;
 } longdouble_union;
 
@@ -2591,7 +2590,7 @@ inline int32_t& intfloat64_t_val_lo(LispObject v)
 //  of the object, ie (8-TAG_BOXFLOAT) bytes on from the tagged pointer
 //  that identifies it.
 //      alignas (8) union long_or_ints {
-//          FLOAT128 f128;
+//          FLOAT_128 f128;
 //          int32_t i[4];
 //          int64_t ii[2];
 //          int128_t iii;
@@ -2599,8 +2598,8 @@ inline int32_t& intfloat64_t_val_lo(LispObject v)
 //  } Long_Float;
 
 inline constexpr size_t SIZEOF_LONG_FLOAT = 24;
-inline FLOAT128* long_float_addr(LispObject v)
-{   return (FLOAT128*)(reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
+inline FLOAT_128* long_float_addr(LispObject v)
+{   return (FLOAT_128*)(reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int32_t& long_float_pad(LispObject v)
@@ -2608,8 +2607,8 @@ inline int32_t& long_float_pad(LispObject v)
         reinterpret_cast<char*>(v) + (4-TAG_BOXFLOAT));
 }
 
-inline FLOAT128& long_float_val(LispObject v)
-{   return *reinterpret_cast<FLOAT128*>(
+inline FLOAT_128& long_float_val(LispObject v)
+{   return *reinterpret_cast<FLOAT_128*>(
         reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 

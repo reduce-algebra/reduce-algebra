@@ -909,14 +909,14 @@ void write_f64(double f)
 }
 
 
-FLOAT128 read_f128()
+FLOAT_128 read_f128()
 {   uint128_t n = 0;
     for (int i=0; i<16; i++)
         n = n | (((uint128_t)read_data_byte())<<(8*i));
-    return FLOAT128(n, 0);
+    return FLOAT_128(n, 0);
 }
 
-void write_f128(FLOAT128 f)
+void write_f128(FLOAT_128 f)
 {   uint128_t n = f.getbits();
     for (int i=0; i<16; i++)
     {   write_byte((int)(n & 0xff), "part of long double");

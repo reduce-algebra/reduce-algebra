@@ -67,9 +67,9 @@
 // urgent.
 
 // OVERVIEW:
-// This introduces types FLOAT128 and COMPLEX128. A literal for FLOAT128
+// This introduces types FLOAT_128 and COMPLEX_128. A literal for FLOAT_128
 // should be presented as for instance LF_C(1.23245e67). The usual range
-// of elementary functions should work on FLOAT128 and COMPLEX128 and the
+// of elementary functions should work on FLOAT_128 and COMPLEX_128 and the
 // names used are sin, cos, exp, log and so on. Utility functions such
 // as frexp and ldexp and tests for NaN and infinity values exist.
 // Output via "std::cout <<" is possible but the level of control over
@@ -97,7 +97,7 @@ static_assert(((long double)1.0 + 1.0e-34) != 1.0,
 #include "int128.h"  // for int128_t and uint128_t
 #include "bitmaps.h" // for nlz()
 
-// I will defined classes FLOAT128 and COMPLEX128 and provide
+// I will defined classes FLOAT_128 and COMPLEX_128 and provide
 // a range of elementary functions over them. Since my class differs
 // from all built in types the functions can have the simple names
 // sin. cos, exp, log etc.
@@ -184,7 +184,7 @@ using std::uint64_t;
 //   NEED_FLOAT160         I implement my own working precision.
 //   NEED_FLOAT128         Implement 128-bit floats and complex.
 //   NEED_REAL_MATHLIB     sin, cos etc on FLOAT128.
-//   NEED_COMPLEX_MATHLIB  sin, cos etc on COMPLEX128.
+//   NEED_COMPLEX_MATHLIB  sin, cos etc on COMPLEX_128.
 
 
 // These booleans inform me if the type "long double" is an IEEE
@@ -199,7 +199,7 @@ inline constexpr bool longdouble64  = LDBL_MANT_DIG == 53;
 #if defined USE_LONG_DOUBLE
 
 using FLOAT128REP = long double;
-#define LF_C(x) ((FLOAT128)(x ## L))
+#define LF_C(x) ((FLOAT_128)(x ## L))
 // Everything provided by standard C++ libraries.
 
 #elif defined USE_QUADMATH
@@ -207,14 +207,14 @@ using FLOAT128REP = long double;
 #include <quadmath.h>
 // Everything provided by "-quadmath" library
 using FLOAT128REP = __float128;
-#define LF_C(x) ((FLOAT128)(x ## Q))
+#define LF_C(x) ((FLOAT_128)(x ## Q))
 
 #elif defined USE_CLANG_FLOAT128
 
 #include <cfloat>
 // Real elementary functions provided as sinf128 etc, but complex ones needed
 using FLOAT128REP = __float128;
-#define LF_C(x) ((FLOAT128)(x ## Q))
+#define LF_C(x) ((FLOAT_128)(x ## Q))
 #define LLF_C(x) ((FLOAT160)(x ## _Q)
 #define NEED_FLOAT160 1
 #define NEED_COMPLEX_MATHLIB 1
@@ -224,7 +224,7 @@ using FLOAT128REP = __float128;
 #include <stdfloat>
 // Basic arithmetic on std::float128_t present, but all libraries needed here.
 using FLOAT128REP = std::float128_t;
-#define LF_C(x) ((FLOAT128)(x ## F128)) 
+#define LF_C(x) ((FLOAT_128)(x ## F128)) 
 #define LLF_C(x) ((FLOAT160)(x ## _Q))
 #define NEED_FLOAT160 1
 #define NEED_REAL_MATHLIB
@@ -234,7 +234,7 @@ using FLOAT128REP = std::float128_t;
 
 // Everything must be done in software.
 using FLOAT128REP = uint128_t;
-#define LF_C(x) ((FLOAT128)(x ## _Q))
+#define LF_C(x) ((FLOAT_128)(x ## _Q))
 #define LLF_C(x) ((FLOAT160)(x ## _Q))
 #define NEED_FLOAT128 1
 #define NEED_FLOAT160 1
@@ -247,29 +247,29 @@ using FLOAT128REP = uint128_t;
 // various other things that FLOAT128REP expands into can need 16 byte
 // alignment.
 
-class alignas(16) FLOAT128
+class alignas(16) FLOAT_128
 {
 private:
     FLOAT128REP v;
 public:
 // Constuctors
-    FLOAT128();
+    FLOAT_128();
 // I am only providing constructors based on the known-width integer types.
-    FLOAT128(int32_t);
-    FLOAT128(int64_t);
-    FLOAT128(int128_t);
-    FLOAT128(uint32_t);
-    FLOAT128(uint64_t);
-    FLOAT128(uint128_t);
-    FLOAT128(double);
-    FLOAT128(long double);
-    FLOAT128(FLOAT128 const&);
+    FLOAT_128(int32_t);
+    FLOAT_128(int64_t);
+    FLOAT_128(int128_t);
+    FLOAT_128(uint32_t);
+    FLOAT_128(uint64_t);
+    FLOAT_128(uint128_t);
+    FLOAT_128(double);
+    FLOAT_128(long double);
+    FLOAT_128(FLOAT_128 const&);
 #if defined USE_QUADMATH || \
     defined USE_CLANG_FLOAT128 || \
     defined USE_CXX23_FLOAT128
 // In these cases FLOAT128REP is a floating point type that is not double
 // or long double, but it is set up by LF_C(...).
-    FLOAT128(FLOAT128REP a) : v(a)
+    FLOAT_128(FLOAT128REP a) : v(a)
     {
     }
 #endif
@@ -278,15 +278,15 @@ public:
 // tag these as accessing the representation not any abstraction. The
 // constructors should be called with 0.0f or 0 as their second argument,
 // and the value used is ignored.
-    FLOAT128(FLOAT128REP, float);            // construct from a FLOAT128REP
+    FLOAT_128(FLOAT128REP, float);            // construct from a FLOAT128REP
     FLOAT128REP rep() const;
-    FLOAT128(uint128_t x, [[maybe_unused]]int y)  // Inject a bit pattern
+    FLOAT_128(uint128_t x, [[maybe_unused]]int y)  // Inject a bit pattern
     {   v = bit_cast<FLOAT128REP>(x);
     }
-    FLOAT128(uint32_t x, [[maybe_unused]]void* y) // the top 32 bits
+    FLOAT_128(uint32_t x, [[maybe_unused]]void* y) // the top 32 bits
     {   v = bit_cast<FLOAT128REP>(((uint128_t)x)<<96);
     }
-    FLOAT128(uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4)
+    FLOAT_128(uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4)
     {   uint128_t w = (uint128_t)a1;
         w = (w<<32) | a2;
         w = (w<<32) | a3;
@@ -321,10 +321,10 @@ public:
     bool iszero() const;
 // I will have some more specialist tests that I use internally
     bool isinfornan() const;
-    FLOAT128 ldexp(int x) const;
-    FLOAT128 frexp(int& x) const;
-    FLOAT128 abs() const;
-    FLOAT128 maxabs(FLOAT128) const;
+    FLOAT_128 ldexp(int x) const;
+    FLOAT_128 frexp(int& x) const;
+    FLOAT_128 abs() const;
+    FLOAT_128 maxabs(FLOAT_128) const;
 // Casts
     operator int32_t() const;
     operator int64_t() const;
@@ -335,22 +335,22 @@ public:
     operator double() const;
     operator long double() const;
 // Operators
-    FLOAT128 operator+() const;
-    FLOAT128 operator-() const;
-    FLOAT128 operator+(FLOAT128) const;
-    FLOAT128 operator-(FLOAT128) const;
-    FLOAT128 operator*(FLOAT128) const;
-    FLOAT128 operator/(FLOAT128) const;
-    FLOAT128 fma(FLOAT128, FLOAT128) const;
+    FLOAT_128 operator+() const;
+    FLOAT_128 operator-() const;
+    FLOAT_128 operator+(FLOAT_128) const;
+    FLOAT_128 operator-(FLOAT_128) const;
+    FLOAT_128 operator*(FLOAT_128) const;
+    FLOAT_128 operator/(FLOAT_128) const;
+    FLOAT_128 fma(FLOAT_128, FLOAT_128) const;
 // Comparisons
-    bool operator==(FLOAT128 const&) const;
-    bool operator!=(FLOAT128 const&) const;
-    bool operator>(FLOAT128 const&) const;
-    bool operator<(FLOAT128 const&) const;
-    bool operator>=(FLOAT128 const&) const;
-    bool operator<=(FLOAT128 const&) const;
+    bool operator==(FLOAT_128 const&) const;
+    bool operator!=(FLOAT_128 const&) const;
+    bool operator>(FLOAT_128 const&) const;
+    bool operator<(FLOAT_128 const&) const;
+    bool operator>=(FLOAT_128 const&) const;
+    bool operator<=(FLOAT_128 const&) const;
 
-    friend std::ostream& operator<<(std::ostream& o, FLOAT128 const& d);
+    friend std::ostream& operator<<(std::ostream& o, FLOAT_128 const& d);
     friend class NAN128;
     friend class PLUSINF128;
     friend class MINUSINF128;
@@ -358,56 +358,56 @@ public:
     friend class MINUSZERO128;
 };
 
-class NAN128 : public FLOAT128
+class NAN128 : public FLOAT_128
 {
 public:
     NAN128();
 };
 
-class PLUSINF128 : public FLOAT128
+class PLUSINF128 : public FLOAT_128
 {
 public:
     PLUSINF128();
 };
 
-class MINUSINF128 : public FLOAT128
+class MINUSINF128 : public FLOAT_128
 {
 public:
     MINUSINF128();
 };
 
-class ZERO128 : public FLOAT128
+class ZERO128 : public FLOAT_128
 {
 public:
     ZERO128();
 };
 
-class MINUSZERO128 : public FLOAT128
+class MINUSZERO128 : public FLOAT_128
 {
 public:
     MINUSZERO128();
 };
 
-class COMPLEX128
+class COMPLEX_128
 {
 private:
-    FLOAT128 rr;
-    FLOAT128 ii;
+    FLOAT_128 rr;
+    FLOAT_128 ii;
 public:
 // Constuctors
-    COMPLEX128();
+    COMPLEX_128();
 // I am only providing constructors based on the known-width integer types.
-    COMPLEX128(int32_t);
-    COMPLEX128(int64_t);
-    COMPLEX128(int128_t);
-    COMPLEX128(uint32_t);
-    COMPLEX128(uint64_t);
-    COMPLEX128(uint128_t);
-    COMPLEX128(double);
-    COMPLEX128(long double);
-    COMPLEX128(FLOAT128);
-    COMPLEX128(FLOAT128, FLOAT128);
-    COMPLEX128(COMPLEX128 const&);
+    COMPLEX_128(int32_t);
+    COMPLEX_128(int64_t);
+    COMPLEX_128(int128_t);
+    COMPLEX_128(uint32_t);
+    COMPLEX_128(uint64_t);
+    COMPLEX_128(uint128_t);
+    COMPLEX_128(double);
+    COMPLEX_128(long double);
+    COMPLEX_128(FLOAT_128);
+    COMPLEX_128(FLOAT_128, FLOAT_128);
+    COMPLEX_128(COMPLEX_128 const&);
 // Useful functions
 // Casts
     operator int32_t() const;
@@ -418,30 +418,30 @@ public:
     operator uint128_t() const;
     operator double() const;
     operator long double() const;
-    operator FLOAT128() const;
+    operator FLOAT_128() const;
 // operators
-    COMPLEX128 operator+() const;
-    COMPLEX128 operator-() const;
-    COMPLEX128 operator+(COMPLEX128) const;
-    COMPLEX128 operator-(COMPLEX128) const;
-    COMPLEX128 operator*(COMPLEX128) const;
-    COMPLEX128 operator/(COMPLEX128) const;
+    COMPLEX_128 operator+() const;
+    COMPLEX_128 operator-() const;
+    COMPLEX_128 operator+(COMPLEX_128) const;
+    COMPLEX_128 operator-(COMPLEX_128) const;
+    COMPLEX_128 operator*(COMPLEX_128) const;
+    COMPLEX_128 operator/(COMPLEX_128) const;
 // comparisons
-    bool operator==(COMPLEX128 const&) const;
-    bool operator!=(COMPLEX128 const&) const;
+    bool operator==(COMPLEX_128 const&) const;
+    bool operator!=(COMPLEX_128 const&) const;
 // specials for complex values
-    FLOAT128 real() const;
-    FLOAT128 imag() const;
-    FLOAT128 arg() const;
-    FLOAT128 abs() const;
-    FLOAT128 norm() const;
-    COMPLEX128 conj() const;
+    FLOAT_128 real() const;
+    FLOAT_128 imag() const;
+    FLOAT_128 arg() const;
+    FLOAT_128 abs() const;
+    FLOAT_128 norm() const;
+    COMPLEX_128 conj() const;
 
-    static COMPLEX128 NaN()
-    {   return COMPLEX128(NAN128(), NAN128());
+    static COMPLEX_128 NaN()
+    {   return COMPLEX_128(NAN128(), NAN128());
     }
 
-    friend std::ostream& operator<<(std::ostream& o, COMPLEX128 const& d);
+    friend std::ostream& operator<<(std::ostream& o, COMPLEX_128 const& d);
 };
 
 
@@ -748,7 +748,7 @@ public:
     constexpr FLOAT160(uint128_t);
     constexpr FLOAT160(double);
     constexpr FLOAT160(long double);
-    FLOAT160(FLOAT128 const&);
+    FLOAT160(FLOAT_128 const&);
     constexpr FLOAT160(FLOAT160 const& v):sign(),x(),m()
     {   sign = v.sign;
         x = v.x;
@@ -783,7 +783,7 @@ public:
     constexpr operator uint128_t() const;
     constexpr operator double() const;
     constexpr operator long double() const;
-    operator FLOAT128() const;
+    operator FLOAT_128() const;
 // Operators
     constexpr FLOAT160 operator=(FLOAT160 const&);
     constexpr FLOAT160 operator=(FLOAT160&&);
@@ -833,8 +833,8 @@ public:
 class COMPLEX160
 {
 private:
-    FLOAT128 rr;
-    FLOAT128 ii;
+    FLOAT160 rr;
+    FLOAT160 ii;
 public:
 // Constuctors
     COMPLEX160();
@@ -847,9 +847,9 @@ public:
     COMPLEX160(uint128_t);
     COMPLEX160(double);
     COMPLEX160(long double);
-    COMPLEX160(FLOAT128);
-    COMPLEX160(FLOAT128, FLOAT128);
-    COMPLEX160(COMPLEX128 const&);
+    COMPLEX160(FLOAT_128);
+    COMPLEX160(FLOAT_128, FLOAT_128);
+    COMPLEX160(COMPLEX_128 const&);
     COMPLEX160(FLOAT160);
     COMPLEX160(FLOAT160, FLOAT160);
     COMPLEX160(COMPLEX160 const&);
@@ -863,9 +863,9 @@ public:
     operator uint128_t() const;
     operator double() const;
     operator long double() const;
-    operator FLOAT128() const;
+    operator FLOAT_128() const;
     operator FLOAT160() const;
-    operator COMPLEX128() const;
+    operator COMPLEX_128() const;
 // Operators
     COMPLEX160 operator+() const;
     COMPLEX160 operator-() const;
@@ -1387,39 +1387,39 @@ constexpr bool FLOAT160::operator==(FLOAT160 const& rhs) const
 
 #endif // NEED_FLOAT160
 
-inline FLOAT128 ldexp(FLOAT128 v, int x)
+inline FLOAT_128 ldexp(FLOAT_128 v, int x)
 {   return v.ldexp(x);
 }
 
-inline FLOAT128 frexp(FLOAT128 v, int* x)
+inline FLOAT_128 frexp(FLOAT_128 v, int* x)
 {   return v.frexp(*x);
 }
 
-inline bool isinf(FLOAT128 v)
+inline bool isinf(FLOAT_128 v)
 {   return v.isinf();
 }
 
-inline bool isfinite(FLOAT128 v)
+inline bool isfinite(FLOAT_128 v)
 {   return v.isfinite();
 }
 
-inline bool isnan(FLOAT128 v)
+inline bool isnan(FLOAT_128 v)
 {   return v.isinf();
 }
 
-inline bool isnormal(FLOAT128 v)
+inline bool isnormal(FLOAT_128 v)
 {   return v.isnormal();
 }
 
-inline bool signbit(FLOAT128 v)
+inline bool signbit(FLOAT_128 v)
 {   return v.signbit();
 }
 
-inline bool iszero(FLOAT128 v)
+inline bool iszero(FLOAT_128 v)
 {   return v.iszero();
 }
 
-// I need to declare all the FLOAT128 and COMPLEX128 elementary functions
+// I need to declare all the FLOAT_128 and COMPLEX_128 elementary functions
 // so that people who #include this header will know about them. I declare
 // versions that work on double and std::complex<double> too because that
 // will be relevant for functions that are not part of the C++ standard but
@@ -1434,15 +1434,15 @@ inline bool iszero(FLOAT128 v)
 #define external_declaration(name)                               \
   extern double name(double);                                    \
   extern std::complex<double> name(const std::complex<double>&); \
-  extern FLOAT128 name(FLOAT128);                                \
-  extern COMPLEX128 name(COMPLEX128);
+  extern FLOAT_128 name(FLOAT_128);                                \
+  extern COMPLEX_128 name(COMPLEX_128);
 
 #define external_declaration_2(name)                       \
   extern double name(double, double);                      \
   extern std::complex<double> name(std::complex<double>&,  \
                                    std::complex<double>&); \
-  extern FLOAT128 name(FLOAT128,FLOAT128);                 \
-  extern COMPLEX128 name(COMPLEX128,COMPLEX128);
+  extern FLOAT_128 name(FLOAT_128,FLOAT_128);                 \
+  extern COMPLEX_128 name(COMPLEX_128,COMPLEX_128);
 
 external_declaration(acos)                   
 external_declaration(acosd)               

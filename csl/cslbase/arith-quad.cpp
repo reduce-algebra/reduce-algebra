@@ -62,7 +62,7 @@ namespace CSL_LISP
 // support 128-bit floats has to do pretty well everything in software!
 
 // *** HOWEVER ***
-// C++23 introduces a <stdfloat> header and then if __CPP_FLOAT128_T__ is
+// C++23 introduces a <stdfloat> header and then if __cpp_float128_t is
 // nonzero it will provide an extended floating point type called
 // std::float128_t. This will ne optional, but surely will be supported
 // on the platforms I care about.

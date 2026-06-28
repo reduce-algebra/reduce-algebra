@@ -60,7 +60,7 @@
 //                     value while on a 64-bit one it can contain the bits
 //                     that represent the floating point value.
 // 64-bit floats.      Passed as "double" values, ie in native floating point.
-// 128-bit floats.     A class LFlt containing a FLOAT128.
+// 128-bit floats.     A class LFlt containing a FLOAT_128.
 
 // Because that leaves 8 different sorts of number a general operation like
 // "plus" will need to provide 64 fragments of code to cover all the
@@ -223,14 +223,14 @@ public:
 class LFlt // for long doubles
 {
 public:
-    FLOAT128 v;
-    LFlt(FLOAT128 a)
+    FLOAT_128 v;
+    LFlt(FLOAT_128 a)
     {   v = a;
     }
-    FLOAT128 value()
+    FLOAT_128 value()
     {   return v;
     }
-    FLOAT128 floatval()
+    FLOAT_128 floatval()
     {   return v;
     }
 };
@@ -2887,21 +2887,21 @@ public:
     static double op(LFlt b);
 };
 
-// Float128 always returns a FLOAT128, so it is sort of RawFloat128
+// Float128 always returns a FLOAT_128, so it is sort of RawFloat128
 
 class Float128
 {
 public:
-    static FLOAT128 op(LispObject a);
+    static FLOAT_128 op(LispObject a);
 
-    static FLOAT128 op(Fixnum b);
-    static FLOAT128 op(uint64_t *b);
-    static FLOAT128 op(Rat b);
-    static FLOAT128 op(Cpx b);
-    static FLOAT128 op(SFlt b);
-    static FLOAT128 op(Flt b);
-    static FLOAT128 op(double b);
-    static FLOAT128 op(LFlt b);
+    static FLOAT_128 op(Fixnum b);
+    static FLOAT_128 op(uint64_t *b);
+    static FLOAT_128 op(Rat b);
+    static FLOAT_128 op(Cpx b);
+    static FLOAT_128 op(SFlt b);
+    static FLOAT_128 op(Flt b);
+    static FLOAT_128 op(double b);
+    static FLOAT_128 op(LFlt b);
 };
 
 class Fix
@@ -3540,16 +3540,16 @@ public:
     static LispObject op(double b);
     static LispObject op(LFlt b);
 
-    static FLOAT128 op(LispObject a, int64_t &x);
+    static FLOAT_128 op(LispObject a, int64_t &x);
 
-    static FLOAT128 op(Fixnum b, int64_t &x);
-    static FLOAT128 op(uint64_t *b, int64_t &x);
-    static FLOAT128 op(Rat b, int64_t &x);
-    static FLOAT128 op(Cpx b, int64_t &x);
-    static FLOAT128 op(SFlt b, int64_t &x);
-    static FLOAT128 op(Flt b, int64_t &x);
-    static FLOAT128 op(double b, int64_t &x);
-    static FLOAT128 op(LFlt b, int64_t &x);
+    static FLOAT_128 op(Fixnum b, int64_t &x);
+    static FLOAT_128 op(uint64_t *b, int64_t &x);
+    static FLOAT_128 op(Rat b, int64_t &x);
+    static FLOAT_128 op(Cpx b, int64_t &x);
+    static FLOAT_128 op(SFlt b, int64_t &x);
+    static FLOAT_128 op(Flt b, int64_t &x);
+    static FLOAT_128 op(double b, int64_t &x);
+    static FLOAT_128 op(LFlt b, int64_t &x);
 };
 
 class Ldexp

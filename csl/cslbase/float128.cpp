@@ -59,7 +59,7 @@
 //   NEED_FLOAT160         I implement my own working precision.
 //   NEED_FLOAT128         Implement 128-bit floats and complex.
 //   NEED_REAL_MATHLIB     sin, cos etc on FLOAT128.
-//   NEED_COMPLEX_MATHLIB  sin, cos etc on COMPLEX128.
+//   NEED_COMPLEX_MATHLIB  sin, cos etc on COMPLEX_128.
 
 // Tu support CSL I provide 64-bit float functions that are
 // not offered by the C++ standard.
@@ -182,7 +182,7 @@ std::complex<double> log10(const std::complex<double>& x)
 
 // Constructors
 
-FLOAT128::FLOAT128()
+FLOAT_128::FLOAT_128()
 {
 }
 
@@ -206,204 +206,204 @@ MINUSZERO128::MINUSZERO128()
 {   v = -LF_C(0.0);
 }
 
-FLOAT128::FLOAT128(int32_t w)
+FLOAT_128::FLOAT_128(int32_t w)
 {   v = w;
 }
 
-FLOAT128::FLOAT128(int64_t w)
+FLOAT_128::FLOAT_128(int64_t w)
 {   v = w;
 }
 
-FLOAT128::FLOAT128(int128_t w)
+FLOAT_128::FLOAT_128(int128_t w)
 {   v = w;
 }
 
-FLOAT128::FLOAT128(uint32_t w)
+FLOAT_128::FLOAT_128(uint32_t w)
 {   v = w;
 }
 
-FLOAT128::FLOAT128(uint64_t w)
+FLOAT_128::FLOAT_128(uint64_t w)
 {   v = w;
 }
 
-FLOAT128::FLOAT128(uint128_t w)
+FLOAT_128::FLOAT_128(uint128_t w)
 {   v = w;
 }
 
-FLOAT128::FLOAT128(double w)
+FLOAT_128::FLOAT_128(double w)
 {   v = w;
 }
 
-FLOAT128::FLOAT128(long double w)
+FLOAT_128::FLOAT_128(long double w)
 {   v = w;
 }
 
-FLOAT128::FLOAT128(FLOAT128 const& w)
+FLOAT_128::FLOAT_128(FLOAT_128 const& w)
 {   v = w.v;
 }
 
 // The extra argument is just there to flags that this is injecting
-// representation-level data into the FLOAT128.
+// representation-level data into the FLOAT_128.
 
-FLOAT128::FLOAT128(FLOAT128REP w, [[maybe_unused]] float unused)
+FLOAT_128::FLOAT_128(FLOAT128REP w, [[maybe_unused]] float unused)
 {   v = w;
 }
 
-FLOAT128REP FLOAT128::rep() const
+FLOAT128REP FLOAT_128::rep() const
 {   return v;
 }
 
-uint128_t FLOAT128::mantissa() const
+uint128_t FLOAT_128::mantissa() const
 {   uint128_t w = bit_cast<uint128_t>(v);
     return (bit_cast<uint128_t>(w)<<16)>>16;
 }
 
 // Useful tests etc
 
-bool FLOAT128::isinf() const
+bool FLOAT_128::isinf() const
 {   uint128_t w = bit_cast<uint128_t>(v);
     return (w<<1) == ((uint128_t)0x7fff << 113);
 }
 
-bool FLOAT128::isnan() const
+bool FLOAT_128::isnan() const
 {   uint128_t w = bit_cast<uint128_t>(v);
     return ((w<<1)>>113) == 0x7fff &&
            (w<<16) != 0;
 }
 
-bool FLOAT128::isinfornan() const
+bool FLOAT_128::isinfornan() const
 {   uint128_t w = bit_cast<uint128_t>(v);
     return ((w<<1)>>113) == 0x7fff;
 }
 
-bool FLOAT128::isfinite() const
+bool FLOAT_128::isfinite() const
 {   uint128_t w = bit_cast<uint128_t>(v);
     return ((w<<1)>>113) != 0x7fff;
 }
 
-bool FLOAT128::signbit() const
+bool FLOAT_128::signbit() const
 {   return (bit_cast<uint128_t>(v)>>127) != 0;
 }
 
-FLOAT128 FLOAT128::abs() const
-{   return FLOAT128((bit_cast<uint128_t>(v)<<1)>>1, 0);
+FLOAT_128 FLOAT_128::abs() const
+{   return FLOAT_128((bit_cast<uint128_t>(v)<<1)>>1, 0);
 }
 
-FLOAT128 FLOAT128::maxabs(FLOAT128 v) const
+FLOAT_128 FLOAT_128::maxabs(FLOAT_128 v) const
 {   if (abs() >= v.abs()) return *this;
     else return v;
 }
 
-bool FLOAT128::isnormal() const
+bool FLOAT_128::isnormal() const
 {   uint128_t b = bit_cast<uint128_t>(v);
     if ((b<<1) == 0) return true;   // +0.0 or -0.0
     else if (((b>>112) & 0x7fff) == 0) return false;
     else return true;               // exponent field nonzero.
 }
 
-bool FLOAT128::iszero() const
+bool FLOAT_128::iszero() const
 {   return (bit_cast<uint128_t>(v)<<1) == 0;
 }
 
 // Casts
 
-FLOAT128::operator int32_t() const
+FLOAT_128::operator int32_t() const
 {   return (int32_t)v;
 }
 
-FLOAT128::operator int64_t() const
+FLOAT_128::operator int64_t() const
 {   return (int64_t)v;
 }
 
-FLOAT128::operator int128_t() const
+FLOAT_128::operator int128_t() const
 {   return (int128_t)v;
 }
 
-FLOAT128::operator uint32_t() const
+FLOAT_128::operator uint32_t() const
 {   return (uint32_t)v;
 }
 
-FLOAT128::operator uint64_t() const
+FLOAT_128::operator uint64_t() const
 {   return (uint64_t)v;
 }
 
-FLOAT128::operator uint128_t() const
+FLOAT_128::operator uint128_t() const
 {   return (uint128_t)v;
 }
 
-FLOAT128::operator double() const
+FLOAT_128::operator double() const
 {   return (double)v;
 }
 
-FLOAT128::operator long double() const
+FLOAT_128::operator long double() const
 {   return (long double)v;
 }
 
 // Operators
 
-FLOAT128 FLOAT128::operator+() const
-{   return FLOAT128(v, 0.0f);
+FLOAT_128 FLOAT_128::operator+() const
+{   return FLOAT_128(v, 0.0f);
 }
 
-FLOAT128 FLOAT128::operator-() const
-{   return FLOAT128(-v, 0.0f);
+FLOAT_128 FLOAT_128::operator-() const
+{   return FLOAT_128(-v, 0.0f);
 }
 
-FLOAT128 FLOAT128::operator+(FLOAT128 w) const
-{   return FLOAT128(v + w.v, 0.0f);
+FLOAT_128 FLOAT_128::operator+(FLOAT_128 w) const
+{   return FLOAT_128(v + w.v, 0.0f);
 }
 
-FLOAT128 FLOAT128::operator-(FLOAT128 w) const
-{   return FLOAT128(v - w.v, 0.0f);
+FLOAT_128 FLOAT_128::operator-(FLOAT_128 w) const
+{   return FLOAT_128(v - w.v, 0.0f);
 }
 
-FLOAT128 FLOAT128::operator*(FLOAT128 w) const
-{   return FLOAT128(v * w.v, 0.0f);
+FLOAT_128 FLOAT_128::operator*(FLOAT_128 w) const
+{   return FLOAT_128(v * w.v, 0.0f);
 }
 
-FLOAT128 FLOAT128::operator/(FLOAT128 w) const
-{   return FLOAT128(v / w.v, 0.0f);
+FLOAT_128 FLOAT_128::operator/(FLOAT_128 w) const
+{   return FLOAT_128(v / w.v, 0.0f);
 }
 
-FLOAT128 FLOAT128::fma(FLOAT128 b, FLOAT128 c) const
+FLOAT_128 FLOAT_128::fma(FLOAT_128 b, FLOAT_128 c) const
 {
 #if defined USE_LONG_DOUBLE
-    return FLOAT128(std::fma(v, b.v, c.v));
+    return FLOAT_128(std::fma(v, b.v, c.v));
 #elif defined USE_QUADMATH
-    return FLOAT128(fmaq(v, b.v, c.v));
+    return FLOAT_128(fmaq(v, b.v, c.v));
 #elif defined USE_CLANG_FLOAT128
-    return FLOAT128(fmaf128(v, b.v, c.v));
+    return FLOAT_128(fmaf128(v, b.v, c.v));
 #else
     FLOAT160 aa = (FLOAT160)*this;
     FLOAT160 bb = (FLOAT160)b;
     FLOAT160 cc = (FLOAT160)c;
-    return (FLOAT128)aa.fma(bb, cc);
+    return (FLOAT_128)aa.fma(bb, cc);
 #endif
 }
 
 // Comparisons
 
-bool FLOAT128::operator==(FLOAT128 const& w) const
+bool FLOAT_128::operator==(FLOAT_128 const& w) const
 {   return (v == w.v);
 }
 
-bool FLOAT128::operator!=(FLOAT128 const& w) const
+bool FLOAT_128::operator!=(FLOAT_128 const& w) const
 {   return (v != w.v);
 }
 
-bool FLOAT128::operator>(FLOAT128 const& w) const
+bool FLOAT_128::operator>(FLOAT_128 const& w) const
 {   return (v > w.v);
 }
 
-bool FLOAT128::operator<(FLOAT128 const& w) const
+bool FLOAT_128::operator<(FLOAT_128 const& w) const
 {   return (v < w.v);
 }
 
-bool FLOAT128::operator>=(FLOAT128 const& w) const
+bool FLOAT_128::operator>=(FLOAT_128 const& w) const
 {   return (v >= w.v);
 }
 
-bool FLOAT128::operator<=(FLOAT128 const& w) const
+bool FLOAT_128::operator<=(FLOAT_128 const& w) const
 {   return (v <= w.v);
 }
 
@@ -414,14 +414,14 @@ bool FLOAT128::operator<=(FLOAT128 const& w) const
 // needs to be done in software, and when there are system-provided
 // versions the names vary.
 
-FLOAT128 FLOAT128::ldexp(int x) const
+FLOAT_128 FLOAT_128::ldexp(int x) const
 {
 #if defined USE_LONG_DOUBLE
-    return FLOAT128(std::ldexp(v, x), 1.0f);
+    return FLOAT_128(std::ldexp(v, x), 1.0f);
 #elif defined USE_QUADMATH
-    return FLOAT128(ldexpq(v, x), 1.0f);
+    return FLOAT_128(ldexpq(v, x), 1.0f);
 #elif defined USE_CLANG_FLOAT128
-    return FLOAT128(ldexpf128(v, x), 1.0f);
+    return FLOAT_128(ldexpf128(v, x), 1.0f);
 #else
 // In the case of C++23 std::float128_t and also if I am doing things
 // all in software I will do this by playing with the binary representation.
@@ -438,7 +438,7 @@ FLOAT128 FLOAT128::ldexp(int x) const
     if (xx == 0x7fff) return *this;
 // If the input is denormalised then normalise it leaving xx the
 // true exponent - which may be outside the proper range for going
-// back into a FLOAT128.
+// back into a FLOAT_128.
     uint128_t mm = (b<<16)>>16;
     if (xx == 0)
     {   int shift = nlz(mm)-15;
@@ -462,18 +462,18 @@ FLOAT128 FLOAT128::ldexp(int x) const
     uint64_t hi = (uint64_t)((b>>127)<<63) |
         (((uint64_t)xx)<<48) |
         (uint64_t)(mm>>64);
-    return FLOAT128(((uint128_t)hi)<<64 | (uint64_t)mm, 0);
+    return FLOAT_128(((uint128_t)hi)<<64 | (uint64_t)mm, 0);
 #endif
 }
 
-FLOAT128 FLOAT128::frexp(int& x) const
+FLOAT_128 FLOAT_128::frexp(int& x) const
 {
 #if defined USE_LONG_DOUBLE
-    return FLOAT128(std::frexp(v, &x), 1.0f);
+    return FLOAT_128(std::frexp(v, &x), 1.0f);
 #elif defined USE_QUADMATH
-    return FLOAT128(frexpq(v, &x), 1.0f);
+    return FLOAT_128(frexpq(v, &x), 1.0f);
 #elif defined USE_CLANG_FLOAT128
-    return FLOAT128(frexpf128(v, &x), 1.0f);
+    return FLOAT_128(frexpf128(v, &x), 1.0f);
 #else
     uint128_t b = bit_cast<uint128_t>(v);
     if (b == 0)
@@ -494,11 +494,11 @@ FLOAT128 FLOAT128::frexp(int& x) const
     }
     else b = (b | (((uint128_t)0x3fff)<<112)) & ~(((uint128_t)1)<<126);
     x = xx - 0x3fff;
-    return FLOAT128(b, true);
+    return FLOAT_128(b, true);
 #endif
 }
 
-void f128tof160(FLOAT128 const& v,
+void f128tof160(FLOAT_128 const& v,
                 bool& sign, int32_t& exponent, uint128_t& mantissa)
 {   uint128_t b = bit_cast<uint128_t>(v.rep());
     sign = (b>>127) != 0;
@@ -546,7 +546,7 @@ INF160::INF160()
 // rounding schemes and will not guarantee to follow IEEE-style rules
 // that round-to-even in the 0.5ULP case. But I will do what I feel I
 // can when it is not too burdensome. This is intended to be used as
-// working precision with 15 more bits of mantissa than FLOAT128 (15 not 16
+// working precision with 15 more bits of mantissa than FLOAT_128 (15 not 16
 // because I represent the top bit of the mantissa explicitly rather than
 // as a hidden bit) and the hope is that that is enough to make work on
 // 128-bit floats as accurate as I need.
@@ -607,7 +607,7 @@ constexpr FLOAT160::FLOAT160(int128_t n):sign(),x(),m()
 // Well I will believe I know the exact format of a double, and so I
 // could probably do this exploiting that.
 
-FLOAT160::FLOAT160(FLOAT128 const& v) : sign(false),x(0),m(0)
+FLOAT160::FLOAT160(FLOAT_128 const& v) : sign(false),x(0),m(0)
 {   f128tof160(v, sign, x, m);
 }
 
@@ -692,8 +692,8 @@ uint128_t FLOAT160::f160tof128rep() const
     return r;
 }
 
-FLOAT160::operator FLOAT128() const
-{   FLOAT128 r(f160tof128rep(), 0);
+FLOAT160::operator FLOAT_128() const
+{   FLOAT_128 r(f160tof128rep(), 0);
     return r;
 }
 
@@ -769,7 +769,7 @@ std::ostream& showfloat160(std::ostream& o,
     }
 }
 
-std::ostream& operator<<(std::ostream& o, FLOAT128 const& d)
+std::ostream& operator<<(std::ostream& o, FLOAT_128 const& d)
 {   if (d.isnan()) return o << "NaN";
     else if (d.isinf())
     {   if (d.signbit()) return o << "-inf";
@@ -785,7 +785,7 @@ std::ostream& operator<<(std::ostream& o, FLOAT128 const& d)
     }
 }
 
-std::ostream& operator<<(std::ostream& o, COMPLEX128 const& d)
+std::ostream& operator<<(std::ostream& o, COMPLEX_128 const& d)
 {   o << d.real() << " + " << d.imag() << "*i";
     return o;
 }
@@ -1002,7 +1002,7 @@ int f160_print_E(int width, int prec,
     return r;
 }
 
-int f128_print_E(int width, int prec, FLOAT128 p)
+int f128_print_E(int width, int prec, FLOAT_128 p)
 {   bool sign;
     int32_t exponent;
     uint128_t mantissa;
@@ -1103,7 +1103,7 @@ int f160_print_F(int width, int prec,
     return r;
 }
 
-int f128_print_F(int width, int prec, FLOAT128 p)
+int f128_print_F(int width, int prec, FLOAT_128 p)
 {   bool sign;
     int32_t exponent;
     uint128_t mantissa;
@@ -1132,7 +1132,7 @@ int f160_sprint_G(char* r, int width, int precision,
     else return f160_sprint_F(r, width, precision-decexp, s, neg, decexp);
 }
 
-int f128_sprint_G(char* r, int width, int precision, FLOAT128 p)
+int f128_sprint_G(char* r, int width, int precision, FLOAT_128 p)
 {   bool sign;
     int32_t exponent;
     uint128_t mantissa;
@@ -1154,7 +1154,7 @@ int f160_print_G(int width, int precision,
     return r;
 }
 
-int f128_print_G(int width, int precision, FLOAT128 p)
+int f128_print_G(int width, int precision, FLOAT_128 p)
 {   bool sign;
     int32_t exponent;
     uint128_t mantissa;
@@ -1165,117 +1165,117 @@ int f128_print_G(int width, int precision, FLOAT128 p)
 #ifdef NEED_FLOAT128
 
 // Here I will sometimes use FLOAT160 working precision to implement
-// FLOAT128 operations. In this case I know that the data field in the
+// FLOAT_128 operations. In this case I know that the data field in the
 // onject is of type uint128_t.
 
 // Constructors
 
-FLOAT128::FLOAT128()
+FLOAT_128::FLOAT_128()
 {
 }
 
-// I convert from integer to FLOAT128 via FLOAT160 since that will deal
+// I convert from integer to FLOAT_128 via FLOAT160 since that will deal
 // with infinities nicely... and avoids me needing to duplicate code.
 // The important part of this is not the FLOAT160 width but that the
-// caset from there to mere FLOAT128 is useful.
+// caset from there to mere FLOAT_128 is useful.
 
-FLOAT128::FLOAT128(int32_t w)
-{   v = ((FLOAT128)FLOAT160(w)).v;
+FLOAT_128::FLOAT_128(int32_t w)
+{   v = ((FLOAT_128)FLOAT160(w)).v;
 }
 
-FLOAT128::FLOAT128(int64_t w)
-{   v = ((FLOAT128)FLOAT160(w)).v;
+FLOAT_128::FLOAT_128(int64_t w)
+{   v = ((FLOAT_128)FLOAT160(w)).v;
 }
 
-FLOAT128::FLOAT128(int128_t w)
-{   v = ((FLOAT128)FLOAT160(w)).v;
+FLOAT_128::FLOAT_128(int128_t w)
+{   v = ((FLOAT_128)FLOAT160(w)).v;
 }
 
-FLOAT128::FLOAT128(uint32_t w)
-{   v = ((FLOAT128)FLOAT160(w)).v;
+FLOAT_128::FLOAT_128(uint32_t w)
+{   v = ((FLOAT_128)FLOAT160(w)).v;
 }
 
-FLOAT128::FLOAT128(uint64_t w)
-{   v = ((FLOAT128)FLOAT160(w)).v;
+FLOAT_128::FLOAT_128(uint64_t w)
+{   v = ((FLOAT_128)FLOAT160(w)).v;
 }
 
-FLOAT128::FLOAT128(uint128_t w)
-{   v = ((FLOAT128)FLOAT160(w)).v;
+FLOAT_128::FLOAT_128(uint128_t w)
+{   v = ((FLOAT_128)FLOAT160(w)).v;
 }
 
-FLOAT128::FLOAT128(double w)
-{   v = ((FLOAT128)FLOAT160(w)).v;
+FLOAT_128::FLOAT_128(double w)
+{   v = ((FLOAT_128)FLOAT160(w)).v;
 }
 
-FLOAT128::FLOAT128(long double w)
-{   v = ((FLOAT128)FLOAT160(w)).v;
+FLOAT_128::FLOAT_128(long double w)
+{   v = ((FLOAT_128)FLOAT160(w)).v;
 }
 
-FLOAT128::FLOAT128(FLOAT128 const& w)
+FLOAT_128::FLOAT_128(FLOAT_128 const& w)
 {   v = w.v;
 }
 
-//FLOAT128::FLOAT128(uint64_t hi, uint64_t lo)
+//FLOAT_128::FLOAT_128(uint64_t hi, uint64_t lo)
 //{   v = (((uint128_t)hi)<<64) | lo;
 //}
 
 // The extra argument is just there to flags that this is injecting
-// representation-level data into the FLOAT128.
+// representation-level data into the FLOAT_128.
 
-//FLOAT128::FLOAT128(uint128_t rep, [[maybe_unused]] int unused)
+//FLOAT_128::FLOAT_128(uint128_t rep, [[maybe_unused]] int unused)
 //{   v = bit_cast<FLOAT128REP>(rep);
 //}
 
-FLOAT128::FLOAT128(FLOAT128REP rep, [[maybe_unused]] float unused)
+FLOAT_128::FLOAT_128(FLOAT128REP rep, [[maybe_unused]] float unused)
 {   v = rep;
 }
 
-FLOAT128REP FLOAT128::rep() const
+FLOAT128REP FLOAT_128::rep() const
 {   return v;
 }
 
-uint128_t FLOAT128::mantissa() const
+uint128_t FLOAT_128::mantissa() const
 {   return (bit_cast<uint128_t>(v)<<16)>>16;
 }
 
 // Useful tests etc
 
-bool FLOAT128::isinf() const
+bool FLOAT_128::isinf() const
 {   return (v<<1) == ((uint128_t)0xfffe)<<112;
 }
 
-bool FLOAT128::isfinite() const
+bool FLOAT_128::isfinite() const
 {   return ((v<<1)>>113) != 0x7fff;
 }
 
-bool FLOAT128::isnan() const
+bool FLOAT_128::isnan() const
 {   return ((v>>112) & 0x7fff) == 0x7fff &&
            (v<<16) != 0;
 }
 
-bool FLOAT128::isinfornan() const
+bool FLOAT_128::isinfornan() const
 {   return ((v>>112) & 0x7fff) == 0x7fff;
 }
 
-bool FLOAT128::signbit() const
+bool FLOAT_128::signbit() const
 {   return (v>>127) != 0;
 }
 
-bool FLOAT128::isnormal() const
+bool FLOAT_128::isnormal() const
 {   if ((v<<1) == 0) return true;   // +0.0 or -0.0
     else if (((v>>112) & 0x7fff) == 0) return false;
     else return true;               // exponent field nonzero.
 }
 
-bool FLOAT128::iszero() const
+bool FLOAT_128::iszero() const
 {   return (v<<1) == 0;
 }
 
-FLOAT128 FLOAT128::abs() const
-{   return FLOAT128((v<<1)>>1, 0);
+FLOAT_128 FLOAT_128::abs() const
+{   return FLOAT_128((v<<1)>>1, 0);
 }
 
-FLOAT128 FLOAT128::maxabs(FLOAT128 x) const
+FLOAT_128 FLOAT_128::maxabs(FLOAT_128 x) const
 {   if ((v>>1) >= (x.v>>1)) return *this;
     else return x;
 }
@@ -1288,29 +1288,29 @@ FLOAT128 FLOAT128::maxabs(FLOAT128 x) const
 // a 128-bit result and truncate. Infinities and NaNs probably lead
 // to a zero value being returned.
 
-FLOAT128::operator int32_t() const
+FLOAT_128::operator int32_t() const
 {   return (int32_t)operator int128_t();
 }
 
-FLOAT128::operator int64_t() const
+FLOAT_128::operator int64_t() const
 {   return (int64_t)operator int128_t();
 }
 
-FLOAT128::operator int128_t() const
+FLOAT_128::operator int128_t() const
 {   uint128_t r = operator uint128_t();
     if ((v>>127) != 0) return -r;
     else return r;
 }
 
-FLOAT128::operator uint32_t() const
+FLOAT_128::operator uint32_t() const
 {   return (uint32_t)operator uint128_t();
 }
 
-FLOAT128::operator uint64_t() const
+FLOAT_128::operator uint64_t() const
 {   return (uint64_t)operator uint128_t();
 }
 
-FLOAT128::operator uint128_t() const
+FLOAT_128::operator uint128_t() const
 {   int x = (v<<1)>>113;            // the exponent field
     if (x <= 0) return 0;           // value is < 1.0
 // Set up the mantissa, putting back the hidden bit.
@@ -1321,7 +1321,7 @@ FLOAT128::operator uint128_t() const
     else return r;
 }
 
-FLOAT128::operator double() const
+FLOAT_128::operator double() const
 {   if (v == 0) return 0.0;
     int x = (v<<1)>>113;
     if (x == 0x7fff) // infinity or NaN
@@ -1335,7 +1335,7 @@ FLOAT128::operator double() const
     return std::ldexp(m, x-0x3fff-113);
 }
 
-FLOAT128::operator long double() const
+FLOAT_128::operator long double() const
 {   if (v == 0) return 0.0L;
     int x = (v<<1)>>113;
     if (x == 0x7fff) // infinity or NaN
@@ -1351,21 +1351,21 @@ FLOAT128::operator long double() const
 
 // Operators
 
-FLOAT128 FLOAT128::operator+() const
-{   return FLOAT128(v, 0.0f);
+FLOAT_128 FLOAT_128::operator+() const
+{   return FLOAT_128(v, 0.0f);
 }
 
 // Note that negating a NaN here flips the sign bit but the result is
 // still a NaN.
-FLOAT128 FLOAT128::operator-() const
-{   return FLOAT128(v ^ ((uint128_t)1)<<127, 0.0f);
+FLOAT_128 FLOAT_128::operator-() const
+{   return FLOAT_128(v ^ ((uint128_t)1)<<127, 0.0f);
 }
 
-// For most of the operations on FLOAT128 I need to start by handling
+// For most of the operations on FLOAT_128 I need to start by handling
 // infinities an NaNs (and sometimes zeros). But beyond that I delegate
 // to FLOAT160. The handling of the special cases feels pretty painful!
 
-FLOAT128 FLOAT128::operator+(FLOAT128 w) const
+FLOAT_128 FLOAT_128::operator+(FLOAT_128 w) const
 {   if (isinfornan())
     {   if (w.isinfornan())
         {
@@ -1381,14 +1381,14 @@ FLOAT128 FLOAT128::operator+(FLOAT128 w) const
         return *this;
     }
     else if (w.isinfornan()) return w;
-    else return (FLOAT128)((FLOAT160)*this + (FLOAT160)w);
+    else return (FLOAT_128)((FLOAT160)*this + (FLOAT160)w);
 }
 
-FLOAT128 FLOAT128::operator-(FLOAT128 w) const
+FLOAT_128 FLOAT_128::operator-(FLOAT_128 w) const
 {   return operator+(- w);
 }
 
-FLOAT128 FLOAT128::operator*(FLOAT128 w) const
+FLOAT_128 FLOAT_128::operator*(FLOAT_128 w) const
 {   if (isinfornan())
     {   if (mantissa() != 0) return *this;    // a NaN
         if (w.isinfornan())
@@ -1408,17 +1408,17 @@ FLOAT128 FLOAT128::operator*(FLOAT128 w) const
         if(signbit() == w.signbit()) return PLUSINF128();
         return MINUSINF128();
     }
-    else return (FLOAT128)((FLOAT160)*this * (FLOAT160)w);
+    else return (FLOAT_128)((FLOAT160)*this * (FLOAT160)w);
 }
 
-FLOAT128 FLOAT128::fma(FLOAT128 b, FLOAT128 c) const
+FLOAT_128 FLOAT_128::fma(FLOAT_128 b, FLOAT_128 c) const
 {   FLOAT160 aa = (FLOAT160)*this;
     FLOAT160 bb = (FLOAT160)b;
     FLOAT160 cc = (FLOAT160)b;
-    return (FLOAT128)aa.fma(bb, cc);
+    return (FLOAT_128)aa.fma(bb, cc);
 }
 
-FLOAT128 FLOAT128::operator/(FLOAT128 w) const
+FLOAT_128 FLOAT_128::operator/(FLOAT_128 w) const
 {   if (isinfornan())
     {   if (w.isinfornan()) return NAN128(); // infornan/infornan
         else if (signbit() == w.signbit()) return PLUSINF128();
@@ -1434,37 +1434,37 @@ FLOAT128 FLOAT128::operator/(FLOAT128 w) const
     {   if (signbit() == w.signbit()) return PLUSINF128();
         else return MINUSINF128();
     }
-    else return (FLOAT128)((FLOAT160)*this / (FLOAT160)w);
+    else return (FLOAT_128)((FLOAT160)*this / (FLOAT160)w);
 }
 
 // Comparisons
 
-bool FLOAT128::operator==(FLOAT128 const& w) const
+bool FLOAT_128::operator==(FLOAT_128 const& w) const
 {   if (isnan() || w.isnan()) return false;
     return (v == w.v);
 }
 
-bool FLOAT128::operator!=(FLOAT128 const& w) const
+bool FLOAT_128::operator!=(FLOAT_128 const& w) const
 {   if (isnan() || w.isnan()) return false;
     return (v != w.v);
 }
 
-bool FLOAT128::operator>(FLOAT128 const& w) const
+bool FLOAT_128::operator>(FLOAT_128 const& w) const
 {   if (isnan() || w.isnan()) return false;
     return (v > w.v);
 }
 
-bool FLOAT128::operator<(FLOAT128 const& w) const
+bool FLOAT_128::operator<(FLOAT_128 const& w) const
 {   if (isnan() || w.isnan()) return false;
     return (v < w.v);
 }
 
-bool FLOAT128::operator>=(FLOAT128 const& w) const
+bool FLOAT_128::operator>=(FLOAT_128 const& w) const
 {   if (isnan() || w.isnan()) return false;
     return (v >= w.v);
 }
 
-bool FLOAT128::operator<=(FLOAT128 const& w) const
+bool FLOAT_128::operator<=(FLOAT_128 const& w) const
 {   if (isnan() || w.isnan()) return false;
     return (v <= w.v);
 }
@@ -1529,62 +1529,62 @@ void debug(FLOAT160 v, const char* msg="") // Show low-precision approximation..
 #endif
 
 
-COMPLEX128::COMPLEX128()
+COMPLEX_128::COMPLEX_128()
 {   rr = LF_C(0.0);
     ii = LF_C(0.0);
 }
 
-COMPLEX128::COMPLEX128(int32_t n)
+COMPLEX_128::COMPLEX_128(int32_t n)
 {   rr = n;
     ii = LF_C(0.0);
 }
 
-COMPLEX128::COMPLEX128(int64_t n)
+COMPLEX_128::COMPLEX_128(int64_t n)
 {   rr = n;
     ii = LF_C(0.0);
 }
 
-COMPLEX128::COMPLEX128(int128_t n)
+COMPLEX_128::COMPLEX_128(int128_t n)
 {   rr = n;
     ii = LF_C(0.0);
 }
 
-COMPLEX128::COMPLEX128(uint32_t n)
+COMPLEX_128::COMPLEX_128(uint32_t n)
 {   rr = n;
     ii = LF_C(0.0);
 }
 
-COMPLEX128::COMPLEX128(uint64_t n)
+COMPLEX_128::COMPLEX_128(uint64_t n)
 {   rr = n;
     ii = LF_C(0.0);
 }
 
-COMPLEX128::COMPLEX128(uint128_t n)
+COMPLEX_128::COMPLEX_128(uint128_t n)
 {   rr = n;
     ii = LF_C(0.0);
 }
 
-COMPLEX128::COMPLEX128(double n)
+COMPLEX_128::COMPLEX_128(double n)
 {   rr = n;
     ii = LF_C(0.0);
 }
 
-COMPLEX128::COMPLEX128(long double n)
+COMPLEX_128::COMPLEX_128(long double n)
 {   rr = n;
     ii = LF_C(0.0);
 }
 
-COMPLEX128::COMPLEX128(FLOAT128 n)
+COMPLEX_128::COMPLEX_128(FLOAT_128 n)
 {   rr = n;
     ii = LF_C(0.0);
 }
 
-COMPLEX128::COMPLEX128(FLOAT128 r, FLOAT128 i)
+COMPLEX_128::COMPLEX_128(FLOAT_128 r, FLOAT_128 i)
 {   rr = r;
     ii = i;
 }
 
-COMPLEX128::COMPLEX128(COMPLEX128 const& z)
+COMPLEX_128::COMPLEX_128(COMPLEX_128 const& z)
 {   rr = z.rr;
     ii = z.ii;
 }
@@ -1593,58 +1593,58 @@ COMPLEX128::COMPLEX128(COMPLEX128 const& z)
 // Hmmm - here if I cast a complex value to a scalar one I will just return
 // the rr part.
 
-COMPLEX128::operator int32_t() const
+COMPLEX_128::operator int32_t() const
 {   return (int32_t)rr;
 }
 
-COMPLEX128::operator int64_t() const
+COMPLEX_128::operator int64_t() const
 {   return (int64_t)rr;
 }
 
-COMPLEX128::operator int128_t() const
+COMPLEX_128::operator int128_t() const
 {   return (int128_t)rr;
 }
 
-COMPLEX128::operator uint32_t() const
+COMPLEX_128::operator uint32_t() const
 {   return (uint32_t)rr;
 }
 
-COMPLEX128::operator uint64_t() const
+COMPLEX_128::operator uint64_t() const
 {   return (uint64_t)rr;
 }
 
-COMPLEX128::operator uint128_t() const
+COMPLEX_128::operator uint128_t() const
 {   return (uint128_t)rr;
 }
 
-COMPLEX128::operator double() const
+COMPLEX_128::operator double() const
 {   return (double)rr;
 }
 
-COMPLEX128::operator long double() const
+COMPLEX_128::operator long double() const
 {   return (long double)rr;
 }
 
-COMPLEX128::operator FLOAT128() const
+COMPLEX_128::operator FLOAT_128() const
 {   return rr;
 }
 
 // operators
 
-COMPLEX128 COMPLEX128::operator+() const
+COMPLEX_128 COMPLEX_128::operator+() const
 {   return *this;
 }
 
-COMPLEX128 COMPLEX128::operator-() const
- {   return COMPLEX128(-rr, -ii);
+COMPLEX_128 COMPLEX_128::operator-() const
+ {   return COMPLEX_128(-rr, -ii);
 }
 
-COMPLEX128 COMPLEX128::operator+(COMPLEX128 a) const
-{   return COMPLEX128(rr + a.rr, ii + a.ii);
+COMPLEX_128 COMPLEX_128::operator+(COMPLEX_128 a) const
+{   return COMPLEX_128(rr + a.rr, ii + a.ii);
 }
 
-COMPLEX128 COMPLEX128::operator-(COMPLEX128 a) const
-{   return COMPLEX128(rr - a.rr, ii - a.ii);
+COMPLEX_128 COMPLEX_128::operator-(COMPLEX_128 a) const
+{   return COMPLEX_128(rr - a.rr, ii - a.ii);
 }
 
 // (a + i b) * (c + i d) = (a c - b d) + i (a d + b c)
@@ -1668,72 +1668,72 @@ COMPLEX128 COMPLEX128::operator-(COMPLEX128 a) const
 //    res = res + ablo;         // final accurate value.
 // To achieve subtraction just negate c (or d) to start with.
 
-COMPLEX128 COMPLEX128::operator*(COMPLEX128 x) const
-{   FLOAT128 a = rr;
-    FLOAT128 b = ii;
-    FLOAT128 c = x.rr;
-    FLOAT128 d = x.ii;
+COMPLEX_128 COMPLEX_128::operator*(COMPLEX_128 x) const
+{   FLOAT_128 a = rr;
+    FLOAT_128 b = ii;
+    FLOAT_128 c = x.rr;
+    FLOAT_128 d = x.ii;
 // Here I want scales such that I do not get premature overflow
 // or underflow;
-    FLOAT128 scale1 = a.maxabs(b);
-    FLOAT128 scale2 = c.maxabs(d);
+    FLOAT_128 scale1 = a.maxabs(b);
+    FLOAT_128 scale2 = c.maxabs(d);
     a = a/scale1;
     b = b/scale1;
     c = c/scale2;
     d = d/scale2;
 // The real part of the result is based on a*c - b*d;
-    FLOAT128 realpart = c*d;
-    FLOAT128 err = c.fma(-d, realpart);
+    FLOAT_128 realpart = c*d;
+    FLOAT_128 err = c.fma(-d, realpart);
     realpart = a.fma(b, -realpart) + err;
 // The imaginary part is based on a*d + b*c;
-    FLOAT128 imagpart = -b*c;
+    FLOAT_128 imagpart = -b*c;
     err = b.fma(c, imagpart);
     imagpart = a.fma(d, imagpart) + err;
-    FLOAT128 q = scale1*scale2;
-    return COMPLEX128(q*realpart, q*imagpart);
+    FLOAT_128 q = scale1*scale2;
+    return COMPLEX_128(q*realpart, q*imagpart);
 }
 
-COMPLEX128 COMPLEX128::operator/(COMPLEX128 a) const
-{   FLOAT128 q = LF_C(1.0)/(a.rr*a.rr + a.ii*a.ii);
-    COMPLEX128 w = operator*(a.conj());
-    return COMPLEX128(q*w.real(), q*w.imag());
+COMPLEX_128 COMPLEX_128::operator/(COMPLEX_128 a) const
+{   FLOAT_128 q = LF_C(1.0)/(a.rr*a.rr + a.ii*a.ii);
+    COMPLEX_128 w = operator*(a.conj());
+    return COMPLEX_128(q*w.real(), q*w.imag());
 }
 
 // comparisons
 
-bool COMPLEX128::operator==(COMPLEX128 const& a) const
+bool COMPLEX_128::operator==(COMPLEX_128 const& a) const
 {   return rr == a.rr && ii == a.ii;
 }
 
-bool COMPLEX128::operator!=(COMPLEX128 const& a) const
+bool COMPLEX_128::operator!=(COMPLEX_128 const& a) const
 {   return rr != a.rr || ii != a.ii;
 }
 
 // specials for complex values
-FLOAT128 COMPLEX128::real() const
+FLOAT_128 COMPLEX_128::real() const
 {   return rr;
 }
 
-FLOAT128 COMPLEX128::imag() const
+FLOAT_128 COMPLEX_128::imag() const
 {   return ii;
 }
 
-FLOAT128 COMPLEX128::arg() const
+FLOAT_128 COMPLEX_128::arg() const
 {   abort(); // atan2(ii, rr);
 }
 
-FLOAT128 COMPLEX128::abs() const
+FLOAT_128 COMPLEX_128::abs() const
 {   abort(); // hypot(rr, ii);
 }
 
 // If this is going to overflow it just will.
 
-FLOAT128 COMPLEX128::norm() const
+FLOAT_128 COMPLEX_128::norm() const
 {   return rr*rr + ii*ii;
 }
 
-COMPLEX128 COMPLEX128::conj() const
-{   return COMPLEX128(rr, -ii);
+COMPLEX_128 COMPLEX_128::conj() const
+{   return COMPLEX_128(rr, -ii);
 }
 
 #ifdef NEED_FLOAT160
@@ -1788,7 +1788,7 @@ COMPLEX160::COMPLEX160(FLOAT160 n)
     ii = 0.0_Q;
 }
 
-COMPLEX160::COMPLEX160(FLOAT128 rrr, FLOAT128 iii)
+COMPLEX160::COMPLEX160(FLOAT_128 rrr, FLOAT_128 iii)
 {   rr = (FLOAT160)rrr;
     ii = (FLOAT160)iii;
 }
@@ -1922,7 +1922,7 @@ COMPLEX160 COMPLEX160::conj() const
 
 
 // For testing the elementary functions I start with a view that any of
-// the schemes I have for FLOAT128 should end up with bitwise identical
+// the schemes I have for FLOAT_128 should end up with bitwise identical
 // representations. On Intel I then have the quadmath library that I can
 // use as a reference set of functions, while on ARM I can expect that
 // "long double" will always support everything. So where either of those
@@ -1933,7 +1933,7 @@ COMPLEX160 COMPLEX160::conj() const
 // long double will use an 80-bit representation not a 129-bit one.
 
 // The macro "tester(fn)" sets up a definitiion of test##fn that takes
-// a FLOAT128 argument.
+// a FLOAT_128 argument.
 
 #if !defined USE_CLANG_FLOAT128 || defined __aarch64__
 
@@ -1943,8 +1943,8 @@ COMPLEX160 COMPLEX160::conj() const
 // reports from here will only pick up gross badness.
 
 #define tester(fn)                                                         \
-void test##fn(FLOAT128 v)                                                  \
-{   FLOAT128 r1 = fn(v);                                                   \
+void test##fn(FLOAT_128 v)                                                  \
+{   FLOAT_128 r1 = fn(v);                                                   \
     long double vv = (long double)v;                                       \
     long double r2 = std::fn(vv);                                          \
     long double err = (long double)r1 - r2;                                \
@@ -1980,8 +1980,8 @@ char* hexstring(void* p)
 
 
 #define tester(fn)                                                           \
-void test##fn(FLOAT128 v)                                                    \
-{   FLOAT128 r1 = fn(v);                                                     \
+void test##fn(FLOAT_128 v)                                                    \
+{   FLOAT_128 r1 = fn(v);                                                     \
     __float128 vv;                                                           \
     std::memcpy(&vv, &v, 16);                                                \
     __float128 r2 = fn##q(vv);                                               \
@@ -2043,10 +2043,10 @@ int main()
 
 #endif // USE_CLANG_FLOAT128
 
-    FLOAT128 one = LF_C(1.0);
+    FLOAT_128 one = LF_C(1.0);
 
 //? std::cout << std::setprecision(33) << exp(one) << "\n";
-//? std::cout << exp(COMPLEX128(LF_C(5.0), LF_C(5.0))) << "\n";
+//? std::cout << exp(COMPLEX_128(LF_C(5.0), LF_C(5.0))) << "\n";
 
     return 0;
 }

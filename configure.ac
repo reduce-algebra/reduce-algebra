@@ -1573,31 +1573,6 @@ then
   cd "$builddir"
 fi
 
-AC_MSG_NOTICE([About to configure libsoftfloat])
-mkdir -p softfloat
-cd softfloat
-setpasscc
-
-# NOTE that there is now a SoftFloat-3e and I should migrate to use of it!
-# However the changes are such that the move is not totally trivial and so
-# some work is needed by sonmebody to make that happen. I would like
-# if if somebody else had a go please!
-
-doconfig="$SHELL $abssrcdir/libraries/SoftFloat-3a/source/configure -C \
-        $filtered \
-        $pass_host \
-        CPPFLAGS=\"$CPPFLAGS\" \
-        CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" \
-        LDFLAGS=\"$LDFLAGS\" \
-        $passcc \
-        --prefix=\"$builddir\" \
-        --libdir=\"$builddir/lib\" \
-        --includedir=\"$builddir/include\""
-AC_MSG_NOTICE([doconfig = $doconfig])
-printf "\n\n+++ About to configure softfloat +++\n\n"
-eval "$doconfig"
-
 cd "$builddir"
 
 AC_MSG_NOTICE([About to configure libedit])

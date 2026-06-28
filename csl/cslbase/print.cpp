@@ -1904,7 +1904,7 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
     else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
 }
 
-static void fp_sprint128(char *buff, FLOAT128 x, int prec, int xchar)
+static void fp_sprint128(char *buff, FLOAT_128 x, int prec, int xchar)
 {   if (x == LF_C(0.0))
     {   if (LF_C(1.0)/x < LF_C(0.0)) std::strcpy(buff, "-0.0L+00");
         else std::strcpy(buff, "0.0L+00");
@@ -1924,7 +1924,7 @@ static void fp_sprint128(char *buff, FLOAT128 x, int prec, int xchar)
         x = -x;
     }
     if (prec > 36) prec = 36;
-#pragma message "printing of FLOAT128 inadequate"
+#pragma message "printing of FLOAT_128 inadequate"
     snprintf(buff, 128, "%.*LG", prec, (long double)x);
 //  printf("Raw printing gives \"%s\"\n", buff);
 //

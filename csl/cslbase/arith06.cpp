@@ -81,7 +81,7 @@ LispObject Lfloat_2(LispObject env, LispObject a, LispObject b)
     }
     else if (!is_bfloat(b)) return aerror1("bad arg for float",  b);
     else if (flthdr(b) == LONG_FLOAT_HEADER)
-    {   FLOAT128 dd = float128_of_number(a);
+    {   FLOAT_128 dd = float128_of_number(a);
         return make_boxfloat128(dd);
     }
     else

@@ -48,7 +48,7 @@ namespace CSL_LISP
 LispObject Lfrexp(LispObject env, LispObject a)
 {   SingleValued fn;
     if (is_long_float(a))
-    {   FLOAT128 d;
+    {   FLOAT_128 d;
         int x;
         d = frexp(long_float_val(a), &x);
         return cons(fixnum_of_int(x), make_boxfloat128(d));

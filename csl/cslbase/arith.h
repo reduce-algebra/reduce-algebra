@@ -230,7 +230,7 @@ inline double value_of_immediate_float(LispObject a)
 }
 
 extern LispObject make_boxfloat(double a, FloatType type=WANT_DOUBLE_FLOAT);
-extern LispObject make_boxfloat128(FLOAT128 a);
+extern LispObject make_boxfloat128(FLOAT_128 a);
 
 inline FloatType floatWant(Header h)
 {   switch (h)
@@ -555,7 +555,7 @@ extern LispObject add1(LispObject p);
 extern LispObject sub1(LispObject p);
 extern LispObject integerp(LispObject p);
 extern double float_of_number(LispObject a);
-extern FLOAT128 float128_of_number(LispObject a);
+extern FLOAT_128 float128_of_number(LispObject a);
 extern LispObject make_complex(LispObject r, LispObject i);
 extern LispObject make_ratio(LispObject p, LispObject q);
 extern LispObject make_approx_ratio(LispObject p, LispObject q, int bits);
@@ -566,21 +566,21 @@ extern LispObject logxor2(LispObject a, LispObject b);
 extern LispObject logand2(LispObject a, LispObject b);
 extern LispObject logeqv2(LispObject a, LispObject b);
 extern LispObject rationalf(double d);
-extern LispObject rationalf128(FLOAT128 d);
+extern LispObject rationalf128(FLOAT_128 d);
 
 extern int _reduced_exp(double, double *);
 extern bool lesspbi(LispObject a, LispObject b);
 extern bool lesspib(LispObject a, LispObject b);
 
-extern FLOAT128 f128_epsilon;
-extern FLOAT128 f128_half_epsilon;
-extern FLOAT128 f128_max;
-extern FLOAT128 f128_negmax;
-extern FLOAT128 f128_min;
-extern FLOAT128 f128_negmin;
-extern FLOAT128 f128_normmin;
-extern FLOAT128 f128_negnormmin;  
-extern FLOAT128 f128_NaN;
+extern FLOAT_128 f128_epsilon;
+extern FLOAT_128 f128_half_epsilon;
+extern FLOAT_128 f128_max;
+extern FLOAT_128 f128_negmax;
+extern FLOAT_128 f128_min;
+extern FLOAT_128 f128_negmin;
+extern FLOAT_128 f128_normmin;
+extern FLOAT_128 f128_negnormmin;  
+extern FLOAT_128 f128_NaN;
 //
 // This is going to be a bit of a mess because I will want to use the C
 // data-type "complex double" when that is available... what happens
@@ -655,7 +655,7 @@ extern intptr_t double_to_3_digits(double d,
 //   s    short float    28 bits and bad rounding behaviour
 //   f    single float   32 bits
 //   d    double float   64 bits
-//   l    FLOAT128      128 bits
+//   l    FLOAT_128     128 bits
 //
 
 
@@ -806,14 +806,14 @@ stgclass type name(LispObject a1, LispObject a2)                    \
     }                                                               \
 }
 
-extern FLOAT128 f128_epsilon;
-extern FLOAT128 f128_half_epsilon;
-extern FLOAT128 f128_max;
-extern FLOAT128 f128_negmax;
-extern FLOAT128 f128_min;
-extern FLOAT128 f128_negmin;
-extern FLOAT128 f128_normmin;
-extern FLOAT128 f128_negnormmin;  
+extern FLOAT_128 f128_epsilon;
+extern FLOAT_128 f128_half_epsilon;
+extern FLOAT_128 f128_max;
+extern FLOAT_128 f128_negmax;
+extern FLOAT_128 f128_min;
+extern FLOAT_128 f128_negmin;
+extern FLOAT_128 f128_normmin;
+extern FLOAT_128 f128_negnormmin;  
 
 // The names here are for the benefit of code compiled into C++ using
 // ccomp.red.
@@ -990,7 +990,7 @@ extern size_t biggestMult;
 extern uint64_t shortResult, longResult;
 #endif
 
-extern intptr_t float128_to_5_digits(FLOAT128 d,
+extern intptr_t float128_to_5_digits(FLOAT_128 d,
     int32_t& a4, uint32_t& a3, uint32_t& a2, uint32_t& a1, uint32_t& a0);
 
 

@@ -267,14 +267,14 @@ AC_ARG_WITH(softfloat,
    [])
 
 if test "$f128_identified" != "yes"
-then 
-AC_COMPILE_IFELSE([AC_LANG_SOURCE(
-  [[
-    static_assert(((long double)1.0 + 1.0e-34) != 1.0);
-  ]])],
-  [AC_MSG_NOTICE([Use long double])
-   f128_identified="yes"
-   AC_DEFINE(USE_LONG_DOUBLE, [1], [long double is a 128-bit format])])
+then
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+    [[
+      static_assert(((long double)1.0 + 1.0e-34) != 1.0);
+    ]])],
+    [AC_MSG_NOTICE([Use long double])
+     f128_identified="yes"
+     AC_DEFINE(USE_LONG_DOUBLE, [1], [long double is a 128-bit format])])
 fi
 
 if test "$f128_identified" != "yes"

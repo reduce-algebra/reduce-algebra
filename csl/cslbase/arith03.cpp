@@ -1062,7 +1062,7 @@ static LispObject quotff(LispObject a, LispObject b)
     FloatType hc;
     mv_2 = fixnum_of_int(0);
     if (ha == LONG_FLOAT_HEADER || hb == LONG_FLOAT_HEADER)
-    {   FLOAT128 x, y, z;
+    {   FLOAT_128 x, y, z;
         x = float128_of_number(a);
         y = float128_of_number(b);
         z = x/y;

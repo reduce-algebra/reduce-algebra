@@ -4,7 +4,9 @@
 // (3) fma for soft float128/160
 // (4) atan2 ought to be clever wrt signed zeros! Ie
 //     atan2(+-0, +-0) => -pi, 0 or pi depending on the signs.
-// (5) FLOAT128 functions to return a NaN if arguments out of range.
+// (5) FLOAT_128 functions to return a NaN if arguments out of range.
+
+// (6) then make the "arithlib" stuff work again!
 
 
 // elem128.cpp                                  Copyright (C) 2026 Codemist
@@ -60,10 +62,10 @@
 // I will set up the following symbols to guard the code I include:
 //   NEED_FLOAT160         I implement my own working precision.
 //   NEED_FLOAT128         Implement 128-bit floats and complex.
-//   NEED_REAL_MATHLIB     sin, cos etc on FLOAT128.
-//   NEED_COMPLEX_MATHLIB  sin, cos etc on COMPLEX128.
+//   NEED_REAL_MATHLIB     sin, cos etc on FLOAT_128.
+//   NEED_COMPLEX_MATHLIB  sin, cos etc on COMPLEX_128.
 
-// Within this file I have FLOAT128 and COMPLEX128 with basic arithmetic.
+// Within this file I have FLOAT_128 and COMPLEX_128 with basic arithmetic.
 // If I have USE_LONG_DOUBLE I can delegate both real and complex cases
 // to std::sin() etc.
 // If I have USE_QUADMATH I can delegate to sinq() etc.
@@ -79,19 +81,19 @@
 #ifdef USE_LONG_DOUBLE
 
 #define delegate128(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)base((long double)x); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)base((long double)x); }
 
 #define delegate128deg(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)todegrees(base((long double)x)); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)todegrees(base((long double)x)); }
 
 #define delegatedeg128(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)base(toradians((long double)x)); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)base(toradians((long double)x)); }
 
 #define delegate128recip(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)(1.0L/(base((long double)x))); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)(1.0L/(base((long double)x))); }
 
 #define delegaterecip128(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)base(1.0L/(long double)x); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)base(1.0L/(long double)x); }
 
 long double todegrees(long double x)
 {   return 57.29577951308232087679815481410517033241L*x;
@@ -131,11 +133,11 @@ long double toradians(long double a)
     return 0.01745329251994329576923690768488612713443L*a;
 }
 
-FLOAT128 acot(FLOAT128 x)
+FLOAT_128 acot(FLOAT_128 x)
 {   if ((long double)x < 0.0)
-        return (FLOAT128)(3.14159265358979323846264338327950288419717L -
+        return (FLOAT_128)(3.14159265358979323846264338327950288419717L -
                           std::atan(-1.0L/(long double)x));
-    else return (FLOAT128)std::atan(1.0L/(long double)x);
+    else return (FLOAT_128)std::atan(1.0L/(long double)x);
 }
 
 delegate128(acos, std::acos)
@@ -185,18 +187,18 @@ delegatedeg128(tand, tan)
 delegate128(tanh, std::tanh)
 
 #define delegatebinary128(fn, base) \
-FLOAT128 fn(FLOAT128 x, FLOAT128 y) \
-{ return (FLOAT128)base((long double)x, (long double)y); }
+FLOAT_128 fn(FLOAT_128 x, FLOAT_128 y) \
+{ return (FLOAT_128)base((long double)x, (long double)y); }
 
 #define delegatebinary128deg(fn, base) \
-FLOAT128 fn(FLOAT128 x, FLOAT128 y)    \
-{ return (FLOAT128)todegrees(base((long double)x, (long double)y)); }
+FLOAT_128 fn(FLOAT_128 x, FLOAT_128 y)    \
+{ return (FLOAT_128)todegrees(base((long double)x, (long double)y)); }
 
 // atan2() returns a value on the range -pi to +pi
 // If x and y are both zero it has defined values in the C++ standard,
 // but right now I have not get those supported.
 
-FLOAT128 atan2(FLOAT128 y, FLOAT128 x)
+FLOAT_128 atan2(FLOAT_128 y, FLOAT_128 x)
 {   if (!signbit(x))
     {   if (!signbit(y))
         {   return atan(y/x);
@@ -237,19 +239,19 @@ delegatebinary128(hypot,     std::hypot)
 #ifdef USE_QUADMATH
 
 #define delegate128(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)base((__float128)x); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)base((__float128)x); }
 
 #define delegate128deg(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)todegrees(base((__float128)x)); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)todegrees(base((__float128)x)); }
 
 #define delegatedeg128(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)base(toradians((__float128)x)); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)base(toradians((__float128)x)); }
 
 #define delegate128recip(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)(1.0Q/(base((__float128)x))); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)(1.0Q/(base((__float128)x))); }
 
 #define delegaterecip128(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)base(1.0Q/(__float128)x); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)base(1.0Q/(__float128)x); }
 
 __float128 todegrees(__float128 x)
 {   return 57.29577951308232087679815481410517033241Q*x;
@@ -289,11 +291,11 @@ __float128 toradians(__float128 a)
     return 0.01745329251994329576923690768488612713443Q*a;
 }
  
-FLOAT128 acot(FLOAT128 x)
+FLOAT_128 acot(FLOAT_128 x)
 {   if (x < LF_C(0.0))
         return LF_C(3.14159265358979323846264338327950288419717) -
-               (FLOAT128)atanq((__float128)(-LF_C(1.0)/x));
-    else return (FLOAT128)atanq((__float128)(LF_C(1.0)/x));
+               (FLOAT_128)atanq((__float128)(-LF_C(1.0)/x));
+    else return (FLOAT_128)atanq((__float128)(LF_C(1.0)/x));
 }
 
 delegate128(acos, acosq)
@@ -343,12 +345,12 @@ delegatedeg128(tand, tan)
 delegate128(tanh, tanhq)
 
 #define delegatebinary128(fn, base) \
-FLOAT128 fn(FLOAT128 x, FLOAT128 y) \
-{ return (FLOAT128)base((__float128)x, (__float128)y); }
+FLOAT_128 fn(FLOAT_128 x, FLOAT_128 y) \
+{ return (FLOAT_128)base((__float128)x, (__float128)y); }
 
 #define delegatebinary128deg(fn, base) \
-FLOAT128 fn(FLOAT128 x, FLOAT128 y)    \
-{ return (FLOAT128)todegrees(base((__float128)x, (__float128)y)); }
+FLOAT_128 fn(FLOAT_128 x, FLOAT_128 y)    \
+{ return (FLOAT_128)todegrees(base((__float128)x, (__float128)y)); }
 
 delegatebinary128(atan2,     atan2q)
 delegatebinary128deg(atan2d, atan2q)
@@ -370,19 +372,19 @@ delegatebinary128(hypot,     hypotq)
 #ifdef USE_CLANG_FLOAT128
 
 #define delegate128(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)base((__float128)x); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)base((__float128)x); }
 
 #define delegate128deg(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)todegrees(base((__float128)x)); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)todegrees(base((__float128)x)); }
 
 #define delegatedeg128(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)base(toradians((__float128)x)); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)base(toradians((__float128)x)); }
 
 #define delegate128recip(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)(1.0Q/(base((__float128)x))); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)(1.0Q/(base((__float128)x))); }
 
 #define delegaterecip128(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)base(1.0Q/(__float128)x); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)base(1.0Q/(__float128)x); }
 
 __float128 todegrees(__float128 x)
 {   return 57.29577951308232087679815481410517033241Q*x;
@@ -422,11 +424,11 @@ __float128 toradians(__float128 a)
     return 0.01745329251994329576923690768488612713443Q*a;
 }
  
-FLOAT128 acot(FLOAT128 x)
+FLOAT_128 acot(FLOAT_128 x)
 {   if (x < LF_C(0.0))
         return LF_C(3.14159265358979323846264338327950288419717) -
-               (FLOAT128)atanf128((__float128)(-LF_C(1.0)/x));
-    else return (FLOAT128)atanf128((__float128)(LF_C(1.0)/x));
+               (FLOAT_128)atanf128((__float128)(-LF_C(1.0)/x));
+    else return (FLOAT_128)atanf128((__float128)(LF_C(1.0)/x));
 }
 
 delegate128(acos, acosf128)
@@ -476,12 +478,12 @@ delegatedeg128(tand, tan)
 delegate128(tanh, tanhf128)
 
 #define delegatebinary128(fn, base) \
-FLOAT128 fn(FLOAT128 x, FLOAT128 y) \
-{ return (FLOAT128)base((__float128)x, (__float128)y); }
+FLOAT_128 fn(FLOAT_128 x, FLOAT_128 y) \
+{ return (FLOAT_128)base((__float128)x, (__float128)y); }
 
 #define delegatebinary128deg(fn, base) \
-FLOAT128 fn(FLOAT128 x, FLOAT128 y)    \
-{ return (FLOAT128)todegrees(base((__float128)x, (__float128)y)); }
+FLOAT_128 fn(FLOAT_128 x, FLOAT_128 y)    \
+{ return (FLOAT_128)todegrees(base((__float128)x, (__float128)y)); }
 
 delegatebinary128(atan2,     atan2f128)
 delegatebinary128deg(atan2d, atan2f128)
@@ -1014,7 +1016,7 @@ FLOAT160 cscd(FLOAT160 x)
 //    I will calculate (2^z-1)/z across the range 0-0.125 and have a table
 //    of powers of 2^0.125 - that lets me get away with a slightly more
 //    compact rational approximation. I will do all this in my FLOAT160
-//    working precision and on that basis expect the FLOAT128 values to
+//    working precision and on that basis expect the FLOAT_128 values to
 //    be good.
 
 // Sorting out how the code for exp() and expm1() overlap is something
@@ -1058,7 +1060,7 @@ FLOAT160 exp(FLOAT160 v)
     FLOAT160 w = v*1.4426950408889634073599246810018921374266_Q;
     if (w > 20000_Q)     // overflowed.
     {   FLOAT160 r(1);
-        r.setexponent(20000);  // out of range for FLOAT128
+        r.setexponent(20000);  // out of range for FLOAT_128
         return r;
     }
     else if (w < -20000_Q) return FLOAT160(0); // underflowed.
@@ -1086,7 +1088,7 @@ FLOAT160 expm1(FLOAT160 v)
 {   FLOAT160 w = v*1.4426950408889634073599246810018921374266_Q;
     if (w > 20000_Q)     // overflowed.
     {   FLOAT160 r(1);
-        r.setexponent(20000);  // out of range for FLOAT128
+        r.setexponent(20000);  // out of range for FLOAT_128
         return r;
     }
     else if (w < -20000_Q) return FLOAT160(0); // underflowed.
@@ -1147,7 +1149,7 @@ FLOAT160 log1p(FLOAT160 v)
 {
 // When |v| < 0.01 I would lose 7 or more trailing bits by adding
 // it to 1. For lerger arguments I will still lose something (up to
-// 7 bits) but for use from FLOAT128 the additional accuracy of my working
+// 7 bits) but for use from FLOAT_128 the additional accuracy of my working
 // precision means that is not a serious worry.
     if (v > 0.01_Q || v < - 0.01_Q) return log(1.0_Q + v);
 // For small arguments I can use a minimax rational approximation.
@@ -1184,9 +1186,9 @@ FLOAT160 log2(FLOAT160 v)
 
 // The formula used here will lose accuracy because log() compresses the
 // whole range of 128-bit floats into around the range +/- 11356. But here
-// as measured against FLOAT128 I have 15 bits of accuracy in hand and that
+// as measured against FLOAT_128 I have 15 bits of accuracy in hand and that
 // is at least pretty close to being able to overcome this challenge when
-// I am only really concerned with use on FLOAT128s.
+// I am only really concerned with use on FLOAT_128s.
  
 FLOAT160 expt(FLOAT160 x, FLOAT160 y)
 {   return exp(y * log(x));
@@ -1272,7 +1274,7 @@ FLOAT160 sqrt(FLOAT160 x)
 // If long double is an 80-bit type then the first approximation
 // should be OK to 64-bits and the next to pretty well 128 which is
 // good for FLOAT160 and thoroughly good enough for when this
-// is a working precision calculation aimes at a FLOAT128 result.
+// is a working precision calculation aimes at a FLOAT_128 result.
 // If long double is no better than double (and Windows may expect that)
 // then an extra iteration is needed.
     if (longdouble64)
@@ -1291,7 +1293,7 @@ FLOAT160 rsqrt(FLOAT160 x)
 
 // The usual main delicacy with hypot is that there can be overflow or
 // underflow in intermediate results. Here the inputs are expected to
-// have come from a FLOAT128 world where exponents are 15 bits, and here
+// have come from a FLOAT_128 world where exponents are 15 bits, and here
 // I have 32-bits, so this is not an issue.
 
 FLOAT160 hypot(FLOAT160 x, FLOAT160 y)
@@ -1483,7 +1485,7 @@ FLOAT160 asech(FLOAT160 z)
 #if defined USE_CXX23_FLOAT128 || defined USE_SOFT_FLOAT128
 
 #define delegate128(fn, base) \
-FLOAT128 fn(FLOAT128 x) { return (FLOAT128)base((FLOAT160)x); }
+FLOAT_128 fn(FLOAT_128 x) { return (FLOAT_128)base((FLOAT160)x); }
 
 delegate128(acos, acos)
 delegate128(acosd, acosd)
@@ -1533,8 +1535,8 @@ delegate128(tand, tand)
 delegate128(tanh, tanh)
 
 #define delegatebinary128(fn, base) \
-FLOAT128 fn(FLOAT128 x, FLOAT128 y) \
-{ return (FLOAT128)base((FLOAT160)x, (FLOAT160)y); }
+FLOAT_128 fn(FLOAT_128 x, FLOAT_128 y) \
+{ return (FLOAT_128)base((FLOAT160)x, (FLOAT160)y); }
 
 delegatebinary128(atan2,  atan2)
 delegatebinary128(atan2d, atan2d)
@@ -1550,7 +1552,7 @@ delegatebinary128(hypot,  hypot)
 
 #endif // defined USE_CXX23_FLOAT128 || defined USE_SOFT_FLOAT128
 
-// I should now have FLOAT128 available on every possible platform. So
+// I should now have FLOAT_128 available on every possible platform. So
 // now I need to do somehing similar with complex-valued functions.
 // If USE_LONG_DOUBLE is set then std::sin() etc will do the trick.
 // If USE_QUADMATH is set then csinq() and friends should be available.
@@ -1684,7 +1686,7 @@ COMPLEX160 expm1(COMPLEX160 z)
 // part of x it means that (cos(y)-1) must be computed accurately
 // for small y. I think I could cross over |x|<0.005 which would mean that
 // the result could be calculated as 1.005-1.0 when the simple formula
-// was used, losing 7 or 8 bits. Well as against FLOAT128 I have 15 bits
+// was used, losing 7 or 8 bits. Well as against FLOAT_128 I have 15 bits
 // in hand so that would feel safe. Then the small case could be done
 // with a simple taylor series or odre around 17 or 18, and since cos
 // has an even series that would be 9 terms. At present I believe that
@@ -1834,7 +1836,7 @@ COMPLEX160 csch(COMPLEX160 z)
 }
 
 // Implementing x^y as exp(y log(x)) tends to lose accuracy - but here I am
-// using a working precision that has 15 more bits than the COMPLEX128 which
+// using a working precision that has 15 more bits than the COMPLEX_128 which
 // is what gets delivered to the end-users, and for at least a large
 // fraction of interesting cases that will be sufficient to yield good
 // results.
@@ -1860,19 +1862,19 @@ COMPLEX160 hypot(COMPLEX160 x, COMPLEX160 y)
 
 #endif // NEED_COMPLEX_MATHLIB
 
-// Now delegate elementary functions on COMPLEX128 either to system-provided
+// Now delegate elementary functions on COMPLEX_128 either to system-provided
 // ones or to my own versions that use COMPLEX160.
 
 #ifdef USE_LONG_DOUBLE
 
 #define delegateC128(fn, base)                         \
-COMPLEX128 fn(COMPLEX128 z)                            \
+COMPLEX_128 fn(COMPLEX_128 z)                            \
 {   std::cout << #base << " " << z << "\n";            \
     std::complex<long double> v(                       \
         (long double)z.real(), (long double)z.imag()); \
     v = base(v);                                       \
     std::cout << "=> " << v << "\n";                   \
-    return COMPLEX128(v.real(), v.imag());             \
+    return COMPLEX_128(v.real(), v.imag());             \
 }
 
 
@@ -1895,13 +1897,13 @@ delegateC128(tan,    std::tan);
 delegateC128(tanh,   std::tanh)
 
 #define delegatebinaryC128(fn, base)                         \
-COMPLEX128 fn(COMPLEX128 y, COMPLEX128 z)                            \
+COMPLEX_128 fn(COMPLEX_128 y, COMPLEX_128 z)                            \
 {   std::complex<long double> u(                       \
         (long double)y.real(), (long double)y.imag()); \
     std::complex<long double> v(                       \
         (long double)z.real(), (long double)z.imag()); \
     v = base(u, v);                                       \
-    return COMPLEX128(v.real(), v.imag());             \
+    return COMPLEX_128(v.real(), v.imag());             \
 }
 
 delegatebinaryC128(expt,  std::pow)
@@ -1940,11 +1942,11 @@ delegateC128(log2,        log2)
 #ifdef USE_QUADMATH
 
 #define delegateC128(fn, base)                             \
-COMPLEX128 fn(COMPLEX128 z)                                \
+COMPLEX_128 fn(COMPLEX_128 z)                                \
 {   __complex128 v =                                       \
         {((__float128)z.real()), ((__float128)z.imag())};  \
     v = base(v);                                           \
-    return COMPLEX128(crealq(v), cimagq(v));               \
+    return COMPLEX_128(crealq(v), cimagq(v));               \
 }
 
 delegateC128(acos,   cacosq)
@@ -1966,13 +1968,13 @@ delegateC128(tan,    ctanq);
 delegateC128(tanh,   ctanhq)
 
 #define delegatebinaryC128(fn, base)                  \
-COMPLEX128 fn(COMPLEX128 y, COMPLEX128 z)             \
+COMPLEX_128 fn(COMPLEX_128 y, COMPLEX_128 z)             \
 {   __complex128 u = {                                \
         (__float128)y.real(), (__float128)y.imag()};  \
     __complex128 v = {                                \
         (__float128)z.real(), (__float128)z.imag()};  \
     v = base(u, v);                                   \
-    return COMPLEX128(crealq(v), cimagq(v));          \
+    return COMPLEX_128(crealq(v), cimagq(v));          \
 }
 
 delegatebinaryC128(expt, cpowq)
@@ -2019,10 +2021,10 @@ delegateC128(log2,        log2)
 #if defined USE_CLANG_FLOAT128 || defined USE_CXX23_FLOAT128 || defined USE_SOFT_FLOAT128
 
 #define delegateC128(fn, base)                                 \
-COMPLEX128 fn(COMPLEX128 z)                                    \
+COMPLEX_128 fn(COMPLEX_128 z)                                    \
 {   COMPLEX160 v((FLOAT160)z.real(), (FLOAT160)z.imag());      \
     v = base(v);                                               \
-    return COMPLEX128((FLOAT128)v.real(), (FLOAT128)v.imag()); \
+    return COMPLEX_128((FLOAT_128)v.real(), (FLOAT_128)v.imag()); \
 }
 
 delegateC128(acos,   acos)
@@ -2049,11 +2051,11 @@ delegateC128(log1p,       log1p)
 delegateC128(log2,        log2)
 
 #define delegatebinaryC128(fn, base)                           \
-COMPLEX128 fn(COMPLEX128 y, COMPLEX128 z)                      \
+COMPLEX_128 fn(COMPLEX_128 y, COMPLEX_128 z)                      \
 {   COMPLEX160 u((FLOAT160)y.real(), (FLOAT160)y.imag());      \
     COMPLEX160 v((FLOAT160)z.real(), (FLOAT160)z.imag());      \
     v = base(u, v);                                            \
-    return COMPLEX128((FLOAT128)v.real(), (FLOAT128)v.imag()); \
+    return COMPLEX_128((FLOAT_128)v.real(), (FLOAT_128)v.imag()); \
 }
 
 delegatebinaryC128(expt,  expt)
@@ -2066,61 +2068,61 @@ delegatebinaryC128(expt,  expt)
 
 // The next bunch of functions are always merely derived
 
-COMPLEX128 recip(COMPLEX128 z)
-{   return COMPLEX128(LF_C(1.0), LF_C(0.0))/z;
+COMPLEX_128 recip(COMPLEX_128 z)
+{   return COMPLEX_128(LF_C(1.0), LF_C(0.0))/z;
 }
 
 // Review principal values here...
 
-COMPLEX128 acot(COMPLEX128 z)
+COMPLEX_128 acot(COMPLEX_128 z)
 {   return atan(recip(z));
 }
 
-COMPLEX128 acoth(COMPLEX128 z)
+COMPLEX_128 acoth(COMPLEX_128 z)
 {   return atanh(recip(z));
 }
 
-COMPLEX128 acsc(COMPLEX128 z)
+COMPLEX_128 acsc(COMPLEX_128 z)
 {   return asin(recip(z));
 }
 
-COMPLEX128 acsch(COMPLEX128 z)
+COMPLEX_128 acsch(COMPLEX_128 z)
 {   return asinh(recip(z));
 }
 
-COMPLEX128 asec(COMPLEX128 z)
+COMPLEX_128 asec(COMPLEX_128 z)
 {   return acos(recip(z));
 }
 
-COMPLEX128 asech(COMPLEX128 z)
+COMPLEX_128 asech(COMPLEX_128 z)
 {   return acosh(recip(z));
 }
 
-COMPLEX128 cot(COMPLEX128 z)
+COMPLEX_128 cot(COMPLEX_128 z)
 {   return recip(tan(z));
 }
 
-COMPLEX128 coth(COMPLEX128 z)
+COMPLEX_128 coth(COMPLEX_128 z)
 {   return recip(tanh(z));
 }
 
-COMPLEX128 csc(COMPLEX128 z)
+COMPLEX_128 csc(COMPLEX_128 z)
 {   return recip(sin(z));
 }
 
-COMPLEX128 csch(COMPLEX128 z)
+COMPLEX_128 csch(COMPLEX_128 z)
 {   return sinh(z);
 }
 
-COMPLEX128 sec(COMPLEX128 z)
+COMPLEX_128 sec(COMPLEX_128 z)
 {   return recip(cos(z));
 }
 
-COMPLEX128 sech(COMPLEX128 z)
+COMPLEX_128 sech(COMPLEX_128 z)
 {   return recip(cosh(z));
 }
 
-COMPLEX128 rsqrt(COMPLEX128 z)
+COMPLEX_128 rsqrt(COMPLEX_128 z)
 {   return recip(sqrt(z));
 }
 

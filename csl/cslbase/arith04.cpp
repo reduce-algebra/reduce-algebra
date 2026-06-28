@@ -334,13 +334,13 @@ static LispObject rationalizef(double dd, int bits)
 //
 // FP128_SMALL_LIMIT is 2^-113 and is used in rationalizef128.
 
-static FLOAT128 FP128_INT_LIMIT(((uint128_t)0x406fU)<<112, 0);
-static FLOAT128 FP128_MINUS_INT_LIMIT(((uint128_t)0xc06fU)<<112, 0);
-static FLOAT128 FP128_SMALL_LIMIT(((uint128_t)0x3f8eU)<<112, 0);
+static FLOAT_128 FP128_INT_LIMIT(((uint128_t)0x406fU)<<112, 0);
+static FLOAT_128 FP128_MINUS_INT_LIMIT(((uint128_t)0xc06fU)<<112, 0);
+static FLOAT_128 FP128_SMALL_LIMIT(((uint128_t)0x3f8eU)<<112, 0);
 
 #include "float128.h"
 
-LispObject rationalf128(FLOAT128 d)
+LispObject rationalf128(FLOAT_128 d)
 {
 // If the value of the double is > 2^112 then it must be an exact integer.
 // In that case rationalf will just return the integer value using fix,
@@ -353,10 +353,10 @@ LispObject rationalf128(FLOAT128 d)
 // exactly an integer or not. Well that is not as easy as it was in the
 // 64-bit case so I will go straight to the general method... Well I will
 // filter out the case of zero first.
-    if (d == (FLOAT128)0.0) return fixnum_of_int(0);
+    if (d == (FLOAT_128)0.0) return fixnum_of_int(0);
     bool negative = false;
-    FLOAT128 dd = d;
-    if (d < (FLOAT128)0.0)
+    FLOAT_128 dd = d;
+    if (d < (FLOAT_128)0.0)
     {   dd = -dd;
         negative = true;
     }
@@ -448,17 +448,17 @@ LispObject rationalf128(FLOAT128 d)
 //--         (uint32_t)(a >> 32), (uint32_t)a);
 //-- }
 
-// Now I need to be able to convert between FLOAT128 and uint128_t with
+// Now I need to be able to convert between FLOAT_128 and uint128_t with
 // "fix" and "float" operations. I will only concern myself with positive
 // numbers, and my expected use will be that I only attempt to fix
 // values that will fit within 113 bits (ie well within 128), and
 // I will only float values that are in around the same range.
 
-uint128_t uint128_fix(FLOAT128 a)
-{   if (a == (FLOAT128)0.0) return 0;
+uint128_t uint128_fix(FLOAT_128 a)
+{   if (a == (FLOAT_128)0.0) return 0;
 // I am not going to do anything clever with NaN or infinity here - they
 // are just not permitted and would lead to chaos.
-    FLOAT128 aa;
+    FLOAT_128 aa;
     int x;
     aa = frexp(a, &x);
 // Now I take the 113 bits of mantissa (including an implicit bit) and
@@ -474,8 +474,8 @@ uint128_t uint128_fix(FLOAT128 a)
     return w;
 }
 
-FLOAT128 uint128_float(uint128_t a)
-{   if (a == 0) return (FLOAT128)0.0;
+FLOAT_128 uint128_float(uint128_t a)
+{   if (a == 0) return (FLOAT_128)0.0;
     int x = 113;
 // Now I want to normalize the integer so that the bit at position
 // 00010000:00000000:00000000:00000000 is set, ie the one that will be
@@ -500,14 +500,14 @@ FLOAT128 uint128_float(uint128_t a)
     }
     uint64_t ahi = (uint64_t)(a>>64) & UINT64_C(0x0000ffffffffffff);
     ahi = ahi | ((uint64_t)(x + 0x3ffe)<<48);
-    return FLOAT128((((uint128_t)ahi)<<64) | (uint64_t)a, 0);
+    return FLOAT_128((((uint128_t)ahi)<<64) | (uint64_t)a, 0);
 }
 
-static LispObject rationalizef128(FLOAT128 dd)
-{   FLOAT128 d;
-    if (dd == (FLOAT128)0.0) return fixnum_of_int(0);
+static LispObject rationalizef128(FLOAT_128 dd)
+{   FLOAT_128 d;
+    if (dd == (FLOAT_128)0.0) return fixnum_of_int(0);
     d = dd;
-    if (d < (FLOAT128)0.0) d = -d;
+    if (d < (FLOAT_128)0.0) d = -d;
 // Maybe the float is in fact exactly an integer.
     if (FP128_INT_LIMIT <= d)
         return lisp_fix(make_boxfloat128(dd), FIX_ROUND);
@@ -522,9 +522,9 @@ static LispObject rationalizef128(FLOAT128 dd)
     uint128_t a;
     uint128_t u0, u1;
     uint128_t v0, v1;
-    if ((FLOAT128)1.0 <= d)
+    if ((FLOAT_128)1.0 <= d)
     {   int x;
-        FLOAT128 d1;
+        FLOAT_128 d1;
         d1 = frexp(d,  &x);
         d1 = ldexp(d1, 113);
         p = uint128_fix(d1);
@@ -539,11 +539,11 @@ static LispObject rationalizef128(FLOAT128 dd)
     }
     else
     {   int x;
-        FLOAT128 d1, d2;
+        FLOAT_128 d1, d2;
         d1 = frexp(d, &x);
         d1 = ldexp(d1, 113);
         p = uint128_fix(d1);
-        d2 = (FLOAT128)1.0 / d;
+        d2 = (FLOAT_128)1.0 / d;
         a = uint128_fix(d2);
         uint128_t w1;
         if (113-x < 128) w1 = uint128_t(1) << (113-x);
@@ -562,7 +562,7 @@ static LispObject rationalizef128(FLOAT128 dd)
         v0 = 1;
         v1 = a;
     }
-    FLOAT128 du1, dv1, q2;
+    FLOAT_128 du1, dv1, q2;
     while (du1 = uint128_float(u1),
            dv1 = uint128_float(v1),
            q2 = du1/dv1,
@@ -580,7 +580,7 @@ static LispObject rationalizef128(FLOAT128 dd)
         v0 = v1; v1 = v2;
     }
     LispObject p1;
-    if (dd < (FLOAT128)0.0) p1 = make_lisp_integer128(-int128_t(u1));
+    if (dd < (FLOAT_128)0.0) p1 = make_lisp_integer128(-int128_t(u1));
     else p1 = make_lisp_unsigned128(u1);
     if (v1 == 1) return p1;
     LispObject q1 = make_lisp_unsigned128(v1);
@@ -773,7 +773,7 @@ inline bool lessp_i_d(LispObject a, LispObject b)
 }
 
 inline bool lessp_i_l(LispObject a, LispObject b)
-{   FLOAT128 aa = (FLOAT128)(int64_t)int_of_fixnum(a);
+{   FLOAT_128 aa = (FLOAT_128)(int64_t)int_of_fixnum(a);
     return aa < long_float_val(b);
 }
 
@@ -790,7 +790,7 @@ inline bool lessp_d_i(LispObject a, LispObject b)
 }
 
 inline bool lessp_l_i(LispObject a, LispObject b)
-{   FLOAT128 bb = (FLOAT128)(int64_t)int_of_fixnum(b);
+{   FLOAT_128 bb = (FLOAT_128)(int64_t)int_of_fixnum(b);
     return long_float_val(a) < bb;
 }
 
@@ -1155,15 +1155,15 @@ inline bool lessp_l_r(LispObject a, LispObject b)
 }
 
 inline bool lessp_l_s(LispObject a, LispObject b)
-{   return long_float_val(a) < (FLOAT128)single_float_val(b);
+{   return long_float_val(a) < (FLOAT_128)single_float_val(b);
 }
 
 inline bool lessp_l_f(LispObject a, LispObject b)
-{   return long_float_val(a) < (FLOAT128)single_float_val(b);
+{   return long_float_val(a) < (FLOAT_128)single_float_val(b);
 }
 
 inline bool lessp_l_d(LispObject a, LispObject b)
-{   return long_float_val(a) < (FLOAT128)double_float_val(b);
+{   return long_float_val(a) < (FLOAT_128)double_float_val(b);
 }
 
 inline bool lessp_l_l(LispObject a, LispObject b)
@@ -1175,15 +1175,15 @@ inline bool lessp_r_l(LispObject a, LispObject b)
 }
 
 inline bool lessp_s_l(LispObject a, LispObject b)
-{   return (FLOAT128)value_of_immediate_float(a) < long_float_val(b);
+{   return (FLOAT_128)value_of_immediate_float(a) < long_float_val(b);
 }
 
 inline bool lessp_f_l(LispObject a, LispObject b)
-{   return (FLOAT128)single_float_val(a) < long_float_val(b);
+{   return (FLOAT_128)single_float_val(a) < long_float_val(b);
 }
 
 inline bool lessp_d_l(LispObject a, LispObject b)
-{   return (FLOAT128)double_float_val(a) < long_float_val(b);
+{   return (FLOAT_128)double_float_val(a) < long_float_val(b);
 }
 
 // Now I have given all the helper type-specific rules - do the

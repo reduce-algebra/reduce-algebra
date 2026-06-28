@@ -79,7 +79,7 @@ static LispObject make_complex_float(std::complex<double> v, LispObject a)
     return a1;
 }
 
-static LispObject make_complex128(COMPLEX128 v)
+static LispObject make_complex128(COMPLEX_128 v)
 {   LispObject a1, a2;
     a1 = make_boxfloat128(v.real());
     a2 = make_boxfloat128(v.imag());
@@ -321,7 +321,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 // (2) Lacos(LispObject a) { return trigfn(enum_acos, a); }
 // (3) a table such that accessing the enum_acos entry gives you
 //     a struct containing versions of that function for double,
-//     complex double, FLOAT128 and COMPLEX128 arguments.
+//     complex double, FLOAT_128 and COMPLEX_128 arguments.
 
 #define functions \
     FF(acos,     std::acos,    std::acos,      acos,      acos) \
@@ -391,8 +391,8 @@ LispObject L ## a (LispObject env, LispObject a1) \
 using f64f64 = double (*)(double);
 using c64c64 = std::complex<double> (*)(const std::complex<double>&);
 
-using f128f128 = FLOAT128 (*)(FLOAT128);
-using c128c128 = COMPLEX128 (*)(COMPLEX128);
+using f128f128 = FLOAT_128 (*)(FLOAT_128);
+using c128c128 = COMPLEX_128 (*)(COMPLEX_128);
 
 struct fn_definitions
 {
@@ -615,8 +615,8 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
                 case TYPE_COMPLEX_NUM:
                 {   if (is_long_float(real_part(a)) ||
                         is_long_float(imag_part(a)))
-                    {   COMPLEX128 c1, c2;
-                        c1 = COMPLEX128(
+                    {   COMPLEX_128 c1, c2;
+                        c1 = COMPLEX_128(
                             float128_of_number(real_part(a)),
                             float128_of_number(imag_part(a)));
                         c2 = (*function_table[which_one].c128)(c1);

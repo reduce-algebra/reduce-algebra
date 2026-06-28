@@ -532,7 +532,7 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
                 }
                 else
                 {
-// This hashes based on all 16 bytes and so in the cases where FLOAT128
+// This hashes based on all 16 bytes and so in the cases where FLOAT_128
 // is narrower than that the unused bits must be set to zero.
                     UPDATE(r, intfloat128_t_val0(key));
                     UPDATE(r, intfloat128_t_val1(key));
@@ -673,15 +673,11 @@ static uint64_t hash_nonsimple_bitvector(uint64_t r, LispObject key)
 // and if the denominator is a power of 2 so that there is no underflow.
 // Sub-normal numbers represent a special edge case for this.
 
-// If FLOAT128 is only 64-bits wide then some fixnums will not
-// convert. So I convert to a FLOAT128 and check if the resulting
-// value is finite.
-
-static FLOAT128 bigfloat_result;
+static FLOAT_128 bigfloat_result;
 
 UNUSED_NAME static bool float_if_exact(LispObject x)
 {   if (is_fixnum(x))
-    {   bigfloat_result = (FLOAT128)(int64_t)int_of_fixnum(x);
+    {   bigfloat_result = (FLOAT_128)(int64_t)int_of_fixnum(x);
         if (bigfloat_result == LF_C(0.0)) return true;
         return isfinite(bigfloat_result);
     }
@@ -696,10 +692,10 @@ UNUSED_NAME static bool float_if_exact(LispObject x)
     else if (is_bfloat(x))
     {   switch (flthdr(x))
         {   case SINGLE_FLOAT_HEADER:
-                bigfloat_result = (FLOAT128)single_float_val(x);
+                bigfloat_result = (FLOAT_128)single_float_val(x);
                 return true;
             case DOUBLE_FLOAT_HEADER:
-                bigfloat_result = (FLOAT128)double_float_val(x);
+                bigfloat_result = (FLOAT_128)double_float_val(x);
                 return true;
             case LONG_FLOAT_HEADER:
                 bigfloat_result = long_float_val(x);

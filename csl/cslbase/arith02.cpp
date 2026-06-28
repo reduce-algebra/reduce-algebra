@@ -241,17 +241,17 @@ static LispObject timesif(LispObject a, LispObject b)
 {   switch (flthdr(b))
     {
         case LONG_FLOAT_HEADER:
-        {   FLOAT128 x, z;
+        {   FLOAT_128 x, z;
 // Hah - int_of_fixnum() returns an intptr_t which is a synonym for long,
-// but the casts to FLOAT128 have been set up to cover the fixed width
+// but the casts to FLOAT_128 have been set up to cover the fixed width
 // integer types such as int64_t. And at least under Xcode (June 2026) the
 // difference between intptr_t and int64_t (even if both are very much like
 // long) is enough to trigger and ambiguity error. Hence the ugly double
-// cast. I could as an alternative put more effort into making the FLOAT128
+// cast. I could as an alternative put more effort into making the FLOAT_128
 // casts cover all cases, but avoiding moans about duplicated cases would
 // lead to more delicacy there (in my opinion) than fixing the issue here and
 // in only a few other places.
-            x = (FLOAT128)(int64_t)int_of_fixnum(a);
+            x = (FLOAT_128)(int64_t)int_of_fixnum(a);
             z = x * long_float_val(b);
             return make_boxfloat128(z);
         }
@@ -286,7 +286,7 @@ static LispObject timessf(LispObject a, LispObject b)
 {   switch (flthdr(b))
     {
         case LONG_FLOAT_HEADER:
-        {   FLOAT128 x, z;
+        {   FLOAT_128 x, z;
             x = float128_of_number(a);
             z = x * long_float_val(b);
             return make_boxfloat128(z);
@@ -1129,7 +1129,7 @@ inline LispObject timesff(LispObject a, LispObject b)
            hb = flthdr(b);
     FloatType hc;
     if (ha == LONG_FLOAT_HEADER || hb == LONG_FLOAT_HEADER)
-    {   FLOAT128 x, y, z;
+    {   FLOAT_128 x, y, z;
         x = float128_of_number(a);
         y = float128_of_number(b);
         z = x*y;

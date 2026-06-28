@@ -307,7 +307,7 @@ static LispObject Lrealpart(LispObject env, LispObject a)
 }
 
 LispObject decode_long_float(LispObject a)
-{   FLOAT128 d = long_float_val(a);
+{   FLOAT_128 d = long_float_val(a);
     if (isinf(d) || isnan(d))
     {   if (trap_floating_overflow) return aerror("decode-float");
         else return nil; // infinity or NaN
@@ -590,7 +590,7 @@ static LispObject Lfloat_sign2(LispObject env, LispObject a,
 {   SingleValued fn;
     if (is_bfloat(b) &&
         flthdr(b) == LONG_FLOAT_HEADER)
-    {   FLOAT128 d = float128_of_number(b);
+    {   FLOAT_128 d = float128_of_number(b);
 // If a is another long float then float_of_number may overflow, but
 // here I am only interested in its sign, and -infinity is still negative.
         if (float_of_number(a) < 0.0) d = -d;
@@ -609,8 +609,8 @@ static LispObject Lfloat_sign1(LispObject env, LispObject a)
 {   SingleValued fn;
     if (is_bfloat(1) &&
         flthdr(a) == LONG_FLOAT_HEADER)
-    {   FLOAT128 d = float128_of_number(a);
-        FLOAT128 r = LF_C(1.0);
+    {   FLOAT_128 d = float128_of_number(a);
+        FLOAT_128 r = LF_C(1.0);
         if (signbit(d)) r = -r;
         return make_boxfloat128(r);
     }
@@ -636,7 +636,7 @@ static LispObject Lftruncate(LispObject env, LispObject a1,
 }
 
 LispObject integer_decode_long_float(LispObject a)
-{   FLOAT128 d = long_float_val(a);
+{   FLOAT_128 d = long_float_val(a);
     if (isinf(d) || isnan(d))
     {   if (trap_floating_overflow) return aerror("integer-decode-float");
         else return nil; // infinity or NaN
@@ -795,7 +795,7 @@ static LispObject Lmask_field(LispObject env, LispObject a1,
 }
 
 static LispObject scale_float128(LispObject a, intptr_t x)
-{   FLOAT128 d = long_float_val(a);
+{   FLOAT_128 d = long_float_val(a);
     d = ldexp(d, (int)x);
     return make_boxfloat128(d);
 }
@@ -833,7 +833,7 @@ static LispObject Lscale_float(LispObject env, LispObject a,
 //   FIX_CEILING
 
 static LispObject lisp_fix_sub128(LispObject a, int roundmode)
-{   FLOAT128 d = long_float_val(a);
+{   FLOAT_128 d = long_float_val(a);
     if (isnan(d)) return aerror("NaN in fix");
     if (isinf(d)) return aerror("infinity in fix");
     int x;
@@ -848,7 +848,7 @@ static LispObject lisp_fix_sub128(LispObject a, int roundmode)
         switch (roundmode)
         {
         case FIX_ROUND:
-            {   FLOAT128 err = d - (FLOAT128)n;
+            {   FLOAT_128 err = d - (FLOAT_128)n;
                 if (n%2 == 0)
                 {   if (err > LF_C(0.5)) n++;
                     else if (err < -LF_C(0.5)) n--;
@@ -863,10 +863,10 @@ static LispObject lisp_fix_sub128(LispObject a, int roundmode)
         default:
             break;
         case FIX_FLOOR:
-            if (d < (FLOAT128)n) n--;
+            if (d < (FLOAT_128)n) n--;
             break;
         case FIX_CEILING:
-            if (d > (FLOAT128)n) n++;
+            if (d > (FLOAT_128)n) n++;
             break;
         }
 
