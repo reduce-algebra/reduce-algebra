@@ -1036,6 +1036,35 @@ static int alpha1(const void* a, const void* b)
 //   input!-libraries and output!-library
 //   Some values needed by the JIT.
 
+FLOAT128 f128_NaN   = FLOAT128(0x7fff8000, nullptr); 
+FLOAT128 f128_inf   = FLOAT128(0x7fff0000, nullptr); 
+FLOAT128 f128_minf  = FLOAT128(0xffff0000, nullptr); 
+ 
+FLOAT128 f128_epsilon      = FLOAT128(0x3f8f0000, nullptr);
+//      1.925929944387235853055977942584927319e-34_Q ;
+
+FLOAT128 f128_half_epsilon = FLOAT128(0x3f8e0000U, nullptr);
+//      9.629649721936179265279889712924636593e-35_Q ;
+
+FLOAT128 f128_max          = FLOAT128(0x7ffeffffU, -1U, -1U, -1U);
+//      1.18973149535723176508575932662800702e+4932_Q ;
+
+FLOAT128 f128_negmax       = FLOAT128(0xfffeffffU, -1U, -1U, -1U);
+//      (-1.18973149535723176508575932662800702e+4932_Q) ;
+
+FLOAT128 f128_min          = FLOAT128(0U, 0U, 0U, 1U);
+//      6.47517511943802511092443895822764655e-4966_Q;
+
+FLOAT128 f128_negmin       = FLOAT128(0x80000000U, 0U, 0U, 1U);
+//      (-6.47517511943802511092443895822764655e-4966_) ;
+
+FLOAT128 f128_normmin      = FLOAT128(0x00010000U, nullptr);
+//      3.36210314311209350626267781732175260e-4932_Q ;
+
+FLOAT128 f128_negnormmin   = FLOAT128(0x80010000U, nullptr);
+//      (-3.36210314311209350626267781732175260e-4932_Q) ;
+
+
 LispObject set_up_variables(int restart_flag)
 {   LispObject w, w1;
     size_t i;
@@ -1572,9 +1601,7 @@ LispObject set_up_variables(int restart_flag)
                   pack_single_float(FLT_EPSILON));
     make_constant("double-float-epsilon",
                   make_boxfloat(DBL_EPSILON, WANT_DOUBLE_FLOAT));
-#ifdef HAVE_SOFTFLOAT
     make_constant("long-float-epsilon", make_boxfloat128(f128_epsilon));
-#endif
 // I assume that I have a radix 2 representation, and float-negative-epsilon
 // is just half float-epsilon. Correct me if I am wrong...
     make_constant("short-float-negative-epsilon",
@@ -1583,10 +1610,8 @@ LispObject set_up_variables(int restart_flag)
                   pack_single_float(FLT_EPSILON/2.0));
     make_constant("double-float-negative-epsilon",
                   make_boxfloat(DBL_EPSILON/2.0, WANT_DOUBLE_FLOAT));
-#ifdef HAVE_SOFTFLOAT
     make_constant("long-float-negative-epsilon",
         make_boxfloat128(f128_half_epsilon));
-#endif
 // I hope that the C header file gets extremal values correct. Note that
 // because pack_short_float() truncates (rather than rounding) it should give
 // correct values for most-positive-short-float etc
@@ -1596,10 +1621,8 @@ LispObject set_up_variables(int restart_flag)
                   pack_single_float(FLT_MAX));
     make_constant("most-positive-double-float",
                   make_boxfloat(DBL_MAX, WANT_DOUBLE_FLOAT));
-#ifdef HAVE_SOFTFLOAT
     make_constant("most-positive-long-float",
                   make_boxfloat128(f128_max));
-#endif
 // Here I assume that the floating point representation is sign-and-magnitude
 // and hence symmetric about zero.
     make_constant("most-negative-short-float",
@@ -1608,10 +1631,8 @@ LispObject set_up_variables(int restart_flag)
                   pack_single_float(-FLT_MAX));
     make_constant("most-negative-double-float",
                   make_boxfloat(-DBL_MAX, WANT_DOUBLE_FLOAT));
-#ifdef HAVE_SOFTFLOAT
     make_constant("most-negative-long-float",
                   make_boxfloat128(f128_negmax));
-#endif
 // The "least-xxx" set of values did not consider the case of denormalised
 // numbers too carefully in ClTl-1, so in ClTl-2 there are elaborations. I
 // believe that a proper C header file <cfloat> will make the macros that
@@ -1624,20 +1645,16 @@ LispObject set_up_variables(int restart_flag)
                   pack_single_float(FLT_MIN));
     make_constant("least-positive-double-float",
                   make_boxfloat(DBL_MIN, WANT_DOUBLE_FLOAT));
-#ifdef HAVE_SOFTFLOAT
     make_constant("least-positive-long-float",
                   make_boxfloat128(f128_min));
-#endif
     make_constant("least-negative-short-float",
                   pack_short_float(-FLT_MIN));
     make_constant("least-negative-single-float",
                   pack_single_float(-FLT_MIN));
     make_constant("least-negative-double-float",
                   make_boxfloat(-DBL_MIN, WANT_DOUBLE_FLOAT));
-#ifdef HAVE_SOFTFLOAT
     make_constant("least-negative-long-float",
                   make_boxfloat128(f128_negmin));
-#endif
 // The bunch here are intended to be NORMALISED numbers, while the unqualified
 // ones above may not be.
     make_constant("least-positive-normalized-short-float",
@@ -1646,20 +1663,16 @@ LispObject set_up_variables(int restart_flag)
                   pack_single_float(FLT_MIN));
     make_constant("least-positive-normalized-double-float",
                   make_boxfloat(DBL_MIN, WANT_DOUBLE_FLOAT));
-#ifdef HAVE_SOFTFLOAT
     make_constant("least-positive-normalized-long-float",
                   make_boxfloat128(f128_normmin));
-#endif
     make_constant("least-negative-normalized-short-float",
                   pack_short_float(-FLT_MIN));
     make_constant("least-negative-normalized-single-float",
                   pack_single_float(-FLT_MIN));
     make_constant("least-negative-normalized-double-float",
                   make_boxfloat(-DBL_MIN, WANT_DOUBLE_FLOAT));
-#ifdef HAVE_SOFTFLOAT
     make_constant("least-negative-normalized-long-float",
                   make_boxfloat128(f128_negnormmin));
-#endif
     make_constant("internal-time-units-per-second",
                   fixnum_of_int(1000));
 

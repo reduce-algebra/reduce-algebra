@@ -1,9 +1,9 @@
 ### Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                                      2008-2025
+# A C Norman.                                                      2008-2026
 
 # **************************************************************************
-# * Copyright (C) 2025, Codemist.                         A C Norman       *
+# * Copyright (C) 2026, Codemist.                         A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *
@@ -192,14 +192,147 @@ then
   AC_DEFINE(HAVE_CRLIBM, [1], [Correct Rounding maths library should be used])
 fi
 
-AC_ARG_WITH(softfloat,
-   AS_HELP_STRING([--with-softfloat], [Can be used to disable use of softfloat]),
-   [],
-   [with_softfloat="yes"])
+# 128-bit floats and complex values based on them are noit fully
+# standardised across platforms. Here I explain the options
+# and define symbols for selecting them.
 
-if test "$with_softfloat" != "no"
+# If "long double" gives fill IEEE-style 128-bit floating point then
+# it will be guaranteed to come with std::complex<long double> as a good
+# representation for complex values, and std::sin, std::cos and all the
+# rest will be available. I will HOPE that the elementary functions yield
+# accurate results and reserve the right to provide my own code to replace
+# and that I am unhappy with! But this case is rather easy. I define
+# "USE_LONG_DOUBLE" when it applies, which is liable to be the case on
+# all aarch64 and all riscv platforms. Numeric literals are as in 1.0L
+# and conversion to and from character strings can be done using ordinary
+# C++ facilities.
+
+# When "long double" is not a full 128-bit type the most plausible
+# situation will be that the platform is x86_64 and it provides 80-bit
+# floats. With both g++ and clang++ there is then a datatype __float128
+# that supports basic arithmetic. Two situations can arise and certainly
+# apply on the x86_64 platforms I have tried:
+#
+# (a) Using g++ and with "#include <quadmath.h>" and "-lquadmath" there is
+#     also a __complex128, and a full set of elementary functions with names
+#     sinf128, cosf128, ..., csinf128, ccosf128. Numeric literals are written
+#     as in 1.0q. The quadmath library also provides for conversion from and
+#     to character strings.
+#     I define "USE_QUADMATH".
+#
+# (b) With clang it seems that for type __float128 one does not use quadmath,
+#     but for real arguments sinf128, cosf128 and so on are available. But
+#     as far as I can see there is no support for the complex case, so
+#     std::complex<__float128> will support arithmetic but I will need to
+#     provide all elementary functions on complex arguments. Literals are
+#     written with suffix "q". Conversion from and to strings will also
+#     have to be provided.
+#     I define "USE_CLANG_FLOAT128"
+#
+# I see mention of an Intel compiler that provides _Quad. I am not trying to
+# support that at present.
+
+# C++23 introduces a type std::float128_t and so building on that the complex
+# case can use std::complex<std::float128_t> - but both just for arithmetic.
+# Literals can be written as 1.0f128 but neither elementary functions nor
+# input/output conversions are provided. So here I need to implement all
+# the elementary functions! Note that std::float128_t is only optionally
+# introduced by this header, so I will only take this path if it actually
+# exists. In that case I define USE_CXX23_FLOAT128.
+
+
+# With Microsoft C it seems that long double uses just the same format as
+# double (ie 64 bits) and this is so via Visual Studio even when building
+# with clang rather than cl. The only way forward will be to implement
+# a float128 type in software.
+# Something similar applies with Xcode on the Mac.
+# I will deal with this by introducing a type FLOAT128 (and another
+# called COMPLEX128) and arranging that that can use whatever is best
+# locally available, including the fall-back situation where everything
+# is done in software that I provide.
+
+# I can check the precision of long double at compile time by checking
+# the value of LDBL_MANT_DIG from <climits> but that does not sort
+# out __float128 or <quadmath> as a fallback, so I do some relatively
+# heavy duty configure-time checks here to decide what I can do.
+
+# if MACHEPS is lower than 1.0e-34 then I have 128-bit floats. I could
+# as an alternative check (LDBL_MANT_DIG==113).
+
+AC_ARG_WITH(softfloat,
+   AS_HELP_STRING([--with-softfloat], [force use of software FLOAT128 for testing]),
+   [AC_DEFINE(USE_SOFT_FLOAT128, [5], [Force software long double])
+    AC_MSG_NOTICE([Use software 128-bit floats])
+    f128_identified="yes"],
+   [])
+
+if test "$f128_identified" != "yes"
+then 
+AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+  [[
+    static_assert(((long double)1.0 + 1.0e-34) != 1.0);
+  ]])],
+  [AC_MSG_NOTICE([Use long double])
+   f128_identified="yes"
+   AC_DEFINE(USE_LONG_DOUBLE, [1], [long double is a 128-bit format])])
+endif
+
+if test "$f128_identified" != "yes"
+then 
+OLDLIBS="$LIBS"
+LIBS="$LIBS -lquadmath"
+AC_LINK_IFELSE([AC_LANG_SOURCE(
+  [[
+    #include <quadmath.h>
+    int main(int argc, char*argv[])
+    {   __float128 w = 1.0;
+        __complex128 x = (__complex128)w;
+        __float128 y = sinq(cosq(expq(logq(w))));
+        __complex128 z = csqrtq(-x);
+        return 0;
+    }
+  ]])],
+  [AC_MSG_NOTICE([Use __float128 and quadmath])
+   f128_identified="yes"
+   AC_DEFINE(USE_QUADMATH, [1], [can use __float128 and quadmath])],
+  [LIBS="$OLDLIBS"])
+fi
+
+if test "$f128_identified" != "yes"
+then 
+AC_LINK_IFELSE([AC_LANG_SOURCE(
+  [[
+    #include <stdfloat>
+    #include <cmath>
+    int main(int argc, char*argv[])
+    {   __float128_t x = 1.0;
+        __float128 y = sinf128(cosf128(expf128(logf128(x))));
+        return 0;
+    }
+  ]])],
+  [AC_MSG_NOTICE([clang __float128 and sinf128 etc])
+   f128_identified="yes"
+   AC_DEFINE(USE_CLANG_FLOAT128, [1], [Use __float128 and sinf128])])
+fi
+
+if test "$f128_identified" != "yes"
+then 
+CXXFLAGS="$CXXFLAGS -std=gnu++23"
+AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+  [[
+    #include <stdfloat>
+    static std::float128_t x = 1.0;
+  ]])],
+  [AC_MSG_NOTICE([Use C++23 float128_t])
+   f128_identified="yes"
+   AC_DEFINE(USE_CXX23_FLOAT128, [1], [can use std::float128_t])],
+  [CXXFLAGS="$OLDCXXFLAGS"])
+fi
+
+if test "$f128_identified" != "yes"
 then
-  AC_DEFINE(HAVE_SOFTFLOAT, [1], [support for 128-bit long double/float128_t])
+  AC_DEFINE(USE_SOFT_FLOAT128, [5], [Fall back to software long double])
+  AC_MSG_NOTICE([Use software 128-bit floats])
 fi
 
 # The next option is intended just for debugging. By configuring with
@@ -574,20 +707,6 @@ case $host in
   ;;
 esac
 
-# I believe tha the next paragraph has become redundant as of Match 2025.
-
-# Adjust the number of steps that clang can take while evaluating
-# constexpr things at compile time. With the CSL code as of September
-# 2022 the code uses almost 3.7 million steps while building cslread.o - I
-# can see ways to reduce that at the code of having more very special code
-# present. I believe that the clang default is 2^20 (about a million),
-# while gcc limits at more like 32 million and that is why I set my
-# explicit clang override here to such a huge value - it is in the hope
-# that this will leave clang and gcc issues arising at around the same
-# point.
-# AC_CHECK_DECL([__clang__],
-#  [CXXFLAGS="$CXXFLAGS -fconstexpr-steps=32000000"])
-
 # In some cases there may be explicitly GNU versions of various utilities,
 # and I will perhaps use them if I find them.
 
@@ -611,7 +730,7 @@ fi
 AC_CHECK_PROGS(VALGRIND,[valgrind],[x])
 
 # I need a C++ compiler that is use to compile small utility programs.
-# In some cases I can not use $CXX because that is a cross-compiler that
+# In some cases I can not use $CXX because that may be a cross-compiler that
 # generates binaries that I can not run. I used to just use "g++" and hope,
 # but here I will see which of g++, clang++, c++ and CC is at least present.
 # I will then assume that that is a viable compiler to use. For these
@@ -957,28 +1076,6 @@ then
      AC_MSG_NOTICE(-fsanitize=xx not available)])
 fi
 
-# Some newer versions of gcc support a new gnu (rather then sysv) format
-# of part of object files. The effect of this new format it to speed up
-# dynamic linking, perhaps by a factor of 2. That is good! But an object
-# made using only the new scheme fails with a floating point exception
-# when you try to run it on an older system. That is it fails while being
-# loaded, not while being run. Fedora Core 6 (at least) by default
-# uses just the new format, and so generates VERY non-portable executables.
-# Enabling the "both" option here should soften the impact...
-# Perhaps this is now an issue of ancient history?
-
-AC_MSG_NOTICE([Checking for "--hash-style=both"])
-if test "$GCC" = "yes"
-then
-  OLDLDFLAGS="$LDFLAGS"
-  LDFLAGS="$LDFLAGS -Wl,--hash-style=both"
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
-                                  [[std::printf("\n");]])],
-    [AC_MSG_NOTICE(Will use --hash-style=both)],
-    [LDFLAGS="$OLDLDFLAGS"
-     AC_MSG_NOTICE(--hash-style=both not available)])
-fi
-
 # The behaviour of signed shifts on negative left operands is implementation
 # defined. In most cases the shift will be arithmetic, but one could
 # imagine it being logical or even something worse. I am going to assume that
@@ -1003,7 +1100,15 @@ then
 fi
 
 # I am going to be increasingly keen to use C++20 features, and I will
-# now demand at least C++17
+# now demand at least C++17, Well even C++23 starts to look as if it offers
+# things I will use! But I will hold back on that for a while yet.
+
+# From C++20 onwards I may not need broad brush symbols such as HAVE_CXX23
+# so much because the language comes with embedded feature test facilities.
+# But I would like to guide my compiler with eg "-std=gnu++23" where I can.
+
+#### AX_CXX_COMPILE_STDCXX([23], [ext], [optional])
+#### AC_MSG_NOTICE([HAVE_CXX23=$HAVE_CXX23])
 
 AX_CXX_COMPILE_STDCXX([20], [ext], [optional])
 AC_MSG_NOTICE([HAVE_CXX20=$HAVE_CXX20])
@@ -1012,6 +1117,10 @@ then
   AX_CXX_COMPILE_STDCXX([17], [ext], [mandatory])
   AC_MSG_NOTICE([HAVE_CXX17=$HAVE_CXX17])
 fi
+
+# At one stage (which I *HOPE* is now past) the C++ "<filesystem>"
+# capabilities were visible on one platform but failed to behave, so I
+# have here bulky and ugly tests to filter out that situation.
 
 AC_LINK_IFELSE(
   [AC_LANG_SOURCE([
@@ -1844,16 +1953,16 @@ then
 # 10.14 Mojave        )
 # 10.15 Catalina      )
 
-# 11.x  Big Sur         Ha ha - from late 2020 there is a transition to
-#                       "Apple Silicon", ie ARM64.                     
-# 12.x  Monterey        (last version that PSL runs on as of 2023)
+# 11.x  Big Sur         From late onwards 2020 there is a transition to
+#                       "Apple Silicon", ie aarch64.                     
+# 12.x  Monterey        (last version that PSL runs on as of 2023-26)
 # 13.x  Ventura
 # 14.x  Sonoma
 # 15.x  Sequoia         In use in 2025 = being 6 years on from the
 #                       introduction of ARM-based Macs start to mean that
 #                       the importance of Intel ones begins to fade. 
-# 26.x  Tahoe           This is to be the last version that will support
-#                       Intel macs.
+# 26.x  Tahoe           This is the last version that will support Intel macs.
+# 27.x  Golden Gate     Expected release September 2026. 
 
   AC_MSG_NOTICE([CC=$CC CXX=$CXX CPP=$CPP CXXCPP=$CXXCPP])
   CC="$ENVP $CC"

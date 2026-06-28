@@ -187,7 +187,7 @@ LispObject rationalf(double d)
 // the use of memcpy ought to sort that out!
 
 double truncate20(double d)
-{   Float_union aa, bb;
+{   float_union aa, bb;
     aa.f = d;
     std::memcpy(&bb, &aa, sizeof(bb));
     bb.i &= ~0xf;
@@ -328,46 +328,36 @@ static LispObject rationalizef(double dd, int bits)
     return make_ratio(p1, q1);
 }
 
-#ifdef HAVE_SOFTFLOAT
 // The following constants are 2^112 and -2^112 and their reciprocals, which
 // are used in rationalf128 because any 128-bit floating point value that
 // is that large is necessarily an exact integer.
 //
 // FP128_SMALL_LIMIT is 2^-113 and is used in rationalizef128.
 
-#ifdef LITTLEENDIAN
+static FLOAT128 FP128_INT_LIMIT(((uint128_t)0x406fU)<<112, 0);
+static FLOAT128 FP128_MINUS_INT_LIMIT(((uint128_t)0xc06fU)<<112, 0);
+static FLOAT128 FP128_SMALL_LIMIT(((uint128_t)0x3f8eU)<<112, 0);
 
-static float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
-static float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
-static float128_t FP128_SMALL_LIMIT = {{0, INT64_C(0x3f8e000000000000)}};
+#include "float128.h"
 
-#else
-
-static float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
-static float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
-static float128_t FP128_LARGE_LIMIT = {{INT64_C(0x4070000000000000), 0}};
-static float128_t FP128_SMALL_LIMIT = {{INT64_C(0x3f8e000000000000), 0}};
-
-#endif
-
-LispObject rationalf128(float128_t *d)
+LispObject rationalf128(FLOAT128 d)
 {
 // If the value of the double is > 2^112 then it must be an exact integer.
 // In that case rationalf will just return the integer value using fix,
 // and in this case it is immaterial what rounding mode I indicate there
 // since no rounding should apply!
-    if (f128M_le(d, &FP128_MINUS_INT_LIMIT) ||
-        f128M_le(&FP128_INT_LIMIT, d))
-        return lisp_fix(make_boxfloat128(*d), FIX_ROUND);
+    if (d <= FP128_MINUS_INT_LIMIT ||
+        FP128_INT_LIMIT <= d)
+        return lisp_fix(make_boxfloat128(d), FIX_ROUND);
 // Now the magnitude if d at most 2^112. I want to check whether it is
 // exactly an integer or not. Well that is not as easy as it was in the
 // 64-bit case so I will go straight to the general method... Well I will
 // filter out the case of zero first.
-    if (f128_zerop(*d)) return fixnum_of_int(0);
+    if (d == (FLOAT128)0.0) return fixnum_of_int(0);
     bool negative = false;
-    float128_t dd = *d;
-    if (f128_negative(*d))
-    {   f128_negate(&dd);
+    FLOAT128 dd = d;
+    if (d < (FLOAT128)0.0)
+    {   dd = -dd;
         negative = true;
     }
 // Remember that |d| < 2^112. That means it will use at most 4 digits
@@ -458,24 +448,25 @@ LispObject rationalf128(float128_t *d)
 //--         (uint32_t)(a >> 32), (uint32_t)a);
 //-- }
 
-// Now I need to be able to convert between float128_t and uint128_t with
+// Now I need to be able to convert between FLOAT128 and uint128_t with
 // "fix" and "float" operations. I will only concern myself with positive
 // numbers, and my expected use will be that I only attempt to fix
 // values that will fit within 113 bits (ie well within 128), and
 // I will only float values that are in around the same range.
 
-uint128_t uint128_fix(float128_t *a)
-{   if (f128M_eq(a, &f128_0)) return 0;
+uint128_t uint128_fix(FLOAT128 a)
+{   if (a == (FLOAT128)0.0) return 0;
 // I am not going to do anything clever with NaN or infinity here - they
 // are just not permitted and would lead to chaos.
-    float128_t aa;
+    FLOAT128 aa;
     int x;
-    f128_frexp(*a, &aa, &x);
+    aa = frexp(a, &x);
 // Now I take the 113 bits of mantissa (including an implicit bit) and
 // shuffle to be in the form of the uint128_t integer.
-    uint64_t hi = (aa.v[HIPART] & UINT64_C(0x0000ffffffffffff)) |
-                  UINT64_C(0x0001000000000000);
-    uint128_t w = aa.v[LOPART] | ((uint128_t)(hi)<<64);
+    uint64_t lo, hi;
+    aa.getbits(hi, lo);
+    hi = (hi & 0x0000ffffffffffffUL) | 0x0001000000000000UL;
+    uint128_t w = lo | ((uint128_t)hi<<64);
 // Now I may need to shift b by an amount determined by x.
     x = x - 113;
     if (x > 0) w = w<<x;
@@ -483,11 +474,8 @@ uint128_t uint128_fix(float128_t *a)
     return w;
 }
 
-void uint128_float(uint128_t a, float128_t *b)
-{   if (a == 0)
-    {   *b = f128_0;
-        return;
-    }
+FLOAT128 uint128_float(uint128_t a)
+{   if (a == 0) return (FLOAT128)0.0;
     int x = 113;
 // Now I want to normalize the integer so that the bit at position
 // 00010000:00000000:00000000:00000000 is set, ie the one that will be
@@ -512,21 +500,20 @@ void uint128_float(uint128_t a, float128_t *b)
     }
     uint64_t ahi = (uint64_t)(a>>64) & UINT64_C(0x0000ffffffffffff);
     ahi = ahi | ((uint64_t)(x + 0x3ffe)<<48);
-    b->v[HIPART] = ahi;
-    b->v[LOPART] = (uint64_t)a;
+    return FLOAT128((((uint128_t)ahi)<<64) | (uint64_t)a, 0);
 }
 
-static LispObject rationalizef128(float128_t *dd)
-{   float128_t d;
-    if (f128_zerop(*dd)) return fixnum_of_int(0);
-    d = *dd;
-    if (f128_negative(d)) f128_negate(&d);
+static LispObject rationalizef128(FLOAT128 dd)
+{   FLOAT128 d;
+    if (dd == (FLOAT128)0.0) return fixnum_of_int(0);
+    d = dd;
+    if (d < (FLOAT128)0.0) d = -d;
 // Maybe the float is in fact exactly an integer.
-    if (f128M_le(&FP128_INT_LIMIT, &d))
-        return lisp_fix(make_boxfloat128(*dd), FIX_ROUND);
+    if (FP128_INT_LIMIT <= d)
+        return lisp_fix(make_boxfloat128(dd), FIX_ROUND);
 // I am slightly more conservative as to when I decide that the
 // result I return will be just the reciprocal of an integer.
-    if (f128M_le(&d, &FP128_SMALL_LIMIT))
+    if (d <= FP128_SMALL_LIMIT)
     {   LispObject r = rationalf128(dd);
         r = lisp_ifix(denominator(r), numerator(r), FIX_ROUND);
         return make_ratio(fixnum_of_int(1), r);
@@ -535,12 +522,12 @@ static LispObject rationalizef128(float128_t *dd)
     uint128_t a;
     uint128_t u0, u1;
     uint128_t v0, v1;
-    if (f128M_le(&f128_1, &d))
+    if ((FLOAT128)1.0 <= d)
     {   int x;
-        float128_t d1;
-        f128_frexp(d, &d1, &x);
-        f128_ldexp(&d1, 113);
-        p = uint128_fix(&d1);
+        FLOAT128 d1;
+        d1 = frexp(d,  &x);
+        d1 = ldexp(d1, 113);
+        p = uint128_fix(d1);
         q = uint128_t(1) << (113-x);
         u1 = p/q;
         a = p%q;
@@ -552,12 +539,12 @@ static LispObject rationalizef128(float128_t *dd)
     }
     else
     {   int x;
-        float128_t d1, d2;
-        f128_frexp(d, &d1, &x);
-        f128_ldexp(&d1, 113);
-        p = uint128_fix(&d1);
-        f128M_div(&f128_1, &d, &d2);
-        a = uint128_fix(&d2);
+        FLOAT128 d1, d2;
+        d1 = frexp(d, &x);
+        d1 = ldexp(d1, 113);
+        p = uint128_fix(d1);
+        d2 = (FLOAT128)1.0 / d;
+        a = uint128_fix(d2);
         uint128_t w1;
         if (113-x < 128) w1 = uint128_t(1) << (113-x);
         else w1 = 0;
@@ -575,11 +562,11 @@ static LispObject rationalizef128(float128_t *dd)
         v0 = 1;
         v1 = a;
     }
-    float128_t du1, dv1, q2;
-    while (uint128_float(u1, &du1),
-           uint128_float(v1, &dv1),
-           f128M_div(&du1, &dv1, &q2),
-           !f128M_eq(&d, &q2))
+    FLOAT128 du1, dv1, q2;
+    while (du1 = uint128_float(u1),
+           dv1 = uint128_float(v1),
+           q2 = du1/dv1,
+           d != q2)
     {   uint128_t a1;
         if (q == 0)
         {   std::printf("\n+++ Trouble in rationalizef128. q = 0\n");
@@ -593,14 +580,12 @@ static LispObject rationalizef128(float128_t *dd)
         v0 = v1; v1 = v2;
     }
     LispObject p1;
-    if (f128_negative(*dd)) p1 = make_lisp_integer128(-int128_t(u1));
+    if (dd < (FLOAT128)0.0) p1 = make_lisp_integer128(-int128_t(u1));
     else p1 = make_lisp_unsigned128(u1);
     if (v1 == 1) return p1;
     LispObject q1 = make_lisp_unsigned128(v1);
     return make_ratio(p1, q1);
 }
-
-#endif // HAVE_SOFTFLOAT
 
 LispObject rational(LispObject a)
 {   switch (static_cast<int>(a) & XTAG_BITS)
@@ -621,13 +606,9 @@ LispObject rational(LispObject a)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-#ifdef HAVE_SOFTFLOAT
             if (flthdr(a) == LONG_FLOAT_HEADER)
-                return rationalf128(reinterpret_cast<float128_t *>(long_float_addr(
-                                        a)));
-            else
-#endif // HAVE_SOFTFLOAT
-                return rationalf(float_of_number(a));
+                return rationalf128(long_float_val(a));
+            else return rationalf(float_of_number(a));
         default:
             return aerror1("bad arg for rational", a);
     }
@@ -659,11 +640,8 @@ LispObject rationalize(LispObject a)
                     return rationalizef(single_float_val(a), 24);
                 case DOUBLE_FLOAT_HEADER:
                     return rationalizef(double_float_val(a), 53);
-#ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
-                    return rationalizef128(reinterpret_cast<float128_t *>(long_float_addr(
-                                               a)));
-#endif // HAVE_SOFTFLOAT
+                    return rationalizef128(long_float_val(a));
             }
         default:
             return aerror1("bad arg for rationalize", a);
@@ -681,9 +659,7 @@ inline bool lessp_i_c(LispObject a1, LispObject a2);
 inline bool lessp_i_s(LispObject a1, LispObject a2);
 inline bool lessp_i_f(LispObject a1, LispObject a2);
 inline bool lessp_i_d(LispObject a1, LispObject a2);
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_i_l(LispObject a1, LispObject a2);
-#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_b_i(LispObject a1, LispObject a2);
 inline bool lessp_b_b(LispObject a1, LispObject a2);
@@ -692,9 +668,7 @@ inline bool lessp_b_c(LispObject a1, LispObject a2);
 inline bool lessp_b_s(LispObject a1, LispObject a2);
 inline bool lessp_b_f(LispObject a1, LispObject a2);
 inline bool lessp_b_d(LispObject a1, LispObject a2);
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_b_l(LispObject a1, LispObject a2);
-#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_r_i(LispObject a1, LispObject a2);
 inline bool lessp_r_b(LispObject a1, LispObject a2);
@@ -703,9 +677,7 @@ inline bool lessp_r_c(LispObject a1, LispObject a2);
 inline bool lessp_r_s(LispObject a1, LispObject a2);
 inline bool lessp_r_f(LispObject a1, LispObject a2);
 inline bool lessp_r_d(LispObject a1, LispObject a2);
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_r_l(LispObject a1, LispObject a2);
-#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_c_i(LispObject a1, LispObject a2);
 inline bool lessp_c_b(LispObject a1, LispObject a2);
@@ -714,9 +686,7 @@ inline bool lessp_c_c(LispObject a1, LispObject a2);
 inline bool lessp_c_s(LispObject a1, LispObject a2);
 inline bool lessp_c_f(LispObject a1, LispObject a2);
 inline bool lessp_c_d(LispObject a1, LispObject a2);
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_c_l(LispObject a1, LispObject a2);
-#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_s_i(LispObject a1, LispObject a2);
 inline bool lessp_s_b(LispObject a1, LispObject a2);
@@ -725,9 +695,7 @@ inline bool lessp_s_c(LispObject a1, LispObject a2);
 inline bool lessp_s_s(LispObject a1, LispObject a2);
 inline bool lessp_s_f(LispObject a1, LispObject a2);
 inline bool lessp_s_d(LispObject a1, LispObject a2);
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_s_l(LispObject a1, LispObject a2);
-#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_f_i(LispObject a1, LispObject a2);
 inline bool lessp_f_b(LispObject a1, LispObject a2);
@@ -736,9 +704,7 @@ inline bool lessp_f_c(LispObject a1, LispObject a2);
 inline bool lessp_f_s(LispObject a1, LispObject a2);
 inline bool lessp_f_f(LispObject a1, LispObject a2);
 inline bool lessp_f_d(LispObject a1, LispObject a2);
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_f_l(LispObject a1, LispObject a2);
-#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_d_i(LispObject a1, LispObject a2);
 inline bool lessp_d_b(LispObject a1, LispObject a2);
@@ -747,7 +713,6 @@ inline bool lessp_d_c(LispObject a1, LispObject a2);
 inline bool lessp_d_s(LispObject a1, LispObject a2);
 inline bool lessp_d_f(LispObject a1, LispObject a2);
 inline bool lessp_d_d(LispObject a1, LispObject a2);
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_d_l(LispObject a1, LispObject a2);
 
 inline bool lessp_l_i(LispObject a1, LispObject a2);
@@ -758,7 +723,6 @@ inline bool lessp_l_s(LispObject a1, LispObject a2);
 inline bool lessp_l_f(LispObject a1, LispObject a2);
 inline bool lessp_l_d(LispObject a1, LispObject a2);
 inline bool lessp_l_l(LispObject a1, LispObject a2);
-#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_i_i(LispObject a, LispObject b)
 {   return (intptr_t)a < (intptr_t)b;
@@ -808,14 +772,10 @@ inline bool lessp_i_d(LispObject a, LispObject b)
     return lessp_i64d(int_of_fixnum(a), double_float_val(b));
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_i_l(LispObject a, LispObject b)
-{   float128_t aa;
-    i64_to_f128M((int64_t)int_of_fixnum(a), &aa);
-    return f128M_lt(&aa, reinterpret_cast<float128_t *>(long_float_addr(
-                        b)));
+{   FLOAT128 aa = (FLOAT128)(int64_t)int_of_fixnum(a);
+    return aa < long_float_val(b);
 }
-#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_f_i(LispObject a, LispObject b)
 {   if (!SIXTY_FOUR_BIT)
@@ -829,14 +789,10 @@ inline bool lessp_d_i(LispObject a, LispObject b)
     return lessp_di64(double_float_val(a), int_of_fixnum(b));
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_l_i(LispObject a, LispObject b)
-{   float128_t bb;
-    i64_to_f128M((int64_t)int_of_fixnum(b), &bb);
-    return f128M_lt(reinterpret_cast<float128_t *>(long_float_addr(a)),
-                    &bb);
+{   FLOAT128 bb = (FLOAT128)(int64_t)int_of_fixnum(b);
+    return long_float_val(a) < bb;
 }
-#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_rawd_b(double a, LispObject b)
 // a is a floating point number and b a bignum.  Compare them.
@@ -949,116 +905,6 @@ inline bool lessp_b_rawd(LispObject a, double b)
 {   return greaterp_rawd_b(b, a);
 }
 
-#ifdef HAVE_SOFTFLOAT
-inline bool lessp_rawl_b(float128_t *a, LispObject b)
-{
-// I am not going to worry too much about performance here - code
-// simplicity will trump that. The strategy to be used will be as follows:
-//    If b uses at no more than 113 bits then I can convert b to
-//    a float128_t without any loss and then do the comparison.
-// [I rather hope that will in fact be a common case.]
-//    Looking at the exponent of the float128_t one can work out how it
-//    would align againt the bignum. It then becomes easy to see if the
-//    top bit of the mantissa aligns nicely againt the top word of the
-//    bignum. It will only be necessary to check 4 words of the bignum.
-// [Actually this does not look too bad either.]
-    size_t n = (length_of_header(numhdr(b))-CELL)/4;
-    float128_t bb, w0, w1;
-    int32_t k;
-    switch (n)
-    {   case 1: // Only happens on 32-bit systems
-            i32_to_f128M((int32_t)bignum_digits(b)[0], &bb);
-            return f128M_lt(a, &bb);
-        case 2:
-            i64_to_f128M(bignum_digits64(b, 1)<<31 | bignum_digits(b)[0], &bb);
-            return f128M_lt(a, &bb);
-        case 3:
-            i64_to_f128M(bignum_digits64(b, 2)<<31 | bignum_digits(b)[1], &w1);
-#ifdef LITTLEENDIAN
-            w1.v[1] += UINT64_C(31) << 48;
-#else
-            w1.v[0] += UINT64_C(31) << 48;
-#endif
-            ui32_to_f128M((int32_t)bignum_digits(b)[0], &w0);
-            f128M_add(&w0, &w1, &bb);
-            return f128M_lt(a, &bb);
-        case 4:
-            k = (int32_t)bignum_digits(b)[3];
-            if (k > 0x80000 ||
-                k < -0x80000) break;
-// I am now confident that b will turn into a number that will convert to
-// a 128-bit float without rounding.
-            i64_to_f128M(bignum_digits64(b,3)<<31 | bignum_digits(b)[2], &w1);
-#ifdef LITTLEENDIAN
-            w1.v[1] += UINT64_C(62) << 48;  // multiply by 2^62
-#else
-            w1.v[0] += UINT64_C(62) << 48;
-#endif
-            ui64_to_f128M(bignum_digits64(b,1)<<31 | bignum_digits(b)[0], &w0);
-            f128M_add(&w0, &w1, &bb);
-            return f128M_lt(a, &bb);
-        default:
-            break;
-    }
-// Here the integer uses at least 113 bits to represent its absolute value.
-    return aerror("comparison between long float and large bignum - not implemented yet");
-}
-
-inline bool lessp_b_rawl(LispObject a, float128_t *b)
-{   size_t n = (length_of_header(numhdr(a))-CELL)/4;
-    float128_t aa, w0, w1;
-    int32_t k;
-    switch (n)
-    {   case 1: // Only happens on 32-bit systems
-            i32_to_f128M((int32_t)bignum_digits(a)[0], &aa);
-            return f128M_lt(&aa, b);
-        case 2:
-            i64_to_f128M(bignum_digits64(a, 1)<<31 | bignum_digits(a)[0], &aa);
-            return f128M_lt(&aa, b);
-        case 3:
-            i64_to_f128M(bignum_digits64(a, 2)<<31 | bignum_digits(a)[1], &w1);
-#ifdef LITTLEENDIAN
-            w1.v[1] += UINT64_C(31) << 48;
-#else
-            w1.v[0] += UINT64_C(31) << 48;
-#endif
-            ui32_to_f128M((int32_t)bignum_digits(a)[0], &w0);
-            f128M_add(&w0, &w1, &aa);
-            return f128M_lt(&aa, b);
-        case 4:
-            k = (int32_t)bignum_digits(a)[3];
-            if (k > 0x80000 ||
-                k < -0x80000) break;
-// I am now confident that a will turn into a number that will convert to
-// a 128-bit float without rounding.
-            i64_to_f128M(bignum_digits64(a,3)<<31 | bignum_digits(a)[2], &w1);
-#ifdef LITTLEENDIAN
-            w1.v[1] += UINT64_C(62) << 48;  // multiply by 2^62
-#else
-            w1.v[0] += UINT64_C(62) << 48;
-#endif
-            ui64_to_f128M(bignum_digits64(a,1)<<31 | bignum_digits(a)[0], &w0);
-            f128M_add(&w0, &w1, &aa);
-            return f128M_lt(&aa, b);
-        default:
-            break;
-    }
-// Here the integer uses at least 113 bits to represent its absolute value.
-    return aerror("comparison between long float and large bignum - not implemented yet");
-}
-
-inline bool lessp_rawl_r(float128_t *a, LispObject b)
-{   aerror("comparison between long float and raion not coded yet");
-    return false;
-}
-
-inline bool lessp_r_rawl(LispObject a, float128_t *b)
-{   aerror("comparison between long float and rational not coded yet");
-    return false;
-}
-
-#endif // HAVE_SOFTFLOAT
-
 inline bool lessp_s_s(LispObject a, LispObject b)
 {   return value_of_immediate_float(a) < value_of_immediate_float(b);
 }
@@ -1107,12 +953,9 @@ inline bool lessp_d_b(LispObject a, LispObject b)
 {   return lessp_rawd_b(double_float_val(a), b);
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_b_l(LispObject a, LispObject b)
-{   return lessp_b_rawl(a,
-                        reinterpret_cast<float128_t *>(long_float_addr(b)));
+{   return lessp2(a, rationalf128(long_float_val(b)));
 }
-#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_r_r(LispObject a, LispObject b)
 {   LispObject c;
@@ -1128,16 +971,15 @@ inline bool lessp_rawd_r(double a, LispObject b)
 }
 
 inline bool lessp_r_rawd(LispObject a, double b)
-{   LispObject b1 = rationalf(b);
-    return lessp2(a, b1);
+{   return lessp2(a, rationalf(b));
 }
 
 inline bool lessp_d_r(LispObject a, LispObject b)
-{   return lessp_rawd_r(double_float_val(a), b);
+{   return lessp2(rationalf(double_float_val(a)), b);
 }
 
 inline bool lessp_r_d(LispObject a, LispObject b)
-{   return lessp_r_rawd(a, double_float_val(b));
+{   return lessp2(a, rationalf(double_float_val(b)));
 }
 
 inline bool lessp_s_i(LispObject a, LispObject b)
@@ -1209,7 +1051,7 @@ inline bool lessp_r_i(LispObject a, LispObject b)
 }
 
 inline bool lessp_r_s(LispObject a, LispObject b)
-{   return lessp_r_rawd(a, value_of_immediate_float(b));
+{   return lessp2(a, rationalf(value_of_immediate_float(b)));
 }
 
 inline bool lessp_r_b(LispObject a, LispObject b)
@@ -1218,15 +1060,15 @@ inline bool lessp_r_b(LispObject a, LispObject b)
 
 
 inline bool lessp_r_f(LispObject a, LispObject b)
-{   return lessp_r_rawd(a, single_float_val(b));
+{   return lessp2(a, rationalf(single_float_val(b)));
 }
 
 inline bool lessp_f_b(LispObject a, LispObject b)
-{   return lessp_rawd_b(single_float_val(a), b);
+{   return lessp2(rationalf(single_float_val(a)), b);
 }
 
 inline bool lessp_f_r(LispObject a, LispObject b)
-{   return lessp_rawd_r(single_float_val(a), b);
+{   return lessp2(rationalf(single_float_val(a)), b);
 }
 
 inline bool lessp_c_i(LispObject a, LispObject b)
@@ -1299,86 +1141,50 @@ inline bool lessp_d_c(LispObject a, LispObject b)
     return false;
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool lessp_l_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_l_b(LispObject a, LispObject b)
-{   return lessp_rawl_b(reinterpret_cast<float128_t *>
-                        (long_float_addr(a)), b);
+{   return lessp2(rationalf128(long_float_val(a)), b);
 }
 
 inline bool lessp_l_r(LispObject a, LispObject b)
-{   return lessp_rawl_r(reinterpret_cast<float128_t *>
-                        (long_float_addr(a)), b);
+{   return lessp2(rationalf128(long_float_val(a)), b);
 }
 
 inline bool lessp_l_s(LispObject a, LispObject b)
-{   Double_union d;
-    d.f = value_of_immediate_float(b);
-    float128_t bb;
-    f64_to_f128M(d.f64, &bb);
-    return f128M_lt(reinterpret_cast<float128_t *>(long_float_addr(a)),
-                    &bb);
+{   return long_float_val(a) < (FLOAT128)single_float_val(b);
 }
 
 inline bool lessp_l_f(LispObject a, LispObject b)
-{   Double_union d;
-    d.f = single_float_val(b);
-    float128_t bb;
-    f64_to_f128M(d.f64, &bb);
-    return f128M_lt(reinterpret_cast<float128_t *>(long_float_addr(a)),
-                    &bb);
+{   return long_float_val(a) < (FLOAT128)single_float_val(b);
 }
 
 inline bool lessp_l_d(LispObject a, LispObject b)
-{   Double_union d;
-    d.f = static_cast<double>(double_float_val(b));
-    float128_t bb;
-    f64_to_f128M(d.f64, &bb);
-    return f128M_lt(reinterpret_cast<float128_t *>(long_float_addr(a)),
-                    &bb);
+{   return long_float_val(a) < (FLOAT128)double_float_val(b);
 }
 
 inline bool lessp_l_l(LispObject a, LispObject b)
-{   return f128M_lt(reinterpret_cast<float128_t *>(long_float_addr(
-                        a)), reinterpret_cast<float128_t *>(long_float_addr(b)));
+{   return long_float_val(a) < long_float_val(b);
 }
 
 inline bool lessp_r_l(LispObject a, LispObject b)
-{   return lessp_r_rawl(a,
-                        reinterpret_cast<float128_t *>(long_float_addr(b)));
+{   return lessp2(a, rationalf128(long_float_val(b)));
 }
 
 inline bool lessp_s_l(LispObject a, LispObject b)
-{   Double_union d;
-    d.f = value_of_immediate_float(a);
-    float128_t aa;
-    f64_to_f128M(d.f64, &aa);
-    return f128M_lt(&aa, reinterpret_cast<float128_t *>(long_float_addr(
-                        b)));
+{   return (FLOAT128)value_of_immediate_float(a) < long_float_val(b);
 }
 
 inline bool lessp_f_l(LispObject a, LispObject b)
-{   Double_union d;
-    d.f = single_float_val(a);
-    float128_t aa;
-    f64_to_f128M(d.f64, &aa);
-    return f128M_lt(&aa, reinterpret_cast<float128_t *>(long_float_addr(
-                        b)));
+{   return (FLOAT128)single_float_val(a) < long_float_val(b);
 }
 
 inline bool lessp_d_l(LispObject a, LispObject b)
-{   Double_union d;
-    d.f = static_cast<double>(double_float_val(a));
-    float128_t aa;
-    f64_to_f128M(d.f64, &aa);
-    return f128M_lt(&aa, reinterpret_cast<float128_t *>(long_float_addr(
-                        b)));
+{   return (FLOAT128)double_float_val(a) < long_float_val(b);
 }
-#endif // HAVE_SOFTFLOAT
 
 // Now I have given all the helper type-specific rules - do the
 // big dispatch.
@@ -1428,13 +1234,10 @@ inline bool geq_i_d(LispObject a1, LispObject a2)
     return !lessp_i_d(a1, a2);
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool geq_i_l(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a2)))) return false;
+{   if (isnan(long_float_val(a2))) return false;
     return !lessp_i_l(a1, a2);
 }
-#endif // HAVE_SOFTFLOAT
 
 inline bool geq_b_i(LispObject a1, LispObject a2)
 {   return lessp_i_b(a2, a1);
@@ -1470,13 +1273,10 @@ inline bool geq_b_d(LispObject a1, LispObject a2)
     return !lessp_b_d(a1, a2);
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool geq_b_l(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a2)))) return false;
+{   if (isnan(long_float_val(a2))) return false;
     return !lessp_b_l(a1, a2);
 }
-#endif // HAVE_SOFTFLOAT
 
 inline bool geq_r_i(LispObject a1, LispObject a2)
 {   return !lessp_r_i(a1, a2);
@@ -1512,13 +1312,10 @@ inline bool geq_r_d(LispObject a1, LispObject a2)
     return !lessp_r_d(a1, a2);
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool geq_r_l(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a2)))) return false;
+{   if (isnan(long_float_val(a2))) return false;
     return !lessp_r_l(a1, a2);
 }
-#endif // HAVE_SOFTFLOAT
 
 inline bool geq_c_i(LispObject a1, LispObject a2)
 {   return !lessp_c_i(a1, a2);
@@ -1554,13 +1351,10 @@ inline bool geq_c_d(LispObject a1, LispObject a2)
     return !lessp_c_d(a1, a2);
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool geq_c_l(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a2)))) return false;
+{   if (isnan(long_float_val(a2))) return false;
     return !lessp_c_l(a1, a2);
 }
-#endif // HAVE_SOFTFLOAT
 
 inline bool geq_s_i(LispObject a1, LispObject a2)
 {   double a1d = value_of_immediate_float(a1);
@@ -1599,15 +1393,12 @@ inline bool geq_s_d(LispObject a1, LispObject a2)
 {   return value_of_immediate_float(a1) >= double_float_val(a2);
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool geq_s_l(LispObject a1, LispObject a2)
 {   double a1d = value_of_immediate_float(a1);
     if (a1d != a1d) return false;
-    if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a2)))) return false;
+    if (isnan(long_float_val(a2))) return false;
     return !lessp_s_l(a1, a2);
 }
-#endif // HAVE_SOFTFLOAT
 
 inline bool geq_f_i(LispObject a1, LispObject a2)
 {   double a1d = single_float_val(a1);
@@ -1645,15 +1436,12 @@ inline bool geq_f_d(LispObject a1, LispObject a2)
 {   return single_float_val(a1) >= double_float_val(a2);
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool geq_f_l(LispObject a1, LispObject a2)
 {   double a1d = single_float_val(a1);
     if (a1d != a1d) return false;
-    if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a2)))) return false;
+    if (isnan(long_float_val(a2))) return false;
     return !lessp_f_l(a1, a2);
 }
-#endif // HAVE_SOFTFLOAT
 
 inline bool geq_d_i(LispObject a1, LispObject a2)
 {   double a1d = double_float_val(a1);
@@ -1691,71 +1479,59 @@ inline bool geq_d_d(LispObject a1, LispObject a2)
 {   return double_float_val(a1) >= double_float_val(a2);
 }
 
-#ifdef HAVE_SOFTFLOAT
 inline bool geq_d_l(LispObject a1, LispObject a2)
 {   double a1d = double_float_val(a1);
     if (a1d != a1d) return false;
-    if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a2)))) return false;
+    if (isnan(long_float_val(a2))) return false;
     return !lessp_d_l(a1, a2);
 }
 
 inline bool geq_l_i(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a1)))) return false;
+{   if (isnan(long_float_val(a1))) return false;
     return !lessp_l_i(a1, a2);
 }
 
 inline bool geq_l_b(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a1)))) return false;
+{   if (isnan(long_float_val(a1))) return false;
     return !lessp_l_b(a1, a2);
 }
 
 inline bool geq_l_r(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a1)))) return false;
+{   if (isnan(long_float_val(a1))) return false;
     return !lessp_l_r(a1, a2);
 }
 
 inline bool geq_l_c(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a1)))) return false;
+{   if (isnan(long_float_val(a1))) return false;
     return !lessp_l_c(a1, a2);
 }
 
 inline bool geq_l_s(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a1)))) return false;
+{   if (isnan(long_float_val(a1))) return false;
     double a2d = value_of_immediate_float(a2);
     if (a2d != a2d) return false;
     return !lessp_l_s(a1, a2);
 }
 
 inline bool geq_l_f(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a1)))) return false;
+{   if (isnan(long_float_val(a1))) return false;
     double a2d = single_float_val(a2);
     if (a2d != a2d) return false;
     return !lessp_l_f(a1, a2);
 }
 
 inline bool geq_l_d(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a1)))) return false;
+{   if (isnan(long_float_val(a1))) return false;
     double a2d = double_float_val(a2);
     if (a2d != a2d) return false;
     return !lessp_l_d(a1, a2);
 }
 
 inline bool geq_l_l(LispObject a1, LispObject a2)
-{   if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a1)))) return false;
-    if (f128_nanp(*reinterpret_cast<float128_t *>(long_float_addr(
-                      a2)))) return false;
+{   if (isnan(long_float_val(a1))) return false;
+    if (isnan(long_float_val(a2))) return false;
     return !lessp_l_l(a1, a2);
 }
-#endif // HAVE_SOFTFLOAT
 
 arith_dispatch_2(inline, bool, geq)
 

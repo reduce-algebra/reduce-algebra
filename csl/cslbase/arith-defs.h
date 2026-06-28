@@ -562,13 +562,9 @@ extern LispObject Nround(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Nfround(LispObject env, LispObject a1);
 extern LispObject Nfround(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Nscale_float(LispObject env, LispObject a1, LispObject a2);
-extern LispObject Nvalidate_number(LispObject env, LispObject a1);
-extern LispObject Nvalidate_number(LispObject env, LispObject a1, LispObject a2);
 
 extern LispObject N_rationalf(double d);
-#ifdef SOFTFLOAT
-extern LispObject N_rationalf128(float128_t d);
-#endif // SOFTFLOAT
+extern LispObject N_rationalf128(long float d);
 
 } // end of namespace
 

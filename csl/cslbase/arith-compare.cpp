@@ -585,7 +585,7 @@ extern LispObject N_rationalf128(float128_t d);
 // long float CL== rational
 bool CLEqn::op(LFlt aa, Rat b)
 {   float128_t a = aa.floatval();
-    if (f128_nanp(a)) return false;
+    if (isnan128(a)) return false;
     if (f128_infinitep(a)) return false;
     LispObject aaa = N_rationalf128(a);
     return binaryR<bool,CLEqn>("CLeqn", aaa, b);

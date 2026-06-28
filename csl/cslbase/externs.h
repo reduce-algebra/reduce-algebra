@@ -825,6 +825,7 @@ extern LispObject  get_pname(LispObject a);
 extern LispObject  get(LispObject a, LispObject b, LispObject c=nil);
 extern LispObject  remprop(LispObject a, LispObject b);
 extern LispObject  get_basic_vector(int tag, int type, size_t length);
+extern LispObject  get_aligned_basic_vector(int tag, int type, size_t length);
 extern LispObject  get_basic_vector_init(size_t n, LispObject v);
 extern LispObject  reduce_basic_vector_size(LispObject v, size_t len);
 extern LispObject  get_vector(int tag, int type, size_t length);

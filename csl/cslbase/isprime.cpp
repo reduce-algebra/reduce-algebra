@@ -90,50 +90,6 @@ extern bool isprime(uint64_t n);
 // 128 bits I just use than rather than the visible messing around with
 // double precision work atop the 64-bit data-type.
 
-#ifdef __GNUC__
-
-// Note that __GNUC__ also gets defined by clang on the Macintosh, so
-// this code is probably optimized there too.
-//
-// In my use here nlz should never be given a zero argument - that would
-// correspond to trying to perform modular arithmetic with a zero modulus.
-
-static inline int nlz(uint64_t x)
-{   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
-}
-
-#else // __GNUC__
-
-static inline int nlz(uint64_t x)
-{   int n = 0;
-    if (x <= 0x00000000FFFFFFFFU)
-    {   n = n +32;
-        x = x <<32;
-    }
-    if (x <= 0x0000FFFFFFFFFFFFU)
-    {   n = n +16;
-        x = x <<16;
-    }
-    if (x <= 0x00FFFFFFFFFFFFFFU)
-    {   n = n + 8;
-        x = x << 8;
-    }
-    if (x <= 0x0FFFFFFFFFFFFFFFU)
-    {   n = n + 4;
-        x = x << 4;
-    }
-    if (x <= 0x3FFFFFFFFFFFFFFFU)
-    {   n = n + 2;
-        x = x << 2;
-    }
-    if (x <= 0x7FFFFFFFFFFFFFFFU)
-    {   n = n + 1;
-    }
-    return n;
-}
-
-#endif // __GNUC__
-
 // Form (a*b) % c where all three inputs are 64-bit unsigned integers
 // and a and b are both less than c.
 
@@ -605,8 +561,23 @@ static int signed_jacobi_symbol(int64_t a, uint64_t b)
 //    integer_length(4)   = 3
 //    integer_length(8)   = 4
 
+// This function would like the "count leading zeros" function, but I also
+// want to keep this file independent of the rest of my code here, so the
+// portable version is not readily available. But then this function will
+// only get called when I am doing quite expensive calculations, and so
+// having a simple but slow version will not be a serious issue.
+
+//static inline int integer_length(uint64_t n)
+//{   return 64 - nlz(n);
+//}
+
 static inline int integer_length(uint64_t n)
-{   return 64 - nlz(n);
+{   int r = 0;
+    while (n != 0)
+    {   n = n>>1;
+        r++;
+    }
+    return r;
 }
 
 // This function must not be given 0 as an argument! It returns the

@@ -60,7 +60,7 @@
 //                     value while on a 64-bit one it can contain the bits
 //                     that represent the floating point value.
 // 64-bit floats.      Passed as "double" values, ie in native floating point.
-// 128-bit floats.     A class LFlt containing a float128_t.
+// 128-bit floats.     A class LFlt containing a FLOAT128.
 
 // Because that leaves 8 different sorts of number a general operation like
 // "plus" will need to provide 64 fragments of code to cover all the
@@ -81,11 +81,6 @@
 
 // Reading this file ought to convince you just how messy having generic
 // arithmetic with quite a few types can be!
-
-// For this to make sense I need softfloat.h
-
-#include "softfloat.h"
-#define softfloat_h 1
 
 // arithlib.cpp needs to know that it will be being used in a way that
 // interfaces with a Lisp system rather than being used as a free-standing
@@ -119,7 +114,7 @@ namespace CSL_LISP
 // Sflt
 // Flt
 // double
-// LFlt         only of softfloat_h defined.
+// LFlt
 
 class Fixnum // for small integers
 {
@@ -224,26 +219,21 @@ public:
     {   return single_float_val(v);
     }
 };
-#ifdef softfloat_h
 
-// This case only supported if softfloat_h is defined, that signalling
-// availability of the 128-bit type float128_t.
-
-class LFlt // for long floats
+class LFlt // for long doubles
 {
 public:
-    float128_t v;
-    LFlt(float128_t a)
+    FLOAT128 v;
+    LFlt(FLOAT128 a)
     {   v = a;
     }
-    float128_t value()
+    FLOAT128 value()
     {   return v;
     }
-    float128_t floatval()
+    FLOAT128 floatval()
     {   return v;
     }
 };
-#endif // softfloat_h
 
 // Type-dispatch for binary functions happens in two parts - one on the
 // first operand and on on the seoond. This overload of the function "binary"
@@ -599,6 +589,9 @@ inline R unary(const char *fname, LispObject a, int64_t &xx)
 // And this is just the declarations, not the implementation.
 
 
+// Much of what follows is painfully repetitive. I need to sort out how to
+// use templates and/or inheritance to clean it all up.
+
 // Basic generic arithmetic
 
 // The main generic addition function is
@@ -692,7 +685,6 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
 
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
 
@@ -712,7 +704,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Difference
@@ -792,7 +783,6 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
 
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
 
@@ -812,7 +802,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Times
@@ -892,7 +881,6 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
 
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
 
@@ -912,7 +900,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class ClassicalTimes
@@ -992,7 +979,6 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
 
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
 
@@ -1012,7 +998,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Quotient
@@ -1092,7 +1077,6 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
 
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
 
@@ -1112,7 +1096,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 // CLquotient is for (/ 3 6) => 1/2 with a rational number result.
@@ -1194,7 +1177,6 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
 
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
 
@@ -1214,7 +1196,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 // I provide Remainder for all combinations of type, taking the view that
@@ -1297,7 +1278,6 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
 
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
 
@@ -1317,7 +1297,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Mod
@@ -1415,7 +1394,6 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
 
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
 
@@ -1435,7 +1413,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 // For raising things to powers I cover all combinations.
@@ -1517,7 +1494,6 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
 
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
 
@@ -1537,7 +1513,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 // Comparisons. Note that these return a boolean result rather than
@@ -1620,7 +1595,6 @@ public:
     static bool op(Flt a, double b);
     static bool op(double a, double b);
 
-#ifdef softfloat_h
     static bool op(LispObject a, LFlt b);
     static bool op(LFlt a, LispObject b);
 
@@ -1640,7 +1614,6 @@ public:
     static bool op(SFlt a, LFlt b);
     static bool op(Flt a, LFlt b);
     static bool op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 // CLEqn is for Common Lisp style (= a b) where eg (= 1 1.0) => true
@@ -1722,7 +1695,6 @@ public:
     static bool op(Flt a, double b);
     static bool op(double a, double b);
 
-#ifdef softfloat_h
     static bool op(LispObject a, LFlt b);
     static bool op(LFlt a, LispObject b);
 
@@ -1742,12 +1714,7 @@ public:
     static bool op(SFlt a, LFlt b);
     static bool op(Flt a, LFlt b);
     static bool op(double a, LFlt b);
-#endif // softfloat_h
 };
-
-// Neqn is provided because for floating point values NaN != NaN => false
-// but also NanN == NaN => false. For non-floating types this will just be
-// a negation over Eqn.
 
 class Neqn
 {
@@ -1826,7 +1793,6 @@ public:
     static bool op(Flt a, double b);
     static bool op(double a, double b);
 
-#ifdef softfloat_h
     static bool op(LispObject a, LFlt b);
     static bool op(LFlt a, LispObject b);
 
@@ -1846,7 +1812,6 @@ public:
     static bool op(SFlt a, LFlt b);
     static bool op(Flt a, LFlt b);
     static bool op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 // Comparing complex values using Greaterp (and friends) may not be useful.
@@ -1928,7 +1893,6 @@ public:
     static bool op(Flt a, double b);
     static bool op(double a, double b);
 
-#ifdef softfloat_h
     static bool op(LispObject a, LFlt b);
     static bool op(LFlt a, LispObject b);
 
@@ -1948,7 +1912,6 @@ public:
     static bool op(SFlt a, LFlt b);
     static bool op(Flt a, LFlt b);
     static bool op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Geq
@@ -2028,7 +1991,6 @@ public:
     static bool op(Flt a, double b);
     static bool op(double a, double b);
 
-#ifdef softfloat_h
     static bool op(LispObject a, LFlt b);
     static bool op(LFlt a, LispObject b);
 
@@ -2048,7 +2010,6 @@ public:
     static bool op(SFlt a, LFlt b);
     static bool op(Flt a, LFlt b);
     static bool op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Lessp
@@ -2128,7 +2089,6 @@ public:
     static bool op(Flt a, double b);
     static bool op(double a, double b);
 
-#ifdef softfloat_h
     static bool op(LispObject a, LFlt b);
     static bool op(LFlt a, LispObject b);
 
@@ -2148,7 +2108,6 @@ public:
     static bool op(SFlt a, LFlt b);
     static bool op(Flt a, LFlt b);
     static bool op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Leq
@@ -2228,7 +2187,6 @@ public:
     static bool op(Flt a, double b);
     static bool op(double a, double b);
 
-#ifdef softfloat_h
     static bool op(LispObject a, LFlt b);
     static bool op(LFlt a, LispObject b);
 
@@ -2248,7 +2206,6 @@ public:
     static bool op(SFlt a, LFlt b);
     static bool op(Flt a, LFlt b);
     static bool op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 // Bitwise operations, including shifts. Note that these will only
@@ -2554,9 +2511,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 };
 
 class Sub1
@@ -2571,9 +2526,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 };
 
 class Minus
@@ -2588,9 +2541,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 };
 
 class Minusp
@@ -2607,9 +2558,7 @@ public:
     static bool op(SFlt b);
     static bool op(Flt b);
     static bool op(double b);
-#ifdef softfloat_h
     static bool op(LFlt b);
-#endif // softfloat_h
 };
 
 class Plusp
@@ -2626,9 +2575,7 @@ public:
     static bool op(SFlt b);
     static bool op(Flt b);
     static bool op(double b);
-#ifdef softfloat_h
     static bool op(LFlt b);
-#endif // softfloat_h
 };
 
 class Abs
@@ -2643,9 +2590,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 };
 
 class Square
@@ -2660,9 +2605,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 };
 
 class Reciprocal
@@ -2677,9 +2620,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 };
 
 class Zerop
@@ -2694,9 +2635,7 @@ public:
     static bool op(SFlt b);
     static bool op(Flt b);
     static bool op(double b);
-#ifdef softfloat_h
     static bool op(LFlt b);
-#endif // softfloat_h
 };
 
 class Onep
@@ -2711,9 +2650,7 @@ public:
     static bool op(SFlt b);
     static bool op(Flt b);
     static bool op(double b);
-#ifdef softfloat_h
     static bool op(LFlt b);
-#endif // softfloat_h
 };
 
 class MinusOnep
@@ -2728,9 +2665,7 @@ public:
     static bool op(SFlt b);
     static bool op(Flt b);
     static bool op(double b);
-#ifdef softfloat_h
     static bool op(LFlt b);
-#endif // softfloat_h
 };
 
 class Oddp
@@ -2823,9 +2758,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 
 // Fload can also be used with 2 arguments - the second being an instance
 // of SFlt, Flt, double or LFlt that indicates the sort of floating point
@@ -2903,7 +2836,6 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
 
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
 
@@ -2923,7 +2855,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class RawFloat32
@@ -2938,9 +2869,7 @@ public:
     static float op(SFlt b);
     static float op(Flt b);
     static float op(double b);
-#ifdef softfloat_h
     static float op(LFlt b);
-#endif // softfloat_h
 };
 
 class RawFloat
@@ -2955,28 +2884,24 @@ public:
     static double op(SFlt b);
     static double op(Flt b);
     static double op(double b);
-#ifdef softfloat_h
     static double op(LFlt b);
-#endif // softfloat_h
 };
 
-// Float128 always returns a long float, so it is sort of RawFloat128
+// Float128 always returns a FLOAT128, so it is sort of RawFloat128
 
 class Float128
 {
 public:
-    static float128_t op(LispObject a);
+    static FLOAT128 op(LispObject a);
 
-    static float128_t op(Fixnum b);
-    static float128_t op(uint64_t *b);
-    static float128_t op(Rat b);
-    static float128_t op(Cpx b);
-    static float128_t op(SFlt b);
-    static float128_t op(Flt b);
-    static float128_t op(double b);
-#ifdef softfloat_h
-    static float128_t op(LFlt b);
-#endif // softfloat_h
+    static FLOAT128 op(Fixnum b);
+    static FLOAT128 op(uint64_t *b);
+    static FLOAT128 op(Rat b);
+    static FLOAT128 op(Cpx b);
+    static FLOAT128 op(SFlt b);
+    static FLOAT128 op(Flt b);
+    static FLOAT128 op(double b);
+    static FLOAT128 op(LFlt b);
 };
 
 class Fix
@@ -2991,9 +2916,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 };
 
 // I nay need to introduce RawTruncate etc!
@@ -3010,9 +2933,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
     static LispObject op(LispObject a, LispObject b);
     static LispObject op(LispObject a, Fixnum b);
     static LispObject op(LispObject a, uint64_t *b);
@@ -3077,7 +2998,6 @@ public:
     static LispObject op(SFlt a, double b);
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
     static LispObject op(LFlt a, Fixnum b);
@@ -3095,7 +3015,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Floor
@@ -3110,9 +3029,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
     static LispObject op(LispObject a, LispObject b);
     static LispObject op(LispObject a, Fixnum b);
     static LispObject op(LispObject a, uint64_t *b);
@@ -3177,7 +3094,6 @@ public:
     static LispObject op(SFlt a, double b);
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
     static LispObject op(LFlt a, Fixnum b);
@@ -3195,7 +3111,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Ceiling
@@ -3210,9 +3125,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
     static LispObject op(LispObject a, LispObject b);
     static LispObject op(LispObject a, Fixnum b);
     static LispObject op(LispObject a, uint64_t *b);
@@ -3277,7 +3190,6 @@ public:
     static LispObject op(SFlt a, double b);
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
     static LispObject op(LFlt a, Fixnum b);
@@ -3295,7 +3207,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Ftruncate
@@ -3310,9 +3221,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
     static LispObject op(LispObject a, LispObject b);
     static LispObject op(LispObject a, Fixnum b);
     static LispObject op(LispObject a, uint64_t *b);
@@ -3377,7 +3286,6 @@ public:
     static LispObject op(SFlt a, double b);
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
     static LispObject op(LFlt a, Fixnum b);
@@ -3395,7 +3303,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Ffloor
@@ -3410,9 +3317,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
     static LispObject op(LispObject a, LispObject b);
     static LispObject op(LispObject a, Fixnum b);
     static LispObject op(LispObject a, uint64_t *b);
@@ -3477,7 +3382,6 @@ public:
     static LispObject op(SFlt a, double b);
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
     static LispObject op(LFlt a, Fixnum b);
@@ -3495,7 +3399,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 class Fceiling
@@ -3510,9 +3413,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
     static LispObject op(LispObject a, LispObject b);
     static LispObject op(LispObject a, Fixnum b);
     static LispObject op(LispObject a, uint64_t *b);
@@ -3577,7 +3478,6 @@ public:
     static LispObject op(SFlt a, double b);
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
-#ifdef softfloat_h
     static LispObject op(LispObject a, LFlt b);
     static LispObject op(LFlt a, LispObject b);
     static LispObject op(LFlt a, Fixnum b);
@@ -3595,7 +3495,6 @@ public:
     static LispObject op(SFlt a, LFlt b);
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
-#endif // softfloat_h
 };
 
 // The first batch are for support of Lisp-level functions, while the
@@ -3613,9 +3512,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 
     static double op(LispObject a, int64_t &x);
 
@@ -3626,9 +3523,7 @@ public:
     static double op(SFlt b, int64_t &x);
     static double op(Flt b, int64_t &x);
     static double op(double b, int64_t &x);
-#ifdef softfloat_h
     static double op(LFlt b, int64_t &x);
-#endif // softfloat_h
 };
 
 class Frexp128
@@ -3643,22 +3538,18 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 
-    static float128_t op(LispObject a, int64_t &x);
+    static FLOAT128 op(LispObject a, int64_t &x);
 
-    static float128_t op(Fixnum b, int64_t &x);
-    static float128_t op(uint64_t *b, int64_t &x);
-    static float128_t op(Rat b, int64_t &x);
-    static float128_t op(Cpx b, int64_t &x);
-    static float128_t op(SFlt b, int64_t &x);
-    static float128_t op(Flt b, int64_t &x);
-    static float128_t op(double b, int64_t &x);
-#ifdef softfloat_h
-    static float128_t op(LFlt b, int64_t &x);
-#endif // softfloat_h
+    static FLOAT128 op(Fixnum b, int64_t &x);
+    static FLOAT128 op(uint64_t *b, int64_t &x);
+    static FLOAT128 op(Rat b, int64_t &x);
+    static FLOAT128 op(Cpx b, int64_t &x);
+    static FLOAT128 op(SFlt b, int64_t &x);
+    static FLOAT128 op(Flt b, int64_t &x);
+    static FLOAT128 op(double b, int64_t &x);
+    static FLOAT128 op(LFlt b, int64_t &x);
 };
 
 class Ldexp
@@ -3673,9 +3564,7 @@ public:
     static LispObject op(SFlt b, Fixnum n);
     static LispObject op(Flt b, Fixnum n);
     static LispObject op(double b, Fixnum n);
-#ifdef softfloat_h
     static LispObject op(LFlt b, Fixnum n);
-#endif // softfloat_h
     static LispObject op(Fixnum b, uint64_t *n);
     static LispObject op(uint64_t *b, uint64_t *n);
     static LispObject op(Rat b, uint64_t *n);
@@ -3683,9 +3572,7 @@ public:
     static LispObject op(SFlt b, uint64_t *n);
     static LispObject op(Flt b, uint64_t *n);
     static LispObject op(double b, uint64_t *n);
-#ifdef softfloat_h
     static LispObject op(LFlt b, uint64_t *n);
-#endif // softfloat_h
 };
 
 class Sqrt
@@ -3700,9 +3587,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 };
 
 class Isqrt
@@ -3717,9 +3602,7 @@ public:
     static LispObject op(SFlt b);
     static LispObject op(Flt b);
     static LispObject op(double b);
-#ifdef softfloat_h
     static LispObject op(LFlt b);
-#endif // softfloat_h
 };
 
 } // end namespace

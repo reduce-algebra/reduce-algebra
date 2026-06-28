@@ -86,7 +86,7 @@ multiply.cpp:	flatten multiply.base.cpp inlinemul.cpp lvector.h \
 arithlib.cpp:	flatten makeheader arithlib.base.cpp lvector.h \
 		acnutil.h multiply.base.cpp inlinemul.cpp \
 		fftutils.cpp fftmod.cpp fftkernel.cpp bitmaps.h \
-		cthread.cpp float128_t.h
+		cthread.cpp
 	./flatten arithlib.base.cpp arithlib.cpp
 	./makeheader arithlib.cpp arithlib.hh
 

@@ -523,19 +523,21 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
                 if (double_float_val(key) == 0.0) UPDATE(r, 0);
                 else UPDATE(r, intfloat64_t_val(key));
                 return r;
-#ifdef HAVE_SOFTFLOAT
             case LONG_FLOAT_HEADER:
                 UPDATE32(r, (uint64_t)h);
-                if (f128_zerop(*reinterpret_cast<float128_t *>(long_float_addr(key))))
+// Here +0.0 and -0.0 hash to the same value.
+                if (iszero(long_float_val(key)))
                 {   UPDATE(r, 0);
                     UPDATE(r, 0);
                 }
                 else
-                {   UPDATE(r, intfloat128_t_val0(key));
+                {
+// This hashes based on all 16 bytes and so in the cases where FLOAT128
+// is narrower than that the unused bits must be set to zero.
+                    UPDATE(r, intfloat128_t_val0(key));
                     UPDATE(r, intfloat128_t_val1(key));
                 }
                 return r;
-#endif // HAVE_SOFTFLOAT
         }
     }
     else if (is_numbers(key))
@@ -666,18 +668,22 @@ static uint64_t hash_nonsimple_bitvector(uint64_t r, LispObject key)
 // converted value and return true. Otherwise return false.
 // Anything that is a float already can be converted. short, single and
 // double floats need widening. Integers can be converted if the value has
-// new enough leading bits nonzero and if the value will lead to no exponent
+// few enough leading bits nonzero and if the value will not lead to exponent
 // overflow. Ratios are OK if the numerator has limited nonzero leading bits
 // and if the denominator is a power of 2 so that there is no underflow.
 // Sub-normal numbers represent a special edge case for this.
 
-#ifdef HAVE_SOFTFLOAT
-static float128_t bigfloat_result;
+// If FLOAT128 is only 64-bits wide then some fixnums will not
+// convert. So I convert to a FLOAT128 and check if the resulting
+// value is finite.
+
+static FLOAT128 bigfloat_result;
 
 UNUSED_NAME static bool float_if_exact(LispObject x)
 {   if (is_fixnum(x))
-    {   i32_to_f128M(int_of_fixnum(x), &bigfloat_result);
-        return true;
+    {   bigfloat_result = (FLOAT128)(int64_t)int_of_fixnum(x);
+        if (bigfloat_result == LF_C(0.0)) return true;
+        return isfinite(bigfloat_result);
     }
     else if (is_numbers(x))
     {   if (is_bignum(x)) return false;       // @@@ More work
@@ -690,10 +696,10 @@ UNUSED_NAME static bool float_if_exact(LispObject x)
     else if (is_bfloat(x))
     {   switch (flthdr(x))
         {   case SINGLE_FLOAT_HEADER:
-                f32_to_f128M(float32_t_val(x), &bigfloat_result);
+                bigfloat_result = (FLOAT128)single_float_val(x);
                 return true;
             case DOUBLE_FLOAT_HEADER:
-                f64_to_f128M(float64_t_val(x), &bigfloat_result);
+                bigfloat_result = (FLOAT128)double_float_val(x);
                 return true;
             case LONG_FLOAT_HEADER:
                 bigfloat_result = long_float_val(x);
@@ -705,7 +711,6 @@ UNUSED_NAME static bool float_if_exact(LispObject x)
     else if (is_sfloat(x)) return false;      // @@@ More work
     else return false;
 }
-#endif // HAVE_SOFTFLOAT
 
 // When computing a hash function I will only explore the top of the
 // structure. So if you have two trees of similar shape but with different
@@ -1160,7 +1165,8 @@ LispObject Lhash_contents(LispObject env, LispObject tab)
     r = nil;
     for (i=0; i<size; i++)
     {   LispObject key = elt(v, i);
-        if (key == SPID_HASHEMPTY) continue;
+        if (key == SPID_HASHEMPTY ||
+            key == SPID_HASHTOMB) continue;
         if (v1 == nil) r = cons(key, r);
         else r = acons(key, elt(v1, i), r);
         errexit();

@@ -47,15 +47,13 @@ namespace CSL_LISP
 
 LispObject Lfrexp(LispObject env, LispObject a)
 {   SingleValued fn;
-#ifdef HAVE_SOFTFLOAT
     if (is_long_float(a))
-    {   float128_t d;
+    {   FLOAT128 d;
         int x;
-        f128_frexp(*reinterpret_cast<float128_t *>(long_float_addr(a)), &d, &x);
+        d = frexp(long_float_val(a), &x);
         return cons(fixnum_of_int(x), make_boxfloat128(d));
     }
     else
-#endif // HAVE_SOFTFLOAT
         if (is_single_float(a))
         {   int x;
             float d = std::frexp(single_float_val(a), &x);

@@ -324,7 +324,6 @@ setup_type const arith_setup[] =
     DEF_1("conjugate", Nconjugate),
     DEF_2("fp-evaluate", Nfp_eval),
     DEF_1("trap-floating-overflow", Ntrap_floating_overflow),
-    {"validate-number", G0Wother, Nvalidate_number, Nvalidate_number, G3Wother, G4Wother},
     {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 

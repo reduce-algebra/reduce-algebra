@@ -606,6 +606,7 @@ LispObject intern(size_t len, bool escaped, int startAddr)
             static_cast<void>(explicit_fp_format);
 #endif
             boffo_char(boffop) = 0;
+            char* endpt = nullptr;
             switch (fplength)
             {   case 0:
                     return pack_short_float(
@@ -618,11 +619,11 @@ LispObject intern(size_t len, bool escaped, int startAddr)
                     return make_boxfloat(
                         std::atof(reinterpret_cast<char *>(&boffo_char(0))),
                         WANT_DOUBLE_FLOAT);
-#ifdef HAVE_SOFTFLOAT
                 case 3:
-                    return make_boxfloat128(atof128(
-                        reinterpret_cast<char *>(&boffo_char(0))));
-#endif // HAVE_SOFTFLOAT
+                    return make_boxfloat128(
+                        strtold(
+                            reinterpret_cast<char *>(&boffo_char(0)),
+                            &endpt));
             }
         }
     }

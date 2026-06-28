@@ -3541,7 +3541,7 @@ lab1253)) (setq d (cons (quote !-) d)) (setq o (cdddr (cdddr (cddddr o)))) (
 setq w o) (setq o (cdddr o)) (setq d (cons (caddr o) (cons (cadr o) (cons (
 car o) d)))) (setq d (compress (cons (quote !") (cons (cadr w) (cons (car w) 
 (cons (quote !-) d)))))) (setq O_file (wrs C_file)) (setq c!:defnames nil) (
-c!:printf "\n// %s.c %tMachine generated C code\n\n" name 25) (c!:printf 
+c!:printf "\n// %s.c %tMachine generated C++ code\n\n" name 25) (c!:printf 
 "// $I") (c!:printf "d: $\n\n") (c!:printf "#include \qconfig.h\q\n") (
 c!:printf "#include \qheaders.h\q\n\n") (c!:printf 
 "namespace CSL_LISP\n{\n\n") (wrs O_file) (return nil)))

@@ -215,7 +215,11 @@ then
   if printf "int main() {return 0;}\n" | \
      gcc -c -x c -arch x86_64 -arch arm64 - -o temp.o >/dev/null 2>/dev/null
   then
-    default_univ="yes"
+#   default_univ="yes"
+# As of June 2026 I make the default single-architecture and one would need
+# and explicit "--enable-univeral" at configure time for the more complicated
+# case.
+    default_univ="no"
   fi
   rm -f temp.o
   AC_MSG_NOTICE([default_univ=$default_univ])

@@ -1061,18 +1061,14 @@ static LispObject quotff(LispObject a, LispObject b)
            hb = flthdr(b);
     FloatType hc;
     mv_2 = fixnum_of_int(0);
-#ifdef HAVE_SOFTFLOAT
-// If EITHER argument is a long float I will need to do things differently,
-// because I can not use machine-native arithmetic on float128_t.
     if (ha == LONG_FLOAT_HEADER || hb == LONG_FLOAT_HEADER)
-    {   float128_t x, y, z;
+    {   FLOAT128 x, y, z;
         x = float128_of_number(a);
         y = float128_of_number(b);
-        f128M_div(&x, &y, &z);
+        z = x/y;
         return make_boxfloat128(z);
     }
     else
-#endif // HAVE_SOFTFLOAT
         if (ha == DOUBLE_FLOAT_HEADER || hb == DOUBLE_FLOAT_HEADER)
             hc = WANT_DOUBLE_FLOAT;
         else hc = WANT_SINGLE_FLOAT;
@@ -1081,17 +1077,6 @@ static LispObject quotff(LispObject a, LispObject b)
 }
 
 LispObject quot2(LispObject a, LispObject b)
-#ifdef DEBUG
-{   validate_number("Arg1 for quot", a, a, b);
-    validate_number("Arg2 for quot", b, a, b);
-    extern LispObject quot2a(LispObject a, LispObject b);
-    LispObject r = quot2a(a, b);
-    validate_number("result for quot", r, a, b);
-    return r;
-}
-
-LispObject quot2a(LispObject a, LispObject b)
-#endif
 {   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             switch (static_cast<int>(b) & XTAG_BITS)
@@ -1289,17 +1274,6 @@ LispObject quot2a(LispObject a, LispObject b)
 }
 
 LispObject quotrem2(LispObject a, LispObject b)
-#ifdef DEBUG
-{   validate_number("Arg1 for quotrem", a, a, b);
-    validate_number("Arg2 for quotrem", b, a, b);
-    extern LispObject quotrem2a(LispObject a, LispObject b);
-    LispObject r = quotrem2a(a, b);
-    validate_number("result for quotrem", r, a, b);
-    return r;
-}
-
-LispObject quotrem2a(LispObject a, LispObject b)
-#endif
 {   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             switch (static_cast<int>(b) & XTAG_BITS)
@@ -1508,17 +1482,6 @@ LispObject quotrem2a(LispObject a, LispObject b)
  */
 
 LispObject CLquot2(LispObject a, LispObject b)
-#ifdef DEBUG
-{   validate_number("Arg1 for CLquot", a, a, b);
-    validate_number("Arg2 for CLquot", b, a, b);
-    extern LispObject CLquot2a(LispObject a, LispObject b);
-    LispObject r = CLquot2a(a, b);
-    validate_number("result for CLquot", r, a, b);
-    return r;
-}
-
-LispObject CLquot2a(LispObject a, LispObject b)
-#endif
 {   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             switch (static_cast<int>(b) & XTAG_BITS)

@@ -1234,13 +1234,13 @@ double max_store_size = 0.0;
 const size_t pageMega = 8;
 size_t maxPages = 0;
 
-#if !defined HAVE_CILK && !defined ARITHLIB
+#if !defined ARITHLIB
 std::thread kara_thread[2];
 std::mutex kara_mutex;
 std::condition_variable cv_kara_ready, cv_kara_done;
 unsigned int kara_ready = 0;
 int kara_done = 0;
-#endif // HAVE_CILK, ARITHLIB
+#endif // ARITHLIB
 
 // I am also putting the following segment in a separate file in case I want
 // to use a (potentially customized) version of it elsewhere...
@@ -1388,27 +1388,18 @@ class KaratsubaThreads
 {
 public:
     KaratsubaThreads()
-    {
-#ifndef HAVE_CILK
-// If CILK is available then the concurrency is expressed using its
-// higher level constructs. Otherwise I will do the thread creation
-// and coordination myself.
-        kara_ready = kara_done = 0;
+    {   kara_ready = kara_done = 0;
         for (int i=0; i<2; i++)
         {   kara_thread[i] = std::thread(kara_worker, i);
             kara_thread[i].detach();
         }
-#endif
     }
     ~KaratsubaThreads()
-    {
-#ifndef HAVE_CILK
-        {   std::lock_guard<std::mutex> lk(kara_mutex);
+    {   {   std::lock_guard<std::mutex> lk(kara_mutex);
             kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
             kara_done = 0;
         }
         cv_kara_ready.notify_all();
-#endif
     }
 };
 
@@ -1424,8 +1415,7 @@ char* mystrdup(const char* s)
 // to cslstart().
 
 void cslstart(int argc, const char* argv[], character_writer *wout)
-{
-    double store_size = 0.0;
+{   double store_size = 0.0;
 // I make "sp" volatile - it is a variable I declare here but then only use by
 // taking its address to get a pointer into the current stack-frame. When it
 // is volatile my compiler will not be entitled to moan about the lack of
