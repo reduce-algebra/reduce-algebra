@@ -39,6 +39,18 @@ here=`cd "$here"; pwd -P`
 host=$1
 shift
 
+# Hmmm - in the case host=x86_64-pc-msys it could be that the x86_64 is
+# a mis-identification and really it should be aarch64. Fix that here.
+
+if test "$host" = "x86_64-pc-msys"
+then
+  case $PROCESSOR_IDENTITY in
+  *ARM*)
+    host="aarch64-pc-msys"
+    ;;
+  esac
+fi
+
 case $host in
 *apple-darwin*)
   case $* in

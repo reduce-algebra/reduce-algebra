@@ -1463,6 +1463,18 @@ LispObject Lmath_display(LispObject env, LispObject a)
         return nil;             // bad arg, but just return nil
 }
 
+#ifdef WIN32
+} // temp end CSL_LISP namespace
+
+//#include "winsupport.h"
+
+namespace CSL_LISP
+{
+using namespace FX;
+
+
+#endif // WIN32
+
 LispObject Ltruename(LispObject env, LispObject name)
 {   SingleValued fn;
     char filename[LONGEST_LEGAL_FILENAME];
@@ -1650,7 +1662,6 @@ LispObject Lfind_gnuplot(LispObject env)
 
 LispObject Lgetpid(LispObject env)
 {   SingleValued fn;
- 
     return fixnum_of_int(getpid());
 }
 

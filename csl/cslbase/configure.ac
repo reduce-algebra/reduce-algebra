@@ -275,58 +275,58 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE(
   [AC_MSG_NOTICE([Use long double])
    f128_identified="yes"
    AC_DEFINE(USE_LONG_DOUBLE, [1], [long double is a 128-bit format])])
-endif
-
-if test "$f128_identified" != "yes"
-then 
-OLDLIBS="$LIBS"
-LIBS="$LIBS -lquadmath"
-AC_LINK_IFELSE([AC_LANG_SOURCE(
-  [[
-    #include <quadmath.h>
-    int main(int argc, char*argv[])
-    {   __float128 w = 1.0;
-        __complex128 x = (__complex128)w;
-        __float128 y = sinq(cosq(expq(logq(w))));
-        __complex128 z = csqrtq(-x);
-        return 0;
-    }
-  ]])],
-  [AC_MSG_NOTICE([Use __float128 and quadmath])
-   f128_identified="yes"
-   AC_DEFINE(USE_QUADMATH, [1], [can use __float128 and quadmath])],
-  [LIBS="$OLDLIBS"])
 fi
 
 if test "$f128_identified" != "yes"
-then 
-AC_LINK_IFELSE([AC_LANG_SOURCE(
-  [[
-    #include <stdfloat>
-    #include <cmath>
-    int main(int argc, char*argv[])
-    {   __float128_t x = 1.0;
-        __float128 y = sinf128(cosf128(expf128(logf128(x))));
-        return 0;
-    }
-  ]])],
-  [AC_MSG_NOTICE([clang __float128 and sinf128 etc])
-   f128_identified="yes"
-   AC_DEFINE(USE_CLANG_FLOAT128, [1], [Use __float128 and sinf128])])
+then
+  OLDLIBS="$LIBS"
+  LIBS="$LIBS -lquadmath"
+  AC_LINK_IFELSE([AC_LANG_SOURCE(
+    [[
+      #include <quadmath.h>
+      int main(int argc, char*argv[])
+      {   __float128 w = 1.0;
+          __complex128 x = (__complex128)w;
+          __float128 y = sinq(cosq(expq(logq(w))));
+          __complex128 z = csqrtq(-x);
+          return 0;
+      }
+    ]])],
+    [AC_MSG_NOTICE([Use __float128 and quadmath])
+     f128_identified="yes"
+     AC_DEFINE(USE_QUADMATH, [1], [can use __float128 and quadmath])],
+    [LIBS="$OLDLIBS"])
 fi
 
 if test "$f128_identified" != "yes"
-then 
-CXXFLAGS="$CXXFLAGS -std=gnu++23"
-AC_COMPILE_IFELSE([AC_LANG_SOURCE(
-  [[
-    #include <stdfloat>
-    static std::float128_t x = 1.0;
-  ]])],
-  [AC_MSG_NOTICE([Use C++23 float128_t])
-   f128_identified="yes"
-   AC_DEFINE(USE_CXX23_FLOAT128, [1], [can use std::float128_t])],
-  [CXXFLAGS="$OLDCXXFLAGS"])
+then
+  AC_LINK_IFELSE([AC_LANG_SOURCE(
+    [[
+      #include <stdfloat>
+      #include <cmath>
+      int main(int argc, char*argv[])
+      {   __float128_t x = 1.0;
+          __float128 y = sinf128(cosf128(expf128(logf128(x))));
+          return 0;
+      }
+    ]])],
+    [AC_MSG_NOTICE([clang __float128 and sinf128 etc])
+     f128_identified="yes"
+     AC_DEFINE(USE_CLANG_FLOAT128, [1], [Use __float128 and sinf128])])
+fi
+
+if test "$f128_identified" != "yes"
+then
+  CXXFLAGS="$CXXFLAGS -std=gnu++23"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+    [[
+      #include <stdfloat>
+      static std::float128_t x = 1.0;
+    ]])],
+    [AC_MSG_NOTICE([Use C++23 float128_t])
+     f128_identified="yes"
+     AC_DEFINE(USE_CXX23_FLOAT128, [1], [can use std::float128_t])],
+    [CXXFLAGS="$OLDCXXFLAGS"])
 fi
 
 if test "$f128_identified" != "yes"
