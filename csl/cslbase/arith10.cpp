@@ -287,10 +287,12 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
             restype = n;
     }
     else if (restype == WANT_SHORT_FLOAT) restype = WANT_SINGLE_FLOAT;
-// At least for now I do not support long floats here - I demote to double
-// floats.
-#pragma message "support long floats here please"
-    if (restype == WANT_LONG_FLOAT) restype = WANT_DOUBLE_FLOAT;
+    if (restype == WANT_LONG_FLOAT)
+    {   FLOAT_128 aa = float128_of_number(a);
+        FLOAT_128 bb = float128_of_number(b);
+        FLOAT_128 rr = expt(aa, bb);
+        return make_boxfloat128(rr);
+    }
     if ((is_numbers(a) && is_complex(a)) ||
         (is_numbers(b) && is_complex(b)))
     {   c1 = complex_of_number(a);
@@ -303,15 +305,9 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
     }
     d = float_of_number(a);
     e = float_of_number(b);
-    if (d < 0.0)
-    {   c1.real(d); c1.imag(0.0);
-        c2.real(e); c2.imag(0.0);
-        c3 = std::pow(c1, c2);
-        a = make_boxfloat(real(c3), restype);
-        b = make_boxfloat(imag(c3), restype);
-        a = make_complex(a, b);
-        return a;
-    }
+// If I have a real number raised to a negative real power I will treat
+// it as an error.
+    if (d < 0.0) return aerror2("expt", a, b);
     d = CSLpow(d, e);
     a = make_boxfloat(d, restype);
     return a;
@@ -595,7 +591,7 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
     FloatType restype = WANT_DOUBLE_FLOAT;
 #else
 // single floats seem to me to be a bad idea! But they are the default
-// for Common Lisp. Boo Hiss.
+// for Common Lisp. Boo Hiss. Well that may be re-settable.
     FloatType restype = WANT_SINGLE_FLOAT;
 #endif
     switch (static_cast<int>(a) & TAG_BITS)
@@ -640,11 +636,13 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
         }
         case TAG_BOXFLOAT:
             restype = floatWant(flthdr(a));
-// HA HA 128-bit case not done yet! But at least now I have all the
-// necessary scaffolding!
             if (restype == WANT_LONG_FLOAT)
-              return aerror(
-                "Elementary functions applied to long floats not quite supported yet");
+            {   FLOAT_128 dd = float128_of_number(a);
+                FLOAT_128 (*rl)(FLOAT_128) = function_table[which_one].f128;
+                FLOAT_128 r = (*rl)(dd);
+                if (isnan(r)) return aerror("argument out of range");
+                return make_boxfloat128(r);
+            }
             d = float_of_number(a);
             break;
         default:
@@ -653,11 +651,6 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
     {   double (*rl)(double) = function_table[which_one].f64;
         double r = (*rl)(d);
         if (std::isnan(r)) return aerror("argument out of range");
-//        {   std::complex<double> c1 = {d, 0.0};
-//            std::complex<double> c2 =
-//                (*function_table[which_one].c64)(c1);
-//            return make_complex_float(c2, a);
-//        }
         return make_boxfloat(r, restype);
     }
 }

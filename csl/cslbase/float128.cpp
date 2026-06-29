@@ -678,43 +678,8 @@ constexpr FLOAT160::operator int32_t() const
     return (int32_t)r;
 }
 
-// This converts to the bit-pattern that will be for a 128-bit float,
-// handling infinities and denormalised values and rounding properly.
-
 uint128_t FLOAT160::f160tof128rep() const
-{
-// I will first handle some special values that have to convert into
-// infinities or NaNs
-    if (x == INT32_MAX)
-    {   if (m == 0)
-        {   if (sign) return MINUSINF128();
-            else return PLUSINF128();
-        }
-        else return NAN128();
-    }
-    uint128_t r = 0;
-    if (m == 0) return r;
-    int32_t xx = x + 0x3ffe;
-    if (xx <= 0)
-    {   if (xx >= -111)
-        {   r |= m>>(16-xx);
-// @@@ I need to round here I guess.
-        }
-        return r; // denorm or underflow
-    }
-    if (xx >= 0x7fff)
-        return r | (((uint128_t)0x7fff)<<112); // infinity
-    r = (m<<1)>>16;              // Mantissa with top bit hidden
-    uint128_t guard = m<<(128-15);
-    if (guard > topbit128() ||
-        (guard == topbit128() && (r&1)!=0)) r++;
-// Note that incrementing r could overflow out of the 112-bit mantissa
-// field, but since I add in the exponent when this happens the (non-
-// hidden) mantissa ends up as zero and the exponent increases. Including
-// possibly to yield an infinity!
-    if (sign) r |= topbit128();
-    r += ((uint128_t)xx) << 112;
-    return r;
+{   return f160tof128rep(sign, x, m);
 }
 
 FLOAT160::operator FLOAT_128() const
@@ -760,9 +725,6 @@ FLOAT160 FLOAT160::operator/=(FLOAT160 const& rhs)
 }
 
 #endif // NEED_FLOAT160
-
-extern int f160_sprint_G(char* r, int width, int precision,
-                         bool sign, int32_t exponent, uint128_t mantissa);
 
 std::ostream& showfloat160(std::ostream& o,
                            bool sign, int32_t exponent, uint128_t mantissa,

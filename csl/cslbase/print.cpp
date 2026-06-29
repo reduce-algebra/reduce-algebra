@@ -1924,8 +1924,11 @@ static void fp_sprint128(char *buff, FLOAT_128 x, int prec, int xchar)
         x = -x;
     }
     if (prec > 36) prec = 36;
-#pragma message "printing of FLOAT_128 inadequate"
-    snprintf(buff, 128, "%.*LG", prec, (long double)x);
+    bool sign;
+    int32_t exponent;
+    uint128_t mantissa;
+    f128tof160(x, sign, exponent, mantissa);
+    f160_sprint_G(buff, 0, prec, sign, exponent, mantissa); 
 //  printf("Raw printing gives \"%s\"\n", buff);
 //
 // I rather hope that my own print routine is not degenerate so some of

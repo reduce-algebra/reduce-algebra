@@ -76,12 +76,12 @@
 // the print format is limited. Input using "std::cin >>" has not been
 // implemented.
 //
-   
+
 #if defined USE_LONG_DOUBLE
 // On the Macintosh and sometimes when compiling for Windows the type
 // "long double" is too narrow. In some of those cases if you try to
 // run this with USE_LONG_DOUBLE set it will necessarily fail.
- 
+
 static_assert(((long double)1.0 + 1.0e-34) != 1.0,
               "long double is not a 128-bit IEEE float");
 #endif
@@ -224,7 +224,7 @@ using FLOAT128REP = __float128;
 #include <stdfloat>
 // Basic arithmetic on std::float128_t present, but all libraries needed here.
 using FLOAT128REP = std::float128_t;
-#define LF_C(x) ((FLOAT_128)(x ## F128)) 
+#define LF_C(x) ((FLOAT_128)(x ## F128))
 #define LLF_C(x) ((FLOAT160)(x ## _Q))
 #define NEED_FLOAT160 1
 #define NEED_REAL_MATHLIB
@@ -460,7 +460,7 @@ inline void addin192(uint64_t n, uint64_t* c, int k)
     {   c[k] = c[k] + n;
         n = (c[k] < n) ? 1 : 0;
         k++;
-    } 
+    }
 }
 
 // {hi, mid, lo, x} = {hi1, mid1, lo1, x1) * {hi2, mid2, lo2, x2};
@@ -483,7 +483,7 @@ inline constexpr void multiply192(
         {   int k = i+j;
             uint128_t w = ((uint128_t)a[i])*b[j];
             addin192((uint64_t)w, c, k);
-            addin192((uint64_t)(w>>64), c, k+1);   
+            addin192((uint64_t)(w>>64), c, k+1);
         }
     }
     hi = c[5];
@@ -511,7 +511,7 @@ inline constexpr void multiply192(
 
 inline constexpr void breakfunction()
 {
-} 
+}
 
 inline constexpr void power(
     uint64_t& hi, uint64_t& mid, uint64_t& lo, int32_t& x, int n)
@@ -524,12 +524,12 @@ inline constexpr void power(
     while (n != 0)
     {   if (n%2 != 0) multiply192(hi, mid, lo, x,
                                   whi, wmid, wlo, wx,
-                                  hi, mid, lo, x); 
+                                  hi, mid, lo, x);
          multiply192(whi, wmid, wlo, wx,
                      whi, wmid, wlo, wx,
                      whi, wmid, wlo, wx);
          n = n/2;
-    } 
+    }
 }
 
 inline constexpr void power10(
@@ -644,7 +644,7 @@ inline constexpr void fracpart192(
     {   hi = lo;
         lo = 0;
         x = -128;
-    }    
+    }
     else if (hi == 0)
     {   hi = mid;
         mid = lo;
@@ -896,99 +896,15 @@ public:
 // confident that the 128-bit version will be accurate. So I can
 // work in a fairly naive way.
 
+extern constexpr void string_to_160(const char* s,
+    bool& sign, int32_t& exponent, uint64_t& mantissa);
+
 constexpr inline FLOAT160 string_to_float160(const char* s)
-{   FLOAT160 r(0);
-// If the literal starts with "0x" or "0X" it is in hex notation.
-    if (*s == '0' && (s[1] == 'x' || s[1] == 'X'))
-    {   s += 2;
-        r.setexponent(0);
-        r.setmantissa(0);
-        int i = 32;
-// For hex input the digits are put in from the most significant part
-// of the mantissa downwards. The result is that if there are only a few
-// digits given the value is effectively padded with zeros, while if
-// there are more than 32 the excess ones are just discarded. The exponent
-// is zero by default. Unless the value is given as zero its top bit
-// will be forced to be a 1 so that it is properly normalised. Note that
-// leading zeros are skipped.
-// Thus:
-//   0x0008_Q           gives 0.5
-//   0x4_Q              is treated as if it has been 0xC_Q which is 0.75
-//   0x9999..99999_Q    [with as many "9s" as you want where I have put
-//                       the "..."] is 0.6, but it does not round the final
-//                       stored "9" to an "a".
-//   0x1234_5678_9abc_Q  illustrates underscores that may help legibility.
-// For hex input I am taking the view that the user should not write
-// more than 32 digits and then expect the excess ones to be used to
-// round the main result. So
-//     0x1111_1111_1111_1111_1111_1111_1111_11111_ffff_Q
-// will still have a "1" in its least significant position.
-        while (*s == '0') s++;
-        for (;;)
-        {   if (*s == '_') s++;  // One can put underscores as spacing.
-            int c = *s;
-            if ('0' <= c && c <= '9') s++, c = c - '0';
-            else if ('a' <= c && c <= 'f') s++, c = 10 + c - 'a'; 
-            else if ('A' <= c && c <= 'F') s++, c = 10 + c - 'A';
-            else break;
-            i--;
-            if (i >= 0) r.setmantissa(r.mantissa() | ((uint128_t)c)<<(4*i));
-        }
-        if (r.mantissa() == 0)
-        {   r.setexponent(INT32_MIN);
-            return r;
-        }
-        r.setmantissa(r.mantissa() | ((uint128_t)1)<<127); 
-        if (*s == 'p' || *s == 'P')
-        {   r.setexponent(atoi(s+1));
-        }
-        return r;
-    }
-// Now for decimal input.
-    uint64_t hi=0, mid=0, lo=0;
-    int32_t x = INT32_MIN;
-    while (*s == '0') s++;
-    int count = 0;
-    int dx = 0;
-    while ('0' <= *s && *s <= '9')
-    {   multiply192(UINT64_C(0xa000000000000000), 0, 0, 4,
-                    hi, mid, lo, x,
-                    hi, mid, lo, x);
-        add192(*s++ - '0', hi, mid, lo, x);
-        count++;
-    }
-    if (*s == '.')
-    {   s++;
-        while ('0' <= *s && *s <= '9')
-        {   if (count < 42)   // I ignore digits beyond this limit.
-            {   multiply192(UINT64_C(0xa000000000000000), 0, 0, 4,
-                            hi, mid, lo, x,
-                            hi, mid, lo, x);
-                add192(*s - '0', hi, mid, lo, x);
-                dx--;
-                count++;
-            }
-            s++;
-        }
-    }
-    if (*s == 'e') dx += std::atoi(s+1);
-    uint64_t hi1=0, mid1=0, lo1=0;
-    int32_t x1=0;
-    power10(hi1, mid1, lo1, x1, dx);
-    multiply192(hi1, mid1, lo1, x1, hi, mid, lo, x, hi, mid, lo, x);
-    uint128_t m = (((uint128_t)hi)<<64) | mid;
-// Round.
-    if ((lo == (UINT64_C(1)<<63) && (m&1)!=0) ||
-        (lo > (UINT64_C(1)<<63)))
-    {   m++;
-        if (m == 0)
-        {   m = ((uint128_t)1)<<127;
-            x++;
-        }
-    }
-    r.setmantissa(m);
-    r.setexponent(x);
-    return r;
+{   bool sign;
+    int32_t x;
+    uint128_t m;
+    string_to_160(const char* s, sign, x, m);
+    return FLOAT160(sign, x, m);
 }
 
 inline constexpr FLOAT160 operator ""_Q(const char* s)
@@ -1194,7 +1110,7 @@ constexpr FLOAT160 FLOAT160::operator/(FLOAT160 const& rhs) const
         r.x = INT32_MAX;
         r.sign = negative;
         return r;
-    }    
+    }
     uint128_t am = m, bm = rhs.m;
     int32_t ax = x, bx = rhs.x;
     r.sign = negative;
@@ -1388,6 +1304,139 @@ constexpr FLOAT160::operator double() const
 
 #endif // NEED_FLOAT160
 
+// This converts to the bit-pattern that will be for a 128-bit float,
+// handling infinities and denormalised values and rounding properly.
+
+inline constexpr uint128_t f160tof128rep(bool sign, int32_t x, uint128_t m)   
+// I will first handle some special values that have to convert into
+// infinities or NaNs
+{   if (x == INT32_MAX)
+    {   if (m == 0)
+        {   if (sign) return MINUSINF128();
+            else return PLUSINF128();
+        }
+        else return NAN128();
+    }
+    uint128_t r = 0;
+    if (m == 0) return r;
+    int32_t xx = x + 0x3ffe;
+    if (xx <= 0)
+    {   if (xx >= -111)
+        {   r |= m>>(16-xx);
+// @@@ I need to round here I guess.
+        }
+        return r; // denorm or underflow
+    }
+    if (xx >= 0x7fff)
+        return r | (((uint128_t)0x7fff)<<112); // infinity
+    r = (m<<1)>>16;              // Mantissa with top bit hidden
+    uint128_t guard = m<<(128-15);
+    if (guard > topbit128() ||
+        (guard == topbit128() && (r&1)!=0)) r++;
+// Note that incrementing r could overflow out of the 112-bit mantissa
+// field, but since I add in the exponent when this happens the (non-
+// hidden) mantissa ends up as zero and the exponent increases. Including
+// possibly to yield an infinity!
+    if (sign) r |= topbit128();
+    r += ((uint128_t)xx) << 112;
+    return r;
+}
+
+constexpr void string_to_160(const char* s,
+    bool& sign, int32_t& exponent, uint128_t& mantissa)
+{   sign = false;
+    exponent = 0;
+    mantissa = 0;
+// If the literal starts with "0x" or "0X" it is in hex notation.
+    if (*s == '0' && (s[1] == 'x' || s[1] == 'X'))
+    {   s += 2;
+        int i = 32;
+// For hex input the digits are put in from the most significant part
+// of the mantissa downwards. The result is that if there are only a few
+// digits given the value is effectively padded with zeros, while if
+// there are more than 32 the excess ones are just discarded. The exponent
+// is zero by default. Unless the value is given as zero its top bit
+// will be forced to be a 1 so that it is properly normalised. Note that
+// leading zeros are skipped.
+// Thus:
+//   0x0008_Q           gives 0.5
+//   0x4_Q              is treated as if it has been 0xC_Q which is 0.75
+//   0x9999..99999_Q    [with as many "9s" as you want where I have put
+//                       the "..."] is 0.6, but it does not round the final
+//                       stored "9" to an "a".
+//   0x1234_5678_9abc_Q  illustrates underscores that may help legibility.
+// For hex input I am taking the view that the user should not write
+// more than 32 digits and then expect the excess ones to be used to
+// round the main result. So
+//     0x1111_1111_1111_1111_1111_1111_1111_11111_ffff_Q
+// will still have a "1" in its least significant position.
+        while (*s == '0') s++;
+        for (;;)
+        {   if (*s == '_') s++;  // One can put underscores as spacing.
+            int c = *s;
+            if ('0' <= c && c <= '9') s++, c = c - '0';
+            else if ('a' <= c && c <= 'f') s++, c = 10 + c - 'a';
+            else if ('A' <= c && c <= 'F') s++, c = 10 + c - 'A';
+            else break;
+            i--;
+            if (i >= 0) mantissa = mantissa | (((uint128_t)c)<<(4*i));
+        }
+        if (mantissa == 0)
+        {   exponent = 0;
+            return;
+        }
+        mantissa = mantissa | (((uint128_t)1)<<127);
+        if (*s == 'p' || *s == 'P')
+        {   exponent = atoi(s+1);
+        }
+        return;
+    }
+// Now for decimal input.
+    uint64_t hi=0, mid=0, lo=0;
+    int32_t x = INT32_MIN;
+    while (*s == '0') s++;
+    int count = 0;
+    int dx = 0;
+    while ('0' <= *s && *s <= '9')
+    {   multiply192(UINT64_C(0xa000000000000000), 0, 0, 4,
+                    hi, mid, lo, x,
+                    hi, mid, lo, x);
+        add192(*s++ - '0', hi, mid, lo, x);
+        count++;
+    }
+    if (*s == '.')
+    {   s++;
+        while ('0' <= *s && *s <= '9')
+        {   if (count < 42)   // I ignore digits beyond this limit.
+            {   multiply192(UINT64_C(0xa000000000000000), 0, 0, 4,
+                            hi, mid, lo, x,
+                            hi, mid, lo, x);
+                add192(*s - '0', hi, mid, lo, x);
+                dx--;
+                count++;
+            }
+            s++;
+        }
+    }
+    if (*s == 'e') dx += std::atoi(s+1);
+    uint64_t hi1=0, mid1=0, lo1=0;
+    int32_t x1=0;
+    power10(hi1, mid1, lo1, x1, dx);
+    multiply192(hi1, mid1, lo1, x1, hi, mid, lo, x, hi, mid, lo, x);
+    uint128_t m = (((uint128_t)hi)<<64) | mid;
+// Round.
+    if ((lo == (UINT64_C(1)<<63) && (m&1)!=0) ||
+        (lo > (UINT64_C(1)<<63)))
+    {   m++;
+        if (m == 0)
+        {   m = ((uint128_t)1)<<127;
+            x++;
+        }
+    }
+    mantissa = m;
+    exponent = x;
+}
+
 inline FLOAT_128 ldexp(FLOAT_128 v, int x)
 {   return v.ldexp(x);
 }
@@ -1420,6 +1469,13 @@ inline bool iszero(FLOAT_128 v)
 {   return v.iszero();
 }
 
+extern int f160_sprint_G(char* r, int width, int precision,
+                         bool sign, int32_t exponent, uint128_t mantissa);
+
+extern void f128tof160(FLOAT_128 const& v,
+                       bool& sign, int32_t& exponent, uint128_t& mantissa);
+
+
 // I need to declare all the FLOAT_128 and COMPLEX_128 elementary functions
 // so that people who #include this header will know about them. I declare
 // versions that work on double and std::complex<double> too because that
@@ -1445,57 +1501,57 @@ inline bool iszero(FLOAT_128 v)
   extern FLOAT_128 name(FLOAT_128,FLOAT_128);                 \
   extern COMPLEX_128 name(COMPLEX_128,COMPLEX_128);
 
-external_declaration(acos)                   
-external_declaration(acosd)               
-external_declaration(acosh)                  
-external_declaration(acot)              
-external_declaration(acotd)               
-external_declaration(acoth)             
-external_declaration(acsc)              
-external_declaration(acscd)               
-external_declaration(acsch)             
-external_declaration(asec)              
-external_declaration(asecd)               
-external_declaration(asech)             
-external_declaration(asin)                   
-external_declaration(asind)               
-external_declaration(asinh)                  
-external_declaration(atan)                   
-external_declaration(atand)               
-external_declaration(atanh)                  
-external_declaration(cbrt)                   
-external_declaration(cos)                    
-external_declaration(cosd)                
-external_declaration(cosh)                   
-external_declaration(cot)               
-external_declaration(cotd)                
-external_declaration(coth)              
-external_declaration(csc)               
-external_declaration(cscd)                
-external_declaration(csch)              
-external_declaration(exp)                    
-external_declaration(expm1)                  
-external_declaration(ln)                     
-external_declaration(log)                    
-external_declaration(log10)                  
-external_declaration(log1p)                  
-external_declaration(log2)                   
-external_declaration(sec)               
-external_declaration(secd)                
-external_declaration(sech)              
-external_declaration(sin)                    
-external_declaration(sind)                
-external_declaration(sinh)                   
-external_declaration(sqrt)                   
-external_declaration(rsqrt)             
-external_declaration(tan)                    
-external_declaration(tand)                
-external_declaration(tanh)                   
+external_declaration(acos)
+external_declaration(acosd)
+external_declaration(acosh)
+external_declaration(acot)
+external_declaration(acotd)
+external_declaration(acoth)
+external_declaration(acsc)
+external_declaration(acscd)
+external_declaration(acsch)
+external_declaration(asec)
+external_declaration(asecd)
+external_declaration(asech)
+external_declaration(asin)
+external_declaration(asind)
+external_declaration(asinh)
+external_declaration(atan)
+external_declaration(atand)
+external_declaration(atanh)
+external_declaration(cbrt)
+external_declaration(cos)
+external_declaration(cosd)
+external_declaration(cosh)
+external_declaration(cot)
+external_declaration(cotd)
+external_declaration(coth)
+external_declaration(csc)
+external_declaration(cscd)
+external_declaration(csch)
+external_declaration(exp)
+external_declaration(expm1)
+external_declaration(ln)
+external_declaration(log)
+external_declaration(log10)
+external_declaration(log1p)
+external_declaration(log2)
+external_declaration(sec)
+external_declaration(secd)
+external_declaration(sech)
+external_declaration(sin)
+external_declaration(sind)
+external_declaration(sinh)
+external_declaration(sqrt)
+external_declaration(rsqrt)
+external_declaration(tan)
+external_declaration(tand)
+external_declaration(tanh)
 
-external_declaration_2(atan2)            
-external_declaration_2(atan2d)        
-external_declaration_2(expt)             
-external_declaration_2(hypot)            
+external_declaration_2(atan2)
+external_declaration_2(atan2d)
+external_declaration_2(expt)
+external_declaration_2(hypot)
 
 #endif // header__float128_h
 
