@@ -761,7 +761,7 @@ inline int exceptionLine = -1;
 #define CATCH(flavour)                                                  \
    return nil;})(); if ((exceptionFlag & flavour) != 0) UNLIKELY        \
    {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; \
-       jitexpectin = 0;                                                 \
+       JITerrflag = 0;                                                 \
        exceptionFlag = LispNormal;
 
 #define ANOTHER_CATCH(flavour)                                          \

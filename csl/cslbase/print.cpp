@@ -1463,6 +1463,18 @@ LispObject Lmath_display(LispObject env, LispObject a)
         return nil;             // bad arg, but just return nil
 }
 
+#ifdef WIN32
+} // temp end CSL_LISP namespace
+
+//#include "winsupport.h"
+
+namespace CSL_LISP
+{
+using namespace FX;
+
+
+#endif // WIN32
+
 LispObject Ltruename(LispObject env, LispObject name)
 {   SingleValued fn;
     char filename[LONGEST_LEGAL_FILENAME];
@@ -1650,7 +1662,6 @@ LispObject Lfind_gnuplot(LispObject env)
 
 LispObject Lgetpid(LispObject env)
 {   SingleValued fn;
- 
     return fixnum_of_int(getpid());
 }
 
@@ -1893,29 +1904,28 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
     else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
 }
 
-#ifdef HAVE_SOFTFLOAT
-static void fp_sprint128(char *buff, float128_t x, int prec,
-                         int xchar)
-{   if (f128M_eq(&x, &f128_0))
-    {   if (f128_negative(x)) std::strcpy(buff, "-0.0L+00");
+static void fp_sprint128(char *buff, FLOAT_128 x, int prec, int xchar)
+{   if (x == LF_C(0.0))
+    {   if (LF_C(1.0)/x < LF_C(0.0)) std::strcpy(buff, "-0.0L+00");
         else std::strcpy(buff, "0.0L+00");
         return;
     }
-    if (f128_nanp(x))
+    if (x != x)
     {   std::strcpy(buff, "NaN");
         return;
     }
-    if (f128_infinitep(x))
-    {   if (f128_negative(x)) std::strcpy(buff, "minusinf");
+    if (LF_C(1.0)/x == LF_C(0.0))
+    {   if (x < LF_C(0.0)) std::strcpy(buff, "minusinf");
         else std::strcpy(buff, "inf");
         return;
     }
-    if (f128_negative(x))
+    if (x < LF_C(0.0))
     {   *buff++ = '-';
-        f128_negate(&x);
+        x = -x;
     }
     if (prec > 36) prec = 36;
-    f128_sprint_G(buff, 0, prec, x);
+#pragma message "printing of FLOAT_128 inadequate"
+    snprintf(buff, 128, "%.*LG", prec, (long double)x);
 //  printf("Raw printing gives \"%s\"\n", buff);
 //
 // I rather hope that my own print routine is not degenerate so some of
@@ -1959,7 +1969,6 @@ static void fp_sprint128(char *buff, float128_t x, int prec,
     if (*(buff+1) == 0) char_ins(buff, '0');
     else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
 }
-#endif // HAVE_SOFTFLOAT
 
 static int32_t local_gensym_count;
 
@@ -2091,7 +2100,7 @@ restart:
 // The tag bits for a short float match those for a fixnum if I just look
 // at the low 3 bits. Yuk - that means I need an extra test here.
             if (is_sfloat(u))
-            {   Float_union uu;
+            {   float_union uu;
 // The following passes the correct value for either 28 or 32-bit floats.
                 int xmark = 's';
                 if (SIXTY_FOUR_BIT)
@@ -2230,9 +2239,13 @@ restart:
                     case SPID_NOARG:   std::strcpy(my_buff, "SPID_NOARG");   break;
 // SPID_HASHEMPTY and SPID_HASHTOMB should only appear within hash tables,
 // and I do not expect to be able to re-read those. I will use concise
-// representations for them.
-                    case SPID_HASHEMPTY:std::strcpy(my_buff, "~"); break;
-                    case SPID_HASHTOMB:std::strcpy(my_buff, "+"); break;
+// representations for them. Well because it was causing confusion I will
+// show them both the same way, so that the tombstones are not revealed
+// to the user. Well why should I print anything at all there.
+//-                 case SPID_HASHEMPTY:std::strcpy(my_buff, "~"); break;
+//-                 case SPID_HASHTOMB:std::strcpy(my_buff, "~"); break;
+                    case SPID_HASHEMPTY:
+                    case SPID_HASHTOMB: my_buff[0] = 0; break;
                     case SPID_GCMARK:  std::strcpy(my_buff, "SPID_GCMARK");  break;
                     case SPID_NOINPUT: std::strcpy(my_buff, "SPID_NOINPUT"); break;
                     case SPID_ERROR: u = (u >> 20) & 0xfff;
@@ -2256,7 +2269,7 @@ restart:
                         break;
                 }
                 len = std::strlen(my_buff);
-                outprefix(blankp, len);
+                if (len != 0) outprefix(blankp, len);
                 for (k=0; k<len; k++) putc_stream(my_buff[k], active_stream);
                 return nil;
             }
@@ -3249,74 +3262,45 @@ restart:
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         std::snprintf(my_buff, sizeof(my_buff),
                                      "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
-#ifdef LITTLEENDIAN
                                      p[1], p[0], static_cast<double>(double_float_val(u)));
-#else
-                                     p[0], p[1], static_cast<double>(double_float_val(u)));
-#endif
                     }
                     else if ((escaped_printing & escape_octal) || force_octal)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         std::snprintf(my_buff, sizeof(my_buff), "{%.11" PRIo32 "/%.11" PRIo32 ":%#.8g}",
-#ifdef LITTLEENDIAN
                                      p[1], p[0], static_cast<double>(double_float_val(u)));
-#else
-                                     p[0], p[1], static_cast<double>(double_float_val(u)));
-#endif
                     }
                     else fp_sprint(my_buff, double_float_val(u),
                                        print_precision, 'e');
                     break;
-#ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
                     if (escaped_printing & escape_checksum)
                     {   int64_t v0 = intfloat128_t_val0(u);
                         int64_t v1 = intfloat128_t_val1(u);
-#ifdef LITTLEENDIAN
                         std::snprintf(my_buff, sizeof(my_buff), "@F%.8" PRIx64 "/%" PRIx64, v1, v0);
-#else
-                        std::snprintf(my_buff, sizeof(my_buff), "@F%.8" PRIx64 "/%" PRIx64, v0, v1);
-#endif
                     }
                     else if ((escaped_printing & escape_hex) || force_hex)
                     {   uint32_t *p = (uint32_t *)&long_float_val(u);
                         char *o = my_buff;
-#ifdef LITTLEENDIAN
                         o += std::snprintf(o, 12, "{%.8" PRIx32, p[3]);
                         o += std::snprintf(o, 12, "/%.8" PRIx32, p[2]);
                         o += std::snprintf(o, 12, "/%.8" PRIx32, p[1]);
                         o += std::snprintf(o, 12, "/%.8" PRIx32, p[0]);
-#else
-                        o += std::snprintf(o, 12, "{%.8" PRIx32, p[0]);
-                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[1]);
-                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[2]);
-                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[3]);
-#endif
                         *o++ = ':';
-                        o += f128_sprint_G(o, 0, 34,
-                                            *reinterpret_cast<float128_t *>(
-                                                &long_float_val(u)));
+                        o += snprintf(o, 48, "%.34LG",
+                                     (long double)long_float_val(u));
                         *o++ = '}';
                         *o = 0;
                     }
                     else if ((escaped_printing & escape_octal) || force_octal)
                     {   uint32_t *p = (uint32_t *)&long_float_val(u);
                         char *o = my_buff;
-#ifdef LITTLEENDIAN
                         o += std::snprintf(o, 16, "{%.11" PRIo32, p[3]);
                         o += std::snprintf(o, 16, "/%.11" PRIo32, p[2]);
                         o += std::snprintf(o, 16, "/%.11" PRIo32, p[1]);
                         o += std::snprintf(o, 16, "/%.11" PRIo32, p[0]);
-#else
-                        o += std::snprintf(o, 16, "{%.11" PRIo32, p[0]);
-                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[1]);
-                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[2]);
-                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[3]);
-#endif
                         *o++ = ':';
-                        o += f128_sprint_G(o, 0, 34,
-                                            *reinterpret_cast<float128_t *>(
-                                                &long_float_val(u)));
+                        o += snprintf(o, 48, "%.34LG",
+                                      (long double)long_float_val(u));
                         *o++ = '}';
                         *o = 0;
                     }
@@ -3325,7 +3309,6 @@ restart:
                     else fp_sprint128(my_buff, long_float_val(u),
                                           print_precision, 'L');
                     break;
-#endif // HAVE_SOFTFLOAT
                 default:
                     std::snprintf(my_buff, sizeof(my_buff), "?%p?", reinterpret_cast<void *>(u));
                     break;

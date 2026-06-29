@@ -64,6 +64,7 @@
 #include <atomic>
 #include <string>
 #include <cstring>
+#include <complex>
 
 #ifndef __has_cpp_attribute
 #define __has_cpp_attribute(name) 0
@@ -121,34 +122,31 @@
 #include <bit>
 using std::bit_cast;
 #else // HAVE_BITCAST
+
 #ifndef CSL_BITCAST
 
 // C++20 introduces bit_cast<T>() but to support earlier C++ dialects I
-// use an implementation for it found at
+// use an implementation for it. A version at
 //     https://en.cppreference.com/w/cpp/numeric/bit_cast
-// By citing that reference I gain permission to use it.
+// looked as if it ought to be available for copying, but when I look
+// harder at the associated license terms it is not, so what I have here
+// is a minimal version without validity checks. My version, unlike the
+// proper C++ built-in version, is not constexpr.
 
 // The key motivating use for bit_cast will be as in
 //        bit_cast<uint64_t>(3.14159)
 // which will obtain the bit representation of the floating point value in
 // a "safe" way.
 
-template <class To, class From>
-std::enable_if_t<
-    sizeof(To) == sizeof(From) &&
-    std::is_trivially_copyable_v<From> &&
-    std::is_trivially_copyable_v<To>,
-    To>
-// constexpr support needs compiler magic
-bit_cast(const From& src) noexcept
-{   static_assert(std::is_trivially_constructible_v<To>,
-        "This implementation additionally requires "
-        "destination type to be trivially constructible");
-    To dst;
-    std::memcpy(&dst, &src, sizeof(To));
-    return dst;
+template <class S, class T>
+S bit_cast(const T& src)
+{   S r;
+    std::memcpy(&r, &src, sizeof(r));
+    return r;
 }
+
 #define CSL_BITCAST 1
+
 #endif // CSL_BITCAST
 #endif // HAVE_BITCAST
 
@@ -160,7 +158,7 @@ using std::int64_t;   // that are really heavily used.
 using std::intptr_t;
 using std::uint32_t;
 using std::uint64_t;
-// The header "int128_h.h" ensures that int128_t and uint128_t are
+// The header "int128.h" ensures that int128_t and uint128_t are
 // available without needing any package prefix.
 using std::uintptr_t;
 using std::size_t;
@@ -175,20 +173,6 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #if !defined DEBUG && !defined NDEBUG
 #define NDEBUG 1
 #endif // DEBUG || NDEBUG
-
-//
-// If the header "complex.h" is available, the type "complex double" is
-// accepted and the function "csqrt" is present I will assume I can use the
-// standard C99 complex number support facilities. Aha SOME C++ systems
-// support this, but others use a template class, and I will adapt my code
-// to use that some time.
-//
-
-#if defined HAVE_COMPLEX_H && \
-    defined HAVE_COMPLEX_DOUBLE && \
-    defined HAVE_CSQRT
-#define HAVE_COMPLEX 1
-#endif // Complex number support
 
 //
 // I will check a number of things before I try to use sigaltstack()
@@ -326,26 +310,13 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 // I want to have types uint128_t and int128_t and this header file
 // can arrange that for me.
 
-#include "int128_t.h"
+#include "int128.h"
+#include "bitmaps.h"
+
+// I also want some 128-bit floating point types...
+#include "float128.h"
+
 #include "winsupport.h"
-
-#if !defined EMBEDDED || defined USE_SOFTFLOAT
-extern "C"
-{
-// At present softfloat.h needs inclusion in C mode not C++ mode.
-// This must be included before tags.h.
-
-#include "softfloat.h"
-}
-
-// float128_t introduces a type QuadFloat with input syntax
-//      nnn.nnnExxx_Q
-// or   xxxxxxxxxxxxxxxx:xxxxxxxxxxxxxx_QX
-// such that basic arithmetic operations are supported.
-
-#include "float128_t.h"
-
-#endif // EMBEDDED
 
 // In a manner that I view as bad, at least the Macintosh copy of libffi
 // installed via macports in August 2017 defined a bunch of autoconf-related

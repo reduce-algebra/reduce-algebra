@@ -107,9 +107,8 @@
 // from the one creating it all is well. That is perhaps especially
 // messy for floating point values, and it is not clear that there is a
 // sane reliable interchange format for floats that are wider then 64 bits,
-// so at present "long double" is not really supported. If I did not care
-// about reading in serialized data on a machine different from the one it
-// was written on there would not be an issue!
+// so "long double" and handled here in a way that such that platforms where
+// I end up with less then 128-bit values are different.
 //
 // I provide two rather different schemes for serializing symbols. The first
 // is for user-level code and it treats a symbol pretty much as just its
@@ -869,39 +868,25 @@ typedef union _float32u
     float f;
 } float32u;
 
-// softfloat.h will have defined LITTLEENDIAN in the case that applies
-// for (eg) Intel, and not for the case of Sun/Sparc.
+// I am now going to ASSUME that all systems use a little endian
+// layout for floating point values.
 
 float read_f32()
 {   float32u u;
-#ifdef LITTLEENDIAN
     u.i[0] = read_data_byte();
     u.i[1] = read_data_byte();
     u.i[2] = read_data_byte();
     u.i[3] = read_data_byte();
-#else
-    u.i[3] = read_data_byte();
-    u.i[2] = read_data_byte();
-    u.i[1] = read_data_byte();
-    u.i[0] = read_data_byte();
-#endif
     return u.f;
 }
 
 void write_f32(double f)
 {   float32u u;
     u.f = f;
-#ifdef LITTLEENDIAN
     write_byte(u.i[0], "part of float");
     write_byte(u.i[1], "part of float");
     write_byte(u.i[2], "part of float");
     write_byte(u.i[3], "part of float");
-#else
-    write_byte(u.i[3], "part of float");
-    write_byte(u.i[2], "part of float");
-    write_byte(u.i[1], "part of float");
-    write_byte(u.i[0], "part of float");
-#endif
 }
 
 typedef union _float64u
@@ -911,77 +896,33 @@ typedef union _float64u
 
 double read_f64()
 {   float64u u;
-#ifdef LITTLEENDIAN
-    u.i[0] = read_data_byte();
-    u.i[1] = read_data_byte();
-    u.i[2] = read_data_byte();
-    u.i[3] = read_data_byte();
-    u.i[4] = read_data_byte();
-    u.i[5] = read_data_byte();
-    u.i[6] = read_data_byte();
-    u.i[7] = read_data_byte();
-#else
-    u.i[7] = read_data_byte();
-    u.i[6] = read_data_byte();
-    u.i[5] = read_data_byte();
-    u.i[4] = read_data_byte();
-    u.i[3] = read_data_byte();
-    u.i[2] = read_data_byte();
-    u.i[1] = read_data_byte();
-    u.i[0] = read_data_byte();
-#endif
+    for (int i=0; i<8; i++)
+        u.i[i] = read_data_byte();
     return u.f;
 }
 
 void write_f64(double f)
 {   float64u u;
     u.f = f;
-#ifdef LITTLEENDIAN
-    write_byte(u.i[0], "part of double");
-    write_byte(u.i[1], "part of double");
-    write_byte(u.i[2], "part of double");
-    write_byte(u.i[3], "part of double");
-    write_byte(u.i[4], "part of double");
-    write_byte(u.i[5], "part of double");
-    write_byte(u.i[6], "part of double");
-    write_byte(u.i[7], "part of double");
-#else
-    write_byte(u.i[7], "part of double");
-    write_byte(u.i[6], "part of double");
-    write_byte(u.i[5], "part of double");
-    write_byte(u.i[4], "part of double");
-    write_byte(u.i[3], "part of double");
-    write_byte(u.i[2], "part of double");
-    write_byte(u.i[1], "part of double");
-    write_byte(u.i[0], "part of double");
-#endif
+    for (int i=0; i<8; i++)
+        write_byte(u.i[i], "part of double");
 }
 
 
-#ifdef HAVE_SOFTFLOAT
-float128_t read_f128()
-{   float128_t r;
-#ifdef LITTLEENDIAN
-    r.v[0] = read_u64();
-    r.v[1] = read_u64();
-#else
-    r.v[1] = read_u64();
-    r.v[0] = read_u64();
-#endif
-    return r;
+FLOAT_128 read_f128()
+{   uint128_t n = 0;
+    for (int i=0; i<16; i++)
+        n = n | (((uint128_t)read_data_byte())<<(8*i));
+    return FLOAT_128(n, 0);
 }
 
-void write_f128(float128_t f)
-{
-#ifdef LITTLEENDIAN
-    write_u64(f.v[0]);
-    write_u64(f.v[1]);
-#else
-    write_u64(f.v[1]);
-    write_u64(f.v[0]);
-#endif
+void write_f128(FLOAT_128 f)
+{   uint128_t n = f.getbits();
+    for (int i=0; i<16; i++)
+    {   write_byte((int)(n & 0xff), "part of long double");
+        n = n>>8;
+    }
 }
-#endif // HAVE_SOFTFLOAT
 
 // At times I need to read and write values that are the entrypoints of
 // functions that are defined in the kernel. I do this by referring back to
@@ -1810,15 +1751,13 @@ down:
                     *(LispObject*)p = prev;
                     goto up;
 
-#ifdef HAVE_SOFTFLOAT
                 case SER_FLOAT128:
 // a 128-bit (double-length) float.
                     my_assert(opcode_repeats == 0, LOCATION);
-                    prev = make_boxfloat128(f128_0);
+                    prev = make_boxfloat128(LF_C(0.0));
                     long_float_val(prev) = read_f128();
                     *(LispObject*)p = prev;
                     goto up;
-#endif // HAVE_SOFTFLOAT
 
                 case SER_CHARSPID:
 // A packed characters literal. Characters that are Basic Latin can be coded
@@ -2082,7 +2021,6 @@ down:
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f32();
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
-#ifdef HAVE_SOFTFLOAT
                 else if (vector_f128(type))
                 {   prev = get_basic_vector(tag, type, 8+16*w);
                     if (!SIXTY_FOUR_BIT)
@@ -2091,7 +2029,6 @@ down:
                     std::fprintf(stderr, "128-bit floats not supported (yet?)\n");
                     my_abort("128-bit float");
                 }
-#endif // HAVE_SOFTFLOAT
                 else if (vector_i128(type))
                 {   prev = get_basic_vector(tag, type, 8+16*w);
                     if (!SIXTY_FOUR_BIT)
@@ -3131,12 +3068,10 @@ down:
                 write_u64(len = (length_of_header(h) - CELL)/4);
                 for (size_t i=0; i<len/4; i++) write_f32(*x++);
             }
-#ifdef HAVE_SOFTFLOAT
             else if (vector_f128(h))
             {   std::fprintf(stderr, "128-bit float arrays not supported (yet?)\n");
                 my_abort("128-bit float arrays");
             }
-#endif // HAVE_SOFTFLOAT
             else if (vector_i128(h))
             {   std::fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
                 my_abort("128-bit integer arrays");
@@ -3175,18 +3110,16 @@ down:
                     write_f64(double_float_val(p));
                 }
                 break;
-#ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
                 {   char msg[40];
 // At present I do not have a good scheme to display the 128-bit float value.
 #ifdef DEBUG_SERIALIZE
-                    std::snprintf(msg, sizeof(msg), "long double");
+                    std::snprintf(msg, sizeof(msg), "FLOAT128");
 #endif // DEBUG_SERIALIZE
                     write_opcode(SER_FLOAT128, msg);
                     write_f128(long_float_val(p));
                 }
                 break;
-#endif // HAVE_SOFTFLOAT
                 default:
                     std::fprintf(stderr, "floating point representation not recognized\n");
                     my_abort("unknown floating  point format");

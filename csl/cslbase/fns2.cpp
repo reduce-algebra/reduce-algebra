@@ -1214,12 +1214,8 @@ bool eql_fn(LispObject a, LispObject b)
             return (single_float_val(a) == single_float_val(b));
         else if (h == DOUBLE_FLOAT_HEADER)
             return (double_float_val(a) == double_float_val(b));
-#ifdef HAVE_SOFTFLOAT
 // Here I must have a long float.
-        return f128_eq(float128_of_number(a), float128_of_number(b));
-#else // HAVE_SOFTFLOAT
-        return false;
-#endif // HAVE_SOFTFLOAT
+        return float128_of_number(a) == float128_of_number(b);
     }
     else if ((a & XTAG_BITS) == XTAG_SFLOAT)
     {   float fa = short_float_val(a),
@@ -1479,14 +1475,9 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                         double_float_val(cb)) return false;
                                     else break;
                                 }
-#ifdef HAVE_SOFTFLOAT
-                                else if (!f128_eq(
-                                             float128_of_number(ca),
-                                             float128_of_number(cb))) return false;
+                                else if (float128_of_number(ca) !=
+                                         float128_of_number(cb)) return false;
                                 else break;
-#else // HAVE_SOFTFLOAT
-                                else return false;
-#endif // HAVE_SOFTFLOAT
                             }
                         }
                     break;  // out of the for (;;) loop
@@ -1540,12 +1531,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
                             return false;
                         else return true;
                     }
-#ifdef HAVE_SOFTFLOAT
-                    else return f128_eq(float128_of_number(a),
-                                        float128_of_number(b));
-#else // HAVE_SOFTFLOAT
-                    else return false;
-#endif // HAVE_SOFTFLOAT
+                    else return float128_of_number(a) ==
+                                float128_of_number(b);
                 }
             }
     }
@@ -1783,14 +1770,9 @@ bool equal_fn(LispObject a, LispObject b)
                                         double_float_val(cb)) return false;
                                     else break;
                                 }
-#ifdef HAVE_SOFTFLOAT
-                                else if (!f128_eq(
-                                             float128_of_number(ca),
-                                             float128_of_number(cb))) return false;
+                                else if (float128_of_number(ca) !=
+                                         float128_of_number(cb)) return false;
                                 else break;
-#else // HAVE_SOFTFLOAT
-                                else return false;
-#endif // HAVE_SOFTFLOAT
                             }
                         }
                     break;  // out of the for (;;) loop
@@ -1841,12 +1823,8 @@ bool equal_fn(LispObject a, LispObject b)
                             return false;
                         else return true;
                     }
-#ifdef HAVE_SOFTFLOAT
-                    else return f128_eq(float128_of_number(a),
-                                        float128_of_number(b));
-#else // HAVE_SOFTFLOAT
-                    else return false;
-#endif // HAVE_SOFTFLOAT
+                    else return float128_of_number(a) ==
+                                float128_of_number(b);
                 }
             }
     }
@@ -2002,14 +1980,9 @@ bool equalp(LispObject a, LispObject b)
                                         double_float_val(cb)) return false;
                                     else break;
                                 }
-#ifdef HAVE_SOFTFLOAT
-                                else if (!f128_eq(
-                                             float128_of_number(ca),
-                                             float128_of_number(cb))) return false;
+                                else if (float128_of_number(ca) !=
+                                         float128_of_number(cb)) return false;
                                 else break;
-#else // HAVE_SOFTFLOAT
-                                else return false;
-#endif // HAVE_SOFTFLOAT
                             }
                         }
                     break;  // out of the for (;;) loop
@@ -2062,12 +2035,8 @@ bool equalp(LispObject a, LispObject b)
                             return false;
                         else return true;
                     }
-#ifdef HAVE_SOFTFLOAT
-                    else return f128_eq(float128_of_number(a),
-                                        float128_of_number(b));
-#else // HAVE_SOFTFLOAT
-                    else return false;
-#endif // HAVE_SOFTFLOAT
+                    else return float128_of_number(a) ==
+                                float128_of_number(b);
                 }
             }
     }

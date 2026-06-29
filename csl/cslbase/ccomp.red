@@ -1,4 +1,4 @@
-% "ccomp.red"                                Copyright 1991-2025,  Codemist
+% "ccomp.red"                                Copyright 1991-2026,  Codemist
 %
 % Compiler that turns Lisp code into C in a way that fits in
 % with the conventions used with CSL/CCL
@@ -6,7 +6,7 @@
 %                                                        A C Norman
 
 %%
-%% Copyright (C) 2025, following the master REDUCE source files.          *
+%% Copyright (C) 2026, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -970,7 +970,7 @@ princ "C file = "; print name;
 #endif
     O_file := wrs C_file;
     c!:defnames := nil;
-    c!:printf("\n// %s.c %tMachine generated C code\n\n", name, 25);
+    c!:printf("\n// %s.c %tMachine generated C++ code\n\n", name, 25);
     c!:printf("// $I");
     c!:printf("d: $\n\n");
     c!:printf "#include \qconfig.h\q\n";

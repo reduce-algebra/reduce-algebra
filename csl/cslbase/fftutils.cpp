@@ -46,7 +46,7 @@
 // It is not standard-compliant and even with those compilers it may
 // not be available on all computers.
 
-#include "int128_t.h"
+#include "int128.h"
 
 // I want to be able to find the number of leading zeros in an integer.
 // In bitmaps.h I set up a function "nlz()" for this that maps onto

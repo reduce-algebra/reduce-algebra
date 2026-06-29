@@ -55,7 +55,7 @@
 #include <atomic>
 #include <cassert>
 
-#include "int128_t.h"
+#include "int128.h"
 #include "acnutil.h"
 using namespace acnutil;
 

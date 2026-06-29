@@ -2,10 +2,10 @@
 ## and then use autoconf to create ./configure. Finally run that
 ## to build your usable Makefile (probably in another directory)
 
-# Copyright A C Norman, Codemist -2025
+# Copyright A C Norman, Codemist -2026
 
 #**************************************************************************
-#* Copyright (C) 2025, Codemist.                         A C Norman       *
+#* Copyright (C) 2026, Codemist.                         A C Norman       *
 #*                                                                        *
 #* Redistribution and use in source and binary forms, with or without     *
 #* modification, are permitted provided that the following conditions are *
@@ -132,7 +132,6 @@ plain_wxfontdemo1 = wxfontdemo1
 plain_wxdvi = wxdvi
 plain_wxshowmath = wxshowmath
 plain_wxshowmathdemo = wxshowmathdemo
-plain_testf128 = testf128
 plain_jitdemo = jitdemo
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
@@ -151,7 +150,6 @@ plain_wxfontdemo1 = wxfontdemo1.unnecessary.except.on.windows
 plain_wxdvi = wxdvi.unnecessary.except.on.windows
 plain_wxshowmath = wxshowmath.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
-plain_testf128 = testf128.unnecessary.except.on.windows
 plain_jitdemo = jitdemo.unnecessary.except.on.windows
 endif !exeext
 
@@ -171,7 +169,6 @@ endif !exeext
 .PHONY: $(plain_wxshowmath)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
-.PHONY: $(plain_testf128)
 .PHONY: $(plain_jitdemo)
 
 .PHONY:	bootstraprecompile
@@ -327,12 +324,12 @@ if mac_framework
 noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
-	testf128$(EXEEXT) $(wxdemotarget) $(jitdemotarget)
+	$(wxdemotarget) $(jitdemotarget)
 else !mac_framework
 noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
-	testf128$(EXEEXT) $(wxdemotarget) $(jitdemotarget)
+	$(wxdemotarget) $(jitdemotarget)
 endif !mac_framework
 
 if mac_framework
@@ -358,8 +355,8 @@ if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
-		arith-elem.cpp arith-misc.cpp qdouble.cpp arith-quad.cpp
-ARITHDEP=arithlib.cpp qdouble.h
+		arith-elem.cpp arith-misc.cpp
+ARITHDEP=arithlib.cpp
 else !arithlib
 arith_sources =
 ARITHDEP=
@@ -375,15 +372,13 @@ endif !enable_webgui
 
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
-		arith11.cpp arith12.cpp arith13.cpp arith14.cpp \
-                isprime.cpp qsieve.cpp jit.cpp forks.cpp \
+		arith11.cpp arith12.cpp arith13.cpp elem128.cpp \
+                float128.cpp isprime.cpp qsieve.cpp jit.cpp forks.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
 		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
 		winsupport.cpp csl.cpp fasl.cpp preserve.cpp bytes1.cpp \
 		showhdr.cpp \
-		float128_t.cpp cbrtq.cpp exp10q.cpp exp2q.cpp expm1q.cpp \
-		expq.cpp hypotq.cpp logq.cpp rsqrtq.cpp sqrtq.cpp \
 		$(gc_sources) $(arith_sources)
 
 # This little rule is because from time to time I really want to see the
@@ -476,6 +471,7 @@ generated_sources_deps =             $(gensrc)/u01.cpp \
 		$(gensrc)/u08.cpp $(gensrc)/u09.cpp \
 		$(gensrc)/u10.cpp $(gensrc)/u11.cpp \
 		$(gensrc)/u12.cpp $(gensrc)/u13.cpp \
+		$(gensrc)/u13.cpp $(gensrc)/u13.cpp \
 		$(gensrc)/u14.cpp $(gensrc)/u15.cpp \
 		$(gensrc)/u16.cpp $(gensrc)/u17.cpp \
 		$(gensrc)/u18.cpp $(gensrc)/u19.cpp \
@@ -616,7 +612,7 @@ endif !mac_framework
 AM_CPPFLAGS     += -Dfontsdir=reduce.$(fontsdir)
 reduce_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
 reduce_web_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir) \
-  -DUSE_SOFTFLOAT=1 -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 \
+  -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1 \
   -DWEBFRONT=\"embwebgui\.h\" -I$(reduce)/libraries/webview
 bootstrapreduce_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
 csl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)
@@ -662,9 +658,6 @@ wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
 AWKFILES=reduce.resources/mma.awk reduce.resources/qepcad.awk
-
-testf128_SOURCES = testf128.cpp float128_t.cpp
-testf128_LDADD = ../lib/libsoftfloat.a
 
 jitdemo_SOURCES = jitdemo.cpp
 jitdemo_LDADD = ../lib/libasmjit.a 
@@ -931,38 +924,6 @@ $(LIBFFIDEPS):
 
 endif !mac_framework
 
-SOFTFLOATDEPS=../lib/libsoftfloat.a ../include/softfloat.h
-
-SOFTFLOATDEP = ../include/softfloat.h
-SOFTFLOATINC = -I../include
-AM_CPPFLAGS     += $(SOFTFLOATINC)
-reduce_CPPFLAGS += $(SOFTFLOATINC)
-reduce_web_CPPFLAGS += $(SOFTFLOATINC)
-bootstrapreduce_CPPFLAGS += $(SOFTFLOATINC)
-csl_CPPFLAGS    += $(SOFTFLOATINC)
-flatcsl_CPPFLAGS    += $(SOFTFLOATINC)
-
-# The following ugly dependencies are here so that one can go, for
-# instance, "make csl.o" in a clean tree and softfloat building will get
-# triggered.
-
-
-csl_LDADD += ../lib/libsoftfloat.a
-flatcsl_LDADD += ../lib/libsoftfloat.a
-bootstrapreduce_LDADD += ../lib/libsoftfloat.a
-reduce_LDADD += ../lib/libsoftfloat.a
-reduce_web_LDADD += ../lib/libsoftfloat.a
-
-csl_DEPENDENCIES += $(SOFTFLOATDEPS)
-bootstrapreduce_DEPENDENCIES += $(SOFTFLOATDEPS)
-reduce_DEPENDENCIES += $(SOFTFLOATDEPS)
-reduce_web_DEPENDENCIES += $(SOFTFLOATDEPS)
-
-$(SOFTFLOATDEPS):
-	@printf "About to build softfloat for %s ($@)\n" `pwd`
-	printf "\n\n=== About to build softfloat library\n\n";
-	-$(TRACE)@$(MAKE) -C ../softfloat install
-
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
 # taken as specifing conflicting actions.
@@ -988,9 +949,9 @@ bootstrapreduce-arith-times.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-float.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-gcdn.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-print.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-compare.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-compare.$(OBJEXT):$(HDRS)
 bootstrapreduce-arith-logops.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-modular.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-modular.$(OBJEXT):$(HDRS)
 bootstrapreduce-arith-elem.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-misc.$(OBJEXT):	$(HDRS)
 
@@ -1036,13 +997,12 @@ csl-arith10.$(OBJEXT):	$(HDRS)
 csl-arith11.$(OBJEXT):	$(HDRS)
 csl-arith12.$(OBJEXT):	$(HDRS)
 csl-arith13.$(OBJEXT):	$(HDRS)
-csl-arith14.$(OBJEXT):	$(HDRS)
-csl-arith-quad.$(OBJEXT):	$(HDRS)
+csl-elem128.$(OBJEXT):	$(HDRS)
+csl-float128.$(OBJEXT):	$(HDRS)
 csl-isprime.$(OBJEXT):	$(HDRS)
 csl-qsieve.$(OBJEXT):	$(HDRS)
 csl-bytes1.$(OBJEXT):	$(HDRS)
 csl-showhdr.$(OBJEXT):	$(HDRS)
-csl-float128_t.$(OBJEXT):	$(HDRS)
 csl-char.$(OBJEXT):	$(HDRS)
 csl-csl.$(OBJEXT):	$(HDRS)
 csl-cslmpi.$(OBJEXT):	$(HDRS)
@@ -1067,8 +1027,8 @@ csl-pro.$(OBJEXT):	$(HDRS)
 csl-restart.$(OBJEXT):	$(HDRS)
 csl-stubs.$(OBJEXT):	$(HDRS)
 csl-sysfwin.$(OBJEXT):	$(HDRS)
-csl-serialize.$(OBJEXT):	$(HDRS)
-csl-winsupport.$(OBJEXT):	$(HDRS)
+csl-serialize.$(OBJEXT):$(HDRS)
+csl-winsupport.$(OBJEXT):$(HDRS)
 csl-inthash.$(OBJEXT):	$(HDRS)
 
 bootstrapreduce-newallocate.$(OBJEXT):	$(HDRS)
@@ -1085,26 +1045,25 @@ bootstrapreduce-arith10.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith11.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith12.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith13.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith14.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-quad.$(OBJEXT):	$(HDRS)
+bootstrapreduce-elem128.$(OBJEXT):	$(HDRS)
+bootstrapreduce-float128.$(OBJEXT):	$(HDRS)
 bootstrapreduce-isprime.$(OBJEXT):	$(HDRS)
 bootstrapreduce-qsieve.$(OBJEXT):	$(HDRS)
 bootstrapreduce-bytes1.$(OBJEXT):	$(HDRS)
 bootstrapreduce-showhdr.$(OBJEXT):	$(HDRS)
-bootstrapreduce-float128_t.$(OBJEXT):	$(HDRS)
-bootstrapreduce-char.$(OBJEXT):	$(HDRS)
-bootstrapreduce-csl.$(OBJEXT):	$(HDRS)
+bootstrapreduce-char.$(OBJEXT):		$(HDRS)
+bootstrapreduce-csl.$(OBJEXT):		$(HDRS)
 bootstrapreduce-cslmpi.$(OBJEXT):	$(HDRS)
 bootstrapreduce-cslread.$(OBJEXT):	$(HDRS)
 bootstrapreduce-eval1.$(OBJEXT):	$(HDRS)
 bootstrapreduce-eval2.$(OBJEXT):	$(HDRS)
 bootstrapreduce-eval3.$(OBJEXT):	$(HDRS)
 bootstrapreduce-eval4.$(OBJEXT):	$(HDRS)
-bootstrapreduce-jit.$(OBJEXT):	$(HDRS)
-bootstrapreduce-fasl.$(OBJEXT):	$(HDRS)
-bootstrapreduce-fns1.$(OBJEXT):	$(HDRS)
-bootstrapreduce-fns2.$(OBJEXT):	$(HDRS)
-bootstrapreduce-fns3.$(OBJEXT):	$(HDRS)
+bootstrapreduce-jit.$(OBJEXT):		$(HDRS)
+bootstrapreduce-fasl.$(OBJEXT):		$(HDRS)
+bootstrapreduce-fns1.$(OBJEXT):		$(HDRS)
+bootstrapreduce-fns2.$(OBJEXT):		$(HDRS)
+bootstrapreduce-fns3.$(OBJEXT):		$(HDRS)
 bootstrapreduce-lisphash.$(OBJEXT):	$(HDRS)
 bootstrapreduce-newcslgc.$(OBJEXT):	$(HDRS)
 bootstrapreduce-gc-check.$(OBJEXT):	$(HDRS)
@@ -1112,7 +1071,7 @@ bootstrapreduce-ompsetup.$(OBJEXT):	$(HDRS)
 bootstrapreduce-openmath.$(OBJEXT):	$(HDRS)
 bootstrapreduce-preserve.$(OBJEXT):	$(HDRS)
 bootstrapreduce-print.$(OBJEXT):	$(HDRS)
-bootstrapreduce-pro.$(OBJEXT):	$(HDRS)
+bootstrapreduce-pro.$(OBJEXT):		$(HDRS)
 bootstrapreduce-restart.$(OBJEXT):	$(HDRS)
 bootstrapreduce-stubs.$(OBJEXT):	$(HDRS)
 bootstrapreduce-sysfwin.$(OBJEXT):	$(HDRS)
@@ -1134,13 +1093,12 @@ reduce-arith10.$(OBJEXT):	$(HDRS)
 reduce-arith11.$(OBJEXT):	$(HDRS)
 reduce-arith12.$(OBJEXT):	$(HDRS)
 reduce-arith13.$(OBJEXT):	$(HDRS)
-reduce-arith14.$(OBJEXT):	$(HDRS)
-reduce-arith-quad.$(OBJEXT):	$(HDRS)
+reduce-elem128.$(OBJEXT):	$(HDRS)
+reduce-float128.$(OBJEXT):	$(HDRS)
 reduce-isprime.$(OBJEXT):	$(HDRS)
 reduce-qsieve.$(OBJEXT):	$(HDRS)
 reduce-bytes1.$(OBJEXT):	$(HDRS)
 reduce-showhdr.$(OBJEXT):	$(HDRS)
-reduce-float128_t.$(OBJEXT):	$(HDRS)
 reduce-char.$(OBJEXT):		$(HDRS)
 reduce-csl.$(OBJEXT):		$(HDRS)
 reduce-cslmpi.$(OBJEXT):	$(HDRS)
@@ -1244,39 +1202,38 @@ reduce_web-arith10.$(OBJEXT):	$(HDRS)
 reduce_web-arith11.$(OBJEXT):	$(HDRS)
 reduce_web-arith12.$(OBJEXT):	$(HDRS)
 reduce_web-arith13.$(OBJEXT):	$(HDRS)
-reduce_web-arith14.$(OBJEXT):	$(HDRS)
-reduce_web-arith-quad.$(OBJEXT):	$(HDRS)
+reduce_web-elem128.$(OBJEXT):	$(HDRS)
+reduce_web-float128.$(OBJEXT):	$(HDRS)
 reduce_web-isprime.$(OBJEXT):	$(HDRS)
 reduce_web-qsieve.$(OBJEXT):	$(HDRS)
 reduce_web-bytes1.$(OBJEXT):	$(HDRS)
 reduce_web-showhdr.$(OBJEXT):	$(HDRS)
-reduce_web-float128_t.$(OBJEXT):	$(HDRS)
-reduce_web-char.$(OBJEXT):		$(HDRS)
-reduce_web-csl.$(OBJEXT):		$(HDRS)
+reduce_web-char.$(OBJEXT):	$(HDRS)
+reduce_web-csl.$(OBJEXT):	$(HDRS)
 reduce_web-cslmpi.$(OBJEXT):	$(HDRS)
 reduce_web-cslread.$(OBJEXT):	$(HDRS)
-reduce_web-eval1.$(OBJEXT):		$(HDRS)
-reduce_web-eval2.$(OBJEXT):		$(HDRS)
-reduce_web-eval3.$(OBJEXT):		$(HDRS)
-reduce_web-eval4.$(OBJEXT):		$(HDRS)
-reduce_web-jit.$(OBJEXT):		$(HDRS)
-reduce_web-fasl.$(OBJEXT):		$(HDRS)
-reduce_web-fns1.$(OBJEXT):		$(HDRS)
-reduce_web-fns2.$(OBJEXT):		$(HDRS)
-reduce_web-fns3.$(OBJEXT):		$(HDRS)
+reduce_web-eval1.$(OBJEXT):	$(HDRS)
+reduce_web-eval2.$(OBJEXT):	$(HDRS)
+reduce_web-eval3.$(OBJEXT):	$(HDRS)
+reduce_web-eval4.$(OBJEXT):	$(HDRS)
+reduce_web-jit.$(OBJEXT):	$(HDRS)
+reduce_web-fasl.$(OBJEXT):	$(HDRS)
+reduce_web-fns1.$(OBJEXT):	$(HDRS)
+reduce_web-fns2.$(OBJEXT):	$(HDRS)
+reduce_web-fns3.$(OBJEXT):	$(HDRS)
 reduce_web-lisphash.$(OBJEXT):	$(HDRS)
 reduce_web-newcslgc.$(OBJEXT):	$(HDRS)
 reduce_web-gc-check.$(OBJEXT):	$(HDRS)
 reduce_web-ompsetup.$(OBJEXT):	$(HDRS)
 reduce_web-openmath.$(OBJEXT):	$(HDRS)
 reduce_web-preserve.$(OBJEXT):	$(HDRS)
-reduce_web-print.$(OBJEXT):		$(HDRS)
-reduce_web-pro.$(OBJEXT):		$(HDRS)
+reduce_web-print.$(OBJEXT):	$(HDRS)
+reduce_web-pro.$(OBJEXT):	$(HDRS)
 reduce_web-restart.$(OBJEXT):	$(HDRS)
-reduce_web-stubs.$(OBJEXT):		$(HDRS)
+reduce_web-stubs.$(OBJEXT):	$(HDRS)
 reduce_web-sysfwin.$(OBJEXT):	$(HDRS)
 reduce_web-serialize.$(OBJEXT):	$(HDRS)
-reduce_web-winsupport.$(OBJEXT):	$(HDRS)
+reduce_web-winsupport.$(OBJEXT):$(HDRS)
 reduce_web-inthash.$(OBJEXT):	$(HDRS)
 
 reduce_web-u01.$(OBJEXT):	$(HDRS)
@@ -1474,7 +1431,7 @@ $(cslbase)/arithlib.cpp:	$(cslbase)/flatten \
 		$(cslbase)/arithlib.base.cpp $(cslbase)/lvector.h \
 		$(cslbase)/acnutil.h $(cslbase)/multiply.base.cpp \
 		$(cslbase)/fftutils.cpp $(cslbase)/fftmod.cpp \
-		$(cslbase)/float128_t.h $(cslbase)/cthread.cpp
+		$(cslbase)/cthread.cpp
 	printf "\n\n=== Prepare arithlib source\n\n";
 	cd $(cslbase) && ./flatten arithlib.base.cpp arithlib.cpp
 
@@ -1488,7 +1445,7 @@ $(cslbase)/inlinemul.cpp:	$(cslbase)/geninline
 
 
 
-HDRS = $(FOXDEPS) $(CRDEP) $(JITDEP) $(FFIDEP) $(SOFTFLOATDEP) $(THREADDEP) $(ARITHDEP)
+HDRS = $(FOXDEPS) $(CRDEP) $(JITDEP) $(FFIDEP) $(THREADDEP) $(ARITHDEP)
 
 csl$(EXEEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(CSLCOM) $(CYG_CSL)
 	@printf "Relinking $@ because of $?\n"
@@ -1998,9 +1955,6 @@ endif wx
 
 $(plain_termdemo):	termdemo.exe
 	printf "$(MAKE) termdemo.exe is preferred\n"
-
-$(plain_testf128):	testf128.exe
-	printf "$(MAKE) testf128.exe is preferred\n"
 
 $(plain_jitdemo):	jitdemo.exe
 	printf "$(MAKE) jitdemo.exe is preferred\n"

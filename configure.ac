@@ -215,7 +215,11 @@ then
   if printf "int main() {return 0;}\n" | \
      gcc -c -x c -arch x86_64 -arch arm64 - -o temp.o >/dev/null 2>/dev/null
   then
-    default_univ="yes"
+#   default_univ="yes"
+# As of June 2026 I make the default single-architecture and one would need
+# and explicit "--enable-univeral" at configure time for the more complicated
+# case.
+    default_univ="no"
   fi
   rm -f temp.o
   AC_MSG_NOTICE([default_univ=$default_univ])
@@ -1568,31 +1572,6 @@ then
   eval "$doconfig"
   cd "$builddir"
 fi
-
-AC_MSG_NOTICE([About to configure libsoftfloat])
-mkdir -p softfloat
-cd softfloat
-setpasscc
-
-# NOTE that there is now a SoftFloat-3e and I should migrate to use of it!
-# However the changes are such that the move is not totally trivial and so
-# some work is needed by sonmebody to make that happen. I would like
-# if if somebody else had a go please!
-
-doconfig="$SHELL $abssrcdir/libraries/SoftFloat-3a/source/configure -C \
-        $filtered \
-        $pass_host \
-        CPPFLAGS=\"$CPPFLAGS\" \
-        CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" \
-        LDFLAGS=\"$LDFLAGS\" \
-        $passcc \
-        --prefix=\"$builddir\" \
-        --libdir=\"$builddir/lib\" \
-        --includedir=\"$builddir/include\""
-AC_MSG_NOTICE([doconfig = $doconfig])
-printf "\n\n+++ About to configure softfloat +++\n\n"
-eval "$doconfig"
 
 cd "$builddir"
 

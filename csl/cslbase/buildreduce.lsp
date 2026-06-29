@@ -1764,13 +1764,22 @@ symbolic restart!-csl nil;
 % The following line has a delicacy that may be unexpected in the case
 % where one is building on Windows. If a native windows version of Reduce is
 % running then the command here is treated as if presented to CMD.COM with
-% and environment (specifically including $PATH/%PATH%) as ay present in
+% and environment (specifically including $PATH/%PATH%) as at present in
 % force. I expect (nay DEMAND!) that this build has been launched from
 % sh/bash shell with PATH providing access to all the Unix-like command
 % I want - with "svn" being the most important. If that is the situation the
 % prefix "sh " in the command here ensures that my shell script is processed
 % the way that I want. Attempts to build Reduce under a Windows style shell
-% without the command "sh" and "svn" in PATH will fail! 
+% without the command "sh" and "svn" in PATH will fail!
+% ++++++++++++++++++++++++++++++++
+% ++++++++++++++++++++++++++++++++
+% NOTE the above as it may apply to a build on Windows-on-ARM. In the
+% experiment for that as at present I may NOT have a bash shell as per
+% above. So I really need to invent an alternative scheme for obtaining
+% a revision number. I suspect I should provide a Lisp-callable function
+% that retrieves one from version.h.
+% ++++++++++++++++++++++++++++++++
+% ++++++++++++++++++++++++++++++++
   (setq ff (pipe!-open (print (concat "sh "
      (concat !@reduce "/scripts/revision.sh"))) 'input))
   (setq ff (rds ff))

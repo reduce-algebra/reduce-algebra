@@ -80,12 +80,10 @@ LispObject Lfloat_2(LispObject env, LispObject a, LispObject b)
         return pack_immediate_float(d, b);
     }
     else if (!is_bfloat(b)) return aerror1("bad arg for float",  b);
-#ifdef HAVE_SOFTFLOAT
     else if (flthdr(b) == LONG_FLOAT_HEADER)
-    {   float128_t dd = float128_of_number(a);
+    {   FLOAT_128 dd = float128_of_number(a);
         return make_boxfloat128(dd);
     }
-#endif // HAVE_SOFTFLOAT
     else
     {   double d = float_of_number(a);
         return make_boxfloat(d, floatWant(flthdr(b)));
@@ -1309,8 +1307,8 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         return a;
     }
     if (is_sfloat(a))
-    {   Float_union d;
-        Float_union v;
+    {   float_union d;
+        float_union v;
         d.f = value_of_immediate_float(a);
         do
         {   v.f = static_cast<float>(
@@ -1416,8 +1414,8 @@ LispObject Lrandom_1(LispObject env, LispObject a)
         return a;
     }
     if (is_sfloat(a))
-    {   Float_union d;
-        Float_union v;
+    {   float_union d;
+        float_union v;
         d.i = a - XTAG_SFLOAT;
         do
         {   v.f = static_cast<float>(
@@ -1501,7 +1499,6 @@ LispObject pack_md5_result(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3)
                 bignum_digits(r)[0] = v0;
         }
     }
-//  validate_number("MD5", r, r, r);
     return r;
 }
 
@@ -1675,7 +1672,6 @@ LispObject Lmd60(LispObject env, LispObject a)
 // number does not extend into the fixnum's sign bit. Of course on a 32-bit
 // machine it will almost always be a bignum using 2 digits.
     a = make_lisp_unsigned64(v >> 5);
-//  validate_number("MD60", a, a, a);
     return a;
 }
 
@@ -1747,20 +1743,6 @@ static LispObject Llogor_3(LispObject env, LispObject a1,
                            LispObject a2, LispObject a3)
 {   SingleValued fn;
     return logior2(logior2(a1, a2), a3);
-}
-
-static LispObject Lvalidate(LispObject env, LispObject a)
-{   SingleValued fn;
-    validate_number("validate-number", a, fixnum_of_int(0),
-                    fixnum_of_int(0));
-    return a;
-}
-
-static LispObject Lvalidate_2(LispObject env, LispObject a,
-                              LispObject b)
-{   SingleValued fn;
-    validate_number("validate-number", a, b, fixnum_of_int(0));
-    return a;
 }
 
 #endif // ARITHLIB
@@ -1841,7 +1823,6 @@ setup_type const arith06_setup[] =
     {"geq",     Lgeq_0, Lgeq_1, Lgeq_2, Lgeq_3, Lgeq_4up},
     {"logor",   Llogor_0, Lidentity, Llogor_2, Llogor_3, Lbool_4up},
     {"lor",     Llogor_0, Lidentity, Llogor_2, Llogor_3, Lbool_4up},
-    {"validate-number", G0Wother, Lvalidate, Lvalidate_2, G3Wother, G4Wother},
 #endif // ARITHLIB
     {nullptr,   nullptr, nullptr, nullptr, nullptr, nullptr}
 };

@@ -38,7 +38,7 @@
 // #include the majority of the header files needed by CSL code.
 //
 
-#ifdef HAVE_CONFIG_H
+#if __has_include("config.h")
 #include "config.h"
 #endif
 
@@ -82,7 +82,11 @@
 #include "log.h"
 #include "machine.h"
 
-// The next two are for platform-specific optimisations.
+// The next two are for platform-specific optimisations. Well in 2026 I
+// see signs that g++ may be moving towards being able to use Microsoft
+// mative thread local support and when that has filtered through it
+// may make threadloc.h redundant.
+
 #include "threadloc.h"
 #include "mymutex.h"
 
@@ -208,7 +212,6 @@ inline double CSLpow(double x, double y)
 
 #endif // HAVE_CRLIBM
 
-#include "bitmaps.h"
 #include "tags.h"
 
 #include "cslerror.h"

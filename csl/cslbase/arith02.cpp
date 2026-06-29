@@ -47,28 +47,6 @@ namespace CSL_LISP
 
 #ifndef ARITHLIB
 
-#ifdef WITH_CILK
-//
-// If CILK is available (see www.cilkplus.com) then it can handle the
-// synchronisation aspects of concurrency and the people who maintain that
-// will surely put effort to ensure that their version is well tuned and that
-// it keeps up to date with future developments. the CILK runtime is subject
-// to the BSD license so there is no concern there. CILK is (at the time of
-// adding this comment) supported by branches of gcc 4.8 and 4.9 and a
-// version for clang/llvm is available but "is not feature complete".
-// Eberhard Schruefer investigated and contributed the code here that
-// uses CILK and as can be seen it makes the use of threads very neat. He
-// reports that it delivers perhaps slightly better performance than my
-// own synchronisation code, but the broad pattern of results is just about
-// the same and in particular the break-even point where use of threads
-// becomes worthwhile remains in the high hundreds with serious savings
-// only arising as one goes beyong 10^1000.
-// For now please manually force WITH_CILK into compiler options to get that
-// version built.
-//
-#include "cilk/cilk.h"
-#endif // WITH_CILK
-
 //
 // Now for multiplication
 //
@@ -108,8 +86,7 @@ inline LispObject timesii(LispObject a, LispObject b)
 // I am now arranging that there will ALWAYS appear to be a 128-bit
 // integer type int128_t. On some platforms this will be provided by the
 // C++ compiler, possibly with direct CPU assistance. In other cases it
-// will be implemented painfully in software in the files int128_t.h and
-// and int128_t.cpp.
+// will be implemented painfully in software in the file int128.h.
     return make_lisp_integer128((int128_t)(aa) * (int128_t)(bb));
 }
 
@@ -263,14 +240,21 @@ static LispObject timesic(LispObject a, LispObject b)
 static LispObject timesif(LispObject a, LispObject b)
 {   switch (flthdr(b))
     {
-#ifdef HAVE_SOFTFLOAT
         case LONG_FLOAT_HEADER:
-        {   float128_t x, z;
-            i64_to_f128M(int_of_fixnum(a), &x);
-            f128M_mul(&x, reinterpret_cast<float128_t *>(long_float_addr(b)), &z);
+        {   FLOAT_128 x, z;
+// Hah - int_of_fixnum() returns an intptr_t which is a synonym for long,
+// but the casts to FLOAT_128 have been set up to cover the fixed width
+// integer types such as int64_t. And at least under Xcode (June 2026) the
+// difference between intptr_t and int64_t (even if both are very much like
+// long) is enough to trigger and ambiguity error. Hence the ugly double
+// cast. I could as an alternative put more effort into making the FLOAT_128
+// casts cover all cases, but avoiding moans about duplicated cases would
+// lead to more delicacy there (in my opinion) than fixing the issue here and
+// in only a few other places.
+            x = (FLOAT_128)(int64_t)int_of_fixnum(a);
+            z = x * long_float_val(b);
             return make_boxfloat128(z);
         }
-#endif // HAVE_SOFTFLOAT
         case SINGLE_FLOAT_HEADER:
             return make_boxfloat(
                        static_cast<double>(int_of_fixnum(a)) * single_float_val(b),
@@ -301,14 +285,12 @@ static LispObject timessb(LispObject a, LispObject b)
 static LispObject timessf(LispObject a, LispObject b)
 {   switch (flthdr(b))
     {
-#ifdef HAVE_SOFTFLOAT
         case LONG_FLOAT_HEADER:
-        {   float128_t x, z;
+        {   FLOAT_128 x, z;
             x = float128_of_number(a);
-            f128M_mul(&x, reinterpret_cast<float128_t *>(long_float_addr(b)), &z);
+            z = x * long_float_val(b);
             return make_boxfloat128(z);
         }
-#endif // HAVE_SOFTFLOAT
         case SINGLE_FLOAT_HEADER:
             return make_boxfloat(
                        float_of_number(a) * single_float_val(b), WANT_SINGLE_FLOAT);
@@ -469,9 +451,6 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 // has all been done elsewhere. These threads never terminate, and so will
 // end up being killed when the whole program exits.
 //
-// If the "CILK" parallel framework is present that will be used, which
-// provides a yet higher level way of expressing all that is needed.
-
 //   Karatsuba memory:
 //   Compute (c3,c2,c1,c0) = (a1,a0)*(b1,b0) using (d1,d0) as workspace.
 //          a1 a0 *
@@ -554,8 +533,6 @@ static uint32_t kara_0_lena, kara_0_lenb, kara_0_lenc;
 static uint32_t *kara_1_c, *kara_1_a, *kara_1_b, *kara_1_d;
 static uint32_t kara_1_lena, kara_1_lenb, kara_1_lenc;
 
-#ifndef WITH_CILK
-
 void kara_worker(int my_id)
 {   for (;;)
     {   // Wait until there is work to be done.
@@ -583,8 +560,6 @@ void kara_worker(int my_id)
         cv_kara_done.notify_one();
     }
 }
-
-#endif // ! WITH_CILK
 
 static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
                          uint32_t *d, size_t lena, size_t lenb, size_t lenc)
@@ -619,28 +594,17 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         kara_1_lenc = 2*h;
 // To keep the worker threads in step I will post dummy work to thread 2.
         kara_0_lena = kara_0_lenb = kara_0_lenc = 0;
-#ifndef WITH_CILK
         {   std::lock_guard<std::mutex> lk(kara_mutex);
             kara_ready = KARA_0 | KARA_1;
             kara_done = 0;
         }
         cv_kara_ready.notify_all();
-#else // WITH_CILK
-        cilk_spawn long_times(kara_1_c,kara_1_a,kara_1_b,kara_1_d,
-                              kara_1_lena,kara_1_lenb,kara_1_lenc);
-        cilk_spawn long_times(kara_0_c,kara_0_a,kara_0_b,kara_0_d,
-                              kara_0_lena,kara_0_lenb,kara_0_lenc);
-#endif // WITH_CILK
         // Now do my own work in parallel with worker 1
         for (i=0; i<h; i++) c[3*h+i] = 0;
         long_times(d, a, b, c, lena, h, 2*h);
-#ifndef WITH_CILK
         {   std::unique_lock<std::mutex> lk(kara_mutex);
             while (kara_done != 2) cv_kara_done.wait(lk);
         }
-#else // WITH_CILK
-        cilk_sync;
-#endif // WITH_CILK
         for (i=0; i<h; i++) c[i] = d[i];
         carry = 0;
         for (; i<2*h; i++)
@@ -679,20 +643,11 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     kara_0_lena = lena1;
     kara_0_lenb = lenb1;
     kara_0_lenc = 2*h;
-#ifndef WITH_CILK
     {   std::lock_guard<std::mutex> lk(kara_mutex);
         kara_ready = KARA_0 | KARA_1;
         kara_done = 0;
     }
     cv_kara_ready.notify_all();
-#else // WITH_CILK
-    if (kara_1_lenc != 0)
-        cilk_spawn long_times(kara_1_c,kara_1_a,kara_1_b,kara_1_d,
-                              kara_1_lena,kara_1_lenb,kara_1_lenc);
-    if (kara_0_lenc != 0)
-        cilk_spawn long_times(kara_0_c,kara_0_a,kara_0_b,kara_0_d,
-                              kara_0_lena,kara_0_lenb,kara_0_lenc);
-#endif // WITH_CILK
 // The rest can be done using the main thread.
 //       d3 = a0+a1;   (leave asumcarry)
 //       d4 = b0+b1;   (leave bsumcarry)
@@ -718,13 +673,9 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     long_times(&d[5*h], &d[3*h], &d[4*h], &d[2*h], h, h, 2*h);
 // Now I wish to re-sync with the two sub-tasks...
     std::fflush(stdout);
-#ifndef WITH_CILK
     {   std::unique_lock<std::mutex> lk(kara_mutex);
         while (kara_done != 2) cv_kara_done.wait(lk);
     }
-#else // WITH_CILK
-    cilk_sync;
-#endif // WITH_CILK
 // Now I just need to combine the various bits together!
 //       d0 = c1;                  preserve (c1, c0)
     for (i=0; i<h; i++) d[i] = c[h+i];
@@ -1177,16 +1128,14 @@ inline LispObject timesff(LispObject a, LispObject b)
 {   Header ha = flthdr(a),
            hb = flthdr(b);
     FloatType hc;
-#ifdef HAVE_SOFTFLOAT
     if (ha == LONG_FLOAT_HEADER || hb == LONG_FLOAT_HEADER)
-    {   float128_t x, y, z;
+    {   FLOAT_128 x, y, z;
         x = float128_of_number(a);
         y = float128_of_number(b);
-        f128M_mul(&x, &y, &z);
+        z = x*y;
         return make_boxfloat128(z);
     }
     else
-#endif // HAVE_SOFTFLOAT
         if (ha == DOUBLE_FLOAT_HEADER || hb == DOUBLE_FLOAT_HEADER)
             hc = WANT_DOUBLE_FLOAT;
         else hc = WANT_SINGLE_FLOAT;
@@ -1245,17 +1194,6 @@ LispObject times2(LispObject ax, LispObject bx)
 #endif
 
 LispObject times2(LispObject a, LispObject b)
-#ifdef DEBUG
-{   validate_number("Arg1 for times", a, a, b);
-    validate_number("Arg2 for times", b, a, b);
-    extern LispObject times2a(LispObject a, LispObject b);
-    LispObject r = times2a(a, b);
-    validate_number("result for times", r, a, b);
-    return r;
-}
-
-LispObject times2a(LispObject a, LispObject b)
-#endif
 {   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             switch (static_cast<int>(b) & XTAG_BITS)

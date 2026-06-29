@@ -142,8 +142,6 @@ static double my_cos(double x)
 
 #endif // HAVE_CRLIBM
 
-#define CSL_log_2 0.6931471805599453094
-
 static CSL_Complex Cdiv_z(CSL_Complex, CSL_Complex);
 
 // Here I should review the C library complex elementary functions
@@ -224,7 +222,6 @@ static CSL_Complex CSLcsin(CSL_Complex z)
 }
 
 
-#define CSL_sqrt_starter 0.7071
 #define CSL_sqrt_iters   6
 
 static CSL_Complex CSLcsqrt(CSL_Complex z)
@@ -263,12 +260,12 @@ static CSL_Complex CSLcsqrt(CSL_Complex z)
 // either real or (pure) imaginary, thus helping ensure that the near-
 // zero component of the answer comes out to decent accuracy.
     if (y < x)
-    {   if (x > -y) vx = CSL_sqrt_starter, vy = 0.0;
-        else vx = CSL_sqrt_starter, vy = -CSL_sqrt_starter;
+    {   if (x > -y) vx = L_sqrt1_2, vy = 0.0;
+        else vx = L_sqrt1_2, vy = -L_sqrt1_2;
     }
-    else if (x > -y) vx = CSL_sqrt_starter, vy = CSL_sqrt_starter;
-    else if (y > 0.0) vx = 0.0, vy = CSL_sqrt_starter;
-    else vx = 0.0, vy = -CSL_sqrt_starter;
+    else if (x > -y) vx = L_sqrt1_2, vy = L_sqrt1_2;
+    else if (y > 0.0) vx = 0.0, vy = L_sqrt1_2;
+    else vx = 0.0, vy = -L_sqrt1_2;
 // For starting values as preconditioned here 6 iterations will converge
 // to about adequate accuracy. For some arguments fewer iterations would
 // suffice, but I am taking the view that the cost of providing a more
@@ -291,7 +288,6 @@ static CSL_Complex CSLcsqrt(CSL_Complex z)
     return z;
 }
 
-#undef CSL_sqrt_starter
 #undef CSL_sqrt_iters
 
 
@@ -434,7 +430,7 @@ static double iasin(double x)
     {   x += std::sqrt(x*x - 1.0);
         x = CSLlog(x);
     }
-    else x = CSL_log_2 + CSLlog(x);
+    else x = F_ln2 + CSLlog(x);
     if (sign) return -x;
     else return x;
 }
@@ -458,7 +454,7 @@ static double iacos(double x)
     {   x += std::sqrt(x*x - 1.0);
         x = CSLlog(x);
     }
-    else x = CSL_log_2 + CSLlog(x);
+    else x = F_ln2 + CSLlog(x);
     if (sign) return x;
     else return -x;
 }
@@ -475,7 +471,7 @@ static double CSLasinh(double x)
     {   x += std::sqrt(1.0 + x*x);
         x = CSLlog(x);
     }
-    else x = CSLlog(x) + CSL_log_2;
+    else x = CSLlog(x) + F_ln2;
     if (sign) x = -x;
     return x;
 }
@@ -514,7 +510,7 @@ static double racosh(double x)
     {   x += std::sqrt((x - 1.0)*(x + 1.0));
         x = CSLlog(x);
     }
-    else x = CSLlog(x) + CSL_log_2;
+    else x = CSLlog(x) + F_ln2;
     if (sign) return -x;
     else return x;
 }
@@ -546,18 +542,12 @@ static double iatanh(double x)
 // have not been adjusted to allow use with the software floating point
 // option.
 
-#define n180pi 57.2957795130823208768   // 180/pi
-
-#define pi180  0.017453292519943295769  // pi/180
-
-#define sqrthalf 0.7071                 // sqrt(0.5), low accuracy OK
-
 static double racosd(double a)
 {   if (a <= -1.0) return 180.0;
-    else if (a < -sqrthalf) return 180.0 - n180pi*CSLacos(-a);
-    else if (a < 0.0) return 90.0 + n180pi*CSLasin(-a);
-    else if (a < sqrthalf) return 90.0 - n180pi*CSLasin(a);
-    else if (a < 1.0) return n180pi*CSLacos(a);
+    else if (a < -L_sqrt1_2) return 180.0 - (180.0*F_1_pi)*CSLacos(-a);
+    else if (a < 0.0) return 90.0 + (180.0*F_1_pi)*CSLasin(-a);
+    else if (a < L_sqrt1_2) return 90.0 - (180.0*F_1_pi)*CSLasin(a);
+    else if (a < 1.0) return (180.0*F_1_pi)*CSLacos(a);
     else return 0.0;
 }
 
@@ -577,10 +567,10 @@ static double racot(double a)
 
 static double racotd(double a)
 {   if (a >= 0.0)
-        if (a > 1.0) return n180pi*CSLatan(1.0/a);
-        else return 90.0 - n180pi*CSLatan(a);
-    else if (a < -1.0) return 180.0 - n180pi*CSLatan(-1.0/a);
-    else return 90.0 + n180pi*CSLatan(-a);
+        if (a > 1.0) return (180.0*F_1_pi)*CSLatan(1.0/a);
+        else return 90.0 - (180.0*F_1_pi)*CSLatan(a);
+    else if (a < -1.0) return 180.0 - (180.0*F_1_pi)*CSLatan(-1.0/a);
+    else return 90.0 + (180.0*F_1_pi)*CSLatan(-a);
 }
 
 static double racoth(double a)
@@ -607,7 +597,7 @@ static double iacsc(double a)
 static double racscd(double a)
 {   if (a > -1.0 && a < 1.0) return 0.0;
 // I could do better than this, I suspect...
-    else return n180pi*CSLasin(1.0/a);
+    else return (180.0*F_1_pi)*CSLasin(1.0/a);
 }
 
 static double iacscd(double a)
@@ -633,7 +623,7 @@ static double iasec(double a)
 static double rasecd(double a)
 {   if (a > -1.0 && a <= 1.0) return 0.0;
 // I could do better than this, I suspect...
-    else return n180pi*CSLacos(1.0/a);
+    else return (180.0*F_1_pi)*CSLacos(1.0/a);
 }
 
 static double iasecd(double a)
@@ -653,9 +643,9 @@ static double iasech(double a)
 
 static double rasind(double a)
 {   if (a <= -1.0) return -90.0;
-    else if (a < -sqrthalf) return -90.0 + n180pi*CSLacos(-a);
-    else if (a < sqrthalf) return n180pi*CSLasin(a);
-    else if (a < 1.0) return 90.0 - n180pi*CSLacos(a);
+    else if (a < -L_sqrt1_2) return -90.0 + (180.0*F_1_pi)*CSLacos(-a);
+    else if (a < L_sqrt1_2) return (180.0*F_1_pi)*CSLasin(a);
+    else if (a < 1.0) return 90.0 - (180.0*F_1_pi)*CSLacos(a);
     else return 90.0;
 }
 
@@ -665,9 +655,9 @@ static double iasind(double a)
 }
 
 static double ratand(double a)
-{   if (a < -1.0) return -90.0 + n180pi*CSLatan(-1.0/a);
-    else if (a < 1.0) return n180pi*CSLatan(a);
-    else return 90.0 - n180pi*CSLatan(1.0/a);
+{   if (a < -1.0) return -90.0 + (180.0*F_1_pi)*CSLatan(-1.0/a);
+    else if (a < 1.0) return (180.0*F_1_pi)*CSLatan(a);
+    else return 90.0 - (180.0*F_1_pi)*CSLatan(1.0/a);
 }
 
 static double rcbrt(double a)
@@ -726,7 +716,7 @@ static double arg_reduce_degrees(double a, int *quadrant)
         w = a - 90.0*n;
     }
     *quadrant = static_cast<int>(n & 3);
-    return pi180*w;
+    return (F_pi/180.0)*w;
 }
 
 static double rsind(double a)
@@ -806,10 +796,8 @@ static double rcsch(double a)
     else return 1.0/CSLsinh(a);
 }
 
-#define CSL_log10 2.302585092994045684
-
 static double rlog10(double a)
-{   if (a > 0.0) return CSLlog(a)/CSL_log10;
+{   if (a > 0.0) return CSLlog(a)/F_ln10;
     else return 0.0;
 }
 
@@ -818,13 +806,11 @@ static double ilog10(double a)
     else return 0.0;
 }
 
-#define CSL_log2 0.693147180559945309417
-
 static double rlog2(double a)
 {   if (a > 0.0)
     {   int x;
         a = std::frexp(a, &x);
-        return CSLlog(a)/CSL_log2 + static_cast<double>(x);
+        return CSLlog(a)/F_ln2 + static_cast<double>(x);
     }
     else return 0.0;
 }
@@ -1300,11 +1286,9 @@ static LispObject makenum(LispObject a, int32_t n)
         }
         case TAG_BOXFLOAT:
             restype = floatWant(flthdr(a));
-#ifdef HAVE_SOFTFLOAT
             if (restype == WANT_LONG_FLOAT)
                 make_boxfloat128(
                     float128_of_number(fixnum_of_int(n)));
-#endif // HAVE_SOFTFLOAT
             return make_boxfloat(static_cast<double>(n), restype);
         default:
             return aerror1("bad arg for makenumber",  a);
@@ -1665,10 +1649,10 @@ LispObject Natan2d(LispObject env, LispObject y, LispObject x)
     u = float_of_number(x);
     v = float_of_number(y);
     if (u == 0.0 && v == 0.0) r = 0.0; // really an error case
-    else if (u >= 0.0) r = n180pi*CSLatan(v/u);
+    else if (u >= 0.0) r = (180.0*F_1_pi)*CSLatan(v/u);
     else if (v > 0.0 || (v == 0.0 && 1.0/v > 0.0))
-        r = 90.0 + n180pi*CSLatan(-u/v);
-    else r = -90.0 - n180pi*CSLatan(u/v);
+        r = 90.0 + (180.0*F_1_pi)*CSLatan(-u/v);
+    else r = -90.0 - (180.0*F_1_pi)*CSLatan(u/v);
     x = make_boxfloat(r, WANT_DOUBLE_FLOAT);
     return x;
 }

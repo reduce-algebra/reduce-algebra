@@ -142,9 +142,9 @@ case $a in
 *--without-csl* | *--with-csl=no*)
   ;;
 *--with-csl* | *--with-both*)
-  L="$L ./csl ./csl/cslbase ./csl/cslbase-nothrow ./libraries/SoftFloat-3a/source"
+  L="$L ./csl ./csl/cslbase"
 # On Apple m1 (ie arm64) I will want to build a universal version of the
-# libffi library and that is done in a way that differs from standrad builds.
+# libffi library and that is done in a way that differs from standard builds.
   case "`uname -s` `uname -m`" in
   *Darwin*arm64*)
     L="$L ./libraries/libffi-for-mac/libffi-3.3-arm64"

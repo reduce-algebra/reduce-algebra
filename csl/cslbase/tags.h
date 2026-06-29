@@ -661,7 +661,7 @@ inline LispObject &car(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_CONS) & 0x7) == 0, "unaligned car");
 #endif // DEBUG
-    return reinterpret_cast<Cons_Cell *>(p)->car;
+    return reinterpret_cast<Cons_Cell*>(p)->car;
 }
 
 inline LispObject &cdr(LispObject p)
@@ -669,7 +669,7 @@ inline LispObject &cdr(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_CONS) & 0x7) == 0, "unaligned cdr");
 #endif // DEBUG
-    return reinterpret_cast<Cons_Cell *>(p)->cdr;
+    return reinterpret_cast<Cons_Cell*>(p)->cdr;
 }
 
 // for gc-check.cpp
@@ -689,13 +689,13 @@ inline LispObject old_cdr(LispObject p)
 // fields in a cons cell expecting atomic and non-atomic layouts to match.
 
 inline LispObject *vcaraddr(LispObject p)
-{   return reinterpret_cast<LispObject *>(
-               &(reinterpret_cast<Cons_Cell *>(p)->car));
+{   return reinterpret_cast<LispObject*>(
+               &(reinterpret_cast<Cons_Cell*>(p)->car));
 }
 
 inline LispObject *vcdraddr(LispObject p)
-{   return reinterpret_cast<LispObject *>(
-               &(reinterpret_cast<Cons_Cell *>(p)->cdr));
+{   return reinterpret_cast<LispObject*>(
+               &(reinterpret_cast<Cons_Cell*>(p)->cdr));
 }
 
 typedef LispObject Special_Form(LispObject, LispObject);
@@ -870,7 +870,7 @@ inline constexpr uintptr_t TYPE_INTPTR       =
 
 inline constexpr uintptr_t TYPE_VECFLOAT32   = 0x53<<Tw; // contains single-precision floats
 inline constexpr uintptr_t TYPE_VECFLOAT64   = 0x57<<Tw; // contains double-precision floats
-inline constexpr uintptr_t TYPE_VECFLOAT128  = 0x5b<<Tw; // contains long double floats
+inline constexpr uintptr_t TYPE_VECFLOAT128  = 0x5b<<Tw; // contains FLOAT_128 floats
 
 // The next items live amongst the vectors that hold Lisp pointers, but only
 // the first three items are pointers - the rest of the stuff is binary
@@ -912,7 +912,7 @@ inline Header &vechdr(LispObject v)
 #ifdef DEBUG
     my_assert(((v-TAG_VECTOR) & 0x7) == 0, "unaligned vechdr");
 #endif // DEBUG
-    return *reinterpret_cast<Header *>(v - TAG_VECTOR);
+    return *reinterpret_cast<Header*>(v - TAG_VECTOR);
 }
 
 inline Header old_vechdr(LispObject v)
@@ -1116,15 +1116,16 @@ inline bool is_array_header(Header h)
 //   01:100 1:1 010  foreign                        64?
 //   01:101 1:1 010  encapsulated-sp                64?
 //   01:110 1:1 010  encapsulated general pointer   64?
-//   01:111 1:1 010  float32           *            F32
+//   01:111 1:1 010  float (32 bit)    *            F32
 //   10:000 1:1 010  vec8-2                         8
 //   10:001 1:1 010  string-3                       8
 //   10:010 1:1 010  bytecode-3                     8
 //   10:011 1:1 010  vec16-2                        16
 //   10:100 1:1 010  vecflt32                       F32
 //   10:101 1:1 010  vecflt64                       F64
+// Note that "128-bit" floats may be of some lever precision!
 //   10:110 1:1 010  vecflt128                      F128
-//   10:111 1:1 010  float64           *            F64
+//   10:111 1:1 010  double (64-bit float)          F64
 //   11:000 1:1 010  vec8-3                         8
 //   11:001 1:1 010  string-4                       8
 //   11:010 1:1 010  bytecode-4                     8
@@ -1132,7 +1133,8 @@ inline bool is_array_header(Header h)
 //   11:100 1:1 010  (spare: 1 code)                X
 //   11:101 1:1 010  (spare: 1 code)                X
 //   11:110 1:1 010  padder vector                  X
-//   11:111 1:1 010  float128          *            F128
+// Note that "128-bit" floats may be of some lever precision!
+//   11:111 1:1 010  FLOAT_128 (using 128 bits)   F128
 
 // I have tests that let me discern the size of storage units within a
 // vector. This matters for serialization and deserialization because the
@@ -1210,7 +1212,7 @@ inline constexpr int bitOf(int code)
 {   return 1<<code;
 }
 
-/*inline*/static const unsigned int float_tags_mask =
+static const unsigned int float_tags_mask =
    bitOf(TAG_BOXFLOAT) |
    bitOf(TAG_BOXFLOAT+TAG_XBIT) |
    bitOf(XTAG_SFLOAT);
@@ -1219,7 +1221,7 @@ inline bool is_float(LispObject p)
 {   return ((float_tags_mask >> (p & XTAG_BITS)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int pointer_tags_mask =
+static const unsigned int pointer_tags_mask =
    bitOf(TAG_CONS) |
    bitOf(TAG_VECTOR) |
    bitOf(TAG_SYMBOL) |
@@ -1230,7 +1232,7 @@ inline bool is_pointer_type(LispObject p)
 {   return ((pointer_tags_mask >> (p & TAG_BITS)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int immed_or_cons_tags_mask =
+static const unsigned int immed_or_cons_tags_mask =
    bitOf(TAG_CONS) |
    bitOf(TAG_HDR_IMMED) |
    bitOf(TAG_FIXNUM);
@@ -1239,7 +1241,7 @@ inline bool is_immed_or_cons(LispObject p)
 {   return ((immed_or_cons_tags_mask >> (p & TAG_BITS)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int immed_tags_mask =
+static const unsigned int immed_tags_mask =
    bitOf(TAG_HDR_IMMED) |
    bitOf(TAG_FIXNUM);
 
@@ -1247,7 +1249,7 @@ inline bool is_immediate(LispObject p)
 {   return ((immed_tags_mask >> (p & TAG_BITS)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int immed_cons_sym_tags_mask =
+static const unsigned int immed_cons_sym_tags_mask =
    bitOf(TAG_CONS) |
    bitOf(TAG_HDR_IMMED) |
    bitOf(TAG_SYMBOL) |
@@ -1257,7 +1259,7 @@ inline bool is_immed_cons_sym(LispObject p)
 {   return ((immed_cons_sym_tags_mask >> (p & TAG_BITS)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int need_more_eq_tags_mask =
+static const unsigned int need_more_eq_tags_mask =
    bitOf(TAG_CONS) |
    bitOf(TAG_VECTOR) |
    bitOf(TAG_NUMBERS) |
@@ -1272,7 +1274,7 @@ inline bool need_more_than_eq(LispObject p)
 {   return ((need_more_eq_tags_mask >> (p & XTAG_BITS)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int vi8_tags_mask =
+static const unsigned int vi8_tags_mask =
    bitOf(TYPE_STRING_1>>(Tw+2)) |
    bitOf(TYPE_VEC8_1>>(Tw+2)) |
    bitOf(TYPE_BPS_1>>(Tw+2)) |
@@ -1290,14 +1292,14 @@ inline bool vector_i8(Header h)
 {   return ((vi8_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int vi16_tags_mask =
+static const unsigned int vi16_tags_mask =
    bitOf(TYPE_VEC16_1>>(Tw+2)) |
    bitOf(TYPE_VEC16_2>>(Tw+2));
 
 inline bool vector_i16(Header h)
 {   return ((vi16_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
-/*inline*/static const unsigned int vi32_tags_mask =
+static const unsigned int vi32_tags_mask =
    bitOf(TYPE_VEC32>>(Tw+2)) |
    bitOf(TYPE_BIGNUM>>(Tw+2));
 
@@ -1305,7 +1307,7 @@ inline bool vector_i32(Header h)
 {   return ((vi32_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int vi64_tags_mask =
+static const unsigned int vi64_tags_mask =
    bitOf(TYPE_VEC64>>(Tw+2)) |
    bitOf(TYPE_NEW_BIGNUM>>(Tw+2)) |
 // bitOf(TYPE_MAPLEREF>>(Tw+2)) |
@@ -1317,14 +1319,14 @@ inline bool vector_i64(Header h)
 {   return ((vi64_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int vi128_tags_mask =
+static const unsigned int vi128_tags_mask =
    bitOf(TYPE_VEC128>>(Tw+2));
 
 inline bool vector_i128(Header h)
 {   return ((vi128_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int f32_tags_mask =
+static const unsigned int f32_tags_mask =
    bitOf(TYPE_SINGLE_FLOAT) |
    bitOf(TYPE_VECFLOAT32>>(Tw+2));
 
@@ -1332,7 +1334,7 @@ inline bool vector_f32(Header h)
 {   return ((f32_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int f64_tags_mask =
+static const unsigned int f64_tags_mask =
    bitOf(TYPE_VECFLOAT64>>(Tw+2));
 
 // Warning - double and long floats share type code and are discriminated
@@ -1342,7 +1344,7 @@ inline bool vector_f64(Header h)
 {   return ((f64_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-/*inline*/static const unsigned int f128_tags_mask =
+static const unsigned int f128_tags_mask =
    bitOf(TYPE_VECFLOAT128>>(Tw+2));
 
 inline bool vector_f128(Header h)
@@ -1363,15 +1365,15 @@ inline LispObject& basic_elt(LispObject v, size_t n)
 #ifdef DEBUG
     my_assert(((v-TAG_VECTOR) & 0x7) == 0, "unaligned basic_elt");
 #endif // DEBUG
-    return *reinterpret_cast<LispObject *>
-           (reinterpret_cast<char *>(v) +
+    return *reinterpret_cast<LispObject*>
+           (reinterpret_cast<char*>(v) +
             (CELL-TAG_VECTOR) +
             (n*sizeof(LispObject)));
 }
 
 inline LispObject old_elt(LispObject v, size_t n)
-{   return oldMem(reinterpret_cast<LispObject *>(
-                     reinterpret_cast<char *>(v) +
+{   return oldMem(reinterpret_cast<LispObject*>(
+                     reinterpret_cast<char*>(v) +
                      (CELL-TAG_VECTOR) +
                      (n*sizeof(LispObject))));
 }
@@ -1429,7 +1431,7 @@ inline Header &numhdr(LispObject v)
 #ifdef DEBUG
     my_assert(((v-TAG_NUMBERS) & 0x7) == 0, "unaligned numhdr");
 #endif // DEBUG
-    return *reinterpret_cast<Header *>(v - TAG_NUMBERS);
+    return *reinterpret_cast<Header*>(v - TAG_NUMBERS);
 }
 
 inline Header old_numhdr(LispObject v)
@@ -1441,7 +1443,7 @@ inline Header &flthdr(LispObject v)
 #ifdef DEBUG
     my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0, "unaligned flthdr");
 #endif // DEBUG
-    return *reinterpret_cast<Header *>(v - TAG_BOXFLOAT);
+    return *reinterpret_cast<Header*>(v - TAG_BOXFLOAT);
 }
 
 inline bool is_short_float(LispObject v)
@@ -1704,28 +1706,28 @@ inline const char* objectType(uintptr_t h)
 }
 
 inline char& basic_celt(LispObject v, size_t n)
-{   return *(reinterpret_cast<char *>(v) + (CELL-TAG_VECTOR) + n);
+{   return *(reinterpret_cast<char*>(v) + (CELL-TAG_VECTOR) + n);
 }
 
 inline char old_celt(LispObject v, size_t n)
-{   char* p = reinterpret_cast<char *>(v) + (CELL-TAG_VECTOR) + n;
+{   char* p = reinterpret_cast<char*>(v) + (CELL-TAG_VECTOR) + n;
     return static_cast<char>(oldMem(p) & 0xff);
 }
 
 inline unsigned char& basic_ucelt(LispObject v, size_t n)
-{   return *(reinterpret_cast<unsigned char *>(v) +
+{   return *(reinterpret_cast<unsigned char*>(v) +
              (CELL-TAG_VECTOR) + n);
 }
 
 inline signed char& basic_scelt(LispObject v, size_t n)
-{   return *(reinterpret_cast<signed char *>(v) +
+{   return *(reinterpret_cast<signed char*>(v) +
              (CELL-TAG_VECTOR) + n);
 }
 
 inline constexpr size_t BPS_DATA_OFFSET = CELL-TAG_VECTOR;
 
 inline unsigned char* data_of_bps(LispObject v)
-{   return reinterpret_cast<unsigned char *>(v) + BPS_DATA_OFFSET;
+{   return reinterpret_cast<unsigned char*>(v) + BPS_DATA_OFFSET;
 }
 
 
@@ -1744,7 +1746,7 @@ inline unsigned char* data_of_bps(LispObject v)
 // large vs basic vectors does not apply.
 
 inline LispObject& vselt(LispObject v, size_t n)
-{   return *reinterpret_cast<LispObject *>(
+{   return *reinterpret_cast<LispObject*>(
                (static_cast<intptr_t>(v) &
                 ~(static_cast<intptr_t>(TAG_BITS))) +
                ((1 + n)*sizeof(LispObject)));
@@ -1762,7 +1764,7 @@ inline int16_t& basic_helt(LispObject v, size_t n)
 #ifdef DEBUG
     my_assert(((v-TAG_VECTOR) & 0x1) == 0, "unaligned helt");
 #endif // DEBUG
-    return *reinterpret_cast<int16_t *>(reinterpret_cast<char *>
+    return *reinterpret_cast<int16_t *>(reinterpret_cast<char*>
             (v) +
             (CELL-TAG_VECTOR) +
             n*sizeof(int16_t));
@@ -1773,7 +1775,7 @@ inline intptr_t& basic_ielt(LispObject v, size_t n)
 #ifdef DEBUG
     my_assert(((v-TAG_VECTOR) & 0x7) == 0, "unaligned ielt");
 #endif // DEBUG
-    return  *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
+    return  *reinterpret_cast<intptr_t *>(reinterpret_cast<char*>
                                           (v) +
                                           (CELL-TAG_VECTOR) +
                                           n*sizeof(intptr_t));
@@ -1786,7 +1788,7 @@ inline int32_t& basic_ielt32(LispObject v, size_t n)
 #ifdef DEBUG
     my_assert(((v-TAG_VECTOR) & 0x3) == 0, "unaligned ielt32");
 #endif // DEBUG
-    return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) +
+    return *reinterpret_cast<int32_t*>(reinterpret_cast<char*>(v) +
                                         (CELL-TAG_VECTOR) +
                                         n*sizeof(int32_t));
 }
@@ -1796,7 +1798,7 @@ inline float& basic_felt(LispObject v, size_t n)
 #ifdef DEBUG
     my_assert(((v-TAG_VECTOR) & 0x3) == 0, "unaligned felt");
 #endif // DEBUG
-    return *reinterpret_cast<float *>(reinterpret_cast<char *>(v) +
+    return *reinterpret_cast<float*>(reinterpret_cast<char*>(v) +
                                       (CELL-TAG_VECTOR) +
                                       n*sizeof(float));
 }
@@ -1806,7 +1808,7 @@ inline double& basic_delt(LispObject v, size_t n)
 #ifdef DEBUG
     my_assert(((v-TAG_VECTOR) & 0x7) == 0, "unaligned delt");
 #endif // DEBUG
-    return *reinterpret_cast<double *>(reinterpret_cast<char *>(v) +
+    return *reinterpret_cast<double *>(reinterpret_cast<char*>(v) +
                                        (8-TAG_VECTOR) +
                                        n*sizeof(double));
 }
@@ -2330,23 +2332,26 @@ inline void incCount(LispObject p, uint32_t m=1)
     if (low < m) pp->countHigh++;
 }
 
-#ifndef HAVE_SOFTFLOAT
+// From C++23 onwards there will be fixed width floating point types
+// float32_t, float64_t and float128_t. However it will be some while before
+// I can properly use those. So for now I will ASSUME that float denotes
+// 32-bit IEEE and double is 64-bit IEEE. I provide a type FLOAT_128
+// (and also COMPLEX_128) that I make as cross-platform as I can.
 
-typedef struct _float32_t
-{   uint32_t v;
-} float32_t;
-
-typedef struct _float64_t
-{   uint64_t v;
-} float64_t;
-
-#endif // HAVE_SOFTFLOAT
-
-typedef union _Float_union
+typedef union _float_union
 {   float f;
     uint32_t i;
-    float32_t f32;
-} Float_union;
+} float_union;
+
+typedef union _double_union
+{   double f;
+    uint64_t i;
+} double_union;
+
+typedef union _longDouble_union
+{   FLOAT_128 f;
+    uint128_t i;
+} longdouble_union;
 
 // The following macro clears any bits in a LispObject above the
 // bottom 32.
@@ -2372,13 +2377,13 @@ inline size_t bignum_length(LispObject b)
 }
 
 inline uint32_t* bignum_digits(LispObject b)
-{   return reinterpret_cast<uint32_t *>(
-               reinterpret_cast<char *>(b)  + (CELL-TAG_NUMBERS));
+{   return reinterpret_cast<uint32_t*>(
+               reinterpret_cast<char*>(b)  + (CELL-TAG_NUMBERS));
 }
 
 inline uint32_t* vbignum_digits(LispObject b)
-{   return reinterpret_cast<uint32_t *>(
-               reinterpret_cast<char *>(b)  + (CELL-TAG_NUMBERS));
+{   return reinterpret_cast<uint32_t*>(
+               reinterpret_cast<char*>(b)  + (CELL-TAG_NUMBERS));
 }
 
 inline uint32_t& bignum_digit(LispObject b, size_t n)
@@ -2396,8 +2401,8 @@ inline uint32_t& bignum_digit(LispObject b, size_t n)
 }
 
 inline uint32_t old_bignum_digit(LispObject b, size_t n)
-{   uint32_t* addr = reinterpret_cast<uint32_t *>(
-               reinterpret_cast<char *>(b)  + (CELL-TAG_NUMBERS) + 4*n);
+{   uint32_t* addr = reinterpret_cast<uint32_t*>(
+               reinterpret_cast<char*>(b)  + (CELL-TAG_NUMBERS) + 4*n);
     return oldMem(addr);;
 }
 
@@ -2436,8 +2441,8 @@ inline Header make_new_bighdr(size_t n)
 }
 
 inline uint64_t* new_bignum_digits(LispObject b)
-{   return reinterpret_cast<uint64_t *>(
-               reinterpret_cast<char *>(b)  + (8-TAG_NUMBERS));
+{   return reinterpret_cast<uint64_t*>(
+               reinterpret_cast<char*>(b)  + (8-TAG_NUMBERS));
 }
 
 inline uint64_t& new_bignum_digit(LispObject b, size_t n)
@@ -2462,11 +2467,11 @@ typedef struct Rational_Number_
 } Rational_Number;
 
 inline LispObject& numerator(LispObject r)
-{   return ((Rational_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->num;
+{   return ((Rational_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->num;
 }
 
 inline LispObject& denominator(LispObject r)
-{   return ((Rational_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->den;
+{   return ((Rational_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->den;
 }
 
 typedef struct Complex_Number_
@@ -2476,24 +2481,23 @@ typedef struct Complex_Number_
 } Complex_Number;
 
 inline LispObject& real_part(LispObject r)
-{   return ((Complex_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->real;
+{   return ((Complex_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->real;
 }
 
 inline LispObject& imag_part(LispObject r)
-{   return ((Complex_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->imag;
+{   return ((Complex_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->imag;
 }
 
 typedef struct Single_Float_
 {   Header header;
     union float_or_int
     {   float f;
-        float32_t f32;
         int32_t i;
     } f;
 } Single_Float;
 
 inline float short_float_val(LispObject v)
-{   Float_union x;
+{   float_union x;
 #if SIXTY_FOUT_BIT
     x.i = v >> 32;
 #else // SIXTY_FOUR_BIT
@@ -2504,15 +2508,11 @@ inline float short_float_val(LispObject v)
 }
 
 inline float& single_float_val(LispObject v)
-{   return ((Single_Float *)(reinterpret_cast<char *>(v)-TAG_BOXFLOAT))->f.f;
-}
-
-inline float32_t& float32_t_val(LispObject v)
-{   return ((Single_Float *)(reinterpret_cast<char *>(v)-TAG_BOXFLOAT))->f.f32;
+{   return ((Single_Float *)(reinterpret_cast<char*>(v)-TAG_BOXFLOAT))->f.f;
 }
 
 inline int32_t& intfloat32_t_val(LispObject v)
-{   return ((Single_Float *)(reinterpret_cast<char *>(v)-TAG_BOXFLOAT))->f.i;
+{   return ((Single_Float *)(reinterpret_cast<char*>(v)-TAG_BOXFLOAT))->f.i;
 }
 
 // The structures here are not actually used - because I can not get
@@ -2522,10 +2522,10 @@ inline int32_t& intfloat32_t_val(LispObject v)
 //  typedef struct Double_Float_
 //  {
 //      Header header;
-//  // I want the data to
+//  // I want the data to be nicely aligned ecen in the case that
+//  // a Header is only 32-bits wide.
 //      alignas (8) union double_or_ints {
 //          double f;
-//          float64_t f64;
 //          int32_t i[2];
 //          int64_t ii;
 //      } f;
@@ -2535,13 +2535,13 @@ typedef union _Double_union
 {   double f;
     uint32_t i[2];
     uint64_t i64;
-    float64_t f64;
-
 } Double_union;
 
 inline constexpr size_t SIZEOF_DOUBLE_FLOAT = 16;
+
 inline double *double_float_addr(LispObject v)
-{   return reinterpret_cast<double *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+{   return reinterpret_cast<double*>(reinterpret_cast<char*>(v) +
+                                      (8-TAG_BOXFLOAT));
 }
 
 // on 32-bit machines there has to be a padding work in a double_float,
@@ -2551,7 +2551,8 @@ inline int32_t& double_float_pad(LispObject v)
 #ifdef DEBUG
     my_assert(((v-TAG_BOXFLOAT) & 0x3) == 0);
 #endif // DEBUG
-    return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) + (4-TAG_BOXFLOAT));
+    return *reinterpret_cast<int32_t*>(
+        reinterpret_cast<char*>(v) + (4-TAG_BOXFLOAT));
 }
 
 inline double& double_float_val(LispObject v)
@@ -2559,15 +2560,8 @@ inline double& double_float_val(LispObject v)
 #ifdef DEBUG
     my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0);
 #endif // DEBUG
-    return *reinterpret_cast<double *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
-}
-
-inline float64_t& float64_t_val(LispObject v)
-{
-#ifdef DEBUG
-    my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0);
-#endif // DEBUG
-    return *reinterpret_cast<float64_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+    return *reinterpret_cast<double*>(
+        reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int64_t& intfloat64_t_val(LispObject v)
@@ -2575,24 +2569,19 @@ inline int64_t& intfloat64_t_val(LispObject v)
 #ifdef DEBUG
     my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0);
 #endif // DEBUG
-    return *reinterpret_cast<int64_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+    return *reinterpret_cast<int64_t*>(
+        reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat64_t_val_hi(LispObject v)
-{   return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<int32_t*>(reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat64_t_val_lo(LispObject v)
-{   return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) + (12-TAG_BOXFLOAT));
+{   return *reinterpret_cast<int32_t*>(reinterpret_cast<char*>(v) + (12-TAG_BOXFLOAT));
 }
 
 // Again I do not actually introduce the struct...
-//
-// For "long double" I use float128_t as implemented in the SoftFloat_3a
-// library. This represents each float with 16-bits of exponent and 113
-// bits of mantissa (including the hidden bit). Basic arithmetic is
-// supported, but not the elementary functions. I am going to ASSUME that
-// everything can be aligned at 8-byte boundaries.
 //
 //  typedef struct Long_Float_
 //  {
@@ -2601,54 +2590,62 @@ inline int32_t& intfloat64_t_val_lo(LispObject v)
 //  of the object, ie (8-TAG_BOXFLOAT) bytes on from the tagged pointer
 //  that identifies it.
 //      alignas (8) union long_or_ints {
-//          float128_t f128;
+//          FLOAT_128 f128;
 //          int32_t i[4];
 //          int64_t ii[2];
+//          int128_t iii;
 //      } f;
 //  } Long_Float;
 
-#ifdef HAVE_SOFTFLOAT
 inline constexpr size_t SIZEOF_LONG_FLOAT = 24;
-inline float128_t *long_float_addr(LispObject v)
-{   return (float128_t *)(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+inline FLOAT_128* long_float_addr(LispObject v)
+{   return (FLOAT_128*)(reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int32_t& long_float_pad(LispObject v)
-{   return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) + (4-TAG_BOXFLOAT));
+{   return *reinterpret_cast<int32_t*>(
+        reinterpret_cast<char*>(v) + (4-TAG_BOXFLOAT));
 }
 
-inline float128_t& long_float_val(LispObject v)
-{   return *reinterpret_cast<float128_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+inline FLOAT_128& long_float_val(LispObject v)
+{   return *reinterpret_cast<FLOAT_128*>(
+        reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 
-inline float128_t& float128_t_val(LispObject v)
-{   return *reinterpret_cast<float128_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+inline int128_t& intfloat128_t_val(LispObject v)
+{   return *reinterpret_cast<int128_t *>(
+        reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int64_t& intfloat128_t_val0(LispObject v)
-{   return *reinterpret_cast<int64_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<int64_t*>(
+        reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int64_t& intfloat128_t_val1(LispObject v)
-{   return *reinterpret_cast<int64_t *>(reinterpret_cast<char *>(v) + (16-TAG_BOXFLOAT));
+{   return *reinterpret_cast<int64_t*>(
+        reinterpret_cast<char*>(v) + (16-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat128_t_val32_0(LispObject v)
-{   return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<int32_t*>(
+        reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat128_t_val32_1(LispObject v)
-{   return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) + (12-TAG_BOXFLOAT));
+{   return *reinterpret_cast<int32_t*>(
+        reinterpret_cast<char*>(v) + (12-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat128_t_val32_2(LispObject v)
-{   return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) + (16-TAG_BOXFLOAT));
+{   return *reinterpret_cast<int32_t*>(
+        reinterpret_cast<char*>(v) + (16-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat128_t_val32_3(LispObject v)
-{   return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) + (20-TAG_BOXFLOAT));
+{   return *reinterpret_cast<int32_t*>(
+        reinterpret_cast<char*>(v) + (20-TAG_BOXFLOAT));
 }
-#endif // HAVE_SOFTFLOAT
 
 // Values to go in exit_reason at times when exceptions are being thrown.
 

@@ -156,6 +156,30 @@ LispObject get_basic_vector(int tag, int type, size_t size)
     return static_cast<LispObject>(r + tag);
 }
 
+// This is only used for allocating long floats - which need internal
+// 16-byte alignment. What I do is I over-allocate by 8 bytes and then
+// return either a pointer to its start or one that is 8-bytes along from
+// that. I then need to put a a padder header either before or after the
+// genuine result.
+
+LispObject get_aligned_basic_vector(int tag, int type, size_t size)
+{   LispObject r = get_basic_vector(tag, type, size+8);
+    uintptr_t addr = (uintptr_t)r - tag;
+    if ((addr & 8) == 0)
+    {   *(reinterpret_cast<Header*>(addr+8)) =
+            type + (size<<(Tw+5)) + TAG_HDR_IMMED;
+        *(Header*)addr = makeHeader(8, TYPE_PADDER);
+        return r + 8;
+    }
+    else
+    {   *(reinterpret_cast<Header*>(addr)) =
+            type + (size<<(Tw+5)) + TAG_HDR_IMMED;
+        *(Header*)(addr + size) = makeHeader(8, TYPE_PADDER);
+        return r;
+    }
+}
+
+
 // This takes a vector (which can be one represented using an INDEXVEC)
 // and reduces its size to a total value len. It returns the shorter
 // vector. Only used on simple vectors. This is ONLY used when a hash table

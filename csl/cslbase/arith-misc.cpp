@@ -102,7 +102,6 @@ LispObject N_rationalf(double d)
     else return make_ratio(mm, N_make_power_of_two(-x));
 }
 
-#ifdef HAVE_SOFTFLOAT
 // This does much the same for 128-bit floats.
 
 int N_rationalf128(float128_t d)
@@ -134,94 +133,6 @@ int N_rationalf128(float128_t d)
     if (x >= 0) return LeftShift::op(mm, fixnum_of_int(x));
     else return make_ratio(mm, N_make_power_of_two(-x));
 }
-#endif // HAVE_SOFTFLOAT
-
-// intptr_t N_double_to_3_digits(double d, int32_t& a2, uint32_t& a1, uint32_t& a0)
-// {   int64_t m;
-//     int x = N_double_to_binary(d, m);
-//     a0 = (uint32_t)m & 0x7fffffffU;
-//     a1 = (uint32_t)((uint64_t)m >> 31) & 0x7fffffff;
-//     a2 = (int32_t)ASR(m, 62);   // In fact value should be either 0 or -1
-//     // because m is only a 53 bit + sign value.
-//     if (x == 0x7ff) return INTPTR_MAX;
-// // Now I need to adjust in effect so that the exponent is treated as
-// // a multiple of 31.
-//     int q = x/31, r = x%31;
-//     if (r < 0)
-//     {   q--;
-//         r += 31;
-//     }
-// // I now shift the 3-digit value left by r bits. It will not overflow.
-//     if (r != 0)
-//     {   a2 = ((uint32_t)a2<<r) | a1>>(31-r);
-//         a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
-//         a0 = (a0<<r) & 0x7fffffffU;
-//     }
-// // At this stage it is possible that a2 is 0 or -1 and a1 does not
-// // intrude into its most significant place, in which case the bignum
-// // could have afforded to use one fewer digits.
-//     if ((a2 == 0 && (a1 & 0x40000000U) == 0) ||
-//         (a2 == -1 && (a1 & 0x40000000U) != 0))
-//     {   a2 = a1 | ((a1 & 0x40000000U)<<1);
-//         a1 = a0;
-//         a0 = 0;
-//         q--;
-// // Further to the above, a number that was originally sub-normalized can
-// // still suffer in the same manner. So I will do the same again!
-//         if ((a2 == 0 && (a1 & 0x40000000U) == 0) ||
-//             (a2 == -1 && (a1 & 0x40000000U) != 0))
-//         {   a2 = a1 | ((a1 & 0x40000000U)<<1);
-//             a1 = a0;
-//             a0 = 0;
-//             q--;
-//         }
-//     }
-//     return q;
-// }
-
-#ifdef HAVE_SOFTFLOAT
-
-// If I re-work this for a 64-bit world it will return 3 64-bit integers
-// and a count of how many 64-bit zero words beyond that would be needed.
-
-// intptr_t N_float128_to_5_digits(float128_t *d,
-//              int32_t& a4, uint32_t& a3, uint32_t& a2,
-//              uint32_t& a1, uint32_t& a0)
-// {   int64_t mhi;
-//     uint64_t mlo;
-//     int x = N_float128_to_binary(d, mhi, mlo);
-//     a0 = (uint32_t)mlo & 0x7fffffffU;
-//     a1 = (uint32_t)((uint64_t)mlo >> 31) & 0x7fffffff;
-//     a2 = (((uint32_t)mhi << 2) & 0x7fffffff) | (uint32_t)(mlo>>62);
-//     a3 = (uint32_t)(mhi>>29);
-//     a4 = (int32_t)ASR(mhi, 60);   // again either 0 or -1
-//     if (x == 0x7fff) return INTPTR_MAX;
-//     int q = x/31, r = x%31;
-//     if (r < 0)
-//     {   q--;
-//         r += 31;
-//     }
-//     if (a4 == 0 && a3 == 0 && a2 == 0 && a1 == 0 && a0 == 0) return q;
-//     if (r != 0)
-//     {   a4 = (int32_t)(((uint32_t)a4<<r) | a3>>(31-r));
-//         a3 = ((a3<<r) & 0x7fffffffU) | a2>>(31-r);
-//         a2 = ((a2<<r) & 0x7fffffffU) | a1>>(31-r);
-//         a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
-//         a0 = (a0<<r) & 0x7fffffffU;
-//     }
-//     while ((a4 == 0 && (a3 & 0x40000000U) == 0) ||
-//            (a4 == -1 && (a3 & 0x40000000U) != 0))
-//     {   a4 = a3 | ((a3 & 0x40000000U)<<1);
-//         a3 = a2;
-//         a2 = a1;
-//         a1 = a0;
-//         a0 = 0;
-//         q--;
-//     }
-//     return q;
-// }
-
-#endif // HAVE_SOFTFLOAT
 
 LispObject N_rationalizef(double dd, int bits)
 //
@@ -356,24 +267,14 @@ LispObject N_rationalizef(double dd, int bits)
     return make_ratio(p1, q1);
 }
 
-#ifdef HAVE_SOFTFLOAT
 // The following constants are 2^112 and -2^112 and their reciprocals, which
 // are used in N_rationalf128 because any 128-bit floating point value that
 // is at least that large is necessarily an exact integer.
 //
 // FP128_SMALL_LIMIT is 2^-113 and is used in N_rationalizef128.
 
-#ifdef LITTLEENDIAN
-
 static float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
 static float128_t FP128_SMALL_LIMIT = {{0, INT64_C(0x3f8e000000000000)}};
-
-#else
-
-static float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
-static float128_t FP128_SMALL_LIMIT = {{INT64_C(0x3f8e000000000000), 0}};
-
-#endif
 
 // This is expected to adjust the ratio returned to support 113 bits
 // of precision.
@@ -528,8 +429,6 @@ LispObject N_rationalizef128(float128_t *dd)
     return make_ratio(p1, q1);
 }
 
-#endif // HAVE_SOFTFLOAT
-
 LispObject N_rational(LispObject a)
 {   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
@@ -549,12 +448,10 @@ LispObject N_rational(LispObject a)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-#ifdef HAVE_SOFTFLOAT
             if (flthdr(a) == LONG_FLOAT_HEADER)
                 return N_rationalf128(
                     *reinterpret_cast<float128_t *>(long_float_addr(a)));
             else
-#endif // HAVE_SOFTFLOAT
                 return N_rationalf(float_of_number(a));
         default:
             return aerror1("bad arg for rational", a);
@@ -587,11 +484,9 @@ LispObject N_rationalize(LispObject a)
                     return N_rationalizef(single_float_val(a), 24);
                 case DOUBLE_FLOAT_HEADER:
                     return N_rationalizef(double_float_val(a), 53);
-#ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
                     return N_rationalizef128(reinterpret_cast<float128_t *>(long_float_addr(
                                                a)));
-#endif // HAVE_SOFTFLOAT
             }
         default:
             return aerror1("bad arg for rationalize", a);
@@ -874,27 +769,6 @@ LispObject Nmd60(LispObject env, LispObject a)
 // number does not extend into the fixnum's sign bit.
 // So maybe this in fact only keeps 59 bits.
     return make_lisp_unsigned64(v >> 5);
-}
-
-LispObject Nvalidate_number(LispObject env, LispObject a, LispObject b)
-{   SingleValued fn;
-    if (!is_number(a)) return aerror2("not even a number", a, b);
-    if (is_fixnum(a)) return a;
-    if (!is_new_bignum(a)) return aerror2("validate_number expects an integer", a, b);
-    size_t len = (bignum_length(a) - CELL)/sizeof(uint64_t);
-    int64_t top = (int64_t)new_bignum_digit(a, len-1);
-    if (len == 1)
-    {   if (int_of_fixnum(fixnum_of_int(top)) == top)
-            return aerror2("should have been a fixnum", a, b);
-    }
-    int64_t next = (int64_t)new_bignum_digit(a, len-2);
-    if (top == 0 && next >= 0 ) return aerror2("bad bignum", a, b);
-    if (top == -1 && next < 0) return aerror2("bad bignum", a, b);
-    return a;
-}
-
-LispObject Nvalidate_number(LispObject env, LispObject a)
-{   return Nvalidate_number(env, a, nil);
 }
 
 LispObject Nrealpart(LispObject env, LispObject a)

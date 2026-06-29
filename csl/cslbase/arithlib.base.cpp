@@ -83,14 +83,6 @@
 // optimising compilers can assume that and generate code that does not
 // perform the way a naive old-fashioned reading of it would suggest.
 //
-// If "softfloat_h" is defined I will suppose that there is a type "float128"
-// available and I will support conversions to and from that. In part because
-// this type is not supported in any standard way I will be assuming that the
-// version I use is as provided by the SoftFloat IEEE Floating-Point Arithmetic
-// package released by John R. Hauser. That does everything in software so
-// absolute speed may be modest, but it is nicely portable. For more
-// information see http://www.jhauser.us/arithmetic/SoftFloat.html.
-//
 // I will provide two levels of access and abstraction. At the low level
 // a big number is represented as and array of uint64_t digits along with
 // a size_t value that indicates the number of digits in use. The most
@@ -496,7 +488,6 @@ static constexpr bool isHeader = ([](){
 #include <algorithm>
 #include <filesystem>
 
-#include "float128_t.h"
 #include "bitmaps.h"
 #include "threadloc.h"
 #include "cthread.cpp"
@@ -894,10 +885,10 @@ constexpr inline SignedDigit intOfHandle(std::intptr_t n);
 [[gnu::used]] inline std::intptr_t floorDoubleToInt(double d);
 [[gnu::used]] inline std::intptr_t ceilingDoubleToInt(double d);
 #ifdef softfloat_h
-[[gnu::used]] inline std::intptr_t roundFloat128ToInt(float128_t d);
-[[gnu::used]] inline std::intptr_t truncFloat128ToInt(float128_t d);
-[[gnu::used]] inline std::intptr_t floorFloat128ToInt(float128_t d);
-[[gnu::used]] inline std::intptr_t ceilingFloat128ToInt(float128_t d);
+[[gnu::used]] inline std::intptr_t roundFloat128ToInt(long float d);
+[[gnu::used]] inline std::intptr_t truncFloat128ToInt(long float d);
+[[gnu::used]] inline std::intptr_t floorFloat128ToInt(long float d);
+[[gnu::used]] inline std::intptr_t ceilingFloat128ToInt(long float d);
 #endif // softfloat_h
 [[gnu::used]] inline std::intptr_t uniformPositive(std::size_t n);
 [[gnu::used]] inline std::intptr_t uniformSigned(std::size_t n);
@@ -2032,10 +2023,10 @@ public:
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(SignedDigit, float128_t);
-    static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, SignedDigit);
-    static bool op(float128_t, std::uint64_t* );
+    static bool op(SignedDigit, long float);
+    static bool op(std::uint64_t* , long float);
+    static bool op(long float, SignedDigit);
+    static bool op(long float, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2057,10 +2048,10 @@ public:
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(SignedDigit, float128_t);
-    static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, SignedDigit);
-    static bool op(float128_t, std::uint64_t* );
+    static bool op(SignedDigit, long float);
+    static bool op(std::uint64_t* , long float);
+    static bool op(long float, SignedDigit);
+    static bool op(long float, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2083,10 +2074,10 @@ public:
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(SignedDigit, float128_t);
-    static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, SignedDigit);
-    static bool op(float128_t, std::uint64_t* );
+    static bool op(SignedDigit, long float);
+    static bool op(std::uint64_t* , long float);
+    static bool op(long float, SignedDigit);
+    static bool op(long float, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2106,10 +2097,10 @@ public:
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(SignedDigit, float128_t);
-    static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, SignedDigit);
-    static bool op(float128_t, std::uint64_t* );
+    static bool op(SignedDigit, long float);
+    static bool op(std::uint64_t* , long float);
+    static bool op(long float, SignedDigit);
+    static bool op(long float, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2129,10 +2120,10 @@ public:
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(SignedDigit, float128_t);
-    static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, SignedDigit);
-    static bool op(float128_t, std::uint64_t* );
+    static bool op(SignedDigit, long float);
+    static bool op(std::uint64_t* , long float);
+    static bool op(long float, SignedDigit);
+    static bool op(long float, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2152,10 +2143,10 @@ public:
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(SignedDigit, float128_t);
-    static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, SignedDigit);
-    static bool op(float128_t, std::uint64_t* );
+    static bool op(SignedDigit, long float);
+    static bool op(std::uint64_t* , long float);
+    static bool op(long float, SignedDigit);
+    static bool op(long float, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2328,15 +2319,15 @@ public:
 class Float128
 {
 public:
-    static float128_t op(SignedDigit w);
-    static float128_t op(uint64_t* w);
+    static long float op(SignedDigit w);
+    static long float op(uint64_t* w);
 };
 
 class Frexp128
 {
 public:
-    static float128_t op(SignedDigit, SignedDigit& x);
-    static float128_t op(std::uint64_t* , SignedDigit& x);
+    static long float op(SignedDigit, SignedDigit& x);
+    static long float op(std::uint64_t* , SignedDigit& x);
 };
 
 #endif // softfloat_h
@@ -2534,7 +2525,7 @@ public:
     {   val = roundDoubleToInt(d);
     }
 #ifdef softfloat_h
-    Bignum(float128_t d)
+    Bignum(long float d)
     {   val = roundFloat128ToInt(d);
     }
 #endif // softfloat_h
@@ -3135,12 +3126,12 @@ template <typename T,
 
 #ifdef softfloat_h
 
-[[gnu::used]] inline float128_t frexp128Bignum(const Bignum& x, SignedDigit &xx)
-{   return op_dispatch1<Frexp128,float128_t>(x.val, xx);
+[[gnu::used]] inline long float frexp128Bignum(const Bignum& x, SignedDigit &xx)
+{   return op_dispatch1<Frexp128,long float>(x.val, xx);
 }
 
-[[gnu::used]] inline float128_t float128Bignum(const Bignum& x)
-{   return op_dispatch1<Float128,float128_t>(x.val);
+[[gnu::used]] inline long float longfloat6Bignum(const Bignum& x)
+{   return op_dispatch1<Float128,long float>(x.val);
 }
 
 #endif // softfloat_h
@@ -4243,46 +4234,34 @@ MAYBE_UNUSED static void reseed(Digit n)
 }
 
 #ifdef softfloat_h
-// Some constants that are useful when I am dealing with float128_t.
+// Some constants that are useful when I am dealing with long float.
+// I am only going to support little endian machines,,,
 
-#ifdef LITTLEENDIAN
-[[gnu::used]] inline float128_t
+[[gnu::used]] inline long float
 f128_0      = {{0, INT64_C(0x0000000000000000)}},
 f128_half   = {{0, INT64_C(0x3ffe000000000000)}},
 f128_mhalf  = {{0, INT64_C(0xbffe000000000000)}},
 f128_1      = {{0, INT64_C(0x3fff000000000000)}},
 f128_m1     = {{0, INT64_C(0xbfff000000000000)}},
 f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
-#else // !LITTLEENDIAN
-[[gnu::used]] inline float128_t
-f128_0      = {{INT64_C(0x0000000000000000), 0}},
-f128_half   = {{INT64_C(0x3ffe000000000000), 0}},
-f128_mhalf  = {{INT64_C(0xbffe000000000000), 0}},
-f128_1      = {{INT64_C(0x3fff000000000000), 0}},
-f128_m1     = {{INT64_C(0xbfff000000000000), 0}},
-f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
-#endif // !LITTLEENDIAN
 
-// The following tests are not supported by the version of softfloat that
-// I am using, so I implement them myself.
-
-[[gnu::used]] inline bool f128_zero(float128_t p)
+[[gnu::used]] inline bool f128_zero(long float p)
 {   return (p.v[HIPART] & 0x7fffffffffffffff) == 0 &&
            p.v[LOPART] == 0;
 }
 
-[[gnu::used]] inline bool f128_infinite(float128_t p)
+[[gnu::used]] inline bool f128_infinite(long float p)
 {   return (p.v[HIPART] & 0x7fffffffffffffff) == 0x7fff000000000000 &&
            p.v[LOPART] == 0;
 }
 
-[[gnu::used]] inline bool f128_nan(float128_t p)
+[[gnu::used]] inline bool f128_nan(long float p)
 {   return (p.v[HIPART] & 0x7fff000000000000) == 0x7fff000000000000 &&
            ((p.v[HIPART] & 0x0000ffffffffffff) != 0 ||
             p.v[LOPART] != 0);
 }
 
-[[gnu::used]] inline float128_t ldexp(float128_t p, int x)
+[[gnu::used]] inline long float ldexp(long float p, int x)
 {   if (f128_zero(p) ||
         f128_infinite(p) ||
         f128_nan(p)) return p;  // special cases!
@@ -4322,7 +4301,7 @@ f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
     return p;
 }
 
-[[gnu::used]] inline float128_t frexp(float128_t p, int &x)
+[[gnu::used]] inline long float frexp(long float p, int &x)
 {   if (f128_zero(p) ||
         f128_infinite(p) ||
         f128_nan(p))
@@ -4352,7 +4331,7 @@ f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
 // I can use a reference argument for i now a pointer and I can overload the
 // vanilla name "modf" along the style of the way C++11 does.
 
-[[gnu::used]] inline float128_t modf(float128_t d, float128_t &i)
+[[gnu::used]] inline long float modf(long float d, long float &i)
 {   i = d;
 // Extract the exponent
     int x = ((d.v[HIPART] >> 48) & 0x7fff) - 0x3ffe;
@@ -4376,7 +4355,7 @@ f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
 
 #endif // softfloat_h
 
-// When doubles (and float128_t values where available) are to be
+// When doubles (and long float values where available) are to be
 // compared against a bignum to get proper results the double should
 // (at least in effect) be converted to a bignum. If one does the comparison
 // by converting both inputs to floating point (which may feel easier) there
@@ -4583,11 +4562,11 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 
 #ifdef softfloat_h
 
-// For float128_t the mantissa needs to be returned as a 128-bit integer, and
+// For long float the mantissa needs to be returned as a 128-bit integer, and
 // I do that as a pair of 64-bit integers here. Infinities and NaNs would
 // lead to nonsense output. Subnormal numbers are got wrong at present!
 
-[[gnu::used]] inline void float128ToBits(float128_t d,
+[[gnu::used]] inline void longfloatToBits(long float d,
                            SignedDigit &mhi, Digit &mlo,
                            int &exponent)
 {   if (f128_nan(d) || f128_zero(d))
@@ -4601,7 +4580,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
         exponent = INT_MAX;
         return;
     }
-// With float128_t the easier way to go is to access the bit-patterns.
+// With long float the easier way to go is to access the bit-patterns.
     exponent = ((d.v[HIPART] >> 48) & 0x7fff);
     if (exponent == 0) // subnormal number
     {   d = f128_mul(d, f128_N1);
@@ -4626,10 +4605,10 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 {   if (lo-- == 0) hi--;
 }
 
-// For a float128_t value I need to generate (up to) 3 64-bit digits for
+// For a long float value I need to generate (up to) 3 64-bit digits for
 // the way it would end up as a bignum.
 
-[[gnu::used]] inline void float128To_virtualBignum(float128_t d,
+[[gnu::used]] inline void longfloatTo_virtualBignum(long float d,
                                      SignedDigit &top,
                                      Digit &mid,
                                      Digit &next,
@@ -4656,7 +4635,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     SignedDigit mhi;
     Digit mlo;
     int exponent;
-    float128ToBits(d, mhi, mlo, exponent);
+    longfloatToBits(d, mhi, mlo, exponent);
 // Here (mhi,mlo) is a 113-bit integer that must be multiplied by
 // 2^exponent to yield the input value.
     uint128_t mantissa = (static_cast<uint128_t>(mhi)<<64) | mlo;
@@ -4773,14 +4752,14 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 
 #ifdef softfloat_h
 
-[[gnu::used]] inline std::intptr_t float128ToInt(float128_t d, RoundingMode mode)
+[[gnu::used]] inline std::intptr_t longfloatToInt(long float d, RoundingMode mode)
 {   if (f128_zero(d) ||
         f128_infinite(d) ||
         f128_nan(d)) return intToHandle(0);
     SignedDigit top;
     Digit mid, next;
     std::size_t len;
-    float128To_virtualBignum(d, top, mid, next, len, mode);
+    longfloatTo_virtualBignum(d, top, mid, next, len, mode);
     std::uint64_t* r = reserve(len);
     if (len == 1) r[0] = top;
     else if (len == 2)
@@ -4796,20 +4775,20 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return confirmSize(r, len, len);
 }
 
-[[gnu::used]] inline std::intptr_t roundFloat128ToInt(float128_t d)
-{   return float128ToInt(d, RoundingMode::ROUND);
+[[gnu::used]] inline std::intptr_t roundFloat128ToInt(long float d)
+{   return longfloatToInt(d, RoundingMode::ROUND);
 }
 
-[[gnu::used]] inline std::intptr_t truncFloat128ToInt(float128_t d)
-{   return float128ToInt(d, RoundingMode::TRUNC);
+[[gnu::used]] inline std::intptr_t truncFloat128ToInt(long float d)
+{   return longfloatToInt(d, RoundingMode::TRUNC);
 }
 
-[[gnu::used]] inline std::intptr_t floorFloat128ToInt(float128_t d)
-{   return float128ToInt(d, RoundingMode::FLOOR);
+[[gnu::used]] inline std::intptr_t floorFloat128ToInt(long float d)
+{   return longfloatToInt(d, RoundingMode::FLOOR);
 }
 
-[[gnu::used]] inline std::intptr_t ceilingFloat128ToInt(float128_t d)
-{   return float128ToInt(d, RoundingMode::CEILING);
+[[gnu::used]] inline std::intptr_t ceilingFloat128ToInt(long float d)
+{   return longfloatToInt(d, RoundingMode::CEILING);
 }
 
 #endif // softfloat_h
@@ -5103,20 +5082,20 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 
 #ifdef softfloat_h
 
-[[gnu::used]] inline float128_t Float128::op(SignedDigit a)
+[[gnu::used]] inline long float Float128::op(SignedDigit a)
 {   return i64_to_f128(a);
 }
 
-[[gnu::used]] inline float128_t Frexp128::op(SignedDigit a, SignedDigit &x)
+[[gnu::used]] inline long float Frexp128::op(SignedDigit a, SignedDigit &x)
 {   using namespace CSL_LISP;
-    float128_t d = i64_to_f128(a), d1;
+    long float d = i64_to_f128(a), d1;
     int xi = 0;
     f128_frexp(d, &d1, &xi); // in the CSL sources.
     x = xi;
     return d1;
 }
 
-[[gnu::used]] inline float128_t Frexp128::op(std::uint64_t* a, SignedDigit &x)
+[[gnu::used]] inline long float Frexp128::op(std::uint64_t* a, SignedDigit &x)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Float128::op(static_cast<SignedDigit>(a[0]));
     Digit top113, top113a;
@@ -5195,9 +5174,9 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
         }
         else top113 += addWithCarry(top113a, top113a&1, top113a);
     }
-//  float128_t d = i64_to_f128({top113, top113a});
-    float128_t d = i64_to_f128(top113);
-    float128_t two32 = i64_to_f128(0x100000000);
+//  long float d = i64_to_f128({top113, top113a});
+    long float d = i64_to_f128(top113);
+    long float two32 = i64_to_f128(0x100000000);
     d = f128_add(f128_mul(f128_mul(two32, two32), d),
                  ui64_to_f128(top113a));
     if (sign) d = f128_sub(i64_to_f128(0), d);
@@ -5205,13 +5184,13 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return d;
 }
 
-[[gnu::used]] inline float128_t Float128::op(std::uint64_t* a)
+[[gnu::used]] inline long float Float128::op(std::uint64_t* a)
 {   using namespace CSL_LISP;
     SignedDigit x = 0;
-    float128_t d = Frexp128::op(a, x);
+    long float d = Frexp128::op(a, x);
     if (x > 100000) x = 100000;
 // There is an implementation of ldexp() for 128-bit floats in
-// the CSL source file float128_t,h.
+// the CSL source file long float,h.
     f128_ldexp(&d, static_cast<int>(x));
     return d;
 }
@@ -5876,19 +5855,10 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // are used in rationalf128 because any 128-bit floating point value that
 // is that large is necessarily an exact integer.
 
-#ifdef LITTLEENDIAN
+[[gnu::used]] inline long float FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
+[[gnu::used]] inline long float FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
 
-[[gnu::used]] inline float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
-[[gnu::used]] inline float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
-
-#else // !LITTLEENDIAN
-
-[[gnu::used]] inline float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
-[[gnu::used]] inline float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
-
-#endif // !LITTLEENDIAN
-
-[[gnu::used]] inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, float128_t b)
+[[gnu::used]] inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, long float b)
 {   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
     SignedDigit top = static_cast<SignedDigit>(a[lena-1]);
     if (top >= 0 && f128_lt(b, f128_0)) return false;
@@ -5905,10 +5875,10 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // resolve matters cheaply.
         if (f128_lt(FP128_INT_LIMIT, b) ||
             f128_lt(b, FP128_MINUS_INT_LIMIT)) return false;
-// Convert a to a float128 and compare. The conversion will not lose any
+// Convert a to a longfloat and compare. The conversion will not lose any
 // information because the |a| <= 2^112 so it will fit within the mantissa
 // bits that are available.
-        float128_t aa = Float128::op(a);
+        long float aa = Float128::op(a);
         return f128_eq(aa, b);
     }
     else
@@ -5924,21 +5894,21 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     }
 }
 
-[[gnu::used]] inline bool Eqn::op(SignedDigit a, float128_t b)
+[[gnu::used]] inline bool Eqn::op(SignedDigit a, long float b)
 {   return f128_eq(i64_to_f128(a), b);
 }
 
-[[gnu::used]] inline bool Eqn::op(std::uint64_t* a, float128_t b)
+[[gnu::used]] inline bool Eqn::op(std::uint64_t* a, long float b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Eqn::op(static_cast<SignedDigit>(a[0]), b);
     return eqnbigfloat(a, lena, b);
 }
 
-[[gnu::used]] inline bool Eqn::op(float128_t a, SignedDigit b)
+[[gnu::used]] inline bool Eqn::op(long float a, SignedDigit b)
 {   return Eqn::op(b, a);
 }
 
-[[gnu::used]] inline bool Eqn::op(float128_t a, std::uint64_t* b)
+[[gnu::used]] inline bool Eqn::op(long float a, std::uint64_t* b)
 {   return Eqn::op(b, a);
 }
 
@@ -6007,21 +5977,21 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 
 #ifdef softfloat_h
 
-[[gnu::used]] inline bool Neqn::op(SignedDigit a, float128_t b)
+[[gnu::used]] inline bool Neqn::op(SignedDigit a, long float b)
 {   return !f128_eq(i64_to_f128(a), b);
 }
 
-[[gnu::used]] inline bool Neqn::op(std::uint64_t* a, float128_t b)
+[[gnu::used]] inline bool Neqn::op(std::uint64_t* a, long float b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Neqn::op(static_cast<SignedDigit>(a[0]), b);
     return !eqnbigfloat(a, lena, b);
 }
 
-[[gnu::used]] inline bool Neqn::op(float128_t a, SignedDigit b)
+[[gnu::used]] inline bool Neqn::op(long float a, SignedDigit b)
 {   return Neqn::op(b, a);
 }
 
-[[gnu::used]] inline bool Neqn::op(float128_t a, std::uint64_t* b)
+[[gnu::used]] inline bool Neqn::op(long float a, std::uint64_t* b)
 {   return Neqn::op(b, a);
 }
 
@@ -6246,7 +6216,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 // the base is > or < and "ifequal" distinguishing > from >= and < from <=.
 
 [[gnu::used]] inline bool greaterpbigfloat(std::uint64_t* a, std::size_t lena,
-                             float128_t b,
+                             long float b,
                              bool great, bool ifequal)
 {   if (f128_nan(b)) return
             false;  // Comparisons involving a NaN => false.
@@ -6265,10 +6235,10 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 // resolve matters cheaply.
         if (f128_lt(FP128_INT_LIMIT, b)) return !great;
         if (f128_lt(b, FP128_MINUS_INT_LIMIT)) return great;
-// Convert a to a float128 and compare. The conversion will not lose any
+// Convert a to a longfloat and compare. The conversion will not lose any
 // information because the |a| <= 2^112 so it will fit within the mantissa
 // bits that are available.
-        float128_t aa = Float128::op(a);
+        long float aa = Float128::op(a);
         if (great)
         {   if (ifequal) return f128_le(b, aa);
             else return f128_lt(b, aa);
@@ -6299,22 +6269,22 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     }
 }
 
-[[gnu::used]] inline bool Greaterp::op(SignedDigit a, float128_t b)
+[[gnu::used]] inline bool Greaterp::op(SignedDigit a, long float b)
 {   return f128_lt(b, i64_to_f128(a));
 }
 
-[[gnu::used]] inline bool Greaterp::op(std::uint64_t* a, float128_t b)
+[[gnu::used]] inline bool Greaterp::op(std::uint64_t* a, long float b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Greaterp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, true, false);
 
 }
 
-[[gnu::used]] inline bool Greaterp::op(float128_t a, SignedDigit b)
+[[gnu::used]] inline bool Greaterp::op(long float a, SignedDigit b)
 {   return Lessp::op(b, a);
 }
 
-[[gnu::used]] inline bool Greaterp::op(float128_t a, std::uint64_t* b)
+[[gnu::used]] inline bool Greaterp::op(long float a, std::uint64_t* b)
 {   return Lessp::op(b, a);
 }
 
@@ -6379,22 +6349,22 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 #ifdef softfloat_h
 
-[[gnu::used]] inline bool Geq::op(SignedDigit a, float128_t b)
+[[gnu::used]] inline bool Geq::op(SignedDigit a, long float b)
 {   return f128_le(b, i64_to_f128(a));
     return false;
 }
 
-[[gnu::used]] inline bool Geq::op(std::uint64_t* a, float128_t b)
+[[gnu::used]] inline bool Geq::op(std::uint64_t* a, long float b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Greaterp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, true, true);
 }
 
-[[gnu::used]] inline bool Geq::op(float128_t a, SignedDigit b)
+[[gnu::used]] inline bool Geq::op(long float a, SignedDigit b)
 {   return Leq::op(b, a);
 }
 
-[[gnu::used]] inline bool Geq::op(float128_t a, std::uint64_t* b)
+[[gnu::used]] inline bool Geq::op(long float a, std::uint64_t* b)
 {   return Leq::op(b, a);
 }
 
@@ -6459,12 +6429,12 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 #ifdef softfloat_h
 
-[[gnu::used]] inline bool Lessp::op(SignedDigit a, float128_t b)
+[[gnu::used]] inline bool Lessp::op(SignedDigit a, long float b)
 {   return f128_lt(i64_to_f128(a), b);
     return false;
 }
 
-[[gnu::used]] inline bool Lessp::op(std::uint64_t* a, float128_t b)
+[[gnu::used]] inline bool Lessp::op(std::uint64_t* a, long float b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Lessp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, false, false);
@@ -6472,11 +6442,11 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return false;
 }
 
-[[gnu::used]] inline bool Lessp::op(float128_t a, SignedDigit b)
+[[gnu::used]] inline bool Lessp::op(long float a, SignedDigit b)
 {   return Greaterp::op(b, a);
 }
 
-[[gnu::used]] inline bool Lessp::op(float128_t a, std::uint64_t* b)
+[[gnu::used]] inline bool Lessp::op(long float a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
 
@@ -6541,22 +6511,22 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 #ifdef softfloat_h
 
-[[gnu::used]] inline bool Leq::op(SignedDigit a, float128_t b)
+[[gnu::used]] inline bool Leq::op(SignedDigit a, long float b)
 {   return f128_le(i64_to_f128(a), b);
     return false;
 }
 
-[[gnu::used]] inline bool Leq::op(std::uint64_t* a, float128_t b)
+[[gnu::used]] inline bool Leq::op(std::uint64_t* a, long float b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Leq::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, false, true);
 }
 
-[[gnu::used]] inline bool Leq::op(float128_t a, SignedDigit b)
+[[gnu::used]] inline bool Leq::op(long float a, SignedDigit b)
 {   return Geq::op(b, a);
 }
 
-[[gnu::used]] inline bool Leq::op(float128_t a, std::uint64_t* b)
+[[gnu::used]] inline bool Leq::op(long float a, std::uint64_t* b)
 {   return Geq::op(b, a);
 }
 
@@ -7107,7 +7077,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 [[gnu::used]] inline Digit Top64Bits::op(SignedDigit a)
 {   if (a == 0) return 0;    // Only non-normalised case
-    return static_cast<uint64_t>(a) << CSL_LISP::nlz(a);
+    return static_cast<uint64_t>(a) << CSL_LISP::nlz((Digit)a);
 }
 
 [[gnu::used]] inline std::size_t Logcount::op(std::uint64_t* a)
@@ -10438,7 +10408,7 @@ using arithlib_implementation::roundFloat128ToInt;
 using arithlib_implementation::truncFloat128ToInt;
 using arithlib_implementation::floorFloat128ToInt;
 using arithlib_implementation::ceilingFloat128ToInt;
-// These next few are just raw float128_t values and operations.
+// These next few are just raw long float values and operations.
 using arithlib_implementation::f128_0;
 using arithlib_implementation::f128_half;
 using arithlib_implementation::f128_mhalf;

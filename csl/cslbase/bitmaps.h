@@ -75,15 +75,15 @@ namespace CSL_LISP
 // C++20 provides functions for counting zeros. Unlike the GNU intrinsics
 // they have defined behaviour when presented with a zero word.
 
-inline int nlz(uint64_t x)
+constexpr inline int nlz(uint64_t x)
 {   return countl_zero(x);
 }
 
-inline int ntz(uint64_t x)
+constexpr inline int ntz(uint64_t x)
 {   return countr_zero(x);
 }
 
-inline int countBits(uint64_t x)
+constexpr inline int countBits(uint64_t x)
 {   return std::popcount(x);
 }
 
@@ -95,17 +95,17 @@ inline int countBits(uint64_t x)
 
 // Count the leading zeros in a 64-bit word.
 
-inline int nlz(uint64_t x)
+constexpr inline int nlz(uint64_t x)
 {   return x==0 ? 64 : __builtin_clzll(x);
 }
 
 // Count the trailing zeros in a 64-bit word.
 
-inline int ntz(uint64_t x)
+constexpr inline int ntz(uint64_t x)
 {   return x==0 ? 64 : __builtin_ctzll(x);
 }
 
-inline int countBits(uint64_t x)
+constexpr inline int countBits(uint64_t x)
 {   return __builtin_popcount(x);
 }
 
@@ -113,7 +113,21 @@ inline int countBits(uint64_t x)
 
 // A generic implementation just in case that is needed!
 
-inline int nlz(uint64_t x)
+class nlztable64
+{
+public:
+    int8_t v[67] = {-1};
+    constexpr nlztable64()
+    {   uint64_t z = 0;
+        for (int i=0; i<64; i++)
+        {   v[z%67] = 64-i;
+            z = 2*z+1;
+        }
+    }
+};
+constexpr inline nlztable64 nlz64;
+
+constexpr inline int nlz(uint64_t x)
 {   x |= x>>1;
     x |= x>>2;
     x |= x>>4;
@@ -125,46 +139,14 @@ inline int nlz(uint64_t x)
 // 2 is a primitive root mod 67, so all the values of 2^k (0<=k<64) are
 // distinct mod 67. So the same will apply for (2^k-1) which are the
 // values I have here. So a simple lookup in a table of size 67 does the
-// job for me. I will fill the table using code here that computes the
-// relevant values since that feels safer than having a table of "magic
-// numbers".
-    auto nlzf = [](int n)
-    {   if (n==0) return 64;
-        uint64_t v = 0;
-        int r = -1;
-        for (int k=0; k<64; k++)
-        {   v = 2*v + 1;
-            if (v%67 == n) r = 63-k;
-        }
-        return r;
-    };
-// The way this is written out is tolerable because 67 is a reasonably
-// small number, but it would have been neater if C++ provided a way to
-// initialize arrays a bit like this. It does if one uses std::vector
-// rather than a plain array.
-    constexpr static int8_t nlzTable[67] =
-    {   nlzf( 0), nlzf( 1), nlzf( 2), nlzf( 3), nlzf( 4),
-        nlzf( 5), nlzf( 6), nlzf( 7), nlzf( 8), nlzf( 9),
-        nlzf(10), nlzf(11), nlzf(12), nlzf(13), nlzf(14),
-        nlzf(15), nlzf(16), nlzf(17), nlzf(18), nlzf(19),
-        nlzf(20), nlzf(21), nlzf(22), nlzf(23), nlzf(24),
-        nlzf(25), nlzf(26), nlzf(27), nlzf(28), nlzf(29),
-        nlzf(30), nlzf(31), nlzf(32), nlzf(33), nlzf(34),
-        nlzf(35), nlzf(36), nlzf(37), nlzf(38), nlzf(39),
-        nlzf(40), nlzf(41), nlzf(42), nlzf(43), nlzf(44),
-        nlzf(45), nlzf(46), nlzf(47), nlzf(48), nlzf(49),
-        nlzf(50), nlzf(51), nlzf(52), nlzf(53), nlzf(54),
-        nlzf(55), nlzf(56), nlzf(57), nlzf(58), nlzf(59),
-        nlzf(60), nlzf(61), nlzf(62), nlzf(63), nlzf(64),
-        nlzf(65), nlzf(66)
-    };
-    return nlzTable[x % 67];
+// job for me.
+    return nlz64.v[x % 67];
 }
 
 // This code is to identify the least significant bit in a 64-bit
 // value. The function leastBit() just removes all other bits.
 
-inline uint64_t leastBit(uint64_t n)
+constexpr inline uint64_t leastBit(uint64_t n)
 {   return n & (-n);
 }
 
@@ -182,40 +164,28 @@ inline uint64_t leastBit(uint64_t n)
 // This is related to the function intlog2() in tags.h, but that function
 // is only to be applied on inputs that are a power of 2.
 
-inline int ntz(uint64_t n)
-{   auto ntzf = [](int n)
-    {   if (n==0) return 64;
-        uint64_t v=0;
-        int r = -1;
-        for (int k=0; k<64; k++)
-        {   v = 1ULL<<k;
-            if (v%67 == n) r = k;
+class ntztable64
+{
+public:
+    int8_t v[67] = {0};
+    constexpr ntztable64()
+    {   uint64_t z = 1;
+        for (int i=0; i<64; i++)
+        {   v[z%67] = i;
+            z = 2*z;
         }
-        return r;
-    };
-    constexpr static int8_t ntzTable[67] =
-    {   ntzf( 0), ntzf( 1), ntzf( 2), ntzf( 3), ntzf( 4),
-        ntzf( 5), ntzf( 6), ntzf( 7), ntzf( 8), ntzf( 9),
-        ntzf(10), ntzf(11), ntzf(12), ntzf(13), ntzf(14),
-        ntzf(15), ntzf(16), ntzf(17), ntzf(18), ntzf(19),
-        ntzf(20), ntzf(21), ntzf(22), ntzf(23), ntzf(24),
-        ntzf(25), ntzf(26), ntzf(27), ntzf(28), ntzf(29),
-        ntzf(30), ntzf(31), ntzf(32), ntzf(33), ntzf(34),
-        ntzf(35), ntzf(36), ntzf(37), ntzf(38), ntzf(39),
-        ntzf(40), ntzf(41), ntzf(42), ntzf(43), ntzf(44),
-        ntzf(45), ntzf(46), ntzf(47), ntzf(48), ntzf(49),
-        ntzf(50), ntzf(51), ntzf(52), ntzf(53), ntzf(54),
-        ntzf(55), ntzf(56), ntzf(57), ntzf(58), ntzf(59),
-        ntzf(60), ntzf(61), ntzf(62), ntzf(63), ntzf(64),
-        ntzf(65), ntzf(66)
-    };
-    return ntzTable[leastBit(n) % 67];
+    }
+};
+constexpr inline ntztable64 ntz64;
+    
+constexpr inline int ntz(uint64_t n)
+{   return ntz64.v[x % 67];
 }
 
 // The version here is expected to be a good one when the expected number
 // of set bits is small.
 
-inline int countBits(uint64_t x)
+constexpr inline int countBits(uint64_t x)
 {   int r = 0;
     while (x != 0)
     {   r++;
@@ -233,6 +203,54 @@ inline int countBits(uint64_t x)
 #define NLZ_DEFINED 1
 #define NTZ_DEFINED 1
 
+// The overload here for 128-bit integers always uses my own code. It does
+// not clash with any overloads of system-provided versions since they
+// are not called "nlz"!
+
+class nlztable128
+{
+public:
+    int8_t v[131] = {-1};
+    constexpr nlztable128()
+    {   uint128_t z = 0;
+        for (int i=0; i<128; i++)
+        {   v[z%131] = 128-i;
+            z = 2*z+1;
+        }
+    }
+};
+constexpr inline nlztable128 nlz128;
+
+#if 0
+// Probably on many machines nlz on 64-bit values will use an intrinsic
+// that can explout machine instructions to do the hard work. I do
+// not expect C++-provided 128 support to be especially strong, so
+// here I decompose that case into looking at the top and bottom
+// 64 bits as relevant.
+
+constexpr inline int nlz(uint128_t x)
+{   if ((x>>64) == 0) 64 + nlz((uint64_t)x)
+    else return nlz((uint64_t)(x>>64));
+}
+#endif
+
+constexpr inline int nlz(uint128_t x)
+{   if (x == 0) return 128;
+    x |= x>>1;
+    x |= x>>2;
+    x |= x>>4;
+    x |= x>>8;
+    x |= x>>16;
+    x |= x>>32;
+    x |= x>>64;
+// Now x is a number with all bits up as far as its highest one set, and I
+// have achieved that without performing any tests.
+// 2 is a primitive root mod 131, so all the values of 2^k (0<=k<128) are
+// distinct mod 131. So the same will apply for (2^k-1) which are the
+// values I have here. So a simple lookup in a table of size 131 does the
+// job for me.
+    return nlz128.v[x % 131];
+}
 
 // These functions view map[] as an array of 64-bit values with bits counted
 // least significant first. They set, clear or test bits. The ones that work

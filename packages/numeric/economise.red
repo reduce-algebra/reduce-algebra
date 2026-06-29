@@ -379,6 +379,7 @@ algebraic procedure multipoint_pade(f, u, v, accuracy);
 
       if stopOnErr = 1 then <<
          precision 6;
+         lisp if not zerop posn() then terpri();
          lisp assgnpri("With N=", nil, nil);
          lisp assgnpri(N, nil, nil);
          lisp assgnpri(" error = ", nil, nil);
@@ -400,7 +401,7 @@ algebraic procedure multipoint_pade(f, u, v, accuracy);
 % x which can be symbolic or numeric.
 % Very typically evaluate_pade will return an ugly result where numerator
 % and denominator will have been normalised more based on the highest
-% degree terms rather than the constant terms (which will oftent start off
+% degree terms rather than the constant terms (which will often start off
 % with values close to 1). So separating out numerator and denominator
 % separately using num_pade and den_pade may often feel more useful.
 

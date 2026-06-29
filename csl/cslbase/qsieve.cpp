@@ -1833,7 +1833,7 @@ begin :;
         {   // Occasionally raise this prime number to a power.
             int pow = (int) xor_rand(seed, 2, remaining_factors - 1);
             remaining_factors += 1 - pow;
-            message += sprintf(message, " %s %c^%d", sym == 'A' ? "and" : "*",
+            message += snprintf(message, 1000, " %s %c^%d", sym == 'A' ? "and" : "*",
                                sym, pow);
             ++sym;
             do
@@ -1904,15 +1904,15 @@ void generate_input_file(state *state)
         } 
         char buf[max_len + 255], *title = buf + max_len,
                                   *comment = title + 127, *str = title ;
-        str += sprintf(str, "Generated %d sample number%s ", (int) count,
+        str += snprintf(str, 1000, "Generated %d sample number%s ", (int) count,
                        1 < count ? "s" : "");
         if (min == max)
-            str += sprintf(str, "of %d-bit", (int) min);
+            str += snprintf(str, 1000, "of %d-bit", (int) min);
         else
-            str += sprintf(str, "ranging from %d-bit to %d-bit", (int) min,
+            str += snprintf(str, 1000, "ranging from %d-bit to %d-bit", (int) min,
                            (int) max);
         if (state->params.rand.custom)
-            sprintf(str, " using seed %" PRIu64, state->params.rand.custom);
+            snprintf(str, 1000, " using seed %" PRIu64, state->params.rand.custom);
         fprintf(fp, "# %s.\n# Use \"--demand", title);
         for(int j = 0; j < 3 && g[j] && g[j] != (qs_md)(-1); ++j)
             fprintf(fp, " %d", (int)g[j]);
