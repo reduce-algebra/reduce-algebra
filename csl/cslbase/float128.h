@@ -1215,23 +1215,36 @@ constexpr FLOAT160 FLOAT160::operator/(FLOAT160 const& rhs) const
     return r;
 }
 
-constexpr bool FLOAT160::operator<(FLOAT160 const& rhs) const
-{   if (sign)
-    {   if (rhs.sign)
-        {   return x > rhs.x ||
-                  (x == rhs.x && m > rhs.m);
-        }
-        else return true;
-    }
-    else if (rhs.sign) return false;
-    else
-    {   return x < rhs.x ||
-              (x == rhs.x && m < rhs.m);
-    }
+constexpr bool FLOAT160::operator==(const FLOAT160& a) const
+{   return sign==a.sign && x==a.x && m==a.m;
 }
 
-constexpr bool FLOAT160::operator>(FLOAT160 const& rhs) const
-{   return rhs < *this;
+constexpr bool FLOAT160::operator!=(const FLOAT160& a) const
+{   return sign!=a.sign || x!=a.x || m!=a.m;
+}
+
+constexpr bool FLOAT160::operator>(const FLOAT160& a) const
+{   if (sign!=a.sign) return a.sign;
+    if (x!=a.x) return x > a.x;
+    return m > a.m;
+}
+
+constexpr bool FLOAT160::operator>=(const FLOAT160& a) const
+{   if (sign!=a.sign) return a.sign;
+    if (x!=a.x) return x > a.x;
+    return m >= a.m;
+}
+
+constexpr bool FLOAT160::operator<(const FLOAT160& a) const
+{   if (sign!=a.sign) return sign;
+    if (x!=a.x) return x < a.x;
+    return m < a.m;
+}
+
+constexpr bool FLOAT160::operator<=(const FLOAT160& a) const
+{   if (sign!=a.sign) return sign;
+    if (x!=a.x) return x < a.x;
+    return m <= a.m;
 }
 
 constexpr FLOAT160 FLOAT160::operator-(FLOAT160 const& rhs) const
@@ -1332,14 +1345,6 @@ constexpr void FLOAT160::setsignbit(bool ss)
 {   sign = ss;
 }
 
-constexpr bool FLOAT160::operator<=(FLOAT160 const& rhs) const
-{   return !(rhs < *this);
-}
-
-constexpr bool FLOAT160::operator>=(FLOAT160 const& rhs) const
-{   return !(*this < rhs);
-}
-
 constexpr FLOAT160 FLOAT160::operator=(FLOAT160 const& rhs)
 {   m = rhs.m;
     x = rhs.x;
@@ -1379,10 +1384,6 @@ constexpr FLOAT160::operator double() const
     else for (int i=0; i<128-x; i++) r = 0.5L*r;
 #endif
     return sign ? -r : r;
-}
-
-constexpr bool FLOAT160::operator==(FLOAT160 const& rhs) const
-{   return m == rhs.m && x == rhs.x && sign == rhs.sign;
 }
 
 #endif // NEED_FLOAT160

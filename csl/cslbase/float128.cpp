@@ -86,40 +86,40 @@ double acot(double x)
 }
 
 double acoth(double x) { return std::atanh(1.0/x); }
-double acsc(double x)  { return std::asin(1.0/x); }
+double acsc(double x)  { return CSLasin(1.0/x); }
 double acsch(double x) { return std::asinh(1.0/x); }
-double asec(double x)  { return std::acos(1.0/x); }
+double asec(double x)  { return CSLacos(1.0/x); }
 double asech(double x) { return std::acosh(1.0/x); }
 double cbrt(double x)
-{   if (x < 0) return -std::pow(-x, 1.0/3.0);
-    else return std::pow(x, 1.0/3.0);
+{   if (x < 0) return -CSLpow(-x, 1.0/3.0);
+    else return CSLpow(x, 1.0/3.0);
 }
-double cot(double x)   { return 1.0/std::tan(x); }
+double cot(double x)   { return 1.0/CSLtan(x); }
 double coth(double x)  { return 1.0/std::tanh(x); }
-double csc(double x)   { return 1.0/std::sin(x); }
-double csch(double x)  { return 1.0/std::sinh(x); }
-double sec(double x)   { return 1.0/std::cos(x); }
-double sech(double x)  { return 1.0/std::cosh(x); }
+double csc(double x)   { return 1.0/CSLsin(x); }
+double csch(double x)  { return 1.0/CSLsinh(x); }
+double sec(double x)   { return 1.0/CSLcos(x); }
+double sech(double x)  { return 1.0/CSLcosh(x); }
 double rsqrt(double x) { return 1.0/std::sqrt(x); }
-double ln(double x)    { return log(x); }
+double ln(double x)    { return CSLlog(x); }
 
 double to_degrees(double x) { return 180.0*x/M_PI; }
 // For large values of x I could do a lot better with the next one!
 double to_radians(double x) { return M_PI*x/180.0; }
 
-double acosd(double x) { return to_degrees(std::acos(x)); }
+double acosd(double x) { return to_degrees(CSLacos(x)); }
 double acotd(double x) { return to_degrees(acot(x)); }
 double acscd(double x) { return to_degrees(acsc(x)); }
 double asecd(double x) { return to_degrees(asec(x)); }
-double asind(double x) { return to_degrees(std::asin(x)); }
-double atand(double x) { return to_degrees(std::atan(x)); }
+double asind(double x) { return to_degrees(CSLasin(x)); }
+double atand(double x) { return to_degrees(CSLatan(x)); }
 
-double cosd(double x) { return std::cos(to_radians(x)); }
+double cosd(double x) { return CSLcos(to_radians(x)); }
 double cotd(double x) { return cot(to_radians(x)); }
 double cscd(double x) { return csc(to_radians(x)); }
 double secd(double x) { return sec(to_radians(x)); }
-double sind(double x) { return std::sin(to_radians(x)); }
-double tand(double x) { return std::tan(to_radians(x)); }
+double sind(double x) { return CSLsin(to_radians(x)); }
+double tand(double x) { return CSLtan(to_radians(x)); }
 
 std::complex<double> acot(const std::complex<double>& x)
 {    return std::tan(1.0/x);
@@ -646,11 +646,36 @@ constexpr FLOAT160::operator uint128_t() const
     else return m>>(128-x);
 }
 
+constexpr FLOAT160::operator int128_t() const
+{   if (x <= 0) return 0;
+    uint128_t r = m>>(128-x);
+    if (sign) r = -r;
+    return (int128_t)r;
+}
+
+// in float128.h
+//constexpr FLOAT160::operator uint64_t() const
+//{   if (x <= 0) return 0;
+//    uint64_t r = (uint64_t)(m>>(128-x));
+//    if (sign) r = -r;
+//    return (int64_t)r;
+//}
+
 constexpr FLOAT160::operator int64_t() const
 {   if (x <= 0) return 0;
-    uint64_t r = (uint64_t)(m>>(128-x));
+    return (uint64_t)(m>>(128-x));
+}
+
+constexpr FLOAT160::operator uint32_t() const
+{   if (x <= 0) return 0;
+    return (uint32_t)(m>>(128-x));
+}
+
+constexpr FLOAT160::operator int32_t() const
+{   if (x <= 0) return 0;
+    uint32_t r = (uint32_t)(m>>(128-x));
     if (sign) r = -r;
-    return (int64_t)r;
+    return (int32_t)r;
 }
 
 // This converts to the bit-pattern that will be for a 128-bit float,

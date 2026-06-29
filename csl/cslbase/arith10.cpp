@@ -289,6 +289,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
     else if (restype == WANT_SHORT_FLOAT) restype = WANT_SINGLE_FLOAT;
 // At least for now I do not support long floats here - I demote to double
 // floats.
+#pragma message "support long floats here please"
     if (restype == WANT_LONG_FLOAT) restype = WANT_DOUBLE_FLOAT;
     if ((is_numbers(a) && is_complex(a)) ||
         (is_numbers(b) && is_complex(b)))
@@ -311,7 +312,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         a = make_complex(a, b);
         return a;
     }
-    d = std::pow(d, e);
+    d = CSLpow(d, e);
     a = make_boxfloat(d, restype);
     return a;
 }
@@ -323,8 +324,11 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 //     a struct containing versions of that function for double,
 //     complex double, FLOAT_128 and COMPLEX_128 arguments.
 
+// NB where there may be a "crlibm" version of the double->double
+// function available I use eg CSLsin etc which will map to it.
+
 #define functions \
-    FF(acos,     std::acos,    std::acos,      acos,      acos) \
+    FF(acos,     CSLacos,      std::acos,      acos,      acos) \
     FF(acosd,    acosd,        nullptr,        acosd,     nullptr) \
     FF(acosh,    std::acosh,   std::acosh,     acosh,     acosh) \
     FF(acot,     acot,         acot,           acot,      acot) \
@@ -336,38 +340,38 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
     FF(asec,     asec,         asec,           asec,      asec) \
     FF(asecd,    asecd,        nullptr,        asecd,     nullptr) \
     FF(asech,    asech,        asech,          asech,     asech) \
-    FF(asin,     std::asin,    std::asin,      asin,      asin) \
+    FF(asin,     CSLasin,      std::asin,      asin,      asin) \
     FF(asind,    asind,        nullptr,        asind,     nullptr) \
     FF(asinh,    std::asinh,   std::asinh,     asinh,     asinh) \
-    FF(atan,     std::atan,    std::atan,      atan,      atan) \
+    FF(atan,     CSLatan,      std::atan,      atan,      atan) \
     FF(atand,    atand,        nullptr,        atand,     nullptr) \
     FF(atanh,    std::atanh,   std::atanh,     atanh,     atanh) \
     FF(cbrt,     std::cbrt,    cbrt,           cbrt,      cbrt) \
-    FF(cos,      std::cos,     std::cos,       cos,       cos) \
+    FF(cos,      CSLcos,       std::cos,       cos,       cos) \
     FF(cosd,     cosd,         nullptr,        cosd,      nullptr) \
-    FF(cosh,     std::cosh,    std::cosh,      cosh,      cosh) \
+    FF(cosh,     CSLcosh,      std::cosh,      cosh,      cosh) \
     FF(cot,      cot,          cot,            cot,       cot) \
     FF(cotd,     cotd,         nullptr,        cotd,      nullptr) \
     FF(coth,     coth,         coth,           coth,      coth) \
     FF(csc,      csc,          csc,            csc,       csc) \
     FF(cscd,     cscd,         nullptr,        cscd,      nullptr) \
     FF(csch,     csch,         csch,           csch,      csch) \
-    FF(exp,      std::exp,     std::exp,       exp,       exp) \
+    FF(exp,      CSLexp,       std::exp,       exp,       exp) \
     FF(expm1,    std::expm1,   expm1,          expm1,     expm1) \
     FF(ln,       ln,           ln,             ln,        ln) \
-    FF(log,      std::log,     std::log,       log,       log) \
-    FF(log10,    std::log10,   log10,          log10,     log10) \
+    FF(log,      CSLlog,       std::log,       log,       log) \
+    FF(log10,    CSLlog10,     log10,          log10,     log10) \
     FF(log1p,    std::log1p,   nullptr,        log1p,     nullptr) \
-    FF(log2,     std::log2,    nullptr,        log2,      nullptr) \
+    FF(log2,     CSLlog2,      nullptr,        log2,      nullptr) \
     FF(sec,      sec,          sec,            sec,       sec) \
     FF(secd,     secd,         nullptr,        secd,      nullptr) \
     FF(sech,     sech,         sech,           sech,      sech) \
-    FF(sin,      std::sin,     std::sin,       sin,       sin) \
+    FF(sin,      CSLsin,       std::sin,       sin,       sin) \
     FF(sind,     sind,         nullptr,        sind,      nullptr) \
-    FF(sinh,     std::sinh,    std::sinh,      sinh,      sinh) \
+    FF(sinh,     CSLsinh,      std::sinh,      sinh,      sinh) \
     FF(sqrt,     std::sqrt,    std::sqrt,      sqrt,      sqrt) \
     FF(rsqrt,    rsqrt,        rsqrt,          rsqrt,     rsqrt) \
-    FF(tan,      std::tan,     std::tan,       tan,       tan) \
+    FF(tan,      CSLtan,       std::tan,       tan,       tan) \
     FF(tand,     tand,         nullptr,        tand,      nullptr) \
     FF(tanh,     std::tanh,    std::tanh,      tanh,      tanh)
 
