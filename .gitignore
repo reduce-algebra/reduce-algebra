@@ -161,19 +161,6 @@
 # /jslisp/nbproject/
 /jslisp/nbproject/private
 
-# /libraries/SoftFloat-3a/source/
-/libraries/SoftFloat-3a/source/Makefile.in
-/libraries/SoftFloat-3a/source/autom4te.cache
-/libraries/SoftFloat-3a/source/compile
-/libraries/SoftFloat-3a/source/config.guess
-/libraries/SoftFloat-3a/source/config.sub
-/libraries/SoftFloat-3a/source/configure
-/libraries/SoftFloat-3a/source/depcomp
-/libraries/SoftFloat-3a/source/install-sh
-/libraries/SoftFloat-3a/source/ltmain.sh
-/libraries/SoftFloat-3a/source/m4
-/libraries/SoftFloat-3a/source/missing
-
 # /libraries/crlibm/
 /libraries/crlibm/autom4te.cache
 /libraries/crlibm/ltmain.sh
