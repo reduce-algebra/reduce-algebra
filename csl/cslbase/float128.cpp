@@ -374,10 +374,13 @@ FLOAT_128 FLOAT_128::fma(FLOAT_128 b, FLOAT_128 c) const
 #elif defined USE_CLANG_FLOAT128
     return FLOAT_128(fmaf128(v, b.v, c.v));
 #else
+// This could be dodgy because the rounding might first round to 160 bits
+// and then a second time to 128. The extra argument to the 160-bit fma is
+// to avoid that.
     FLOAT160 aa = (FLOAT160)*this;
     FLOAT160 bb = (FLOAT160)b;
     FLOAT160 cc = (FLOAT160)c;
-    return (FLOAT_128)aa.fma(bb, cc);
+    return (FLOAT_128)aa.fma(bb, cc, true);
 #endif
 }
 
@@ -685,11 +688,6 @@ uint128_t FLOAT160::f160tof128rep() const
 FLOAT160::operator FLOAT_128() const
 {   FLOAT_128 r(f160tof128rep(), 0);
     return r;
-}
-
-FLOAT160 FLOAT160::fma(FLOAT160& b, FLOAT160& c)
-{   std::cout << "160-bit fms called\n";
-    std::abort(); // @@@
 }
 
 FLOAT160 FLOAT160::operator+=(FLOAT160 const& rhs)
@@ -1344,6 +1342,7 @@ FLOAT_128 FLOAT_128::operator+() const
 
 // Note that negating a NaN here flips the sign bit but the result is
 // still a NaN.
+
 FLOAT_128 FLOAT_128::operator-() const
 {   return FLOAT_128(v ^ ((uint128_t)1)<<127, 0.0f);
 }
@@ -1402,7 +1401,7 @@ FLOAT_128 FLOAT_128::fma(FLOAT_128 b, FLOAT_128 c) const
 {   FLOAT160 aa = (FLOAT160)*this;
     FLOAT160 bb = (FLOAT160)b;
     FLOAT160 cc = (FLOAT160)b;
-    return (FLOAT_128)aa.fma(bb, cc);
+    return (FLOAT_128)aa.fma(bb, cc, true);
 }
 
 FLOAT_128 FLOAT_128::operator/(FLOAT_128 w) const
@@ -1655,6 +1654,12 @@ COMPLEX_128 COMPLEX_128::operator-(COMPLEX_128 a) const
 //    res = res + ablo;         // final accurate value.
 // To achieve subtraction just negate c (or d) to start with.
 
+FLOAT_128 sumprods(FLOAT_128 a, FLOAT_128 b, FLOAT_128 c, FLOAT_128 d)
+{   FLOAT_128 w = a*b;
+    FLOAT_128 wlo = a.fma(b, -w);
+    return c.fma(d, w) + wlo;
+}
+
 COMPLEX_128 COMPLEX_128::operator*(COMPLEX_128 x) const
 {   FLOAT_128 a = rr;
     FLOAT_128 b = ii;
@@ -1668,20 +1673,14 @@ COMPLEX_128 COMPLEX_128::operator*(COMPLEX_128 x) const
     b = b/scale1;
     c = c/scale2;
     d = d/scale2;
-// The real part of the result is based on a*c - b*d;
-    FLOAT_128 realpart = c*d;
-    FLOAT_128 err = c.fma(-d, realpart);
-    realpart = a.fma(b, -realpart) + err;
-// The imaginary part is based on a*d + b*c;
-    FLOAT_128 imagpart = -b*c;
-    err = b.fma(c, imagpart);
-    imagpart = a.fma(d, imagpart) + err;
+    FLOAT_128 realpart = sumprods(a, c, -b, d);
+    FLOAT_128 imagpart = sumprods(a, d, b, c);
     FLOAT_128 q = scale1*scale2;
     return COMPLEX_128(q*realpart, q*imagpart);
 }
 
 COMPLEX_128 COMPLEX_128::operator/(COMPLEX_128 a) const
-{   FLOAT_128 q = LF_C(1.0)/(a.rr*a.rr + a.ii*a.ii);
+{   FLOAT_128 q = LF_C(1.0)/sumprods(a.rr, a.rr, a.ii, a.ii);
     COMPLEX_128 w = operator*(a.conj());
     return COMPLEX_128(q*w.real(), q*w.imag());
 }
@@ -1853,14 +1852,21 @@ COMPLEX160 COMPLEX160::operator*(FLOAT160 a) const
 {   return COMPLEX160(rr*a, ii*a);
 }
 
+FLOAT160 sumprods(FLOAT160 a, FLOAT160 b, FLOAT160 c, FLOAT160 d)
+{   FLOAT160 w = a*b;
+    FLOAT160 wlo = a.fma(b, -w);
+    return c.fma(d, w) + wlo;
+}
+
 COMPLEX160 COMPLEX160::operator*(COMPLEX160 a) const
-{   return COMPLEX160(rr*a.rr - ii*a.ii, rr*a.ii + ii*a.rr);
+{   return COMPLEX160(sumprods(rr, a.rr, -ii, a.ii),
+                      sumprods(rr, a.ii, ii, a.rr));
 }
 
 COMPLEX160 COMPLEX160::operator/(COMPLEX160 a) const
-{   FLOAT160 q = a.rr*a.rr + a.ii*a.ii;
-    return COMPLEX160((rr*a.rr * ii*a.ii)/q, (rr*a.ii - ii*a.rr)/q);
-
+{   FLOAT160 q = sumprods(a.rr, a.rr, a.ii, a.ii);
+    return COMPLEX160(sumprods(rr, a.rr, ii, a.ii)/q,
+                      sumprods(rr, a.ii, -ii, a.rr)/q);
 }
 
 // comparisons

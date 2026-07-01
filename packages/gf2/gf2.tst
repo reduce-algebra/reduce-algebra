@@ -1,11 +1,9 @@
-% Tests of work over GF(2)
-
 load_package gf2;
 
+% The expressions here will be printed using decimal notation, however
+% often a binary (or octal or hex) reading of them would make sense.
+
 on echo;
-lisp if 'csl memq lispsystem!* then force!-output!-radix 16
-else if 'psl memq lispsystem!* then outputbase!* := 16
-else if 'common!-lisp memq lispsystem!* then !*print!-base!* := 16$
 
 operator vv;
 gf2_vars {x, y, z};
@@ -50,9 +48,5 @@ gf2_groeb{p + s + b,
           w*p + *b**3,
           w + b*s + b**2};
 
-% Avoid upsetting the testing framework:
-lisp if 'csl memq lispsystem!* then force!-output!-radix 10
-else if 'psl memq lispsystem!* then outputbase!* := 10
-else if 'common!-lisp memq lispsystem!* then !*print!-base!* := 10$
 
 end;

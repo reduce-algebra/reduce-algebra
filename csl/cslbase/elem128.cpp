@@ -1,12 +1,6 @@
-//@@@@@@@@@@@@@@@@@
-// (1) check principle value, notably acot() on complex args.
-// (2) remaining inverse functions for FLOAT160 and COMPLEX160
-// (3) fma for soft float128/160
-// (4) atan2 ought to be clever wrt signed zeros! Ie
-//     atan2(+-0, +-0) => -pi, 0 or pi depending on the signs.
-// (5) FLOAT_128 functions to return a NaN if arguments out of range.
-
-// (6) then make the "arithlib" stuff work again!
+// (1) remaining inverse functions for FLOAT160 and COMPLEX160
+// (2) FLOAT_128 functions to return a NaN if arguments out of range.
+// (3) then make the "arithlib" stuff work again!
 
 
 // elem128.cpp                                  Copyright (C) 2026 Codemist
@@ -506,20 +500,11 @@ delegatebinary128(hypot,     hypotf128)
 
 FLOAT160 sumSeries(FLOAT160* v, int n, FLOAT160 x)
 {   FLOAT160 r = v[n-1];
-    long double rr = (long double)r;
-    for (int i=n-2; i>=0; i--)
-    {   r = x*r + v[i];
-// In a while I will change the above to
-//      r = r.fma(x, v[i];
-// which may slightly reduce errors. 
-        rr = ((long double)x)*rr + (long double)v[i];
-        long double mine = (long double) r;
-        if (std::abs((rr - mine)/rr) > 0.0001) abort();
-    }
+    for (int i=n-2; i>=0; i--) r = r.fma(x, v[i]);
     return r;
 }
 
-// For this one I can be a lot more clever about reducing modulo 360.
+// For this one I can be a lot more clever about reducing modulo 360. @@@@
 
 constexpr FLOAT160 f160toradians(FLOAT160 x)
 {   return x*0.0174532925199432957692369076848861271344287_Q;
@@ -1284,7 +1269,7 @@ FLOAT160 sqrt(FLOAT160 x)
 
 FLOAT160 rsqrt(FLOAT160 x)
 {   if (x < 0.0_Q) return NAN160();
-    else if (x == 0.0_Q) return INF160();
+    else if (x == 0.0_Q) return INF160();  // should rsqrt(-0.0) be -infinity?
      FLOAT160 r = 1.0_Q/(FLOAT160)std::sqrt((long double)x);
     if (longdouble64)
         r = 0.5_Q*r*(3.0_Q - x*r*r);
@@ -1402,10 +1387,10 @@ FLOAT160 atan(FLOAT160 z)
 FLOAT160 atanh(FLOAT160 z)
 {   if (z > 1.0_Q || z < -1.0_Q) return NAN160();
     FLOAT160 r = (FLOAT160)std::atanh((long double)z);
-    FLOAT160 t = tan(r);
+    FLOAT160 t = tanh(r);
     r = r - (t - z)/(1.0_Q + t*t);
     if (longdouble64)
-    {   t = tan(r);
+    {   t = tanh(r);
         r = r - (t - z)/(1.0_Q + t*t);
     }
     return r;
@@ -1414,8 +1399,8 @@ FLOAT160 atanh(FLOAT160 z)
 // atan2() returns a value on the range -pi to +pi
 
 FLOAT160 atan2(FLOAT160 y, FLOAT160 x)
-{   if (x >= 0.0_Q)
-    {   if (y >= 0.0_Q)
+{   if (!x.sign)
+    {   if (!y.sign)
         {   return atan(y/x);
         }
         else
@@ -1423,7 +1408,7 @@ FLOAT160 atan2(FLOAT160 y, FLOAT160 x)
         }
     }
     else
-    {   if (y >= 0.0_Q)
+    {   if (!y.sign)
         {   return 3.14159265358979323846264338327950288419717_Q -
                    atan(-y/x);
         }
@@ -1728,24 +1713,52 @@ COMPLEX160 rsqrt(COMPLEX160 z)
 COMPLEX160 acos(COMPLEX160 z)
 {   COMPLEX160 r = fromcomplexlongdouble(
         std::acos(tocomplexlongdouble(z)));
-    r = r + (cos(r) - z)/sin(r);
+    if (longdouble64) r = r + (cos(r) - z)/sin(r);
     return r + (cos(r) - z)/sin(r);
 }
+
 COMPLEX160 acosh(COMPLEX160 z)
-{ return fromcomplexlongdouble(
-    std::acosh(tocomplexlongdouble(z)));  }
+{   COMPLEX160 r = fromcomplexlongdouble(
+        std::acosh(tocomplexlongdouble(z);
+    if (longdouble64) r = r + (cosh(r) - z)/sinh(r);
+    return r + (cosh(r) - z)/sinh(r);
+}
 
 COMPLEX160 asin(COMPLEX160 z)
-{ return fromcomplexlongdouble(std::asin(tocomplexlongdouble(z)));   }
+{   COMPLEX160 r = fromcomplexlongdouble(
+        std::asin(tocomplexlongdouble(z);
+    if (longdouble64) r = r + (z - sin(r))/cos(r);
+    return r + (z - sin(r))/cos(r);
+}
 
 COMPLEX160 asinh(COMPLEX160 z)
-{ return fromcomplexlongdouble(std::asinh(tocomplexlongdouble(z)));  }
+{   COMPLEX160 r = fromcomplexlongdouble(
+        std::asinh(tocomplexlongdouble(z);
+    if (longdouble64) r = r + (sinh(r) - z)/cosh(r);
+    return r + (sinh(r) - z)/cosh(r);
+}
 
 COMPLEX160 atan(COMPLEX160 z)
-{ return fromcomplexlongdouble(std::atan(tocomplexlongdouble(z)));   }
+{   COMPLEX160 r = fromcomplexlongdouble(
+        std::atan(tocomplexlongdouble(z);
+    COMPLEX160 t = tan(r);
+    if (longdouble64)
+    {   r = r + (t - z)/(1 - t*t);
+        t = tan(r);
+    }
+    return r + (t - z)/(1 - t*t);
+
 
 COMPLEX160 atanh(COMPLEX160 z)
-{ return fromcomplexlongdouble(std::atanh(tocomplexlongdouble(z)));  }
+   COMPLEX160 r = fromcomplexlongdouble(
+        std::atanh(tocomplexlongdouble(z);
+    COMPLEX160 t = tanh(r);
+    if (longdouble64)
+    {   r = r + (t - z)/(1 + t*t);
+        t = tanh(r);
+    }
+    return r + (t - z)/(1 + t*t);
+
 
 COMPLEX160 ln(COMPLEX160 z)
 {   FLOAT160 x = z.real();
@@ -1793,7 +1806,7 @@ COMPLEX160 tanh(COMPLEX160 z)
     return s/c;
 }
 
-// Review princial value issue here...
+// Review princial value issue here...  @@@@@
 
 COMPLEX160 acot(COMPLEX160 z)
 {   return atan(recip(z));
@@ -1851,13 +1864,6 @@ COMPLEX160 expt(COMPLEX160 x, COMPLEX160 y)
 
 COMPLEX160 expt(COMPLEX160 x, FLOAT160 y)
 {   return exp(log(x)*y);
-}
-
-// I do not really think this is meaningful and I am liable to remove
-// it in a while.
-
-COMPLEX160 hypot(COMPLEX160 x, COMPLEX160 y)
-{   return sqrt(x*x + y*y);
 }
 
 #endif // NEED_COMPLEX_MATHLIB

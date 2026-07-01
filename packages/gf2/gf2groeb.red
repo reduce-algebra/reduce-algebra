@@ -101,15 +101,15 @@ symbolic procedure gf2_expand_base G;
     while pending do <<
       ul := pop pending;
       for each v in cdr ul do <<
-        if (gf2_steps_count := gf2_steps_count+1) > 1000 then
-          rederr "too many steps - giving up";
-        S := gf2_S(car ul, v, G);
-        if S then <<
+        gf2_steps_count := gf2_steps_count+1;
+        if gf2_steps_count < 1000 then <<
+          S := gf2_S(car ul, v, G);
+          if S then <<
 % Am I supposed to reduce everything in G by S here?
-          optterpri();
-          princ "Add in a new base polynomial "; print gf2_to_prefix S;
-          G := S . G;
-          push(G, pending) >> >> >>;
+            optterpri();
+            princ "Add in a new base polynomial "; print gf2_to_prefix S;
+            G := S . G;
+            push(G, pending) >> >> >> >>;
 % To get a reduced base here I would need to scan G and spot cases
 % where one leading coefficient divided nicely into the other...
     return G
@@ -135,11 +135,13 @@ fluid '(changed);
 symbolic procedure gf2_reduce_by_one_poly(u, v);
   begin
     scalar q;
-    while u and (q := gf2_quotient_two_terms(gf2_lt u, gf2_lt v)) do <<
-      if (gf2_steps_count := gf2_steps_count+1) > 1000 then
-        rederr "too many steps - giving up";
+    while u and
+          (q := gf2_quotient_two_terms(gf2_lt u, gf2_lt v)) and
+          (gf2_steps_count := gf2_steps_count+1) <= 1000 do <<
       u := gf2_plus(u, gf2_times_term(q, v));
       changed := t >>;
+    if gf2_steps_count > 1000 then
+      printc "too many steps - giving up";
     return u
   end;
 
