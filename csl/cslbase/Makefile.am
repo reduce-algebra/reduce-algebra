@@ -372,7 +372,7 @@ endif !enable_webgui
 
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
-		arith11.cpp arith12.cpp arith13.cpp elem128.cpp \
+		arith11.cpp arith12.cpp elem128.cpp \
                 float128.cpp isprime.cpp qsieve.cpp jit.cpp forks.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
@@ -996,7 +996,6 @@ csl-arith09.$(OBJEXT):	$(HDRS)
 csl-arith10.$(OBJEXT):	$(HDRS)
 csl-arith11.$(OBJEXT):	$(HDRS)
 csl-arith12.$(OBJEXT):	$(HDRS)
-csl-arith13.$(OBJEXT):	$(HDRS)
 csl-elem128.$(OBJEXT):	$(HDRS)
 csl-float128.$(OBJEXT):	$(HDRS)
 csl-isprime.$(OBJEXT):	$(HDRS)
@@ -1044,7 +1043,6 @@ bootstrapreduce-arith09.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith10.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith11.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith12.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith13.$(OBJEXT):	$(HDRS)
 bootstrapreduce-elem128.$(OBJEXT):	$(HDRS)
 bootstrapreduce-float128.$(OBJEXT):	$(HDRS)
 bootstrapreduce-isprime.$(OBJEXT):	$(HDRS)
@@ -1092,7 +1090,6 @@ reduce-arith09.$(OBJEXT):	$(HDRS)
 reduce-arith10.$(OBJEXT):	$(HDRS)
 reduce-arith11.$(OBJEXT):	$(HDRS)
 reduce-arith12.$(OBJEXT):	$(HDRS)
-reduce-arith13.$(OBJEXT):	$(HDRS)
 reduce-elem128.$(OBJEXT):	$(HDRS)
 reduce-float128.$(OBJEXT):	$(HDRS)
 reduce-isprime.$(OBJEXT):	$(HDRS)
@@ -1201,7 +1198,6 @@ reduce_web-arith09.$(OBJEXT):	$(HDRS)
 reduce_web-arith10.$(OBJEXT):	$(HDRS)
 reduce_web-arith11.$(OBJEXT):	$(HDRS)
 reduce_web-arith12.$(OBJEXT):	$(HDRS)
-reduce_web-arith13.$(OBJEXT):	$(HDRS)
 reduce_web-elem128.$(OBJEXT):	$(HDRS)
 reduce_web-float128.$(OBJEXT):	$(HDRS)
 reduce_web-isprime.$(OBJEXT):	$(HDRS)

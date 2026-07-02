@@ -402,7 +402,7 @@ setup_type const* setup_tables[] =
 // table so it is easy to see where they start.
     nullptr,
     arith06_setup, arith08_setup, arith10_setup, arith12_setup,
-    arith13_setup, char_setup, eval1_setup, eval2_setup, eval3_setup,
+    char_setup, eval1_setup, eval2_setup, eval3_setup,
     funcs1_setup, funcs2_setup, funcs3_setup, lisphash_setup,
     print_setup, read_setup, restart_setup, mpi_setup, forks_setup,
 #ifdef ARITHLIB
@@ -970,7 +970,6 @@ LispObject set_up_functions(int restart_flag)
     create_symbols(arith08_setup,  restart_flag);
     create_symbols(arith10_setup,  restart_flag);
     create_symbols(arith12_setup,  restart_flag);
-    create_symbols(arith13_setup,  restart_flag);
     create_symbols(char_setup,     restart_flag);
     create_symbols(eval1_setup,    restart_flag);
     create_symbols(eval2_setup,    restart_flag);

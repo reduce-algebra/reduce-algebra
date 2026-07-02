@@ -45,7 +45,7 @@
 // floating point type via Xcode and clang. (I see some suggestion that
 // a version of g++ via homebrew may have quadmath.h present, but that is
 // not a very comfortable path forward). Also the current Xcode does
-// not provide <stdfloat> and this the C++23 options... so I need to do
+// not provide <stdfloat> and thus the C++23 options... so I need to do
 // EVERYTHING in software there!
 // Windows/x86_64 is OK with quadmath. Windows/aarch64 awaits a build
 // environment that I am happy using and that is stable! But the fallback
@@ -63,8 +63,14 @@
 // rounded setup. The only one that at present is liable to be called
 // for is use of clang on Windows on ARM where in some cases it may be
 // that long double is just a 64-bit type. At the moment I am not yet
-// supporting build there (for a range opf other reasons) so this is not
+// supporting build there (for a range of other reasons) so this is not
 // urgent.
+//
+// A current issue is that for numbers that are too small to be normalised
+// in the usual way I do not round calculations properly. Just now now
+// I will take the view that these numbers already suffer lower precision
+// than other cases and few people will notuce if it is even worse than
+// that> But when I get round to it I will wish to sort that out!
 
 // OVERVIEW:
 // This introduces types FLOAT_128 and COMPLEX_128. A literal for FLOAT_128
@@ -75,13 +81,17 @@
 // Output via "std::cout <<" is possible but the level of control over
 // the print format is limited. Input using "std::cin >>" has not been
 // implemented.
-//
+// These types may not interact with other C++ numeric types as smoothly as
+// you would ideally like - so sometimes you may need to insert explicit
+// casts.
+
+
 
 #if defined USE_LONG_DOUBLE
 // On the Macintosh and sometimes when compiling for Windows the type
 // "long double" is too narrow. In some of those cases if you try to
 // run this with USE_LONG_DOUBLE set it will necessarily fail.
-
+// Check for that here.
 static_assert(((long double)1.0 + 1.0e-34) != 1.0,
               "long double is not a 128-bit IEEE float");
 #endif
@@ -113,10 +123,11 @@ static_assert(((long double)1.0 + 1.0e-34) != 1.0,
 
 // The first two of these cover important practical situations:
 //    Linux on ARM can use USE_LONG_DOUBLE.
-//    MacOS on ARM can use USE_LONG_DOUBLE.
+//    MacOS on ARM gas to use USE_SOFT_FLOAT128
 //    Linux on Intel with g++ can use USE_QUADMATH.
 //    MacOS on Intel is uncertain since the default compiler is clang.
 //        but that platform is in the process of falling out of support!
+//        However USE_SOFT_FLOAT128 should work.
 //    Windows on Intel using the Mingw version of gcc is OK with USE_QUADMATH.
 //    Windows on Intel using Cygwin ditto.
 //    Windows on ARM is pending at the momemnt (June 2026).
@@ -124,11 +135,12 @@ static_assert(((long double)1.0 + 1.0e-34) != 1.0,
 // The main oddity is when one wished to use clang (which is very reasonable
 // and may be the default with some operating systems).
 
-// So the USE_CLANG_FLOAT128 option is desirable even though I will probably
-// noty use it a lot. The USE_CXX_FLOAT23 is present with a view to being
-// future-proof, but it will really start to make sense when std::sin etc
-// all have overfloads for std::float128_t. USE_SOFT_FLOAT128 is there as
-// an ultimate fallback!
+// Support for USE_CLANG_FLOAT128 option is desirable even though I will
+// probably not use it a lot. The USE_CXX_FLOAT23 is present with a view 
+// to being future-proof, but it will really start to make sense when
+// std::sin etc all have overfloads for std::float128_t and all that is
+// widely available..
+// USE_SOFT_FLOAT128 is there as an ultimate fallback!
 //
 // USE_CLANG_FLOAT128 has an issue that clang does not provide a complex
 // library (at present?), so to fill that gap I need me own high precision
@@ -340,8 +352,8 @@ public:
     FLOAT_128 operator+(FLOAT_128) const;
     FLOAT_128 operator-(FLOAT_128) const;
     FLOAT_128 operator*(FLOAT_128) const;
-    FLOAT_128 operator/(FLOAT_128) const;
     FLOAT_128 fma(FLOAT_128, FLOAT_128) const;
+    FLOAT_128 operator/(FLOAT_128) const;
 // Comparisons
     bool operator==(FLOAT_128 const&) const;
     bool operator!=(FLOAT_128 const&) const;
@@ -790,14 +802,17 @@ public:
     FLOAT160 operator+=(FLOAT160 const&);
     FLOAT160 operator-=(FLOAT160 const&);
     FLOAT160 operator*=(FLOAT160 const&);
-//  fma(a, b) == this*a + b but with only one rounding operation.
-    FLOAT160 fma(FLOAT160&, FLOAT160&);
     FLOAT160 operator/=(FLOAT160 const&);
     constexpr FLOAT160 operator+() const;
     constexpr FLOAT160 operator-() const;
     constexpr FLOAT160 operator+(FLOAT160 const&) const;
     constexpr FLOAT160 operator-(FLOAT160 const&) const;
     constexpr FLOAT160 operator*(FLOAT160 const&) const;
+// The f128 flag will force rounding (once) to 128-bit floating point
+// compatibility, so that a subsequent case to FLOAT_128 does not
+// change the value further.
+    constexpr FLOAT160 fma(const FLOAT160&, const FLOAT160&,
+                           bool f128=false) const;
     constexpr FLOAT160 operator/(FLOAT160 const&) const;
     constexpr FLOAT160 abs() const;
     constexpr FLOAT160 maxabs(FLOAT160) const;
@@ -1051,10 +1066,7 @@ constexpr FLOAT160 FLOAT160::operator+(FLOAT160 const& b) const
 }
 
 constexpr FLOAT160 FLOAT160::operator*(FLOAT160 const& rhs) const
-{   long double xx = (long double)*this;
-    long double yy = (long double)rhs;
-    long double rr = xx*yy;
-    FLOAT160 r;
+{   FLOAT160 r;
     r.sign = sign != rhs.sign;
     if (m == 0 || rhs.m == 0)
     {   r.m = 0;
@@ -1088,31 +1100,240 @@ constexpr FLOAT160 FLOAT160::operator*(FLOAT160 const& rhs) const
     if (lo > topbit128() ||
         (lo == topbit128() && (hi&1) != 0)) hi++;
     r.m = hi;
-    long double mine = (long double)r;
-    if (std::abs((mine-rr)/rr) > 0.001L) breakfunction();
     return r;
 }
 
-constexpr FLOAT160 FLOAT160::operator/(FLOAT160 const& rhs) const
+constexpr FLOAT160 FLOAT160::fma(FLOAT160 const& b, FLOAT160 const& c,
+                                 bool f128) const
+{
+// 0*b + c => c
+// a*0 + c => c;
+    if (m == 0 || b.m == 0)
+    {
+// Here a and b are both zero. The result must be -0.0 if a*b is -0.0
+// which happens if |a|==0 or |b|==0 and the signs of a and b differ,
+// together with c = -0.0. So in a*b+c will yield c when a*b=0 except that
+// if a*b=+0.0 and c=-0.0 we need to return +0.0. >Oh what fun!
+        if ((sign == b.sign) && (c.sign && c.m == 0))
+            return FLOAT160(true, INT32_MIN, 0);
+        else return c;
+    }
+    uint128_t topbit = ((uint128_t)1)<<127;
+// Now I will set up  a 256-bit version of a*b.
+    bool rsign = (sign != b.sign);
+    int32_t rx = x + b.x;
+    uint128_t ahi = m >> 64;
+    uint128_t alo = m - (ahi<<64);
+    uint128_t bhi = b.m >> 64;
+    uint128_t blo = b.m - (bhi<<64);
+    uint128_t rmhi = ahi * bhi;
+    uint128_t mid1 = ahi * blo;
+    uint128_t mid2 = alo * bhi;
+    uint128_t rmlo = alo * blo;
+    rmhi = rmhi + (mid1>>64) + (mid2>>64);
+    mid1 = mid1 << 64;
+    mid2 = mid2 << 64;
+    rmlo = rmlo + mid1;
+    if (rmlo < mid1) rmhi++;
+    rmlo = rmlo + mid2;
+    if (rmlo < mid2) rmhi++;
+    if (!topbit128(rmhi))
+    {   rmhi = (rmhi<<1) | (rmlo>>127);
+        rmlo = rmlo << 1;
+        rx--;
+    }
+// Now (rsign, rx, rmhi:rmlo) should be a full 256-bit product a*b.
+// So set up (csign, cx, cmhi:cmlo) for c.
+    bool csign = c.sign;
+    int32_t cx = c.x;
+    uint128_t cmhi = c.m, cmlo = 0;
+// I do various things based on the signs of a*b and c, and on which is
+// larger. In many cases I will need to shift one to align it with the other.
+    if (rx = cx)                  // already aligned
+    {   if (rsign == csign)       // add them.
+        {   rmhi = rmhi + cmhi;
+            if (rhi < cmhi)
+            {   rmlo = (rmlo>>1) | (rmhi<<127);
+                rmhi = (rmhi>>1) | topbit;
+                rx = rx + 1;
+            }
+// a*b and c aligned and needed adding.
+        }
+        else
+        {   if (rmhi >= chi)
+            {   rmhi = rmhi - chi;
+                // rmlo unaltered
+            }
+            else
+            {   rmlo = -rmlo;
+                rmhi = cmhi - rmhi;
+                if (rmlo != 0) rmhi = rmhi - 1; // borrow
+                rsign = csign;
+// Because rmhi < cmhi here this can not call for a borrow. It may
+// leave amhi zero. 
+            }
+// Now rmhi:rmlo is the difference between a*b and c but there can have been
+// leading digit cancellation, so I need to re-normalise.
+            if (rmhi == 0)
+            {   if (rmlo == 0) return FLOAT160(false, INT32_MIN, 0);
+                rmhi = rmlo;
+                rmlo = 0;
+                rx = rx - 128;
+            }
+            int shift = nlz(rmhi);
+            if (shift != 0)
+            {   rmhi = (rmhi<<shift) | (rmlo>>(128-shift));
+                rmlo = (rmlo<<shift);
+                rx = rx = shift;
+            }
+        }
+    }        // cases where a*b and c are aligned all covered.            
+    else
+    {
+// I will now ensure that r has the larger magnitude and since the
+// exponents differ that is easy to check.
+        if (rx < cx)
+        {   std::swap(rsign, csign);
+            std::swap(rx, cx);
+            std::swap(rmhi, cmhi);
+            std::swap(rmlo, cmlo);
+        }
+// Shift c right to align. I will tag on an extra word for very low bits.
+        uint128_t rmlolo = 0, cmlolo = 0;
+        int shift = rx - cx;
+        if (shift >= 384)
+        {   cmhi = 0;
+            cmlo = 0;
+// If I shift c by a huge distance I will make put 1 in the low extension
+// to stand for the fact that it is not zero.
+            cmlolo = 1;
+        }
+        else if (shift > 256)
+        {
+// Note that the top bit of cmhi will have been 1 so this will never set
+// cmlolo to zero and lose all remains of c.
+            cmlolo = cmihi>>(shift-256);
+            cmlo = 0;
+            cmhi = 0; 
+        }
+        else if (shift == 256)
+        {   cmlolo = cmhi;
+            cmlo = 0;
+            cmhi = 0;
+        }
+        else if (shift > 128)
+        {    cmlolo = (cmlo<<(256-shift));
+             cmlo = (cmhi>>(shift-128));
+             cmhi = 0;
+        }
+        else if (shift == 128)
+        {   cmlolo = cmlo;
+            cmlo = cmhi;
+            cmhi = 0;
+        else
+        {    cmlolo = (cmlo<<(128-shift));
+             cmlo = (cmlo>>shift) | (cmhi<<(128-shift);
+             cmhi = (cmhi>>shift);
+        }
+// Now depending on the signs I need to add or subtract.
+        if (rsign == csign) // add.
+        {   bool carry = false;
+            rmlo = rmlo + cmlo;
+            if (rmlo < cmlo)
+            {   rmhi = rmhi + 1;
+                if (rmhi == 0) carry = true;
+            }
+            rmhi = rmhi + cmhi;
+            if (rmhi < cmhi) carry = true;
+            if (carry)
+            {
+// When I shift rmlolo right by 1 I do not want it to end up zero unless
+// it always was, so I preserve its bottom bit!
+                rmlolo = (rmlol&1) | (rmlolo>>1) | (rmlo<<127);
+                rmlo = (rmlo>>1) | (rmhi<<127);
+                rmhi = (rmhi>>1) | topbit;
+                rx = rx + 1;
+            } 
+        }
+        else   // subtraction needed. Can only lose 1 bit at top!
+        {   // x - y == x + (~y) + 1
+            cmlolo = ~cmlolo;
+            cmlo = ~cmlo;
+            cmhi = ~cmhi;
+            rmlolo = rmlolo + 1;
+            if (rmlolo == 0)
+            {   rmlo = rmlo + 1;
+                if (rmlo == 0) rmhi = rmhi + 1;
+            }
+            rmlolo = rmlolo + cmlolo;
+            if (rmlolo < cmlolo)
+            {   rmlo = rmlo + 1;
+                if (rmlo == 0) rmhi = rmhi + 1;
+            }
+            rmlo = rmlo + cmlo;
+            if (rmlo < cmlo) rmhi = rmhi + 1;
+            rmhi = rmhi + cmhi;
+// Because rx>cx here this subtraction must have left a positive result,
+// but it can have lost one bit.
+            if ((rmhi>>127)  == 0)
+            {   rmhi = (rmhi<<1) | (rmlo>>127);
+                rmlo = (rmlo<<1) | (rmlolo>>127);
+                rmlolo = (rmlolo<<1);
+                rx = rx - 1;
+            }
+        }
+    }
+// Hah - now I have a 3-word mantissa for my result, and this is where
+// I need to round. I need to round to either 128 bits (is basically just
+// keep rmhi) oe 113 bits for FLOAT_128 (and ideally to lower precisions
+// if the FLOAT_128 version will end up denormalised.
+    if (!f128) // The regular FLOAT160 case
+    {   if (rmlo > topbit ||
+            (rmlo == topbit &&
+             (rmlolo != 0 || ((rmhi & 1) != 0))))
+        {   rmhi = rmhi + 1;
+            if (rmhi == 0)
+            {   rmhi = topbit;
+                rx = rx + 1;
+            }
+        }
+    }
+    else
+    {   uint128_t rmxlo = (rmhi<<113)>>113;
+        rmhi = (rmhi>>15)<<15;
+        if (rmxlo > 0x4000 ||
+            (rmxlo == 0x4000 &&
+             (rmlo != 0 || rmlolo != 0 || ((rmhi & 0x8000) != 0))))
+        {   rmhi = rmhi + 0x8000;
+            if (rmhi == 0)
+            {   rmhi = topbit;
+                rx = rx + 1;
+            }
+        }
+    }
+    return FLOAT160(rsign, rx, rmhi);
+}
+
+constexpr FLOAT160 FLOAT160::operator/(FLOAT160 const& b) const
 {   long double xx = (long double)*this;
-    long double yy = (long double)rhs;
+    long double yy = (long double)b;
     long double rr = xx/yy;
     FLOAT160 r;
-    bool negative = sign != rhs.sign;
+    bool negative = sign != b.sign;
     if (m == 0)
     {   r.m = 0;
         r.x = INT32_MIN;
-        r.sign = sign != rhs.sign;
+        r.sign = sign != b.sign;
         return r;
     }
-    if (rhs.m == 0)
+    if (b.m == 0)
     {   r.m = 0;
         r.x = INT32_MAX;
         r.sign = negative;
         return r;
     }
-    uint128_t am = m, bm = rhs.m;
-    int32_t ax = x, bx = rhs.x;
+    uint128_t am = m, bm = b.m;
+    int32_t ax = x, bx = b.x;
     r.sign = negative;
     r.x = ax - bx;
 // Now I want r.m = (a.m<<128)/b.m with minor adjustment depending on where
