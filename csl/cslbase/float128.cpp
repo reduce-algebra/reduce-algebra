@@ -682,7 +682,7 @@ constexpr FLOAT160::operator int32_t() const
 }
 
 uint128_t FLOAT160::f160tof128rep() const
-{   return f160tof128rep(sign, x, m);
+{   return ::f160tof128rep(sign, x, m);
 }
 
 FLOAT160::operator FLOAT_128() const
@@ -1724,11 +1724,6 @@ COMPLEX_128 COMPLEX_128::conj() const
 
 #ifdef NEED_FLOAT160
 
-COMPLEX160::COMPLEX160()
-{   rr = 0.0_Q;
-    ii = 0.0_Q;
-}
-
 COMPLEX160::COMPLEX160(int32_t n)
 {   rr = (FLOAT160)n;
     ii = 0.0_Q;
@@ -1765,6 +1760,11 @@ COMPLEX160::COMPLEX160(double n)
 }
 
 COMPLEX160::COMPLEX160(long double n)
+{   rr = (FLOAT160)n;
+    ii = 0.0_Q;
+}
+
+COMPLEX160::COMPLEX160(FLOAT_128 n)
 {   rr = (FLOAT160)n;
     ii = 0.0_Q;
 }
@@ -1821,6 +1821,10 @@ COMPLEX160::operator double() const
 
 COMPLEX160::operator long double() const
 {   return (long double)rr;
+}
+
+COMPLEX160::operator FLOAT_128() const
+{   return (FLOAT_128)rr;
 }
 
 COMPLEX160::operator FLOAT160() const

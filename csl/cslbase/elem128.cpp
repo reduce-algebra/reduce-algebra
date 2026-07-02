@@ -1399,8 +1399,8 @@ FLOAT160 atanh(FLOAT160 z)
 // atan2() returns a value on the range -pi to +pi
 
 FLOAT160 atan2(FLOAT160 y, FLOAT160 x)
-{   if (!x.sign)
-    {   if (!y.sign)
+{   if (!x.signbit())
+    {   if (!y.signbit())
         {   return atan(y/x);
         }
         else
@@ -1408,7 +1408,7 @@ FLOAT160 atan2(FLOAT160 y, FLOAT160 x)
         }
     }
     else
-    {   if (!y.sign)
+    {   if (!y.signbit())
         {   return 3.14159265358979323846264338327950288419717_Q -
                    atan(-y/x);
         }
@@ -1632,6 +1632,18 @@ void sinhcosh(COMPLEX160 x, COMPLEX160& s, COMPLEX160& c)
     c = cosh(x);
 }
 
+COMPLEX160 tan(COMPLEX160 z)
+{   COMPLEX160 s, c;
+    sincos(z, s, c);
+    return s/c;
+}
+
+COMPLEX160 tanh(COMPLEX160 z)
+{   COMPLEX160 s, c;
+    sinhcosh(z, s, c);
+    return s/c;
+}
+
 COMPLEX160 exp(COMPLEX160 z)
 {   FLOAT160 e, s, c;
     e = exp(z.real());
@@ -1719,46 +1731,46 @@ COMPLEX160 acos(COMPLEX160 z)
 
 COMPLEX160 acosh(COMPLEX160 z)
 {   COMPLEX160 r = fromcomplexlongdouble(
-        std::acosh(tocomplexlongdouble(z);
+        std::acosh(tocomplexlongdouble(z)));
     if (longdouble64) r = r + (cosh(r) - z)/sinh(r);
     return r + (cosh(r) - z)/sinh(r);
 }
 
 COMPLEX160 asin(COMPLEX160 z)
 {   COMPLEX160 r = fromcomplexlongdouble(
-        std::asin(tocomplexlongdouble(z);
+        std::asin(tocomplexlongdouble(z)));
     if (longdouble64) r = r + (z - sin(r))/cos(r);
     return r + (z - sin(r))/cos(r);
 }
 
 COMPLEX160 asinh(COMPLEX160 z)
 {   COMPLEX160 r = fromcomplexlongdouble(
-        std::asinh(tocomplexlongdouble(z);
+        std::asinh(tocomplexlongdouble(z)));
     if (longdouble64) r = r + (sinh(r) - z)/cosh(r);
     return r + (sinh(r) - z)/cosh(r);
 }
 
 COMPLEX160 atan(COMPLEX160 z)
 {   COMPLEX160 r = fromcomplexlongdouble(
-        std::atan(tocomplexlongdouble(z);
+        std::atan(tocomplexlongdouble(z)));
     COMPLEX160 t = tan(r);
     if (longdouble64)
-    {   r = r + (t - z)/(1 - t*t);
+    {   r = r + (t - z)/(LF_C(1.0) - t*t);
         t = tan(r);
     }
-    return r + (t - z)/(1 - t*t);
-
+    return r + (t - z)/(LF_C(1.0) - t*t);
+}
 
 COMPLEX160 atanh(COMPLEX160 z)
-   COMPLEX160 r = fromcomplexlongdouble(
-        std::atanh(tocomplexlongdouble(z);
+{   COMPLEX160 r = fromcomplexlongdouble(
+        std::atanh(tocomplexlongdouble(z)));
     COMPLEX160 t = tanh(r);
     if (longdouble64)
-    {   r = r + (t - z)/(1 + t*t);
+    {   r = r + (t - z)/(LF_C(1.0) + t*t);
         t = tanh(r);
     }
-    return r + (t - z)/(1 + t*t);
-
+    return r + (t - z)/(LF_C(1.0) + t*t);
+}
 
 COMPLEX160 ln(COMPLEX160 z)
 {   FLOAT160 x = z.real();
@@ -1792,18 +1804,6 @@ COMPLEX160 sec(COMPLEX160 z)
 
 COMPLEX160 sech(COMPLEX160 z)
 {   return recip(cosh(z));
-}
-
-COMPLEX160 tan(COMPLEX160 z)
-{   COMPLEX160 s, c;
-    sincos(z, s, c);
-    return s/c;
-}
-
-COMPLEX160 tanh(COMPLEX160 z)
-{   COMPLEX160 s, c;
-    sinhcosh(z, s, c);
-    return s/c;
 }
 
 // Review princial value issue here...  @@@@@
@@ -1873,14 +1873,16 @@ COMPLEX160 expt(COMPLEX160 x, FLOAT160 y)
 
 #ifdef USE_LONG_DOUBLE
 
+//@@@@ debug printing here
+
 #define delegateC128(fn, base)                         \
-COMPLEX_128 fn(COMPLEX_128 z)                            \
+COMPLEX_128 fn(COMPLEX_128 z)                          \
 {   std::cout << #base << " " << z << "\n";            \
     std::complex<long double> v(                       \
         (long double)z.real(), (long double)z.imag()); \
     v = base(v);                                       \
     std::cout << "=> " << v << "\n";                   \
-    return COMPLEX_128(v.real(), v.imag());             \
+    return COMPLEX_128(v.real(), v.imag());            \
 }
 
 
