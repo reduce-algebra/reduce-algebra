@@ -852,7 +852,10 @@ private:
     FLOAT160 ii;
 public:
 // Constuctors
-    COMPLEX160();
+    COMPLEX160()
+    {   rr = (int32_t)0;
+        ii = (int32_t)0;
+    }
 // I am only providing constructors based on the known-width integer types.
     COMPLEX160(int32_t);
     COMPLEX160(int64_t);
@@ -912,13 +915,13 @@ public:
 // work in a fairly naive way.
 
 extern constexpr void string_to_160(const char* s,
-    bool& sign, int32_t& exponent, uint64_t& mantissa);
+    bool& sign, int32_t& exponent, uint128_t& mantissa);
 
 constexpr inline FLOAT160 string_to_float160(const char* s)
 {   bool sign;
     int32_t x;
     uint128_t m;
-    string_to_160(const char* s, sign, x, m);
+    string_to_160(s, sign, x, m);
     return FLOAT160(sign, x, m);
 }
 
@@ -1147,12 +1150,13 @@ constexpr FLOAT160 FLOAT160::fma(FLOAT160 const& b, FLOAT160 const& c,
     bool csign = c.sign;
     int32_t cx = c.x;
     uint128_t cmhi = c.m, cmlo = 0;
+    uint128_t rmlolo = 0, cmlolo = 0;
 // I do various things based on the signs of a*b and c, and on which is
 // larger. In many cases I will need to shift one to align it with the other.
-    if (rx = cx)                  // already aligned
+    if (rx == cx)                  // already aligned
     {   if (rsign == csign)       // add them.
         {   rmhi = rmhi + cmhi;
-            if (rhi < cmhi)
+            if (rmhi < cmhi)
             {   rmlo = (rmlo>>1) | (rmhi<<127);
                 rmhi = (rmhi>>1) | topbit;
                 rx = rx + 1;
@@ -1160,8 +1164,8 @@ constexpr FLOAT160 FLOAT160::fma(FLOAT160 const& b, FLOAT160 const& c,
 // a*b and c aligned and needed adding.
         }
         else
-        {   if (rmhi >= chi)
-            {   rmhi = rmhi - chi;
+        {   if (rmhi >= cmhi)
+            {   rmhi = rmhi - cmhi;
                 // rmlo unaltered
             }
             else
@@ -1199,7 +1203,6 @@ constexpr FLOAT160 FLOAT160::fma(FLOAT160 const& b, FLOAT160 const& c,
             std::swap(rmlo, cmlo);
         }
 // Shift c right to align. I will tag on an extra word for very low bits.
-        uint128_t rmlolo = 0, cmlolo = 0;
         int shift = rx - cx;
         if (shift >= 384)
         {   cmhi = 0;
@@ -1212,7 +1215,7 @@ constexpr FLOAT160 FLOAT160::fma(FLOAT160 const& b, FLOAT160 const& c,
         {
 // Note that the top bit of cmhi will have been 1 so this will never set
 // cmlolo to zero and lose all remains of c.
-            cmlolo = cmihi>>(shift-256);
+            cmlolo = cmhi>>(shift-256);
             cmlo = 0;
             cmhi = 0; 
         }
@@ -1230,9 +1233,10 @@ constexpr FLOAT160 FLOAT160::fma(FLOAT160 const& b, FLOAT160 const& c,
         {   cmlolo = cmlo;
             cmlo = cmhi;
             cmhi = 0;
+        }
         else
         {    cmlolo = (cmlo<<(128-shift));
-             cmlo = (cmlo>>shift) | (cmhi<<(128-shift);
+             cmlo = (cmlo>>shift) | (cmhi<<(128-shift));
              cmhi = (cmhi>>shift);
         }
 // Now depending on the signs I need to add or subtract.
@@ -1249,7 +1253,7 @@ constexpr FLOAT160 FLOAT160::fma(FLOAT160 const& b, FLOAT160 const& c,
             {
 // When I shift rmlolo right by 1 I do not want it to end up zero unless
 // it always was, so I preserve its bottom bit!
-                rmlolo = (rmlol&1) | (rmlolo>>1) | (rmlo<<127);
+                rmlolo = (rmlolo&1) | (rmlolo>>1) | (rmlo<<127);
                 rmlo = (rmlo>>1) | (rmhi<<127);
                 rmhi = (rmhi>>1) | topbit;
                 rx = rx + 1;
