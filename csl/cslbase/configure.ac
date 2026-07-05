@@ -317,6 +317,7 @@ fi
 
 if test "$f128_identified" != "yes"
 then
+  OLDCXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -std=gnu++23"
   AC_COMPILE_IFELSE([AC_LANG_SOURCE(
     [[

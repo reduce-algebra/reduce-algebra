@@ -221,8 +221,6 @@ AM_CPPFLAGS     += $(MY_CPPFLAGS)
 reduce_CPPFLAGS += $(MY_CPPFLAGS)
 bootstrapreduce_CPPFLAGS += $(MY_CPPFLAGS)
 csl_CPPFLAGS    += $(MY_CPPFLAGS)
-# For at least a while I will NOT warn about unused (static) functions, because
-# I have rather a lot of that that are to do with support for short floats.
 flatcsl_CPPFLAGS    += $(MY_CPPFLAGS)
 AM_CFLAGS        = $(MY_CFLAGS)
 AM_CPPFLAGS     += $(MY_CPPFLAGS)
