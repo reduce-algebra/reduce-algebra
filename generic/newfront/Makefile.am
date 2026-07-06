@@ -64,9 +64,9 @@ endif
 
 if WINDOWS
 if !DEBUG
-	x86_64-w64-mingw32-strip rfcslwin.exe
-	x86_64-w64-mingw32-strip rfbootwin.exe
-	x86_64-w64-mingw32-strip rfpslwin.exe
+	$(STRIP) rfcslwin.exe
+	$(STRIP) rfbootwin.exe
+	$(STRIP) rfpslwin.exe
 endif
 # On Windows generally PATHEXT will pick up a ".com" file before a ".exe"
 # one. However Cygwin sees ".exe" rather than ".com". So by giving the
@@ -170,7 +170,7 @@ rfcslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
-	x86_64-w64-mingw32-gcc $(CFLAGS) -DCSL=1 \
+	$(CC) $(CFLAGS) -DCSL=1 \
 		-DREDCSL=\"$(REDCSL)\" -DREDPSL=\"$(REDPSL)\" \
 		-DBOOTSTRAPREDUCE=\"$(BOOTSTRAPREDUCE)\" -DBAT=\"$(BAT)\" \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \
@@ -189,7 +189,7 @@ rfbootwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
-	x86_64-w64-mingw32-gcc $(CFLAGS) -DBOOT=1 \
+	$(CC) $(CFLAGS) -DBOOT=1 \
 		-DREDCSL=\"$(REDCSL)\" -DREDPSL=\"$(REDPSL)\" \
 		-DBOOTSTRAPREDUCE=\"$(BOOTSTRAPREDUCE)\" -DBAT=\"$(BAT)\" \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \
@@ -208,7 +208,7 @@ rfpslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
-	x86_64-w64-mingw32-gcc $(CFLAGS) -DPSL=1 \
+	$(CC) $(CFLAGS) -DPSL=1 \
 		-DREDCSL=\"$(REDCSL)\" -DREDPSL=\"$(REDPSL)\" \
 		-DBOOTSTRAPREDUCE=\"$(BOOTSTRAPREDUCE)\" -DBAT=\"$(BAT)\" \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \

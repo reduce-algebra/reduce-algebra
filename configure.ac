@@ -1,7 +1,7 @@
-AC_INIT([REDUCE], [from SourceForge], [acn1@cam.ac.uk])
+AC_INIT([REDUCE],[from SourceForge],[acn1@cam.ac.uk])
 
 # **************************************************************************
-# * Copyright (C) 2017-2025, Codemist.                    A C Norman       *
+# * Copyright (C) 2017-2026, Codemist.                    A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *
@@ -51,7 +51,7 @@ AC_COPYRIGHT([The REDUCE project])
 # availability, although an enthusiastic person could probably get things
 # working without them.
 
-AC_PREREQ(2.61)
+AC_PREREQ([2.72])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
 
@@ -99,7 +99,7 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 
 
 # Note that AS_HELP_STRING has been available since version 2.61 and
-# use of AC_HELP_STRING leads to loud moans from version 2.71
+# use of AS_HELP_STRING leads to loud moans from version 2.71
 
 AC_ARG_WITH(autogen,
   AS_HELP_STRING([--with-autogen], [Regenerate autoconf file at start]),
@@ -526,26 +526,6 @@ AC_ARG_WITH(clang,
 # Apple will really support anything other than their latest version
 # gives me headaches.
 
-if test "$OS" = "Windows_NT"
-then
-  case $PROCESSOR_IDENTIFIER in
-  *ARM*)
-    case $PATH in
-    *clangarm64/bin*)
-# If I am building on Windows-for-ARM using msys and with the mingw64
-# native toolchain I should compile things using clang++ because (at the
-# time I write this!) g++ is not available there at least by default. These
-# tests feel like a bit of a hack. However (and again this is as of January
-# 2026) msys2 on WoA uses x86_64 binaries for many utilities (including
-# bash and uname) and an effect of that is thet eg config.guess does not
-# identify it cleanly. This is NOT part of a working setup for WindowsOnARM!
-       with_clang="yes"
-      ;;
-    esac
-    ;;
-  esac
-fi
-
 ORIG="$CC$CXX"
 OLD_CFLAGS="$CFLAGS"
 OLD_CXXFLAGS="$CXXFLAGS"
@@ -896,7 +876,7 @@ setpasscc ()
 
 csl_inplace_cygwin_build ()
 {
-# The argument here should be x88_64-pc-cygwin
+# The argument here should be x88_64-pc-cygwin.
   target=$1
   forcer=$2
   AC_MSG_NOTICE([in csl_inplace_cygwin_build])
@@ -926,7 +906,7 @@ csl_inplace_nativewin_build ()
   buildmc=$1
   host=$2
   AC_MSG_NOTICE([CSL inplace for native Windows])
-  build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args"`
+  build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $buildmc $ac_configure_args"`
   AC_MSG_NOTICE([About to configure using $host in $build])
   mkdir -p "$abssrcdir/cslbuild/$build"
   cd "$abssrcdir/cslbuild/$build"
@@ -966,6 +946,9 @@ csl_inplace_nativewin_build ()
 
 csl_inplace_windows_build ()
 {
+# In 2026 I introduce a new case here. I may be running under wsl/Linux
+# on a windows-on-arm system with --hist-aarch64-w64-mingw32 and in such
+# a case I will not be able to build a cygwin variant.
 # If I am on Windows I will configure for variants:
 #   x86_64-pc-cygwin
 #   x86_64-w64-mingw
@@ -981,17 +964,9 @@ csl_inplace_windows_build ()
     AC_MSG_NOTICE([Configure windows64 version])
     csl_inplace_nativewin_build "x86_64-pc-windows" "x86_64-w64-mingw32"
   else
-# I may now be using msys, and where I want to build things will depend
-# on whether I am on x86_64 or ARM. But since I am definitely on
-# windows I have an easy check... 
-    case $PROCESSOR_IDENTIFIER in
-    *ARM*)
-# Args here are buildmachine then host
-      csl_inplace_nativewin_build "aarch64-pc-msys" ""
-      ;;
-    *)
-      ;;
-    esac
+# The only case I am going to support just now (July 2026) is cross-
+# building on WSL-on-WOA with --host=aarch64-w64-mingw32.
+    csl_inplace_nativewin_build "aarch64-pc-windows" "aarch64-w64-mingw32"
   fi
 }
 
@@ -1007,7 +982,7 @@ csl_inplace_build ()
   if test ! -d "$abssrcdir/cslbuild/$GENERATED_C" ||
      test ! -f "$abssrcdir/cslbuild/$GENERATED_C/profile.dat" ||
      diff "$abssrcdir/cslbuild/$GENERATED_C/profile.dat" \
-          "$abssrcdir/csl/$GENERATED_C/profile.dat.old" >/dev/null
+          "$abssrcdir/csl/$GENERATED_C/profile.dat.old" 2>/dev/null >/dev/null
   then
     mkdir -p "$abssrcdir/cslbuild/$GENERATED_C"
     cp -r "$abssrcdir/csl/$GENERATED_C" "$abssrcdir/cslbuild"

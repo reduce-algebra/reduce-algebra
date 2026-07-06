@@ -2096,6 +2096,15 @@ reduce.prototypes:	prototypes
 reduce.dep:
 	$(TRACE)touch reduce.dep
 
+revision.txt:
+	LANG=C; \
+	a=`svnversion -c $(reduce)`; \
+	a=`echo $$a | \
+	   grep -v 'Unversioned\|Uncommitted' | \
+	   sed -e 's/[A-Z]*$$//'` ; \
+	a=$${a#*:}; \
+	echo $$a > revision.txt
+
 # By making $(REDUCE_IMG) depend on both reduce.exe and reduce.com I ensure
 # that both get built. However on non-Windows platforms reduce$(COM) expands
 # to be just the same name as reduce$(EXEEXT) and so all I have is a repeated
@@ -2116,6 +2125,8 @@ $(REDUCE_IMG):	$(XREDUCE) reduce$(EXEEXT) reduce$(COM) $(reducedep) $(generated_
 #
 # A user may go "make CSLFLAGS=-g" to force "-g" into build-times Lisp flags...
 	chmod 664 $(gensrc)/*
+	rm -f revision.txt
+	make revision.txt
 	-$(TRACE): > $(REDUCE_IMG) && $(XREDUCE) -w -r1 -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
@@ -2208,6 +2219,8 @@ bootimage:	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	mkdir -p buildlogs
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
+	rm -f revision.txt
+	make revision.txt
 	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG) && $(XBOOTSTRAPREDUCE) \
 		-w -r1 -z -x $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
@@ -2229,6 +2242,8 @@ $(BOOTSTRAPREDUCE_IMG):	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrap
 	mkdir -p buildlogs
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
+	rm -f revision.txt
+	make revision.txt
 	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG) && $(XBOOTSTRAPREDUCE) \
 		-w -r1 -z -x $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
@@ -2255,6 +2270,8 @@ noinlines.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
 	mkdir -p buildlogs
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
+	rm -f revision.txt
+	make revision.txt
 	$(XBOOTSTRAPREDUCE) \
 		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \

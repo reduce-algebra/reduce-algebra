@@ -1188,7 +1188,7 @@ constexpr FLOAT160 FLOAT160::fma(FLOAT160 const& b, FLOAT160 const& c,
             if (shift != 0)
             {   rmhi = (rmhi<<shift) | (rmlo>>(128-shift));
                 rmlo = (rmlo<<shift);
-                rx = rx = shift;
+                rx = rx - shift;
             }
         }
     }        // cases where a*b and c are aligned all covered.            
