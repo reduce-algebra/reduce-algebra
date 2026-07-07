@@ -39,18 +39,6 @@ here=`cd "$here"; pwd -P`
 host=$1
 shift
 
-# Hmmm - in the case host=x86_64-pc-msys it could be that the x86_64 is
-# a mis-identification and really it should be aarch64. Fix that here.
-
-if test "$host" = "x86_64-pc-msys"
-then
-  case $PROCESSOR_IDENTITY in
-  *ARM*)
-    host="aarch64-pc-msys"
-    ;;
-  esac
-fi
-
 case $host in
 *apple-darwin*)
   case $* in
@@ -81,6 +69,10 @@ fi
 # I map it to say just "windows" and will tend to end up using a mingw
 # compiler. Later on if "--with-cygwin" is set I will unwiind that.
 case $host in
+*aarch64-w64-mingw32*)
+# This can happen when cross-compiling using "--host=aarch64-w64-mingw32"
+  host="aarch64-pc-windows";
+  ;;
 x86_64*cygwin* | x86_64*mingw*)
   host="x86_64-pc-windows"
   ;;

@@ -70,7 +70,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_COPYRIGHT([Codemist])
 
-AC_PREREQ([2.69])
+AC_PREREQ([2.72])
 
 # My source file is expected to have "csl.cpp" in it. This is just a small
 # sanity check in case somebody tries to configure with directories
@@ -192,7 +192,29 @@ then
   AC_DEFINE(HAVE_CRLIBM, [1], [Correct Rounding maths library should be used])
 fi
 
-# 128-bit floats and complex values based on them are noit fully
+# Well I used to use AX_CXX_COMPILE_STDCXX but it is rather easy to find
+# that the version of that as installed can not cope with seeking newer
+# versions of the standard. So I intend to try from -std=gnu++26 down to
+# --std=gnu++17 ann use the first found. The option is handled by both
+# gcc and clang. THose using other compilers may need to do something
+# else!
+
+OLDCXXFLAGS="$CXXFLAGS"
+for std in gnu++26 gnu++23 gnu++20 gnu++17 c++17
+do
+  CXXFLAGS="-std=$std $CXXFLAGS"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+    [[
+      int main(int argc, char* argv[]) { return 0; }
+    ]])],
+    [AC_MSG_NOTICE([Use C++ standard $std])
+     break],
+    [CXXFLAGS="$OLDCXXFLAGS"])
+done
+
+AC_MSG_NOTICE([CXXFLAGS==$CXXFLAGS])
+
+# 128-bit floats and complex values based on them are not fully
 # standardised across platforms. Here I explain the options
 # and define symbols for selecting them.
 
@@ -261,7 +283,7 @@ fi
 
 AC_ARG_WITH(softfloat,
    AS_HELP_STRING([--with-softfloat], [force use of software FLOAT128 for testing]),
-   [AC_DEFINE(USE_SOFT_FLOAT128, [5], [Force software long double])
+   [AC_DEFINE(USE_SOFT_FLOAT128, [1], [Force software long double])
     AC_MSG_NOTICE([Use software 128-bit floats])
     f128_identified="yes"],
    [])
@@ -317,8 +339,6 @@ fi
 
 if test "$f128_identified" != "yes"
 then
-  OLDCXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=gnu++23"
   AC_COMPILE_IFELSE([AC_LANG_SOURCE(
     [[
       #include <stdfloat>
@@ -326,13 +346,12 @@ then
     ]])],
     [AC_MSG_NOTICE([Use C++23 float128_t])
      f128_identified="yes"
-     AC_DEFINE(USE_CXX23_FLOAT128, [1], [can use std::float128_t])],
-    [CXXFLAGS="$OLDCXXFLAGS"])
+     AC_DEFINE(USE_CXX23_FLOAT128, [1], [can use std::float128_t])])
 fi
 
 if test "$f128_identified" != "yes"
 then
-  AC_DEFINE(USE_SOFT_FLOAT128, [5], [Fall back to software long double])
+  AC_DEFINE(USE_SOFT_FLOAT128, [1], [Fall back to software long double])
   AC_MSG_NOTICE([Use software 128-bit floats])
 fi
 
@@ -735,7 +754,8 @@ AC_CHECK_PROGS(VALGRIND,[valgrind],[x])
 # generates binaries that I can not run. I used to just use "g++" and hope,
 # but here I will see which of g++, clang++, c++ and CC is at least present.
 # I will then assume that that is a viable compiler to use. For these
-# utilities I will limit myself to using C++17 features.
+# utilities I will limit myself to using C++17 features. And I will suppose
+# that the compiler does not choke if one tells it "-std=gnu++17".
 
 AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
 LOCALCXX="$LOCALCXX -std=gnu++17"
@@ -936,9 +956,23 @@ fi
 
 AC_ARG_WITH(throw,
   AS_HELP_STRING([--without-throw],
-                 [Avoid C++ catch & throw. Experimental. (CSL only)]),
+                 [Avoid C++ catch & throw. (CSL only)]),
   [],
   [with_throw="yes"])
+
+# If I am using aarch64-w64-mingw32-g++ than at least as of July 2026
+# the compiler and run-time system do not support exceptions because
+# the Microsoft scheme (Structured Exception Handling) is not (yet)
+# working there. It is if you are using clang++. However happily CSL
+# can fall back to its own scheme that unwinds by setting a flag that
+# if then has to check (repeatedly!). Once g++ has SEH implemented and
+# stable this adaptation can be removed.
+
+case $host$ in
+*aarch*mingw32*)
+   with_throw="no"
+   ;;
+esac
 
 if test "$with_throw" != "yes"
 then
@@ -1049,18 +1083,6 @@ then
   AC_PATH_X
 fi
 
-# If "-std=gnu++20" is available I will add it to CXXFLAGS, at least
-# provided "consteval" is recognised.
-
-OLDCXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS -std=gnu++20"
-AC_LINK_IFELSE([AC_LANG_SOURCE(
-    [[  consteval int f(int x) { return x*x; }
-        int main() {return 0;}]])],
-  [AC_MSG_NOTICE(Will use -std=gnu++20)],
-  [CXXFLAGS="$OLDCXXFLAGS"
-   AC_MSG_NOTICE(C++20 not available)])
-
 if test "$enable_debug" = "yes"
 then
 # In debugging mode I will use -fsanitise=address if it is available.
@@ -1103,105 +1125,6 @@ fi
 # I am going to be increasingly keen to use C++20 features, and I will
 # now demand at least C++17, Well even C++23 starts to look as if it offers
 # things I will use! But I will hold back on that for a while yet.
-
-# From C++20 onwards I may not need broad brush symbols such as HAVE_CXX23
-# so much because the language comes with embedded feature test facilities.
-# But I would like to guide my compiler with eg "-std=gnu++23" where I can.
-
-#### AX_CXX_COMPILE_STDCXX([23], [ext], [optional])
-#### AC_MSG_NOTICE([HAVE_CXX23=$HAVE_CXX23])
-
-AX_CXX_COMPILE_STDCXX([20], [ext], [optional])
-AC_MSG_NOTICE([HAVE_CXX20=$HAVE_CXX20])
-if test "$HAVE_CXX20" != "1"
-then
-  AX_CXX_COMPILE_STDCXX([17], [ext], [mandatory])
-  AC_MSG_NOTICE([HAVE_CXX17=$HAVE_CXX17])
-fi
-
-# At one stage (which I *HOPE* is now past) the C++ "<filesystem>"
-# capabilities were visible on one platform but failed to behave, so I
-# have here bulky and ugly tests to filter out that situation.
-
-AC_LINK_IFELSE(
-  [AC_LANG_SOURCE([
-    #if defined __has_include
-    #if __has_include(<filesystem>)
-    #include <filesystem>
-    #ifdef __cpp_lib_filesystem
-      int main()
-      {   std::filesystem::path p(".");
-          return 0;
-      }
-    #else // __cpp_lib_filesystem
-      int main()
-      {   return 0;
-      }
-    #endif // __cpp_lib_filesystem
-    #endif // <filesystem>
-    #endif // __has_include
-  ])],
-  [filesystem="ok"],
-  [filesystem="fail"])
-
-if test "$filesystem" = "fail"
-then
-  OLIBS="$LIBS"
-  LIBS="$LIBS -lstdc++fs"
-  AC_LINK_IFELSE(
-    [AC_LANG_SOURCE([
-      #if defined __has_include
-      #if __has_include(<filesystem>)
-      #include <filesystem>
-      #ifdef __cpp_lib_filesystem
-        int main()
-        {   std::filesystem::path p(".");
-            return 0;
-        }
-      #else // __cpp_lib_filesystem
-        int main()
-        {   return 0;
-        }
-      #endif // __cpp_lib_filesystem
-      #endif // <filesystem>
-      #endif // __has_include
-    ])],
-    [filesystem="ok"],
-    [filesystem="fail"
-     LIBS="$OLIBS"])
-fi
-
-if test "$filesystem" = "fail"
-then
-  OLIBS="$LIBS"
-  LIBS="$LIBS -lc++fs"
-  AC_LINK_IFELSE(
-    [AC_LANG_SOURCE([
-      #if defined __has_include
-      #if __has_include(<filesystem>)
-      #include <filesystem>
-      #ifdef __cpp_lib_filesystem
-        int main()
-        {   std::filesystem::path p(".");
-            return 0;
-        }
-      #else // __cpp_lib_filesystem
-        int main()
-        {   return 0;
-        }
-      #endif // __cpp_lib_filesystem
-      #endif // <filesystem>
-      #endif // __has_include
-    ])],
-    [filesystem="ok"],
-    [filesystem="fail"
-     LIBS="$OLIBS"])
-fi
-
-if test "$filesystem" = "fail"
-then
-  AC_DEFINE(FILESYSTEM_NOT_USABLE, [1], "std::filesystem not available")
-fi
 
 # E.g. on some 32-bit systems the use of 8-byte atomics needs "-latomic"
 # linked in.

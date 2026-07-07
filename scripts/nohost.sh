@@ -1,5 +1,5 @@
 #! /bin/sh
-# Usage: scripts/nohost "$ac_configure_args"
+# Usage: scripts/nohost.sh "$ac_configure_args"
 # displays the arguments that are NOT ones that are specific to
 # Reduce! It also removes any "--host=XXX" entry.
 
@@ -26,6 +26,7 @@ do
   \'--with*-wx*\' | \
   \'--with-cyg*\' | \
   \'--with-csl*\' | \
+  \'--with*-arithlib\' | \
   \'--with-psl*\' | \
   \'--with-build*\' | \
   \'--with-pslbuild*\' | \
@@ -37,6 +38,8 @@ do
   \'--enable-test*\' | \
   \'--enable-jit*\' | \
   \'--enable-static*\' | \
+  \'--enable-universal*\' | \
+  \'--disable-universal*\' | \
   \'--enable-silent*\' | \
   \'--disable-silent*\' )
     ;;

@@ -47,18 +47,70 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ctype.h>
 #include <wctype.h>
 #include <tchar.h>
+#include <stdarg.h>
 #if defined __GNUC__ && defined __MINGW32__
 #ifdef __CRT__NO_INLINE
 #undef __CRT__NO_INLINE
 #define NEED_REDEFINE__CRT__NO_INLINE
 #endif
 #endif
-#include <Strsafe.h>
 #ifdef NEED_REDEFINE__CRT__NO_INLINE
 #define __CRT__NO_INLINE
 #endif
 
 //#define FN_COMPLETE_DEBUG 1
+
+// The original cersion of this file used a Windows-special safe version
+// of sprintf. For portability I provide code that maintains the
+// security but is self contained (and only supports the options as used).
+
+// The only format codes used here are %s and %c
+
+int StringCchPrintf(wchar_t* dest, size_t size,
+                    const wchar_t* format, ...)
+{   va_list args;
+    va_start(args, format);
+// va_arg(args, Type) accesses the next arg.
+    wchar_t c;
+    wchar_t* p;
+    while ((c = *format++) != 0)
+    {   if (c != '%')
+        {   if (size <= 1)
+            {   *dest = 0;
+                return 1;
+            }
+            *dest++ = c;
+            size--;
+        }
+        c = *format++;
+        switch (c)
+        {
+        case 's':
+            p = va_arg(args, wchar_t*);
+            while (*p != 0)
+            {   if (size <= 1)
+                {   *dest = 0;
+                    return 1;
+                }
+                *dest++ = *p++;
+                size--;
+            }
+            continue;
+        case 'c':
+            if (size <= 1)
+            {   *dest = 0;
+                return 1;
+            }
+            *dest++ = va_arg(args, int);
+            size--;
+            continue;
+        default:
+            *dest++ = 0;
+            return 1;
+        }
+    }
+    va_end(args);
+}
 
 BOOL _el_replace_char(wchar_t *string, wchar_t src, wchar_t dest)
 {
