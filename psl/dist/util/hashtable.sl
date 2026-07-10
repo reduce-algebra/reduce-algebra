@@ -223,6 +223,8 @@
         (stderror (bldmsg "Argument %w to %w is not a hashtable" table fnc))
       t))
 
+(de hash-table-p (table) (is-hashtable table))
+
 (ds hash-to-key (key shftamount mask)
     (wplus2 1 (wand (wshift (wtimes2 (sxhash key) (get-hash-multiplier)) shftamount) mask)))
 
@@ -283,6 +285,18 @@
                                  (deletip found v))))
           )))
 
+(de maphash (fn table)
+    (if (valid-hashtable table 'maphash)
+	(prog (x mask v)
+	   (setq x (cdr (igetv table 0)))
+           (setq mask (caddr x))
+           (for (from i 1 (iadd1 mask) 1)
+                (do
+		 (setq v (igetv table i))
+		 (while (pairp v)
+		   (apply fn (list (car (car v)) (cdr (car v))))
+		   (setq v (cdr v))))))))
+
 (de hashcontents (table)
     (if (valid-hashtable table 'hashcontents)
         (prog (x mask v)
@@ -291,3 +305,27 @@
            (for (from i 1 (iadd1 mask) 1)
                 (do (setq v (append v (igetv table i)))))
            (return v))))
+
+(de copyhash (table)
+    (if (valid-hashtable table 'copyhash)
+	(let* ((v0 (cdr (igetv table 0)))
+	       (size (iadd1 (caddr v0)))
+	       (new (mkhash1 size (car v0)))
+	       (v))
+	  (for (from i size 1 -1)
+	       (do
+		(setq v (igetv table i))
+		(while (pairp v)
+		  (puthash (car (car v)) new (cdr (car v)))
+		  (setq v (cdr v)))))
+	  new)))
+
+(de hash-table-count (table)
+    (if (valid-hashtable table 'maphash)
+        (prog (x mask count)
+           (setq x (cdr (igetv table 0)))
+           (setq mask (caddr x))
+	   (setq count 0)
+           (for (from i 1 (iadd1 mask) 1)
+                (do (setq count (plus2 count (length (igetv table i))))))
+	   (return count))))
