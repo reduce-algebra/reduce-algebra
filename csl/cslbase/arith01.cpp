@@ -78,7 +78,7 @@ LispObject make_complex(LispObject r, LispObject i)
     if (i == fixnum_of_int(0) ||
         ((is_short_float(i) || is_single_float(i) || is_double_float(i)) &&
          float_of_number(i) == 0.0) ||
-        (is_long_float(i) && f128_zerop(long_float_val(i))))
+        (is_long_float(i) && iszero(long_float_val(i))))
         return r;
     stackcheck();
     v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM, sizeof(Complex_Number));
@@ -205,8 +205,7 @@ LispObject make_boxfloat128(FLOAT_128 a)
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
     long_float_val(r) = a;
     if (trap_floating_overflow &&
-        floating_edge_case128(
-            *reinterpret_cast<FLOAT_128 *>(&long_float_val(r))))
+        floating_edge_case(long_float_val(r)))
         return aerror("exception with long float");
     return r;
 }

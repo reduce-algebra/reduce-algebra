@@ -1,7 +1,5 @@
 // Big Number arithmetic.                             A C Norman, 2019-2026
 
-// To use this  #include "arithlib.cpp" as a header-only library.
-
 #ifndef __arithlib_cpp
 #define __arithlib_cpp 1
 
@@ -380,7 +378,7 @@
 // too bad, but in many places I will in fact write the rather wordy but very
 // explicit (1ULL<<n).
 
-#define ARITHLIB_VERSION 1002
+#define ARITHLIB_VERSION 1003
 
 // The next comment is mainly prospective! At present one is expected
 // to go '#include "arithlib.cpp"' in any file that will use this. The
@@ -405,7 +403,7 @@ static constexpr bool isHeader = ([](){
 
 // If I am in a process created using fork() this variable must be set
 // and doing that will disable use of threads here!
-[[gnu::used]] inline bool inChild = false;
+inline bool inChild = false;
 
 // While debugging this (or indeed anything else) it is sometimes
 // helpful to embed information about filename and line number in
@@ -487,6 +485,2134 @@ static constexpr bool isHeader = ([](){
 #include <type_traits>
 #include <algorithm>
 #include <filesystem>
+
+// "int128.h":                 128 bit integer types for C++
+//                             Copyright Jason Lee, Arthur Norman 2013-2026
+
+// $Id$
+  
+#ifndef __int128_h__
+#define __int128_h__
+
+/*
+If you go "#include "int128.h" you should end up with two types -
+uint128_t and int128_t for wide integers. If these are supported by
+your C++ compiler directly (possibly via names like unsigned __int128_t
+and __int128_t) then the native versions will be used. Otherwise classes
+with the relevant names will be introduced with most arithmetic operators
+overloaded to use them.
+
+The test of what to do is based around whether __SIZEOF_INT128__ is
+defined. This is automatically predefined by the compiler and does
+not need any action from the programmer. For at least the platforms I
+care about most (well x86_64 Linux, Raspberry Pi 5 (64-bit), Mac M1, all
+using g++ or clang++) this gets defined and then a type __int128_t exists.
+I then set up aliases int128_t and uint128_t.
+
+I *ASSUME* that if __SIZEOF_INT128__ is not defined then both signed and
+unsigned 128-bit integers will be avaliable with __int128_t being the
+signed type. I also assume that the plain names int128_t and uint128_t
+will be available for me to define as classes that behave as much like
+regular integers as can reasonably be arranged.
+
+Some of my C++ coding may be ugly or otherwise bad! The unsigned part
+was originally by Jason Lee and should be robust and tidy (apart from where I
+altered it)  but the signed variant is mine and may be repetitive, ugly,
+incomplete or otherwise less satisfactory!
+
+I have also not worried very much about performance-tuning of the signed
+code. The unsigned version had some care to avoid unnecessary work, but here
+my stance is that a computer that does not support native 128-bit will be
+slow at big arithmetic whatever I do, so hurting it a bit mnore will not
+upset me too much. A C++ expert may want to address that issue as well as
+code style!
+
+I have a collection of uses of "typename enable_if<std::is_arithetic<..."
+in here that is sufficient to resolve some ambiguities that arose in use
+with CSL, but I have not put that in everywhere - just in enough places to
+support my current usage. Others who pick this up might want to review
+and extent that!
+
+Copyright (c) 2013 - 2017 Jason Lee @ calccrypto at gmail.com
+              2020 - 2026 Arthur Norman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+With much help from Auston Sterling
+
+Thanks to Stefan Deigmo?=ller for finding
+a bug in operator*.
+
+Thanks to Frano?=ois Dessenne for convincing me
+to do a general rewrite of this class.
+
+
+This code incorporated the Jason Lee code but has been re-worked by Arthur
+Norman, 2020-, and now provides both signed and unsigned 128-bit types called
+uint128_t and int128_t, and to arrange that it can always be loaded as a
+header-only library.
+*/
+
+
+// I want this to be a standalone header file that could be used outside
+// CSL, and so I include the C++ header files that it used and I will refer
+// to things as e.g. std::uint64_t even though through CSL I have a "using"
+// directive to render the "std::" unnecessary.
+
+#include <cinttypes>
+#include <cstdint>
+#include <string>
+#include <iostream>
+#include <iomanip>
+#include <stdexcept>
+#include <utility>
+#include <type_traits>
+
+#ifdef __SIZEOF_INT128__
+
+#include <type_traits>
+
+// The following works with both gcc and clang++ on the platforms that
+// I am keen on.
+// With older versions of the compilers "__uint128_t" needed to be
+// replaced by "unsigned __int128_t" but as of December 2025 I find
+// the following works on the platforms that I have tried...
+
+using int128_t = __int128_t;
+using uint128_t = __uint128_t;
+
+#ifndef getUPPER_defined
+#define getUPPER_defined 1
+
+namespace INT128names
+{
+
+// I provide getUPPER(), getLOWER() and PACK128() for conversions between
+// unsigned 128-bit integers and pairs of unsigned 64-bit values.
+
+
+inline std::uint64_t getUPPER(uint128_t a)
+{   return a >> 64;
+}
+
+inline std::uint64_t getLOWER(uint128_t a)
+{   return static_cast<std::uint64_t>(a);
+}
+
+inline uint128_t PACK128(std::uint64_t high, std::uint64_t low)
+{   return uint128_t(high)<<64 | low;
+}
+
+inline bool TOP_BIT(uint128_t a)
+{   return (a >> 127) != 0;
+}
+
+inline uint128_t UNSIGNED_FLIP_TOP_BIT(uint128_t a)
+{   return a ^ (uint128_t(1)<<127);
+}
+
+} // end of namespace
+
+#endif // getUPPER_defined
+
+#else // __SIZEOF_INT128__
+
+class uint128_t;
+class int128_t;
+#define __SIZEOF_INT128__ 16
+
+class uint128_t
+{
+private:
+    std::uint64_t UPPER, LOWER;
+
+public:
+    // Constructors
+    uint128_t();
+    uint128_t(const uint128_t & rhs);
+    uint128_t(uint128_t && rhs);
+    uint128_t(int128_t rhs);
+    uint128_t(double rhs);
+
+    template <typename T>
+    uint128_t(const T & rhs)
+        : UPPER(0), LOWER(rhs)
+    {   static_assert(std::is_integral <T>::value,
+                      "Input argument type must be an integer.");
+    }
+
+    template <typename S, typename T> uint128_t(const S & upper_rhs,
+            const T & lower_rhs)
+        : UPPER(upper_rhs), LOWER(lower_rhs)
+    {   static_assert(std::is_integral <S>::value &&
+                      std::is_integral <T>::value
+                      , "Input argument types must be integers.");
+    }
+
+    //  RHS input args only
+
+    // Assignment Operator
+    uint128_t operator=(const uint128_t & rhs);
+    uint128_t operator=(uint128_t && rhs);
+    uint128_t operator=(int128_t rhs);
+
+    template <typename T> uint128_t operator=(const T & rhs)
+    {   static_assert(std::is_integral <T>::value,
+                      "Input argument type must be an integer.");
+        UPPER = 0;
+        LOWER = rhs;
+        return *this;
+    }
+
+    // Typecast Operators
+    operator bool() const;
+    operator std::uint8_t() const;
+    operator std::uint16_t() const;
+    operator std::uint32_t() const;
+    operator std::uint64_t() const;
+    operator std::int64_t() const;
+    operator int128_t() const;
+    operator long double() const;
+    operator double() const;
+
+    // Bitwise Operators
+    uint128_t operator&(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator&(const T & rhs) const
+    {   return uint128_t(0, LOWER & static_cast<std::uint64_t>(rhs));
+    }
+
+    uint128_t & operator&=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator&=(const T & rhs)
+    {   UPPER = 0;
+        LOWER &= rhs;
+        return *this;
+    }
+
+    uint128_t operator|(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator|(const T & rhs) const
+    {   return uint128_t(UPPER, LOWER | static_cast<std::uint64_t>(rhs));
+    }
+
+    uint128_t & operator|=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator|=(const T & rhs)
+    {   LOWER |= static_cast<std::uint64_t>(rhs);
+        return *this;
+    }
+
+    uint128_t operator^(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator^(const T & rhs) const
+    {   return uint128_t(UPPER, LOWER ^ static_cast<std::uint64_t>(rhs));
+    }
+
+    uint128_t & operator^=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator^=(const T & rhs)
+    {   LOWER ^= static_cast<std::uint64_t>(rhs);
+        return *this;
+    }
+
+    uint128_t operator~() const;
+
+    // Bit Shift Operators
+    uint128_t operator<<(const uint128_t & rhs) const;
+
+    template <typename T> uint128_t operator<<(const T & rhs) const
+    {   return *this << uint128_t(rhs);
+    }
+
+    uint128_t & operator<<=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator<<=(const T & rhs)
+    {   *this = *this << uint128_t(rhs);
+        return *this;
+    }
+
+    uint128_t operator>>(const uint128_t & rhs) const;
+
+    template <typename T> uint128_t operator>>(const T & rhs) const
+    {   return *this >> uint128_t(rhs);
+    }
+
+    uint128_t & operator>>=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator>>=(const T & rhs)
+    {   *this = *this >> uint128_t(rhs);
+        return *this;
+    }
+
+    // Logical Operators
+    bool operator!() const;
+    bool operator&&(const uint128_t & rhs) const;
+    bool operator||(const uint128_t & rhs) const;
+
+    template <typename T> bool operator&&(const T & rhs)
+    {   return static_cast <bool> (*this && rhs);
+    }
+
+    template <typename T> bool operator||(const T & rhs)
+    {   return static_cast <bool> (*this || rhs);
+    }
+
+    // Comparison Operators
+    bool operator==(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator==(const T & rhs) const
+    {   return (!UPPER && (LOWER == static_cast<std::uint64_t>(rhs)));
+    }
+
+    bool operator!=(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator!=(const T & rhs) const
+    {   return (UPPER | (LOWER != static_cast<std::uint64_t>(rhs)));
+    }
+
+    bool operator>(const uint128_t & rhs) const;
+
+    template <typename T> bool operator>(const T & rhs) const
+    {   return (UPPER || (LOWER > static_cast<std::uint64_t>(rhs)));
+    }
+
+    bool operator<(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<(const T & rhs) const
+    {   return (!UPPER)?(LOWER < static_cast<std::uint64_t>(rhs)):false;
+    }
+
+    bool operator>=(const uint128_t & rhs) const;
+
+    template <typename T> bool operator>=(const T & rhs) const
+    {   return ((*this > rhs) | (*this == rhs));
+    }
+
+    bool operator<=(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<=(const T & rhs) const
+    {   return ((*this < rhs) | (*this == rhs));
+    }
+
+    // Arithmetic Operators
+    uint128_t operator+(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator+(const T & rhs) const
+    {   return uint128_t(UPPER + ((LOWER + static_cast<std::uint64_t>(rhs)) <
+                                  LOWER), LOWER + static_cast<std::uint64_t>(rhs));
+    }
+
+    uint128_t & operator+=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator+=(const T & rhs)
+    {   UPPER = UPPER + ((LOWER + rhs) < LOWER);
+        LOWER = LOWER + rhs;
+        return *this;
+    }
+
+    uint128_t operator-(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator-(const T & rhs) const
+    {   return uint128_t(static_cast<std::uint64_t>(
+                             UPPER - ((LOWER - rhs) > LOWER)),
+                         static_cast<std::uint64_t>(LOWER - rhs));
+    }
+
+    uint128_t & operator-=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator-=(const T & rhs)
+    {   *this = *this - rhs;
+        return *this;
+    }
+
+    uint128_t operator*(const uint128_t & rhs) const;
+
+    template <typename T> uint128_t operator*(const T & rhs) const
+    {   return *this * uint128_t(rhs);
+    }
+
+    uint128_t & operator*=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator*=(const T & rhs)
+    {   *this = *this * uint128_t(rhs);
+        return *this;
+    }
+
+private:
+    std::pair <uint128_t, uint128_t> divmod(const uint128_t & lhs,
+                                            const uint128_t & rhs) const;
+
+public:
+    uint128_t operator/(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator/(const T & rhs) const
+    {   return *this / uint128_t(rhs);
+    }
+
+    uint128_t & operator/=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator/=(const T & rhs)
+    {   *this = *this / uint128_t(rhs);
+        return *this;
+    }
+
+    uint128_t operator%(const uint128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+    operator%(const T & rhs) const
+    {   return *this - (rhs * (*this / rhs));
+    }
+
+    uint128_t & operator%=(const uint128_t & rhs);
+
+    template <typename T> uint128_t & operator%=(const T & rhs)
+    {   *this = *this % uint128_t(rhs);
+        return *this;
+    }
+
+    // Increment Operator
+    uint128_t & operator++();
+    uint128_t operator++(int);
+
+    // Decrement Operator
+    uint128_t & operator--();
+    uint128_t operator--(int);
+
+    // Nothing done since promotion doesn't work here
+    uint128_t operator+() const;
+
+    // two's complement
+    uint128_t operator-() const;
+
+    // Get private values
+    const std::uint64_t & upper() const
+    {   return UPPER;
+    }
+    const std::uint64_t & lower() const
+    {   return LOWER;
+    }
+
+    // Get bitsize of value
+    std::uint8_t bits() const;
+
+    // Get string representation of value
+    std::string str(std::uint8_t base = 10,
+                    const unsigned int & len = 0) const;
+};
+
+#ifndef getUPPER_defined
+#define getUPPER_defined 1
+
+namespace INT128names
+{
+
+inline std::uint64_t getUPPER(uint128_t a)
+{   return a.upper();
+}
+
+inline std::uint64_t getLOWER(uint128_t a)
+{   return a.lower();
+}
+
+inline uint128_t PACK128(std::uint64_t high, std::uint64_t low)
+{   return uint128_t(high, low);
+}
+
+inline bool TOP_BIT(uint128_t a)
+{   return (getUPPER(a) >> 63) != 0;
+}
+
+inline uint128_t UNSIGNED_FLIP_TOP_BIT(uint128_t a)
+{   return uint128_t(getUPPER(a) ^ static_cast<std::uint64_t>(1)<<63,
+                     getLOWER(a));
+}
+
+} // end of namespace
+
+#endif // getUPPER_defined
+
+
+// Bitwise Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator&(const T & lhs, const uint128_t & rhs)
+{   return rhs & lhs;
+}
+
+template <typename T> T & operator&=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs & lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator|(const T & lhs, const uint128_t & rhs)
+{   return rhs | lhs;
+}
+
+template <typename T> T & operator|=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs | lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator^(const T & lhs, const uint128_t & rhs)
+{   return rhs ^ lhs;
+}
+
+template <typename T> T & operator^=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs ^ lhs);
+}
+
+// Bitshift operators
+uint128_t operator<<(const bool & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint8_t  & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int8_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int16_t  & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int32_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int64_t & lhs, const uint128_t & rhs);
+
+template <typename T> T & operator<<=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) << rhs);
+}
+
+uint128_t operator>>(const bool & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint8_t  & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int8_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int16_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int32_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int64_t & lhs, const uint128_t & rhs);
+
+template <typename T> T & operator>>=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) >> rhs);
+}
+
+// Comparison Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator==(const T & lhs, const uint128_t & rhs)
+{   return (!rhs.upper() &&
+            (static_cast<std::uint64_t>(lhs) == rhs.lower()));
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator!=(const T & lhs, const uint128_t & rhs)
+{   return (rhs.upper() ||
+            (static_cast<std::uint64_t>(lhs) != rhs.lower()));
+}
+
+template <typename T> bool operator>(const T & lhs, const uint128_t & rhs)
+{   return (!rhs.upper()) &&
+           (static_cast<std::uint64_t>(lhs) > rhs.lower());
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<(const T & lhs, const uint128_t & rhs)
+{   if (rhs.upper())
+    {   return true;
+    }
+    return (static_cast<std::uint64_t>(lhs) < rhs.lower());
+}
+
+template <typename T> bool operator>=(const T & lhs, const uint128_t & rhs)
+{   if (rhs.upper())
+    {   return false;
+    }
+    return (static_cast<std::uint64_t>(lhs) >= rhs.lower());
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<=(const T & lhs, const uint128_t & rhs)
+{   if (rhs.upper())
+    {   return true;
+    }
+    return (static_cast<std::uint64_t>(lhs) <= rhs.lower());
+}
+
+// Arithmetic Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator+(const T & lhs, const uint128_t & rhs)
+{   return rhs + lhs;
+}
+
+template <typename T> T & operator+=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs + lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator-(const T & lhs, const uint128_t & rhs)
+{   return -(rhs - lhs);
+}
+
+template <typename T> T & operator-=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (-(rhs - lhs));
+}
+
+template <typename T> uint128_t operator*(const T & lhs, const uint128_t & rhs)
+{   return rhs * lhs;
+}
+
+template <typename T> T & operator*=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs * lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+operator/(const T & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) / rhs;
+}
+
+template <typename T> T & operator/=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) / rhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
+ operator%(const T & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) % rhs;
+}
+
+template <typename T> T & operator%=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) % rhs);
+}
+
+// I do not go "#define UINT128_T" here because while I am setting up
+// int128_t I want to know if the unsigned version is native or
+// simulated. A key reason for that is that if both are native then
+// casts between them will already exist, while if either is simulated
+// I will need to define something.
+
+inline uint128_t::uint128_t()
+    : UPPER(0), LOWER(0)
+{}
+
+inline uint128_t::uint128_t(const uint128_t & rhs)
+    : UPPER(rhs.UPPER), LOWER(rhs.LOWER)
+{}
+
+inline uint128_t::uint128_t(uint128_t && rhs)
+    : UPPER(std::move(rhs.UPPER)), LOWER(std::move(rhs.LOWER))
+{   if (this != &rhs)
+    {   rhs.UPPER = 0;
+        rhs.LOWER = 0;
+    }
+}
+
+inline uint128_t::uint128_t(double rhs)
+    : UPPER(), LOWER()
+{   double two64 = (double)x100000000LU * (double)0x100000000LU;
+    double w = rhs/two64;
+    uint64_t hi = (uint64_t)w;
+    rhs = rhs - two64*(double)hi;
+    if (rhs < 0.0)
+    {   hi--;
+        rhs = rhs + two64;
+    }
+    uint64_t lo = (uint64_t)rhs;
+    if ((double)lo > rhs) lo--;
+    UPPER = hi;
+    LOWER = lo;
+}
+
+inline uint128_t uint128_t::operator=(const uint128_t & rhs)
+{   UPPER = rhs.UPPER;
+    LOWER = rhs.LOWER;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator=(uint128_t && rhs)
+{   if (this != &rhs)
+    {   UPPER = std::move(rhs.UPPER);
+        LOWER = std::move(rhs.LOWER);
+        rhs.UPPER = 0;
+        rhs.LOWER = 0;
+    }
+    return *this;
+}
+
+inline uint128_t::operator bool() const
+{   return (bool) (UPPER | LOWER);
+}
+
+inline uint128_t::operator std::uint8_t() const
+{   return static_cast<std::uint8_t>(LOWER);
+}
+
+inline uint128_t::operator std::uint16_t() const
+{   return static_cast<std::uint16_t>(LOWER);
+}
+
+inline uint128_t::operator std::uint32_t() const
+{   return (std::uint32_t) LOWER;
+}
+
+inline uint128_t::operator std::uint64_t() const
+{   return (std::uint64_t) LOWER;
+}
+
+inline uint128_t::operator std::int64_t() const
+{   return (std::int64_t) LOWER;
+}
+
+inline uint128_t uint128_t::operator&(const uint128_t & rhs) const
+{   return uint128_t(UPPER & rhs.UPPER, LOWER & rhs.LOWER);
+}
+
+inline uint128_t::operator long double() const
+{   return (long double)LOWER + std::ldexp((long double)UPPER, 64);
+}
+
+inline uint128_t::operator double() const
+{   return (double)LOWER + std::ldexp((double)UPPER, 64);
+}
+
+inline uint128_t & uint128_t::operator&=(const uint128_t & rhs)
+{   UPPER &= rhs.UPPER;
+    LOWER &= rhs.LOWER;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator|(const uint128_t & rhs) const
+{   return uint128_t(UPPER | rhs.UPPER, LOWER | rhs.LOWER);
+}
+
+inline uint128_t & uint128_t::operator|=(const uint128_t & rhs)
+{   UPPER |= rhs.UPPER;
+    LOWER |= rhs.LOWER;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator^(const uint128_t & rhs) const
+{   return uint128_t(UPPER ^ rhs.UPPER, LOWER ^ rhs.LOWER);
+}
+
+inline uint128_t & uint128_t::operator^=(const uint128_t & rhs)
+{   UPPER ^= rhs.UPPER;
+    LOWER ^= rhs.LOWER;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator~() const
+{   return uint128_t(~UPPER, ~LOWER);
+}
+
+inline uint128_t uint128_t::operator<<(const uint128_t & rhs) const
+{   const std::uint64_t shift = rhs.LOWER;
+    if (((bool) rhs.UPPER) || (shift >= 128))
+    {   return uint128_t(0);
+    }
+    else if (shift == 64)
+    {   return uint128_t(LOWER, 0);
+    }
+    else if (shift == 0)
+    {   return *this;
+    }
+    else if (shift < 64)
+    {   return uint128_t((UPPER << shift) + (LOWER >> (64 - shift)),
+                         LOWER << shift);
+    }
+    else if ((128 > shift) && (shift > 64))
+    {   return uint128_t(LOWER << (shift - 64), 0);
+    }
+    else
+    {   return uint128_t(0);
+    }
+}
+
+inline uint128_t & uint128_t::operator<<=(const uint128_t & rhs)
+{   *this = *this << rhs;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator>>(const uint128_t & rhs) const
+{   const std::uint64_t shift = rhs.LOWER;
+    if (((bool) rhs.UPPER) || (shift >= 128))
+    {   return uint128_t(0);
+    }
+    else if (shift == 64)
+    {   return uint128_t(0, UPPER);
+    }
+    else if (shift == 0)
+    {   return *this;
+    }
+    else if (shift < 64)
+    {   return uint128_t(UPPER >> shift,
+                         (UPPER << (64 - shift)) + (LOWER >> shift));
+    }
+    else if ((128 > shift) && (shift > 64))
+    {   return uint128_t(0, (UPPER >> (shift - 64)));
+    }
+    else
+    {   return uint128_t(0);
+    }
+}
+
+inline uint128_t & uint128_t::operator>>=(const uint128_t & rhs)
+{   *this = *this >> rhs;
+    return *this;
+}
+
+inline bool uint128_t::operator!() const
+{   return !(bool) (UPPER | LOWER);
+}
+
+inline bool uint128_t::operator&&(const uint128_t & rhs) const
+{   return ((bool) *this && rhs);
+}
+
+inline bool uint128_t::operator||(const uint128_t & rhs) const
+{   return ((bool) *this || rhs);
+}
+
+inline bool uint128_t::operator==(const uint128_t & rhs) const
+{   return ((UPPER == rhs.UPPER) && (LOWER == rhs.LOWER));
+}
+
+inline bool uint128_t::operator!=(const uint128_t & rhs) const
+{   return ((UPPER != rhs.UPPER) | (LOWER != rhs.LOWER));
+}
+
+inline bool uint128_t::operator>(const uint128_t & rhs) const
+{   if (UPPER == rhs.UPPER)
+    {   return (LOWER > rhs.LOWER);
+    }
+    return (UPPER > rhs.UPPER);
+}
+
+inline bool uint128_t::operator<(const uint128_t & rhs) const
+{   if (UPPER == rhs.UPPER)
+    {   return (LOWER < rhs.LOWER);
+    }
+    return (UPPER < rhs.UPPER);
+}
+
+inline bool uint128_t::operator>=(const uint128_t & rhs) const
+{   return ((*this > rhs) || (*this == rhs));
+}
+
+inline bool uint128_t::operator<=(const uint128_t & rhs) const
+{   return ((*this < rhs) || (*this == rhs));
+}
+
+inline uint128_t uint128_t::operator+(const uint128_t & rhs) const
+{   return uint128_t(UPPER + rhs.UPPER + ((LOWER + rhs.LOWER) <
+                                          LOWER), LOWER + rhs.LOWER);
+}
+
+inline uint128_t & uint128_t::operator+=(const uint128_t & rhs)
+{   UPPER += rhs.UPPER + ((LOWER + rhs.LOWER) < LOWER);
+    LOWER += rhs.LOWER;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator-(const uint128_t & rhs) const
+{   return uint128_t(UPPER - rhs.UPPER - ((LOWER - rhs.LOWER) >
+                                          LOWER), LOWER - rhs.LOWER);
+}
+
+inline uint128_t & uint128_t::operator-=(const uint128_t & rhs)
+{   *this = *this - rhs;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator*(const uint128_t & rhs) const
+{   // split values into 4 32-bit parts
+    std::uint64_t top[4] = {UPPER >> 32, UPPER & 0xffffffff, LOWER >> 32, LOWER & 0xffffffff};
+    std::uint64_t bottom[4] = {rhs.UPPER >> 32, rhs.UPPER & 0xffffffff, rhs.LOWER >> 32, rhs.LOWER & 0xffffffff};
+    std::uint64_t products[4][4];
+
+    // multiply each component of the values
+    for(int y = 3; y > -1; y--)
+    {   for(int x = 3; x > -1; x--)
+        {   products[3 - x][y] = top[x] * bottom[y];
+        }
+    }
+
+    // first row
+    std::uint64_t fourth32 = (products[0][3] & 0xffffffff);
+    std::uint64_t third32  = (products[0][2] & 0xffffffff) +
+                             (products[0][3] >> 32);
+    std::uint64_t second32 = (products[0][1] & 0xffffffff) +
+                             (products[0][2] >> 32);
+    std::uint64_t first32  = (products[0][0] & 0xffffffff) +
+                             (products[0][1] >> 32);
+
+    // second row
+    third32  += (products[1][3] & 0xffffffff);
+    second32 += (products[1][2] & 0xffffffff) + (products[1][3] >> 32);
+    first32  += (products[1][1] & 0xffffffff) + (products[1][2] >> 32);
+
+    // third row
+    second32 += (products[2][3] & 0xffffffff);
+    first32  += (products[2][2] & 0xffffffff) + (products[2][3] >> 32);
+
+    // fourth row
+    first32  += (products[3][3] & 0xffffffff);
+
+    // move carry to next digit
+    third32  += fourth32 >> 32;
+    second32 += third32  >> 32;
+    first32  += second32 >> 32;
+
+    // remove carry from current digit
+    fourth32 &= 0xffffffff;
+    third32  &= 0xffffffff;
+    second32 &= 0xffffffff;
+    first32  &= 0xffffffff;
+
+    // combine components
+    return uint128_t((first32 << 32) | second32,
+                     (third32 << 32) | fourth32);
+}
+
+inline uint128_t & uint128_t::operator*=(const uint128_t & rhs)
+{   *this = *this * rhs;
+    return *this;
+}
+
+inline std::pair <uint128_t, uint128_t> uint128_t::divmod(
+    const uint128_t & lhs, const uint128_t & rhs) const
+{   // Save some calculations /////////////////////
+    if (rhs == uint128_t(0))
+    {   throw std::domain_error("Error: division or modulus by 0");
+    }
+    else if (rhs == uint128_t(1))
+    {   return std::pair <uint128_t, uint128_t> (lhs, uint128_t(0));
+    }
+    else if (lhs == rhs)
+    {   return std::pair <uint128_t, uint128_t> (uint128_t(1), uint128_t(0));
+    }
+    else if ((lhs == uint128_t(0)) || (lhs < rhs))
+    {   return std::pair <uint128_t, uint128_t> (uint128_t(0), lhs);
+    }
+
+    std::pair <uint128_t, uint128_t> qr (uint128_t(0), uint128_t(0));
+    for(std::uint8_t x = lhs.bits(); x > 0; x--)
+    {   qr.first  <<= uint128_t(1);
+        qr.second <<= uint128_t(1);
+
+        if ((lhs >> (x - 1U)) & 1)
+        {   qr.second++;
+        }
+
+        if (qr.second >= rhs)
+        {   qr.second -= rhs;
+            qr.first++;
+        }
+    }
+    return qr;
+}
+
+inline uint128_t uint128_t::operator/(const uint128_t & rhs) const
+{   return divmod(*this, rhs).first;
+}
+
+inline uint128_t & uint128_t::operator/=(const uint128_t & rhs)
+{   *this = *this / rhs;
+    return *this;
+}
+
+inline uint128_t uint128_t::operator%(const uint128_t & rhs) const
+{   return divmod(*this, rhs).second;
+}
+
+inline uint128_t & uint128_t::operator%=(const uint128_t & rhs)
+{   *this = *this % rhs;
+    return *this;
+}
+
+inline uint128_t & uint128_t::operator++()
+{   static const uint128_t uint128_1(1);
+    return *this += uint128_1;
+}
+
+inline uint128_t uint128_t::operator++(int)
+{   uint128_t temp(*this);
+    ++*this;
+    return temp;
+}
+
+inline uint128_t & uint128_t::operator--()
+{   static const uint128_t uint128_1(1);
+    return *this -= uint128_1;
+}
+
+inline uint128_t uint128_t::operator--(int)
+{   uint128_t temp(*this);
+    --*this;
+    return temp;
+}
+
+inline uint128_t uint128_t::operator+() const
+{   return *this;
+}
+
+inline uint128_t uint128_t::operator-() const
+{   static const uint128_t uint128_1(1);
+    return ~*this + uint128_1;
+}
+
+inline std::uint8_t uint128_t::bits() const
+{   std::uint8_t out = 0;
+    if (UPPER)
+    {   out = 64;
+        std::uint64_t up = UPPER;
+        while (up)
+        {   up >>= 1;
+            out++;
+        }
+    }
+    else
+    {   std::uint64_t low = LOWER;
+        while (low)
+        {   low >>= 1;
+            out++;
+        }
+    }
+    return out;
+}
+
+inline std::string uint128_t::str(std::uint8_t base,
+                                  const unsigned int & len) const
+{   if ((base < 2) || (base > 16))
+    {   throw std::invalid_argument("Base must be in the range [2, 16]");
+    }
+    std::string out = "";
+    if (!(*this))
+    {   out = "0";
+    }
+    else
+    {   std::pair <uint128_t, uint128_t> qr(*this, uint128_t(0));
+        do
+        {   qr = divmod(qr.first, base);
+            out = "0123456789abcdef"[static_cast<std::uint8_t>(qr.second)] + out;
+        }
+        while (qr.first);
+    }
+    if (out.size() < len)
+    {   out = std::string(len - out.size(), '0') + out;
+    }
+    return out;
+}
+
+inline uint128_t operator<<(const bool & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::uint8_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::int8_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::int16_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::int32_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator<<(const std::int64_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) << rhs;
+}
+
+inline uint128_t operator>>(const bool & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::uint8_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::int8_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::int16_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::int32_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+inline uint128_t operator>>(const std::int64_t & lhs, const uint128_t & rhs)
+{   return uint128_t(lhs) >> rhs;
+}
+
+// Now I should certainly have a type uint128_t.
+
+namespace INT128names
+{
+inline uint128_t UNSIGNED(int128_t a);
+};
+
+class int128_t
+{
+private:
+    std::int64_t UPPER;
+    std::uint64_t LOWER;
+
+public:
+    // Constructors
+    int128_t()
+    {   UPPER = 0;
+        LOWER = 0;
+    }
+    int128_t(const int128_t & rhs)
+    {   UPPER = rhs.UPPER;
+        LOWER = rhs.LOWER;
+    }
+    int128_t(int128_t && rhs)
+    {   UPPER = rhs.UPPER;
+        LOWER = rhs.LOWER;
+    }
+    int128_t(uint128_t v)
+    {   UPPER = static_cast<std::int64_t>(INT128names::getUPPER(v));
+        LOWER = INT128names::getLOWER(v);
+    }
+
+    int128_t(const bool &rhs)
+    {   UPPER = 0;
+        LOWER = rhs;
+    }
+    template <typename T> int128_t(const T & rhs)
+        : UPPER(rhs < 0 ? -1 : 0), LOWER(rhs)
+    {   static_assert(std::is_integral <T>::value,
+                      "Input argument type must be an integer.");
+    }
+    template <typename S, typename T> int128_t(const S & upper_rhs,
+                                               const T & lower_rhs)
+        : UPPER(upper_rhs), LOWER(lower_rhs)
+    {   static_assert(std::is_integral <S>::value &&
+                      std::is_integral <T>::value
+                      , "Input argument types must be integers.");
+    }
+
+    std::int64_t getUPPER()
+    {   return UPPER;
+    }
+
+    std::uint64_t getLOWER()
+    {   return LOWER;
+    }
+
+    static uint128_t FLIP_TOP_BIT(int128_t a)
+    {   return INT128names::UNSIGNED_FLIP_TOP_BIT(INT128names::UNSIGNED(a));
+    }
+
+    //  RHS input args only
+
+    // Assignment Operator
+    int128_t operator=(const int128_t & rhs)
+    {   UPPER = rhs.UPPER;
+        LOWER = rhs.LOWER;
+        return *this;
+    }
+    int128_t operator=(int128_t && rhs)
+    {   UPPER = rhs.UPPER;
+        LOWER = rhs.LOWER;
+        return *this;
+    }
+    int128_t operator=(uint128_t rhs)
+    {   UPPER = static_cast<std::int64_t>(INT128names::getUPPER(rhs));
+        LOWER = INT128names::getLOWER(rhs);
+        return *this;
+    }
+
+    template <typename T> int128_t operator=(const T & rhs)
+    {   static_assert(std::is_integral <T>::value,
+                      "Input argument type must be an integer.");
+        UPPER = rhs < 0 ? -1 : 0;
+        LOWER = rhs;
+        return *this;
+    }
+
+    // Typecast Operators
+    operator bool() const
+    {   return (bool) (UPPER | LOWER);
+    }
+    
+    operator std::int8_t() const
+    {   return static_cast<std::int8_t>(LOWER);
+    }
+
+    operator std::int16_t() const
+    {   return static_cast<std::int16_t>(LOWER);
+    }
+
+    operator std::int32_t() const
+    {   return (std::int32_t) LOWER;
+    }
+
+    operator std::int64_t() const
+    {   return (std::int64_t) LOWER;
+    }
+
+    operator std::uint8_t() const
+    {   return static_cast<std::uint8_t>(LOWER);
+    }
+
+    operator std::uint16_t() const
+    {   return static_cast<std::uint16_t>(LOWER);
+    }
+
+    operator std::uint32_t() const
+    {   return (std::uint32_t) LOWER;
+    }
+
+    operator std::uint64_t() const
+    {   return (std::uint64_t) LOWER;
+    }
+
+    operator uint128_t() const
+    {   return INT128names::PACK128(static_cast<std::uint64_t>(UPPER), LOWER);
+    }
+
+    // Bitwise Operators
+    int128_t operator&(const int128_t & rhs) const
+    {   return int128_t(UPPER&rhs.UPPER, LOWER&rhs.LOWER);
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator&(const T & rhs) const
+    {   return int128_t(rhs >= 0 ? 0 : UPPER,
+                        LOWER & static_cast<std::uint64_t>(rhs));
+    }
+
+    int128_t & operator&=(const int128_t & rhs)
+    {   UPPER &= rhs.UPPER;
+        LOWER &= rhs.LOWER;
+        return *this;
+    }
+
+    template <typename T> int128_t & operator&=(const T & rhs)
+    {   if (rhs >= 0) UPPER = 0;
+        LOWER &= rhs;
+        return *this;
+    }
+
+    int128_t operator|(const int128_t & rhs) const
+    {   return int128_t(UPPER|rhs.UPPER, LOWER|rhs.LOWER);
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator|(const T & rhs) const
+    {   return int128_t(rhs < 0 ? -1 : UPPER,
+                        LOWER | static_cast<std::uint64_t>(rhs));
+    }
+
+    int128_t & operator|=(const int128_t & rhs)
+    {   UPPER |= rhs.UPPER;
+        LOWER |= rhs.LOWER;
+        return *this;
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    & operator|=(const T & rhs)
+    {   if (rhs < 0) UPPER = -1;
+        LOWER |= static_cast<std::uint64_t>(rhs);
+        return *this;
+    }
+
+    int128_t operator^(const int128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator^(const T & rhs) const
+    {   return int128_t(rhs<0 ? ~UPPER : UPPER,
+                        LOWER ^ static_cast<std::uint64_t>(rhs));
+    }
+
+    int128_t & operator^=(const int128_t & rhs);
+
+    template <typename T> int128_t & operator^=(const T & rhs)
+    {   if (rhs < 0) UPPER = ~UPPER;
+        LOWER ^= static_cast<std::uint64_t>(rhs);
+        return *this;
+    }
+
+    int128_t operator~() const
+    {   return int128_t(~INT128names::UNSIGNED(*this));
+    }
+
+    // Bit Shift Operators
+    int128_t operator<<(const int128_t & rhs) const;
+
+    template <typename T> int128_t operator<<(const T & rhs) const
+    {   return *this << int128_t(rhs);
+    }
+
+    int128_t & operator<<=(const int128_t & rhs);
+
+    template <typename T> int128_t & operator<<=(const T & rhs)
+    {   *this = *this << int128_t(rhs);
+        return *this;
+    }
+
+    int128_t operator>>(const int128_t & rhs) const
+    {   bool sign = UPPER < 0;
+        uint128_t r = INT128names::UNSIGNED(*this) >> INT128names::UNSIGNED(rhs);
+        if (sign) r |= INT128names::UNSIGNED(int128_t(-1)) << INT128names::UNSIGNED(int128_t(128)-rhs);
+        return int128_t(r);
+    }
+
+    template <typename T> int128_t operator>>(const T & rhs) const
+    {   return *this >> int128_t(rhs);
+    }
+
+    int128_t & operator>>=(const int128_t & rhs)
+    {   bool sign = UPPER < 0;
+        uint128_t r = INT128names::UNSIGNED(*this) >> INT128names::UNSIGNED(rhs);
+        if (sign) r |= INT128names::UNSIGNED(int128_t(-1)) << INT128names::UNSIGNED(int128_t(128)-rhs);
+        UPPER=static_cast<std::int64_t>(INT128names::getUPPER(r));
+        LOWER=INT128names::getLOWER(r);
+        return *this;
+    }
+
+    template <typename T> int128_t & operator>>=(const T & rhs)
+    {   *this = *this >> int128_t(rhs);
+        return *this;
+    }
+
+    // Logical Operators
+    bool operator!() const;
+    bool operator&&(const int128_t & rhs) const;
+    bool operator||(const int128_t & rhs) const;
+
+    template <typename T> bool operator&&(const T & rhs)
+    {   return static_cast <bool> (*this && rhs);
+    }
+
+    template <typename T> bool operator||(const T & rhs)
+    {   return static_cast <bool> (*this || rhs);
+    }
+
+    // Comparison Operators
+    bool operator==(const int128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator==(const T & rhs) const
+    {   return (UPPER == (rhs>=0 ? 0 : -1) &&
+               (LOWER == static_cast<std::uint64_t>(rhs)));
+    }
+
+    bool operator!=(const int128_t & rhs) const;
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator!=(const T & rhs) const
+    {   return (UPPER != (rhs>0 ? 0 : -1) ||
+               (LOWER != static_cast<std::uint64_t>(rhs)));
+    }
+
+    bool operator>(const int128_t & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) > int128_t::FLIP_TOP_BIT(rhs);
+    }
+
+    template <typename T> bool operator>(const T & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) > int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
+    }
+
+    bool operator<(const int128_t & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) < int128_t::FLIP_TOP_BIT(rhs);
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<(const T & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) < int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
+    }
+
+    bool operator>=(const int128_t & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) >= int128_t::FLIP_TOP_BIT(rhs);
+    }
+
+    template <typename T> bool operator>=(const T & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) >= int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
+    }
+
+    bool operator<=(const int128_t & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) <= int128_t::FLIP_TOP_BIT(rhs);
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+    operator<=(const T & rhs) const
+    {   return int128_t::FLIP_TOP_BIT(*this) <= int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
+    }
+
+    // Arithmetic Operators
+    int128_t operator+(const int128_t & rhs) const
+    {   return int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
+    }
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator+(const T & rhs) const
+    {   return int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
+    }
+
+    int128_t & operator+=(const int128_t & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+    template <typename T> int128_t & operator+=(const T & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+    int128_t operator-(const int128_t & rhs) const
+    {   return int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator=(const T & rhs)
+    {   return *this = int128_t(rhs);
+    }
+
+    int128_t & operator-=(const int128_t & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+    template <typename T> int128_t & operator-=(const T & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+    int128_t operator*(const int128_t & rhs) const
+    {   return int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
+    }
+
+    template <typename T> int128_t operator*(const T & rhs) const
+    {   return int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
+    }
+
+    int128_t & operator*=(const int128_t & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+    template <typename T> int128_t & operator*=(const T & rhs)
+    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
+        UPPER = r.UPPER;
+        LOWER = r.LOWER;
+        return *this;
+    }
+
+private:
+    std::pair <int128_t, int128_t> divrem(const int128_t & a,
+                                          const int128_t & b) const
+    {   uint128_t ua = INT128names::UNSIGNED(a), ub = INT128names::UNSIGNED(b), uq;
+        if (a.upper() < 0)
+        {   if (b.upper() < 0) uq = (-ua)/(-ub);
+            else uq = -((-ua)/ub);
+        }
+        else
+        {   if (b.upper() < 0) uq = -(ua/(-ub));
+            else uq = ua/ub;
+        }
+        int128_t q(uq);
+        return std::pair<int128_t,int128_t>(q, a - q*b);
+    }
+
+public:
+    int128_t operator/(const int128_t & rhs) const
+    {   return  divrem(*this, rhs).first;
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator/(const T & rhs) const
+    {   return *this / int128_t(rhs);
+    }
+
+    int128_t & operator/=(const int128_t & rhs);
+
+    template <typename T> int128_t & operator/=(const T & rhs)
+    {   *this = *this / int128_t(rhs);
+        return *this;
+    }
+
+    int128_t operator%(const int128_t & rhs) const
+    {   return divrem(*this, rhs).second;
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+    operator%(const T & rhs) const
+    {   return  *this % int128_t(rhs);
+    }
+
+    int128_t & operator%=(const int128_t & rhs);
+
+    template <typename T> int128_t & operator%=(const T & rhs)
+    {   *this = *this % int128_t(rhs);
+        return *this;
+    }
+
+    // Increment Operator
+    int128_t & operator++();
+    int128_t operator++(int);
+
+    // Decrement Operator
+    int128_t & operator--();
+    int128_t operator--(int);
+
+    // Nothing done since promotion doesn't work here
+    int128_t operator+() const
+    {   return *this;
+    }
+
+    // two's complement
+    int128_t operator-() const;
+
+    // Get private values
+    const std::int64_t & upper() const
+    {   return UPPER;
+    }
+    const std::uint64_t & lower() const
+    {   return LOWER;
+    }
+
+    // Get bitsize of value
+    std::uint8_t bits() const;
+
+    // Get string representation of value
+    std::string str(std::uint8_t base = 10,
+                    unsigned int len = 0) const;
+};
+
+inline uint128_t INT128names::UNSIGNED(int128_t a)
+{   return INT128names::PACK128(static_cast<std::uint64_t>(a.getUPPER()), a.getLOWER());
+}
+
+// Bitwise Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator&(const T & lhs, const int128_t & rhs)
+{   return rhs & lhs;
+}
+
+template <typename T> T & operator&=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (rhs & lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator|(const T & lhs, const int128_t & rhs)
+{   return rhs | lhs;
+}
+
+template <typename T> T & operator|=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (rhs | lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator^(const T & lhs, const int128_t & rhs)
+{   return rhs ^ lhs;
+}
+
+template <typename T> T & operator^=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (rhs ^ lhs);
+}
+
+// Bitshift operators
+
+//inline int128_t operator<<(const int128_t & lhs, const int128_t & rhs)
+//{   return int128_t(int128_t::INT128names::UNSIGNED(lhs) << INT128names::UNSIGNED(rhs));
+//}
+
+inline int128_t operator<<(const bool & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::uint8_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::uint16_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::uint32_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::uint64_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::int8_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::int16_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::int32_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+inline int128_t operator<<(const std::int64_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) << rhs;
+}
+
+//inline int128_t operator>>(const int128_t & lhs, const int128_t & rhs)
+//{   if (lhs >= 0) return int128_t((int128_t::INT128names::UNSIGNED(lhs) >> INT128names::UNSIGNED(rhs));
+//    else return int128_t((int128_t::INT128names::UNSIGNED(lhs) >> INT128names::UNSIGNED(rhs)) |
+//                         (INT128names::UNSIGNED(int128_t(-1)) << (128-INT128names::UNSIGNED(rhs))));
+//}
+
+inline int128_t operator>>(const bool & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::uint8_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::uint16_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::uint32_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::uint64_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::int8_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::int16_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::int32_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+inline int128_t operator>>(const std::int64_t & lhs, const int128_t & rhs)
+{   return int128_t(lhs) >> rhs;
+}
+
+template <typename T> T & operator<<=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (int128_t(lhs) << rhs);
+}
+
+template <typename T> T & operator>>=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (int128_t(lhs) >> rhs);
+}
+
+// Comparison Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator==(const T & lhs, const int128_t & rhs)
+{   return (rhs.upper() == (lhs<0?-1:0) &&
+            (static_cast<std::uint64_t>(lhs) == rhs.lower()));
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator!=(const T & lhs, const int128_t & rhs)
+{   
+    return (rhs.upper() != (lhs<0?-1:0) ||
+            (static_cast<std::uint64_t>(lhs) != rhs.lower()));
+}
+
+template <typename T> bool operator>(const T & lhs, const int128_t & rhs)
+{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) >
+           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<(const T & lhs, const int128_t & rhs)
+{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) <
+           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
+}
+
+template <typename T> bool operator>=(const T & lhs,
+                                      const int128_t & rhs)
+{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) >=
+           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+operator<=(const T & lhs, const int128_t & rhs)
+{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) <=
+           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
+}
+
+// Arithmetic Operators
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator+(const T & lhs, const int128_t & rhs)
+{   return rhs + lhs;
+}
+
+template <typename T> T & operator+=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (rhs + lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator-(const T & lhs, const int128_t & rhs)
+{   return -(rhs - lhs);
+}
+
+template <typename T> T & operator-=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (-(rhs - lhs));
+}
+
+template <typename T> int128_t operator*(const T & lhs, const int128_t & rhs)
+{   return rhs * lhs;
+}
+
+template <typename T> T & operator*=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (rhs * lhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator/(const T & lhs, const int128_t & rhs)
+{   return int128_t(lhs) / rhs;
+}
+
+template <typename T> T & operator/=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (int128_t(lhs) / rhs);
+}
+
+template <typename T>
+typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
+operator%(const T & lhs, const int128_t & rhs)
+{   return int128_t(lhs) % rhs;
+}
+
+template <typename T> T & operator%=(T & lhs, const int128_t & rhs)
+{   return lhs = static_cast <T> (int128_t(lhs) % rhs);
+}
+
+//inline bool greaterp128(const int128_t & a, const int128_t & b)
+//{   uint128_t aa(a.upper() ^ UINT64_C(0x8000000000000000), a.lower());
+//    uint128_t bb(b.upper() ^ UINT64_C(0x8000000000000000), b.lower());
+//    return aa > bb;
+//}
+
+// The code here is because x<<n can have undefined value for signed types x,
+// and I want one that just "does what I expect" even in cases where there
+// is overflow. The situation with x>>n is even less satisfactory because
+// when x is signed there is little guarantee about how its sign bit is
+// handled. I want it to be replicated into the space vacated by the shift.
+
+//inline int128_t ASL128(const int128_t & a, int n)
+//{   if (n >= 128) return 0;
+//    if (n < 64) return
+//            int128_t((a.upper()<<n) | (a.lower()>>(64-n)),
+//                     a.lower()<<n);
+//    else if (n == 64) return int128_t(a.lower(), 0);
+//    else return int128_t(a.lower()<<(n-64), 0);
+//}
+
+//inline int128_t ASR128(const int128_t & a, int n)
+//{   if (n >= 128) return int128_t(a < 0 ? -1 : 0);
+//    if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
+//                                    (a.upper()<<(64-n)) | (a.lower()>>n));
+//    else if (n == 64) return int128_t(-static_cast<std::int64_t>(a.upper()<0),
+//                                          a.upper());
+//    else if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
+//                                         (a.upper()<<(64-n)) | (a.lower()>>n));
+//    else return int128_t(-static_cast<std::int64_t>(a.upper()<0),
+//                             ASR((static_cast<std::int64_t>(a.upper())), n-64));
+//}
+
+#ifndef getUPPER_defined
+#define getUPPER_defined 1
+
+namespace INT128
+{
+
+inline std::int64_t getUPPER(int128_t a)
+{   return a.getUPPER();
+}
+
+inline std::uint64_t getLOWER(int128_t a)
+{   return a.getLOWER();
+}
+
+inline int128_t PACK128(std::int64_t high, std::uint64_t low)
+{   return int128_t(high, low);
+}
+
+} // end of namespace
+
+#endif // getUPPER_defined
+
+inline std::string int128_t::str(std::uint8_t base,
+                                 unsigned int len) const
+{   std::string out = "";
+    if (UPPER==0 && LOWER==0) out = "0";
+    else
+    {   uint128_t u = INT128names::UNSIGNED(*this);
+        if (base==10 && UPPER<0)
+        {   u = -u;
+            len--;
+        }
+        do
+        {   int r = static_cast<std::uint64_t>(u % base);
+            out = "0123456789abcdef"[r] + out;
+            u = u / base;
+        } while (u != 0);
+    }
+    if (out.size() < len) out = std::string(len - out.size(), '0') + out;
+    if (base==10 && UPPER<0) out = "-" + out;
+    return out; 
+}
+
+inline int128_t & int128_t::operator++()
+{   static const int128_t int128_1(1);
+    return *this += int128_1;
+}
+
+inline int128_t int128_t::operator++(int)
+{   int128_t temp(*this);
+    ++*this;
+    return temp;
+}
+
+inline int128_t & int128_t::operator--()
+{   static const int128_t int128_1(1);
+    return *this -= int128_1;
+}
+
+inline int128_t int128_t::operator--(int)
+{   int128_t temp(*this);
+    --*this;
+    return temp;
+}
+
+inline int128_t int128_t::operator-() const
+{   static const int128_t int128_1(1);
+    return ~*this + int128_1;
+}
+
+inline uint128_t uint128(int128_t v)
+{   return INT128names::PACK128(static_cast<std::uint64_t>(v>>64),
+                   INT128names::getLOWER(INT128names::UNSIGNED(v)));
+}
+
+inline uint128_t uint128(std::uint64_t v)
+{   return INT128names::PACK128(static_cast<std::uint64_t>(0), v);
+}
+
+inline uint128_t uint128(int64_t v)
+{   return INT128names::PACK128(
+        static_cast<std::uint64_t>(v<0 ? 0xffffffffffffffffU : 0U),
+        v);
+}
+
+inline int128_t int128(int64_t v)
+{   return int128_t(static_cast<std::int64_t>(v<0 ? -1 : 0),
+                    static_cast<std::uint64_t>(v));
+}
+
+#endif // __SIZEOF_INT128__
+
+// Once this header has been installed both HAVE_UINT128_T and
+// HAVE_INT128_T will be defined. That is rather as if autoconf had
+// been used to check for the presence of 128-bit integer types.
+
+#ifndef HAVE_UINT128_T
+#define HAVE_UINT128_T 1
+#endif
+
+#ifndef HAVE_INT128_T
+#define HAVE_INT128_T 1
+#endif
+
+constexpr inline uint128_t topbit128()
+{   return ((uint128_t)1) << 127;
+}
+
+constexpr inline bool topbit128(uint128_t a)
+{   return (a>>127) != 0;
+}
+
+constexpr inline uint64_t topbit64()
+{   return ((uint64_t)1) << 63;
+}
+
+constexpr inline bool topbit64(uint64_t a)
+{   return (a>>63) != 0;
+}
+
+inline void showinteger(std::ostream& stream, uint128_t n, unsigned int base)
+{   if (n >= base) showinteger(stream, n/base, base);
+    static char digs[] = "0123456789abcdef";
+    stream << digs[n%base];
+}
+
+inline std::ostream& operator<<(std::ostream& stream, int128_t rhs)
+{   uint128_t urhs;
+    if (rhs < 0 && stream.flags() & stream.dec)
+    {   urhs = -(uint128_t)rhs;
+        stream << "-";
+    }
+    else urhs = (uint128_t)rhs;
+    if (stream.flags() & stream.oct) showinteger(stream, urhs, 8U);
+    else if (stream.flags() & stream.dec) showinteger(stream, urhs, 10U);
+    else if (stream.flags() & stream.hex) showinteger(stream, urhs, 16U);
+    return stream;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, uint128_t rhs)
+{   if (stream.flags() & stream.oct) showinteger(stream, rhs, 8);
+    else if (stream.flags() & stream.dec) showinteger(stream, rhs, 10);
+    else if (stream.flags() & stream.hex) showinteger(stream, rhs, 16);
+    return stream;
+    return stream;
+}
+
+inline void to_string(std::stringstream& s, uint128_t a)
+{   if (a >= 10) to_string(s, a/10);
+    s << (unsigned int)(a%10);
+}
+
+inline std::string to_string(uint128_t a)
+{   std::stringstream s;
+    to_string(s, a);
+    return s.str();
+}
+
+inline std::string to_string(int128_t a)
+{   std::stringstream s;
+    uint128_t b;
+    if (a>=0) b = a;
+    else
+    {   s << "-";
+        b = -(uint128_t)a;
+    }
+    to_string(s, b);
+    return s.str();
+}
+
+inline std::string to_hexstring(uint128_t a)
+{   std::stringstream s;
+    s << std::hex << std::setprecision(16);
+    s << (uint64_t)(a>>64) << (uint64_t)a;
+    return s.str();
+}
+
+inline std::string to_hexstring(int128_t a)
+{   return to_hexstring((uint128_t)a);
+}
+
+#endif // __int128_h__
+
+// end of int128.h
+// float128.h                                   Copyright (C) 2026 Codemist
+
+#ifndef header_float128_h
+#define header_float128_h 1
+
+// $Id$
+
+
+/**************************************************************************
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+
+// STATUS:                                                    21 June 2026.
+// When built either on an x86_64 using g++ where the quadmath library
+// is available, or on aarch64 Linux where "long double" is a 128-bit type
+// this should now support all the elementary functions I want both on real
+// and on complex arguments.
+// As of mid 2026 it seems that the Macintosh does not provide a 128-bit
+// floating point type via Xcode and clang. (I see some suggestion that
+// a version of g++ via homebrew may have quadmath.h present, but that is
+// not a very comfortable path forward). Also the current Xcode does
+// not provide <stdfloat> and thus the C++23 options... so I need to do
+// EVERYTHING in software there!
+// Windows/x86_64 is OK with quadmath. Windows/aarch64 awaits a build
+// environment that I am happy using and that is stable! But the fallback
+// to using software for everything means I can cope come what may.
+//
+// The potential build options that now work well in at least some cases
+// but need finshing off are:
+//   Use of the C++23 std::float128_t type which provides arithmetic but
+//       does not come with a math library.
+//   Compilation using clang where there is a type __float128 and
+//       support for real but not complex elementary functions.
+//   Configurations where all 128-bit floating point needs to be
+//       implemented in software.
+// These cases should get sorted out in order to have a fully portable
+// rounded setup. The only one that at present is liable to be called
+// for is use of clang on Windows on ARM where in some cases it may be
+// that long double is just a 64-bit type. At the moment I am not yet
+// supporting build there (for a range of other reasons) so this is not
+// urgent.
+//
+// A current issue is that for numbers that are too small to be normalised
+// in the usual way I do not round calculations properly. Just now now
+// I will take the view that these numbers already suffer lower precision
+// than other cases and few people will notuce if it is even worse than
+// that> But when I get round to it I will wish to sort that out!
+
+// OVERVIEW:
+// This introduces types FLOAT_128 and COMPLEX_128. A literal for FLOAT_128
+// should be presented as for instance LF_C(1.23245e67). The usual range
+// of elementary functions should work on FLOAT_128 and COMPLEX_128 and the
+// names used are sin, cos, exp, log and so on. Utility functions such
+// as frexp and ldexp and tests for NaN and infinity values exist.
+// Output via "std::cout <<" is possible but the level of control over
+// the print format is limited. Input using "std::cin >>" has not been
+// implemented.
+// These types may not interact with other C++ numeric types as smoothly as
+// you would ideally like - so sometimes you may need to insert explicit
+// casts.
+
+
+
+#if defined USE_LONG_DOUBLE
+// On the Macintosh and sometimes when compiling for Windows the type
+// "long double" is too narrow. In some of those cases if you try to
+// run this with USE_LONG_DOUBLE set it will necessarily fail.
+// Check for that here.
+static_assert(((long double)1.0 + 1.0e-34) != 1.0,
+              "long double is not a 128-bit IEEE float");
+#endif
+
+#include <cstdint>
+#include <iostream>
+#include <iomanip>
+#include <cstring>
+#include <cmath>
+#include <cfloat>
+#include <complex>
 
 // bitmaps.h                                    Copyright (C) 2026 Codemist
 
@@ -962,6 +3088,1682 @@ using CSL_LISP::countBits;
 #endif // header_bitmaps_h
 
 // end of bitmaps.h
+
+
+// I will defined classes FLOAT_128 and COMPLEX_128 and provide
+// a range of elementary functions over them. Since my class differs
+// from all built in types the functions can have the simple names
+// sin. cos, exp, log etc.
+
+// Here are the scenarios I support:
+//  USE_LONG_DOUBLE     long double conforms to 128-bit IEEE, so std::sin.
+//  USE_QUADMATH        __float128 is a suitable type, and functions sinq etc
+//  USE_CLANG_FLOAT128  __float128, together with sinf128 but no complex fns
+//  USE_CXX23_FLOAT128  std::float128_t for arithmetic but no library provided
+//  USE_SOFT_FLOAT128   must do everything myself.
+// and in general one of those symbols should be defined. If none are then I
+// default to USE_SOFT_FLOAT128
+
+// The first two of these cover important practical situations:
+//    Linux on ARM can use USE_LONG_DOUBLE.
+//    MacOS on ARM gas to use USE_SOFT_FLOAT128
+//    Linux on Intel with g++ can use USE_QUADMATH.
+//    MacOS on Intel is uncertain since the default compiler is clang.
+//        but that platform is in the process of falling out of support!
+//        However USE_SOFT_FLOAT128 should work.
+//    Windows on Intel using the Mingw version of gcc is OK with USE_QUADMATH.
+//    Windows on Intel using Cygwin ditto.
+//    Windows on ARM is pending at the momemnt (June 2026).
+
+// The main oddity is when one wished to use clang (which is very reasonable
+// and may be the default with some operating systems).
+
+// Support for USE_CLANG_FLOAT128 option is desirable even though I will
+// probably not use it a lot. The USE_CXX_FLOAT23 is present with a view 
+// to being future-proof, but it will really start to make sense when
+// std::sin etc all have overfloads for std::float128_t and all that is
+// widely available..
+// USE_SOFT_FLOAT128 is there as an ultimate fallback!
+//
+// USE_CLANG_FLOAT128 has an issue that clang does not provide a complex
+// library (at present?), so to fill that gap I need me own high precision
+// set of complex floating point elementary functions.
+
+#if !defined USE_LONG_DOUBLE && \
+    !defined USE_QUADMATH && \
+    !defined USE_CLANG_FLOAT128 && \
+    !defined USE_CXX23_FLOAT128 && \
+    !defined USE_SOFT_FLOAT128
+#define USE_SOFT_FLOAT128 1
+#endif
+
+#if defined __has_include
+#  if __has_include(<bit>)
+#    include <bit>
+#  endif
+#endif
+
+#ifdef __cpp_lib_bit_cast
+using std::bit_cast;
+#else
+
+#ifndef CSL_BITCAST
+
+// This version will not be constexpr and that is a nuisance. And the
+// code here does not do any validity checks on its usage!
+
+template<class S, class T>
+S bit_cast(const T& src)
+{   S r;
+    std::memcpy(&r, &src, sizeof(r));
+    return r;
+}
+
+#define CSL_BITCAST 1
+
+#endif // CSL_BITCAST
+#endif // __cpp_lib_bit_cast
+
+using std::int32_t;
+using std::uint32_t;
+using std::int64_t;
+using std::uint64_t;
+
+// Sometimes I will have a 128-bit floating point datatype provided by the
+// along with all the elementary functions I need. In other cases the
+// datatype and basic arithmetic operations are in place but T will need
+// my own elementary function library. And in the most extreme case
+// I will have to implement floating point in software.
+//
+// I will set up the following symbols to guard the code I include:
+//   NEED_FLOAT160         I implement my own working precision.
+//   NEED_FLOAT128         Implement 128-bit floats and complex.
+//   NEED_REAL_MATHLIB     sin, cos etc on FLOAT128.
+//   NEED_COMPLEX_MATHLIB  sin, cos etc on COMPLEX_128.
+
+
+// These booleans inform me if the type "long double" is an IEEE
+// 128-bit float, or if it is at least an Intel-style 80-bit one.
+// And failing that it is liable to be just ths same as plain double,
+// ie 53-bits of mantissa.
+
+inline constexpr bool longdouble128 = LDBL_MANT_DIG == 113;
+inline constexpr bool longdouble80  = LDBL_MANT_DIG == 64;
+inline constexpr bool longdouble64  = LDBL_MANT_DIG == 53;
+
+#if defined USE_LONG_DOUBLE
+
+using FLOAT128REP = long double;
+#define LF_C(x) ((FLOAT_128)(x ## L))
+// Everything provided by standard C++ libraries.
+
+#elif defined USE_QUADMATH
+
+#include <quadmath.h>
+// Everything provided by "-quadmath" library
+using FLOAT128REP = __float128;
+#define LF_C(x) ((FLOAT_128)(x ## Q))
+
+#elif defined USE_CLANG_FLOAT128
+
+#include <cfloat>
+// Real elementary functions provided as sinf128 etc, but complex ones needed
+using FLOAT128REP = __float128;
+#define LF_C(x) ((FLOAT_128)(x ## Q))
+#define LLF_C(x) ((FLOAT160)(x ## _Q)
+#define NEED_FLOAT160 1
+#define NEED_COMPLEX_MATHLIB 1
+
+#elif defined USE_CXX23_FLOAT128
+
+#include <stdfloat>
+// Basic arithmetic on std::float128_t present, but all libraries needed here.
+using FLOAT128REP = std::float128_t;
+#define LF_C(x) ((FLOAT_128)(x ## F128))
+#define LLF_C(x) ((FLOAT160)(x ## _Q))
+#define NEED_FLOAT160 1
+#define NEED_REAL_MATHLIB
+#define NEED_COMPLEX_MATHLIB 1
+
+#else
+
+// Everything must be done in software.
+using FLOAT128REP = uint128_t;
+#define LF_C(x) ((FLOAT_128)(x ## _Q))
+#define LLF_C(x) ((FLOAT160)(x ## _Q))
+#define NEED_FLOAT128 1
+#define NEED_FLOAT160 1
+#define NEED_REAL_MATHLIB
+#define NEED_COMPLEX_MATHLIB 1
+
+#endif // selection of representation for FLPAT128 etc.
+
+// NOTE that at least __float128 as used with quadmath.h, and plausibly
+// various other things that FLOAT128REP expands into can need 16 byte
+// alignment.
+
+class alignas(16) FLOAT_128
+{
+private:
+    FLOAT128REP v;
+public:
+// Constuctors
+    FLOAT_128();
+// I am only providing constructors based on the known-width integer types.
+    FLOAT_128(int32_t);
+    FLOAT_128(int64_t);
+    FLOAT_128(int128_t);
+    FLOAT_128(uint32_t);
+    FLOAT_128(uint64_t);
+    FLOAT_128(uint128_t);
+    FLOAT_128(double);
+    FLOAT_128(long double);
+    FLOAT_128(FLOAT_128 const&);
+#if defined USE_QUADMATH || \
+    defined USE_CLANG_FLOAT128 || \
+    defined USE_CXX23_FLOAT128
+// In these cases FLOAT128REP is a floating point type that is not double
+// or long double, but it is set up by LF_C(...).
+    FLOAT_128(FLOAT128REP a) : v(a)
+    {
+    }
+#endif
+// Accessing the representation
+// In the next two constructors the "float" and "int" arguments are to
+// tag these as accessing the representation not any abstraction. The
+// constructors should be called with 0.0f or 0 as their second argument,
+// and the value used is ignored.
+    FLOAT_128(FLOAT128REP, float);            // construct from a FLOAT128REP
+    FLOAT128REP rep() const;
+    FLOAT_128(uint128_t x, [[maybe_unused]]int y)  // Inject a bit pattern
+    {   v = bit_cast<FLOAT128REP>(x);
+    }
+    FLOAT_128(uint32_t x, [[maybe_unused]]void* y) // the top 32 bits
+    {   v = bit_cast<FLOAT128REP>(((uint128_t)x)<<96);
+    }
+    FLOAT_128(uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4)
+    {   uint128_t w = (uint128_t)a1;
+        w = (w<<32) | a2;
+        w = (w<<32) | a3;
+        w = (w<<32) | a4;
+        v = bit_cast<FLOAT128REP>(w);
+    }
+    void getbits(uint64_t& x, uint64_t& y) const // As bit-pattern
+    {   uint128_t w = bit_cast<uint128_t>(v);
+        x = (uint64_t)(w>>64);
+        y = (uint64_t)w;
+    }
+    uint128_t getbits() const                    // ditto
+    {   return bit_cast<uint128_t>(v);
+    }
+#if defined USE_QUADMATH || \
+    defined USE_CLANG_FLOAT128 || \
+    defined USE_CXX23_FLOAT128
+// In these cases FLOAT128REP is a floating point type that is not double
+// or long double, but converting to it using a cast feels nicer than
+// needing to call rep().
+    operator FLOAT128REP()
+    {   return v;
+    }
+#endif
+    uint128_t mantissa() const;
+// Useful tests etc
+    bool isinf() const;
+    bool isnan() const;
+    bool isfinite() const;
+    bool isnormal() const;
+    bool signbit() const;
+    bool iszero() const;
+// I will have some more specialist tests that I use internally
+    bool isinfornan() const;
+    FLOAT_128 ldexp(int x) const;
+    FLOAT_128 frexp(int& x) const;
+    FLOAT_128 abs() const;
+    FLOAT_128 maxabs(FLOAT_128) const;
+// Casts
+    operator int32_t() const;
+    operator int64_t() const;
+    operator int128_t() const;
+    operator uint32_t() const;
+    operator uint64_t() const;
+    operator uint128_t() const;
+    operator double() const;
+    operator long double() const;
+// Operators
+    FLOAT_128 operator+() const;
+    FLOAT_128 operator-() const;
+    FLOAT_128 operator+(FLOAT_128) const;
+    FLOAT_128 operator-(FLOAT_128) const;
+    FLOAT_128 operator*(FLOAT_128) const;
+    FLOAT_128 fma(FLOAT_128, FLOAT_128) const;
+    FLOAT_128 operator/(FLOAT_128) const;
+// Comparisons
+    bool operator==(FLOAT_128 const&) const;
+    bool operator!=(FLOAT_128 const&) const;
+    bool operator>(FLOAT_128 const&) const;
+    bool operator<(FLOAT_128 const&) const;
+    bool operator>=(FLOAT_128 const&) const;
+    bool operator<=(FLOAT_128 const&) const;
+
+    friend std::ostream& operator<<(std::ostream& o, FLOAT_128 const& d);
+    friend class NAN128;
+    friend class PLUSINF128;
+    friend class MINUSINF128;
+    friend class ZERO128;
+    friend class MINUSZERO128;
+};
+
+class NAN128 : public FLOAT_128
+{
+public:
+    NAN128();
+};
+
+class PLUSINF128 : public FLOAT_128
+{
+public:
+    PLUSINF128();
+};
+
+class MINUSINF128 : public FLOAT_128
+{
+public:
+    MINUSINF128();
+};
+
+class ZERO128 : public FLOAT_128
+{
+public:
+    ZERO128();
+};
+
+class MINUSZERO128 : public FLOAT_128
+{
+public:
+    MINUSZERO128();
+};
+
+class COMPLEX_128
+{
+private:
+    FLOAT_128 rr;
+    FLOAT_128 ii;
+public:
+// Constuctors
+    COMPLEX_128();
+// I am only providing constructors based on the known-width integer types.
+    COMPLEX_128(int32_t);
+    COMPLEX_128(int64_t);
+    COMPLEX_128(int128_t);
+    COMPLEX_128(uint32_t);
+    COMPLEX_128(uint64_t);
+    COMPLEX_128(uint128_t);
+    COMPLEX_128(double);
+    COMPLEX_128(long double);
+    COMPLEX_128(FLOAT_128);
+    COMPLEX_128(FLOAT_128, FLOAT_128);
+    COMPLEX_128(COMPLEX_128 const&);
+// Useful functions
+// Casts
+    operator int32_t() const;
+    operator int64_t() const;
+    operator int128_t() const;
+    operator uint32_t() const;
+    operator uint64_t() const;
+    operator uint128_t() const;
+    operator double() const;
+    operator long double() const;
+    operator FLOAT_128() const;
+// operators
+    COMPLEX_128 operator+() const;
+    COMPLEX_128 operator-() const;
+    COMPLEX_128 operator+(COMPLEX_128) const;
+    COMPLEX_128 operator-(COMPLEX_128) const;
+    COMPLEX_128 operator*(COMPLEX_128) const;
+    COMPLEX_128 operator/(COMPLEX_128) const;
+// comparisons
+    bool operator==(COMPLEX_128 const&) const;
+    bool operator!=(COMPLEX_128 const&) const;
+// specials for complex values
+    FLOAT_128 real() const;
+    FLOAT_128 imag() const;
+    FLOAT_128 arg() const;
+    FLOAT_128 abs() const;
+    FLOAT_128 norm() const;
+    COMPLEX_128 conj() const;
+
+    static COMPLEX_128 NaN()
+    {   return COMPLEX_128(NAN128(), NAN128());
+    }
+
+    friend std::ostream& operator<<(std::ostream& o, COMPLEX_128 const& d);
+};
+
+
+// Internal to the reading and printing code I do some work to 192 bits...
+// The code is here in the header file for its use when the user-defined
+// syntax "_Q" is used for the input of FLOAT160 literals.
+
+
+// add a digit somewhere into the middle of a vector, propagating carries.
+
+// I use this when multiplying two 3-digit numbers, and there can never
+// be a carry beyond the 6 digits that the result can have.
+
+inline void addin192(uint64_t n, uint64_t* c, int k)
+{   while (n != 0)
+    {   c[k] = c[k] + n;
+        n = (c[k] < n) ? 1 : 0;
+        k++;
+    }
+}
+
+// {hi, mid, lo, x} = {hi1, mid1, lo1, x1) * {hi2, mid2, lo2, x2};
+
+inline constexpr void multiply192(
+    uint64_t hi1, uint64_t mid1, uint64_t lo1, int32_t x1,
+    uint64_t hi2, uint64_t mid2, uint64_t lo2, int32_t x2,
+    uint64_t& hi, uint64_t& mid, uint64_t& lo, int32_t& x)
+{   if (x1 == INT32_MIN ||
+        x2 == INT32_MIN)
+    {   hi = mid = lo = 0;  // Special case if either input is zero
+        x = INT32_MIN;
+        return;
+    }
+    uint64_t a[3] = {lo1, mid1, hi1};
+    uint64_t b[3] = {lo2, mid2, hi2};
+    uint64_t c[6] = {0,0,0,0,0,0};
+    for (int i=0; i<3; i++)
+    {   for (int j=0; j<3; j++)
+        {   int k = i+j;
+            uint128_t w = ((uint128_t)a[i])*b[j];
+            addin192((uint64_t)w, c, k);
+            addin192((uint64_t)(w>>64), c, k+1);
+        }
+    }
+    hi = c[5];
+    mid = c[4];
+    lo = c[3];
+// The raw product could have its top bit clear. If that is so then
+// shift left by 1 to normalise.
+    if ((hi>>63) == 0)
+    {   hi = (hi<<1) | (mid>>63);
+        mid = (mid<<1) | (lo>>63);
+        lo = (lo<<1) | (c[2]>>63);
+        c[2] = (c[2]<<2);
+        x1--;
+    }
+    if ((c[2]>>63) != 0)   // round up if necessary.
+        if (++lo == 0)
+            if (++mid == 0) hi++;
+    x = x1 + x2;
+}
+
+// breakfunction is a function that does not do anything! It exists so I can
+// put calls of it in while I am debugging and then set breakpoints on
+// it. That is sometimes easier than finding the exact point where I
+// want the break or breaks every time I start the debugger.
+
+inline constexpr void breakfunction()
+{
+}
+
+inline constexpr void power(
+    uint64_t& hi, uint64_t& mid, uint64_t& lo, int32_t& x, int n)
+{   uint64_t whi = hi, wmid=mid, wlo=lo;
+    int32_t wx = x;
+    hi = UINT64_C(0x8000000000000000);
+    mid = 0;
+    lo = 0;
+    x = 1;
+    while (n != 0)
+    {   if (n%2 != 0) multiply192(hi, mid, lo, x,
+                                  whi, wmid, wlo, wx,
+                                  hi, mid, lo, x);
+         multiply192(whi, wmid, wlo, wx,
+                     whi, wmid, wlo, wx,
+                     whi, wmid, wlo, wx);
+         n = n/2;
+    }
+}
+
+inline constexpr void power10(
+    uint64_t& hi, uint64_t& mid, uint64_t& lo, int32_t& x, int n)
+{   if (n == 0)
+    {   hi=UINT64_C(0x8000000000000000);
+        mid = lo = 0;
+        x = 1;
+        return;
+    }
+    else if (n > 0)
+    {   hi=UINT64_C(0xa000000000000000);
+        mid = lo = 0;
+        x = 4;
+    }
+    else
+    {   n = -n;
+        hi = UINT64_C(0xcccccccccccccccc);
+        mid = UINT64_C(0xcccccccccccccccc);
+        lo = UINT64_C(0xcccccccccccccccd);
+        x = -3;
+    }
+    power(hi, mid, lo, x, n);
+}
+
+// Add the integer n
+
+inline constexpr void add192(
+    uint64_t n,
+    uint64_t& hi, uint64_t& mid, uint64_t& lo, int32_t& x)
+{   if (n==0) return;     // add zero to anything does not change it
+    uint64_t nhi=0, nmid=0, nlo=0;
+    uint32_t nx=0;
+    int shift = nlz(n);
+    nhi = n << shift;
+    nmid = 0;
+    nlo = 0;
+    nx = 64 - shift;
+// Now n is in 192-bit notation.
+    if (x == INT32_MIN) x = nx;
+// Now I need to shift {nhi,nmid,nlo} right by x-nx places to align it.
+    shift = x - nx;
+    while (shift >= 64)
+    {   nlo = nmid;
+        nmid = nhi;
+        nhi = 0;
+        shift = shift - 64;
+    }
+    if (shift != 0)
+    {   nlo = (nlo>>shift) | (nmid<<(64-shift));
+        nmid = (nmid>>shift) | (nhi<<(64-shift));
+        nhi = (nhi>>shift);
+    }
+    bool carry = false;
+// Now I can do the addition.
+    lo = lo + nlo;
+    if (lo < nlo)
+    {   mid++;
+        if (mid == 0)
+        {   hi++;
+            if (hi == 0) carry = true;
+        }
+    }
+    mid = mid + nmid;
+    if (mid < nmid)
+    {   hi++;
+        if (hi == 0) carry = true;
+    }
+    hi = hi + nhi;
+    if (hi < nhi) carry = true;
+    if (carry)
+    {   lo = (lo>>1) | (mid<<63);
+        mid = (mid>>1) | (hi<<63);
+        hi = (hi>>1) | UINT64_C(0x8000000000000000);
+        x++;
+    }
+}
+
+// Only valid if the integer part is less than 2^64.
+
+inline constexpr uint64_t intpart192(uint64_t hi, int32_t x)
+{   if (x<=0) return 0;
+    else return hi>>(64-x);
+}
+
+// getting the fractional part is much more work that getting the
+// integer part because in cases such as 3.0000001 when the integer is
+// removed it becomes necessary to re-normalize the residue.
+
+inline constexpr void fracpart192(
+    uint64_t& hi, uint64_t& mid, uint64_t& lo, int32_t& x)
+{
+// When I call this I have just got the value to be such that its integer
+// part fitted in uint64_t, and so I know that 0<x<64. Well that is apart
+// from a case where (hi:mid:lo) has become zero, so let me filter that
+// case out first!
+// Also if the integer part was zero what I have is already correct.
+    if (x<=0 || (hi==0 && mid==0 && lo==0)) return;
+// Shift the bits up to discard an integer part.
+    hi = (hi<<x) | (mid>>(64-x));
+    mid = (mid<<x) | (lo>>(64-x));
+    lo = (lo<<x);
+    x = 0;
+// There are various cases where the fractional part ends up zero
+// or very very tiny.
+    if (hi==0 && mid==0 && lo==0)
+    {   x = INT32_MIN;   // Input had been exactly an integer.
+        return;
+    }
+// Now I need to normalize.
+    if (hi==0 && mid==0)
+    {   hi = lo;
+        lo = 0;
+        x = -128;
+    }
+    else if (hi == 0)
+    {   hi = mid;
+        mid = lo;
+        lo = 0;
+        x = -64;
+    }
+// Now hi will be non-zero
+    int shift = nlz(hi);
+    if (shift != 0)
+    {   hi = (hi<<shift) | (mid>>(64-shift));
+        mid = (mid<<shift) | (lo>>(64-shift));
+        lo = (lo<<shift);
+        x -= shift;
+    }
+}
+
+// The next few compares absolute values of a pair of 192-bit values.
+
+inline constexpr bool gt192(
+    uint64_t hi1, uint64_t mid1, uint64_t lo1, int32_t x1,
+    uint64_t hi2, uint64_t mid2, uint64_t lo2, int32_t x2)
+{   if (x1 > x2) return true;
+    if (x1 < x2) return false;
+    if (hi1 > hi2) return true;
+    if (hi1 < hi2) return false;
+    if (mid1 > mid2) return true;
+    if (mid1 < mid2) return false;
+    if (lo1 > lo2) return true;
+    if (lo1 < lo2) return false;
+    return false;
+}
+
+inline constexpr bool ge192(
+    uint64_t hi1, uint64_t mid1, uint64_t lo1, int32_t x1,
+    uint64_t hi2, uint64_t mid2, uint64_t lo2, int32_t x2)
+{   if (x1 > x2) return true;
+    if (x1 < x2) return false;
+    if (hi1 > hi2) return true;
+    if (hi1 < hi2) return false;
+    if (mid1 > mid2) return true;
+    if (mid1 < mid2) return false;
+    if (lo1 > lo2) return true;
+    if (lo1 < lo2) return false;
+    return true;
+}
+
+inline constexpr bool lt192(
+    uint64_t hi1, uint64_t mid1, uint64_t lo1, int32_t x1,
+    uint64_t hi2, uint64_t mid2, uint64_t lo2, int32_t x2)
+{   return !ge192(hi1, mid1, lo1, x1, hi2, mid2, lo2, x2);
+}
+
+inline constexpr bool le192(
+    uint64_t hi1, uint64_t mid1, uint64_t lo1, int32_t x1,
+    uint64_t hi2, uint64_t mid2, uint64_t lo2, int32_t x2)
+{   return !gt192(hi1, mid1, lo1, x1, hi2, mid2, lo2, x2);
+}
+
+#ifdef NEED_FLOAT160
+
+// This provides working precision with a 128-bit mantissa. If I have
+// to implement 128-bit floats in software I often delegate to this for the
+// actual arithmetic. For input/output conversions and for the elementary
+// functions this is how I keep accuracy high.
+
+// The representation used here thinks of the top bit of the mantissa
+// as having weight "1", so that the mantissa denotes a value in the
+// range [1,2) with a non-offset binary exponent. Thus the value
+// {false, 0x8000_0000_0000_0000_0000_0000_0000_0000, 0} represents
+// 1.0.
+
+class FLOAT160
+{
+private:
+    bool sign;
+    int32_t x;
+    uint128_t m;
+public:
+// Constuctors
+    constexpr FLOAT160();
+    constexpr FLOAT160(int64_t n):sign(),x(),m()
+    {   if (n == 0)
+        {   m = 0;
+            x = INT32_MIN;
+            sign = false;
+            return;
+        }
+        m = (int128_t)n;
+        if (n >= 0) sign = false;
+        else m = -m, sign = true;
+        int shift = nlz(m);
+        m = m << shift;
+        x = 128 - shift;
+    }
+    constexpr FLOAT160(int32_t x) : FLOAT160((int64_t)x)
+    {
+    }
+    constexpr FLOAT160(int128_t);
+    constexpr FLOAT160(uint32_t);
+    constexpr FLOAT160(uint64_t);
+    constexpr FLOAT160(uint128_t);
+    constexpr FLOAT160(double);
+    constexpr FLOAT160(long double);
+    FLOAT160(FLOAT_128 const&);
+    constexpr FLOAT160(FLOAT160 const& v):sign(),x(),m()
+    {   sign = v.sign;
+        x = v.x;
+        m = v.m;
+    }
+// Accessing the representation
+    constexpr FLOAT160(bool, int32_t, uint128_t);
+    constexpr bool signbit() const;
+    constexpr int32_t exponent() const;
+    constexpr void mantissa(uint64_t&, uint64_t&) const;
+    constexpr uint128_t mantissa() const
+    {   return m;
+    }
+    constexpr bool iszero() const;
+    constexpr void setsignbit(bool);
+    constexpr void setexponent(int32_t xx)
+    {   x = xx;
+    }
+    constexpr void setmantissa(uint64_t, uint64_t);
+    constexpr void setmantissa(uint128_t mm)
+    {   m = mm;
+    }
+// Useful operations
+    FLOAT160 ldexp(int32_t x) const;
+    FLOAT160 frexp(int32_t& x) const;
+// Casts
+    constexpr operator int32_t() const;
+    constexpr operator int64_t() const;
+    constexpr operator int128_t() const;
+    constexpr operator uint32_t() const;
+    constexpr operator uint64_t() const;
+    constexpr operator uint128_t() const;
+    constexpr operator double() const;
+    constexpr operator long double() const;
+    operator FLOAT_128() const;
+// Operators
+    constexpr FLOAT160 operator=(FLOAT160 const&);
+    constexpr FLOAT160 operator=(FLOAT160&&);
+    FLOAT160 operator+=(FLOAT160 const&);
+    FLOAT160 operator-=(FLOAT160 const&);
+    FLOAT160 operator*=(FLOAT160 const&);
+    FLOAT160 operator/=(FLOAT160 const&);
+    constexpr FLOAT160 operator+() const;
+    constexpr FLOAT160 operator-() const;
+    constexpr FLOAT160 operator+(FLOAT160 const&) const;
+    constexpr FLOAT160 operator-(FLOAT160 const&) const;
+    constexpr FLOAT160 operator*(FLOAT160 const&) const;
+// The f128 flag will force rounding (once) to 128-bit floating point
+// compatibility, so that a subsequent case to FLOAT_128 does not
+// change the value further.
+    constexpr FLOAT160 fma(const FLOAT160&, const FLOAT160&,
+                           bool f128=false) const;
+    constexpr FLOAT160 operator/(FLOAT160 const&) const;
+    constexpr FLOAT160 abs() const;
+    constexpr FLOAT160 maxabs(FLOAT160) const;
+// Comparisons
+    constexpr bool operator==(FLOAT160 const&) const;
+    constexpr bool operator!=(FLOAT160 const&) const;
+    constexpr bool operator>(FLOAT160 const&) const;
+    constexpr bool operator<(FLOAT160 const&) const;
+    constexpr bool operator>=(FLOAT160 const&) const;
+    constexpr bool operator<=(FLOAT160 const&) const;
+
+    friend std::ostream& operator<<(std::ostream& o, FLOAT160 const& d);
+// f160tof128rep() returns a value as a uint128_t that is the bit-pattern
+// required for an IEEE-style 128 bit floating point value.
+    uint128_t f160tof128rep() const;
+    friend class NAN160;
+    friend class INF160;
+};
+
+class NAN160 : public FLOAT160
+{
+public:
+    NAN160();
+};
+
+class INF160 : public FLOAT160
+{
+public:
+    INF160();
+};
+
+
+class COMPLEX160
+{
+private:
+    FLOAT160 rr;
+    FLOAT160 ii;
+public:
+// Constuctors
+    COMPLEX160()
+    {   rr = (int32_t)0;
+        ii = (int32_t)0;
+    }
+// I am only providing constructors based on the known-width integer types.
+    COMPLEX160(int32_t);
+    COMPLEX160(int64_t);
+    COMPLEX160(int128_t);
+    COMPLEX160(uint32_t);
+    COMPLEX160(uint64_t);
+    COMPLEX160(uint128_t);
+    COMPLEX160(double);
+    COMPLEX160(long double);
+    COMPLEX160(FLOAT_128);
+    COMPLEX160(FLOAT_128, FLOAT_128);
+    COMPLEX160(COMPLEX_128 const&);
+    COMPLEX160(FLOAT160);
+    COMPLEX160(FLOAT160, FLOAT160);
+    COMPLEX160(COMPLEX160 const&);
+// Useful tests etc
+// Casts
+    operator int32_t() const;
+    operator int64_t() const;
+    operator int128_t() const;
+    operator uint32_t() const;
+    operator uint64_t() const;
+    operator uint128_t() const;
+    operator double() const;
+    operator long double() const;
+    operator FLOAT_128() const;
+    operator FLOAT160() const;
+    operator COMPLEX_128() const;
+// Operators
+    COMPLEX160 operator+() const;
+    COMPLEX160 operator-() const;
+    COMPLEX160 operator+(COMPLEX160) const;
+    COMPLEX160 operator-(COMPLEX160) const;
+    COMPLEX160 operator*(FLOAT160) const;
+    COMPLEX160 operator*(COMPLEX160) const;
+    COMPLEX160 operator/(COMPLEX160) const;
+// Comparisons
+    bool operator==(COMPLEX160 const&) const;
+    bool operator!=(COMPLEX160 const&) const;
+// Specials for complex values
+    FLOAT160 real() const;
+    FLOAT160 imag() const;
+    FLOAT160 arg() const;
+    FLOAT160 abs() const;
+    FLOAT160 norm() const;
+    COMPLEX160 conj() const;
+    friend std::ostream& operator<<(std::ostream& o, COMPLEX160 const& d);
+};
+
+// The handling of the user-defined literals such as 1.2e3_Q and
+// 0xabcdP22_Q are here in the header file so that the literals
+// can be handled at compile-time.
+
+
+// If I read the numbers in using 192-bits of precision I can be
+// confident that the 128-bit version will be accurate. So I can
+// work in a fairly naive way.
+
+extern constexpr void string_to_160(const char* s,
+    bool& sign, int32_t& exponent, uint128_t& mantissa);
+
+constexpr inline FLOAT160 string_to_float160(const char* s)
+{   bool sign;
+    int32_t x;
+    uint128_t m;
+    string_to_160(s, sign, x, m);
+    return FLOAT160(sign, x, m);
+}
+
+inline constexpr FLOAT160 operator ""_Q(const char* s)
+{   return string_to_float160(s);
+}
+
+// I now include definitions of some things that get used by elem128.cpp
+// where otherwise I get warnings about inline functions used but not
+// defined.
+
+// Here p={hi,lo} and q are values each with their top bit set. I
+// want to set quot=p/q and rem=p%q. But note that it can be that
+// hi>=q in which case the quotient would have 129 bits - so I return
+// the top one as a boolean result.
+
+// The version here works bit by bit which is unduly slow. I could
+// do a lot better using something like
+//    uint128_t q1 = hi / ((q>>64)+1);
+// to get a slight underestimate for the top 64-bits of the quotient!
+// But that optimisation can come later when I have things working
+// correctly!
+
+constexpr bool divide128(uint128_t hi, uint128_t lo, uint128_t q,
+                         uint128_t& quot, uint128_t rem)
+{   quot = rem = 0;
+    bool bit128 = (hi>=q);
+    if (bit128) hi -= q;
+    quot = 0;
+// I want to replace this with a version that uses division of
+// 128-bit values by 64-bit ones rather than working one bit at a time.
+    for (int i=0; i<128; i++)
+    {   if ((hi>>127) != 0)
+        {   quot = (quot<<1) | 1;
+            hi = (hi<<1 | lo>>127) - q;
+            lo = lo << 1;
+        }
+        else
+        {   hi = (hi<<1 | lo>>127);
+            lo = lo << 1;
+            quot = quot << 1;
+            if (hi >= q)
+            {   hi -= q;
+                quot |= 1;
+            }
+        }
+    }
+    rem = hi;
+    return bit128;
+}
+
+constexpr FLOAT160::operator long double() const
+{
+#ifdef __cpp_lib_constexpr_cmath
+    long double r = std::ldexp((long double)m, x-128);
+#else
+    long double r = (long double)m;
+    if (x-128 > 0) for (int i=0; i<x-128; i++) r = 2.0L*r;
+    else for (int i=0; i<128-x; i++) r = 0.5L*r;
+#endif
+    return sign ? -r : r;
+}
+
+constexpr FLOAT160 FLOAT160::operator+(FLOAT160 const& b) const
+{   if (iszero())
+    {   if (b.iszero())     // Ha ha (-0.0) + (-0.0) should return (-0.0).
+        {   if (signbit())  // other combinations of zeros give +0.0.
+            {   if (b.signbit()) return *this;
+                else return b;
+            }
+            else return *this;
+        }
+        else return b;
+    }
+    else if (b.iszero()) return *this;
+    long double xx = (long double)*this;
+    long double yy = (long double)b;
+    long double rr = xx+yy;
+    FLOAT160 a = *this;
+// Ensure that |a| >= |b|. This is useful when I come to aligning the two
+// values and also for subtraction.
+    FLOAT160 bb = b;
+    if (x < bb.x ||
+        (x == bb.x && m < bb.m))
+    {   FLOAT160 w = a;
+        a = bb;
+        bb = w;
+    }
+    bool subtract = false;
+    bool negate = false;
+// Now look at the signs.
+    if (a.sign)
+    {   negate = true;
+        if (!bb.sign) subtract = true;
+    }
+    else if (bb.sign) subtract = true;
+// I can now shift bb right by ax-bx bits. I keep whatever is shifted
+// out in guard.
+    uint128_t guard = 0;
+    int shift = a.x - bb.x;
+    if (shift > 128) bb.m = 0;
+    else if (shift == 128)
+    {   guard = bb.m;
+        bb.m = 0;
+    }
+    else if (shift != 0)
+    {   guard = bb.m << (128-shift);
+        bb.m = bb.m >> shift;
+    }
+// Now bb has been shifted so is aligned with a and I can either add or
+// subtract.
+    if (!subtract)
+    {   a.m = a.m + bb.m;
+        if (a.m < bb.m) // overflowed
+        {   guard = (guard>>1) | (a.m<<127);
+            a.m = topbit128() | (a.m>>1);
+            a.x++;
+        }
+    }
+    else
+    {   a.m = a.m - bb.m;
+// If the two values started off equal then guard will be zero so if I
+// subtract I will have a.m==0 and guard==0. In other cases I can need to
+// shift left so I end up with a normalized value. I can only ever need to
+// shift by up to 127 bits.
+        int shift = nlz(a.m);
+        if (shift != 0)
+        {   a.m = (a.m<<shift) | (guard>>(128-shift));
+            guard = guard<<shift;
+            a.x -= shift;
+        }        }
+// I now want to round.
+    if (guard > topbit128() ||
+        (guard == topbit128() && (a.m&1) != 0))
+    {   a.m++;
+        if (a.m == 0)
+        {   a.m = topbit128();
+            a.x++;
+        }
+    }
+    if (negate) a.sign = true;
+    long double mine = (long double)a;
+    if (std::abs((mine-rr)/rr) > 0.001L) breakfunction();
+    return a;
+}
+
+constexpr FLOAT160 FLOAT160::operator*(FLOAT160 const& rhs) const
+{   FLOAT160 r;
+    r.sign = sign != rhs.sign;
+    if (m == 0 || rhs.m == 0)
+    {   r.m = 0;
+        r.x = INT32_MIN;
+        return r;
+    }
+    r.x = x + rhs.x;
+    uint128_t ahi = m >> 64;
+    uint128_t alo = m - (ahi<<64);
+    uint128_t bhi = rhs.m >> 64;
+    uint128_t blo = rhs.m - (bhi<<64);
+    uint128_t hi = ahi * bhi;
+    uint128_t mid1 = ahi * blo;
+    uint128_t mid2 = alo * bhi;
+    uint128_t lo = alo * blo;
+    hi = hi + (mid1>>64) + (mid2>>64);
+    mid1 = mid1 << 64;
+    mid2 = mid2 << 64;
+    lo = lo + mid1;
+    if (lo < mid1) hi++;
+    lo = lo + mid2;
+    if (lo < mid2) hi++;
+// Now (hi,lo) should be a full 256-bit product of the mantissas.
+    if (!topbit128(hi))
+    {   hi = (hi<<1) | (lo>>127);
+        lo = lo << 1;
+        r.x--;
+    }
+// Even if I round up here that can not cause the high part of the
+// result to overflow.
+    if (lo > topbit128() ||
+        (lo == topbit128() && (hi&1) != 0)) hi++;
+    r.m = hi;
+    return r;
+}
+
+constexpr FLOAT160 FLOAT160::fma(FLOAT160 const& b, FLOAT160 const& c,
+                                 bool f128) const
+{
+// 0*b + c => c
+// a*0 + c => c;
+    if (m == 0 || b.m == 0)
+    {
+// Here a and b are both zero. The result must be -0.0 if a*b is -0.0
+// which happens if |a|==0 or |b|==0 and the signs of a and b differ,
+// together with c = -0.0. So in a*b+c will yield c when a*b=0 except that
+// if a*b=+0.0 and c=-0.0 we need to return +0.0. >Oh what fun!
+        if ((sign == b.sign) && (c.sign && c.m == 0))
+            return FLOAT160(true, INT32_MIN, 0);
+        else return c;
+    }
+    uint128_t topbit = ((uint128_t)1)<<127;
+// Now I will set up  a 256-bit version of a*b.
+    bool rsign = (sign != b.sign);
+    int32_t rx = x + b.x;
+    uint128_t ahi = m >> 64;
+    uint128_t alo = m - (ahi<<64);
+    uint128_t bhi = b.m >> 64;
+    uint128_t blo = b.m - (bhi<<64);
+    uint128_t rmhi = ahi * bhi;
+    uint128_t mid1 = ahi * blo;
+    uint128_t mid2 = alo * bhi;
+    uint128_t rmlo = alo * blo;
+    rmhi = rmhi + (mid1>>64) + (mid2>>64);
+    mid1 = mid1 << 64;
+    mid2 = mid2 << 64;
+    rmlo = rmlo + mid1;
+    if (rmlo < mid1) rmhi++;
+    rmlo = rmlo + mid2;
+    if (rmlo < mid2) rmhi++;
+    if (!topbit128(rmhi))
+    {   rmhi = (rmhi<<1) | (rmlo>>127);
+        rmlo = rmlo << 1;
+        rx--;
+    }
+// Now (rsign, rx, rmhi:rmlo) should be a full 256-bit product a*b.
+// So set up (csign, cx, cmhi:cmlo) for c.
+    bool csign = c.sign;
+    int32_t cx = c.x;
+    uint128_t cmhi = c.m, cmlo = 0;
+    uint128_t rmlolo = 0, cmlolo = 0;
+// I do various things based on the signs of a*b and c, and on which is
+// larger. In many cases I will need to shift one to align it with the other.
+    if (rx == cx)                  // already aligned
+    {   if (rsign == csign)       // add them.
+        {   rmhi = rmhi + cmhi;
+            if (rmhi < cmhi)
+            {   rmlo = (rmlo>>1) | (rmhi<<127);
+                rmhi = (rmhi>>1) | topbit;
+                rx = rx + 1;
+            }
+// a*b and c aligned and needed adding.
+        }
+        else
+        {   if (rmhi >= cmhi)
+            {   rmhi = rmhi - cmhi;
+                // rmlo unaltered
+            }
+            else
+            {   rmlo = -rmlo;
+                rmhi = cmhi - rmhi;
+                if (rmlo != 0) rmhi = rmhi - 1; // borrow
+                rsign = csign;
+// Because rmhi < cmhi here this can not call for a borrow. It may
+// leave amhi zero. 
+            }
+// Now rmhi:rmlo is the difference between a*b and c but there can have been
+// leading digit cancellation, so I need to re-normalise.
+            if (rmhi == 0)
+            {   if (rmlo == 0) return FLOAT160(false, INT32_MIN, 0);
+                rmhi = rmlo;
+                rmlo = 0;
+                rx = rx - 128;
+            }
+            int shift = nlz(rmhi);
+            if (shift != 0)
+            {   rmhi = (rmhi<<shift) | (rmlo>>(128-shift));
+                rmlo = (rmlo<<shift);
+                rx = rx - shift;
+            }
+        }
+    }        // cases where a*b and c are aligned all covered.            
+    else
+    {
+// I will now ensure that r has the larger magnitude and since the
+// exponents differ that is easy to check.
+        if (rx < cx)
+        {   std::swap(rsign, csign);
+            std::swap(rx, cx);
+            std::swap(rmhi, cmhi);
+            std::swap(rmlo, cmlo);
+        }
+// Shift c right to align. I will tag on an extra word for very low bits.
+        int shift = rx - cx;
+        if (shift >= 384)
+        {   cmhi = 0;
+            cmlo = 0;
+// If I shift c by a huge distance I will make put 1 in the low extension
+// to stand for the fact that it is not zero.
+            cmlolo = 1;
+        }
+        else if (shift > 256)
+        {
+// Note that the top bit of cmhi will have been 1 so this will never set
+// cmlolo to zero and lose all remains of c.
+            cmlolo = cmhi>>(shift-256);
+            cmlo = 0;
+            cmhi = 0; 
+        }
+        else if (shift == 256)
+        {   cmlolo = cmhi;
+            cmlo = 0;
+            cmhi = 0;
+        }
+        else if (shift > 128)
+        {    cmlolo = (cmlo<<(256-shift));
+             cmlo = (cmhi>>(shift-128));
+             cmhi = 0;
+        }
+        else if (shift == 128)
+        {   cmlolo = cmlo;
+            cmlo = cmhi;
+            cmhi = 0;
+        }
+        else
+        {    cmlolo = (cmlo<<(128-shift));
+             cmlo = (cmlo>>shift) | (cmhi<<(128-shift));
+             cmhi = (cmhi>>shift);
+        }
+// Now depending on the signs I need to add or subtract.
+        if (rsign == csign) // add.
+        {   bool carry = false;
+            rmlo = rmlo + cmlo;
+            if (rmlo < cmlo)
+            {   rmhi = rmhi + 1;
+                if (rmhi == 0) carry = true;
+            }
+            rmhi = rmhi + cmhi;
+            if (rmhi < cmhi) carry = true;
+            if (carry)
+            {
+// When I shift rmlolo right by 1 I do not want it to end up zero unless
+// it always was, so I preserve its bottom bit!
+                rmlolo = (rmlolo&1) | (rmlolo>>1) | (rmlo<<127);
+                rmlo = (rmlo>>1) | (rmhi<<127);
+                rmhi = (rmhi>>1) | topbit;
+                rx = rx + 1;
+            } 
+        }
+        else   // subtraction needed. Can only lose 1 bit at top!
+        {   // x - y == x + (~y) + 1
+            cmlolo = ~cmlolo;
+            cmlo = ~cmlo;
+            cmhi = ~cmhi;
+            rmlolo = rmlolo + 1;
+            if (rmlolo == 0)
+            {   rmlo = rmlo + 1;
+                if (rmlo == 0) rmhi = rmhi + 1;
+            }
+            rmlolo = rmlolo + cmlolo;
+            if (rmlolo < cmlolo)
+            {   rmlo = rmlo + 1;
+                if (rmlo == 0) rmhi = rmhi + 1;
+            }
+            rmlo = rmlo + cmlo;
+            if (rmlo < cmlo) rmhi = rmhi + 1;
+            rmhi = rmhi + cmhi;
+// Because rx>cx here this subtraction must have left a positive result,
+// but it can have lost one bit.
+            if ((rmhi>>127)  == 0)
+            {   rmhi = (rmhi<<1) | (rmlo>>127);
+                rmlo = (rmlo<<1) | (rmlolo>>127);
+                rmlolo = (rmlolo<<1);
+                rx = rx - 1;
+            }
+        }
+    }
+// Hah - now I have a 3-word mantissa for my result, and this is where
+// I need to round. I need to round to either 128 bits (is basically just
+// keep rmhi) oe 113 bits for FLOAT_128 (and ideally to lower precisions
+// if the FLOAT_128 version will end up denormalised.
+    if (!f128) // The regular FLOAT160 case
+    {   if (rmlo > topbit ||
+            (rmlo == topbit &&
+             (rmlolo != 0 || ((rmhi & 1) != 0))))
+        {   rmhi = rmhi + 1;
+            if (rmhi == 0)
+            {   rmhi = topbit;
+                rx = rx + 1;
+            }
+        }
+    }
+    else
+    {   uint128_t rmxlo = (rmhi<<113)>>113;
+        rmhi = (rmhi>>15)<<15;
+        if (rmxlo > 0x4000 ||
+            (rmxlo == 0x4000 &&
+             (rmlo != 0 || rmlolo != 0 || ((rmhi & 0x8000) != 0))))
+        {   rmhi = rmhi + 0x8000;
+            if (rmhi == 0)
+            {   rmhi = topbit;
+                rx = rx + 1;
+            }
+        }
+    }
+    return FLOAT160(rsign, rx, rmhi);
+}
+
+constexpr FLOAT160 FLOAT160::operator/(FLOAT160 const& b) const
+{   long double xx = (long double)*this;
+    long double yy = (long double)b;
+    long double rr = xx/yy;
+    FLOAT160 r;
+    bool negative = sign != b.sign;
+    if (m == 0)
+    {   r.m = 0;
+        r.x = INT32_MIN;
+        r.sign = sign != b.sign;
+        return r;
+    }
+    if (b.m == 0)
+    {   r.m = 0;
+        r.x = INT32_MAX;
+        r.sign = negative;
+        return r;
+    }
+    uint128_t am = m, bm = b.m;
+    int32_t ax = x, bx = b.x;
+    r.sign = negative;
+    r.x = ax - bx;
+// Now I want r.m = (a.m<<128)/b.m with minor adjustment depending on where
+// the top bit falls.
+    uint128_t remainder = 0;
+    bool top = divide128(am, 0, bm, r.m, remainder);
+    if (top)
+    {   remainder = (r.m<<127) | (remainder>>1);
+        r.m = topbit128() | (r.m>>1);
+        r.x++;
+    }
+    if (remainder > bm/2 ||
+        (remainder == bm/2 && (r.m&1) != 0)) r.m++;
+    long double mine = (long double)r;
+    if (std::abs((mine-rr)/rr) > 0.001L) breakfunction();
+    return r;
+}
+
+constexpr bool FLOAT160::operator==(const FLOAT160& a) const
+{   return sign==a.sign && x==a.x && m==a.m;
+}
+
+constexpr bool FLOAT160::operator!=(const FLOAT160& a) const
+{   return sign!=a.sign || x!=a.x || m!=a.m;
+}
+
+constexpr bool FLOAT160::operator>(const FLOAT160& a) const
+{   if (sign!=a.sign) return a.sign;
+    if (x!=a.x) return x > a.x;
+    return m > a.m;
+}
+
+constexpr bool FLOAT160::operator>=(const FLOAT160& a) const
+{   if (sign!=a.sign) return a.sign;
+    if (x!=a.x) return x > a.x;
+    return m >= a.m;
+}
+
+constexpr bool FLOAT160::operator<(const FLOAT160& a) const
+{   if (sign!=a.sign) return sign;
+    if (x!=a.x) return x < a.x;
+    return m < a.m;
+}
+
+constexpr bool FLOAT160::operator<=(const FLOAT160& a) const
+{   if (sign!=a.sign) return sign;
+    if (x!=a.x) return x < a.x;
+    return m <= a.m;
+}
+
+constexpr FLOAT160 FLOAT160::operator-(FLOAT160 const& rhs) const
+{   return operator+(-rhs);
+}
+
+constexpr FLOAT160 FLOAT160::operator-() const
+{   FLOAT160 r;
+    r.sign = !sign;
+    r.x = x;
+    r.m = m;
+    return r;
+}
+
+constexpr FLOAT160 FLOAT160::abs() const
+{   return FLOAT160(false, x, m);
+}
+
+constexpr bool FLOAT160::iszero() const
+{   return m == 0;
+}
+
+constexpr FLOAT160::FLOAT160():sign(),x(),m()
+{   m = 0;
+    x = INT32_MIN;
+    sign = false;
+}
+
+// Build a FLOAT160 by specifying exponent and mantissa.
+
+constexpr FLOAT160::FLOAT160(bool ss, int32_t xx, uint128_t mm):
+                             sign(ss),x(xx),m(mm)
+{
+}
+
+constexpr FLOAT160::FLOAT160(long double f):sign(),x(),m()
+{   sign = std::signbit(f); // So that signed zeros transfer properly.
+    if (f == 0.0L)
+    {   m = 0;
+        x = INT32_MIN;
+        return;
+    }
+    if (sign) f = -f;
+    int xx = 0;
+// Until C++23 frexp and ldexp are not constexpr, so until then I use
+// code that should be portable but which may be slow.
+#ifdef __cpp_lib_constexpr_cmath
+// I will separate mantissa and exponent.
+    long double f1 = std::frexp(f, &xx);
+// Now if I multiply the mantissa by 2^64 its integer part should be the
+// top 64 bits.
+    long double f2 = std::ldexp(f1, 64);
+    uint64_t hi = (uint64_t)f2;
+// Subtract that integer part off and again multiply by 2^64 and then
+// I get the next 64 bits. If long double is not terribly long this
+// will consist mostly of zero bits. But the scheme used here should apply
+// regardless of how narrow or how wide long double is.
+    long double f3 = std::ldexp(f2 - (long double)hi, 64);
+#else
+    xx = 0;
+    long double f1 = f;
+    while (f1 >= 1.0L)
+    {   f1 = 0.5L*f1;
+        xx++;
+    }
+    while (f1 < 0.5L)
+    {   f1 = 2.0L*f1;
+        xx--;
+    }
+    for (int i=0; i<64; i++) f1 = 2.0L*f1;
+    uint64_t hi = (uint64_t)f1;
+    long double f3 = f1 - (long double)hi;
+    for (int i=0; i<64; i++) f3 = 2.0L*f3;
+#endif
+    uint64_t lo = (uint64_t)f3;
+// The versions of long double that might be in use have 53, 64 and 113
+// mantissa bits (including the hidden bit). So in all these cases
+// the 128-bit value {hi,lo} will have captured them all, and the
+// way I have done things means that what used to be a hidden bit is
+// now explicitly represented.
+    m = ((uint128_t)hi)<<64 | lo;
+// is not yet normalised, but we should have f = m*2^(xx-128);
+    x = xx;
+    int shift = nlz(m);
+    m = m << shift;
+    x = x - shift;
+}
+
+constexpr FLOAT160::FLOAT160(double x):FLOAT160((long double)x)
+{
+}
+
+constexpr bool FLOAT160::signbit() const
+{   return sign;
+}
+
+constexpr void FLOAT160::setsignbit(bool ss)
+{   sign = ss;
+}
+
+constexpr FLOAT160 FLOAT160::operator=(FLOAT160 const& rhs)
+{   m = rhs.m;
+    x = rhs.x;
+    sign = rhs.sign;
+    return *this;
+}
+
+constexpr FLOAT160 FLOAT160::operator=(FLOAT160&& rhs)
+{   m = rhs.m;
+    x = rhs.x;
+    sign = rhs.sign;
+    return *this;
+}
+
+constexpr int32_t FLOAT160::exponent() const
+{   return x;
+}
+
+// Note that the casts to unsigned integers ignore the sign of the
+// floating point value. Well in such cases the value is outside the
+// range of the integer type so such usage would give "undefined behaviour"
+// so I do not worry too much. But I may rely on my own behaviour here
+// in later parts of this code.
+
+constexpr FLOAT160::operator uint64_t() const
+{   if (x <= 0) return 0;
+    else return (uint64_t)(m>>(128-x));
+}
+
+constexpr FLOAT160::operator double() const
+{
+#ifdef  __cpp_lib_constexpr_cmath
+    double r = std::ldexp((double)m, x-128);
+#else
+    double r = (double)m;
+    if (x-128 > 0) for (int i=0; i<x-128; i++) r = 2.0L*r;
+    else for (int i=0; i<128-x; i++) r = 0.5L*r;
+#endif
+    return sign ? -r : r;
+}
+
+#endif // NEED_FLOAT160
+
+// This converts to the bit-pattern that will be for a 128-bit float,
+// handling infinities and denormalised values and rounding properly.
+
+inline constexpr uint128_t f160tof128rep(bool sign, int32_t x, uint128_t m)   
+// I will first handle some special values that have to convert into
+// infinities or NaNs
+{   if (x == INT32_MAX)
+    {   if (m == 0)
+        {   if (sign) return MINUSINF128();
+            else return PLUSINF128();
+        }
+        else return NAN128();
+    }
+    uint128_t r = 0;
+    if (m == 0) return r;
+    int32_t xx = x + 0x3ffe;
+    if (xx <= 0)
+    {   if (xx >= -111)
+        {   r |= m>>(16-xx);
+// @@@ I need to round here I guess.
+        }
+        return r; // denorm or underflow
+    }
+    if (xx >= 0x7fff)
+        return r | (((uint128_t)0x7fff)<<112); // infinity
+    r = (m<<1)>>16;              // Mantissa with top bit hidden
+    uint128_t guard = m<<(128-15);
+    if (guard > topbit128() ||
+        (guard == topbit128() && (r&1)!=0)) r++;
+// Note that incrementing r could overflow out of the 112-bit mantissa
+// field, but since I add in the exponent when this happens the (non-
+// hidden) mantissa ends up as zero and the exponent increases. Including
+// possibly to yield an infinity!
+    if (sign) r |= topbit128();
+    r += ((uint128_t)xx) << 112;
+    return r;
+}
+
+constexpr void string_to_160(const char* s,
+    bool& sign, int32_t& exponent, uint128_t& mantissa)
+{   sign = false;
+    exponent = 0;
+    mantissa = 0;
+// If the literal starts with "0x" or "0X" it is in hex notation.
+    if (*s == '0' && (s[1] == 'x' || s[1] == 'X'))
+    {   s += 2;
+        int i = 32;
+// For hex input the digits are put in from the most significant part
+// of the mantissa downwards. The result is that if there are only a few
+// digits given the value is effectively padded with zeros, while if
+// there are more than 32 the excess ones are just discarded. The exponent
+// is zero by default. Unless the value is given as zero its top bit
+// will be forced to be a 1 so that it is properly normalised. Note that
+// leading zeros are skipped.
+// Thus:
+//   0x0008_Q           gives 0.5
+//   0x4_Q              is treated as if it has been 0xC_Q which is 0.75
+//   0x9999..99999_Q    [with as many "9s" as you want where I have put
+//                       the "..."] is 0.6, but it does not round the final
+//                       stored "9" to an "a".
+//   0x1234_5678_9abc_Q  illustrates underscores that may help legibility.
+// For hex input I am taking the view that the user should not write
+// more than 32 digits and then expect the excess ones to be used to
+// round the main result. So
+//     0x1111_1111_1111_1111_1111_1111_1111_11111_ffff_Q
+// will still have a "1" in its least significant position.
+        while (*s == '0') s++;
+        for (;;)
+        {   if (*s == '_') s++;  // One can put underscores as spacing.
+            int c = *s;
+            if ('0' <= c && c <= '9') s++, c = c - '0';
+            else if ('a' <= c && c <= 'f') s++, c = 10 + c - 'a';
+            else if ('A' <= c && c <= 'F') s++, c = 10 + c - 'A';
+            else break;
+            i--;
+            if (i >= 0) mantissa = mantissa | (((uint128_t)c)<<(4*i));
+        }
+        if (mantissa == 0)
+        {   exponent = 0;
+            return;
+        }
+        mantissa = mantissa | (((uint128_t)1)<<127);
+        if (*s == 'p' || *s == 'P')
+        {   exponent = atoi(s+1);
+        }
+        return;
+    }
+// Now for decimal input.
+    uint64_t hi=0, mid=0, lo=0;
+    int32_t x = INT32_MIN;
+    while (*s == '0') s++;
+    int count = 0;
+    int dx = 0;
+    while ('0' <= *s && *s <= '9')
+    {   multiply192(UINT64_C(0xa000000000000000), 0, 0, 4,
+                    hi, mid, lo, x,
+                    hi, mid, lo, x);
+        add192(*s++ - '0', hi, mid, lo, x);
+        count++;
+    }
+    if (*s == '.')
+    {   s++;
+        while ('0' <= *s && *s <= '9')
+        {   if (count < 42)   // I ignore digits beyond this limit.
+            {   multiply192(UINT64_C(0xa000000000000000), 0, 0, 4,
+                            hi, mid, lo, x,
+                            hi, mid, lo, x);
+                add192(*s - '0', hi, mid, lo, x);
+                dx--;
+                count++;
+            }
+            s++;
+        }
+    }
+    if (*s == 'e') dx += std::atoi(s+1);
+    uint64_t hi1=0, mid1=0, lo1=0;
+    int32_t x1=0;
+    power10(hi1, mid1, lo1, x1, dx);
+    multiply192(hi1, mid1, lo1, x1, hi, mid, lo, x, hi, mid, lo, x);
+    uint128_t m = (((uint128_t)hi)<<64) | mid;
+// Round.
+    if ((lo == (UINT64_C(1)<<63) && (m&1)!=0) ||
+        (lo > (UINT64_C(1)<<63)))
+    {   m++;
+        if (m == 0)
+        {   m = ((uint128_t)1)<<127;
+            x++;
+        }
+    }
+    mantissa = m;
+    exponent = x;
+}
+
+inline FLOAT_128 ldexp(FLOAT_128 v, int x)
+{   return v.ldexp(x);
+}
+
+inline FLOAT_128 frexp(FLOAT_128 v, int* x)
+{   return v.frexp(*x);
+}
+
+inline bool isinf(FLOAT_128 v)
+{   return v.isinf();
+}
+
+inline bool isfinite(FLOAT_128 v)
+{   return v.isfinite();
+}
+
+inline bool isnan(FLOAT_128 v)
+{   return v.isinf();
+}
+
+inline bool isnormal(FLOAT_128 v)
+{   return v.isnormal();
+}
+
+inline bool signbit(FLOAT_128 v)
+{   return v.signbit();
+}
+
+inline bool iszero(FLOAT_128 v)
+{   return v.iszero();
+}
+
+extern int f160_sprint_G(char* r, int width, int precision,
+                         bool sign, int32_t exponent, uint128_t mantissa);
+
+extern void f128tof160(FLOAT_128 const& v,
+                       bool& sign, int32_t& exponent, uint128_t& mantissa);
+
+
+// I need to declare all the FLOAT_128 and COMPLEX_128 elementary functions
+// so that people who #include this header will know about them. I declare
+// versions that work on double and std::complex<double> too because that
+// will be relevant for functions that are not part of the C++ standard but
+// are ones I provide. Eg the trig functions that work in degrees rather
+// than radians.
+
+
+// Here I declare complex variants of a number of things that will not
+// actually be needed. Notably the trig functions that work in degrees
+// rather than radians. I view this as fairly harmless.
+
+#define external_declaration(name)                               \
+  extern double name(double);                                    \
+  extern std::complex<double> name(const std::complex<double>&); \
+  extern FLOAT_128 name(FLOAT_128);                                \
+  extern COMPLEX_128 name(COMPLEX_128);
+
+#define external_declaration_2(name)                       \
+  extern double name(double, double);                      \
+  extern std::complex<double> name(std::complex<double>&,  \
+                                   std::complex<double>&); \
+  extern FLOAT_128 name(FLOAT_128,FLOAT_128);                 \
+  extern COMPLEX_128 name(COMPLEX_128,COMPLEX_128);
+
+external_declaration(acos)
+external_declaration(acosd)
+external_declaration(acosh)
+external_declaration(acot)
+external_declaration(acotd)
+external_declaration(acoth)
+external_declaration(acsc)
+external_declaration(acscd)
+external_declaration(acsch)
+external_declaration(asec)
+external_declaration(asecd)
+external_declaration(asech)
+external_declaration(asin)
+external_declaration(asind)
+external_declaration(asinh)
+external_declaration(atan)
+external_declaration(atand)
+external_declaration(atanh)
+external_declaration(cbrt)
+external_declaration(cos)
+external_declaration(cosd)
+external_declaration(cosh)
+external_declaration(cot)
+external_declaration(cotd)
+external_declaration(coth)
+external_declaration(csc)
+external_declaration(cscd)
+external_declaration(csch)
+external_declaration(exp)
+external_declaration(expm1)
+external_declaration(ln)
+external_declaration(log)
+external_declaration(log10)
+external_declaration(log1p)
+external_declaration(log2)
+external_declaration(sec)
+external_declaration(secd)
+external_declaration(sech)
+external_declaration(sin)
+external_declaration(sind)
+external_declaration(sinh)
+external_declaration(sqrt)
+external_declaration(rsqrt)
+external_declaration(tan)
+external_declaration(tand)
+external_declaration(tanh)
+
+external_declaration_2(atan2)
+external_declaration_2(atan2d)
+external_declaration_2(expt)
+external_declaration_2(hypot)
+
+#endif // header__float128_h
+
+// end of float128.h
 
 // threadloc.h                                  Copyright (C) 2026 Codemist
 
@@ -3116,1999 +6918,6 @@ public:
 // It is not standard-compliant and even with those compilers it may
 // not be available on all computers.
 
-// "int128.h":                 128 bit integer types for C++
-//                             Copyright Jason Lee, Arthur Norman 2013-2026
-
-// $Id$
-  
-#ifndef __int128_h__
-#define __int128_h__
-
-/*
-If you go "#include "int128.h" you should end up with two types -
-uint128_t and int128_t for wide integers. If these are supported by
-your C++ compiler directly (possibly via names like unsigned __int128
-and __int128) then the native versions will be used. Otherwise classes
-with the relevant names will be introduced with most arithmetic operators
-overloaded to use them.
-
-The test of what to do is based around whether __SIZEOF_INT128__ is
-defined. This is automatically predefined by the compiler and does
-not need any action from the programmer. For at least the platforms I
-care about most (well x86_64 Linux, Raspberry Pi 5 (64-bit), Mac M1, all
-using g++ or clang++) this gets defined and then a type __int128_t exists.
-I then set up aliases int128_t and uint128_t.#
-
-I *ASSUME* that if __SIZEOF_INT128__ is not defined then both signed and
-unsigned 128-bit integers will be avaliable with __int128_t being the
-signed type. I also assume that the plain names int128_t and uint128_t
-will be available for me to define as classes that behave as much like
-regular integers as can reasonably be arranged.
-
-Some of my C++ coding may be ugly or otherwise bad! The unsigned part
-was originally by Jason Lee and should be robust and tidy (apart from where I
-altered it)  but the signed variant is mine and may be repetitive, ugly,
-incomplete or otherwise less satisfactory!
-
-I have also not worried very much about performance-tuning of the signed
-code. The unsigned version had some care to avoid unnecessary work, but here
-my stance is that a computer that does not support native 128-bit will be
-slow at big arithmetic whatever I do, so hurting it a bit mnore will not
-upset me too much. A C++ expert may want to address that issue as well as
-code style!
-
-I have a collection of uses of "typename enable_if<std::is_arithetic<..."
-in here that is sufficient to resolve some ambiguities that arose in use
-with CSL, but I have not put that in everywhere - just in enough places to
-support my current usage. Others who pick this up might want to review
-and extent that!
-
-Copyright (c) 2013 - 2017 Jason Lee @ calccrypto at gmail.com
-              2020 - 2025 Arthur Norman
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-With much help from Auston Sterling
-
-Thanks to Stefan Deigmo?=ller for finding
-a bug in operator*.
-
-Thanks to Frano?=ois Dessenne for convincing me
-to do a general rewrite of this class.
-
-
-This code incorporated the Jason Lee code but has been re-worked by Arthur
-Norman, 2020-, and now provides both signed and unsigned 128-bit types called
-uint128_t and int128_t, and to arrange that it can always be loaded as a
-header-only library.
-*/
-
-
-// I want this to be a standalone header file that could be used outside
-// CSL, and so I include the C++ header files that it used and I will refer
-// to things as e.g. std::uint64_t even though through CSL I have a "using"
-// directive to render the "std::" unnecessary.
-
-#include <cinttypes>
-#include <cstdint>
-#include <string>
-#include <iostream>
-#include <stdexcept>
-#include <utility>
-#include <type_traits>
-
-#ifdef __SIZEOF_INT128__
-
-#include <type_traits>
-
-// The following works with both gcc and clang++ on the platforms that
-// I am keen on.
-// With older versions of the compilers "__uint128_t" needed to be
-// replaced by "unsigned __int128_t" but as of December 2025 I find
-// the following works on the platforms that I have tried...
-
-using int128_t = __int128_t;
-using uint128_t = __uint128_t;
-
-#ifndef getUPPER_defined
-#define getUPPER_defined 1
-
-namespace INT128names
-{
-
-// I provide getUPPER(), getLOWER() and PACK128() for conversions between
-// unsigned 128-bit integers and pairs of unsigned 64-bit values.
-
-
-inline std::uint64_t getUPPER(uint128_t a)
-{   return a >> 64;
-}
-
-inline std::uint64_t getLOWER(uint128_t a)
-{   return static_cast<std::uint64_t>(a);
-}
-
-inline uint128_t PACK128(std::uint64_t high, std::uint64_t low)
-{   return uint128_t(high)<<64 | low;
-}
-
-inline bool TOP_BIT(uint128_t a)
-{   return (a >> 127) != 0;
-}
-
-inline uint128_t UNSIGNED_FLIP_TOP_BIT(uint128_t a)
-{   return a ^ (uint128_t(1)<<127);
-}
-
-} // end of namespace
-
-#endif // getUPPER_defined
-
-#else // __SIZEOF_INT128__
-
-class uint128_t;
-class int128_t;
-#define __SIZEOF_INT128__ 16
-
-class uint128_t
-{
-private:
-    std::uint64_t UPPER, LOWER;
-
-public:
-    // Constructors
-    uint128_t();
-    uint128_t(const uint128_t & rhs);
-    uint128_t(uint128_t && rhs);
-    uint128_t(int128_t rhs);
-    uint128_t(double rhs);
-
-    template <typename T>
-    uint128_t(const T & rhs)
-        : UPPER(0), LOWER(rhs)
-    {   static_assert(std::is_integral <T>::value,
-                      "Input argument type must be an integer.");
-    }
-
-    template <typename S, typename T> uint128_t(const S & upper_rhs,
-            const T & lower_rhs)
-        : UPPER(upper_rhs), LOWER(lower_rhs)
-    {   static_assert(std::is_integral <S>::value &&
-                      std::is_integral <T>::value
-                      , "Input argument types must be integers.");
-    }
-
-    //  RHS input args only
-
-    // Assignment Operator
-    uint128_t operator=(const uint128_t & rhs);
-    uint128_t operator=(uint128_t && rhs);
-    uint128_t operator=(int128_t rhs);
-
-    template <typename T> uint128_t operator=(const T & rhs)
-    {   static_assert(std::is_integral <T>::value,
-                      "Input argument type must be an integer.");
-        UPPER = 0;
-        LOWER = rhs;
-        return *this;
-    }
-
-    // Typecast Operators
-    operator bool() const;
-    operator std::uint8_t() const;
-    operator std::uint16_t() const;
-    operator std::uint32_t() const;
-    operator std::uint64_t() const;
-    operator std::int64_t() const;
-    operator int128_t() const;
-    operator long double() const;
-    operator double() const;
-
-    // Bitwise Operators
-    uint128_t operator&(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator&(const T & rhs) const
-    {   return uint128_t(0, LOWER & static_cast<std::uint64_t>(rhs));
-    }
-
-    uint128_t & operator&=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator&=(const T & rhs)
-    {   UPPER = 0;
-        LOWER &= rhs;
-        return *this;
-    }
-
-    uint128_t operator|(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator|(const T & rhs) const
-    {   return uint128_t(UPPER, LOWER | static_cast<std::uint64_t>(rhs));
-    }
-
-    uint128_t & operator|=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator|=(const T & rhs)
-    {   LOWER |= static_cast<std::uint64_t>(rhs);
-        return *this;
-    }
-
-    uint128_t operator^(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator^(const T & rhs) const
-    {   return uint128_t(UPPER, LOWER ^ static_cast<std::uint64_t>(rhs));
-    }
-
-    uint128_t & operator^=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator^=(const T & rhs)
-    {   LOWER ^= static_cast<std::uint64_t>(rhs);
-        return *this;
-    }
-
-    uint128_t operator~() const;
-
-    // Bit Shift Operators
-    uint128_t operator<<(const uint128_t & rhs) const;
-
-    template <typename T> uint128_t operator<<(const T & rhs) const
-    {   return *this << uint128_t(rhs);
-    }
-
-    uint128_t & operator<<=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator<<=(const T & rhs)
-    {   *this = *this << uint128_t(rhs);
-        return *this;
-    }
-
-    uint128_t operator>>(const uint128_t & rhs) const;
-
-    template <typename T> uint128_t operator>>(const T & rhs) const
-    {   return *this >> uint128_t(rhs);
-    }
-
-    uint128_t & operator>>=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator>>=(const T & rhs)
-    {   *this = *this >> uint128_t(rhs);
-        return *this;
-    }
-
-    // Logical Operators
-    bool operator!() const;
-    bool operator&&(const uint128_t & rhs) const;
-    bool operator||(const uint128_t & rhs) const;
-
-    template <typename T> bool operator&&(const T & rhs)
-    {   return static_cast <bool> (*this && rhs);
-    }
-
-    template <typename T> bool operator||(const T & rhs)
-    {   return static_cast <bool> (*this || rhs);
-    }
-
-    // Comparison Operators
-    bool operator==(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator==(const T & rhs) const
-    {   return (!UPPER && (LOWER == static_cast<std::uint64_t>(rhs)));
-    }
-
-    bool operator!=(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator!=(const T & rhs) const
-    {   return (UPPER | (LOWER != static_cast<std::uint64_t>(rhs)));
-    }
-
-    bool operator>(const uint128_t & rhs) const;
-
-    template <typename T> bool operator>(const T & rhs) const
-    {   return (UPPER || (LOWER > static_cast<std::uint64_t>(rhs)));
-    }
-
-    bool operator<(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator<(const T & rhs) const
-    {   return (!UPPER)?(LOWER < static_cast<std::uint64_t>(rhs)):false;
-    }
-
-    bool operator>=(const uint128_t & rhs) const;
-
-    template <typename T> bool operator>=(const T & rhs) const
-    {   return ((*this > rhs) | (*this == rhs));
-    }
-
-    bool operator<=(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator<=(const T & rhs) const
-    {   return ((*this < rhs) | (*this == rhs));
-    }
-
-    // Arithmetic Operators
-    uint128_t operator+(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator+(const T & rhs) const
-    {   return uint128_t(UPPER + ((LOWER + static_cast<std::uint64_t>(rhs)) <
-                                  LOWER), LOWER + static_cast<std::uint64_t>(rhs));
-    }
-
-    uint128_t & operator+=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator+=(const T & rhs)
-    {   UPPER = UPPER + ((LOWER + rhs) < LOWER);
-        LOWER = LOWER + rhs;
-        return *this;
-    }
-
-    uint128_t operator-(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator-(const T & rhs) const
-    {   return uint128_t(static_cast<std::uint64_t>(
-                             UPPER - ((LOWER - rhs) > LOWER)),
-                         static_cast<std::uint64_t>(LOWER - rhs));
-    }
-
-    uint128_t & operator-=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator-=(const T & rhs)
-    {   *this = *this - rhs;
-        return *this;
-    }
-
-    uint128_t operator*(const uint128_t & rhs) const;
-
-    template <typename T> uint128_t operator*(const T & rhs) const
-    {   return *this * uint128_t(rhs);
-    }
-
-    uint128_t & operator*=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator*=(const T & rhs)
-    {   *this = *this * uint128_t(rhs);
-        return *this;
-    }
-
-private:
-    std::pair <uint128_t, uint128_t> divmod(const uint128_t & lhs,
-                                            const uint128_t & rhs) const;
-
-public:
-    uint128_t operator/(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator/(const T & rhs) const
-    {   return *this / uint128_t(rhs);
-    }
-
-    uint128_t & operator/=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator/=(const T & rhs)
-    {   *this = *this / uint128_t(rhs);
-        return *this;
-    }
-
-    uint128_t operator%(const uint128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-    operator%(const T & rhs) const
-    {   return *this - (rhs * (*this / rhs));
-    }
-
-    uint128_t & operator%=(const uint128_t & rhs);
-
-    template <typename T> uint128_t & operator%=(const T & rhs)
-    {   *this = *this % uint128_t(rhs);
-        return *this;
-    }
-
-    // Increment Operator
-    uint128_t & operator++();
-    uint128_t operator++(int);
-
-    // Decrement Operator
-    uint128_t & operator--();
-    uint128_t operator--(int);
-
-    // Nothing done since promotion doesn't work here
-    uint128_t operator+() const;
-
-    // two's complement
-    uint128_t operator-() const;
-
-    // Get private values
-    const std::uint64_t & upper() const
-    {   return UPPER;
-    }
-    const std::uint64_t & lower() const
-    {   return LOWER;
-    }
-
-    // Get bitsize of value
-    std::uint8_t bits() const;
-
-    // Get string representation of value
-    std::string str(std::uint8_t base = 10,
-                    const unsigned int & len = 0) const;
-};
-
-#ifndef getUPPER_defined
-#define getUPPER_defined 1
-
-namespace INT128names
-{
-
-inline std::uint64_t getUPPER(uint128_t a)
-{   return a.upper();
-}
-
-inline std::uint64_t getLOWER(uint128_t a)
-{   return a.lower();
-}
-
-inline uint128_t PACK128(std::uint64_t high, std::uint64_t low)
-{   return uint128_t(high, low);
-}
-
-inline bool TOP_BIT(uint128_t a)
-{   return (getUPPER(a) >> 63) != 0;
-}
-
-inline uint128_t UNSIGNED_FLIP_TOP_BIT(uint128_t a)
-{   return uint128_t(getUPPER(a) ^ static_cast<std::uint64_t>(1)<<63,
-                     getLOWER(a));
-}
-
-} // end of namespace
-
-#endif // getUPPER_defined
-
-
-// Bitwise Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator&(const T & lhs, const uint128_t & rhs)
-{   return rhs & lhs;
-}
-
-template <typename T> T & operator&=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (rhs & lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator|(const T & lhs, const uint128_t & rhs)
-{   return rhs | lhs;
-}
-
-template <typename T> T & operator|=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (rhs | lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator^(const T & lhs, const uint128_t & rhs)
-{   return rhs ^ lhs;
-}
-
-template <typename T> T & operator^=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (rhs ^ lhs);
-}
-
-// Bitshift operators
-uint128_t operator<<(const bool & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint8_t  & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int8_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int16_t  & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int32_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int64_t & lhs, const uint128_t & rhs);
-
-template <typename T> T & operator<<=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (uint128_t(lhs) << rhs);
-}
-
-uint128_t operator>>(const bool & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint8_t  & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int8_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int16_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int32_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int64_t & lhs, const uint128_t & rhs);
-
-template <typename T> T & operator>>=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (uint128_t(lhs) >> rhs);
-}
-
-// Comparison Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator==(const T & lhs, const uint128_t & rhs)
-{   return (!rhs.upper() &&
-            (static_cast<std::uint64_t>(lhs) == rhs.lower()));
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator!=(const T & lhs, const uint128_t & rhs)
-{   return (rhs.upper() ||
-            (static_cast<std::uint64_t>(lhs) != rhs.lower()));
-}
-
-template <typename T> bool operator>(const T & lhs, const uint128_t & rhs)
-{   return (!rhs.upper()) &&
-           (static_cast<std::uint64_t>(lhs) > rhs.lower());
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator<(const T & lhs, const uint128_t & rhs)
-{   if (rhs.upper())
-    {   return true;
-    }
-    return (static_cast<std::uint64_t>(lhs) < rhs.lower());
-}
-
-template <typename T> bool operator>=(const T & lhs, const uint128_t & rhs)
-{   if (rhs.upper())
-    {   return false;
-    }
-    return (static_cast<std::uint64_t>(lhs) >= rhs.lower());
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator<=(const T & lhs, const uint128_t & rhs)
-{   if (rhs.upper())
-    {   return true;
-    }
-    return (static_cast<std::uint64_t>(lhs) <= rhs.lower());
-}
-
-// Arithmetic Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator+(const T & lhs, const uint128_t & rhs)
-{   return rhs + lhs;
-}
-
-template <typename T> T & operator+=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (rhs + lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator-(const T & lhs, const uint128_t & rhs)
-{   return -(rhs - lhs);
-}
-
-template <typename T> T & operator-=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (-(rhs - lhs));
-}
-
-template <typename T> uint128_t operator*(const T & lhs, const uint128_t & rhs)
-{   return rhs * lhs;
-}
-
-template <typename T> T & operator*=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (rhs * lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
-operator/(const T & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) / rhs;
-}
-
-template <typename T> T & operator/=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (uint128_t(lhs) / rhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, uint128_t>::type
- operator%(const T & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) % rhs;
-}
-
-template <typename T> T & operator%=(T & lhs, const uint128_t & rhs)
-{   return lhs = static_cast <T> (uint128_t(lhs) % rhs);
-}
-
-// IO Operator
-std::ostream & operator<<(std::ostream & stream, const uint128_t & rhs);
-
-// I do not go "#define UINT128_T" here because while I am setting up
-// int128_t I want to know if the unsigned version is native or
-// simulated. A key reason for that is that if both are native then
-// casts between them will already exist, while if either is simulated
-// I will need to define something.
-
-inline uint128_t::uint128_t()
-    : UPPER(0), LOWER(0)
-{}
-
-inline uint128_t::uint128_t(const uint128_t & rhs)
-    : UPPER(rhs.UPPER), LOWER(rhs.LOWER)
-{}
-
-inline uint128_t::uint128_t(uint128_t && rhs)
-    : UPPER(std::move(rhs.UPPER)), LOWER(std::move(rhs.LOWER))
-{   if (this != &rhs)
-    {   rhs.UPPER = 0;
-        rhs.LOWER = 0;
-    }
-}
-
-inline uint128_t::uint128_t(double rhs)
-    : UPPER(), LOWER()
-{   double two64 = (double)x100000000LU * (double)0x100000000LU;
-    double w = rhs/two64;
-    uint64_t hi = (uint64_t)w;
-    rhs = rhs - two64*(double)hi;
-    if (rhs < 0.0)
-    {   hi--;
-        rhs = rhs + two64;
-    }
-    uint64_t lo = (uint64_t)rhs;
-    if ((double)lo > rhs) lo--;
-    UPPER = hi;
-    LOWER = lo;
-}
-
-inline uint128_t uint128_t::operator=(const uint128_t & rhs)
-{   UPPER = rhs.UPPER;
-    LOWER = rhs.LOWER;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator=(uint128_t && rhs)
-{   if (this != &rhs)
-    {   UPPER = std::move(rhs.UPPER);
-        LOWER = std::move(rhs.LOWER);
-        rhs.UPPER = 0;
-        rhs.LOWER = 0;
-    }
-    return *this;
-}
-
-inline uint128_t::operator bool() const
-{   return (bool) (UPPER | LOWER);
-}
-
-inline uint128_t::operator std::uint8_t() const
-{   return static_cast<std::uint8_t>(LOWER);
-}
-
-inline uint128_t::operator std::uint16_t() const
-{   return static_cast<std::uint16_t>(LOWER);
-}
-
-inline uint128_t::operator std::uint32_t() const
-{   return (std::uint32_t) LOWER;
-}
-
-inline uint128_t::operator std::uint64_t() const
-{   return (std::uint64_t) LOWER;
-}
-
-inline uint128_t::operator std::int64_t() const
-{   return (std::int64_t) LOWER;
-}
-
-inline uint128_t uint128_t::operator&(const uint128_t & rhs) const
-{   return uint128_t(UPPER & rhs.UPPER, LOWER & rhs.LOWER);
-}
-
-inline uint128_t::operator long double() const
-{   return (long double)LOWER + std::ldexp((long double)UPPER, 64);
-}
-
-inline uint128_t::operator double() const
-{   return (double)LOWER + std::ldexp((double)UPPER, 64);
-}
-
-inline uint128_t & uint128_t::operator&=(const uint128_t & rhs)
-{   UPPER &= rhs.UPPER;
-    LOWER &= rhs.LOWER;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator|(const uint128_t & rhs) const
-{   return uint128_t(UPPER | rhs.UPPER, LOWER | rhs.LOWER);
-}
-
-inline uint128_t & uint128_t::operator|=(const uint128_t & rhs)
-{   UPPER |= rhs.UPPER;
-    LOWER |= rhs.LOWER;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator^(const uint128_t & rhs) const
-{   return uint128_t(UPPER ^ rhs.UPPER, LOWER ^ rhs.LOWER);
-}
-
-inline uint128_t & uint128_t::operator^=(const uint128_t & rhs)
-{   UPPER ^= rhs.UPPER;
-    LOWER ^= rhs.LOWER;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator~() const
-{   return uint128_t(~UPPER, ~LOWER);
-}
-
-inline uint128_t uint128_t::operator<<(const uint128_t & rhs) const
-{   const std::uint64_t shift = rhs.LOWER;
-    if (((bool) rhs.UPPER) || (shift >= 128))
-    {   return uint128_t(0);
-    }
-    else if (shift == 64)
-    {   return uint128_t(LOWER, 0);
-    }
-    else if (shift == 0)
-    {   return *this;
-    }
-    else if (shift < 64)
-    {   return uint128_t((UPPER << shift) + (LOWER >> (64 - shift)),
-                         LOWER << shift);
-    }
-    else if ((128 > shift) && (shift > 64))
-    {   return uint128_t(LOWER << (shift - 64), 0);
-    }
-    else
-    {   return uint128_t(0);
-    }
-}
-
-inline uint128_t & uint128_t::operator<<=(const uint128_t & rhs)
-{   *this = *this << rhs;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator>>(const uint128_t & rhs) const
-{   const std::uint64_t shift = rhs.LOWER;
-    if (((bool) rhs.UPPER) || (shift >= 128))
-    {   return uint128_t(0);
-    }
-    else if (shift == 64)
-    {   return uint128_t(0, UPPER);
-    }
-    else if (shift == 0)
-    {   return *this;
-    }
-    else if (shift < 64)
-    {   return uint128_t(UPPER >> shift,
-                         (UPPER << (64 - shift)) + (LOWER >> shift));
-    }
-    else if ((128 > shift) && (shift > 64))
-    {   return uint128_t(0, (UPPER >> (shift - 64)));
-    }
-    else
-    {   return uint128_t(0);
-    }
-}
-
-inline uint128_t & uint128_t::operator>>=(const uint128_t & rhs)
-{   *this = *this >> rhs;
-    return *this;
-}
-
-inline bool uint128_t::operator!() const
-{   return !(bool) (UPPER | LOWER);
-}
-
-inline bool uint128_t::operator&&(const uint128_t & rhs) const
-{   return ((bool) *this && rhs);
-}
-
-inline bool uint128_t::operator||(const uint128_t & rhs) const
-{   return ((bool) *this || rhs);
-}
-
-inline bool uint128_t::operator==(const uint128_t & rhs) const
-{   return ((UPPER == rhs.UPPER) && (LOWER == rhs.LOWER));
-}
-
-inline bool uint128_t::operator!=(const uint128_t & rhs) const
-{   return ((UPPER != rhs.UPPER) | (LOWER != rhs.LOWER));
-}
-
-inline bool uint128_t::operator>(const uint128_t & rhs) const
-{   if (UPPER == rhs.UPPER)
-    {   return (LOWER > rhs.LOWER);
-    }
-    return (UPPER > rhs.UPPER);
-}
-
-inline bool uint128_t::operator<(const uint128_t & rhs) const
-{   if (UPPER == rhs.UPPER)
-    {   return (LOWER < rhs.LOWER);
-    }
-    return (UPPER < rhs.UPPER);
-}
-
-inline bool uint128_t::operator>=(const uint128_t & rhs) const
-{   return ((*this > rhs) || (*this == rhs));
-}
-
-inline bool uint128_t::operator<=(const uint128_t & rhs) const
-{   return ((*this < rhs) || (*this == rhs));
-}
-
-inline uint128_t uint128_t::operator+(const uint128_t & rhs) const
-{   return uint128_t(UPPER + rhs.UPPER + ((LOWER + rhs.LOWER) <
-                                          LOWER), LOWER + rhs.LOWER);
-}
-
-inline uint128_t & uint128_t::operator+=(const uint128_t & rhs)
-{   UPPER += rhs.UPPER + ((LOWER + rhs.LOWER) < LOWER);
-    LOWER += rhs.LOWER;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator-(const uint128_t & rhs) const
-{   return uint128_t(UPPER - rhs.UPPER - ((LOWER - rhs.LOWER) >
-                                          LOWER), LOWER - rhs.LOWER);
-}
-
-inline uint128_t & uint128_t::operator-=(const uint128_t & rhs)
-{   *this = *this - rhs;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator*(const uint128_t & rhs) const
-{   // split values into 4 32-bit parts
-    std::uint64_t top[4] = {UPPER >> 32, UPPER & 0xffffffff, LOWER >> 32, LOWER & 0xffffffff};
-    std::uint64_t bottom[4] = {rhs.UPPER >> 32, rhs.UPPER & 0xffffffff, rhs.LOWER >> 32, rhs.LOWER & 0xffffffff};
-    std::uint64_t products[4][4];
-
-    // multiply each component of the values
-    for(int y = 3; y > -1; y--)
-    {   for(int x = 3; x > -1; x--)
-        {   products[3 - x][y] = top[x] * bottom[y];
-        }
-    }
-
-    // first row
-    std::uint64_t fourth32 = (products[0][3] & 0xffffffff);
-    std::uint64_t third32  = (products[0][2] & 0xffffffff) +
-                             (products[0][3] >> 32);
-    std::uint64_t second32 = (products[0][1] & 0xffffffff) +
-                             (products[0][2] >> 32);
-    std::uint64_t first32  = (products[0][0] & 0xffffffff) +
-                             (products[0][1] >> 32);
-
-    // second row
-    third32  += (products[1][3] & 0xffffffff);
-    second32 += (products[1][2] & 0xffffffff) + (products[1][3] >> 32);
-    first32  += (products[1][1] & 0xffffffff) + (products[1][2] >> 32);
-
-    // third row
-    second32 += (products[2][3] & 0xffffffff);
-    first32  += (products[2][2] & 0xffffffff) + (products[2][3] >> 32);
-
-    // fourth row
-    first32  += (products[3][3] & 0xffffffff);
-
-    // move carry to next digit
-    third32  += fourth32 >> 32;
-    second32 += third32  >> 32;
-    first32  += second32 >> 32;
-
-    // remove carry from current digit
-    fourth32 &= 0xffffffff;
-    third32  &= 0xffffffff;
-    second32 &= 0xffffffff;
-    first32  &= 0xffffffff;
-
-    // combine components
-    return uint128_t((first32 << 32) | second32,
-                     (third32 << 32) | fourth32);
-}
-
-inline uint128_t & uint128_t::operator*=(const uint128_t & rhs)
-{   *this = *this * rhs;
-    return *this;
-}
-
-inline std::pair <uint128_t, uint128_t> uint128_t::divmod(
-    const uint128_t & lhs, const uint128_t & rhs) const
-{   // Save some calculations /////////////////////
-    if (rhs == uint128_t(0))
-    {   throw std::domain_error("Error: division or modulus by 0");
-    }
-    else if (rhs == uint128_t(1))
-    {   return std::pair <uint128_t, uint128_t> (lhs, uint128_t(0));
-    }
-    else if (lhs == rhs)
-    {   return std::pair <uint128_t, uint128_t> (uint128_t(1), uint128_t(0));
-    }
-    else if ((lhs == uint128_t(0)) || (lhs < rhs))
-    {   return std::pair <uint128_t, uint128_t> (uint128_t(0), lhs);
-    }
-
-    std::pair <uint128_t, uint128_t> qr (uint128_t(0), uint128_t(0));
-    for(std::uint8_t x = lhs.bits(); x > 0; x--)
-    {   qr.first  <<= uint128_t(1);
-        qr.second <<= uint128_t(1);
-
-        if ((lhs >> (x - 1U)) & 1)
-        {   qr.second++;
-        }
-
-        if (qr.second >= rhs)
-        {   qr.second -= rhs;
-            qr.first++;
-        }
-    }
-    return qr;
-}
-
-inline uint128_t uint128_t::operator/(const uint128_t & rhs) const
-{   return divmod(*this, rhs).first;
-}
-
-inline uint128_t & uint128_t::operator/=(const uint128_t & rhs)
-{   *this = *this / rhs;
-    return *this;
-}
-
-inline uint128_t uint128_t::operator%(const uint128_t & rhs) const
-{   return divmod(*this, rhs).second;
-}
-
-inline uint128_t & uint128_t::operator%=(const uint128_t & rhs)
-{   *this = *this % rhs;
-    return *this;
-}
-
-inline uint128_t & uint128_t::operator++()
-{   static const uint128_t uint128_1(1);
-    return *this += uint128_1;
-}
-
-inline uint128_t uint128_t::operator++(int)
-{   uint128_t temp(*this);
-    ++*this;
-    return temp;
-}
-
-inline uint128_t & uint128_t::operator--()
-{   static const uint128_t uint128_1(1);
-    return *this -= uint128_1;
-}
-
-inline uint128_t uint128_t::operator--(int)
-{   uint128_t temp(*this);
-    --*this;
-    return temp;
-}
-
-inline uint128_t uint128_t::operator+() const
-{   return *this;
-}
-
-inline uint128_t uint128_t::operator-() const
-{   static const uint128_t uint128_1(1);
-    return ~*this + uint128_1;
-}
-
-inline std::uint8_t uint128_t::bits() const
-{   std::uint8_t out = 0;
-    if (UPPER)
-    {   out = 64;
-        std::uint64_t up = UPPER;
-        while (up)
-        {   up >>= 1;
-            out++;
-        }
-    }
-    else
-    {   std::uint64_t low = LOWER;
-        while (low)
-        {   low >>= 1;
-            out++;
-        }
-    }
-    return out;
-}
-
-inline std::string uint128_t::str(std::uint8_t base,
-                                  const unsigned int & len) const
-{   if ((base < 2) || (base > 16))
-    {   throw std::invalid_argument("Base must be in the range [2, 16]");
-    }
-    std::string out = "";
-    if (!(*this))
-    {   out = "0";
-    }
-    else
-    {   std::pair <uint128_t, uint128_t> qr(*this, uint128_t(0));
-        do
-        {   qr = divmod(qr.first, base);
-            out = "0123456789abcdef"[static_cast<std::uint8_t>(qr.second)] + out;
-        }
-        while (qr.first);
-    }
-    if (out.size() < len)
-    {   out = std::string(len - out.size(), '0') + out;
-    }
-    return out;
-}
-
-inline uint128_t operator<<(const bool & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::uint8_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::int8_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::int16_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::int32_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator<<(const std::int64_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) << rhs;
-}
-
-inline uint128_t operator>>(const bool & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::uint8_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::int8_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::int16_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::int32_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline uint128_t operator>>(const std::int64_t & lhs, const uint128_t & rhs)
-{   return uint128_t(lhs) >> rhs;
-}
-
-inline std::ostream & operator<<(std::ostream & stream, const uint128_t & rhs)
-{   if (stream.flags() & stream.oct)
-    {   stream << rhs.str(8);
-    }
-    else if (stream.flags() & stream.dec)
-    {   stream << rhs.str(10);
-    }
-    else if (stream.flags() & stream.hex)
-    {   stream << rhs.str(16);
-    }
-    return stream;
-}
-
-// Now I should certainly have a type uint128_t.
-
-namespace INT128names
-{
-inline uint128_t UNSIGNED(int128_t a);
-};
-
-class int128_t
-{
-private:
-    std::int64_t UPPER;
-    std::uint64_t LOWER;
-
-public:
-    // Constructors
-    int128_t()
-    {   UPPER = 0;
-        LOWER = 0;
-    }
-    int128_t(const int128_t & rhs)
-    {   UPPER = rhs.UPPER;
-        LOWER = rhs.LOWER;
-    }
-    int128_t(int128_t && rhs)
-    {   UPPER = rhs.UPPER;
-        LOWER = rhs.LOWER;
-    }
-    int128_t(uint128_t v)
-    {   UPPER = static_cast<std::int64_t>(INT128names::getUPPER(v));
-        LOWER = INT128names::getLOWER(v);
-    }
-
-    int128_t(const bool &rhs)
-    {   UPPER = 0;
-        LOWER = rhs;
-    }
-    template <typename T> int128_t(const T & rhs)
-        : UPPER(rhs < 0 ? -1 : 0), LOWER(rhs)
-    {   static_assert(std::is_integral <T>::value,
-                      "Input argument type must be an integer.");
-    }
-    template <typename S, typename T> int128_t(const S & upper_rhs,
-                                               const T & lower_rhs)
-        : UPPER(upper_rhs), LOWER(lower_rhs)
-    {   static_assert(std::is_integral <S>::value &&
-                      std::is_integral <T>::value
-                      , "Input argument types must be integers.");
-    }
-
-    std::int64_t getUPPER()
-    {   return UPPER;
-    }
-
-    std::uint64_t getLOWER()
-    {   return LOWER;
-    }
-
-    static uint128_t FLIP_TOP_BIT(int128_t a)
-    {   return INT128names::UNSIGNED_FLIP_TOP_BIT(INT128names::UNSIGNED(a));
-    }
-
-    //  RHS input args only
-
-    // Assignment Operator
-    int128_t operator=(const int128_t & rhs)
-    {   UPPER = rhs.UPPER;
-        LOWER = rhs.LOWER;
-        return *this;
-    }
-    int128_t operator=(int128_t && rhs)
-    {   UPPER = rhs.UPPER;
-        LOWER = rhs.LOWER;
-        return *this;
-    }
-    int128_t operator=(uint128_t rhs)
-    {   UPPER = static_cast<std::int64_t>(INT128names::getUPPER(rhs));
-        LOWER = INT128names::getLOWER(rhs);
-        return *this;
-    }
-
-    template <typename T> int128_t operator=(const T & rhs)
-    {   static_assert(std::is_integral <T>::value,
-                      "Input argument type must be an integer.");
-        UPPER = rhs < 0 ? -1 : 0;
-        LOWER = rhs;
-        return *this;
-    }
-
-    // Typecast Operators
-    operator bool() const
-    {   return (bool) (UPPER | LOWER);
-    }
-    
-    operator std::int8_t() const
-    {   return static_cast<std::int8_t>(LOWER);
-    }
-
-    operator std::int16_t() const
-    {   return static_cast<std::int16_t>(LOWER);
-    }
-
-    operator std::int32_t() const
-    {   return (std::int32_t) LOWER;
-    }
-
-    operator std::int64_t() const
-    {   return (std::int64_t) LOWER;
-    }
-
-    operator std::uint8_t() const
-    {   return static_cast<std::uint8_t>(LOWER);
-    }
-
-    operator std::uint16_t() const
-    {   return static_cast<std::uint16_t>(LOWER);
-    }
-
-    operator std::uint32_t() const
-    {   return (std::uint32_t) LOWER;
-    }
-
-    operator std::uint64_t() const
-    {   return (std::uint64_t) LOWER;
-    }
-
-    operator uint128_t() const
-    {   return INT128names::PACK128(static_cast<std::uint64_t>(UPPER), LOWER);
-    }
-
-    // Bitwise Operators
-    int128_t operator&(const int128_t & rhs) const
-    {   return int128_t(UPPER&rhs.UPPER, LOWER&rhs.LOWER);
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator&(const T & rhs) const
-    {   return int128_t(rhs >= 0 ? 0 : UPPER,
-                        LOWER & static_cast<std::uint64_t>(rhs));
-    }
-
-    int128_t & operator&=(const int128_t & rhs)
-    {   UPPER &= rhs.UPPER;
-        LOWER &= rhs.LOWER;
-        return *this;
-    }
-
-    template <typename T> int128_t & operator&=(const T & rhs)
-    {   if (rhs >= 0) UPPER = 0;
-        LOWER &= rhs;
-        return *this;
-    }
-
-    int128_t operator|(const int128_t & rhs) const
-    {   return int128_t(UPPER|rhs.UPPER, LOWER|rhs.LOWER);
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator|(const T & rhs) const
-    {   return int128_t(rhs < 0 ? -1 : UPPER,
-                        LOWER | static_cast<std::uint64_t>(rhs));
-    }
-
-    int128_t & operator|=(const int128_t & rhs)
-    {   UPPER |= rhs.UPPER;
-        LOWER |= rhs.LOWER;
-        return *this;
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    & operator|=(const T & rhs)
-    {   if (rhs < 0) UPPER = -1;
-        LOWER |= static_cast<std::uint64_t>(rhs);
-        return *this;
-    }
-
-    int128_t operator^(const int128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator^(const T & rhs) const
-    {   return int128_t(rhs<0 ? ~UPPER : UPPER,
-                        LOWER ^ static_cast<std::uint64_t>(rhs));
-    }
-
-    int128_t & operator^=(const int128_t & rhs);
-
-    template <typename T> int128_t & operator^=(const T & rhs)
-    {   if (rhs < 0) UPPER = ~UPPER;
-        LOWER ^= static_cast<std::uint64_t>(rhs);
-        return *this;
-    }
-
-    int128_t operator~() const
-    {   return int128_t(~INT128names::UNSIGNED(*this));
-    }
-
-    // Bit Shift Operators
-    int128_t operator<<(const int128_t & rhs) const;
-
-    template <typename T> int128_t operator<<(const T & rhs) const
-    {   return *this << int128_t(rhs);
-    }
-
-    int128_t & operator<<=(const int128_t & rhs);
-
-    template <typename T> int128_t & operator<<=(const T & rhs)
-    {   *this = *this << int128_t(rhs);
-        return *this;
-    }
-
-    int128_t operator>>(const int128_t & rhs) const
-    {   bool sign = UPPER < 0;
-        uint128_t r = INT128names::UNSIGNED(*this) >> INT128names::UNSIGNED(rhs);
-        if (sign) r |= INT128names::UNSIGNED(int128_t(-1)) << INT128names::UNSIGNED(int128_t(128)-rhs);
-        return int128_t(r);
-    }
-
-    template <typename T> int128_t operator>>(const T & rhs) const
-    {   return *this >> int128_t(rhs);
-    }
-
-    int128_t & operator>>=(const int128_t & rhs)
-    {   bool sign = UPPER < 0;
-        uint128_t r = INT128names::UNSIGNED(*this) >> INT128names::UNSIGNED(rhs);
-        if (sign) r |= INT128names::UNSIGNED(int128_t(-1)) << INT128names::UNSIGNED(int128_t(128)-rhs);
-        UPPER=static_cast<std::int64_t>(INT128names::getUPPER(r));
-        LOWER=INT128names::getLOWER(r);
-        return *this;
-    }
-
-    template <typename T> int128_t & operator>>=(const T & rhs)
-    {   *this = *this >> int128_t(rhs);
-        return *this;
-    }
-
-    // Logical Operators
-    bool operator!() const;
-    bool operator&&(const int128_t & rhs) const;
-    bool operator||(const int128_t & rhs) const;
-
-    template <typename T> bool operator&&(const T & rhs)
-    {   return static_cast <bool> (*this && rhs);
-    }
-
-    template <typename T> bool operator||(const T & rhs)
-    {   return static_cast <bool> (*this || rhs);
-    }
-
-    // Comparison Operators
-    bool operator==(const int128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator==(const T & rhs) const
-    {   return (UPPER == (rhs>=0 ? 0 : -1) &&
-               (LOWER == static_cast<std::uint64_t>(rhs)));
-    }
-
-    bool operator!=(const int128_t & rhs) const;
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator!=(const T & rhs) const
-    {   return (UPPER != (rhs>0 ? 0 : -1) ||
-               (LOWER != static_cast<std::uint64_t>(rhs)));
-    }
-
-    bool operator>(const int128_t & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) > int128_t::FLIP_TOP_BIT(rhs);
-    }
-
-    template <typename T> bool operator>(const T & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) > int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
-    }
-
-    bool operator<(const int128_t & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) < int128_t::FLIP_TOP_BIT(rhs);
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator<(const T & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) < int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
-    }
-
-    bool operator>=(const int128_t & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) >= int128_t::FLIP_TOP_BIT(rhs);
-    }
-
-    template <typename T> bool operator>=(const T & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) >= int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
-    }
-
-    bool operator<=(const int128_t & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) <= int128_t::FLIP_TOP_BIT(rhs);
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-    operator<=(const T & rhs) const
-    {   return int128_t::FLIP_TOP_BIT(*this) <= int128_t::FLIP_TOP_BIT(static_cast<std::uint64_t>(rhs));
-    }
-
-    // Arithmetic Operators
-    int128_t operator+(const int128_t & rhs) const
-    {   return int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
-    }
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator+(const T & rhs) const
-    {   return int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
-    }
-
-    int128_t & operator+=(const int128_t & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-    template <typename T> int128_t & operator+=(const T & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) + INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-    int128_t operator-(const int128_t & rhs) const
-    {   return int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator=(const T & rhs)
-    {   return *this = int128_t(rhs);
-    }
-
-    int128_t & operator-=(const int128_t & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-    template <typename T> int128_t & operator-=(const T & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) - INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-    int128_t operator*(const int128_t & rhs) const
-    {   return int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
-    }
-
-    template <typename T> int128_t operator*(const T & rhs) const
-    {   return int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
-    }
-
-    int128_t & operator*=(const int128_t & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-    template <typename T> int128_t & operator*=(const T & rhs)
-    {   int128_t r = int128_t(INT128names::UNSIGNED(*this) * INT128names::UNSIGNED(rhs));
-        UPPER = r.UPPER;
-        LOWER = r.LOWER;
-        return *this;
-    }
-
-private:
-    std::pair <int128_t, int128_t> divrem(const int128_t & a,
-                                          const int128_t & b) const
-    {   uint128_t ua = INT128names::UNSIGNED(a), ub = INT128names::UNSIGNED(b), uq;
-        if (a.upper() < 0)
-        {   if (b.upper() < 0) uq = (-ua)/(-ub);
-            else uq = -((-ua)/ub);
-        }
-        else
-        {   if (b.upper() < 0) uq = -(ua/(-ub));
-            else uq = ua/ub;
-        }
-        int128_t q(uq);
-        return std::pair<int128_t,int128_t>(q, a - q*b);
-    }
-
-public:
-    int128_t operator/(const int128_t & rhs) const
-    {   return  divrem(*this, rhs).first;
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator/(const T & rhs) const
-    {   return *this / int128_t(rhs);
-    }
-
-    int128_t & operator/=(const int128_t & rhs);
-
-    template <typename T> int128_t & operator/=(const T & rhs)
-    {   *this = *this / int128_t(rhs);
-        return *this;
-    }
-
-    int128_t operator%(const int128_t & rhs) const
-    {   return divrem(*this, rhs).second;
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator%(const T & rhs) const
-    {   return  *this % int128_t(rhs);
-    }
-
-    int128_t & operator%=(const int128_t & rhs);
-
-    template <typename T> int128_t & operator%=(const T & rhs)
-    {   *this = *this % int128_t(rhs);
-        return *this;
-    }
-
-    // Increment Operator
-    int128_t & operator++();
-    int128_t operator++(int);
-
-    // Decrement Operator
-    int128_t & operator--();
-    int128_t operator--(int);
-
-    // Nothing done since promotion doesn't work here
-    int128_t operator+() const
-    {   return *this;
-    }
-
-    // two's complement
-    int128_t operator-() const;
-
-    // Get private values
-    const std::int64_t & upper() const
-    {   return UPPER;
-    }
-    const std::uint64_t & lower() const
-    {   return LOWER;
-    }
-
-    // Get bitsize of value
-    std::uint8_t bits() const;
-
-    // Get string representation of value
-    std::string str(std::uint8_t base = 10,
-                    unsigned int len = 0) const;
-};
-
-inline uint128_t INT128names::UNSIGNED(int128_t a)
-{   return INT128names::PACK128(static_cast<std::uint64_t>(a.getUPPER()), a.getLOWER());
-}
-
-// Bitwise Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator&(const T & lhs, const int128_t & rhs)
-{   return rhs & lhs;
-}
-
-template <typename T> T & operator&=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (rhs & lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator|(const T & lhs, const int128_t & rhs)
-{   return rhs | lhs;
-}
-
-template <typename T> T & operator|=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (rhs | lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator^(const T & lhs, const int128_t & rhs)
-{   return rhs ^ lhs;
-}
-
-template <typename T> T & operator^=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (rhs ^ lhs);
-}
-
-// Bitshift operators
-
-//inline int128_t operator<<(const int128_t & lhs, const int128_t & rhs)
-//{   return int128_t(int128_t::INT128names::UNSIGNED(lhs) << INT128names::UNSIGNED(rhs));
-//}
-
-inline int128_t operator<<(const bool & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::uint8_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::uint16_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::uint32_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::uint64_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::int8_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::int16_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::int32_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-inline int128_t operator<<(const std::int64_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) << rhs;
-}
-
-//inline int128_t operator>>(const int128_t & lhs, const int128_t & rhs)
-//{   if (lhs >= 0) return int128_t((int128_t::INT128names::UNSIGNED(lhs) >> INT128names::UNSIGNED(rhs));
-//    else return int128_t((int128_t::INT128names::UNSIGNED(lhs) >> INT128names::UNSIGNED(rhs)) |
-//                         (INT128names::UNSIGNED(int128_t(-1)) << (128-INT128names::UNSIGNED(rhs))));
-//}
-
-inline int128_t operator>>(const bool & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::uint8_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::uint16_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::uint32_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::uint64_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::int8_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::int16_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::int32_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-inline int128_t operator>>(const std::int64_t & lhs, const int128_t & rhs)
-{   return int128_t(lhs) >> rhs;
-}
-
-template <typename T> T & operator<<=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (int128_t(lhs) << rhs);
-}
-
-template <typename T> T & operator>>=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (int128_t(lhs) >> rhs);
-}
-
-// Comparison Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator==(const T & lhs, const int128_t & rhs)
-{   return (rhs.upper() == (lhs<0?-1:0) &&
-            (static_cast<std::uint64_t>(lhs) == rhs.lower()));
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator!=(const T & lhs, const int128_t & rhs)
-{   
-    return (rhs.upper() != (lhs<0?-1:0) ||
-            (static_cast<std::uint64_t>(lhs) != rhs.lower()));
-}
-
-template <typename T> bool operator>(const T & lhs, const int128_t & rhs)
-{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) >
-           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator<(const T & lhs, const int128_t & rhs)
-{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) <
-           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
-}
-
-template <typename T> bool operator>=(const T & lhs,
-                                      const int128_t & rhs)
-{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) >=
-           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-operator<=(const T & lhs, const int128_t & rhs)
-{   return INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) <=
-           INT128names::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
-}
-
-// Arithmetic Operators
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator+(const T & lhs, const int128_t & rhs)
-{   return rhs + lhs;
-}
-
-template <typename T> T & operator+=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (rhs + lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator-(const T & lhs, const int128_t & rhs)
-{   return -(rhs - lhs);
-}
-
-template <typename T> T & operator-=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (-(rhs - lhs));
-}
-
-template <typename T> int128_t operator*(const T & lhs, const int128_t & rhs)
-{   return rhs * lhs;
-}
-
-template <typename T> T & operator*=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (rhs * lhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator/(const T & lhs, const int128_t & rhs)
-{   return int128_t(lhs) / rhs;
-}
-
-template <typename T> T & operator/=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (int128_t(lhs) / rhs);
-}
-
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-operator%(const T & lhs, const int128_t & rhs)
-{   return int128_t(lhs) % rhs;
-}
-
-template <typename T> T & operator%=(T & lhs, const int128_t & rhs)
-{   return lhs = static_cast <T> (int128_t(lhs) % rhs);
-}
-
-// IO Operator
-std::ostream & operator<<(std::ostream & stream, const int128_t & rhs);
-
-
-//inline bool greaterp128(const int128_t & a, const int128_t & b)
-//{   uint128_t aa(a.upper() ^ UINT64_C(0x8000000000000000), a.lower());
-//    uint128_t bb(b.upper() ^ UINT64_C(0x8000000000000000), b.lower());
-//    return aa > bb;
-//}
-
-// The code here is because x<<n can have undefined value for signed types x,
-// and I want one that just "does what I expect" even in cases where there
-// is overflow. The situation with x>>n is even less satisfactory because
-// when x is signed there is little guarantee about how its sign bit is
-// handled. I want it to be replicated into the space vacated by the shift.
-
-//inline int128_t ASL128(const int128_t & a, int n)
-//{   if (n >= 128) return 0;
-//    if (n < 64) return
-//            int128_t((a.upper()<<n) | (a.lower()>>(64-n)),
-//                     a.lower()<<n);
-//    else if (n == 64) return int128_t(a.lower(), 0);
-//    else return int128_t(a.lower()<<(n-64), 0);
-//}
-
-//inline int128_t ASR128(const int128_t & a, int n)
-//{   if (n >= 128) return int128_t(a < 0 ? -1 : 0);
-//    if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
-//                                    (a.upper()<<(64-n)) | (a.lower()>>n));
-//    else if (n == 64) return int128_t(-static_cast<std::int64_t>(a.upper()<0),
-//                                          a.upper());
-//    else if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
-//                                         (a.upper()<<(64-n)) | (a.lower()>>n));
-//    else return int128_t(-static_cast<std::int64_t>(a.upper()<0),
-//                             ASR((static_cast<std::int64_t>(a.upper())), n-64));
-//}
-
-#ifndef getUPPER_defined
-#define getUPPER_defined 1
-
-namespace INT128
-{
-
-inline std::int64_t getUPPER(int128_t a)
-{   return a.getUPPER();
-}
-
-inline std::uint64_t getLOWER(int128_t a)
-{   return a.getLOWER();
-}
-
-inline int128_t PACK128(std::int64_t high, std::uint64_t low)
-{   return int128_t(high, low);
-}
-
-} // end of namespace
-
-#endif // getUPPER_defined
-
-inline std::string int128_t::str(std::uint8_t base,
-                                 unsigned int len) const
-{   std::string out = "";
-    if (UPPER==0 && LOWER==0) out = "0";
-    else
-    {   uint128_t u = INT128names::UNSIGNED(*this);
-        if (base==10 && UPPER<0)
-        {   u = -u;
-            len--;
-        }
-        do
-        {   int r = static_cast<std::uint64_t>(u % base);
-            out = "0123456789abcdef"[r] + out;
-            u = u / base;
-        } while (u != 0);
-    }
-    if (out.size() < len) out = std::string(len - out.size(), '0') + out;
-    if (base==10 && UPPER<0) out = "-" + out;
-    return out; 
-}
-
-inline int128_t & int128_t::operator++()
-{   static const int128_t int128_1(1);
-    return *this += int128_1;
-}
-
-inline int128_t int128_t::operator++(int)
-{   int128_t temp(*this);
-    ++*this;
-    return temp;
-}
-
-inline int128_t & int128_t::operator--()
-{   static const int128_t int128_1(1);
-    return *this -= int128_1;
-}
-
-inline int128_t int128_t::operator--(int)
-{   int128_t temp(*this);
-    --*this;
-    return temp;
-}
-
-inline int128_t int128_t::operator-() const
-{   static const int128_t int128_1(1);
-    return ~*this + int128_1;
-}
-
-inline std::ostream & operator<<(std::ostream & stream, const int128_t & rhs)
-{   if (stream.flags() & stream.oct)
-    {   stream << rhs.str(8);
-    }
-    else if (stream.flags() & stream.dec)
-    {   stream << rhs.str(10);
-    }
-    else if (stream.flags() & stream.hex)
-    {   stream << rhs.str(16);
-    }
-    return stream;
-}
-
-inline uint128_t uint128(int128_t v)
-{   return INT128names::PACK128(static_cast<std::uint64_t>(v>>64),
-                   INT128names::getLOWER(INT128names::UNSIGNED(v)));
-}
-
-inline uint128_t uint128(std::uint64_t v)
-{   return INT128names::PACK128(static_cast<std::uint64_t>(0), v);
-}
-
-inline uint128_t uint128(int64_t v)
-{   return INT128names::PACK128(
-        static_cast<std::uint64_t>(v<0 ? 0xffffffffffffffffU : 0U),
-        v);
-}
-
-inline int128_t int128(int64_t v)
-{   return int128_t(static_cast<std::int64_t>(v<0 ? -1 : 0),
-                    static_cast<std::uint64_t>(v));
-}
-
-#endif // __SIZEOF_INT128__
-
-// Once this header has been installed both HAVE_UINT128_T and
-// HAVE_INT128_T will be defined. That is rather as if autoconf had
-// been used to check for the presence of 128-bit integer types.
-
-#ifndef HAVE_UINT128_T
-#define HAVE_UINT128_T 1
-#endif
-
-#ifndef HAVE_INT128_T
-#define HAVE_INT128_T 1
-#endif
-
-constexpr inline uint128_t topbit128()
-{   return ((uint128_t)1) << 127;
-}
-
-constexpr inline bool topbit128(uint128_t a)
-{   return (a>>127) != 0;
-}
-
-constexpr inline uint64_t topbit64()
-{   return ((uint64_t)1) << 63;
-}
-
-constexpr inline bool topbit64(uint64_t a)
-{   return (a>>63) != 0;
-}
-
-#endif // __int128_h__
-
-// end of int128.h
 
 // I want to be able to find the number of leading zeros in an integer.
 // In bitmaps.h I set up a function "nlz()" for this that maps onto
@@ -6061,10 +7870,10 @@ using ConstDigitPtr32 = const Digit32*;
 #endif // DEBUG
 
 
-[[gnu::used]] inline const char* version_string =
+inline const char* version_string =
     "$Id$";
 
-[[gnu::used]] inline int version()
+inline int version()
 {   static int seq = -1;
 // This extracts the subversion revision number from version_string.
     if (seq <= 0)
@@ -6108,7 +7917,7 @@ struct MyArithlibData
 
 #define arithlibData arithlibDataFn()
 
-[[gnu::used]] inline MyArithlibData* arithlibDataFn()
+inline MyArithlibData* arithlibDataFn()
 {   static thread_local MyArithlibData data;
     return &data;
 }
@@ -6141,10 +7950,10 @@ struct MyArithlibData
 // one of if. It also sets its argument to a reference to a const char*
 // pointer that will be used for transmitting the location information.
 
-[[gnu::used]] inline std::mutex my_diagnostic_mutex;
-[[gnu::used]] inline const char* my_diagnostic_location;
+inline std::mutex my_diagnostic_mutex;
+inline const char* my_diagnostic_location;
 
-[[gnu::used]] inline std::mutex& diagnostic_mutex(const char ***where)
+inline std::mutex& diagnostic_mutex(const char ***where)
 {   *where = &my_diagnostic_location;
     return my_diagnostic_mutex;
 }
@@ -6208,7 +8017,7 @@ static const bool debug_arith = true;
 #endif // __OPTIMIZE__
 
 template <typename F>
-[[gnu::used]] inline void assert1(bool ok, const char* why,
+inline void assert1(bool ok, const char* why,
                     F&& action, const char* location)
 {
 // Use this as in:
@@ -6225,7 +8034,7 @@ template <typename F>
     }
 }
 
-[[gnu::used]] inline void assert1(bool ok, const char* why, const char* location)
+inline void assert1(bool ok, const char* why, const char* location)
 {
 // For simple use where a customised message is not required:
 //     arithlib_assert(predicate);
@@ -6251,7 +8060,7 @@ template <typename F>
 // used. So even though this may somewhat waste space when it is used,
 // I like this option.
 
-[[gnu::used]] inline void logprintf(const char* fmt, ...)
+inline void logprintf(const char* fmt, ...)
 {
 // I use a fixed name for the log file. This is another respect in which
 // this has to be seen as code only suitable for temporary use. I use static
@@ -6270,7 +8079,7 @@ template <typename F>
     std::fflush(logfile);
 }
 
-[[gnu::used]] inline void traceprintf(const char* fmt, ...)
+inline void traceprintf(const char* fmt, ...)
 {   const char** where;
     std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
     std::va_list args;
@@ -6291,7 +8100,7 @@ template <typename F>
 // the "obvious way" already, so the code here is something of an exercise
 // in pedantry.
 
-[[gnu::used]] inline std::int32_t ASR(std::int32_t a, SignedDigit n)
+inline std::int32_t ASR(std::int32_t a, SignedDigit n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(std::int32_t))) n=0;
     std::uint32_t r = static_cast<std::uint32_t>(a) >> n;
     std::uint32_t signbit = static_cast<std::uint32_t>(a) >>
@@ -6300,7 +8109,7 @@ template <typename F>
     return static_cast<std::int32_t>(r);
 }
 
-[[gnu::used]] inline SignedDigit ASR(SignedDigit a, SignedDigit n)
+inline SignedDigit ASR(SignedDigit a, SignedDigit n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(SignedDigit))) n=0;
     Digit r = static_cast<Digit>(a) >> n;
     Digit signbit = static_cast<Digit>(a) >> (8*sizeof(
@@ -6309,7 +8118,7 @@ template <typename F>
     return static_cast<SignedDigit>(r);
 }
 
-[[gnu::used]] inline Digit ASR(Digit a, SignedDigit n)
+inline Digit ASR(Digit a, SignedDigit n)
 {   return ASR(static_cast<SignedDigit>(a), n);
 }
 
@@ -6323,12 +8132,12 @@ template <typename F>
 // In the comparisons I case the sizeof value to an int so that I can compare
 // it against the signed amount n.
 
-[[gnu::used]] inline std::int32_t ASL(std::int32_t a, SignedDigit n)
+inline std::int32_t ASL(std::int32_t a, SignedDigit n)
 {   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint32_t))) n = 0;
     return static_cast<std::int32_t>(static_cast<std::uint32_t>(a) << n);
 }
 
-[[gnu::used]] inline SignedDigit ASL(SignedDigit a, SignedDigit n)
+inline SignedDigit ASL(SignedDigit a, SignedDigit n)
 {   if (n < 0 || n>=8*static_cast<int>(sizeof(Digit))) n = 0;
     return static_cast<SignedDigit>(static_cast<Digit>(a) << n);
 }
@@ -6371,20 +8180,20 @@ private:
 // I want a new io manipulator "std::bin" to select binary mode output.
 // This will be used much as std::oct, std::dec and std::hex.
 
-[[gnu::used]] inline std::ostream& bin(std::ostream& os)
+inline std::ostream& bin(std::ostream& os)
 {   arithlib_implementation::radix::set_binary_output(os);
     return os;
 }
 
 // Declare a number of functions that might usefully be used elsewhere.
 
-[[gnu::used]] inline std::uint64_t* reserve(std::size_t n);
-[[gnu::used]] inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
+inline std::uint64_t* reserve(std::size_t n);
+inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
                                  std::size_t final);
-[[gnu::used]] inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
+inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
                                    std::size_t final);
-[[gnu::used]] inline void abandon(std::uint64_t* p);
-[[gnu::used]] inline void abandon(std::intptr_t h);
+inline void abandon(std::uint64_t* p);
+inline void abandon(std::intptr_t h);
 
 #if defined LISP
 typedef std::intptr_t string_handle;
@@ -6392,40 +8201,38 @@ typedef std::intptr_t string_handle;
 typedef char* string_handle;
 #endif // LISP
 
-[[gnu::used]] inline string_handle confirmSizeString(char* p, std::size_t n,
+inline string_handle confirmSizeString(char* p, std::size_t n,
                                        std::size_t final);
-[[gnu::used]] inline void abandonString(string_handle);
+inline void abandonString(string_handle);
 
-[[gnu::used]] inline std::intptr_t vectorToHandle(std::uint64_t* p);
-[[gnu::used]] inline std::uint64_t* vectorOfHandle(std::intptr_t n);
-[[gnu::used]] inline std::size_t numberSize(std::uint64_t* p);
-[[gnu::used]] inline void setNumberSize(std::uint64_t* p, std::size_t n);
+inline std::intptr_t vectorToHandle(std::uint64_t* p);
+inline std::uint64_t* vectorOfHandle(std::intptr_t n);
+inline std::size_t numberSize(std::uint64_t* p);
+inline void setNumberSize(std::uint64_t* p, std::size_t n);
 
-[[gnu::used]] inline bool fitsIntoFixnum(SignedDigit n);
-[[gnu::used]] inline std::intptr_t intToHandle(SignedDigit n);
+inline bool fitsIntoFixnum(SignedDigit n);
+inline std::intptr_t intToHandle(SignedDigit n);
 constexpr inline SignedDigit intOfHandle(std::intptr_t n);
 
-[[gnu::used]] inline std::intptr_t stringToBignum(const char* s);
-[[gnu::used]] inline std::intptr_t intToBignum(SignedDigit n);
-[[gnu::used]] inline std::intptr_t unsignedIntToBignum(Digit n);
-[[gnu::used]] inline std::intptr_t int128ToBignum(SignedDigit high, Digit low);
-[[gnu::used]] inline std::intptr_t unsignedInt128ToBignum(Digit high,
+inline std::intptr_t stringToBignum(const char* s);
+inline std::intptr_t intToBignum(SignedDigit n);
+inline std::intptr_t unsignedIntToBignum(Digit n);
+inline std::intptr_t int128ToBignum(SignedDigit high, Digit low);
+inline std::intptr_t unsignedInt128ToBignum(Digit high,
                                             Digit low);
-[[gnu::used]] inline std::intptr_t roundDoubleToInt(double d);
-[[gnu::used]] inline std::intptr_t truncDoubleToInt(double d);
-[[gnu::used]] inline std::intptr_t floorDoubleToInt(double d);
-[[gnu::used]] inline std::intptr_t ceilingDoubleToInt(double d);
-#ifdef softfloat_h
-[[gnu::used]] inline std::intptr_t roundFloat128ToInt(long float d);
-[[gnu::used]] inline std::intptr_t truncFloat128ToInt(long float d);
-[[gnu::used]] inline std::intptr_t floorFloat128ToInt(long float d);
-[[gnu::used]] inline std::intptr_t ceilingFloat128ToInt(long float d);
-#endif // softfloat_h
-[[gnu::used]] inline std::intptr_t uniformPositive(std::size_t n);
-[[gnu::used]] inline std::intptr_t uniformSigned(std::size_t n);
-[[gnu::used]] inline std::intptr_t uniformUpto(std::intptr_t a);
-[[gnu::used]] inline std::intptr_t randomUptoBits(std::size_t bits);
-[[gnu::used]] inline std::intptr_t fudgeDistribution(std::intptr_t, int);
+inline std::intptr_t roundDoubleToInt(double d);
+inline std::intptr_t truncDoubleToInt(double d);
+inline std::intptr_t floorDoubleToInt(double d);
+inline std::intptr_t ceilingDoubleToInt(double d);
+inline std::intptr_t roundFloat128ToInt(FLOAT_128 d);
+inline std::intptr_t truncFloat128ToInt(FLOAT_128 d);
+inline std::intptr_t floorFloat128ToInt(FLOAT_128 d);
+inline std::intptr_t ceilingFloat128ToInt(FLOAT_128 d);
+inline std::intptr_t uniformPositive(std::size_t n);
+inline std::intptr_t uniformSigned(std::size_t n);
+inline std::intptr_t uniformUpto(std::intptr_t a);
+inline std::intptr_t randomUptoBits(std::size_t bits);
+inline std::intptr_t fudgeDistribution(std::intptr_t, int);
 
 #if defined MALLOC
 
@@ -6455,17 +8262,17 @@ typedef void* malloc_t(size_t n);
 typedef void* realloc_t(void* , std::size_t);
 typedef void free_t(void* );
 
-[[gnu::used]] inline malloc_t * malloc_function = std::malloc;
-[[gnu::used]] inline realloc_t* realloc_function = std::realloc;
-[[gnu::used]] inline free_t   * free_function   = std::free;
+inline malloc_t * malloc_function = std::malloc;
+inline realloc_t* realloc_function = std::realloc;
+inline free_t   * free_function   = std::free;
 
-[[gnu::used]] inline std::uint64_t* reserve(std::size_t n)
+inline std::uint64_t* reserve(std::size_t n)
 {   std::uint64_t* r = reinterpret_cast<std::uint64_t*>(
         (*malloc_function)((n+1)*sizeof(Digit)));
     return &r[1];
 }
 
-[[gnu::used]] inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
+inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
                                  std::size_t final)
 {   p = reinterpret_cast<std::uint64_t*>(
         (*realloc_function)((void* )&p[-1],
@@ -6476,18 +8283,18 @@ typedef void free_t(void* );
 
 // In this model confirmSize_x() is just the same as confirmSize().
 
-[[gnu::used]] inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
+inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
                                    std::size_t final)
 {   confirmSize(p, n, final);
 }
 
-[[gnu::used]] inline void abandon(std::uint64_t* p)
+inline void abandon(std::uint64_t* p)
 {   (*free_function)((void* )&p[-1]);
 }
 
 // Note that I allocate space for the string data plus a NUL terminating byte.
 
-[[gnu::used]] inline char* reserveString(std::size_t n)
+inline char* reserveString(std::size_t n)
 {   char* r = reinterpret_cast<char*>((*malloc_function)(n+1));
     return r;
 }
@@ -6498,12 +8305,12 @@ typedef void free_t(void* );
 // realloc to shrink things to the exact size that is filled would not
 // be a good bargain.
 
-[[gnu::used]] inline char* confirmSizeString(char* p, std::size_t n, std::size_t final)
+inline char* confirmSizeString(char* p, std::size_t n, std::size_t final)
 {   r[final] = 0;
     return r;
 }
 
-[[gnu::used]] inline void abandonString(char* s)
+inline void abandonString(char* s)
 {   (*free_function)(s);
 }
 
@@ -6512,19 +8319,19 @@ typedef void free_t(void* );
 // Note that converting to and fro between intptr_t and pointers risks
 // ending up with C++ undefined behaviour.
 
-[[gnu::used]] inline std::intptr_t vectorToHandle(std::uint64_t* p)
+inline std::intptr_t vectorToHandle(std::uint64_t* p)
 {   return reinterpret_cast<std::intptr_t>(p);
 }
 
-[[gnu::used]] inline std::uint64_t* vectorOfHandle(std::intptr_t n)
+inline std::uint64_t* vectorOfHandle(std::intptr_t n)
 {   return reinterpret_cast<std::uint64_t*>(n);
 }
 
-[[gnu::used]] inline std::size_t numberSize(std::uint64_t* p)
+inline std::size_t numberSize(std::uint64_t* p)
 {   return p[-1];
 }
 
-[[gnu::used]] inline void setNumberSize(std::uint64_t* p, std::size_t n)
+inline void setNumberSize(std::uint64_t* p, std::size_t n)
 {   p[-1] = n;
 }
 
@@ -6536,21 +8343,21 @@ typedef void free_t(void* );
 // NEW (but leaves data sharable on systems with garbage collection) while
 // the other unconditionally copies.
 
-[[gnu::used]] inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
+inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
     std::uint64_t* r = reserve(n);
     std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
-[[gnu::used]] inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
+inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
     std::uint64_t* r = reserve(n);
     std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
-[[gnu::used]] inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
+inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 {   if (storedAsFixnum(pp)) return pp;
     std::uint64_t* p = vectorOfHandle(pp);
     std::size_t n = numberSize(p);
@@ -6572,7 +8379,7 @@ typedef void free_t(void* );
 //=========================================================================
 
 
-[[gnu::used]] inline unsigned int logNextPowerOf2(std::size_t n);
+inline unsigned int logNextPowerOf2(std::size_t n);
 
 // There is a serious issue here as regards thread safety.
 //
@@ -6632,7 +8439,7 @@ typedef void free_t(void* );
 #endif // Some thread policy
 
 #ifdef ARITHLIB_MUTEX
-[[gnu::used]] inline std::mutex& freechain_mutex()
+inline std::mutex& freechain_mutex()
 {   static std::mutex m;
     return m;
 }
@@ -6641,7 +8448,7 @@ typedef void free_t(void* );
 typedef std::uint64_t* FreehainTable_t[64];
 
 #ifdef ARITHLIB_THREAD_LOCAL
-[[gnu::used]] inline thread_local FreehainTable_t freechainTable;
+inline thread_local FreehainTable_t freechainTable;
 #else // ARITHLIB_THREAD_LOCAL
 class freechainTable
 {   static inline FreehainTable_t freechainTableVar;
@@ -6661,15 +8468,15 @@ public:
 // terms of 8 bit digits. That does not feel like a worrying restriction
 // to me!
 
-[[gnu::used]] inline uint32_t& bitSize(uint64_t* p)
+inline uint32_t& bitSize(uint64_t* p)
 {   return reinterpret_cast<std::uint32_t*>(&p[-1])[0];
 }
 
-[[gnu::used]] inline std::size_t numberSize(std::uint64_t* p)
+inline std::size_t numberSize(std::uint64_t* p)
 {   return reinterpret_cast<std::uint32_t*>(&p[-1])[1];
 }
 
-[[gnu::used]] inline void setNumberSize(std::uint64_t* p, size_t n)
+inline void setNumberSize(std::uint64_t* p, size_t n)
 {   reinterpret_cast<std::uint32_t*>(&p[-1])[1] = static_cast<uint32_t>(n);
 }
 
@@ -6684,11 +8491,11 @@ private:
     std::ios_base::Init forceIOStreamsInitialization;
 
 public:
-    [[gnu::used]] Freechains()
+    Freechains()
     {   for (int i=0; i<64; i++) (freechainTable::get())[i] = nullptr;
     }
 
-    [[gnu::used]] ~Freechains()
+    ~Freechains()
     {   for (std::size_t i=0; i<64; i++)
         {   std::uint64_t* f = (freechainTable::get())[i];
 // Here I am assumung that uint64_t is at least as wide as uintptr_t.
@@ -6760,22 +8567,22 @@ public:
 };
 
 #ifdef ARITHLIB_THREAD_LOCAL
-[[gnu::used]] inline thread_local Freechains freechain;
+inline thread_local Freechains freechain;
 #else // ARITHLIB_THREAD_LOCAL
 class freechains
 {   static inline Freechains freechainsVar;
 public:
-    [[gnu::used]] static Freechains& get()
+    static Freechains& get()
     {   return freechainsVar;
     }
 };
 #endif // ARITHLIB_THREAD_LOCAL
 
-[[gnu::used]] inline std::uint64_t* reserve(std::size_t n)
+inline std::uint64_t* reserve(std::size_t n)
 {   return &(freechains::get().allocate(n+1))[1];
 }
 
-[[gnu::used]] inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
+inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
                                  std::size_t final)
 {
     if (final == 1 && fitsIntoFixnum(static_cast<SignedDigit>(p[0])))
@@ -6801,20 +8608,20 @@ public:
     return vectorToHandle(p);
 }
 
-[[gnu::used]] inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
+inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
                                    std::size_t final)
 {   return confirmSize(p, n, final);
 }
 
-[[gnu::used]] inline std::intptr_t vectorToHandle(std::uint64_t* p)
+inline std::intptr_t vectorToHandle(std::uint64_t* p)
 {   return reinterpret_cast<std::intptr_t>(p);
 }
 
-[[gnu::used]] inline std::uint64_t* vectorOfHandle(std::intptr_t n)
+inline std::uint64_t* vectorOfHandle(std::intptr_t n)
 {   return reinterpret_cast<std::uint64_t*>(n);
 }
 
-[[gnu::used]] inline bool storedAsFixnum(std::intptr_t a)
+inline bool storedAsFixnum(std::intptr_t a)
 {   return (a & 1) != 0;
 }
 
@@ -6825,7 +8632,7 @@ constexpr inline SignedDigit intOfHandle(std::intptr_t a)
 // This function should only ever be called in situations where the
 // arithmetic indicated will not overflow.
 
-[[gnu::used]] inline std::intptr_t intToHandle(SignedDigit n)
+inline std::intptr_t intToHandle(SignedDigit n)
 {   return static_cast<std::intptr_t>(2*n + 1);
 }
 
@@ -6833,34 +8640,34 @@ constexpr inline SignedDigit intOfHandle(std::intptr_t a)
 // may not have the low tag bits to be proper fixnums. But if I implement
 // intOfHandle so that it ignores tag bits that will be OK.
 
-[[gnu::used]] inline const SignedDigit MIN_FIXNUM = intOfHandle(INTPTR_MIN);
-[[gnu::used]] inline const SignedDigit MAX_FIXNUM = intOfHandle(INTPTR_MAX);
+inline const SignedDigit MIN_FIXNUM = intOfHandle(INTPTR_MIN);
+inline const SignedDigit MAX_FIXNUM = intOfHandle(INTPTR_MAX);
 
-[[gnu::used]] inline bool fitsIntoFixnum(SignedDigit a)
+inline bool fitsIntoFixnum(SignedDigit a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
 }
 
-[[gnu::used]] inline void abandon(std::uint64_t* p)
+inline void abandon(std::uint64_t* p)
 {   freechains::get().abandon(&p[-1]);
 }
 
-[[gnu::used]] inline void abandon(std::intptr_t p)
+inline void abandon(std::intptr_t p)
 {   if (!storedAsFixnum(p) && p!=0)
     {   std::uint64_t* pp = vectorOfHandle(p);
         freechains::get().abandon(&pp[-1]);
     }
 }
 
-[[gnu::used]] inline char* reserveString(std::size_t n)
+inline char* reserveString(std::size_t n)
 {   return new char[n+1];
 }
 
-[[gnu::used]] inline char* confirmSizeString(char* p, std::size_t n, std::size_t final)
+inline char* confirmSizeString(char* p, std::size_t n, std::size_t final)
 {   p[final] = 0;
     return p;
 }
 
-[[gnu::used]] inline void abandonString(char* s)
+inline void abandonString(char* s)
 {   delete [] s;
 }
 
@@ -6875,19 +8682,19 @@ constexpr inline SignedDigit intOfHandle(std::intptr_t a)
 // template stuff and classes.
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch1(std::intptr_t a1)
+inline RES op_dispatch1(std::intptr_t a1)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1));
     else return OP::op(vectorOfHandle(a1));
 }
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
+inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
     else return OP::op(vectorOfHandle(a1), n);
 }
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
+inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
     else return OP::op(vectorOfHandle(a1), n);
 }
@@ -6896,7 +8703,7 @@ template <class OP,class RES>
 // it will prefer operations on small numbers.
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
+inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (storedAsFixnum(a1))
     {   LIKELY
         if (storedAsFixnum(a2))
@@ -6912,21 +8719,21 @@ template <class OP,class RES>
     }
 }
 
-[[gnu::used]] inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
+inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
     std::uint64_t* r = reserve(n);
     std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
-[[gnu::used]] inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
+inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
     std::uint64_t* r = reserve(n);
     std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
-[[gnu::used]] inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
+inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 {   if (storedAsFixnum(pp)) return pp;
     std::uint64_t* p = vectorOfHandle(pp);
     std::size_t n = numberSize(p);
@@ -6959,14 +8766,14 @@ using namespace CSL_LISP;
 // and it is assumed that all the relevant CSL header files have already
 // been #included.
 
-[[gnu::used]] inline std::uint64_t* reserve(std::size_t n)
+inline std::uint64_t* reserve(std::size_t n)
 {   LispObject a = get_basic_vector(TAG_NUMBERS,
                                     TYPE_NEW_BIGNUM,
                                     n*sizeof(Digit)+8);
     return reinterpret_cast<std::uint64_t*>(a + 8 - TAG_NUMBERS);
 }
 
-[[gnu::used]] inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
+inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
                                  std::size_t final)
 {   if (final == 1 && fitsIntoFixnum(static_cast<SignedDigit>(p[0])))
     {   std::intptr_t r = intToHandle(static_cast<SignedDigit>(p[0]));
@@ -6999,7 +8806,7 @@ using namespace CSL_LISP;
     return vectorToHandle(p);
 }
 
-[[gnu::used]] inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
+inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
                                    std::size_t final)
 {
 // Here I might need to write a nice dummy object into the gap left by
@@ -7007,15 +8814,15 @@ using namespace CSL_LISP;
     return confirmSize(p, n, final);
 }
 
-[[gnu::used]] inline std::intptr_t vectorToHandle(std::uint64_t* p)
+inline std::intptr_t vectorToHandle(std::uint64_t* p)
 {   return reinterpret_cast<std::intptr_t>(p) - 8 + TAG_NUMBERS;
 }
 
-[[gnu::used]] inline std::uint64_t* vectorOfHandle(std::intptr_t n)
+inline std::uint64_t* vectorOfHandle(std::intptr_t n)
 {   return reinterpret_cast<std::uint64_t*>(n + 8 - TAG_NUMBERS);
 }
 
-[[gnu::used]] inline std::size_t numberSize(std::uint64_t* p)
+inline std::size_t numberSize(std::uint64_t* p)
 {
 // The odd looking cast here is because in arithlib I am passing around
 // arrays of explicitly 64-bit values, however in the underlying Lisp
@@ -7036,7 +8843,7 @@ using namespace CSL_LISP;
     return r;
 }
 
-[[gnu::used]] inline bool storedAsFixnum(std::intptr_t a)
+inline bool storedAsFixnum(std::intptr_t a)
 {   return is_fixnum(a);
 }
 
@@ -7044,34 +8851,34 @@ constexpr inline SignedDigit intOfHandle(std::intptr_t a)
 {   return int_of_fixnum(a);
 }
 
-[[gnu::used]] inline std::intptr_t intToHandle(SignedDigit n)
+inline std::intptr_t intToHandle(SignedDigit n)
 {   return fixnum_of_int(n);
 }
 
-[[gnu::used]] inline const SignedDigit MIN_FIXNUM = intOfHandle(INTPTR_MIN);
-[[gnu::used]] inline const SignedDigit MAX_FIXNUM = intOfHandle(INTPTR_MAX);
+inline const SignedDigit MIN_FIXNUM = intOfHandle(INTPTR_MIN);
+inline const SignedDigit MAX_FIXNUM = intOfHandle(INTPTR_MAX);
 
-[[gnu::used]] inline bool fitsIntoFixnum(SignedDigit a)
+inline bool fitsIntoFixnum(SignedDigit a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
 }
 
-[[gnu::used]] inline void abandon(std::uint64_t* p)
+inline void abandon(std::uint64_t* p)
 {   // No need to do anything! But MIGHT reset fringe pointer?
 }
 
-[[gnu::used]] inline void abandon(std::intptr_t p)
+inline void abandon(std::intptr_t p)
 {   if (!storedAsFixnum(p) && p!=0)
     {   std::uint64_t* pp = vectorOfHandle(p);
         abandon(pp);
     }
 }
 
-[[gnu::used]] inline char* reserveString(std::size_t n)
+inline char* reserveString(std::size_t n)
 {   LispObject a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     return reinterpret_cast<char*>(a - TAG_VECTOR + sizeof(LispObject));
 }
 
-[[gnu::used]] inline LispObject confirmSizeString(char* p, std::size_t n,
+inline LispObject confirmSizeString(char* p, std::size_t n,
                                              std::size_t final)
 {
 // The size of the string object in memory must allow for  a Lisp header
@@ -7089,30 +8896,30 @@ constexpr inline SignedDigit intOfHandle(std::intptr_t a)
     return (LispObject)a + TAG_VECTOR;
 }
 
-[[gnu::used]] inline void abandonString(string_handle s)
+inline void abandonString(string_handle s)
 {   // Do nothing.
 }
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch1(std::intptr_t a1)
+inline RES op_dispatch1(std::intptr_t a1)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1));
     else return OP::op(vectorOfHandle(a1));
 }
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
+inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
     else return OP::op(vectorOfHandle(a1), n);
 }
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
+inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
     else return OP::op(vectorOfHandle(a1), n);
 }
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
+inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (storedAsFixnum(a1))
     {   LIKELY
         if (storedAsFixnum(a2))
@@ -7128,21 +8935,21 @@ template <class OP,class RES>
     }
 }
 
-[[gnu::used]] inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
+inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
     std::uint64_t* r = reserve(n);
     std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
-[[gnu::used]] inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
+inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
     std::uint64_t* r = reserve(n);
     std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
-[[gnu::used]] inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
+inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 {   if (storedAsFixnum(pp)) return pp;
     std::uint64_t* p = vectorOfHandle(pp);
     std::size_t n = numberSize(p);
@@ -7153,7 +8960,7 @@ template <class OP,class RES>
 
 #else // CSL
 
-[[gnu::used]] inline std::uint64_t* reserve(std::size_t n)
+inline std::uint64_t* reserve(std::size_t n)
 {
 // I must allow for alignment padding on 32-bit platforms.
     if (sizeof(LispObject)==4) n = n*sizeof(Digit) + 4;
@@ -7162,7 +8969,7 @@ template <class OP,class RES>
     return reinterpret_cast<std::uint64_t*>(a + 8 - tagATOM);
 }
 
-[[gnu::used]] inline std::intptr_t confirmSize(Digit *p, std::size_t n,
+inline std::intptr_t confirmSize(Digit *p, std::size_t n,
                                  std::size_t final)
 {   if (final == 1 && fitsIntoFixnum(static_cast<SignedDigit>(p[0])))
     {   std::intptr_t r = intToHandle(static_cast<SignedDigit>(p[0]));
@@ -7181,7 +8988,7 @@ template <class OP,class RES>
     return vectorToHandle(p);
 }
 
-[[gnu::used]] inline std::intptr_t confirmSize_x(std::uint64_t* p,
+inline std::intptr_t confirmSize_x(std::uint64_t* p,
                                    std::size_t n, std::size_t final)
 {
 // Here I might need to write a nice dummy object into the gap left by
@@ -7189,15 +8996,15 @@ template <class OP,class RES>
     return confirmSize(p, n, final);
 }
 
-[[gnu::used]] inline std::intptr_t vectorToHandle(std::uint64_t* p)
+inline std::intptr_t vectorToHandle(std::uint64_t* p)
 {   return reinterpret_cast<std::intptr_t>(p) - 8 + tagATOM;
 }
 
-[[gnu::used]] inline std::uint64_t* vectorOfHandle(std::intptr_t n)
+inline std::uint64_t* vectorOfHandle(std::intptr_t n)
 {   return reinterpret_cast<std::uint64_t*>(n + 8 - tagATOM);
 }
 
-[[gnu::used]] inline std::size_t numberSize(std::uint64_t* p)
+inline std::size_t numberSize(std::uint64_t* p)
 {
 // The odd looking cast here is because in arithlib I am passing around
 // arrays of explicitly 64-bit values, however in the underlying Lisp
@@ -7219,7 +9026,7 @@ template <class OP,class RES>
     return r;
 }
 
-[[gnu::used]] inline bool storedAsFixnum(std::intptr_t a)
+inline bool storedAsFixnum(std::intptr_t a)
 {   return isFIXNUM(a);
 }
 
@@ -7227,31 +9034,31 @@ constexpr inline SignedDigit intOfHandle(std::intptr_t a)
 {   return qfixnum(a);
 }
 
-[[gnu::used]] inline std::intptr_t intToHandle(SignedDigit n)
+inline std::intptr_t intToHandle(SignedDigit n)
 {   return packfixnum(n);
 }
 
-[[gnu::used]] inline bool fitsIntoFixnum(SignedDigit a)
+inline bool fitsIntoFixnum(SignedDigit a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
 }
 
-[[gnu::used]] inline void abandon(std::uint64_t* p)
+inline void abandon(std::uint64_t* p)
 {   // No need to do anything! But MIGHT reset fringe pointer?
 }
 
-[[gnu::used]] inline void abandon(std::intptr_t p)
+inline void abandon(std::intptr_t p)
 {   if (!storedAsFixnum(p) && p!=0)
     {   std::uint64_t* pp = vectorOfHandle(p);
         abandon(pp);
     }
 }
 
-[[gnu::used]] inline char* reserveString(std::size_t n)
+inline char* reserveString(std::size_t n)
 {   LispObject a = allocateatom(n);
     return reinterpret_cast<char*>(a - tagATOM + sizeof(LispObject));
 }
 
-[[gnu::used]] inline LispObject confirmSizeString(char* p, std::size_t n,
+inline LispObject confirmSizeString(char* p, std::size_t n,
                                     std::size_t final)
 {   LispObject* a = (LispObject* )(p - sizeof(LispObject));
 // On 32-bit platforms I do not have a padder word before string data
@@ -7260,30 +9067,30 @@ constexpr inline SignedDigit intOfHandle(std::intptr_t a)
     return (LispObject)a +tagATOM;
 }
 
-[[gnu::used]] inline void abandonString(string_handle s)
+inline void abandonString(string_handle s)
 {   // Do nothing.
 }
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch1(std::intptr_t a1)
+inline RES op_dispatch1(std::intptr_t a1)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1));
     else return OP::op(vectorOfHandle(a1));
 }
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
+inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
     else return OP::op(vectorOfHandle(a1), n);
 }
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
+inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
     else return OP::op(vectorOfHandle(a1), n);
 }
 
 template <class OP,class RES>
-[[gnu::used]] inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
+inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (storedAsFixnum(a1))
     {   LIKELY
         if (storedAsFixnum(a2))
@@ -7299,21 +9106,21 @@ template <class OP,class RES>
     }
 }
 
-[[gnu::used]] inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
+inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
     std::uint64_t* r = reserve(n);
     std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
-[[gnu::used]] inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
+inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
     std::uint64_t* r = reserve(n);
     std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
-[[gnu::used]] inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
+inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 {   if (storedAsFixnum(pp)) return pp;
     std::uint64_t* p = vectorOfHandle(pp);
     std::size_t n = numberSize(p);
@@ -7342,7 +9149,7 @@ public:
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
-[[gnu::used]] inline std::intptr_t bigplus_small(std::intptr_t, SignedDigit);
+inline std::intptr_t bigplus_small(std::intptr_t, SignedDigit);
 
 class Difference
 {
@@ -7553,12 +9360,10 @@ public:
     static bool op(std::uint64_t* , double);
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
-#ifdef softfloat_h
-    static bool op(SignedDigit, long float);
-    static bool op(std::uint64_t* , long float);
-    static bool op(long float, SignedDigit);
-    static bool op(long float, std::uint64_t* );
-#endif // softfloat_h
+    static bool op(SignedDigit, FLOAT_128);
+    static bool op(std::uint64_t* , FLOAT_128);
+    static bool op(FLOAT_128, SignedDigit);
+    static bool op(FLOAT_128, std::uint64_t* );
 };
 
 class Neqn
@@ -7578,12 +9383,10 @@ public:
     static bool op(std::uint64_t* , double);
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
-#ifdef softfloat_h
-    static bool op(SignedDigit, long float);
-    static bool op(std::uint64_t* , long float);
-    static bool op(long float, SignedDigit);
-    static bool op(long float, std::uint64_t* );
-#endif // softfloat_h
+    static bool op(SignedDigit, FLOAT_128);
+    static bool op(std::uint64_t* , FLOAT_128);
+    static bool op(FLOAT_128, SignedDigit);
+    static bool op(FLOAT_128, std::uint64_t* );
 };
 
 class Geq
@@ -7604,12 +9407,10 @@ public:
     static bool op(std::uint64_t* , double);
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
-#ifdef softfloat_h
-    static bool op(SignedDigit, long float);
-    static bool op(std::uint64_t* , long float);
-    static bool op(long float, SignedDigit);
-    static bool op(long float, std::uint64_t* );
-#endif // softfloat_h
+    static bool op(SignedDigit, FLOAT_128);
+    static bool op(std::uint64_t* , FLOAT_128);
+    static bool op(FLOAT_128, SignedDigit);
+    static bool op(FLOAT_128, std::uint64_t* );
 };
 
 class Greaterp
@@ -7627,12 +9428,10 @@ public:
     static bool op(std::uint64_t* , double);
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
-#ifdef softfloat_h
-    static bool op(SignedDigit, long float);
-    static bool op(std::uint64_t* , long float);
-    static bool op(long float, SignedDigit);
-    static bool op(long float, std::uint64_t* );
-#endif // softfloat_h
+    static bool op(SignedDigit, FLOAT_128);
+    static bool op(std::uint64_t* , FLOAT_128);
+    static bool op(FLOAT_128, SignedDigit);
+    static bool op(FLOAT_128, std::uint64_t* );
 };
 
 class Leq
@@ -7650,12 +9449,10 @@ public:
     static bool op(std::uint64_t* , double);
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
-#ifdef softfloat_h
-    static bool op(SignedDigit, long float);
-    static bool op(std::uint64_t* , long float);
-    static bool op(long float, SignedDigit);
-    static bool op(long float, std::uint64_t* );
-#endif // softfloat_h
+    static bool op(SignedDigit, FLOAT_128);
+    static bool op(std::uint64_t* , FLOAT_128);
+    static bool op(FLOAT_128, SignedDigit);
+    static bool op(FLOAT_128, std::uint64_t* );
 };
 
 class Lessp
@@ -7673,12 +9470,10 @@ public:
     static bool op(std::uint64_t* , double);
     static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
-#ifdef softfloat_h
-    static bool op(SignedDigit, long float);
-    static bool op(std::uint64_t* , long float);
-    static bool op(long float, SignedDigit);
-    static bool op(long float, std::uint64_t* );
-#endif // softfloat_h
+    static bool op(SignedDigit, FLOAT_128);
+    static bool op(std::uint64_t* , FLOAT_128);
+    static bool op(FLOAT_128, SignedDigit);
+    static bool op(FLOAT_128, std::uint64_t* );
 };
 
 class Add1
@@ -7845,23 +9640,19 @@ public:
     static double op(std::uint64_t* , SignedDigit& x);
 };
 
-#ifdef softfloat_h
-
 class Float128
 {
 public:
-    static long float op(SignedDigit w);
-    static long float op(uint64_t* w);
+    static FLOAT_128 op(SignedDigit w);
+    static FLOAT_128 op(uint64_t* w);
 };
 
 class Frexp128
 {
 public:
-    static long float op(SignedDigit, SignedDigit& x);
-    static long float op(std::uint64_t* , SignedDigit& x);
+    static FLOAT_128 op(SignedDigit, SignedDigit& x);
+    static FLOAT_128 op(std::uint64_t* , SignedDigit& x);
 };
-
-#endif // softfloat_h
 
 #ifdef CSL
 
@@ -7947,40 +9738,40 @@ public:
 
 #endif // CSL
 
-[[gnu::used]] inline string_handle bignumToString(std::intptr_t aa);
-[[gnu::used]] inline string_handle bignumToStringHex(std::intptr_t aa);
-[[gnu::used]] inline string_handle bignumToStringOctal(std::intptr_t aa);
-[[gnu::used]] inline string_handle bignumToStringBinary(std::intptr_t aa);
+inline string_handle bignumToString(std::intptr_t aa);
+inline string_handle bignumToStringHex(std::intptr_t aa);
+inline string_handle bignumToStringOctal(std::intptr_t aa);
+inline string_handle bignumToStringBinary(std::intptr_t aa);
 
 class Bignum;
 
-[[gnu::used]] inline int displayIndent = 0;
-[[gnu::used]] inline void display(const char* label,
+inline int displayIndent = 0;
+inline void display(const char* label,
                     const std::uint64_t* a,
                     std::size_t lena);
-[[gnu::used]] inline void display(const char* label, std::intptr_t a);
-[[gnu::used]] inline void display(const char* label, const Bignum& a);
+inline void display(const char* label, std::intptr_t a);
+inline void display(const char* label, const Bignum& a);
 
-[[gnu::used]] inline void display(std::string label,
+inline void display(std::string label,
                     const std::uint64_t* a,
                     std::size_t lena);
-[[gnu::used]] inline void display(std::string label, std::intptr_t a);
-[[gnu::used]] inline void display(std::string label, const Bignum& a);
+inline void display(std::string label, std::intptr_t a);
+inline void display(std::string label, const Bignum& a);
 
-[[gnu::used]] inline void display(const char* label,
+inline void display(const char* label,
                     SignedDigit top,
                     const std::uint64_t* a,
                     std::size_t lena);
-[[gnu::used]] inline void display(std::string label,
+inline void display(std::string label,
                     SignedDigit top,
                     const std::uint64_t* a,
                     std::size_t lena);
-[[gnu::used]] inline void display(std::string label);
-[[gnu::used]] inline void display(const char* label);
-[[gnu::used]] inline void display1(std::string label, std::size_t a);
-[[gnu::used]] inline void display1(const char* label, std::size_t a);
-[[gnu::used]] inline void display2(std::string label, std::size_t a, std::size_t b);
-[[gnu::used]] inline void display2(const char* label, std::size_t a, std::size_t b);
+inline void display(std::string label);
+inline void display(const char* label);
+inline void display1(std::string label, std::size_t a);
+inline void display1(const char* label, std::size_t a);
+inline void display2(std::string label, std::size_t a, std::size_t b);
+inline void display2(const char* label, std::size_t a, std::size_t b);
 
 
 //=========================================================================
@@ -8055,11 +9846,9 @@ public:
     Bignum(double d)
     {   val = roundDoubleToInt(d);
     }
-#ifdef softfloat_h
-    Bignum(long float d)
+    Bignum(FLOAT_128 d)
     {   val = roundFloat128ToInt(d);
     }
-#endif // softfloat_h
     Bignum(const char* s)
     {   val = stringToBignum(s);
     }
@@ -8512,72 +10301,72 @@ public:
 // I use a suffix "_Z" for bignums, with Z chosen to reminding me that this
 // gives me an Integer, the "Z" (typically written in a blackboard font)
 // standing for the ring of integers.
-[[gnu::used]] inline Bignum operator ""_Z(const char* s)
+inline Bignum operator ""_Z(const char* s)
 {   return Bignum(s);
 }
 
-[[gnu::used]] inline const string_handle toString(Bignum x)
+inline const string_handle toString(Bignum x)
 {   return bignumToString(x.val);
 }
 
-[[gnu::used]] inline Bignum uniformPositiveBignum(std::size_t n)
+inline Bignum uniformPositiveBignum(std::size_t n)
 {   return Bignum(true, uniformPositive(n));
 }
 
-[[gnu::used]] inline Bignum uniformSignedBignum(std::size_t n)
+inline Bignum uniformSignedBignum(std::size_t n)
 {   return Bignum(true, uniformSigned(n));
 }
 
-[[gnu::used]] inline Bignum uniformUptoBignum(Bignum a)
+inline Bignum uniformUptoBignum(Bignum a)
 {   return Bignum(true, uniformUpto(a.val));
 }
 
-[[gnu::used]] inline Bignum fudgeDistributionBignum(Bignum a, int n)
+inline Bignum fudgeDistributionBignum(Bignum a, int n)
 {   return Bignum(true, fudgeDistribution(a.val, n));
 }
 
-[[gnu::used]] inline Bignum randomUptoBitsBignum(std::size_t n)
+inline Bignum randomUptoBitsBignum(std::size_t n)
 {   return Bignum(true, randomUptoBits(n));
 }
 
-[[gnu::used]] inline Bignum square(const Bignum& x)
+inline Bignum square(const Bignum& x)
 {   return Bignum(true, op_dispatch1<Square,std::intptr_t>(x.val));
 }
 
-[[gnu::used]] inline Bignum isqrt(const Bignum& x)
+inline Bignum isqrt(const Bignum& x)
 {   return Bignum(true, op_dispatch1<Isqrt,std::intptr_t>(x.val));
 }
 
-[[gnu::used]] inline Bignum abs(const Bignum& x)
+inline Bignum abs(const Bignum& x)
 {   return Bignum(true, op_dispatch1<Abs,std::intptr_t>(x.val));
 }
 
-[[gnu::used]] inline bool zerop(const Bignum& x)
+inline bool zerop(const Bignum& x)
 {   return op_dispatch1<Zerop,bool>(x.val);
 }
 
-[[gnu::used]] inline bool onep(const Bignum& x)
+inline bool onep(const Bignum& x)
 {   return op_dispatch1<Onep,bool>(x.val);
 }
 
-[[gnu::used]] inline bool minusp(const Bignum& x)
+inline bool minusp(const Bignum& x)
 {   return op_dispatch1<Minusp,bool>(x.val);
 }
 
-[[gnu::used]] inline bool plusp(const Bignum& x)
+inline bool plusp(const Bignum& x)
 {   return op_dispatch1<Plusp,bool>(x.val);
 }
 
-[[gnu::used]] inline bool evenp(const Bignum& x)
+inline bool evenp(const Bignum& x)
 {   return op_dispatch1<Evenp,bool>(x.val);
 }
 
-[[gnu::used]] inline bool oddp(const Bignum& x)
+inline bool oddp(const Bignum& x)
 {   return op_dispatch1<Oddp,bool>(x.val);
 }
 template <typename T,
     typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-[[gnu::used]] inline Bignum pow(const Bignum& x, T n)
+inline Bignum pow(const Bignum& x, T n)
 {   if (n == 0) return Bignum(true, intToBignum(1));
     else if (n == 1) return Bignum(true, copyIfNoGarbageCollector(x.val));
     else if (n == 2) return square(x);
@@ -8585,65 +10374,65 @@ template <typename T,
         op_dispatch1<Pow,std::intptr_t>(x.val, static_cast<SignedDigit>(n)));
 }
 
-[[gnu::used]] inline double doubleBignum(const Bignum& x);
+inline double doubleBignum(const Bignum& x);
 
-[[gnu::used]] inline double pow(const Bignum& x, double n)
+inline double pow(const Bignum& x, double n)
 {   return std::pow(doubleBignum(x), n);
 }
 
-[[gnu::used]] inline Bignum gcd(const Bignum& x, const Bignum& y)
+inline Bignum gcd(const Bignum& x, const Bignum& y)
 {   return Bignum(true, op_dispatch2<Gcd,std::intptr_t>(x.val, y.val));
 }
 
-[[gnu::used]] inline Bignum lcm(const Bignum& x, const Bignum& y)
+inline Bignum lcm(const Bignum& x, const Bignum& y)
 {   return Bignum(true, op_dispatch2<Lcm,std::intptr_t>(x.val, y.val));
 }
 
-[[gnu::used]] inline Bignum fixBignum(double d)
+inline Bignum fixBignum(double d)
 {   return Bignum(true, truncDoubleToInt(d));
 }
 
-[[gnu::used]] inline Bignum roundBignum(double d)
+inline Bignum roundBignum(double d)
 {   return Bignum(true, roundDoubleToInt(d));
 }
 
-[[gnu::used]] inline Bignum truncBignum(double d)
+inline Bignum truncBignum(double d)
 {   return Bignum(true, truncDoubleToInt(d));
 }
 
-[[gnu::used]] inline Bignum floorBignum(double d)
+inline Bignum floorBignum(double d)
 {   return Bignum(true, floorDoubleToInt(d));
 }
 
-[[gnu::used]] inline Bignum ceilBignum(double d)
+inline Bignum ceilBignum(double d)
 {   return Bignum(true, ceilingDoubleToInt(d));
 }
 
-[[gnu::used]] inline Bignum fixBignum(float d)
+inline Bignum fixBignum(float d)
 {   return fixBignum(static_cast<double>(d));
 }
 
-[[gnu::used]] inline Bignum roundBignum(float d)
+inline Bignum roundBignum(float d)
 {   return roundBignum(static_cast<double>(d));
 }
 
-[[gnu::used]] inline Bignum truncBignum(float d)
+inline Bignum truncBignum(float d)
 {   return truncBignum(static_cast<double>(d));
 }
 
-[[gnu::used]] inline Bignum floorBignum(float d)
+inline Bignum floorBignum(float d)
 {   return floorBignum(static_cast<double>(d));
 }
 
-[[gnu::used]] inline Bignum ceilBignum(float d)
+inline Bignum ceilBignum(float d)
 {   return ceilBignum(static_cast<double>(d));
 }
 
-[[gnu::used]] inline double floatBignum(const Bignum& x)
+inline double floatBignum(const Bignum& x)
 {   return op_dispatch1<Float,float>(x.val);
 }
 
-[[gnu::used]] inline double doubleBignum(const Bignum& x)
+inline double doubleBignum(const Bignum& x)
 {   return op_dispatch1<Double,double>(x.val);
 }
 
@@ -8651,21 +10440,17 @@ template <typename T,
 // It can be better than using frexp(doubleBignum(x), ..) because it
 // avoids overflow.
 
-[[gnu::used]] inline double frexpBignum(const Bignum& x, SignedDigit &xx)
+inline double frexpBignum(const Bignum& x, SignedDigit &xx)
 {   return op_dispatch1<Frexp,double>(x.val, xx);
 }
 
-#ifdef softfloat_h
-
-[[gnu::used]] inline long float frexp128Bignum(const Bignum& x, SignedDigit &xx)
-{   return op_dispatch1<Frexp128,long float>(x.val, xx);
+inline FLOAT_128 frexp128Bignum(const Bignum& x, SignedDigit &xx)
+{   return op_dispatch1<Frexp128,FLOAT_128>(x.val, xx);
 }
 
-[[gnu::used]] inline long float longfloat6Bignum(const Bignum& x)
-{   return op_dispatch1<Float128,long float>(x.val);
+inline FLOAT_128 longfloat6Bignum(const Bignum& x)
+{   return op_dispatch1<Float128,FLOAT_128>(x.val);
 }
-
-#endif // softfloat_h
 
 //=========================================================================
 // display() will show the internal representation of a bignum as a
@@ -8677,7 +10462,7 @@ template <typename T,
 // followed by whitespace and I used that to keep line lengths under 80.
 //=========================================================================
 
-[[gnu::used]] inline void display(const char* label,
+inline void display(const char* label,
                     const std::uint64_t* a,
                     std::size_t lena)
 {   display(label, 0, a, lena);
@@ -8688,10 +10473,10 @@ template <typename T,
 // a neat printed representation, so here I arrange that when I want to
 // display one I allocate a small integer.
 
-[[gnu::used]] inline unsigned int nextThreadId = 1;
-[[gnu::used]] inline std::unordered_map<std::thread::id, unsigned int> threadIdTable;
+inline unsigned int nextThreadId = 1;
+inline std::unordered_map<std::thread::id, unsigned int> threadIdTable;
 
-[[gnu::used]] inline unsigned int getTidyThreadId()
+inline unsigned int getTidyThreadId()
 {   unsigned int res;
     auto id = std::this_thread::get_id();
     if (threadIdTable.count(id) == 0)
@@ -8700,7 +10485,7 @@ template <typename T,
     return res;
 }
 
-[[gnu::used]] inline void display(const char* label,
+inline void display(const char* label,
                     SignedDigit top,
                     const std::uint64_t* a,
                     std::size_t lena)
@@ -8734,7 +10519,7 @@ template <typename T,
     std::printf("$\n\n");
 }
 
-[[gnu::used]] inline void display(const char* label, std::intptr_t a)
+inline void display(const char* label, std::intptr_t a)
 {   const char** where;
     std::lock_guard<std::mutex> lock(
         arithlib_implementation::diagnostic_mutex(&where));
@@ -8751,39 +10536,39 @@ template <typename T,
     }
 }
 
-[[gnu::used]] inline void display(const char* label, const Bignum& a)
+inline void display(const char* label, const Bignum& a)
 {   display(label, a.val);
 }
 
-[[gnu::used]] inline void display(std::string label,
+inline void display(std::string label,
                     const std::uint64_t* a,
                     std::size_t lena)
 {   display(label.c_str(), a, lena);
 }
 
-[[gnu::used]] inline void display(std::string label,
+inline void display(std::string label,
                     SignedDigit top,
                     const std::uint64_t* a,
                     std::size_t lena)
 {   display(label.c_str(), top, a, lena);
 }
 
-[[gnu::used]] inline void display(std::string label, std::intptr_t a)
+inline void display(std::string label, std::intptr_t a)
 {   display(label.c_str(), a);
 }
 
-[[gnu::used]] inline void display(std::string label, const Bignum& a)
+inline void display(std::string label, const Bignum& a)
 {   display(label.c_str(), a);
 }
 
-[[gnu::used]] inline void display(const char* label)
+inline void display(const char* label)
 {   const char** where;
     std::lock_guard<std::mutex> lock(
         arithlib_implementation::diagnostic_mutex(&where));
     std::printf("[%u] %s\n", getTidyThreadId(), label);
 }
 
-[[gnu::used]] inline void display1(const char* label, std::size_t a)
+inline void display1(const char* label, std::size_t a)
 {   const char** where;
     std::lock_guard<std::mutex> lock(
         arithlib_implementation::diagnostic_mutex(&where));
@@ -8791,7 +10576,7 @@ template <typename T,
                label, (std::uint64_t)a);
 }
 
-[[gnu::used]] inline void display2(const char* label, std::size_t a, std::size_t b)
+inline void display2(const char* label, std::size_t a, std::size_t b)
 {   const char** where;
     std::lock_guard<std::mutex> lock(
         arithlib_implementation::diagnostic_mutex(&where));
@@ -8800,15 +10585,15 @@ template <typename T,
 }
 
 
-[[gnu::used]] inline void display(std::string label)
+inline void display(std::string label)
 {   display(label.c_str());
 }
 
-[[gnu::used]] inline void display1(std::string label, std::size_t a)
+inline void display1(std::string label, std::size_t a)
 {   display1(label.c_str(), a);
 }
 
-[[gnu::used]] inline void display2(std::string label, std::size_t a, std::size_t b)
+inline void display2(std::string label, std::size_t a, std::size_t b)
 {   display2(label.c_str(), a, b);
 }
 
@@ -8836,15 +10621,15 @@ template <typename T,
 // In the (vanishingly improbable?) case that neither of the above hold I
 // implement things for myself.
 
-[[gnu::used]] inline int nlz(uint64_t x)
+inline int nlz(uint64_t x)
 {   return countl_zero(x);
 }
 
-[[gnu::used]] inline int ntz(uint64_t x)
+inline int ntz(uint64_t x)
 {   return countr_zero(x);
 }
 
-[[gnu::used]] inline int countBits(uint64_t x)
+inline int countBits(uint64_t x)
 {   return std::popcount(x);
 }
 
@@ -8855,21 +10640,21 @@ template <typename T,
 
 // Count the leading zeros in a 64-bit word.
 
-[[gnu::used]] inline int nlz(Digit x)
+inline int nlz(Digit x)
 {   return x==0 ? 64 : __builtin_clzll(x);
 }
 
-[[gnu::used]] inline int ntz(Digit x)
+inline int ntz(Digit x)
 {   return x==0 ? 64 : __builtin_ctzll(x);
 }
 
-[[gnu::used]] inline int countBits(Digit x)
+inline int countBits(Digit x)
 {   return __builtin_popcountll(x);
 }
 
 #else // __GNUC__
 
-[[gnu::used]] inline int nlz(uint64_t x)
+inline int nlz(uint64_t x)
 {   x |= x>>1;
     x |= x>>2;
     x |= x>>4;
@@ -8921,7 +10706,7 @@ template <typename T,
 // This is related to the function intlog2() in tags.h, but that function
 // is only to be applied on inputs that are a power of 2.
 
-[[gnu::used]] inline int ntz(uint64_t n)
+inline int ntz(uint64_t n)
 {   auto ntzf = [](int n)
     {   if (n==0) return 64;
         uint64_t v=0;
@@ -8952,7 +10737,7 @@ template <typename T,
 }
 
 
-[[gnu::used]] inline int countBits(Digit x)
+inline int countBits(Digit x)
 {   x = (x & 0x5555555555555555U) + ((x >> 1) & 0x5555555555555555U);
     x = (x & 0x3333333333333333U) + ((x >> 2) & 0x3333333333333333U);
     x = x + ((x >> 4) & 0x0f0f0f0f0f0f0f0fU);
@@ -8971,12 +10756,12 @@ template <typename T,
 // I do this based on counting the number of leading zeros in the
 // binary representation of n-1.
 
-[[gnu::used]] inline std::size_t next_power_of_2(std::size_t n)
+inline std::size_t next_power_of_2(std::size_t n)
 {   return (static_cast<std::size_t>(1)) << (64-CSL_LISP::nlz(
                 static_cast<Digit>(n-1)));
 }
 
-[[gnu::used]] inline unsigned int logNextPowerOf2(std::size_t n)
+inline unsigned int logNextPowerOf2(std::size_t n)
 {   return 64-CSL_LISP::nlz(static_cast<Digit>(n-1));
 }
 
@@ -9013,7 +10798,7 @@ template <typename T,
 
 
 [[gnu::always_inline]]
-[[gnu::used]] inline Digit addWithCarry(Digit a1,
+inline Digit addWithCarry(Digit a1,
                           Digit a2,
                           Digit &r)
 {   return static_cast<Digit>(__builtin_add_overflow(a1, a2, &r));
@@ -9025,7 +10810,7 @@ template <typename T,
 // function.
 
 [[gnu::always_inline]]
-[[gnu::used]] inline Digit addWithCarry(Digit a1,
+inline Digit addWithCarry(Digit a1,
                           Digit a2,
                           Digit carry_in,
                           Digit &r)
@@ -9039,14 +10824,14 @@ template <typename T,
 // and returns 1 is there is a borrow out.
 
 [[gnu::always_inline]]
-[[gnu::used]] inline Digit subtractWithBorrow(Digit a1,
+inline Digit subtractWithBorrow(Digit a1,
                                 Digit a2,
                                 Digit &r)
 {   return static_cast<Digit>(__builtin_sub_overflow(a1, a2, &r));
 }
 
 [[gnu::always_inline]]
-[[gnu::used]] inline Digit subtractWithBorrow(Digit a1,
+inline Digit subtractWithBorrow(Digit a1,
                                 Digit a2,
                                 Digit borrow_in,
                                 Digit &r)
@@ -9065,7 +10850,7 @@ template <typename T,
 // already supported printing of 128-bit ints this definition might clash
 // and would need commenting out.
 
-[[gnu::used]] inline std::ostream & operator << (std::ostream &out, uint128_t a)
+inline std::ostream & operator << (std::ostream &out, uint128_t a)
 {   out << std::hex << std::setw(16) << std::setfill('0') <<
         static_cast<Digit>(a>>64)
         << " "
@@ -9073,12 +10858,12 @@ template <typename T,
     return out;
 }
 
-[[gnu::used]] inline uint128_t pack128(Digit hi, Digit lo)
+inline uint128_t pack128(Digit hi, Digit lo)
 {   return (static_cast<uint128_t>(hi)<<64) | lo;
 }
 
 [[gnu::always_inline]]
-[[gnu::used]] inline void multiply64(Digit a, Digit b,
+inline void multiply64(Digit a, Digit b,
                        Digit &hi, Digit &lo)
 {   uint128_t r = static_cast<uint128_t>(a)*static_cast<uint128_t>(b);
     hi = static_cast<Digit>(r >> 64);
@@ -9090,7 +10875,7 @@ template <typename T,
 // of this, and so they are allowed to be the same as other arguments.
 
 [[gnu::always_inline]]
-[[gnu::used]] inline void multiply64(Digit a, Digit b,
+inline void multiply64(Digit a, Digit b,
                        Digit c,
                        Digit &hi, Digit &lo)
 {   uint128_t r = static_cast<uint128_t>(a)*static_cast<uint128_t>(b) +
@@ -9100,7 +10885,7 @@ template <typename T,
 }
 
 [[gnu::always_inline]]
-[[gnu::used]] inline void signedMultiply64(SignedDigit a, SignedDigit b,
+inline void signedMultiply64(SignedDigit a, SignedDigit b,
                              SignedDigit &hi, Digit &lo)
 {   int128_t r = static_cast<int128_t>(a)*static_cast<int128_t>(b);
     hi = static_cast<SignedDigit>(static_cast<uint128_t>(r) >> 64);
@@ -9108,7 +10893,7 @@ template <typename T,
 }
 
 [[gnu::always_inline]]
-[[gnu::used]] inline void signedMultiply64(SignedDigit a, SignedDigit b,
+inline void signedMultiply64(SignedDigit a, SignedDigit b,
                              Digit c,
                              SignedDigit &hi, Digit &lo)
 {   uint128_t r = static_cast<uint128_t>(
@@ -9123,7 +10908,7 @@ template <typename T,
 // documentation of the intent.
 
 [[gnu::always_inline]]
-[[gnu::used]] inline void divide64(Digit hi, Digit lo,
+inline void divide64(Digit hi, Digit lo,
                      Digit divisor,
                      Digit &q, Digit &r)
 {   uint128_t dividend = pack128(hi, lo);
@@ -9135,23 +10920,23 @@ template <typename T,
 // that in C++ the consequences of overflow are defined) I need to treat
 // some top-digits as signed: here are values and tests relating to that.
 
-[[gnu::used]] inline const Digit allbits   = ~static_cast<Digit>(0);
-[[gnu::used]] inline const Digit topbit    = static_cast<Digit>(1)<<63;
-[[gnu::used]] inline const Digit allbuttop = topbit - 1;
+inline const Digit allbits   = ~static_cast<Digit>(0);
+inline const Digit topbit    = static_cast<Digit>(1)<<63;
+inline const Digit allbuttop = topbit - 1;
 
-[[gnu::used]] inline bool positive(Digit a)
+inline bool positive(Digit a)
 {   return static_cast<SignedDigit>(a) >= 0;
 }
 
-[[gnu::used]] inline bool negative(Digit a)
+inline bool negative(Digit a)
 {   return static_cast<SignedDigit>(a) < 0;
 }
 
-[[gnu::used]] inline bool strictlyPositive(Digit a)
+inline bool strictlyPositive(Digit a)
 {   return static_cast<SignedDigit>(a) > 0;
 }
 
-[[gnu::used]] inline bool negativeOrZero(Digit a)
+inline bool negativeOrZero(Digit a)
 {   return static_cast<SignedDigit>(a) <= 0;
 }
 
@@ -9160,11 +10945,11 @@ template <typename T,
 //            (a1==-1 && negative(a2)));
 // and it is to test if a bignum can have its top digit removed.
 
-[[gnu::used]] inline bool shrinkable(Digit a1, Digit a2)
+inline bool shrinkable(Digit a1, Digit a2)
 {   return ((a1 + (a2>>63)) == 0);
 }
 
-[[gnu::used]] inline void internalCopy(const std::uint64_t* a, std::size_t lena,
+inline void internalCopy(const std::uint64_t* a, std::size_t lena,
                          std::uint64_t* b)
 {   std::memcpy(b, a, lena*sizeof(Digit));
 }
@@ -9173,7 +10958,7 @@ template <typename T,
 // Because length is not changed it does not need a length for the
 // destination passed to it.
 
-[[gnu::used]] inline void internalNegate(const std::uint64_t* a, std::size_t lena,
+inline void internalNegate(const std::uint64_t* a, std::size_t lena,
                            std::uint64_t* b)
 {   Digit carry = 1;
     for (std::size_t i=0; i<lena; i++)
@@ -9191,7 +10976,7 @@ template <typename T,
 // that I have a function virtualDigit64() which lets me read from a
 // bignum as if it has been usefully sign-extended.
 
-[[gnu::used]] inline Digit virtualDigit64(const std::uint64_t* v,
+inline Digit virtualDigit64(const std::uint64_t* v,
                                     std::size_t n,
                                     std::size_t j)
 {   if (j < n) return v[j];
@@ -9202,7 +10987,7 @@ template <typename T,
 // This function reads a 3-bit digit from a bignum, and is for use when
 // printing in octal.
 
-[[gnu::used]] inline int readU3(const std::uint64_t* v, std::size_t n,
+inline int readU3(const std::uint64_t* v, std::size_t n,
                   std::size_t i)
 {   std::size_t bits = 3*i;
     std::size_t n0 = bits/64;   // word with lowest bit of the 3
@@ -9360,7 +11145,7 @@ inline unsigned int system_randomness()
     return r;
 }
 
-[[gnu::used]] inline std::mt19937_64 mersenne_twister(*(([]()->std::seed_seq*
+inline std::mt19937_64 mersenne_twister(*(([]()->std::seed_seq*
 {   unsigned int seed_component_1 = system_randomness();
     unsigned int seed_component_2 = system_randomness();
     unsigned int seed_component_3 = system_randomness();
@@ -9440,7 +11225,7 @@ MAYBE_UNUSED static void reseed(Digit n)
 // values. To get a full 64-bit range merely call mersenne_twister()
 // directly.
 
-[[gnu::used]] inline Digit uniformUint64(Digit n)
+inline Digit uniformUint64(Digit n)
 {   if (n <= 1) return 0;
 // I I want the remainder operation on the last line of this function to
 // return a uniformly distributed result. To ensure that I want r to be
@@ -9463,7 +11248,7 @@ MAYBE_UNUSED static void reseed(Digit n)
 // a bignum using (up to) the given number of bits. So eg uniformPositive(3)
 // should return 0,1,2,3,4,5,6 or 7 each with equal probability.
 
-[[gnu::used]] inline void uniformPositive(std::uint64_t* r, std::size_t &lenr,
+inline void uniformPositive(std::uint64_t* r, std::size_t &lenr,
                             std::size_t bits)
 {   if (bits == 0)
     {   r[0] = 0;
@@ -9477,7 +11262,7 @@ MAYBE_UNUSED static void reseed(Digit n)
     while (lenr!=1 && shrinkable(r[lenr-1], r[lenr-2])) lenr--;
 }
 
-[[gnu::used]] inline std::intptr_t uniformPositive(std::size_t n)
+inline std::intptr_t uniformPositive(std::size_t n)
 {   std::size_t lenr = (n + 63)/64;
     if (lenr == 0) lenr = 1; // special case!
     std::size_t save = lenr;
@@ -9491,7 +11276,7 @@ MAYBE_UNUSED static void reseed(Digit n)
 // Note that while uniform_unsigned(0) can only return the value 0,
 // uniformSigned(0) can return -1 or 0.
 
-[[gnu::used]] inline void uniformSigned(std::uint64_t* r, std::size_t &lenr,
+inline void uniformSigned(std::uint64_t* r, std::size_t &lenr,
                           std::size_t bits)
 {   lenr = 1 + bits/64;
     for (std::size_t i=0; i<lenr; i++)
@@ -9508,7 +11293,7 @@ MAYBE_UNUSED static void reseed(Digit n)
     }
 }
 
-[[gnu::used]] inline std::intptr_t uniformSigned(std::size_t n)
+inline std::intptr_t uniformSigned(std::size_t n)
 {   std::size_t lenr = n/64+1;
     std::size_t save = lenr;
     std::uint64_t* r = reserve(lenr);
@@ -9516,11 +11301,11 @@ MAYBE_UNUSED static void reseed(Digit n)
     return confirmSize(r, save, lenr);
 }
 
-[[gnu::used]] inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena);
+inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena);
 
 // Generate a value in the range 0 .. a-1 using a uniform distribution
 
-[[gnu::used]] inline void uniformUpto(std::uint64_t* a, std::size_t lena,
+inline void uniformUpto(std::uint64_t* a, std::size_t lena,
                         std::uint64_t* r,
                         std::size_t &lenr)
 {   std::size_t n = bignumBits(a, lena);
@@ -9538,7 +11323,7 @@ MAYBE_UNUSED static void reseed(Digit n)
     }
 }
 
-[[gnu::used]] inline std::intptr_t uniformUpto(std::intptr_t aa)
+inline std::intptr_t uniformUpto(std::intptr_t aa)
 {   if (storedAsFixnum(aa))
     {   Digit r = uniformUint64(static_cast<Digit>
                                          (intOfHandle(
@@ -9553,15 +11338,15 @@ MAYBE_UNUSED static void reseed(Digit n)
     return confirmSize(r, lena, lenr);
 }
 
-[[gnu::used]] inline void truncatePositive(const std::uint64_t* r, std::size_t &n)
+inline void truncatePositive(const std::uint64_t* r, std::size_t &n)
 {   while (r[n-1]==0 && n>1 && positive(r[n-2])) n--;
 }
 
-[[gnu::used]] inline void truncateNegative(const std::uint64_t* r, std::size_t &n)
+inline void truncateNegative(const std::uint64_t* r, std::size_t &n)
 {   while (r[n-1]==allbits && n>1 && negative(r[n-2])) n--;
 }
 
-[[gnu::used]] inline void truncateUnsigned(const std::uint64_t* r, std::size_t &n)
+inline void truncateUnsigned(const std::uint64_t* r, std::size_t &n)
 {   while (r[n-1]==0 && n>1) n--;
 }
 
@@ -9588,7 +11373,7 @@ MAYBE_UNUSED static void reseed(Digit n)
 // close to powers of 2 can easily be "edge cases" that deserve extra attention
 // during testing.
 
-[[gnu::used]] inline void fudgeDistribution(const std::uint64_t* a,
+inline void fudgeDistribution(const std::uint64_t* a,
                               std::size_t lena,
                               std::uint64_t* r, std::size_t &lenr, int n)
 {   lenr = lena;
@@ -9628,7 +11413,7 @@ MAYBE_UNUSED static void reseed(Digit n)
     else truncatePositive(r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t fudgeDistribution(std::intptr_t aa, int n)
+inline std::intptr_t fudgeDistribution(std::intptr_t aa, int n)
 {   std::uint64_t* a;
     std::size_t lena;
     Digit w[2];
@@ -9654,7 +11439,7 @@ MAYBE_UNUSED static void reseed(Digit n)
 // not a very nice distribution from a mathematical perspective, but is is
 // nevertheless a useful one to have in some test code.
 
-[[gnu::used]] inline void randomUptoBits(std::uint64_t* r, std::size_t &lenr,
+inline void randomUptoBits(std::uint64_t* r, std::size_t &lenr,
                            std::size_t n)
 {   std::size_t bits = static_cast<std::size_t>(uniformUint64(n));
     if (bits == 0)
@@ -9672,7 +11457,7 @@ MAYBE_UNUSED static void reseed(Digit n)
     if (bits%64 == 0) r[lenr++] = 0;
 }
 
-[[gnu::used]] inline std::intptr_t randomUptoBits(std::size_t bits)
+inline std::intptr_t randomUptoBits(std::size_t bits)
 {   std::size_t m = 1+bits/64;
     if (m == 0) m = 1;
     std::uint64_t* r = reserve(m);
@@ -9696,18 +11481,18 @@ MAYBE_UNUSED static void reseed(Digit n)
 // perform arithmetic between a bignum and a native int64_t integer
 // directly.
 
-[[gnu::used]] inline void intToBignum(SignedDigit n, std::uint64_t* r)
+inline void intToBignum(SignedDigit n, std::uint64_t* r)
 {   r[0] = static_cast<Digit>(n);
 }
 
-[[gnu::used]] inline std::intptr_t intToBignum(SignedDigit n)
+inline std::intptr_t intToBignum(SignedDigit n)
 {   if (fitsIntoFixnum(n)) return intToHandle(n);
     std::uint64_t* r = reserve(1);
     intToBignum(n, r);
     return confirmSize(r, 1, 1);
 }
 
-[[gnu::used]] inline void unsignedIntToBignum(Digit n, std::uint64_t* r,
+inline void unsignedIntToBignum(Digit n, std::uint64_t* r,
                                 std::size_t &lenr)
 {   r[0] = n;
     if (negative(n))
@@ -9717,7 +11502,7 @@ MAYBE_UNUSED static void reseed(Digit n)
     else lenr = 1;
 }
 
-[[gnu::used]] inline std::intptr_t unsignedIntToBignum(Digit n)
+inline std::intptr_t unsignedIntToBignum(Digit n)
 {   std::size_t w = (negative(n) ? 2 : 1);
     std::uint64_t* r = reserve(w);
     std::size_t lenr;
@@ -9727,7 +11512,7 @@ MAYBE_UNUSED static void reseed(Digit n)
 
 // The next two pass an 128-bit value as two 64-bit words.
 
-[[gnu::used]] inline std::intptr_t int128ToBignum(SignedDigit high, Digit low)
+inline std::intptr_t int128ToBignum(SignedDigit high, Digit low)
 {   if (high == 0 &&
         !negative(low) &&
         fitsIntoFixnum(static_cast<std::intptr_t>(low)))
@@ -9742,7 +11527,7 @@ MAYBE_UNUSED static void reseed(Digit n)
     return confirmSize(r, 2, 2);
 }
 
-[[gnu::used]] inline std::intptr_t unsignedInt128ToBignum(Digit  high,
+inline std::intptr_t unsignedInt128ToBignum(Digit  high,
                                             Digit low)
 {   if (high == 0 &&
         !negative(low) &&
@@ -9764,11 +11549,10 @@ MAYBE_UNUSED static void reseed(Digit n)
     return confirmSize(r, 2, 2);
 }
 
-#ifdef softfloat_h
-// Some constants that are useful when I am dealing with long float.
+// Some constants that are useful when I am dealing with FLOAT_128.
 // I am only going to support little endian machines,,,
 
-[[gnu::used]] inline long float
+inline FLOAT_128
 f128_0      = {{0, INT64_C(0x0000000000000000)}},
 f128_half   = {{0, INT64_C(0x3ffe000000000000)}},
 f128_mhalf  = {{0, INT64_C(0xbffe000000000000)}},
@@ -9776,23 +11560,23 @@ f128_1      = {{0, INT64_C(0x3fff000000000000)}},
 f128_m1     = {{0, INT64_C(0xbfff000000000000)}},
 f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
 
-[[gnu::used]] inline bool f128_zero(long float p)
+inline bool f128_zero(FLOAT_128 p)
 {   return (p.v[HIPART] & 0x7fffffffffffffff) == 0 &&
            p.v[LOPART] == 0;
 }
 
-[[gnu::used]] inline bool f128_infinite(long float p)
+inline bool f128_infinite(FLOAT_128 p)
 {   return (p.v[HIPART] & 0x7fffffffffffffff) == 0x7fff000000000000 &&
            p.v[LOPART] == 0;
 }
 
-[[gnu::used]] inline bool f128_nan(long float p)
+inline bool f128_nan(FLOAT_128 p)
 {   return (p.v[HIPART] & 0x7fff000000000000) == 0x7fff000000000000 &&
            ((p.v[HIPART] & 0x0000ffffffffffff) != 0 ||
             p.v[LOPART] != 0);
 }
 
-[[gnu::used]] inline long float ldexp(long float p, int x)
+inline FLOAT_128 ldexp(FLOAT_128 p, int x)
 {   if (f128_zero(p) ||
         f128_infinite(p) ||
         f128_nan(p)) return p;  // special cases!
@@ -9832,7 +11616,7 @@ f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
     return p;
 }
 
-[[gnu::used]] inline long float frexp(long float p, int &x)
+inline FLOAT_128 frexp(FLOAT_128 p, int &x)
 {   if (f128_zero(p) ||
         f128_infinite(p) ||
         f128_nan(p))
@@ -9862,7 +11646,7 @@ f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
 // I can use a reference argument for i now a pointer and I can overload the
 // vanilla name "modf" along the style of the way C++11 does.
 
-[[gnu::used]] inline long float modf(long float d, long float &i)
+inline FLOAT_128 modf(FLOAT_128 d, FLOAT_128 &i)
 {   i = d;
 // Extract the exponent
     int x = ((d.v[HIPART] >> 48) & 0x7fff) - 0x3ffe;
@@ -9884,9 +11668,7 @@ f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
     return f128_sub(d, i);
 }
 
-#endif // softfloat_h
-
-// When doubles (and long float values where available) are to be
+// When doubles (and FLOAT_128 values where available) are to be
 // compared against a bignum to get proper results the double should
 // (at least in effect) be converted to a bignum. If one does the comparison
 // by converting both inputs to floating point (which may feel easier) there
@@ -9900,7 +11682,7 @@ f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
 // give sensible output if passed an infinity or a NaN and so they should be
 // filtered out before it is called.
 
-[[gnu::used]] inline void doubleToBits(double d, SignedDigit &mantissa, int &exponent)
+inline void doubleToBits(double d, SignedDigit &mantissa, int &exponent)
 {   if (d == 0.0)
     {   mantissa = 0;
         exponent = 0;
@@ -9920,7 +11702,7 @@ f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
 // There are places where I need to shift a 128 or 192-bit number that is
 // represented using several int64 values...
 
-[[gnu::used]] inline void shiftleft(SignedDigit &hi, Digit &lo, int n)
+inline void shiftleft(SignedDigit &hi, Digit &lo, int n)
 {   if (n == 0) return;
     else if (n < 64)
     {   hi = ASL(hi, n) | (lo >> (64-n));
@@ -9936,7 +11718,7 @@ f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
     }
 }
 
-[[gnu::used]] inline void shiftleft(SignedDigit &hi, Digit &mid,
+inline void shiftleft(SignedDigit &hi, Digit &mid,
                       Digit &lo,
                       int n)
 {   if (n == 0) return;
@@ -9965,7 +11747,7 @@ f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
     }
 }
 
-[[gnu::used]] inline void shiftright(SignedDigit &hi, Digit &lo, int n)
+inline void shiftright(SignedDigit &hi, Digit &lo, int n)
 {   if (n == 0) return;
     else if (n < 64)
     {   lo = (lo >> n) | ASL(hi, 64-n);
@@ -9999,7 +11781,7 @@ f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
 
 enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 
-[[gnu::used]] inline void doubleTo_virtualBignum(double d,
+inline void doubleTo_virtualBignum(double d,
                                    SignedDigit &top, Digit &next,
                                    std::size_t &len,
                                    RoundingMode mode)
@@ -10091,13 +11873,11 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     }
 }
 
-#ifdef softfloat_h
-
-// For long float the mantissa needs to be returned as a 128-bit integer, and
+// For FLOAT_128 the mantissa needs to be returned as a 128-bit integer, and
 // I do that as a pair of 64-bit integers here. Infinities and NaNs would
 // lead to nonsense output. Subnormal numbers are got wrong at present!
 
-[[gnu::used]] inline void longfloatToBits(long float d,
+inline void longfloatToBits(FLOAT_128 d,
                            SignedDigit &mhi, Digit &mlo,
                            int &exponent)
 {   if (f128_nan(d) || f128_zero(d))
@@ -10111,7 +11891,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
         exponent = INT_MAX;
         return;
     }
-// With long float the easier way to go is to access the bit-patterns.
+// With FLOAT_128 the easier way to go is to access the bit-patterns.
     exponent = ((d.v[HIPART] >> 48) & 0x7fff);
     if (exponent == 0) // subnormal number
     {   d = f128_mul(d, f128_N1);
@@ -10128,18 +11908,18 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     exponent -= 113;
 }
 
-[[gnu::used]] inline void inc128(SignedDigit &hi, Digit &lo)
+inline void inc128(SignedDigit &hi, Digit &lo)
 {   if (++lo == 0) hi++;
 }
 
-[[gnu::used]] inline void dec128(SignedDigit &hi, Digit &lo)
+inline void dec128(SignedDigit &hi, Digit &lo)
 {   if (lo-- == 0) hi--;
 }
 
-// For a long float value I need to generate (up to) 3 64-bit digits for
+// For a FLOAT_128 value I need to generate (up to) 3 64-bit digits for
 // the way it would end up as a bignum.
 
-[[gnu::used]] inline void longfloatTo_virtualBignum(long float d,
+inline void longfloatTo_virtualBignum(FLOAT_128 d,
                                      SignedDigit &top,
                                      Digit &mid,
                                      Digit &next,
@@ -10243,9 +12023,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     }
 }
 
-#endif // softfloat_h
-
-[[gnu::used]] inline std::intptr_t doubleToInt(double d, RoundingMode mode)
+inline std::intptr_t doubleToInt(double d, RoundingMode mode)
 {
 // I return 0 if the input is a NaN or either +infinity or -infinity.
 // This is somewhat arbitrary, but right now I am not minded to raise an
@@ -10265,25 +12043,23 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return confirmSize(r, len, len);
 }
 
-[[gnu::used]] inline std::intptr_t roundDoubleToInt(double d)
+inline std::intptr_t roundDoubleToInt(double d)
 {   return doubleToInt(d, RoundingMode::ROUND);
 }
 
-[[gnu::used]] inline std::intptr_t truncDoubleToInt(double d)
+inline std::intptr_t truncDoubleToInt(double d)
 {   return doubleToInt(d, RoundingMode::TRUNC);
 }
 
-[[gnu::used]] inline std::intptr_t floorDoubleToInt(double d)
+inline std::intptr_t floorDoubleToInt(double d)
 {   return doubleToInt(d, RoundingMode::FLOOR);
 }
 
-[[gnu::used]] inline std::intptr_t ceilingDoubleToInt(double d)
+inline std::intptr_t ceilingDoubleToInt(double d)
 {   return doubleToInt(d, RoundingMode::CEILING);
 }
 
-#ifdef softfloat_h
-
-[[gnu::used]] inline std::intptr_t longfloatToInt(long float d, RoundingMode mode)
+inline std::intptr_t longfloatToInt(FLOAT_128 d, RoundingMode mode)
 {   if (f128_zero(d) ||
         f128_infinite(d) ||
         f128_nan(d)) return intToHandle(0);
@@ -10306,37 +12082,35 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return confirmSize(r, len, len);
 }
 
-[[gnu::used]] inline std::intptr_t roundFloat128ToInt(long float d)
+inline std::intptr_t roundFloat128ToInt(FLOAT_128 d)
 {   return longfloatToInt(d, RoundingMode::ROUND);
 }
 
-[[gnu::used]] inline std::intptr_t truncFloat128ToInt(long float d)
+inline std::intptr_t truncFloat128ToInt(FLOAT_128 d)
 {   return longfloatToInt(d, RoundingMode::TRUNC);
 }
 
-[[gnu::used]] inline std::intptr_t floorFloat128ToInt(long float d)
+inline std::intptr_t floorFloat128ToInt(FLOAT_128 d)
 {   return longfloatToInt(d, RoundingMode::FLOOR);
 }
 
-[[gnu::used]] inline std::intptr_t ceilingFloat128ToInt(long float d)
+inline std::intptr_t ceilingFloat128ToInt(FLOAT_128 d)
 {   return longfloatToInt(d, RoundingMode::CEILING);
 }
 
-#endif // softfloat_h
-
-[[gnu::used]] inline SignedDigit Int64_t::op(SignedDigit a)
+inline SignedDigit Int64_t::op(SignedDigit a)
 {   return a;
 }
 
-[[gnu::used]] inline SignedDigit Int64_t::op(std::uint64_t* a)
+inline SignedDigit Int64_t::op(std::uint64_t* a)
 {   return static_cast<SignedDigit>(a[0]);
 }
 
-[[gnu::used]] inline Digit Uint64_t::op(SignedDigit a)
+inline Digit Uint64_t::op(SignedDigit a)
 {   return static_cast<Digit>(a);
 }
 
-[[gnu::used]] inline Digit Uint64_t::op(std::uint64_t* a)
+inline Digit Uint64_t::op(std::uint64_t* a)
 {   return a[0];
 }
 
@@ -10352,7 +12126,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 //     in a manner that I believe is standards-conforming at least on IEEE
 //     platforms with the rounding-style set normally.
 
-[[gnu::used]] inline float castTo_float(double d)
+inline float castTo_float(double d)
 {
 // If the argument is a NaN then return a NaN of type float.
     if (std::isnan(d)) return std::nanf("");
@@ -10402,11 +12176,11 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // The case back to a float can not introduxce rounding, but might notice
 // overflow leading to a result that is an IEEE infinity.
 
-[[gnu::used]] inline float ldexpf(float a, int n)
+inline float ldexpf(float a, int n)
 {   return castTo_float(std::ldexp(static_cast<double>(a), n));
 }
 
-[[gnu::used]] inline float Float::op(SignedDigit a)
+inline float Float::op(SignedDigit a)
 {
 // if |a| < 2^52 I can convert to a double exactly
     if (a > -0x10000000000000 && a < 0x10000000000000)
@@ -10426,7 +12200,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
                          static_cast<double>(mid));
 }
 
-[[gnu::used]] inline float Float::op(std::uint64_t* a)
+inline float Float::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Float::op(static_cast<SignedDigit>(a[0]));
 // Now I need to do something similar to that done for the int64_t case
@@ -10492,7 +12266,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return ldexpf(d, static_cast<int>(128-24-lz+64*(lena-2)));
 }
 
-[[gnu::used]] inline double Frexp::op(SignedDigit a, SignedDigit &x)
+inline double Frexp::op(SignedDigit a, SignedDigit &x)
 {
 // The bad news here is that I am not confident that C++ will guarantee
 // to round large integer values in any particular way when it converts
@@ -10521,7 +12295,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return d;
 }
 
-[[gnu::used]] inline double Double::op(SignedDigit a)
+inline double Double::op(SignedDigit a)
 {
 // One would obviously like to go "return (double)a;" however C++ says
 //  "If the value being converted is in the range of values that can
@@ -10537,7 +12311,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return d + static_cast<double>(hi);
 }
 
-[[gnu::used]] inline double Frexp::op(std::uint64_t* a, SignedDigit &x)
+inline double Frexp::op(std::uint64_t* a, SignedDigit &x)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Frexp::op(static_cast<SignedDigit>(a[0]), x);
 // Now I need to do something similar to that done for the int64_t case
@@ -10604,29 +12378,27 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return d;
 }
 
-[[gnu::used]] inline double Double::op(std::uint64_t* a)
+inline double Double::op(std::uint64_t* a)
 {   SignedDigit x = 0;
     double d = Frexp::op(a, x);
     if (x > 10000) x = 10000;
     return std::ldexp(d, static_cast<int>(x));
 }
 
-#ifdef softfloat_h
-
-[[gnu::used]] inline long float Float128::op(SignedDigit a)
+inline FLOAT_128 Float128::op(SignedDigit a)
 {   return i64_to_f128(a);
 }
 
-[[gnu::used]] inline long float Frexp128::op(SignedDigit a, SignedDigit &x)
+inline FLOAT_128 Frexp128::op(SignedDigit a, SignedDigit &x)
 {   using namespace CSL_LISP;
-    long float d = i64_to_f128(a), d1;
+    FLOAT_128 d = i64_to_f128(a), d1;
     int xi = 0;
     f128_frexp(d, &d1, &xi); // in the CSL sources.
     x = xi;
     return d1;
 }
 
-[[gnu::used]] inline long float Frexp128::op(std::uint64_t* a, SignedDigit &x)
+inline FLOAT_128 Frexp128::op(std::uint64_t* a, SignedDigit &x)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Float128::op(static_cast<SignedDigit>(a[0]));
     Digit top113, top113a;
@@ -10705,9 +12477,9 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
         }
         else top113 += addWithCarry(top113a, top113a&1, top113a);
     }
-//  long float d = i64_to_f128({top113, top113a});
-    long float d = i64_to_f128(top113);
-    long float two32 = i64_to_f128(0x100000000);
+//  FLOAT_128 d = i64_to_f128({top113, top113a});
+    FLOAT_128 d = i64_to_f128(top113);
+    FLOAT_128 two32 = i64_to_f128(0x100000000);
     d = f128_add(f128_mul(f128_mul(two32, two32), d),
                  ui64_to_f128(top113a));
     if (sign) d = f128_sub(i64_to_f128(0), d);
@@ -10715,22 +12487,20 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return d;
 }
 
-[[gnu::used]] inline long float Float128::op(std::uint64_t* a)
+inline FLOAT_128 Float128::op(std::uint64_t* a)
 {   using namespace CSL_LISP;
     SignedDigit x = 0;
-    long float d = Frexp128::op(a, x);
+    FLOAT_128 d = Frexp128::op(a, x);
     if (x > 100000) x = 100000;
 // There is an implementation of ldexp() for 128-bit floats in
-// the CSL source file long float,h.
+// the CSL source file FLOAT_128,h.
     f128_ldexp(&d, static_cast<int>(x));
     return d;
 }
 
-#endif // softfloat_t
+inline const Digit ten19 = UINT64_C(10000000000000000000);
 
-[[gnu::used]] inline const Digit ten19 = UINT64_C(10000000000000000000);
-
-[[gnu::used]] inline std::intptr_t stringToBignum(const char* s)
+inline std::intptr_t stringToBignum(const char* s)
 {   bool sign = false;
     if (*s == '-')
     {   sign = true;
@@ -10796,7 +12566,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // with the quotient.
 
 
-[[gnu::used]] inline Digit short_divide_ten_19(std::uint64_t* r,
+inline Digit short_divide_ten_19(std::uint64_t* r,
                                          std::size_t &n)
 {   Digit hi = 0;
     std::size_t i=n-1;
@@ -10816,7 +12586,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // this might happen if the number occupies over 512 Mbytes and I view
 // that as a situation I will accept as a limit for 32-bit platforms.
 
-[[gnu::used]] inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena)
+inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena)
 {   if (lena == 0 && a[0] == 0) return 1; // say that 0 has 1 bit.
     Digit top = a[lena-1];  // top digit.
 // The exact interpretation of "the length in bits of a negative number"
@@ -10856,7 +12626,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // in this case this yields 8 as required. For negative numbers I will add 1
 // to allow for a "-" sign.
 
-[[gnu::used]] inline std::size_t predictSize_in_bytes(const std::uint64_t* a,
+inline std::size_t predictSize_in_bytes(const std::uint64_t* a,
                                         std::size_t lena)
 {
 // I am first going to estimate the size in BITS and then I will
@@ -10868,7 +12638,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return r;
 }
 
-[[gnu::used]] inline std::size_t bignumToStringLength(std::uint64_t* a, std::size_t lena)
+inline std::size_t bignumToStringLength(std::uint64_t* a, std::size_t lena)
 {   if (lena == 1)
     {   SignedDigit v = a[0];
 // Note that the negative numbers checked against are 1 digit shorter so as
@@ -10884,7 +12654,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // internal debugging because at times I work with values that are known
 // to be positive and so where the top digit must be treated as unsigned...
 
-[[gnu::used]] inline std::size_t bignumToString(char* result, std::size_t m,
+inline std::size_t bignumToString(char* result, std::size_t m,
                                   std::uint64_t* a, std::size_t lena,
                                   bool asUnsigned=false)
 {
@@ -11027,7 +12797,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return len;
 }
 
-[[gnu::used]] inline string_handle bignumToString(std::uint64_t* a,
+inline string_handle bignumToString(std::uint64_t* a,
                                     std::size_t lena,
                                     bool asUnsigned=false)
 {   std::size_t len = bignumToStringLength(a, lena);
@@ -11037,7 +12807,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return confirmSizeString(s, len, final_len);
 }
 
-[[gnu::used]] inline string_handle bignumToString(std::intptr_t aa)
+inline string_handle bignumToString(std::intptr_t aa)
 {   std::uint64_t* a;
     Digit v[1];
     std::size_t lena;
@@ -11055,12 +12825,12 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 
 // As well as converting to decimal I can do hex, octal or binary!
 
-[[gnu::used]] inline std::size_t bignumToStringHexLength(std::intptr_t aa)
+inline std::size_t bignumToStringHexLength(std::intptr_t aa)
 {   std::size_t n = IntegerLength::op(aa);
     return (n+3)/4;
 }
 
-[[gnu::used]] inline string_handle bignumToStringHex(std::intptr_t aa)
+inline string_handle bignumToStringHex(std::intptr_t aa)
 {   std::uint64_t* a;
     Digit v[1];
     std::size_t n;
@@ -11123,12 +12893,12 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return confirmSizeString(r, m, p-reinterpret_cast<char*>(r));
 }
 
-[[gnu::used]] inline std::size_t bignumToStringOctalLength(std::intptr_t aa)
+inline std::size_t bignumToStringOctalLength(std::intptr_t aa)
 {   std::size_t n = IntegerLength::op(aa);
     return (n+2)/3;
 }
 
-[[gnu::used]] inline string_handle bignumToStringOctal(std::intptr_t aa)
+inline string_handle bignumToStringOctal(std::intptr_t aa)
 {   std::uint64_t* a;
     Digit v[1];
     std::size_t n;
@@ -11169,11 +12939,11 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return confirmSizeString(r, nn, p-reinterpret_cast<char*>(r));
 }
 
-[[gnu::used]] inline std::size_t bignumToStringBinaryLength(std::intptr_t aa)
+inline std::size_t bignumToStringBinaryLength(std::intptr_t aa)
 {   return IntegerLength::op(aa);
 }
 
-[[gnu::used]] inline string_handle bignumToStringBinary(std::intptr_t aa)
+inline string_handle bignumToStringBinary(std::intptr_t aa)
 {   std::uint64_t* a;
     Digit v[1];
     std::size_t n;
@@ -11239,100 +13009,100 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 //=========================================================================
 
 
-[[gnu::used]] inline bool Zerop::op(std::uint64_t* a)
+inline bool Zerop::op(std::uint64_t* a)
 {   return numberSize(a) == 1 && a[0] == 0;
 }
 
-[[gnu::used]] inline bool Zerop::op(SignedDigit a)
+inline bool Zerop::op(SignedDigit a)
 {   return a == 0;
 }
 
-[[gnu::used]] inline bool Onep::op(std::uint64_t* a)
+inline bool Onep::op(std::uint64_t* a)
 {   return numberSize(a) == 1 && a[0] == 1;
 }
 
-[[gnu::used]] inline bool Onep::op(SignedDigit a)
+inline bool Onep::op(SignedDigit a)
 {   return a == 1;
 }
 
-[[gnu::used]] inline bool Minusp::op(std::uint64_t* a)
+inline bool Minusp::op(std::uint64_t* a)
 {   return negative(a[numberSize(a)-1]);
 }
 
-[[gnu::used]] inline bool Minusp::op(SignedDigit a)
+inline bool Minusp::op(SignedDigit a)
 {   return a < 0;
 }
 
-[[gnu::used]] inline bool Plusp::op(std::uint64_t* a)
+inline bool Plusp::op(std::uint64_t* a)
 {   return !negative(a[numberSize(a)-1]); // NB a bignum can not be zero
 }
 
-[[gnu::used]] inline bool Plusp::op(SignedDigit a)
+inline bool Plusp::op(SignedDigit a)
 {   return a > 0;
 }
 
-[[gnu::used]] inline bool Evenp::op(std::uint64_t* a)
+inline bool Evenp::op(std::uint64_t* a)
 {   return (a[0] & 1) == 0;
 }
 
-[[gnu::used]] inline bool Evenp::op(SignedDigit a)
+inline bool Evenp::op(SignedDigit a)
 {   return (a & 1) == 0;
 }
 
-[[gnu::used]] inline bool Oddp::op(std::uint64_t* a)
+inline bool Oddp::op(std::uint64_t* a)
 {   return (a[0] & 1) != 0;
 }
 
-[[gnu::used]] inline bool Oddp::op(SignedDigit a)
+inline bool Oddp::op(SignedDigit a)
 {   return (a & 1) != 0;
 }
 
 // eqn
 
-[[gnu::used]] inline bool bigeqn(const std::uint64_t* a, std::size_t lena,
+inline bool bigeqn(const std::uint64_t* a, std::size_t lena,
                    const std::uint64_t* b, std::size_t lenb)
 {   if (lena != lenb) return false;
     return std::memcmp(a, b, lena*sizeof(Digit)) == 0;
 }
 
 
-[[gnu::used]] inline bool Eqn::op(std::uint64_t* a, std::uint64_t* b)
+inline bool Eqn::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     return bigeqn(a, lena, b, lenb);
 }
 
-[[gnu::used]] inline bool Eqn::op(std::uint64_t* a, SignedDigit b)
+inline bool Eqn::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
     return lena==1 && static_cast<SignedDigit>(a[0])==b;
 }
 
-[[gnu::used]] inline bool Eqn::op(SignedDigit a, std::uint64_t* b)
+inline bool Eqn::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     return lenb==1 && a==static_cast<SignedDigit>(b[0]);
 }
 
-[[gnu::used]] inline bool Eqn::op(SignedDigit a, SignedDigit b)
+inline bool Eqn::op(SignedDigit a, SignedDigit b)
 {   return (a == b);
 }
 
-[[gnu::used]] inline bool Eqn::op(SignedDigit a, float b)
+inline bool Eqn::op(SignedDigit a, float b)
 {   return Eqn::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Eqn::op(std::uint64_t* a, float b)
+inline bool Eqn::op(std::uint64_t* a, float b)
 {   return Eqn::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Eqn::op(float a, SignedDigit b)
+inline bool Eqn::op(float a, SignedDigit b)
 {   return Eqn::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Eqn::op(float a, std::uint64_t* b)
+inline bool Eqn::op(float a, std::uint64_t* b)
 {   return Eqn::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Eqn::op(SignedDigit a, double b)
+inline bool Eqn::op(SignedDigit a, double b)
 {   const SignedDigit range = (1LL)<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) == b;
 // The value on the next line is a floating point representation of 2^63,
@@ -11343,7 +13113,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return a == static_cast<SignedDigit>(b);
 }
 
-[[gnu::used]] inline bool eqnfloat(std::uint64_t* a, std::size_t lena, double b)
+inline bool eqnfloat(std::uint64_t* a, std::size_t lena, double b)
 {   if (std::isnan(b)||
         std::isinf(b)) return false;
     SignedDigit top = static_cast<SignedDigit>(a[lena-1]);
@@ -11366,30 +13136,28 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return true;
 }
 
-[[gnu::used]] inline bool Eqn::op(std::uint64_t* a, double b)
+inline bool Eqn::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Eqn::op(static_cast<SignedDigit>(a[0]), b);
     return eqnfloat(a, lena, b);
 }
 
-[[gnu::used]] inline bool Eqn::op(double a, SignedDigit b)
+inline bool Eqn::op(double a, SignedDigit b)
 {   return Eqn::op(b, a);
 }
 
-[[gnu::used]] inline bool Eqn::op(double a, std::uint64_t* b)
+inline bool Eqn::op(double a, std::uint64_t* b)
 {   return Eqn::op(b, a);
 }
-
-#ifdef softfloat_h
 
 // The following constants are 2^112 and -2^112 and their reciprocals, which
 // are used in rationalf128 because any 128-bit floating point value that
 // is that large is necessarily an exact integer.
 
-[[gnu::used]] inline long float FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
-[[gnu::used]] inline long float FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
+inline FLOAT_128 FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
+inline FLOAT_128 FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
 
-[[gnu::used]] inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, long float b)
+inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, FLOAT_128 b)
 {   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
     SignedDigit top = static_cast<SignedDigit>(a[lena-1]);
     if (top >= 0 && f128_lt(b, f128_0)) return false;
@@ -11409,7 +13177,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // Convert a to a longfloat and compare. The conversion will not lose any
 // information because the |a| <= 2^112 so it will fit within the mantissa
 // bits that are available.
-        long float aa = Float128::op(a);
+        FLOAT_128 aa = Float128::op(a);
         return f128_eq(aa, b);
     }
     else
@@ -11425,63 +13193,61 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     }
 }
 
-[[gnu::used]] inline bool Eqn::op(SignedDigit a, long float b)
+inline bool Eqn::op(SignedDigit a, FLOAT_128 b)
 {   return f128_eq(i64_to_f128(a), b);
 }
 
-[[gnu::used]] inline bool Eqn::op(std::uint64_t* a, long float b)
+inline bool Eqn::op(std::uint64_t* a, FLOAT_128 b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Eqn::op(static_cast<SignedDigit>(a[0]), b);
     return eqnbigfloat(a, lena, b);
 }
 
-[[gnu::used]] inline bool Eqn::op(long float a, SignedDigit b)
+inline bool Eqn::op(FLOAT_128 a, SignedDigit b)
 {   return Eqn::op(b, a);
 }
 
-[[gnu::used]] inline bool Eqn::op(long float a, std::uint64_t* b)
+inline bool Eqn::op(FLOAT_128 a, std::uint64_t* b)
 {   return Eqn::op(b, a);
 }
 
-#endif // softfloat_h
-
-[[gnu::used]] inline bool Neqn::op(std::uint64_t* a, std::uint64_t* b)
+inline bool Neqn::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     return !bigeqn(a, lena, b, lenb);
 }
 
-[[gnu::used]] inline bool Neqn::op(std::uint64_t* a, SignedDigit b)
+inline bool Neqn::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
     return lena!=1 || static_cast<SignedDigit>(a[0])!=b;
 }
 
-[[gnu::used]] inline bool Neqn::op(SignedDigit a, std::uint64_t* b)
+inline bool Neqn::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     return lenb!=1 || a!=static_cast<SignedDigit>(b[0]);
 }
 
-[[gnu::used]] inline bool Neqn::op(SignedDigit a, SignedDigit b)
+inline bool Neqn::op(SignedDigit a, SignedDigit b)
 {   return (a != b);
 }
 
-[[gnu::used]] inline bool Neqn::op(SignedDigit a, float b)
+inline bool Neqn::op(SignedDigit a, float b)
 {   return Neqn::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Neqn::op(std::uint64_t* a, float b)
+inline bool Neqn::op(std::uint64_t* a, float b)
 {   return Neqn::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Neqn::op(float a, SignedDigit b)
+inline bool Neqn::op(float a, SignedDigit b)
 {   return Neqn::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Neqn::op(float a, std::uint64_t* b)
+inline bool Neqn::op(float a, std::uint64_t* b)
 {   return Neqn::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Neqn::op(SignedDigit a, double b)
+inline bool Neqn::op(SignedDigit a, double b)
 {   const SignedDigit range = (1LL)<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) != b;
 // The value on the next line is a floating point representation of 2^63,
@@ -11492,45 +13258,41 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return a != static_cast<SignedDigit>(b);
 }
 
-[[gnu::used]] inline bool Neqn::op(std::uint64_t* a, double b)
+inline bool Neqn::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Neqn::op(static_cast<SignedDigit>(a[0]), b);
     return !eqnfloat(a, lena, b);
 }
 
-[[gnu::used]] inline bool Neqn::op(double a, SignedDigit b)
+inline bool Neqn::op(double a, SignedDigit b)
 {   return Neqn::op(b, a);
 }
 
-[[gnu::used]] inline bool Neqn::op(double a, std::uint64_t* b)
+inline bool Neqn::op(double a, std::uint64_t* b)
 {   return Neqn::op(b, a);
 }
 
-#ifdef softfloat_h
-
-[[gnu::used]] inline bool Neqn::op(SignedDigit a, long float b)
+inline bool Neqn::op(SignedDigit a, FLOAT_128 b)
 {   return !f128_eq(i64_to_f128(a), b);
 }
 
-[[gnu::used]] inline bool Neqn::op(std::uint64_t* a, long float b)
+inline bool Neqn::op(std::uint64_t* a, FLOAT_128 b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Neqn::op(static_cast<SignedDigit>(a[0]), b);
     return !eqnbigfloat(a, lena, b);
 }
 
-[[gnu::used]] inline bool Neqn::op(long float a, SignedDigit b)
+inline bool Neqn::op(FLOAT_128 a, SignedDigit b)
 {   return Neqn::op(b, a);
 }
 
-[[gnu::used]] inline bool Neqn::op(long float a, std::uint64_t* b)
+inline bool Neqn::op(FLOAT_128 a, std::uint64_t* b)
 {   return Neqn::op(b, a);
 }
-
-#endif // softfloat_h
 
 // greaterp
 
-[[gnu::used]] inline bool biggreaterp(const std::uint64_t* a, std::size_t lena,
+inline bool biggreaterp(const std::uint64_t* a, std::size_t lena,
                         const std::uint64_t* b, std::size_t lenb)
 {   Digit a0 = a[lena-1], b0 = b[lenb-1];
 // If one of the numbers has more digits than the other then the sign of
@@ -11558,7 +13320,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // This version treats the two inputs as unsigned numbers. It is used from
 // within the GCD code (at least)
 
-[[gnu::used]] inline bool bigUnsignedGreaterp(const std::uint64_t* a,
+inline bool bigUnsignedGreaterp(const std::uint64_t* a,
                                 std::size_t lena,
                                 const std::uint64_t* b, std::size_t lenb)
 {
@@ -11576,25 +13338,25 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
     return false;
 }
 
-[[gnu::used]] inline bool Greaterp::op(std::uint64_t* a, std::uint64_t* b)
+inline bool Greaterp::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     return biggreaterp(a, lena, b, lenb);
 }
 
-[[gnu::used]] inline bool Greaterp::op(std::uint64_t* a, SignedDigit bb)
+inline bool Greaterp::op(std::uint64_t* a, SignedDigit bb)
 {   Digit b[1] = {static_cast<Digit>(bb)};
     std::size_t lena = numberSize(a);
     return biggreaterp(a, lena, b, 1);
 }
 
-[[gnu::used]] inline bool Greaterp::op(SignedDigit aa, std::uint64_t* b)
+inline bool Greaterp::op(SignedDigit aa, std::uint64_t* b)
 {   Digit a[1] = {static_cast<Digit>(aa)};
     std::size_t lenb = numberSize(b);
     return biggreaterp(a, 1, b, lenb);
 }
 
-[[gnu::used]] inline bool Greaterp::op(SignedDigit a, SignedDigit b)
+inline bool Greaterp::op(SignedDigit a, SignedDigit b)
 {   return a > b;
 }
 
@@ -11602,23 +13364,23 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 // so all the cases of comparisons with floats (as distinct from with
 // double) are easy to delegate.
 
-[[gnu::used]] inline bool Greaterp::op(SignedDigit a, float b)
+inline bool Greaterp::op(SignedDigit a, float b)
 {   return Greaterp::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Greaterp::op(std::uint64_t* a, float b)
+inline bool Greaterp::op(std::uint64_t* a, float b)
 {   return Greaterp::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Greaterp::op(float a, SignedDigit b)
+inline bool Greaterp::op(float a, SignedDigit b)
 {   return Greaterp::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Greaterp::op(float a, std::uint64_t* b)
+inline bool Greaterp::op(float a, std::uint64_t* b)
 {   return Greaterp::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Greaterp::op(SignedDigit a, double b)
+inline bool Greaterp::op(SignedDigit a, double b)
 {
 // If the integer is small enough it can be converted to a double
 // without any rounding, so then I can do the comparison easily.
@@ -11650,7 +13412,7 @@ enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 
 enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
-[[gnu::used]] inline bool greaterpfloat(std::uint64_t* a, std::size_t lena,
+inline bool greaterpfloat(std::uint64_t* a, std::size_t lena,
                           double b,
                           CompareMode mode)
 {   if (std::isnan(b)) return false;
@@ -11725,29 +13487,27 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return mode==CompareMode::GEQ || mode==CompareMode::LEQ;
 }
 
-[[gnu::used]] inline bool Greaterp::op(std::uint64_t* a, double b)
+inline bool Greaterp::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Greaterp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::GREATERP);
 }
 
-[[gnu::used]] inline bool Greaterp::op(double a, SignedDigit b)
+inline bool Greaterp::op(double a, SignedDigit b)
 {   return Lessp::op(b, a);
 }
 
-[[gnu::used]] inline bool Greaterp::op(double a, std::uint64_t* b)
+inline bool Greaterp::op(double a, std::uint64_t* b)
 {   return Lessp::op(b, a);
 }
-
-#ifdef softfloat_h
 
 //@@ This is not sorted out yet!
 
 // This one function does >, >=, < and <= with "great" indicating if
 // the base is > or < and "ifequal" distinguishing > from >= and < from <=.
 
-[[gnu::used]] inline bool greaterpbigfloat(std::uint64_t* a, std::size_t lena,
-                             long float b,
+inline bool greaterpbigfloat(std::uint64_t* a, std::size_t lena,
+                             FLOAT_128 b,
                              bool great, bool ifequal)
 {   if (f128_nan(b)) return
             false;  // Comparisons involving a NaN => false.
@@ -11769,7 +13529,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 // Convert a to a longfloat and compare. The conversion will not lose any
 // information because the |a| <= 2^112 so it will fit within the mantissa
 // bits that are available.
-        long float aa = Float128::op(a);
+        FLOAT_128 aa = Float128::op(a);
         if (great)
         {   if (ifequal) return f128_le(b, aa);
             else return f128_lt(b, aa);
@@ -11800,62 +13560,60 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     }
 }
 
-[[gnu::used]] inline bool Greaterp::op(SignedDigit a, long float b)
+inline bool Greaterp::op(SignedDigit a, FLOAT_128 b)
 {   return f128_lt(b, i64_to_f128(a));
 }
 
-[[gnu::used]] inline bool Greaterp::op(std::uint64_t* a, long float b)
+inline bool Greaterp::op(std::uint64_t* a, FLOAT_128 b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Greaterp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, true, false);
 
 }
 
-[[gnu::used]] inline bool Greaterp::op(long float a, SignedDigit b)
+inline bool Greaterp::op(FLOAT_128 a, SignedDigit b)
 {   return Lessp::op(b, a);
 }
 
-[[gnu::used]] inline bool Greaterp::op(long float a, std::uint64_t* b)
+inline bool Greaterp::op(FLOAT_128 a, std::uint64_t* b)
 {   return Lessp::op(b, a);
 }
-
-#endif // softfloat_h
 
 // geq
 
-[[gnu::used]] inline bool Geq::op(std::uint64_t* a, std::uint64_t* b)
+inline bool Geq::op(std::uint64_t* a, std::uint64_t* b)
 {   return !Greaterp::op(b, a);
 }
 
-[[gnu::used]] inline bool Geq::op(std::uint64_t* a, SignedDigit b)
+inline bool Geq::op(std::uint64_t* a, SignedDigit b)
 {   return !Greaterp::op(b, a);
 }
 
-[[gnu::used]] inline bool Geq::op(SignedDigit a, std::uint64_t* b)
+inline bool Geq::op(SignedDigit a, std::uint64_t* b)
 {   return !Greaterp::op(b, a);
 }
 
-[[gnu::used]] inline bool Geq::op(SignedDigit a, SignedDigit b)
+inline bool Geq::op(SignedDigit a, SignedDigit b)
 {   return a >= b;
 }
 
-[[gnu::used]] inline bool Geq::op(SignedDigit a, float b)
+inline bool Geq::op(SignedDigit a, float b)
 {   return Geq::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Geq::op(std::uint64_t* a, float b)
+inline bool Geq::op(std::uint64_t* a, float b)
 {   return Geq::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Geq::op(float a, SignedDigit b)
+inline bool Geq::op(float a, SignedDigit b)
 {   return Geq::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Geq::op(float a, std::uint64_t* b)
+inline bool Geq::op(float a, std::uint64_t* b)
 {   return Geq::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Geq::op(SignedDigit a, double b)
+inline bool Geq::op(SignedDigit a, double b)
 {   const SignedDigit range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) >= b;
     if (std::isnan(b)) return false;
@@ -11864,78 +13622,74 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return a >= static_cast<SignedDigit>(b);
 }
 
-[[gnu::used]] inline bool Geq::op(std::uint64_t* a, double b)
+inline bool Geq::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Geq::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::GEQ);
 }
 
-[[gnu::used]] inline bool Geq::op(double a, SignedDigit b)
+inline bool Geq::op(double a, SignedDigit b)
 {   return Leq::op(b, a);
 }
 
-[[gnu::used]] inline bool Geq::op(double a, std::uint64_t* b)
+inline bool Geq::op(double a, std::uint64_t* b)
 {   return Leq::op(b, a);
 }
 
-#ifdef softfloat_h
-
-[[gnu::used]] inline bool Geq::op(SignedDigit a, long float b)
+inline bool Geq::op(SignedDigit a, FLOAT_128 b)
 {   return f128_le(b, i64_to_f128(a));
     return false;
 }
 
-[[gnu::used]] inline bool Geq::op(std::uint64_t* a, long float b)
+inline bool Geq::op(std::uint64_t* a, FLOAT_128 b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Greaterp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, true, true);
 }
 
-[[gnu::used]] inline bool Geq::op(long float a, SignedDigit b)
+inline bool Geq::op(FLOAT_128 a, SignedDigit b)
 {   return Leq::op(b, a);
 }
 
-[[gnu::used]] inline bool Geq::op(long float a, std::uint64_t* b)
+inline bool Geq::op(FLOAT_128 a, std::uint64_t* b)
 {   return Leq::op(b, a);
 }
-
-#endif // softfloat_h
 
 // lessp
 
-[[gnu::used]] inline bool Lessp::op(std::uint64_t* a, std::uint64_t* b)
+inline bool Lessp::op(std::uint64_t* a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
 
-[[gnu::used]] inline bool Lessp::op(std::uint64_t* a, SignedDigit b)
+inline bool Lessp::op(std::uint64_t* a, SignedDigit b)
 {   return Greaterp::op(b, a);
 }
 
-[[gnu::used]] inline bool Lessp::op(SignedDigit a, std::uint64_t* b)
+inline bool Lessp::op(SignedDigit a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
 
-[[gnu::used]] inline bool Lessp::op(SignedDigit a, SignedDigit b)
+inline bool Lessp::op(SignedDigit a, SignedDigit b)
 {   return a < b;
 }
 
-[[gnu::used]] inline bool Lessp::op(SignedDigit a, float b)
+inline bool Lessp::op(SignedDigit a, float b)
 {   return Lessp::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Lessp::op(std::uint64_t* a, float b)
+inline bool Lessp::op(std::uint64_t* a, float b)
 {   return Lessp::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Lessp::op(float a, SignedDigit b)
+inline bool Lessp::op(float a, SignedDigit b)
 {   return Lessp::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Lessp::op(float a, std::uint64_t* b)
+inline bool Lessp::op(float a, std::uint64_t* b)
 {   return Lessp::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Lessp::op(SignedDigit a, double b)
+inline bool Lessp::op(SignedDigit a, double b)
 {   const SignedDigit range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) < b;
     if (std::isnan(b)) return false;
@@ -11944,28 +13698,26 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return a < static_cast<SignedDigit>(b);
 }
 
-[[gnu::used]] inline bool Lessp::op(std::uint64_t* a, double b)
+inline bool Lessp::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Lessp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::LESSP);
 }
 
-[[gnu::used]] inline bool Lessp::op(double a, SignedDigit b)
+inline bool Lessp::op(double a, SignedDigit b)
 {   return Greaterp::op(b, a);
 }
 
-[[gnu::used]] inline bool Lessp::op(double a, std::uint64_t* b)
+inline bool Lessp::op(double a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
 
-#ifdef softfloat_h
-
-[[gnu::used]] inline bool Lessp::op(SignedDigit a, long float b)
+inline bool Lessp::op(SignedDigit a, FLOAT_128 b)
 {   return f128_lt(i64_to_f128(a), b);
     return false;
 }
 
-[[gnu::used]] inline bool Lessp::op(std::uint64_t* a, long float b)
+inline bool Lessp::op(std::uint64_t* a, FLOAT_128 b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Lessp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, false, false);
@@ -11973,51 +13725,49 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return false;
 }
 
-[[gnu::used]] inline bool Lessp::op(long float a, SignedDigit b)
+inline bool Lessp::op(FLOAT_128 a, SignedDigit b)
 {   return Greaterp::op(b, a);
 }
 
-[[gnu::used]] inline bool Lessp::op(long float a, std::uint64_t* b)
+inline bool Lessp::op(FLOAT_128 a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
-
-#endif // softfloat_h
 
 // leq
 
-[[gnu::used]] inline bool Leq::op(std::uint64_t* a, std::uint64_t* b)
+inline bool Leq::op(std::uint64_t* a, std::uint64_t* b)
 {   return !Greaterp::op(a, b);
 }
 
-[[gnu::used]] inline bool Leq::op(std::uint64_t* a, SignedDigit b)
+inline bool Leq::op(std::uint64_t* a, SignedDigit b)
 {   return !Greaterp::op(a, b);
 }
 
-[[gnu::used]] inline bool Leq::op(SignedDigit a, std::uint64_t* b)
+inline bool Leq::op(SignedDigit a, std::uint64_t* b)
 {   return !Greaterp::op(a, b);
 }
 
-[[gnu::used]] inline bool Leq::op(SignedDigit a, SignedDigit b)
+inline bool Leq::op(SignedDigit a, SignedDigit b)
 {   return a <= b;
 }
 
-[[gnu::used]] inline bool Leq::op(SignedDigit a, float b)
+inline bool Leq::op(SignedDigit a, float b)
 {   return Leq::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Leq::op(std::uint64_t* a, float b)
+inline bool Leq::op(std::uint64_t* a, float b)
 {   return Leq::op(a, static_cast<double>(b));
 }
 
-[[gnu::used]] inline bool Leq::op(float a, SignedDigit b)
+inline bool Leq::op(float a, SignedDigit b)
 {   return Leq::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Leq::op(float a, std::uint64_t* b)
+inline bool Leq::op(float a, std::uint64_t* b)
 {   return Leq::op(static_cast<double>(a), b);
 }
 
-[[gnu::used]] inline bool Leq::op(SignedDigit a, double b)
+inline bool Leq::op(SignedDigit a, double b)
 {   const SignedDigit range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) <= b;
     if (std::isnan(b)) return false;
@@ -12026,42 +13776,38 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return a <= static_cast<SignedDigit>(b);
 }
 
-[[gnu::used]] inline bool Leq::op(std::uint64_t* a, double b)
+inline bool Leq::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Lessp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::LEQ);
 }
 
-[[gnu::used]] inline bool Leq::op(double a, SignedDigit b)
+inline bool Leq::op(double a, SignedDigit b)
 {   return Geq::op(b, a);
 }
 
-[[gnu::used]] inline bool Leq::op(double a, std::uint64_t* b)
+inline bool Leq::op(double a, std::uint64_t* b)
 {   return Geq::op(b, a);
 }
 
-#ifdef softfloat_h
-
-[[gnu::used]] inline bool Leq::op(SignedDigit a, long float b)
+inline bool Leq::op(SignedDigit a, FLOAT_128 b)
 {   return f128_le(i64_to_f128(a), b);
     return false;
 }
 
-[[gnu::used]] inline bool Leq::op(std::uint64_t* a, long float b)
+inline bool Leq::op(std::uint64_t* a, FLOAT_128 b)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Leq::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, false, true);
 }
 
-[[gnu::used]] inline bool Leq::op(long float a, SignedDigit b)
+inline bool Leq::op(FLOAT_128 a, SignedDigit b)
 {   return Geq::op(b, a);
 }
 
-[[gnu::used]] inline bool Leq::op(long float a, std::uint64_t* b)
+inline bool Leq::op(FLOAT_128 a, std::uint64_t* b)
 {   return Geq::op(b, a);
 }
-
-#endif // softfloat_h
 
 
 // Negation, addition and subtraction. These are easy apart from a mess
@@ -12079,7 +13825,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 // [0x8000000000000000] (a negative value) you get [0,0x8000000000000000],
 // and vice versa.
 
-[[gnu::used]] inline void bignegate(const std::uint64_t* a, std::size_t lena,
+inline void bignegate(const std::uint64_t* a, std::size_t lena,
                       std::uint64_t* r, std::size_t &lenr)
 {   internalNegate(a, lena, r);
     r[lena] = negative(a[lena-1]) ? 0 : -1;
@@ -12088,7 +13834,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     truncateNegative(r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t Minus::op(std::uint64_t* a)
+inline std::intptr_t Minus::op(std::uint64_t* a)
 {   std::size_t n = numberSize(a);
     std::uint64_t* p = reserve(n+1);
     std::size_t final_n;
@@ -12102,28 +13848,28 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 // even in that case (-a) can not overflow 64-bit arithmetic because
 // the fixnum will have had at least one tag bit.
 
-[[gnu::used]] inline std::intptr_t Minus::op(SignedDigit a)
+inline std::intptr_t Minus::op(SignedDigit a)
 {   if (a == MIN_FIXNUM) return intToBignum(-a);
     else return intToHandle(-a);
 }
 
-[[gnu::used]] inline std::intptr_t Add1::op(std::uint64_t* a)
+inline std::intptr_t Add1::op(std::uint64_t* a)
 {   return Plus::op(a, 1);
 }
 
-[[gnu::used]] inline std::intptr_t Add1::op(SignedDigit a)
+inline std::intptr_t Add1::op(SignedDigit a)
 {   return intToBignum(a+1);
 }
 
-[[gnu::used]] inline std::intptr_t Sub1::op(std::uint64_t* a)
+inline std::intptr_t Sub1::op(std::uint64_t* a)
 {   return Plus::op(a, -1);
 }
 
-[[gnu::used]] inline std::intptr_t Sub1::op(SignedDigit a)
+inline std::intptr_t Sub1::op(SignedDigit a)
 {   return intToBignum(a-1);
 }
 
-[[gnu::used]] inline std::intptr_t Abs::op(std::uint64_t* a)
+inline std::intptr_t Abs::op(std::uint64_t* a)
 {   std::size_t n = numberSize(a);
     if (!negative(a[n-1]))
     {   std::uint64_t* r = reserve(n);
@@ -12142,14 +13888,14 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 // even in that case (-a) can not overflow 64-bit arithmetic because
 // the fixnum will have had at least one tag bit.
 
-[[gnu::used]] inline std::intptr_t Abs::op(SignedDigit a)
+inline std::intptr_t Abs::op(SignedDigit a)
 {   if (a == MIN_FIXNUM) return unsignedIntToBignum(-a);
     else return intToHandle(a<0 ? -a : a);
 }
 
 // The "bitnot" operation is simple and length can not change.
 
-[[gnu::used]] inline void biglognot(const std::uint64_t* a, std::size_t lena,
+inline void biglognot(const std::uint64_t* a, std::size_t lena,
                       std::uint64_t* r, std::size_t &lenr)
 {   for (std::size_t i=0; i<lena; i++)
     {   r[i] = ~a[i];
@@ -12157,7 +13903,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     lenr = lena;
 }
 
-[[gnu::used]] inline std::intptr_t Lognot::op(std::uint64_t* a)
+inline std::intptr_t Lognot::op(std::uint64_t* a)
 {   std::size_t n = numberSize(a);
     std::uint64_t* p = reserve(n+1);
     std::size_t final_n;
@@ -12165,13 +13911,13 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, n+1, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Lognot::op(SignedDigit a)
+inline std::intptr_t Lognot::op(SignedDigit a)
 {   return intToHandle(~a);
 }
 
 // logand
 
-[[gnu::used]] inline void ordered_biglogand(const std::uint64_t* a,
+inline void ordered_biglogand(const std::uint64_t* a,
                               std::size_t lena,
                               const std::uint64_t* b, std::size_t lenb,
                               std::uint64_t* r, std::size_t &lenr)
@@ -12185,14 +13931,14 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     truncatePositive(r, lenr);
 }
 
-[[gnu::used]] inline void biglogand(const std::uint64_t* a, std::size_t lena,
+inline void biglogand(const std::uint64_t* a, std::size_t lena,
                       const std::uint64_t* b, std::size_t lenb,
                       std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_biglogand(a, lena, b, lenb, r, lenr);
     else return ordered_biglogand(b, lenb, a, lena, r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t Logand::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Logand::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::size_t n;
@@ -12209,7 +13955,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 // I am not going to expect that to be on the critical performance path for
 // enough programs for me to worry too much!
 
-[[gnu::used]] inline std::intptr_t Logand::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Logand::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
     std::uint64_t* p = reserve(lena);
     std::size_t final_n;
@@ -12218,7 +13964,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, lena, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logand::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Logand::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     std::uint64_t* p = reserve(lenb);
     std::size_t final_n;
@@ -12227,13 +13973,13 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, lenb, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logand::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Logand::op(SignedDigit a, SignedDigit b)
 {   return intToHandle(a & b);
 }
 
 // logor
 
-[[gnu::used]] inline void ordered_biglogor(const std::uint64_t* a, std::size_t lena,
+inline void ordered_biglogor(const std::uint64_t* a, std::size_t lena,
                              const std::uint64_t* b, std::size_t lenb,
                              std::uint64_t* r, std::size_t &lenr)
 {   for (std::size_t i=0; i<lenb; i++)
@@ -12246,14 +13992,14 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     truncateNegative(r, lenr);
 }
 
-[[gnu::used]] inline void biglogor(const std::uint64_t* a, std::size_t lena,
+inline void biglogor(const std::uint64_t* a, std::size_t lena,
                      const std::uint64_t* b, std::size_t lenb,
                      std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_biglogor(a, lena, b, lenb, r, lenr);
     else return ordered_biglogor(b, lenb, a, lena, r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t Logor::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Logor::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::size_t n;
@@ -12265,7 +14011,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, n, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logor::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Logor::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
     std::uint64_t* p = reserve(lena);
     std::size_t final_n;
@@ -12274,7 +14020,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, lena, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logor::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Logor::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     std::uint64_t* p = reserve(lenb);
     std::size_t final_n;
@@ -12283,13 +14029,13 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, lenb, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logor::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Logor::op(SignedDigit a, SignedDigit b)
 {   return intToHandle(a | b);
 }
 
 // logxor
 
-[[gnu::used]] inline void ordered_biglogxor(const std::uint64_t* a,
+inline void ordered_biglogxor(const std::uint64_t* a,
                               std::size_t lena,
                               const std::uint64_t* b, std::size_t lenb,
                               std::uint64_t* r, std::size_t &lenr)
@@ -12310,14 +14056,14 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     truncateNegative(r, lenr);
 }
 
-[[gnu::used]] inline void biglogxor(const std::uint64_t* a, std::size_t lena,
+inline void biglogxor(const std::uint64_t* a, std::size_t lena,
                       const std::uint64_t* b, std::size_t lenb,
                       std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_biglogxor(a, lena, b, lenb, r, lenr);
     else return ordered_biglogxor(b, lenb, a, lena, r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t Logxor::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Logxor::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::size_t n;
@@ -12329,7 +14075,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, n, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logxor::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Logxor::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
     std::uint64_t* p = reserve(lena);
     std::size_t final_n;
@@ -12338,7 +14084,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, lena, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logxor::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Logxor::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     std::uint64_t* p = reserve(lenb);
     std::size_t final_n;
@@ -12347,12 +14093,12 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, lenb, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logxor::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Logxor::op(SignedDigit a, SignedDigit b)
 {   return intToHandle(a ^ b);
 }
 
 
-[[gnu::used]] inline void ordered_biglogeqv(const std::uint64_t* a,
+inline void ordered_biglogeqv(const std::uint64_t* a,
                               std::size_t lena,
                               const std::uint64_t* b, std::size_t lenb,
                               std::uint64_t* r, std::size_t &lenr)
@@ -12373,14 +14119,14 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     truncateNegative(r, lenr);
 }
 
-[[gnu::used]] inline void biglogeqv(const std::uint64_t* a, std::size_t lena,
+inline void biglogeqv(const std::uint64_t* a, std::size_t lena,
                       const std::uint64_t* b, std::size_t lenb,
                       std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_biglogeqv(a, lena, b, lenb, r, lenr);
     else return ordered_biglogeqv(b, lenb, a, lena, r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t Logeqv::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Logeqv::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::size_t n;
@@ -12392,7 +14138,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, n, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logeqv::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Logeqv::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
     std::uint64_t* p = reserve(lena);
     std::size_t final_n;
@@ -12401,7 +14147,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, lena, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logeqv::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Logeqv::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     std::uint64_t* p = reserve(lenb);
     std::size_t final_n;
@@ -12410,15 +14156,15 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, lenb, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Logeqv::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Logeqv::op(SignedDigit a, SignedDigit b)
 {   return intToHandle(~a ^ b);
 }
 
-[[gnu::used]] inline void bigrightshift(const std::uint64_t* a, std::size_t lena,
+inline void bigrightshift(const std::uint64_t* a, std::size_t lena,
                           SignedDigit n,
                           std::uint64_t* r, std::size_t &lenr);
 
-[[gnu::used]] inline void bigleftshift(const std::uint64_t* a, std::size_t lena,
+inline void bigleftshift(const std::uint64_t* a, std::size_t lena,
                          SignedDigit n,
                          std::uint64_t* r, std::size_t &lenr)
 {   if (n == 0)
@@ -12452,9 +14198,9 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     truncateNegative(r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t rightshift_b(std::uint64_t* a, SignedDigit n);
+inline std::intptr_t rightshift_b(std::uint64_t* a, SignedDigit n);
 
-[[gnu::used]] inline std::intptr_t LeftShift::op(std::uint64_t* a, SignedDigit n)
+inline std::intptr_t LeftShift::op(std::uint64_t* a, SignedDigit n)
 {   if (n == 0) return copyIfNoGarbageCollector(a);
     else if (n < 0) return RightShift::op(a, -n);
     std::size_t lena = numberSize(a);
@@ -12465,7 +14211,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, nr, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t LeftShift::op(SignedDigit aa, SignedDigit n)
+inline std::intptr_t LeftShift::op(SignedDigit aa, SignedDigit n)
 {   if (n == 0) return intToHandle(aa);
     else if (n < 0) return RightShift::op(aa, -n);
     std::size_t nr = (n/64) + 2;
@@ -12476,7 +14222,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, nr, final_n);
 }
 
-[[gnu::used]] inline void bigrightshift(const std::uint64_t* a, std::size_t lena,
+inline void bigrightshift(const std::uint64_t* a, std::size_t lena,
                           SignedDigit n,
                           std::uint64_t* r, std::size_t &lenr)
 {   if (n == 0)
@@ -12510,7 +14256,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     truncateNegative(r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t RightShift::op(std::uint64_t* a, SignedDigit n)
+inline std::intptr_t RightShift::op(std::uint64_t* a, SignedDigit n)
 {   if (n == 0) return copyIfNoGarbageCollector(a);
     else if (n < 0) return LeftShift::op(a, -n);
     std::size_t lena = numberSize(a);
@@ -12523,7 +14269,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, nr, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t RightShift::op(SignedDigit a, SignedDigit n)
+inline std::intptr_t RightShift::op(SignedDigit a, SignedDigit n)
 {   if (n == 0) return intToHandle(a);
     else if (n < 0) return LeftShift::op(a, -n);
 // Shifts of 64 and up obviously lose all the input data apart from its
@@ -12536,15 +14282,15 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return intToHandle((a & ~(q-1))/q);
 }
 
-[[gnu::used]] inline Digit Low64Bits::op(std::uint64_t* a)
+inline Digit Low64Bits::op(std::uint64_t* a)
 {   return a[0];
 }
 
-[[gnu::used]] inline Digit Low64Bits::op(SignedDigit aa)
+inline Digit Low64Bits::op(SignedDigit aa)
 {   return static_cast<Digit>(aa);
 }
 
-[[gnu::used]] inline std::size_t LowBit::op(std::uint64_t* a)
+inline std::size_t LowBit::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
     if (negative(a[lena-1])) // count trailing 1 bits!
     {   std::size_t r=0, i=0;
@@ -12561,7 +14307,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     }
 }
 
-[[gnu::used]] inline std::size_t LowBit::op(SignedDigit aa)
+inline std::size_t LowBit::op(SignedDigit aa)
 {   Digit a;
     if (aa == 0) return 0;
     else if (aa < 0) a = ~static_cast<Digit>(aa);
@@ -12570,11 +14316,11 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return 64-CSL_LISP::nlz(a);
 }
 
-[[gnu::used]] inline std::size_t IntegerLength::op(std::uint64_t* a)
+inline std::size_t IntegerLength::op(std::uint64_t* a)
 {   return bignumBits(a, numberSize(a));
 }
 
-[[gnu::used]] inline std::size_t IntegerLength::op(SignedDigit aa)
+inline std::size_t IntegerLength::op(SignedDigit aa)
 {   Digit a;
     if (aa == 0 || aa == -1) return 0;
     else if (aa < 0) a = -static_cast<Digit>(aa) - 1;
@@ -12595,7 +14341,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 // "floating point" value with a 64-bit mantissa so I will not worry about
 // that at the moment.
 
-[[gnu::used]] inline Digit Top64Bits::op(std::uint64_t* a)
+inline Digit Top64Bits::op(std::uint64_t* a)
 {   size_t n = numberSize(a);
     if (n == 1 ||
         (n == 2 && a[2] == 0))
@@ -12606,12 +14352,12 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return (a[n-1] << lz) | (a[n-2] >> (64-lz));
 }
 
-[[gnu::used]] inline Digit Top64Bits::op(SignedDigit a)
+inline Digit Top64Bits::op(SignedDigit a)
 {   if (a == 0) return 0;    // Only non-normalised case
     return static_cast<uint64_t>(a) << CSL_LISP::nlz((Digit)a);
 }
 
-[[gnu::used]] inline std::size_t Logcount::op(std::uint64_t* a)
+inline std::size_t Logcount::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
     std::size_t r = 0;
     if (negative(a[lena-1]))
@@ -12621,25 +14367,25 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return r;
 }
 
-[[gnu::used]] inline std::size_t Logcount::op(SignedDigit a)
+inline std::size_t Logcount::op(SignedDigit a)
 {   if (a < 0) return countBits(~a);
     else return countBits(a);
 }
 
-[[gnu::used]] inline bool Logbitp::op(std::uint64_t* a, std::size_t n)
+inline bool Logbitp::op(std::uint64_t* a, std::size_t n)
 {   std::size_t lena = numberSize(a);
     if (n >= 64*lena) return negative(a[lena-1]);
     return (a[n/64] & (1ULL << (n%64))) != 0;
 }
 
-[[gnu::used]] inline bool Logbitp::op(SignedDigit a, std::size_t n)
+inline bool Logbitp::op(SignedDigit a, std::size_t n)
 {   if (n >= 64) return (a < 0);
     else return (a & (1ULL << n)) != 0;
 }
 
 // Addition when the length of a is art least than that of b.
 
-[[gnu::used]] inline void ordered_bigplus(const std::uint64_t* a, std::size_t lena,
+inline void ordered_bigplus(const std::uint64_t* a, std::size_t lena,
                             const std::uint64_t* b, std::size_t lenb,
                             std::uint64_t* r, std::size_t &lenr)
 {   Digit carry = 0;
@@ -12669,7 +14415,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 // Add a small number to a bignum
 
-[[gnu::used]] inline void bigplus_small(const std::uint64_t* a, std::size_t lena,
+inline void bigplus_small(const std::uint64_t* a, std::size_t lena,
                           SignedDigit n,
                           std::uint64_t* r, std::size_t &lenr)
 {   Digit w[1];
@@ -12679,14 +14425,14 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 // When I do a general addition I will not know which input is longer.
 
-[[gnu::used]] inline void bigplus(const std::uint64_t* a, std::size_t lena,
+inline void bigplus(const std::uint64_t* a, std::size_t lena,
                     const std::uint64_t* b, std::size_t lenb,
                     std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_bigplus(a, lena, b, lenb, r, lenr);
     else return ordered_bigplus(b, lenb, a, lena, r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t Plus::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Plus::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::size_t n;
@@ -12704,7 +14450,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 // most efficient implementation, so at a later stage I will want to hone
 // the code to make it better!
 
-[[gnu::used]] inline std::intptr_t Plus::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Plus::op(SignedDigit a, SignedDigit b)
 {
 // The two integer arguments will in fact each have been derived from a
 // tagged representation, and a consequence of that is that I can add
@@ -12719,7 +14465,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(r, 1, 1);
 }
 
-[[gnu::used]] inline std::intptr_t Plus::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Plus::op(SignedDigit a, std::uint64_t* b)
 {   Digit aa[1];
     aa[0] = a;
     std::size_t lenb = numberSize(b);
@@ -12729,7 +14475,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(r, lenb+1, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Plus::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Plus::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
     Digit bb[1];
     bb[0] = b;
@@ -12739,7 +14485,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(r, lena+1, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t bigplus_small(std::intptr_t aa, SignedDigit b)
+inline std::intptr_t bigplus_small(std::intptr_t aa, SignedDigit b)
 {   std::uint64_t* a = vectorOfHandle(aa);
     std::size_t lena = numberSize(a);
     std::uint64_t* p = reserve(lena+1);
@@ -12751,7 +14497,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 // For subtraction I implement both a-b and b-a. These work by
 // computing a + (~b) + 1 and (~a) + b + 1 respectively.
 
-[[gnu::used]] inline void ordered_bigsubtract(const std::uint64_t* a,
+inline void ordered_bigsubtract(const std::uint64_t* a,
                                 std::size_t lena,
                                 const std::uint64_t* b, std::size_t lenb,
                                 std::uint64_t* r, std::size_t &lenr)
@@ -12778,7 +14524,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     lenr = i+1;
 }
 
-[[gnu::used]] inline void ordered_bigrevsubtract(const std::uint64_t* a,
+inline void ordered_bigrevsubtract(const std::uint64_t* a,
                                    std::size_t lena,
                                    const std::uint64_t* b, std::size_t lenb,
                                    std::uint64_t* r, std::size_t &lenr)
@@ -12807,7 +14553,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 // Subtract a small number from a bignum
 
-[[gnu::used]] inline void bigsubtract_small(const std::uint64_t* a,
+inline void bigsubtract_small(const std::uint64_t* a,
                               std::size_t lena,
                               SignedDigit n,
                               std::uint64_t* r, std::size_t &lenr)
@@ -12818,7 +14564,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 // subtract a bignum from a small number
 
-[[gnu::used]] inline void bigrevsubtract_small(const std::uint64_t* a,
+inline void bigrevsubtract_small(const std::uint64_t* a,
                                  std::size_t lena,
                                  SignedDigit n,
                                  std::uint64_t* r, std::size_t &lenr)
@@ -12828,14 +14574,14 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 }
 
 
-[[gnu::used]] inline void bigsubtract(const std::uint64_t* a, std::size_t lena,
+inline void bigsubtract(const std::uint64_t* a, std::size_t lena,
                         const std::uint64_t* b, std::size_t lenb,
                         std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_bigsubtract(a, lena, b, lenb, r, lenr);
     else return ordered_bigrevsubtract(b, lenb, a, lena, r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t Difference::op(std::uint64_t* a,
+inline std::intptr_t Difference::op(std::uint64_t* a,
                                     std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
@@ -12848,7 +14594,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, n, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Difference::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Difference::op(SignedDigit a, SignedDigit b)
 {   Digit aa[1], bb[1];
     aa[0] = a;
     bb[0] = b;
@@ -12858,7 +14604,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(r, 2, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Difference::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Difference::op(SignedDigit a, std::uint64_t* b)
 {   Digit aa[1];
     aa[0] = a;
     std::size_t lenb = numberSize(b);
@@ -12868,7 +14614,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(r, lenb+1, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Difference::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Difference::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
     Digit bb[1];
     bb[0] = b;
@@ -12879,7 +14625,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 }
 
 
-[[gnu::used]] inline std::intptr_t RevDifference::op(std::uint64_t* a,
+inline std::intptr_t RevDifference::op(std::uint64_t* a,
                                        std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
@@ -12892,7 +14638,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(p, n, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t RevDifference::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t RevDifference::op(SignedDigit a, SignedDigit b)
 {   Digit aa[1], bb[1];
     aa[0] = a;
     bb[0] = b;
@@ -12902,7 +14648,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(r, 2, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t RevDifference::op(SignedDigit a,
+inline std::intptr_t RevDifference::op(SignedDigit a,
                                        std::uint64_t* b)
 {   Digit aa[1];
     aa[0] = a;
@@ -12913,7 +14659,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
     return confirmSize(r, lenb+1, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t RevDifference::op(std::uint64_t* a,
+inline std::intptr_t RevDifference::op(std::uint64_t* a,
                                        SignedDigit b)
 {   std::size_t lena = numberSize(a);
     Digit bb[1];
@@ -12935,7 +14681,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 // increment the N-digit number x by n.
 
-[[gnu::used]] inline void increment(std::uint64_t* x, std::size_t N, Digit n=1)
+inline void increment(std::uint64_t* x, std::size_t N, Digit n=1)
 {   if ((x[0] += n) >= n) return;
     for (std::size_t i=1; i<N; i++)
     {   if (++x[i] != 0) return;
@@ -12944,7 +14690,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 // z = x + y and return a carry, where x, y and z are N digit numbers.
 
-[[gnu::used]] inline Digit addWithCarry(const std::uint64_t* x,
+inline Digit addWithCarry(const std::uint64_t* x,
                                   const std::uint64_t* y,
                                   std::uint64_t* z, std::size_t N)
 {   Digit c = addWithCarry(x[0], y[0], z[0]);
@@ -12955,7 +14701,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 // As above except that c is a "carry in".
 
-[[gnu::used]] inline Digit addWithCarry(const std::uint64_t* x,
+inline Digit addWithCarry(const std::uint64_t* x,
                                   const std::uint64_t* y,
                                   Digit c,
                                   std::uint64_t* z, std::size_t N)
@@ -12965,7 +14711,7 @@ enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 }
 // z = x - y and return a borrow.
 
-[[gnu::used]] inline Digit subtractWithBorrow(const std::uint64_t* x,
+inline Digit subtractWithBorrow(const std::uint64_t* x,
                                         const std::uint64_t* y,
                                         std::uint64_t* z, std::size_t N)
 {   Digit b = subtractWithBorrow(x[0], y[0], z[0]);
@@ -21364,7 +23110,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // can be used to document the intent of everything else. I will also use
 // it when the sizes M and N are very different.
 
-[[gnu::used]] inline void referencePartMul(const std::uint64_t* u, size_t N,
+inline void referencePartMul(const std::uint64_t* u, size_t N,
                              const std::uint64_t* v, size_t M,
                              std::uint64_t* w,
                              size_t from=0, size_t to=SIZE_MAX)
@@ -21381,7 +23127,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // The "classical" version is what will be used for multiplications
 // involving not too many digits, and is pretty straightforward.
 
-[[gnu::used]] inline void classicalPartMul(const std::uint64_t* u, size_t N,
+inline void classicalPartMul(const std::uint64_t* u, size_t N,
                              const std::uint64_t* v, size_t M,
                              std::uint64_t* w,
                              size_t from=0, size_t to=SIZE_MAX)
@@ -21435,7 +23181,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // G Henriot and P Zimmermanm, "A long note on Mulder's Short Product"
 // Journal of Symbolic Computation Volume 37, 3, March 2004, Pages 391-401
 
-[[gnu::used]] inline Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
+inline Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
                             const std::uint64_t* v, size_t M,
                             std::uint64_t* w,
                             size_t from, size_t to);
@@ -21445,7 +23191,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // because from, to and w need adjustment and the calculations that
 // set their values seemed most easily expressed here.
 
-[[gnu::used]] inline Digit shiftedFastPartMulAdd(const std::uint64_t* u, size_t N,
+inline Digit shiftedFastPartMulAdd(const std::uint64_t* u, size_t N,
                                    const std::uint64_t* v, size_t M,
                                    std::uint64_t* w,
                                    size_t from, size_t to,
@@ -21470,7 +23216,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // and where "to" is such that quite a lot of the high digits of the
 // result are not wanted.
 
-[[gnu::used]] inline void lowPartMul(const std::uint64_t* u,
+inline void lowPartMul(const std::uint64_t* u,
                        const std::uint64_t* v, size_t N,
                        std::uint64_t*  w,
                        size_t from, size_t to)
@@ -21498,7 +23244,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // even though in C++ it is legal to have a pointer to the location
 // one beyond a vector.
 
-[[gnu::used]] inline Digit propagateCarry(Digit carry, std::uint64_t* w, size_t len)
+inline Digit propagateCarry(Digit carry, std::uint64_t* w, size_t len)
 {   if (carry==0 || len==0) return carry;
     for (;;)
     {   carry = addWithCarry(*w, carry, *w);
@@ -21509,9 +23255,9 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     }
 }
 
-[[gnu::used]] inline const size_t midmul_threshold = 20;
+inline const size_t midmul_threshold = 20;
 
-[[gnu::used]] inline void fastPartMul(const std::uint64_t* u, size_t N,
+inline void fastPartMul(const std::uint64_t* u, size_t N,
                         const std::uint64_t* v, size_t M,
                         std::uint64_t* w,
                         size_t from=0, size_t to=SIZE_MAX)
@@ -21610,7 +23356,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // Note that default values for from and to were set up in the declaration
 // and must not be repeated here.
 
-[[gnu::used]] inline Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
+inline Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
                             const std::uint64_t* v, size_t M,
                             std::uint64_t* w,
                             size_t from, size_t to)
@@ -21635,7 +23381,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // This is because in the perfect result there may have been carries
 // passed on up from lower partial products.
 
-[[gnu::used]] inline Digit fastSlice(const std::uint64_t* u, size_t N,
+inline Digit fastSlice(const std::uint64_t* u, size_t N,
                        const std::uint64_t* v, size_t M,
                        size_t from=0, size_t bits = 0)
 {   stkvector<Digit> shiftedU(N+1);
@@ -21683,7 +23429,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // This is the main entrypoint to the (big) integer multiplication code. It
 // takes two signed numbers and forms their product.
 
-[[gnu::used]] inline void bigmultiply(
+inline void bigmultiply(
         const std::uint64_t* a, std::size_t lena,
         const std::uint64_t* b, std::size_t lenb,
         std::uint64_t* c, std::size_t &lenc)
@@ -21719,7 +23465,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     lenc = lena;
 }
 
-[[gnu::used]] inline void classicalbigmultiply(
+inline void classicalbigmultiply(
         const std::uint64_t* a, std::size_t lena,
         const std::uint64_t* b, std::size_t lenb,
         std::uint64_t* c, std::size_t &lenc)
@@ -21747,7 +23493,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 //===========================================================================
 //===========================================================================
 
-[[gnu::used]] inline std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::size_t n = lena+lenb;
@@ -21760,7 +23506,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(p, n, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Times::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Times::op(SignedDigit a, SignedDigit b)
 {   SignedDigit hi;
     Digit lo;
     signedMultiply64(a, b, hi, lo);
@@ -21779,7 +23525,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(r, 2, 2);
 }
 
-[[gnu::used]] inline std::intptr_t Times::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Times::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     std::uint64_t* c = reserve(lenb+1);
     Digit hi = 0;
@@ -21798,11 +23544,11 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(c, lenb+1, lenc);
 }
 
-[[gnu::used]] inline std::intptr_t Times::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Times::op(std::uint64_t* a, SignedDigit b)
 {   return Times::op(b, a);
 }
 
-[[gnu::used]] inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::size_t n = lena+lenb;
@@ -21815,7 +23561,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(p, n, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t ClassicalTimes::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t ClassicalTimes::op(SignedDigit a, SignedDigit b)
 {   SignedDigit hi;
     Digit lo;
     signedMultiply64(a, b, hi, lo);
@@ -21834,7 +23580,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(r, 2, 2);
 }
 
-[[gnu::used]] inline std::intptr_t ClassicalTimes::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t ClassicalTimes::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     std::uint64_t* c = reserve(lenb+1);
     Digit hi = 0;
@@ -21853,7 +23599,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(c, lenb+1, lenc);
 }
 
-[[gnu::used]] inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, SignedDigit b)
 {   return ClassicalTimes::op(b, a);
 }
 
@@ -21872,7 +23618,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // clear to me, but for now I am setting it as 3 times the point at which
 // ordinary multiplications moves on from classical methods.
 
-[[gnu::used]] inline void bigsquare(std::uint64_t* a, std::size_t lena,
+inline void bigsquare(std::uint64_t* a, std::size_t lena,
                       std::uint64_t* r, std::size_t &lenr)
 {   if (lena > 24)
     {   bigmultiply(a, lena, a, lena, r, lenr);
@@ -21926,7 +23672,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     truncateNegative(r, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t Square::op(std::uint64_t* a)
+inline std::intptr_t Square::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
     std::size_t n = 2*lena;
     std::uint64_t* p = reserve(n);
@@ -21935,7 +23681,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(p, n, final_n);
 }
 
-[[gnu::used]] inline std::intptr_t Square::op(SignedDigit a)
+inline std::intptr_t Square::op(SignedDigit a)
 {   Digit hi, lo;
     multiply64(a, a, hi, lo);
     if (a < 0) hi -= 2u*static_cast<Digit>(a);
@@ -21957,7 +23703,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(p, 2, 2);
 }
 
-[[gnu::used]] inline std::intptr_t Isqrt::op(std::uint64_t* a)
+inline std::intptr_t Isqrt::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Isqrt::op(static_cast<SignedDigit>(a[0]));
     std::size_t lenx = (lena+1)/2;
@@ -22003,7 +23749,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return r;
 }
 
-[[gnu::used]] inline std::intptr_t Isqrt::op(SignedDigit aa)
+inline std::intptr_t Isqrt::op(SignedDigit aa)
 {   if (aa <= 0) return intToBignum(0);
     Digit a = static_cast<Digit>(aa);
     std::size_t w = 64 - CSL_LISP::nlz(a);
@@ -22032,7 +23778,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // must be at least the size of the result, but it is not clear that any
 // useful saving spece saving can be found down that path.
 
-[[gnu::used]] inline void bigpow(std::uint64_t* a, std::size_t lena,
+inline void bigpow(std::uint64_t* a, std::size_t lena,
                    Digit n,
                    std::uint64_t* v,
                    std::uint64_t* w,
@@ -22073,7 +23819,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // The code that dispatches into here should have filtered cases such that
 // the exponent n is not 0, 1 or 2 here.
 
-[[gnu::used]] inline std::intptr_t Pow::op(std::uint64_t* a, SignedDigit n)
+inline std::intptr_t Pow::op(std::uint64_t* a, SignedDigit n)
 {   std::size_t lena = numberSize(a);
 //  1^(-n) == 1,
 //  (-1)^(-n) == 1 if n is even or -1 if n is odd.
@@ -22118,7 +23864,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 
 // Again the cases n = 0, 1 and 2 have been filtered out
 
-[[gnu::used]] inline std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
+inline std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
 {   if (n < 0)
     {   int z = 0;
         if (a == 1) z = 1;
@@ -22158,11 +23904,11 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(r, olenr, lenr);
 }
 
-[[gnu::used]] inline double Pow::op(std::uint64_t* a, double n)
+inline double Pow::op(std::uint64_t* a, double n)
 {   return std::pow(Double::op(a), n);
 }
 
-[[gnu::used]] inline double Pow::op(SignedDigit a, double n)
+inline double Pow::op(SignedDigit a, double n)
 {   return std::pow(Double::op(a), n);
 }
 
@@ -22211,7 +23957,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // both. Note that at this stage a may still be negative! The value b is
 // passed in sign and magnitide form as {b, bNegative}
 
-[[gnu::used]] inline void unsigned_short_division(std::uint64_t* a,
+inline void unsigned_short_division(std::uint64_t* a,
                                     std::size_t lena,
                                     Digit b, bool bNegative,
                                     bool want_q, std::uint64_t*& q,
@@ -22294,7 +24040,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     }
 }
 
-[[gnu::used]] inline void signed_short_division(std::uint64_t* a, std::size_t lena,
+inline void signed_short_division(std::uint64_t* a, std::size_t lena,
                                   SignedDigit b,
                                   bool want_q, std::uint64_t*& q,
                                   std::size_t &olenq, std::size_t &lenq,
@@ -22311,14 +24057,14 @@ static void fftmul(ConstDigitPtr a, size_t lena,
                                  want_r, r, olenr, lenr);
 }
 
-[[gnu::used]] inline void unsigned_long_division(std::uint64_t* a,
+inline void unsigned_long_division(std::uint64_t* a,
                                    std::size_t &lena,
                                    std::uint64_t* b, std::size_t &lenb,
                                    bool want_q, std::uint64_t* q,
                                    std::size_t &olenq, std::size_t &lenq);
 
 #ifdef FASTDIVISION
-[[gnu::used]] inline void fastDivision(std::uint64_t* a,
+inline void fastDivision(std::uint64_t* a,
                          std::size_t &lena,
                          std::uint64_t* b, std::size_t &lenb,
                          bool want_q, std::uint64_t* q,
@@ -22336,7 +24082,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 
 // Divide a by b to obtain a quotient q and a remainder r.
 
-[[gnu::used]] inline void division(std::uint64_t* a, std::size_t lena,
+inline void division(std::uint64_t* a, std::size_t lena,
                      std::uint64_t* b, std::size_t lenb,
                      bool want_q, std::uint64_t*& q, std::size_t &olenq, std::size_t &lenq,
                      bool want_r, std::uint64_t*& r, std::size_t &olenr, std::size_t &lenr)
@@ -22555,7 +24301,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // that the shift amount will be in the range 0-63.
 
 
-[[gnu::used]] inline Digit scale_for_division(std::uint64_t* r,
+inline Digit scale_for_division(std::uint64_t* r,
                                         std::size_t lenr,
                                         int s)
 {
@@ -22578,7 +24324,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 
 // r = r - b*q*base^(lena-lenb-1).
 
-[[gnu::used]] inline void multiply_and_subtract(std::uint64_t* r, std::size_t lenr,
+inline void multiply_and_subtract(std::uint64_t* r, std::size_t lenr,
                                   Digit q0,
                                   std::uint64_t* b, std::size_t lenb)
 {   Digit hi = 0, lo, carry = 1;
@@ -22597,7 +24343,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // result. I fix things up by decrementing q and going
 //         r = r + (b<<(lenr-lenb-1))
 
-[[gnu::used]] inline void addBackCorrection(std::uint64_t* r, std::size_t lenr,
+inline void addBackCorrection(std::uint64_t* r, std::size_t lenr,
                               std::uint64_t* b, std::size_t lenb)
 {   Digit carry = 0;
     for (std::size_t i=0; i<lenb; i++)
@@ -22606,7 +24352,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     r[lenr-1] += carry;
 }
 
-[[gnu::used]] inline Digit nextQuotientDigit(std::uint64_t* r,
+inline Digit nextQuotientDigit(std::uint64_t* r,
                                std::size_t &lenr,
                                std::uint64_t* b, std::size_t lenb)
 {   Digit q0, r0;
@@ -22646,7 +24392,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // is in the range 0 - 63. The bits shifted out to the right should all
 // be zero.
 
-[[gnu::used]] inline void unscale_for_division(std::uint64_t* r, std::size_t &lenr, int s)
+inline void unscale_for_division(std::uint64_t* r, std::size_t &lenr, int s)
 {   if (s != 0)
     {   Digit carry = 0;
         std::size_t i = lenr-1;
@@ -22670,7 +24416,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // I promise I will not corrupt it, so in that case b still has to be
 // uint64_t* not const uint64_t* but it will not be overwritten.
 
-[[gnu::used]] inline void unsigned_long_division(std::uint64_t* a,
+inline void unsigned_long_division(std::uint64_t* a,
                                    std::size_t &lena,
                                    std::uint64_t* b, std::size_t &lenb,
                                    bool want_q, std::uint64_t* q,
@@ -22714,7 +24460,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // Here a>b and b is at least 2 words. The code corrupts b and replaces
 // a with remainder(a, b).
 
-[[gnu::used]] inline void unsigned_long_remainder(std::uint64_t* a,
+inline void unsigned_long_remainder(std::uint64_t* a,
                                     std::size_t &lena,
                                     std::uint64_t* b, std::size_t &lenb)
 {   std::size_t w;
@@ -22722,7 +24468,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
                            false, nullptr, w, w);
 }
 
-[[gnu::used]] inline std::intptr_t Quotient::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Quotient::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::uint64_t* q = nullptr;
@@ -22734,7 +24480,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(q, olenq, lenq);
 }
 
-[[gnu::used]] inline std::intptr_t Quotient::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Quotient::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
@@ -22768,7 +24514,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // A fixnum divided by a bignum ought always to yield 0, except that
 // maybe -0x8000000000000000} / {0,0x8000000000000000) => -1
 
-[[gnu::used]] inline std::intptr_t Quotient::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Quotient::op(SignedDigit a, std::uint64_t* b)
 {   if (numberSize(b)==1 &&
         b[0]==-static_cast<Digit>(a))
         UNLIKELY
@@ -22778,12 +24524,12 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 
 // unpleasantly -0x8000000000000000 / -1 => a bignum
 
-[[gnu::used]] inline std::intptr_t Quotient::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Quotient::op(SignedDigit a, SignedDigit b)
 {   if (b==-1 && a == MIN_FIXNUM) UNLIKELY return intToBignum(-a);
     else return intToHandle(a / b);
 }
 
-[[gnu::used]] inline std::intptr_t Remainder::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Remainder::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::uint64_t* q = nullptr;
@@ -22795,7 +24541,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(r, olenr, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t Remainder::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Remainder::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
@@ -22813,17 +24559,17 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return confirmSize(r, olenr, lenr);
 }
 
-[[gnu::used]] inline std::intptr_t Remainder::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Remainder::op(SignedDigit a, std::uint64_t* b)
 {   if (numberSize(b)==1 &&
         b[0]==-static_cast<Digit>(a)) return intToHandle(0);
     return intToHandle(a);
 }
 
-[[gnu::used]] inline std::intptr_t Remainder::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Remainder::op(SignedDigit a, SignedDigit b)
 {   return intToHandle(a % b);
 }
 
-[[gnu::used]] inline std::intptr_t Mod::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Mod::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::uint64_t* q = nullptr;
@@ -22847,7 +24593,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // b is negative it is as for Ceiling, so that the sign of (P mod Q) always
 // matches that of Q.
 
-[[gnu::used]] inline std::intptr_t Mod::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Mod::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
@@ -22873,7 +24619,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     else return w;
 }
 
-[[gnu::used]] inline std::intptr_t Mod::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Mod::op(SignedDigit a, std::uint64_t* b)
 {   if (a==0 ||
         (numberSize(b)==1 &&
          b[0]==-static_cast<Digit>(a))) return intToHandle(0);
@@ -22884,7 +24630,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     else return intToHandle(a);
 }
 
-[[gnu::used]] inline std::intptr_t Mod::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Mod::op(SignedDigit a, SignedDigit b)
 {   int64_t r = a%b;
     if (r!=0 &&((a<0 && b>0) || (a>0 && b<0))) r += b;
     return intToHandle(r);
@@ -22892,7 +24638,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 
 // Here if division is not exact the quotient is rounded towards -infinity. 
 
-[[gnu::used]] inline std::intptr_t Floor::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Floor::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     bool a_neg = negative(a[lena-1]);
@@ -22909,7 +24655,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     else return w1;
 }
 
-[[gnu::used]] inline std::intptr_t Floor::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Floor::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
@@ -22939,14 +24685,14 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // same signs the required result is zero, otherwise it will be -1.
 // Hah - happily the edge case comes out right in the wash!
 
-[[gnu::used]] inline std::intptr_t Floor::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Floor::op(SignedDigit a, std::uint64_t* b)
 {   bool a_neg = (a < 0);
     bool b_neg = negative(b[numberSize(b)-1]);
     if (a_neg == b_neg) return intToHandle(0);
     else return intToHandle(-1);
 }
 
-[[gnu::used]] inline std::intptr_t Floor::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Floor::op(SignedDigit a, SignedDigit b)
 {   int64_t q = a/b;
     int64_t r = a%b;
     if (r == 0 ||
@@ -22958,7 +24704,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     else return intToHandle(q-1);
 }
 
-[[gnu::used]] inline std::intptr_t Ceiling::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Ceiling::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     bool a_neg = negative(a[lena-1]);
@@ -22975,7 +24721,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     else return w1;
 }
 
-[[gnu::used]] inline std::intptr_t Ceiling::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Ceiling::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
@@ -22999,7 +24745,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     else return w1;
 }
 
-[[gnu::used]] inline std::intptr_t Ceiling::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Ceiling::op(SignedDigit a, std::uint64_t* b)
 {   if (numberSize(b) == 1 &&
         a == -static_cast<int64_t>(b[0])) return intToHandle(-1);
     bool a_neg = (a < 0);
@@ -23008,7 +24754,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     else return intToHandle(0);
 }
 
-[[gnu::used]] inline std::intptr_t Ceiling::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Ceiling::op(SignedDigit a, SignedDigit b)
 {   int64_t q = a/b;
     int64_t r = a%b;
 // if b=-1 or b=+1 then the remainder will be zero. In all other
@@ -23025,7 +24771,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // as a function that delivers the quotient as its result and saves
 // the remainder via an additional argument.
 
-[[gnu::used]] inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::uint64_t* q = nullptr;
@@ -23039,7 +24785,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return cons(qq, rr);
 }
 
-[[gnu::used]] inline std::intptr_t Divide::op(std::uint64_t* a, SignedDigit bb)
+inline std::intptr_t Divide::op(std::uint64_t* a, SignedDigit bb)
 {   switch (bb)
     {
     case 1:
@@ -23060,7 +24806,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return cons(qq, rr);
 }
 
-[[gnu::used]] inline std::intptr_t Divide::op(SignedDigit aa, std::uint64_t* b)
+inline std::intptr_t Divide::op(SignedDigit aa, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     std::uint64_t* q = nullptr;
     std::uint64_t* r = nullptr;
@@ -23074,7 +24820,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return cons(qq, rr);
 }
 
-[[gnu::used]] inline std::intptr_t Divide::op(SignedDigit aa, SignedDigit bb)
+inline std::intptr_t Divide::op(SignedDigit aa, SignedDigit bb)
 {   std::uint64_t* q = nullptr;
     std::uint64_t* r = nullptr;
     std::size_t olenq, olenr, lenq, lenr;
@@ -23090,7 +24836,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 
 #else // LISP
 
-[[gnu::used]] inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b,
+inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b,
                                 std::intptr_t &rem)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
@@ -23108,7 +24854,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 
 // a = a - b*q.
 
-[[gnu::used]] inline bool reduce_for_gcd(std::uint64_t* a, std::size_t lena,
+inline bool reduce_for_gcd(std::uint64_t* a, std::size_t lena,
                            Digit q,
                            std::uint64_t* b, std::size_t lenb)
 {   Digit hi = 0, hi1, lo, borrow = 0;
@@ -23131,7 +24877,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // I provide a function that accesses (b<<shift)[n]. Note that the
 // valid index values n will from from 0 up to and including lenb.
 
-[[gnu::used]] inline Digit shiftedDigit(std::uint64_t* b, std::size_t lenb,
+inline Digit shiftedDigit(std::uint64_t* b, std::size_t lenb,
                                   int shift, std::size_t n)
 {   if (n == 0) return b[0]<<shift;
     else if (n == lenb) return b[lenb-1]>>(64-shift);
@@ -23142,7 +24888,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // it computes it more as a = a - (b<<shift)*q.
 // It will be used with 0 < shift < 64, ie only when a genuine shift
 // between digits is required.
-[[gnu::used]] inline bool shifted_reduce_for_gcd(std::uint64_t* a, std::size_t lena,
+inline bool shifted_reduce_for_gcd(std::uint64_t* a, std::size_t lena,
                                    Digit q,
                                    std::uint64_t* b, std::size_t lenb,
                                    int shift)
@@ -23174,7 +24920,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // a result of length lena even though I very much expect that in at least
 // almost all cases the result will be almost 128 bits smaller!
 
-[[gnu::used]] inline bool ua_minus_vb(std::uint64_t* a, std::size_t lena,
+inline bool ua_minus_vb(std::uint64_t* a, std::size_t lena,
                         Digit u,
                         std::uint64_t* b, std::size_t lenb,
                         Digit v,
@@ -23232,7 +24978,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // for r = -u*a + b*v;
 // Again this supposes that a is at least as long as b.
 
-[[gnu::used]] inline bool minus_ua_plus_vb(std::uint64_t* a, std::size_t lena,
+inline bool minus_ua_plus_vb(std::uint64_t* a, std::size_t lena,
                              Digit u,
                              std::uint64_t* b, std::size_t lenb,
                              Digit v,
@@ -23268,7 +25014,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 //    swap(a, b);
 // but a Lehmer-style scheme can go distinctly faster overall.
 
-[[gnu::used]] inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
+inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
                           std::uint64_t*& b, std::size_t &lenb,
                           std::size_t &olena, std::size_t &olenb,
                           std::uint64_t*& temp, std::size_t &lentemp)
@@ -23569,7 +25315,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // what are logically multiple individual reduction steps.
 
 
-[[gnu::used]] inline std::intptr_t Gcd::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Gcd::op(std::uint64_t* a, std::uint64_t* b)
 {   if (numberSize(b) == 1)
         return Gcd::op(a, static_cast<SignedDigit>(b[0]));
 // I will start by making copies of |a| and |b| that I can overwrite
@@ -23674,7 +25420,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return unsignedIntToBignum(bb);
 }
 
-[[gnu::used]] inline std::intptr_t Gcd::op(std::uint64_t* a, SignedDigit bb)
+inline std::intptr_t Gcd::op(std::uint64_t* a, SignedDigit bb)
 {
 // This case involved doing a long-by-short remainder operation and then
 // it reduces to the small-small case. The main problem is the handling of
@@ -23697,11 +25443,11 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return Gcd::op(b, hi);
 }
 
-[[gnu::used]] inline std::intptr_t Gcd::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Gcd::op(SignedDigit a, std::uint64_t* b)
 {   return Gcd::op(b, a);
 }
 
-[[gnu::used]] inline std::intptr_t Gcd::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Gcd::op(SignedDigit a, SignedDigit b)
 {
 // Take absolute values of both arguments.
     Digit aa = a < 0 ? -static_cast<Digit>(a) : a;
@@ -23723,7 +25469,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // a system with garbage collection that will not matter (hoorah) but at
 // some stage I need to come back here and look harder and tidy things up.
 
-[[gnu::used]] inline std::intptr_t Lcm::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t Lcm::op(std::uint64_t* a, std::uint64_t* b)
 {   std::intptr_t g = Gcd::op(a, b);
     std::intptr_t q = op_dispatch2<Quotient,std::intptr_t>
                       (vectorToHandle(b), g);
@@ -23731,7 +25477,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return op_dispatch1<Abs,std::intptr_t>(q);
 }
 
-[[gnu::used]] inline std::intptr_t Lcm::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t Lcm::op(std::uint64_t* a, SignedDigit b)
 {   std::intptr_t g = Gcd::op(a, b);
     std::intptr_t q = op_dispatch2<Quotient,std::intptr_t>(
                           intToHandle(b), g);
@@ -23739,11 +25485,11 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     return op_dispatch1<Abs,std::intptr_t>(q);
 }
 
-[[gnu::used]] inline std::intptr_t Lcm::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t Lcm::op(SignedDigit a, std::uint64_t* b)
 {   return Lcm::op(b, a);
 }
 
-[[gnu::used]] inline std::intptr_t Lcm::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t Lcm::op(SignedDigit a, SignedDigit b)
 {   std::intptr_t g = Gcd::op(a, b);
 // The GCD can only be a bignum if a = b = MIN_FIXNUM.
     if (storedAsFixnum(g))
@@ -23760,9 +25506,9 @@ static void fftmul(ConstDigitPtr a, size_t lena,
 // Some of these NEED to be inline, so that they are shared across all
 // uses...
 
-[[gnu::used]] inline const int modulus_32 = 0;
-[[gnu::used]] inline const int modulus_64 = 1;
-[[gnu::used]] inline const int modulus_big = 2;
+inline const int modulus_32 = 0;
+inline const int modulus_64 = 1;
+inline const int modulus_big = 2;
 // On Windows these thread-locals may introduce serious overhead. I
 // will worry about that later if needbe.
 thread_local inline int modulusSize = 0;
@@ -23773,16 +25519,16 @@ thread_local inline Digit smallModulus = 2;
 // the platforms I was interested in, so I use a slightly more contorted
 // code style that seems to survive better...
 
-[[gnu::used]] inline std::vector<Digit>& largeModulusVector()
+inline std::vector<Digit>& largeModulusVector()
 {   static thread_local std::vector<Digit> v;
     return v;
 }
 
-[[gnu::used]] inline std::uint64_t* largeModulus()
+inline std::uint64_t* largeModulus()
 {   return 1 + reinterpret_cast<std::uint64_t*>(largeModulusVector().data());
 }
 
-[[gnu::used]] inline std::intptr_t value_of_currentModulus()
+inline std::intptr_t value_of_currentModulus()
 {   if (modulusSize == modulus_big)
     {   std::size_t n = numberSize(largeModulus());
         std::uint64_t* r = reserve(n);
@@ -23792,7 +25538,7 @@ thread_local inline Digit smallModulus = 2;
     else return intToHandle(smallModulus);
 }
 
-[[gnu::used]] inline std::intptr_t SetModulus::op(SignedDigit n)
+inline std::intptr_t SetModulus::op(SignedDigit n)
 {   using namespace CSL_LISP;
     if (n < 1)
         UNLIKELY
@@ -23805,7 +25551,7 @@ thread_local inline Digit smallModulus = 2;
     return r;
 }
 
-[[gnu::used]] inline std::intptr_t SetModulus::op(std::uint64_t* n)
+inline std::intptr_t SetModulus::op(std::uint64_t* n)
 {   using namespace CSL_LISP;
     if (!Plusp::op(n))
         UNLIKELY
@@ -23821,7 +25567,7 @@ thread_local inline Digit smallModulus = 2;
     return r;
 }
 
-[[gnu::used]] inline std::intptr_t ModularNumber::op(SignedDigit a)
+inline std::intptr_t ModularNumber::op(SignedDigit a)
 {   if (a >= 0)
     {   if (modulusSize == modulus_big) return intToHandle(a);
         else return intToHandle(a % smallModulus);
@@ -23834,7 +25580,7 @@ thread_local inline Digit smallModulus = 2;
     }
 }
 
-[[gnu::used]] inline std::intptr_t ModularNumber::op(std::uint64_t* a)
+inline std::intptr_t ModularNumber::op(std::uint64_t* a)
 {   if (Minusp::op(a))
     {   std::intptr_t r = Remainder::op(a, largeModulus());
         if (Minusp::op(r))
@@ -23848,7 +25594,7 @@ thread_local inline Digit smallModulus = 2;
     else return Remainder::op(a, largeModulus());
 }
 
-[[gnu::used]] inline std::intptr_t ModularPlus::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t ModularPlus::op(SignedDigit a, SignedDigit b)
 {   Digit ua = a, ub = b;
 // Because a and b are 64-bit signed values and they should be positive,
 // their sum will fit within a 64-bit unsigned integer, but if the modulus
@@ -23864,7 +25610,7 @@ thread_local inline Digit smallModulus = 2;
     return intToHandle(static_cast<SignedDigit>(r));
 }
 
-[[gnu::used]] inline std::intptr_t ModularPlus::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t ModularPlus::op(SignedDigit a, std::uint64_t* b)
 {
 // One of the inputs here is a bignum, and that can only be valid if we
 // have a large modulus.
@@ -23883,11 +25629,11 @@ thread_local inline Digit smallModulus = 2;
     else return r;
 }
 
-[[gnu::used]] inline std::intptr_t ModularPlus::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t ModularPlus::op(std::uint64_t* a, SignedDigit b)
 {   return ModularPlus::op(b, a);
 }
 
-[[gnu::used]] inline std::intptr_t ModularPlus::op(std::uint64_t* a,
+inline std::intptr_t ModularPlus::op(std::uint64_t* a,
                                      std::uint64_t* b)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
@@ -23904,13 +25650,13 @@ thread_local inline Digit smallModulus = 2;
     else return r;
 }
 
-[[gnu::used]] inline std::intptr_t ModularDifference::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t ModularDifference::op(SignedDigit a, SignedDigit b)
 {   if (a >= b) return intToHandle(a - b);
     if (modulusSize == modulus_big) return Plus::op(largeModulus(), a - b);
     else return intToHandle(smallModulus - b + a);
 }
 
-[[gnu::used]] inline std::intptr_t ModularDifference::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t ModularDifference::op(SignedDigit a, std::uint64_t* b)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
@@ -23923,7 +25669,7 @@ thread_local inline Digit smallModulus = 2;
     return r1;
 }
 
-[[gnu::used]] inline std::intptr_t ModularDifference::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t ModularDifference::op(std::uint64_t* a, SignedDigit b)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
@@ -23932,7 +25678,7 @@ thread_local inline Digit smallModulus = 2;
     return Difference::op(a, b);
 }
 
-[[gnu::used]] inline std::intptr_t ModularDifference::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t ModularDifference::op(std::uint64_t* a, std::uint64_t* b)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
@@ -23947,7 +25693,7 @@ thread_local inline Digit smallModulus = 2;
 }
 
 
-[[gnu::used]] inline std::intptr_t ModularTimes::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t ModularTimes::op(SignedDigit a, SignedDigit b)
 {   switch (modulusSize)
     {   case modulus_32:
             return intToHandle((static_cast<Digit>(a)* 
@@ -23972,7 +25718,7 @@ thread_local inline Digit smallModulus = 2;
     }
 }
 
-[[gnu::used]] inline std::intptr_t ModularTimes::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t ModularTimes::op(SignedDigit a, std::uint64_t* b)
 {   std::intptr_t w = Times::op(a, b);
     std::intptr_t r =
         op_dispatch1<Remainder,std::intptr_t>(w, largeModulus());
@@ -23980,11 +25726,11 @@ thread_local inline Digit smallModulus = 2;
     return r;
 }
 
-[[gnu::used]] inline std::intptr_t ModularTimes::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t ModularTimes::op(std::uint64_t* a, SignedDigit b)
 {   return ModularTimes::op(b, a);
 }
 
-[[gnu::used]] inline std::intptr_t ModularTimes::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t ModularTimes::op(std::uint64_t* a, std::uint64_t* b)
 {   std::intptr_t w = Times::op(a, b);
     std::intptr_t r =
         op_dispatch1<Remainder,std::intptr_t>(w, largeModulus());
@@ -23993,28 +25739,28 @@ thread_local inline Digit smallModulus = 2;
 }
 
 
-[[gnu::used]] inline std::intptr_t ModularExpt::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t ModularExpt::op(SignedDigit a, SignedDigit b)
 {   using namespace CSL_LISP;
     return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
-[[gnu::used]] inline std::intptr_t ModularExpt::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t ModularExpt::op(SignedDigit a, std::uint64_t* b)
 {   using namespace CSL_LISP;
     return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
-[[gnu::used]] inline std::intptr_t ModularExpt::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t ModularExpt::op(std::uint64_t* a, SignedDigit b)
 {   using namespace CSL_LISP;
     return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
-[[gnu::used]] inline std::intptr_t ModularExpt::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t ModularExpt::op(std::uint64_t* a, std::uint64_t* b)
 {   using namespace CSL_LISP;
     return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 
-[[gnu::used]] inline std::intptr_t ModularQuotient::op(SignedDigit a, SignedDigit b)
+inline std::intptr_t ModularQuotient::op(SignedDigit a, SignedDigit b)
 {   std::intptr_t recip_b = ModularReciprocal::op(b);
     std::intptr_t r;
     if (storedAsFixnum(recip_b))
@@ -24024,7 +25770,7 @@ thread_local inline Digit smallModulus = 2;
     return r;
 }
 
-[[gnu::used]] inline std::intptr_t ModularQuotient::op(SignedDigit a, std::uint64_t* b)
+inline std::intptr_t ModularQuotient::op(SignedDigit a, std::uint64_t* b)
 {   std::intptr_t recip_b = ModularReciprocal::op(b);
     std::intptr_t r;
     if (storedAsFixnum(recip_b))
@@ -24034,7 +25780,7 @@ thread_local inline Digit smallModulus = 2;
     return r;
 }
 
-[[gnu::used]] inline std::intptr_t ModularQuotient::op(std::uint64_t* a, SignedDigit b)
+inline std::intptr_t ModularQuotient::op(std::uint64_t* a, SignedDigit b)
 {   std::intptr_t recip_b = ModularReciprocal::op(b);
     std::intptr_t r;
     if (storedAsFixnum(recip_b))
@@ -24044,7 +25790,7 @@ thread_local inline Digit smallModulus = 2;
     return r;
 }
 
-[[gnu::used]] inline std::intptr_t ModularQuotient::op(std::uint64_t* a, std::uint64_t* b)
+inline std::intptr_t ModularQuotient::op(std::uint64_t* a, std::uint64_t* b)
 {   std::intptr_t recip_b = ModularReciprocal::op(b);
     std::intptr_t r;
     if (storedAsFixnum(recip_b))
@@ -24055,14 +25801,14 @@ thread_local inline Digit smallModulus = 2;
 }
 
 
-[[gnu::used]] inline std::intptr_t ModularMinus::op(SignedDigit a)
+inline std::intptr_t ModularMinus::op(SignedDigit a)
 {   if (a == 0) return intToHandle(a);
     if (modulusSize == modulus_big)
         return Difference::op(largeModulus(), a);
     else return intToHandle(smallModulus - a);
 }
 
-[[gnu::used]] inline std::intptr_t ModularMinus::op(std::uint64_t* a)
+inline std::intptr_t ModularMinus::op(std::uint64_t* a)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
@@ -24071,7 +25817,7 @@ thread_local inline Digit smallModulus = 2;
     return Difference::op(largeModulus(), a);
 }
 
-[[gnu::used]] inline std::intptr_t generalModularReciprocal(std::intptr_t aa,
+inline std::intptr_t generalModularReciprocal(std::intptr_t aa,
                                               bool safe=false)
 {
 // I believe that this could be speeded up significantly in cases where
@@ -24105,7 +25851,7 @@ thread_local inline Digit smallModulus = 2;
     return y;
 }
 
-[[gnu::used]] inline std::intptr_t ModularReciprocal::op(SignedDigit aa)
+inline std::intptr_t ModularReciprocal::op(SignedDigit aa)
 {   using namespace CSL_LISP;
     if (aa <= 0)
         UNLIKELY
@@ -24137,11 +25883,11 @@ thread_local inline Digit smallModulus = 2;
     return intToHandle(y);
 }
 
-[[gnu::used]] inline std::intptr_t ModularReciprocal::op(std::uint64_t* a)
+inline std::intptr_t ModularReciprocal::op(std::uint64_t* a)
 {   return generalModularReciprocal(vectorToHandle(a));
 }
 
-[[gnu::used]] inline std::intptr_t SafeModularReciprocal::op(SignedDigit aa)
+inline std::intptr_t SafeModularReciprocal::op(SignedDigit aa)
 {   using namespace CSL_LISP;
     if (aa <= 0)
         UNLIKELY
@@ -24170,7 +25916,7 @@ thread_local inline Digit smallModulus = 2;
     return intToHandle(y);
 }
 
-[[gnu::used]] inline std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
+inline std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
 {   return generalModularReciprocal(vectorToHandle(a), true);
 }
 
@@ -24296,14 +26042,13 @@ using arithlib_implementation::ceilingDoubleToInt;
 using arithlib_implementation::reseed;
 using arithlib_implementation::uniformUpto;
 
-#ifdef softfloat_h
 using arithlib_implementation::Float128;   // returns 128-bit float
 using arithlib_implementation::Frexp128;
 using arithlib_implementation::roundFloat128ToInt;
 using arithlib_implementation::truncFloat128ToInt;
 using arithlib_implementation::floorFloat128ToInt;
 using arithlib_implementation::ceilingFloat128ToInt;
-// These next few are just raw long float values and operations.
+// These next few are just raw FLOAT_128 values and operations.
 using arithlib_implementation::f128_0;
 using arithlib_implementation::f128_half;
 using arithlib_implementation::f128_mhalf;
@@ -24315,7 +26060,6 @@ using arithlib_implementation::f128_nan;
 using arithlib_implementation::frexp;
 using arithlib_implementation::ldexp;
 using arithlib_implementation::modf;
-#endif // softfloat_h
 
 // The next few are functions I may like to use in low-level code...
 //using arithlib_implementation::negative;

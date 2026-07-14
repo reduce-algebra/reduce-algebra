@@ -82,7 +82,7 @@
 // Reading this file ought to convince you just how messy having generic
 // arithmetic with quite a few types can be!
 
-// arithlib.cpp needs to know that it will be being used in a way that
+// arithlib.h needs to know that it will be being used in a way that
 // interfaces with a Lisp system rather than being used as a free-standing
 // C++ library.
 
@@ -92,7 +92,7 @@
 #define CSL 1
 #endif // CSL
 
-#include "arithlib.cpp"
+#include "arithlib.h"
 
 namespace CSL_LISP
 {

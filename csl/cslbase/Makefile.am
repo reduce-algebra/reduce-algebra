@@ -354,7 +354,7 @@ arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
 		arith-elem.cpp arith-misc.cpp
-ARITHDEP=arithlib.cpp
+ARITHDEP=arithlib.h
 else !arithlib
 arith_sources =
 ARITHDEP=
@@ -1400,36 +1400,6 @@ endif mac_framework
 else !wx
 WXDEPS=
 endif !wx
-
-# The file arithlib.cpp is maintained in the form of a top level file
-# arithlib.base.cpp and a collection of files that it uses "#include" to
-# get merged in. The utility flatten performs the expansion for me. The
-# consequence of this is that arithlib.cpp is a single free-standing
-# header-only library, but if you also #include one of the things it
-# incorporates (eg threadloc.h or lvector.h) then there will be no clash.
-
-$(cslbase)/flatten:	flatten.cpp
-	g++ $(CXXFLAGS) $(cslbase)/flatten.cpp -o $(cslbase)/flatten
-
-$(cslbase)/lvector.h:	$(cslbase)/flatten $(cslbase)/lvector.base.h \
-		$(cslbase)/threadloc.h
-	cd $(cslbase) && ./flatten lvector.base.h lvector.h
-
-$(cslbase)/multiply.cpp:	$(cslbase)/flatten \
-		$(cslbase)/multiply.base.cpp $(cslbase)/inlinemul.cpp \
-		$(cslbase)/lvector.h $(cslbase)/cthread.cpp \
-		$(cslbase)/fftmod.cpp
-	cd $(cslbase) && ./flatten multiply.base.cpp multiply.cpp
-
-$(cslbase)/arithlib.cpp:	$(cslbase)/flatten \
-		$(cslbase)/arithlib.base.cpp $(cslbase)/lvector.h \
-		$(cslbase)/acnutil.h $(cslbase)/multiply.base.cpp \
-		$(cslbase)/fftutils.cpp $(cslbase)/fftmod.cpp \
-		$(cslbase)/cthread.cpp
-	printf "\n\n=== Prepare arithlib source\n\n";
-	cd $(cslbase) && ./flatten arithlib.base.cpp arithlib.cpp
-
-$(cslbase)/arithlib.h:	$(cslbase)/arithlib.cpp
 
 $(cslbase)/geninline:	$(cslbase)/geninline.cpp
 	g++ $(CXXFLAGS) $(cslbase)/geninline.cpp -o $(cslbase)/geninline

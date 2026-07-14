@@ -1,3 +1,6 @@
+// cthread.h                                      Copyright 2026 A C Norman
+
+
 // $Id$
 
 
@@ -53,8 +56,8 @@
 // multiple threads even with std::execution::par_unseq. So maybe at some
 // stage in the future this will be good. 
 
-#ifndef cthread_cpp_loaded
-#define cthread_cpp_loaded
+#ifndef cthread_h_loaded
+#define cthread_h_loaded
 
 #include <iostream>
 #include <thread>
@@ -70,7 +73,7 @@
 #include "threadloc.h"
 
 template <typename T, bool parallel=true>
-[[gnu::used]] inline void runInThreads(std::vector<T> v, void (*fn)(T))
+inline void runInThreads(std::vector<T> v, void (*fn)(T))
 {   if constexpr (parallel)
         std::for_each(std::execution::par_unseq,
             std::begin(v),
@@ -188,7 +191,7 @@ extern __declspec(dllimport) int CloseHandle(void* h);
 extern __declspec(dllimport) int ReleaseMutex(void* m);
 extern __declspec(dllimport) void* 
     WaitForSingleObject(void* , std::uintptr_t);
-[[gnu::used]] inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
+inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
 
 #endif // MSDECLS
 
@@ -287,7 +290,7 @@ public:
 // them and that they then access. When this structures is created it will
 // cause the worker threads and the data block they need to be constructed.
 
-[[gnu::used]] inline void workerThreadFunction(WorkerTaskData* wd);
+inline void workerThreadFunction(WorkerTaskData* wd);
 
 inline const size_t POOLSIZE = 4;
 inline std::atomic<uint32_t> activeThreads(0);
@@ -302,7 +305,7 @@ public:
 // things to do.
     std::thread w[POOLSIZE];
 
-    [[gnu::used]] ThreadDriverData()
+    ThreadDriverData()
     {   for (size_t i=0; i<POOLSIZE; i++)
             w[i] = std::thread(workerThreadFunction, &wd[i]);
 // I busy-wait until all the threads have both claimed the mutexes that they
@@ -329,7 +332,7 @@ public:
 // when none of the worker threads are doing anything, and thus they are
 // all sitting ready to accept this request. Abrupt (ie error) termination
 // of the program might not manage that!
-    [[gnu::used]] ~ThreadDriverData()
+    ~ThreadDriverData()
     {   for (size_t i=0; i<POOLSIZE; i++)
         {   wd[i].quit_flag = true;
             releaseWorker(i);
@@ -379,11 +382,11 @@ public:
 // Creating this object should set up POOLSIZE threads.
 
 
-[[gnu::used]] inline ThreadDriverData threadDriverData;
+inline ThreadDriverData threadDriverData;
 
 #if defined USE_MICROSOFT_SRW
 
-[[gnu::used]] inline void workerThreadFunction(WorkerTaskData* wd)
+inline void workerThreadFunction(WorkerTaskData* wd)
 {   ThreadLocal::initialize();
     AcquireSRWLockExclusive(&wd->mutex[2]);
     AcquireSRWLockExclusive(&wd->mutex[3]);
@@ -400,7 +403,7 @@ public:
 
 #elif defined USE_MICROSOFT_MUTEX
 
-[[gnu::used]] inline void workerThreadFunction(WorkerTaskData* wd)
+inline void workerThreadFunction(WorkerTaskData* wd)
 {   WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
     WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
     wd->ready = true;
@@ -419,7 +422,7 @@ public:
 
 #else // Here I use C++ std::mutex
 
-[[gnu::used]] inline void workerThreadFunction(WorkerTaskData* wd)
+inline void workerThreadFunction(WorkerTaskData* wd)
 {   wd->mutex[2].lock();
     wd->mutex[3].lock();
     wd->ready = true;
@@ -436,7 +439,7 @@ public:
 #endif // definition of workerThreadFunction
 
 template <typename T, bool parallel=true>
-[[gnu::used]] inline void runInThreads(std::vector<T> v, void (*fn)(T))
+inline void runInThreads(std::vector<T> v, void (*fn)(T))
 {   int n = v.size();
 // Here I want to see if there are any worker threads available to
 // dedicate to this task.
@@ -513,7 +516,7 @@ template <typename T, bool parallel=true>
 #endif // USE_EXECUTION
 
 template <bool parallel, typename T>
-[[gnu::used]] inline void runInThreads(std::vector<T> v, void (*fn)(T))
+inline void runInThreads(std::vector<T> v, void (*fn)(T))
 {   runInThreads<T, parallel>(v, fn);
 }
 
@@ -574,7 +577,7 @@ int main()
 
 #endif // TEST_CODE
 
-#endif // cthread_cpp_loaded
+#endif // cthread_h_loaded
 
 
-// end of cthread.cpp
+// end of cthread.h

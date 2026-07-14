@@ -187,8 +187,7 @@ LispObject Times::op(double a, Fixnum b)
 
 // long float * fixnum
 LispObject Times::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_mul(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(a.floatval() * (FLOAT_128)b.intval());
 }
 
 // fixnum * bignum
@@ -248,7 +247,7 @@ LispObject Times::op(double a, std::uint64_t* b)
 
 // long float * bignum
 LispObject Times::op(LFlt a, std::uint64_t* b)
-{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(a.floatval() * Float128::op(b));
 }
 
 // fixnum * rational
@@ -317,13 +316,13 @@ LispObject Times::op(double a, Rat b)
 // long float * rational
 LispObject Times::op(LFlt a, Rat b)
 {   std::int64_t xb;
-    float128_t d = Frexp128::op(b, xb);
+    FLOAT_128 d = Frexp128::op(b, xb);
     int x;
-    float128_t d1 = a.floatval();
-    f128_frexp(d1, &d1, &x);
+    FLOAT_128 d1 = a.floatval();
+    d1 = frexp(d1, x);
     x += xb;
-    d = f128_mul(d, d1);
-    f128_ldexp(&d, x);
+    d = d * d1;
+    d = ldexp(d, x);
     return make_boxfloat128(d);
 }
 
@@ -412,7 +411,7 @@ LispObject Times::op(double a, SFlt b)
 
 // long float * short float
 LispObject Times::op(LFlt a, SFlt b)
-{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(a.floatval() * Float128::op(b));
 }
 
 // fixnum * single float
@@ -452,7 +451,7 @@ LispObject Times::op(double a, Flt b)
 
 // long float * single float
 LispObject Times::op(LFlt a, Flt b)
-{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(a.floatval() * Float128::op(b));
 }
 
 // fixnum * double float
@@ -492,7 +491,7 @@ LispObject Times::op(double a, double b)
 
 // long float * double float
 LispObject Times::op(LFlt a, double b)
-{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(a.floatval() * Float128::op(b));
 }
 
 // fixnum * long float
@@ -532,7 +531,7 @@ LispObject Times::op(double a, LFlt b)
 
 // long float * long float
 LispObject Times::op(LFlt a, LFlt b)
-{   return make_boxfloat128(f128_mul(a.floatval(), b.floatval()));
+{   return make_boxfloat128(a.floatval() * b.floatval());
 }
 
 LispObject ClassicalTimes::op(LispObject a, LispObject b)
@@ -660,8 +659,7 @@ LispObject ClassicalTimes::op(double a, Fixnum b)
 
 // long float * fixnum
 LispObject ClassicalTimes::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_mul(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(a.floatval() * (FLOAT_128)b.intval());
 }
 
 // fixnum * bignum
@@ -721,7 +719,7 @@ LispObject ClassicalTimes::op(double a, std::uint64_t* b)
 
 // long float * bignum
 LispObject ClassicalTimes::op(LFlt a, std::uint64_t* b)
-{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(a.floatval() * Float128::op(b));
 }
 
 // fixnum * rational
@@ -790,13 +788,13 @@ LispObject ClassicalTimes::op(double a, Rat b)
 // long float * rational
 LispObject ClassicalTimes::op(LFlt a, Rat b)
 {   std::int64_t xb;
-    float128_t d = Frexp128::op(b, xb);
+    FLOAT_128 d = Frexp128::op(b, xb);
     int x;
-    float128_t d1 = a.floatval();
-    f128_frexp(d1, &d1, &x);
+    FLOAT_128 d1 = a.floatval();
+    d1 = frexp(d1, x);
     x += xb;
-    d = f128_mul(d, d1);
-    f128_ldexp(&d, x);
+    d = d * d1;
+    d = ldexp(d, x);
     return make_boxfloat128(d);
 }
 
@@ -885,7 +883,7 @@ LispObject ClassicalTimes::op(double a, SFlt b)
 
 // long float * short float
 LispObject ClassicalTimes::op(LFlt a, SFlt b)
-{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(a.floatval() * Float128::op(b));
 }
 
 // fixnum * single float
@@ -925,7 +923,7 @@ LispObject ClassicalTimes::op(double a, Flt b)
 
 // long float * single float
 LispObject ClassicalTimes::op(LFlt a, Flt b)
-{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(a.floatval() * Float128::op(b));
 }
 
 // fixnum * double float
@@ -965,7 +963,7 @@ LispObject ClassicalTimes::op(double a, double b)
 
 // long float * double float
 LispObject ClassicalTimes::op(LFlt a, double b)
-{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(a.floatval() * Float128::op(b));
 }
 
 // fixnum * long float
@@ -1005,7 +1003,7 @@ LispObject ClassicalTimes::op(double a, LFlt b)
 
 // long float * long float
 LispObject ClassicalTimes::op(LFlt a, LFlt b)
-{   return make_boxfloat128(f128_mul(a.floatval(), b.floatval()));
+{   return make_boxfloat128(a.floatval() * b.floatval());
 }
 
 LispObject Expt::op(LispObject a, LispObject b)
@@ -1119,7 +1117,7 @@ LispObject match_type(LispObject in, int value)
                 case DOUBLE_FLOAT_HEADER:
                     return make_boxfloat(static_cast<double>(value));
                 case LONG_FLOAT_HEADER:
-                    return make_boxfloat128(i64_to_f128(value));
+                    return make_boxfloat128((FLOAT_128)value);
                 default:
                     return aerror1("Invalid component in complex number", in);
             }
@@ -1176,8 +1174,7 @@ LispObject Expt::op(double a, Fixnum b)
 
 // long float ** fixnum
 LispObject Expt::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_add(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(expt(a.floatval(), b.intval()));
 }
 
 // fixnum ** bignum
@@ -1370,51 +1367,19 @@ LispObject Expt::op(Rat a, Cpx b)
 // I should handle that and return a complex value built of two
 // 128-bit floats. For now I just fold down to 64-bits.
 //
-//    a**b = exp(b*log(a))
-// if a = r*exp(i*theta) then log(a) = log(r) + theta
-// Where a = x + iy => r = sqrt(x^2+y^2) and theta=atan(y/x);
-// and exp(x + iy) = exp(x)*(cos y + i*sin x)
-//
-// So to implement all this I need the following functions on 128-bit
-// (real) floats:
-//    exp, log, sqrt, atan, sin, cos.
-// Ha ha. Those can go in arith_float128.cpp at some stage but the
-// basic techniques can be:
-//   exp(x) == exp(intpart(x)) * exp(fracpart(x))
-//     first bit done by raising e to an integer power. Second
-//     part via power series exp(x) = 1 + x + x^2/2! + x^3/3! + ...
-//                                    + x^31/31!
-//     which is about what is needed to get accuracy.
-//   sin and cos: range reduction to 0..pi/4 then power series ending in
-//     the x^29/29! term.
-//   sqrt: Newton Raphson . This is cheap!
-//   atan: range reduction using atan(1/x) = pi/2 - atan x
-//                               atan x = atan c + atan((x-c)/(1+x*c))
-//     where the first rule ensures x<=1 and by having a modest table
-//     the second could leave x <= 1/10. Then the series
-//     atan x = x - x^3/3 + x^5/5 ... x^33/33
-//   log: start with frexp that leaves a range 1-2 to cope with. Use
-//     log x = log c + log(x/c) for some tabulated values of c and log c
-//     to reduce range to 1..1.1 and then use
-//     log(1+x) = x - x/2 + ... x^33/33
-// Use of the raw Taylor Series will not be as efficient as I could achieve
-// with some minimax approximations, and the simplistic use of the formulae
-// will leave some inaccuracies, but basically I do not care that much. If I
-// get this much working I will be amazed!
 
 LispObject Expt::op(Cpx a, Cpx b)
 {   if (is_long_float(a.real_part()) ||
         is_long_float(a.imag_part()) ||
         is_long_float(b.real_part()) ||
         is_long_float(b.imag_part()))
-    {   float128_t ax = Float128::op(a.real_part());
-        float128_t ay = Float128::op(a.imag_part());
-        float128_t bx = Float128::op(b.real_part());
-        float128_t by = Float128::op(b.imag_part());
-        float128_t rx, ry;
-        rx = i64_to_f128(1);
-        ry = i64_to_f128(0);
-        return make_complex(make_boxfloat128(rx), make_boxfloat128(ry));
+    {   FLOAT_128 ax = Float128::op(a.real_part());
+        FLOAT_128 ay = Float128::op(a.imag_part());
+        FLOAT_128 bx = Float128::op(b.real_part());
+        FLOAT_128 by = Float128::op(b.imag_part());
+        COMPLEX_128 r = expt(COMPLEX_128(ax, ay), COMPLEX_128(bx, by));
+        return make_complex(make_boxfloat128(r.real()),
+                            make_boxfloat128(r.imag()));
     }
     std::complex<double> aa(RawFloat::op(a.real_part()),
                             RawFloat::op(a.imag_part()));
@@ -1458,7 +1423,7 @@ LispObject Expt::op(double a, Cpx b)
 // long float ** complex
 LispObject Expt::op(LFlt a, Cpx b)
 {   return Expt::op(make_complex(make_boxfloat128(a.value()),
-                                 make_boxfloat128(i64_to_f128(0))), b);
+                                 make_boxfloat128(LF_C(0.0))), b);
 }
 
 // fixnum ** short float
@@ -1653,7 +1618,7 @@ LispObject Expt::op(Rat a, LFlt b)
 LispObject Expt::op(Cpx a, LFlt b)
 {   return Expt::op(a,
                     make_complex(make_boxfloat128(b.value()),
-                                 make_boxfloat128(i64_to_f128(0))));
+                                 make_boxfloat128(LF_C(0.0))));
 }
 
 // short float ** long float
@@ -1675,7 +1640,7 @@ LispObject Expt::op(double a, LFlt b)
 
 
 LispObject Expt::op(LFlt a, LFlt b)
-{   return make_boxfloat128(qexpt(a.floatval(), b.floatval()));
+{   return make_boxfloat128(expt(a.floatval(), b.floatval()));
 }
 
 LispObject Quotient::op(LispObject a, LispObject b)
@@ -1787,8 +1752,7 @@ LispObject Quotient::op(double a, Fixnum b)
 
 // long float / fixnum
 LispObject Quotient::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(a.floatval() / (FLOAT_128)b.intval());
 }
 
 // fixnum / bignum
@@ -1852,9 +1816,9 @@ LispObject Quotient::op(double a, std::uint64_t* b)
 // long float / bignum
 LispObject Quotient::op(LFlt a, std::uint64_t* b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -1935,9 +1899,9 @@ LispObject Quotient::op(double a, Rat b)
 // long float / rational
 LispObject Quotient::op(LFlt a, Rat b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -2007,7 +1971,7 @@ LispObject Quotient::op(double a, Cpx b)
 // long float / complex
 LispObject Quotient::op(LFlt a, Cpx b)
 {   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
+    LispObject num = Times::op(LFlt(a.value()), conj);
     LispObject den =
         Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
     return Quotient::op(num, den);
@@ -2059,8 +2023,7 @@ LispObject Quotient::op(double a, SFlt b)
 
 // long float / short float
 LispObject Quotient::op(LFlt a, SFlt b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                            Float128::op(b)));
+{   return make_boxfloat128(a.floatval() / Float128::op(b));
 }
 
 // fixnum / single float
@@ -2110,8 +2073,7 @@ LispObject Quotient::op(double a, Flt b)
 
 // long float / single float
 LispObject Quotient::op(LFlt a, Flt b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                            Float128::op(b)));
+{   return make_boxfloat128(a.floatval() / Float128::op(b));
 }
 
 // fixnum / double float
@@ -2157,24 +2119,24 @@ LispObject Quotient::op(double a, double b)
 
 // long float / double float
 LispObject Quotient::op(LFlt a, double b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                            Float128::op(b)));
+{   return make_boxfloat128(a.floatval() / Float128::op(b));
 }
 
 // fixnum / long float
 LispObject Quotient::op(Fixnum a, LFlt b)
-{   return Quotient::op(Float128::op(a), b);
+{   return Quotient::op(LFlt(Float128::op(a)), b);
 }
 
 // bignum / long float
 LispObject Quotient::op(std::uint64_t* a, LFlt b)
-{   return Quotient::op(Float128::op(a), b);
-// Imperfect wrt premature overflow if a is huge
+{   return Quotient::op(LFlt(Float128::op(a)), b);
+// Imperfect wrt premature overflow if a is huge but b is large enough that
+// the result is in the range that long floats support.
 }
 
 // rational / long float
 LispObject Quotient::op(Rat a, LFlt b)
-{   return Quotient::op(Float128::op(a), b);
+{   return Quotient::op(LFlt(Float128::op(a)), b);
 }
 
 // complex / long float
@@ -2186,22 +2148,22 @@ LispObject Quotient::op(Cpx a, LFlt b)
 
 // short float / long float
 LispObject Quotient::op(SFlt a, LFlt b)
-{   return Quotient::op(Float128::op(a), b);
+{   return Quotient::op(LFlt(Float128::op(a)), b);
 }
 
 // single float / long float
 LispObject Quotient::op(Flt a, LFlt b)
-{   return Quotient::op(Float128::op(a), b);
+{   return Quotient::op(LFlt(Float128::op(a)), b);
 }
 
 // double float / long float
 LispObject Quotient::op(double a, LFlt b)
-{   return Quotient::op(Float128::op(a), b);
+{   return Quotient::op(LFlt(Float128::op(a)), b);
 }
 
 // long float / long float
 LispObject Quotient::op(LFlt a, LFlt b)
-{   return make_boxfloat128(f128_div(a.floatval(), b.floatval()));
+{   return make_boxfloat128(a.floatval() / b.floatval());
 }
 
 // (quotient 22 7) => 3 and (!/!/ 22 7) => 3
@@ -2357,8 +2319,7 @@ LispObject CLQuotient::op(double a, Fixnum b)
 
 // long float CL/ fixnum
 LispObject CLQuotient::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(a.floatval() / (FLOAT_128)b.intval());
 }
 
 // fixnum CL/ bignum
@@ -2428,9 +2389,9 @@ LispObject CLQuotient::op(double a, std::uint64_t* b)
 // long float CL/ bignum
 LispObject CLQuotient::op(LFlt a, std::uint64_t* b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -2511,9 +2472,9 @@ LispObject CLQuotient::op(double a, Rat b)
 // long float CL/ rational
 LispObject CLQuotient::op(LFlt a, Rat b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -2583,7 +2544,7 @@ LispObject CLQuotient::op(double a, Cpx b)
 // long float CL/ complex
 LispObject CLQuotient::op(LFlt a, Cpx b)
 {   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
+    LispObject num = Times::op(a, conj);
     LispObject den =
         Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
     return CLQuotient::op(num, den);
@@ -3832,7 +3793,7 @@ LispObject Square::op(double a)
 }
 
 LispObject Square::op(LFlt a)
-{   return make_boxfloat128(f128_mul(a.floatval(), a.floatval()));
+{   return make_boxfloat128(a.floatval() * a.floatval());
 }
 
 LispObject Reciprocal::op(LispObject a)
@@ -3908,13 +3869,47 @@ LispObject Reciprocal::op(double a)
 }
 
 LispObject Reciprocal::op(LFlt a)
-{   return make_boxfloat128(f128_div(i64_to_f128(1), a.floatval()));
+{   return make_boxfloat128(LF_C(1.0) / a.floatval());
 }
 
 // There are now definitions for Truncate, Floor and Ceiling which
 // perform division with directed rounding. In general I have not
 // implemented these so even when they divide they will often not
 // round properly. I will need to come back and work over them later.
+
+
+// The required behaviour is
+//   floor(a, b)  = the largest integer not greater than a/b
+//   ffloor(a, b) = the integer-valued quotient is returned as a floating
+//                  point value either of some default type (?) or as wide
+//                  as either a or b if they are floating.
+//   ceiling, fceiling
+//   truncate, ftruncate
+//   round, fround
+//
+// In each case if the result is q there is a remainder (a - q*b) which is
+// an integer if a and b are integers, a ration if both are ratios (or one
+// is a ratio and the other an integer) and a float of some sort otherwise.
+//    So for floor the remaninder is >= 0
+//    ceiling: <= 0
+//    truncate: sign of remainder = sign of q
+//    round: magnitude of remainder bounded to b/2
+
+// Basically NONE of this is implemented yet and these functions just
+// return one value (rather than 2!) that will usually be the quotient
+// a/b, truncated in the case of integers and rounded for floats.
+// HOWEVER code in arith-float.cpp provides for directed rounding
+// on floating point values so will "just needs to be plumbed in here".
+//
+// Hah a thought:
+//     procedure f(a, b);
+//       q = a/b;              // approximate quotient
+//       r = fma(q, b, -a)     // accurate remainder from fused-multiply-add.
+// then I can test r and adjust q if necessary.
+//
+// I also think that these functions will not make sense for complex
+// arguments, so those cases cen all just trigger diagnostics. Even if tha
+// complex number has a zero imaginary part!
 
 LispObject Truncate::op(LispObject a, LispObject b)
 {   return binary<LispObject,Truncate>("truncate", a, b);
@@ -3933,7 +3928,7 @@ LispObject Truncate::op(LispObject a, Rat b)
 }
 
 LispObject Truncate::op(LispObject a, Cpx b)
-{   return binaryR<LispObject,Truncate>("truncate", a, b);
+{   return aerror1("Truncate with complex argument is invalid", b.v);
 }
 
 LispObject Truncate::op(LispObject a, SFlt b)
@@ -3965,7 +3960,7 @@ LispObject Truncate::op(Rat a, LispObject b)
 }
 
 LispObject Truncate::op(Cpx a, LispObject b)
-{   return binaryL<LispObject,Truncate>("truncate", a, b);
+{   return aerror1("Truncate with complex argument is invalid", a.v);
 }
 
 LispObject Truncate::op(SFlt a, LispObject b)
@@ -4004,8 +3999,7 @@ LispObject Truncate::op(Rat a, Fixnum b)
 
 // complex truncate fixnum
 LispObject Truncate::op(Cpx a, Fixnum b)
-{   if (b.intval() == 0) return a.v;
-    return make_complex(Truncate::op(a.real_part(), b), a.imag_part());
+{   return aerror1("Truncate with complex argument is invalid", a.v);
 }
 
 // short float truncate fixnum
@@ -4025,8 +4019,7 @@ LispObject Truncate::op(double a, Fixnum b)
 
 // long float truncate fixnum
 LispObject Truncate::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(a.floatval() / (FLOAT_128)b.intval());
 }
 
 // fixnum truncate bignum
@@ -4051,8 +4044,7 @@ LispObject Truncate::op(Rat a, std::uint64_t* b)
 
 // complex truncate bignum
 LispObject Truncate::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Truncate::op(a.real_part(), b),
-                        Truncate::op(a.imag_part(), b));
+{   return aerror1("Truncate with complex argument is invalid", a.v);
 }
 
 // short float truncate bignum
@@ -4085,9 +4077,9 @@ LispObject Truncate::op(double a, std::uint64_t* b)
 // long float truncate bignum
 LispObject Truncate::op(LFlt a, std::uint64_t* b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -4134,8 +4126,7 @@ LispObject Truncate::op(Rat a, Rat b)
 
 // complex truncate rational
 LispObject Truncate::op(Cpx a, Rat b)
-{   return make_complex(Truncate::op(a.real_part(), b),
-                        Truncate::op(a.imag_part(), b));
+{   return aerror1("Truncate with complex argument is invalid", a.v);
 }
 
 // short float truncate rational
@@ -4168,82 +4159,50 @@ LispObject Truncate::op(double a, Rat b)
 // long float truncate rational
 LispObject Truncate::op(LFlt a, Rat b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
 // fixnum truncate complex
 LispObject Truncate::op(Fixnum a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Truncate::op(num, den);
+{   return aerror1("Truncate with complex argument is invalid", b.v);
 }
 
 // bignum truncate complex
 LispObject Truncate::op(std::uint64_t* a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a, conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Truncate::op(num, den);
+{   return aerror1("Truncate with complex argument is invalid", b.v);
 }
 
 // rational truncate complex
 LispObject Truncate::op(Rat a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Truncate::op(num, den);
+{   return aerror1("Truncate with complex argument is invalid", b.v);
 }
 
 // complex truncate complex
 LispObject Truncate::op(Cpx a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Truncate::op(num, den);
+{   return aerror1("Truncate with complex argument is invalid", a.v);
 }
 
 // short float truncate complex
 LispObject Truncate::op(SFlt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Truncate::op(num, den);
+{   return aerror1("Truncate with complex argument is invalid", b.v);
 }
 
 // single float truncate complex
 LispObject Truncate::op(Flt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Truncate::op(num, den);
+{   return aerror1("Truncate with complex argument is invalid", b.v);
 }
 
 // double float truncate complex
 LispObject Truncate::op(double a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a, conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Truncate::op(num, den);
+{   return aerror1("Truncate with complex argument is invalid", b.v);
 }
 
 // long float truncate complex
 LispObject Truncate::op(LFlt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Truncate::op(num, den);
+{   return aerror1("Truncate with complex argument is invalid", b.v);
 }
 
 // fixnum truncate short float
@@ -4270,7 +4229,7 @@ LispObject Truncate::op(Rat a, SFlt b)
 }
 // complex truncate short float
 LispObject Truncate::op(Cpx a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Truncate with complex argument is invalid", a.v);
 }
 
 // short float truncate short float
@@ -4310,7 +4269,7 @@ LispObject Truncate::op(Rat a, Flt b)
 
 // complex truncate single float
 LispObject Truncate::op(Cpx a, Flt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Truncate with complex argument is invalid", a.v);
 }
 
 // short float truncate single float
@@ -4350,7 +4309,7 @@ LispObject Truncate::op(Rat a, double b)
 
 // complex truncate double float
 LispObject Truncate::op(Cpx a, double b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Truncate with complex argument is invalid", a.v);
 }
 
 // short float truncate double float
@@ -4390,7 +4349,7 @@ LispObject Truncate::op(Rat a, LFlt b)
 
 // complex truncate long float
 LispObject Truncate::op(Cpx a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Truncate with complex argument is invalid", a.v);
 }
 
 // short float truncate long float
@@ -4430,7 +4389,7 @@ LispObject Ceiling::op(LispObject a, Rat b)
 }
 
 LispObject Ceiling::op(LispObject a, Cpx b)
-{   return binaryR<LispObject,Ceiling>("ceiling", a, b);
+{   return aerror1("Ceiling with complex argument is invalid", b.v);
 }
 
 LispObject Ceiling::op(LispObject a, SFlt b)
@@ -4462,7 +4421,7 @@ LispObject Ceiling::op(Rat a, LispObject b)
 }
 
 LispObject Ceiling::op(Cpx a, LispObject b)
-{   return binaryL<LispObject,Ceiling>("ceiling", a, b);
+{   return aerror1("Ceiling with complex argument is invalid", a.v);
 }
 
 LispObject Ceiling::op(SFlt a, LispObject b)
@@ -4480,6 +4439,13 @@ LispObject Ceiling::op(double a, LispObject b)
 LispObject Ceiling::op(LFlt a, LispObject b)
 {   return binaryL<LispObject,Ceiling>("ceiling", a, b);
 }
+
+// All the Ceiling cases will need to do something like
+//    prpcedure ceiling(a, b);
+//      q := a/b;
+//      if (q*b < a) q++;
+//      return q;
+// with careful thought about the test "q*b < a" in the floating point case.
 
 // fixnum ceiling fixnum
 LispObject Ceiling::op(Fixnum a, Fixnum b)
@@ -4501,8 +4467,7 @@ LispObject Ceiling::op(Rat a, Fixnum b)
 
 // complex ceiling fixnum
 LispObject Ceiling::op(Cpx a, Fixnum b)
-{   if (b.intval() == 0) return a.v;
-    return make_complex(Ceiling::op(a.real_part(), b), a.imag_part());
+{   return aerror1("Ceiling with complex argument is invalid", a.v);
 }
 
 // short float ceiling fixnum
@@ -4522,8 +4487,7 @@ LispObject Ceiling::op(double a, Fixnum b)
 
 // long float ceiling fixnum
 LispObject Ceiling::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(a.floatval() / (FLOAT_128)b.intval());
 }
 
 // fixnum ceiling bignum
@@ -4548,8 +4512,7 @@ LispObject Ceiling::op(Rat a, std::uint64_t* b)
 
 // complex ceiling bignum
 LispObject Ceiling::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Ceiling::op(a.real_part(), b),
-                        Ceiling::op(a.imag_part(), b));
+{   return aerror1("Ceiling with complex argument is invalid", a.v);
 }
 
 // short float ceiling bignum
@@ -4582,9 +4545,9 @@ LispObject Ceiling::op(double a, std::uint64_t* b)
 // long float ceiling bignum
 LispObject Ceiling::op(LFlt a, std::uint64_t* b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -4631,8 +4594,7 @@ LispObject Ceiling::op(Rat a, Rat b)
 
 // complex ceiling rational
 LispObject Ceiling::op(Cpx a, Rat b)
-{   return make_complex(Ceiling::op(a.real_part(), b),
-                        Ceiling::op(a.imag_part(), b));
+{   return aerror1("Ceiling with complex argument is invalid", a.v);
 }
 
 // short float ceiling rational
@@ -4665,82 +4627,50 @@ LispObject Ceiling::op(double a, Rat b)
 // long float ceiling rational
 LispObject Ceiling::op(LFlt a, Rat b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
 // fixnum ceiling complex
 LispObject Ceiling::op(Fixnum a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Ceiling::op(num, den);
+{   return aerror1("Ceiling with complex argument is invalid", b.v);
 }
 
 // bignum ceiling complex
 LispObject Ceiling::op(std::uint64_t* a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a, conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Ceiling::op(num, den);
+{   return aerror1("Ceiling with complex argument is invalid", b.v);
 }
 
 // rational ceiling complex
 LispObject Ceiling::op(Rat a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Ceiling::op(num, den);
+{   return aerror1("Ceiling with complex argument is invalid", b.v);
 }
 
 // complex ceiling complex
 LispObject Ceiling::op(Cpx a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Ceiling::op(num, den);
+{   return aerror1("Ceiling with complex argument is invalid", a.v);
 }
 
 // short float ceiling complex
 LispObject Ceiling::op(SFlt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Ceiling::op(num, den);
+{   return aerror1("Ceiling with complex argument is invalid", b.v);
 }
 
 // single float ceiling complex
 LispObject Ceiling::op(Flt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Ceiling::op(num, den);
+{   return aerror1("Ceiling with complex argument is invalid", b.v);
 }
 
 // double float ceiling complex
 LispObject Ceiling::op(double a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a, conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Ceiling::op(num, den);
+{   return aerror1("Ceiling with complex argument is invalid", b.v);
 }
 
 // long float ceiling complex
 LispObject Ceiling::op(LFlt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
-    LispObject num = Times::op(a.value(), conj);
-    LispObject den =
-        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
-    return Ceiling::op(num, den);
+{   return aerror1("Ceiling with complex argument is invalid", b.v);
 }
 
 // fixnum ceiling short float
@@ -4767,7 +4697,7 @@ LispObject Ceiling::op(Rat a, SFlt b)
 }
 // complex ceiling short float
 LispObject Ceiling::op(Cpx a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Ceiling with complex argument is invalid", a.v);
 }
 
 // short float ceiling short float
@@ -4807,7 +4737,7 @@ LispObject Ceiling::op(Rat a, Flt b)
 
 // complex ceiling single float
 LispObject Ceiling::op(Cpx a, Flt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Ceiling with complex argument is invalid", a.v);
 }
 
 // short float ceiling single float
@@ -4847,7 +4777,7 @@ LispObject Ceiling::op(Rat a, double b)
 
 // complex ceiling double float
 LispObject Ceiling::op(Cpx a, double b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Ceiling with complex argument is invalid", a.v);
 }
 
 // short float ceiling double float
@@ -4887,7 +4817,7 @@ LispObject Ceiling::op(Rat a, LFlt b)
 
 // complex ceiling long float
 LispObject Ceiling::op(Cpx a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Ceiling with complex argument is invalid", a.v);
 }
 
 // short float ceiling long float
@@ -4928,7 +4858,7 @@ LispObject Floor::op(LispObject a, Rat b)
 }
 
 LispObject Floor::op(LispObject a, Cpx b)
-{   return binaryR<LispObject,Floor>("floor", a, b);
+{   return aerror1("Floor with complex argument is invalid", b.v);
 }
 
 LispObject Floor::op(LispObject a, SFlt b)
@@ -4960,7 +4890,7 @@ LispObject Floor::op(Rat a, LispObject b)
 }
 
 LispObject Floor::op(Cpx a, LispObject b)
-{   return binaryL<LispObject,Floor>("floor", a, b);
+{   return aerror1("Floor with complex argument is invalid", a.v);
 }
 
 LispObject Floor::op(SFlt a, LispObject b)
@@ -4999,8 +4929,7 @@ LispObject Floor::op(Rat a, Fixnum b)
 
 // complex floor fixnum
 LispObject Floor::op(Cpx a, Fixnum b)
-{   if (b.intval() == 0) return a.v;
-    return make_complex(Floor::op(a.real_part(), b), a.imag_part());
+{   return aerror1("Floor with complex argument is invalid", a.v);
 }
 
 // short float floor fixnum
@@ -5020,8 +4949,7 @@ LispObject Floor::op(double a, Fixnum b)
 
 // long float floor fixnum
 LispObject Floor::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(a.floatval() / (FLOAT_128)b.intval());
 }
 
 // fixnum floor bignum
@@ -5046,8 +4974,7 @@ LispObject Floor::op(Rat a, std::uint64_t* b)
 
 // complex floor bignum
 LispObject Floor::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Floor::op(a.real_part(), b),
-                        Floor::op(a.imag_part(), b));
+{   return aerror1("Floor with complex argument is invalid", a.v);
 }
 
 // short float floor bignum
@@ -5080,9 +5007,9 @@ LispObject Floor::op(double a, std::uint64_t* b)
 // long float floor bignum
 LispObject Floor::op(LFlt a, std::uint64_t* b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -5129,8 +5056,7 @@ LispObject Floor::op(Rat a, Rat b)
 
 // complex floor rational
 LispObject Floor::op(Cpx a, Rat b)
-{   return make_complex(Floor::op(a.real_part(), b),
-                        Floor::op(a.imag_part(), b));
+{   return aerror1("Floor with complex argument is invalid", a.v);
 }
 
 // short float floor rational
@@ -5163,50 +5089,50 @@ LispObject Floor::op(double a, Rat b)
 // long float floor rational
 LispObject Floor::op(LFlt a, Rat b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
 // fixnum floor complex
 LispObject Floor::op(Fixnum a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", b.v);
 }
 
 // bignum floor complex
 LispObject Floor::op(std::uint64_t* a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", b.v);
 }
 
 // rational floor complex
 LispObject Floor::op(Rat a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", b.v);
 }
 
 // complex floor complex
 LispObject Floor::op(Cpx a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", a.v);
 }
 
 // short float floor complex
 LispObject Floor::op(SFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", b.v);
 }
 
 // single float floor complex
 LispObject Floor::op(Flt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", b.v);
 }
 
 // double float floor complex
 LispObject Floor::op(double a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", b.v);
 }
 
 // long float floor complex
 LispObject Floor::op(LFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", b.v);
 }
 
 // fixnum floor short float
@@ -5233,7 +5159,7 @@ LispObject Floor::op(Rat a, SFlt b)
 }
 // complex floor short float
 LispObject Floor::op(Cpx a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", a.v);
 }
 
 // short float floor short float
@@ -5273,7 +5199,7 @@ LispObject Floor::op(Rat a, Flt b)
 
 // complex floor single float
 LispObject Floor::op(Cpx a, Flt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", a.v);
 }
 
 // short float floor single float
@@ -5313,7 +5239,7 @@ LispObject Floor::op(Rat a, double b)
 
 // complex floor double float
 LispObject Floor::op(Cpx a, double b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", a.v);
 }
 
 // short float floor double float
@@ -5353,7 +5279,7 @@ LispObject Floor::op(Rat a, LFlt b)
 
 // complex floor long float
 LispObject Floor::op(Cpx a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("Floor with complex argument is invalid", a.v);
 }
 
 // short float floor long float
@@ -5396,8 +5322,7 @@ LispObject Ftruncate::op(LispObject a, Rat b)
 }
 
 LispObject Ftruncate::op(LispObject a, Cpx b)
-{   return
-        binaryR<LispObject,Ftruncate>("ftruncate", a, b);
+{   return aerror1("ftruncate with complex argument is invalid", b.v);
 }
 
 LispObject Ftruncate::op(LispObject a, SFlt b)
@@ -5436,8 +5361,7 @@ LispObject Ftruncate::op(Rat a, LispObject b)
 }
 
 LispObject Ftruncate::op(Cpx a, LispObject b)
-{   return
-        binaryL<LispObject,Ftruncate>("ftruncate", a, b);
+{   return aerror1("ftruncate with complex argument is invalid", a.v);
 }
 
 LispObject Ftruncate::op(SFlt a, LispObject b)
@@ -5480,8 +5404,7 @@ LispObject Ftruncate::op(Rat a, Fixnum b)
 
 // complex ftruncate fixnum
 LispObject Ftruncate::op(Cpx a, Fixnum b)
-{   if (b.intval() == 0) return a.v;
-    return make_complex(Ftruncate::op(a.real_part(), b), a.imag_part());
+{   return aerror1("ftruncate with complex argument is invalid", a.v);
 }
 
 // short float ftruncate fixnum
@@ -5501,8 +5424,7 @@ LispObject Ftruncate::op(double a, Fixnum b)
 
 // long float ftruncate fixnum
 LispObject Ftruncate::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(a.floatval() / (FLOAT_128)b.intval());
 }
 
 // fixnum ftruncate bignum
@@ -5524,8 +5446,7 @@ LispObject Ftruncate::op(Rat a, std::uint64_t* b)
 
 // complex ftruncate bignum
 LispObject Ftruncate::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Ftruncate::op(a.real_part(), b),
-                        Ftruncate::op(a.imag_part(), b));
+{   return aerror1("ftruncate with complex argument is invalid", a.v);
 }
 
 // short float ftruncate bignum
@@ -5558,9 +5479,9 @@ LispObject Ftruncate::op(double a, std::uint64_t* b)
 // long float ftruncate bignum
 LispObject Ftruncate::op(LFlt a, std::uint64_t* b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -5607,8 +5528,7 @@ LispObject Ftruncate::op(Rat a, Rat b)
 
 // complex ftruncate rational
 LispObject Ftruncate::op(Cpx a, Rat b)
-{   return make_complex(Ftruncate::op(a.real_part(), b),
-                        Ftruncate::op(a.imag_part(), b));
+{   return aerror1("ftruncate with complex argument is invalid", a.v);
 }
 
 // short float ftruncate rational
@@ -5641,50 +5561,50 @@ LispObject Ftruncate::op(double a, Rat b)
 // long float ftruncate rational
 LispObject Ftruncate::op(LFlt a, Rat b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
 // fixnum ftruncate complex
 LispObject Ftruncate::op(Fixnum a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", b.v);
 }
 
 // bignum ftruncate complex
 LispObject Ftruncate::op(std::uint64_t* a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", b.v);
 }
 
 // rational ftruncate complex
 LispObject Ftruncate::op(Rat a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", b.v);
 }
 
 // complex ftruncate complex
 LispObject Ftruncate::op(Cpx a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", a.v);
 }
 
 // short float ftruncate complex
 LispObject Ftruncate::op(SFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", b.v);
 }
 
 // single float ftruncate complex
 LispObject Ftruncate::op(Flt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", b.v);
 }
 
 // double float ftruncate complex
 LispObject Ftruncate::op(double a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", b.v);
 }
 
 // long float ftruncate complex
 LispObject Ftruncate::op(LFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", b.v);
 }
 
 // fixnum ftruncate short float
@@ -5711,7 +5631,7 @@ LispObject Ftruncate::op(Rat a, SFlt b)
 }
 // complex ftruncate short float
 LispObject Ftruncate::op(Cpx a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", a.v);
 }
 
 // short float ftruncate short float
@@ -5751,7 +5671,7 @@ LispObject Ftruncate::op(Rat a, Flt b)
 
 // complex ftruncate single float
 LispObject Ftruncate::op(Cpx a, Flt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", a.v);
 }
 
 // short float ftruncate single float
@@ -5791,7 +5711,7 @@ LispObject Ftruncate::op(Rat a, double b)
 
 // complex ftruncate double float
 LispObject Ftruncate::op(Cpx a, double b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", a.v);
 }
 
 // short float ftruncate double float
@@ -5831,7 +5751,7 @@ LispObject Ftruncate::op(Rat a, LFlt b)
 
 // complex ftruncate long float
 LispObject Ftruncate::op(Cpx a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ftruncate with complex argument is invalid", a.v);
 }
 
 // short float ftruncate long float
@@ -5871,7 +5791,7 @@ LispObject Fceiling::op(LispObject a, Rat b)
 }
 
 LispObject Fceiling::op(LispObject a, Cpx b)
-{   return binaryR<LispObject,Fceiling>("fceiling", a, b);
+{   return aerror1("fceiling with complex argument is invalid", b.v);
 }
 
 LispObject Fceiling::op(LispObject a, SFlt b)
@@ -5903,7 +5823,7 @@ LispObject Fceiling::op(Rat a, LispObject b)
 }
 
 LispObject Fceiling::op(Cpx a, LispObject b)
-{   return binaryL<LispObject,Fceiling>("fceiling", a, b);
+{   return aerror1("fceiling with complex argument is invalid", a.v);
 }
 
 LispObject Fceiling::op(SFlt a, LispObject b)
@@ -5942,8 +5862,7 @@ LispObject Fceiling::op(Rat a, Fixnum b)
 
 // complex fceiling fixnum
 LispObject Fceiling::op(Cpx a, Fixnum b)
-{   if (b.intval() == 0) return a.v;
-    return make_complex(Fceiling::op(a.real_part(), b), a.imag_part());
+{   return aerror1("fceiling with complex argument is invalid", a.v);
 }
 
 // short float fceiling fixnum
@@ -5963,8 +5882,7 @@ LispObject Fceiling::op(double a, Fixnum b)
 
 // long float fceiling fixnum
 LispObject Fceiling::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(a.floatval() / (FLOAT_128)b.intval());
 }
 
 // fixnum fceiling bignum
@@ -5986,8 +5904,7 @@ LispObject Fceiling::op(Rat a, std::uint64_t* b)
 
 // complex ceiling bignum
 LispObject Fceiling::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Fceiling::op(a.real_part(), b),
-                        Fceiling::op(a.imag_part(), b));
+{   return aerror1("fceiling with complex argument is invalid", a.v);
 }
 
 // short float / bignum
@@ -6020,9 +5937,9 @@ LispObject Fceiling::op(double a, std::uint64_t* b)
 // long float / bignum
 LispObject Fceiling::op(LFlt a, std::uint64_t* b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -6069,8 +5986,7 @@ LispObject Fceiling::op(Rat a, Rat b)
 
 // complex / rational
 LispObject Fceiling::op(Cpx a, Rat b)
-{   return make_complex(Fceiling::op(a.real_part(), b),
-                        Fceiling::op(a.imag_part(), b));
+{   return aerror1("fceiling with complex argument is invalid", a.v);
 }
 
 // short float / rational
@@ -6103,50 +6019,50 @@ LispObject Fceiling::op(double a, Rat b)
 // long float / rational
 LispObject Fceiling::op(LFlt a, Rat b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
 // fixnum / complex
 LispObject Fceiling::op(Fixnum a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", b.v);
 }
 
 // bignum fceiling complex
 LispObject Fceiling::op(std::uint64_t* a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", b.v);
 }
 
 // rational fceiling complex
 LispObject Fceiling::op(Rat a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", b.v);
 }
 
 // complex fceiling complex
 LispObject Fceiling::op(Cpx a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", a.v);
 }
 
 // short float fceiling complex
 LispObject Fceiling::op(SFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", b.v);
 }
 
 // single float fceiling complex
 LispObject Fceiling::op(Flt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", b.v);
 }
 
 // double float fceiling complex
 LispObject Fceiling::op(double a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", b.v);
 }
 
 // long float fceiling complex
 LispObject Fceiling::op(LFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", b.v);
 }
 
 // fixnum fceiling short float
@@ -6173,7 +6089,7 @@ LispObject Fceiling::op(Rat a, SFlt b)
 }
 // complex fceiling short float
 LispObject Fceiling::op(Cpx a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", a.v);
 }
 
 // short float fceiling short float
@@ -6213,7 +6129,7 @@ LispObject Fceiling::op(Rat a, Flt b)
 
 // complex fceiling single float
 LispObject Fceiling::op(Cpx a, Flt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", a.v);
 }
 
 // short float fceiling single float
@@ -6253,7 +6169,7 @@ LispObject Fceiling::op(Rat a, double b)
 
 // complex fceiling double float
 LispObject Fceiling::op(Cpx a, double b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", a.v);
 }
 
 // short float fceiling double float
@@ -6293,7 +6209,7 @@ LispObject Fceiling::op(Rat a, LFlt b)
 
 // complex fceiling long float
 LispObject Fceiling::op(Cpx a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("fceiling with complex argument is invalid", a.v);
 }
 
 // short float fceiling long float
@@ -6317,8 +6233,7 @@ LispObject Fceiling::op(LFlt a, LFlt b)
 }
 
 LispObject Ffloor::op(LispObject a, LispObject b)
-{   return binary<LispObject,Ffloor>("ffloor", a,
-            b);
+{   return binary<LispObject,Ffloor>("ffloor", a, b);
 }
 
 LispObject Ffloor::op(LispObject a, Fixnum b)
@@ -6334,7 +6249,7 @@ LispObject Ffloor::op(LispObject a, Rat b)
 }
 
 LispObject Ffloor::op(LispObject a, Cpx b)
-{   return binaryR<LispObject,Ffloor>("ffloor", a, b);
+{   return aerror1("ffloor with complex argument is invalid", b.v);
 }
 
 LispObject Ffloor::op(LispObject a, SFlt b)
@@ -6366,7 +6281,7 @@ LispObject Ffloor::op(Rat a, LispObject b)
 }
 
 LispObject Ffloor::op(Cpx a, LispObject b)
-{   return binaryL<LispObject,Ffloor>("ffloor", a, b);
+{   return aerror1("ffloor with complex argument is invalid", a.v);
 }
 
 LispObject Ffloor::op(SFlt a, LispObject b)
@@ -6405,8 +6320,7 @@ LispObject Ffloor::op(Rat a, Fixnum b)
 
 // complex ffloor fixnum
 LispObject Ffloor::op(Cpx a, Fixnum b)
-{   if (b.intval() == 0) return a.v;
-    return make_complex(Ffloor::op(a.real_part(), b), a.imag_part());
+{   return aerror1("ffloor with complex argument is invalid", a.v);
 }
 
 // short float ffloor fixnum
@@ -6426,8 +6340,7 @@ LispObject Ffloor::op(double a, Fixnum b)
 
 // long float ffloor fixnum
 LispObject Ffloor::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_div(a.floatval(),
-                                     i64_to_f128(b.intval())));
+{   return make_boxfloat128(a.floatval() / (FLOAT_128)b.intval());
 }
 
 // fixnum ffloor bignum
@@ -6449,8 +6362,7 @@ LispObject Ffloor::op(Rat a, std::uint64_t* b)
 
 // complex ffloor bignum
 LispObject Ffloor::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Ffloor::op(a.real_part(), b),
-                        Ffloor::op(a.imag_part(), b));
+{   return aerror1("ffloor with complex argument is invalid", a.v);
 }
 
 // short float ffloor bignum
@@ -6483,9 +6395,9 @@ LispObject Ffloor::op(double a, std::uint64_t* b)
 // long float ffloor bignum
 LispObject Ffloor::op(LFlt a, std::uint64_t* b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -6532,8 +6444,7 @@ LispObject Ffloor::op(Rat a, Rat b)
 
 // complex ffloor rational
 LispObject Ffloor::op(Cpx a, Rat b)
-{   return make_complex(Ffloor::op(a.real_part(), b),
-                        Ffloor::op(a.imag_part(), b));
+{   return aerror1("ffloor with complex argument is invalid", a.v);
 }
 
 // short float ffloor rational
@@ -6566,50 +6477,50 @@ LispObject Ffloor::op(double a, Rat b)
 // long float ffloor rational
 LispObject Ffloor::op(LFlt a, Rat b)
 {   std::int64_t xx;
-    float128_t bb = Frexp128::op(b, xx);
-    float128_t d = f128_div(a.floatval(), bb);
-    f128_ldexp(&d, -xx);
+    FLOAT_128 bb = Frexp128::op(b, xx);
+    FLOAT_128 d = a.floatval() / bb;
+    d = ldexp(d, -xx);
     return make_boxfloat128(d);
 }
 
 // fixnum ffloor complex
 LispObject Ffloor::op(Fixnum a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", b.v);
 }
 
 // bignum ffloor complex
 LispObject Ffloor::op(std::uint64_t* a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", b.v);
 }
 
 // rational ffloor complex
 LispObject Ffloor::op(Rat a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", b.v);
 }
 
 // complex ffloor complex
 LispObject Ffloor::op(Cpx a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", a.v);
 }
 
 // short float ffloor complex
 LispObject Ffloor::op(SFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", b.v);
 }
 
 // single float ffloor complex
 LispObject Ffloor::op(Flt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", b.v);
 }
 
 // double float ffloor complex
 LispObject Ffloor::op(double a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", b.v);
 }
 
 // long float ffloor complex
 LispObject Ffloor::op(LFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", b.v);
 }
 
 // fixnum ffloor short float
@@ -6636,7 +6547,7 @@ LispObject Ffloor::op(Rat a, SFlt b)
 }
 // complex ffloor short float
 LispObject Ffloor::op(Cpx a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", a.v);
 }
 
 // short float ffloor short float
@@ -6676,7 +6587,7 @@ LispObject Ffloor::op(Rat a, Flt b)
 
 // complex ffloor single float
 LispObject Ffloor::op(Cpx a, Flt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", a.v);
 }
 
 // short float ffloor single float
@@ -6716,7 +6627,7 @@ LispObject Ffloor::op(Rat a, double b)
 
 // complex ffloor double float
 LispObject Ffloor::op(Cpx a, double b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", a.v);
 }
 
 // short float ffloor double float
@@ -6756,7 +6667,7 @@ LispObject Ffloor::op(Rat a, LFlt b)
 
 // complex ffloor long float
 LispObject Ffloor::op(Cpx a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return aerror1("ffloor with complex argument is invalid", a.v);
 }
 
 // short float ffloor long float
