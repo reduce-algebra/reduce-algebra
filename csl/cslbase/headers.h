@@ -217,7 +217,7 @@ inline double CSLpow(double x, double y)
 #include "cslerror.h"
 #include "externs.h"
 #include "lispthrow.h"
-#include "newallocate.h"
+#include "allocate.h"
 #include "syscsl.h"
 #include "entries.h"
 #include "arith.h"

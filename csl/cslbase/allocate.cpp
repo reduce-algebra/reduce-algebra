@@ -1,4 +1,4 @@
-// newallocate.cpp                         Copyright (C) 2018-2026 Codemist
+// allocate.cpp                            Copyright (C) 2018-2026 Codemist
 
 //
 // Code to deal with storage allocation, both grabbing memory at the start
@@ -844,4 +844,4 @@ bool pageFull;
 
 } // end namespace
 
-// end of newallocate.cpp
+// end of allocate.cpp
