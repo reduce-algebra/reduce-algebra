@@ -918,9 +918,9 @@ extern constexpr void string_to_160(const char* s,
     bool& sign, int32_t& exponent, uint128_t& mantissa);
 
 constexpr inline FLOAT160 string_to_float160(const char* s)
-{   bool sign;
-    int32_t x;
-    uint128_t m;
+{   bool sign = false;
+    int32_t x = 0;
+    uint128_t m = 0;
     string_to_160(s, sign, x, m);
     return FLOAT160(sign, x, m);
 }
@@ -1666,8 +1666,8 @@ inline FLOAT_128 ldexp(FLOAT_128 v, int x)
 {   return v.ldexp(x);
 }
 
-inline FLOAT_128 frexp(FLOAT_128 v, int* x)
-{   return v.frexp(*x);
+inline FLOAT_128 frexp(FLOAT_128 v, int& x)
+{   return v.frexp(x);
 }
 
 inline bool isinf(FLOAT_128 v)
@@ -1777,6 +1777,8 @@ external_declaration_2(atan2)
 external_declaration_2(atan2d)
 external_declaration_2(expt)
 external_declaration_2(hypot)
+
+extern FLOAT_128 expt(FLOAT_128 a, int128_t n);
 
 #endif // header__float128_h
 

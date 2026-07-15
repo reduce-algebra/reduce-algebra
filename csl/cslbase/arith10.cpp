@@ -449,24 +449,19 @@ LispObject Latand(LispObject env, LispObject y, LispObject x)
     return x;
 }
 
-// If ARITHLIB is enabled all these functions will have their names
-// prefixed with "old" so that the versions from the arithlib code
-// provide the default behaviour
-
-#endif // ARITHLIB
-
 LispObject Llog_2(LispObject env, LispObject a, LispObject b)
 // Log with specified base.
 {   SingleValued fn;
-    a = trigfn(enum_log, a);
+    a = Llog(nil, a);
     errexit();
-    b = trigfn(enum_log, b);
+    b = Llog(nil, b);
     errexit();
     return quot2(a, b);
 }
 
 #ifdef ISQRT_IMPLEMENTED_PROPERLY
 // This can only be used when it is implemented properly!
+
 static LispObject Lisqrt(LispObject, LispObject a)
 {   SingleValued fn;
     double d;
@@ -497,7 +492,10 @@ static LispObject Lisqrt(LispObject, LispObject a)
 // /* This is not anything like good enough yet
     return fixnum_of_int((int32_t)d);
 }
+
 #endif
+
+#endif // ARITHLIB
 
 LispObject Labsval(LispObject env, LispObject a)
 // I call this Labsval not Labs because a non-case-sensitive linker
@@ -540,6 +538,8 @@ LispObject Labsval(LispObject env, LispObject a)
     return a;
 }
 
+#ifndef ARITHLIB
+
 static LispObject Lphase(LispObject env, LispObject a)
 {   SingleValued fn;
     bool s;
@@ -578,7 +578,7 @@ static LispObject Lcis(LispObject, LispObject a)
 // doing so avoids loads of messy type dispatch code here and
 // I am not over-worried about performance at this level (yet).
     a = times2(a, ii);
-    return trigfn(enum_exp, a);     // exp()
+    return Lexp(nil, a);
 }
 
 
@@ -654,6 +654,8 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
         return make_boxfloat(r, restype);
     }
 }
+
+#endif // ARITHLIB
 
 setup_type const arith10_setup[] =
 {

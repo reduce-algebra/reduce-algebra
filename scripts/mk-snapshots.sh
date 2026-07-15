@@ -4,7 +4,8 @@
 # building ones for Windows (64-bit), Macintosh, Linux-x86_64
 # and the Raspberry Pi. For the latter both 32 and 64-bit can be built,
 # but we will probably not be keeping published Raspberry Pi snapshots
-# up to date.
+# up to date. And now in 2026 all 32-bit builds are no longer supported!
+# Soon Macintosh builds other than for aarch64 will drop away.
 #
 # The default as of June 2020 is
 #     win64 linux64 macintosh
@@ -245,6 +246,7 @@ prepare() {
 # level location I can move it to where I want it!
       svn $SVNOPT update | tee reduce-update.log
       REVISION=`svnversion`
+      echo $REVISION > revision.txt
       popd >/dev/null
       mv $REDUCE_DISTRIBUTION/reduce-update.log $SNAPSHOTS
     else
@@ -256,6 +258,7 @@ prepare() {
            $REDUCE_DISTRIBUTION > $SNAPSHOTS/reduce-checkout.log
     pushd $REDUCE_DISTRIBUTION >/dev/null
     REVISION=`svnversion`
+    echo $REVISION > revision.txt
     popd >/dev/null
 # REVISION will be the subversion revision of the copy that I will make the
 # snapshot of, written in the form "svnNNNN".

@@ -83,7 +83,7 @@ using ConstDigitPtr32 = const Digit32*;
 
 // A utility to round up to the next size that is either 2^n or 3*2^(n-2)
 
-[[gnu::used]] inline size_t roundUp23(size_t N)
+size_t roundUp23(size_t N)
 {
 #ifdef __cpp_lib_int_pow2
     size_t r = std::bit_ceil(N);
@@ -94,7 +94,7 @@ using ConstDigitPtr32 = const Digit32*;
     return N<=r1 ? r1 : r;
 }
 
-[[gnu::used]] inline char* hex128(uint128_t a)
+char* hex128(uint128_t a)
 {   static char str[40];
     for (int i=31; i>=0; i--)
     {   str[i] = "0123456789abcdef"[a&0xf];
@@ -104,7 +104,7 @@ using ConstDigitPtr32 = const Digit32*;
     return str;
 }
 
-[[gnu::used]] inline char* dec128(uint128_t a)
+char* dec128(uint128_t a)
 {   static char str[44];
     char temp[44];
     size_t i=0, j=0;
@@ -123,41 +123,41 @@ using ConstDigitPtr32 = const Digit32*;
 
 #ifdef SYMMETRIC
 
-[[gnu::used]] inline int64_t Sig(uint64_t a, uint64_t P)
+int64_t Sig(uint64_t a, uint64_t P)
 {
     return a>(P/2) ? a-P : a;
 }
 
 #else
 
-[[gnu::used]] inline uint64_t Sig(uint64_t a, uint64_t P)
+uint64_t Sig(uint64_t a, uint64_t P)
 {   return a;
 }
 
 #endif
 
-[[gnu::used]] inline void prinvec(const char* s, const uint64_t* v, size_t n, uint64_t P)
+void prinvec(const char* s, const uint64_t* v, size_t n, uint64_t P)
 {   std::cout << s;
     for (size_t i=0; i<n; i++)
         std::cout << " " << Sig(v[i], P);
     std::cout << "\n";
 }
 
-[[gnu::used]] inline void prinvec(const char* s, uint64_t w, const uint64_t* v, size_t n, uint64_t P)
+void prinvec(const char* s, uint64_t w, const uint64_t* v, size_t n, uint64_t P)
 {   std::cout << s << " " << w << ":";
     for (size_t i=0; i<n; i++)
         std::cout << " " << Sig(v[i], P);
     std::cout << "\n";
 }
 
-[[gnu::used]] inline void prinvec(const char* s, const uint64_t* v, size_t n)
+void prinvec(const char* s, const uint64_t* v, size_t n)
 {   std::cout << s;
     for (size_t i=0; i<n; i++)
         std::cout << " " << v[i];
     std::cout << "\n";
 }
 
-[[gnu::used]] inline void prinvec(const char* s, uint64_t w, const uint64_t* v, size_t n)
+void prinvec(const char* s, uint64_t w, const uint64_t* v, size_t n)
 {   std::cout << s << " " << w << ":";
     for (size_t i=0; i<n; i++)
         std::cout << " " << v[i];
@@ -166,26 +166,26 @@ using ConstDigitPtr32 = const Digit32*;
 
 #ifdef SYMMETRIC
 
-[[gnu::used]] inline int32_t Sig(uint32_t a, uint32_t P)
+int32_t Sig(uint32_t a, uint32_t P)
 {   return a>(P/2) ? a-P : a;
 }
 
 #else
 
-[[gnu::used]] inline uint32_t Sig(uint32_t a, uint32_t P)
+uint32_t Sig(uint32_t a, uint32_t P)
 {   return a;
 }
 
 #endif
 
-[[gnu::used]] inline void prinvec(const char* s, const uint32_t* v, uint32_t n, uint32_t P)
+void prinvec(const char* s, const uint32_t* v, uint32_t n, uint32_t P)
 {   std::cout << s;
     for (uint32_t i=0; i<n; i++)
         std::cout << " " << Sig(v[i], P);
     std::cout << "\n";
 }
 
-[[gnu::used]] inline void prinvec(const char* s, uint32_t w,
+void prinvec(const char* s, uint32_t w,
                     const uint32_t* v, uint32_t n, uint32_t P)
 {   std::cout << s << " " << w << ":";
     for (uint32_t i=0; i<n; i++)
@@ -193,14 +193,14 @@ using ConstDigitPtr32 = const Digit32*;
     std::cout << "\n";
 }
 
-[[gnu::used]] inline void prinvec(const char* s, const uint32_t* v, uint32_t n)
+void prinvec(const char* s, const uint32_t* v, uint32_t n)
 {   std::cout << s;
     for (uint32_t i=0; i<n; i++)
         std::cout << " " << v[i];
     std::cout << "\n";
 }
 
-[[gnu::used]] inline void prinvec(const char* s, uint32_t w,
+void prinvec(const char* s, uint32_t w,
                     const uint32_t* v, uint32_t n)
 {   std::cout << s << " " << w << ":";
     for (uint32_t i=0; i<n; i++)
@@ -248,7 +248,7 @@ using ConstDigitPtr32 = const Digit32*;
 // although the main FFT will use just 32-but the Chinese Remainder
 // support code may need more.
 
-[[gnu::used]] inline constexpr uint64_t plusmod(uint64_t a, uint64_t b, uint64_t N)
+constexpr uint64_t plusmod(uint64_t a, uint64_t b, uint64_t N)
 {   //assert(a < N);
     //assert(b < N);
     uint64_t c = a + b;
@@ -257,7 +257,7 @@ using ConstDigitPtr32 = const Digit32*;
 }
 
 template <uint64_t P>
-[[gnu::used]] inline constexpr uint64_t plusmod(uint64_t a, uint64_t b)
+constexpr uint64_t plusmod(uint64_t a, uint64_t b)
 {   //assert(a < P);
     //assert(b < P);
     uint64_t c = a + b;
@@ -265,7 +265,7 @@ template <uint64_t P>
     return c;
 }
 
-[[gnu::used]] inline constexpr uint32_t plusmod(uint32_t a, uint32_t b, uint32_t N)
+constexpr uint32_t plusmod(uint32_t a, uint32_t b, uint32_t N)
 {   //assert(a < N);
     //assert(b < N);
     uint32_t c = a + b;
@@ -274,7 +274,7 @@ template <uint64_t P>
 }
 
 template <uint32_t P>
-[[gnu::used]] inline constexpr uint32_t plusmod(uint32_t a, uint32_t b)
+constexpr uint32_t plusmod(uint32_t a, uint32_t b)
 {   //assert(a < P);
     //assert(b < P);
     uint32_t c = a + b;
@@ -282,7 +282,7 @@ template <uint32_t P>
     return c;
 }
 
-[[gnu::used]] inline constexpr uint64_t differencemod(uint64_t a, uint64_t b, uint64_t N)
+constexpr uint64_t differencemod(uint64_t a, uint64_t b, uint64_t N)
 {   //assert(a < N);
     //assert(b < N);
     uint64_t c = a + N - b;
@@ -291,7 +291,7 @@ template <uint32_t P>
 }
 
 template <uint64_t P>
-[[gnu::used]] inline constexpr uint64_t differencemod(uint64_t a, uint64_t b)
+constexpr uint64_t differencemod(uint64_t a, uint64_t b)
 {   //assert(a < P);
     //assert(b < P);
     uint64_t c = a + P - b;
@@ -299,7 +299,7 @@ template <uint64_t P>
     return c;
 }
 
-[[gnu::used]] inline constexpr uint32_t differencemod(uint32_t a, uint32_t b, uint32_t N)
+constexpr uint32_t differencemod(uint32_t a, uint32_t b, uint32_t N)
 {   //assert(a < N);
     //assert(b < N);
     uint64_t c = a + N - b;
@@ -308,7 +308,7 @@ template <uint64_t P>
 }
 
 template <uint32_t P>
-[[gnu::used]] inline constexpr uint32_t differencemod(uint32_t a, uint32_t b)
+constexpr uint32_t differencemod(uint32_t a, uint32_t b)
 {   //assert(a < P);
     //assert(b < P);
     uint64_t c = a + P - b;
@@ -319,14 +319,14 @@ template <uint32_t P>
 // Form (a*b) % N where all three inputs are 64-bit unsigned integers
 // and a and b are both less than N.
 
-[[gnu::used]] inline constexpr uint64_t timesmod(uint64_t a, uint64_t b, uint64_t N)
+constexpr uint64_t timesmod(uint64_t a, uint64_t b, uint64_t N)
 {   //assert(a < N);
     //assert(b < N);
     return (uint64_t)(((uint128_t)a * b) % N);
 }
 
 template <uint64_t P>
-[[gnu::used]] inline constexpr uint64_t timesmod(uint64_t a, uint64_t b)
+constexpr uint64_t timesmod(uint64_t a, uint64_t b)
 {   //assert(a < P);
     //assert(b < P);
     return (uint64_t)(((uint128_t)a * b) % P);
@@ -335,26 +335,26 @@ template <uint64_t P>
 // Form (a*b) % N where all three inputs are 32-bit unsigned integers
 // and a and b are both less than N.
 
-[[gnu::used]] inline constexpr uint32_t timesmod(uint32_t a, uint32_t b, uint32_t N)
+constexpr uint32_t timesmod(uint32_t a, uint32_t b, uint32_t N)
 {   //assert(a < N);
     //assert(b < N);
     return (uint32_t)(((uint64_t)a * b) % N);
 }
 
 template <uint32_t P>
-[[gnu::used]] inline constexpr uint32_t timesmod(uint32_t a, uint32_t b)
+constexpr uint32_t timesmod(uint32_t a, uint32_t b)
 {   //assert(a < P);
     //assert(b < P);
     return (uint32_t)(((uint64_t)a * b) % P);
 }
 
-[[gnu::used]] inline constexpr uint64_t times64(uint32_t a, uint32_t b)
+constexpr uint64_t times64(uint32_t a, uint32_t b)
 {    return a*(uint64_t)b;
 }
 
 /// Compute x^n mod N where all values are 64 bits.
 
-[[gnu::used]] inline constexpr uint64_t exptmod(uint64_t x, uint64_t n, uint64_t N)
+constexpr uint64_t exptmod(uint64_t x, uint64_t n, uint64_t N)
 {   if (n == 0) return 1;
     uint64_t y = 1;
     while (n > 1)
@@ -365,7 +365,7 @@ template <uint32_t P>
     return timesmod(x, y, N);
 }
 
-[[gnu::used]] inline constexpr uint32_t exptmod(uint32_t x, uint32_t n, uint32_t N)
+constexpr uint32_t exptmod(uint32_t x, uint32_t n, uint32_t N)
 {   if (n == 0) return 1;
     uint32_t y = 1;
     while (n > 1)
@@ -379,7 +379,7 @@ template <uint32_t P>
 // Find the reciprocal of a mod N.
 
 template <uint64_t P>
-[[gnu::used]] inline constexpr uint64_t recipmod(uint64_t a)
+constexpr uint64_t recipmod(uint64_t a)
 {   int64_t y = 0, x = 1;
     uint64_t m = P;
     while (a > 1)
@@ -392,7 +392,7 @@ template <uint64_t P>
 }
 
 template <uint32_t P>
-[[gnu::used]] inline constexpr uint32_t recipmod(uint32_t a)
+constexpr uint32_t recipmod(uint32_t a)
 {   int32_t y = 0, x = 1;
     uint32_t m = P;
     while (a > 1)
@@ -409,7 +409,7 @@ template <uint32_t P>
 // execured at compile time so any excess there has no impact on eventual
 // runtime cost.
 
-[[gnu::used]] inline constexpr bool miller_rabin_probably_prime(uint64_t a, uint64_t N)
+constexpr bool miller_rabin_probably_prime(uint64_t a, uint64_t N)
 {   uint64_t d = N-1;
     int s = 0;
     while ((d % 2) == 0)  // Find largest power of 2 dividing n-1
@@ -432,7 +432,7 @@ template <uint32_t P>
 // primality in that range. Again I will now only be checking values up
 // to 2^31 so the support for 64-bit values is not really necessary!
 
-[[gnu::used]] inline constexpr bool isprime64(uint64_t N)
+constexpr bool isprime64(uint64_t N)
 {   const uint64_t witnesses[] =
         {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
     for (auto a:witnesses)
@@ -480,7 +480,7 @@ template <uint32_t P>
 // times 2^128, giving 25 bits there. This is remarkably close to the first
 // limit I had! And in any of my uses I will not approach either.
 
-[[gnu::used]] inline constexpr uint32_t LCMlengths = 0x06000000U;
+constexpr uint32_t LCMlengths = 0x06000000U;
 
 // Here I will be able to cope with vectors of length up to 3*2^24. A
 // vector just longer than that would round up in size to 2^26 which does
@@ -491,7 +491,7 @@ template <uint32_t P>
 // want to move to use of 64-bit primes for my modular arithmetic.
 
 
-[[gnu::used]] inline constexpr uint64_t findP(uint64_t start)
+constexpr uint64_t findP(uint64_t start)
 {   uint64_t p = LCMlengths*(start/LCMlengths) + 1;
     while (!isprime64(p)) p -= LCMlengths;
     return p;
@@ -515,26 +515,26 @@ template <uint32_t P>
 // to setting consistent limits.
 
 
-[[gnu::used]] inline constexpr uint32_t Q1 = findP(0x80000000U);  // 0x7e000001
-[[gnu::used]] inline constexpr uint32_t Q2 = findP(Q1-2);         // 0x78000001
-[[gnu::used]] inline constexpr uint32_t Q3 = findP(Q2-2);         // 0x6c000001
-[[gnu::used]] inline constexpr uint32_t Q4 = findP(Q3-2);         // 0x66000001
-[[gnu::used]] inline constexpr uint32_t Q5 = findP(Q4-2);         // 0x42000001
+constexpr uint32_t Q1 = findP(0x80000000U);  // 0x7e000001
+constexpr uint32_t Q2 = findP(Q1-2);         // 0x78000001
+constexpr uint32_t Q3 = findP(Q2-2);         // 0x6c000001
+constexpr uint32_t Q4 = findP(Q3-2);         // 0x66000001
+constexpr uint32_t Q5 = findP(Q4-2);         // 0x42000001
 
 // For reason I do not understand gdb has trouble displaying Q1 etc
 // and seems to show floating point values. I hope these versions will
 // help me debug more easily.
-[[gnu::used]] inline uint32_t QQ1 = Q1;
-[[gnu::used]] inline uint32_t QQ2 = Q2;
-[[gnu::used]] inline uint32_t QQ3 = Q3;
-[[gnu::used]] inline uint32_t QQ4 = Q4;
-[[gnu::used]] inline uint32_t QQ5 = Q5;
+uint32_t QQ1 = Q1;
+uint32_t QQ2 = Q2;
+uint32_t QQ3 = Q3;
+uint32_t QQ4 = Q4;
+uint32_t QQ5 = Q5;
 
 // For each prime I want a value (omega1,omega2,...) that is a primitive
 // LCMlength root of unity modulo that prime.
 
 template <uint64_t P>
-[[gnu::used]] inline constexpr uint64_t rootofunity()
+constexpr uint64_t rootofunity()
 {   for (uint64_t k=2;;k++)
     {   if (exptmod(k, (P-1), P) != 1) continue; // redundant: P prime
 // The next 2 lines verify that no lower power of k will be 1. Ie that
@@ -549,11 +549,11 @@ template <uint64_t P>
     }
 }
 
-[[gnu::used]] inline constexpr uint32_t omega1 = rootofunity<Q1>();   // 0x0f6abdd4
-[[gnu::used]] inline constexpr uint32_t omega2 = rootofunity<Q2>();   // 0x54c52df8
-[[gnu::used]] inline constexpr uint32_t omega3 = rootofunity<Q3>();   // 0x58232605
-[[gnu::used]] inline constexpr uint32_t omega4 = rootofunity<Q4>();   // 0x0cb719df
-[[gnu::used]] inline constexpr uint32_t omega5 = rootofunity<Q5>();   // 0x1476e7a6
+constexpr uint32_t omega1 = rootofunity<Q1>();   // 0x0f6abdd4
+constexpr uint32_t omega2 = rootofunity<Q2>();   // 0x54c52df8
+constexpr uint32_t omega3 = rootofunity<Q3>();   // 0x58232605
+constexpr uint32_t omega4 = rootofunity<Q4>();   // 0x0cb719df
+constexpr uint32_t omega5 = rootofunity<Q5>();   // 0x1476e7a6
 
 //*************************************************************************
 //*************************************************************************
@@ -565,9 +565,9 @@ template <uint64_t P>
 //*************************************************************************
 //*************************************************************************
 
-[[gnu::used]] inline constexpr uint64_t P1 = Q1*(uint64_t)Q2;
-[[gnu::used]] inline constexpr uint64_t P2 = Q3*(uint64_t)Q4;
-[[gnu::used]] inline constexpr uint32_t P3 = (uint32_t)Q5;
+constexpr uint64_t P1 = Q1*(uint64_t)Q2;
+constexpr uint64_t P2 = Q3*(uint64_t)Q4;
+constexpr uint32_t P3 = (uint32_t)Q5;
 
 // Given a and b I want to find x and y such that
 //     a*x - b*y = 1  (x_negated=false)
@@ -602,10 +602,10 @@ struct XGCD64
 // These first two are used to find results mod P1 and P2, and then
 // the third helps with P1*P2 - otherwise Q1*Q2*Q3*Q4.
 
-[[gnu::used]] inline constexpr XGCD64 Q1_Q2(Q1, Q2);
-[[gnu::used]] inline constexpr XGCD64 Q3_Q4(Q3, Q4);
+constexpr XGCD64 Q1_Q2(Q1, Q2);
+constexpr XGCD64 Q3_Q4(Q3, Q4);
 
-[[gnu::used]] inline constexpr XGCD64 P1_P2(P1, P2);
+constexpr XGCD64 P1_P2(P1, P2);
 
 // now suppose X = a mod P1 and b mod P2 then
 //    x = a*P2*P1_P2.x - b*P1*P1_P2.y  [uniquely mod P1*P2]
@@ -631,14 +631,14 @@ struct XGCD128
     }
 };
 
-[[gnu::used]] inline constexpr uint128_t P1xP2 = (uint128_t)P1*P2;
-[[gnu::used]] inline constexpr XGCD128 P1_P2_P3(P1xP2, P3);
+constexpr uint128_t P1xP2 = (uint128_t)P1*P2;
+constexpr XGCD128 P1_P2_P3(P1xP2, P3);
 
-[[gnu::used]] inline uint64_t Hi(uint128_t n)
+uint64_t Hi(uint128_t n)
 {   return n>>64;
 }
 
-[[gnu::used]] inline uint64_t Lo(uint128_t n)
+uint64_t Lo(uint128_t n)
 {   return n;
 }
 
@@ -654,7 +654,7 @@ struct XGCD128
 // is basically "short multiplication" because I view the 128 bit
 // number as two 64-bit digits.
 
-[[gnu::used]] inline constexpr void times_64_128(uint64_t a, uint128_t b,
+constexpr void times_64_128(uint64_t a, uint128_t b,
                                    uint64_t& hi, uint64_t& mid, uint64_t& lo)
 {   uint64_t bhi = static_cast<uint64_t>(b>>64);
     uint64_t blo = static_cast<uint64_t>(b);
@@ -677,7 +677,7 @@ struct P1xP2xP3_t
     }
 };
 
-[[gnu::used]] inline constexpr P1xP2xP3_t P1xP2xP3;
+constexpr P1xP2xP3_t P1xP2xP3;
 
 // I want (a*b)%P1xP2 where all the values are 128-bit integers.
 // I had experimented with code to do this on 64-bit inputs but found
@@ -687,7 +687,7 @@ struct P1xP2xP3_t
 // totally in vain.
 
 template <uint128_t P>
-[[gnu::used]] inline constexpr int leadingzeros()
+constexpr int leadingzeros()
 {   for (int i=0; i<128; i++)
         if ((P>>(127-i)) == 1) return i;
     return 128;
@@ -699,7 +699,7 @@ template <uint128_t P>
 // overflow or division by zero.
 
 template <uint128_t P>
-[[gnu::used]] inline constexpr uint128_t inverse()
+constexpr uint128_t inverse()
 {   uint128_t phi=static_cast<uint128_t>(1)<<(128-leadingzeros<P>()), plo=0;
     uint128_t q = P;    
     uint128_t r = 0;
@@ -715,11 +715,11 @@ template <uint128_t P>
     return r;
 }
 
-[[gnu::used]] inline constexpr uint128_t invP1xP2 = inverse<P1xP2>();
+constexpr uint128_t invP1xP2 = inverse<P1xP2>();
 
 // Multiply a pair of 128-bit values to get a 256 bit result.
 
-[[gnu::used]] inline void times_128(uint128_t a, uint128_t b,
+void times_128(uint128_t a, uint128_t b,
                       uint128_t& chi, uint128_t& clo)
 {
     uint64_t ahi = a>>64, alo = a;
@@ -743,7 +743,7 @@ template <uint128_t P>
 // the value I get may be low by 1 or 2. In context I will not worry
 // about this.
 
-[[gnu::used]] inline constexpr uint128_t times_hi_128(uint128_t a, uint128_t b)
+constexpr uint128_t times_hi_128(uint128_t a, uint128_t b)
 {   uint64_t ahi = a>>64, alo = a;
     uint64_t bhi = b>>64, blo = b;
     uint128_t hi = ahi*(uint128_t)bhi;
@@ -757,7 +757,7 @@ template <uint128_t P>
 // a couple of high zero bits.
 
 template <uint128_t P>
-[[gnu::used]] inline constexpr uint128_t timesmod(uint128_t a, uint128_t b)
+constexpr uint128_t timesmod(uint128_t a, uint128_t b)
 {   uint128_t phi=0, plo=0;
     times_128(a, b, phi, plo);
 // Here a and b each have (at least) leadingzeros<P>() leading zeros and so
@@ -813,7 +813,7 @@ template <uint128_t P>
 // (but now having to use larger numbers) to merge in the the effect
 // of P3. The result will be returned as three 64-bit digits.
 
-[[gnu::used]] inline uint32_t modulo(uint64_t hi, uint64_t mid, uint64_t lo, uint32_t P)
+uint32_t modulo(uint64_t hi, uint64_t mid, uint64_t lo, uint32_t P)
 {   uint32_t r = ((((uint128_t)hi)<<64) + mid)%P;
     r = ((((uint128_t)r)<<64) + lo)%P;
     return r;
@@ -823,7 +823,7 @@ template <uint128_t P>
 // P3 which is only 32-bits wide. This gives a result that fits within
 // 64+64+32 bits (ie 160 bits). 
 
-[[gnu::used]] inline void chinese_remainder(Digit a1, Digit a2, Digit32 a3,
+void chinese_remainder(Digit a1, Digit a2, Digit32 a3,
                               uint64_t& hi, uint64_t& mid, uint64_t& lo)
 {
     //assert(a3 < Q3);
@@ -901,7 +901,7 @@ template <uint128_t P>
 // Return the 64-bit value of R
 
 template <Digit32 q1, Digit32 q2, Digit32 x, Digit32 y, bool x_negated>
-[[gnu::used]] inline Digit chinese_remainder_32(Digit32 a, Digit32 b)
+Digit chinese_remainder_32(Digit32 a, Digit32 b)
 {   //assert(a < q1);
     //assert(b < q2);
 // First find a1a2 which will be a1 mod q1 and a2 mod q2
@@ -916,7 +916,7 @@ template <Digit32 q1, Digit32 q2, Digit32 x, Digit32 y, bool x_negated>
     return r;
 }
 
-[[gnu::used]] inline void chinese_remainder(Digit32 a1, Digit32 a2,
+void chinese_remainder(Digit32 a1, Digit32 a2,
                               Digit32 a3, Digit32 a4, Digit32 a5,
                               uint64_t& hi, uint64_t& mid, uint64_t& lo)
 {   //assert(a1 < Q1);
@@ -934,32 +934,6 @@ template <Digit32 q1, Digit32 q2, Digit32 x, Digit32 y, bool x_negated>
     //assert(a4 == b2%Q4);
     chinese_remainder(b1, b2, a5, hi, mid, lo);
 }
-
-#ifdef TESTUTILS
-
-extern "C"
-{
-
-int main()
-{
-     std::cout << std::hex;
-     std::cout << Q1 << "  " << omega1 << "  " << (2*Q1*(uint64_t)Q1) << "\n";
-     std::cout << Q2 << "  " << omega2 << "  " << (2*Q2*(uint64_t)Q2) << "\n";
-     std::cout << Q3 << "  " << omega3 << "  " << (2*Q3*(uint64_t)Q3) << "\n";
-     std::cout << Q4 << "  " << omega4 << "  " << (2*Q4*(uint64_t)Q4) << "\n";
-     std::cout << Q5 << "  " << omega5 << "  " << (2*Q5*(uint64_t)Q5) << "\n";
-
-     uint64_t hi, mid, lo;
-     chinese_remainder(7,7,7,7,7, hi,mid,lo);
-     std:: cout << hi << " " << mid << " " << lo << "\n";
-
-     std::cout << "finishing\n";
-     return 0;
-}
-
-}
-
-#endif // TESTUTILS
 
 } // end of namespace
 

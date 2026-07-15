@@ -1761,15 +1761,16 @@ symbolic restart!-csl nil;
 
 
 (prog (ff rev)
-% Just before I started this I should have made a fiule called "revision.txt"
-% in the current directort containing the subversion revision number for
-% the version being built. Or if that information is not available some
-% other text.
+% Just before I started this task I should have made a file called
+% "revision.txt" in the current directory containing the subversion
+% revision number for the version being built. Or if that information
+% is not available some other text.
   (setq ff (open "revision.txt" 'input))
   (setq ff (rds ff))
   (setq rev (read))
   (close (rds ff))
-  (cond ((fixp rev) (setq revision!* rev)))
+  (cond ((fixp rev) (setq revision!* rev))
+         (t (setq revision!* 'unknown)))
   (setq version!* (compress (cons '!"
     (append
       (explodec "Reduce (CSL, rev ")

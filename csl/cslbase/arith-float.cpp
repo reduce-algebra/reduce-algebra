@@ -39,296 +39,264 @@
 namespace CSL_LISP
 {
 
-// I first provide some helper functions for directed rouding in
-// floating point division. Well C++ provides "fesetround()" to establish
-// a (global) rounding mode, but that needs to be enabled using
-// "#pragma STDC FENV_ACCESS ON" and there is no guarantee of what
-// options will actually be supported (if any!). So despite the fact
-// that what I provide here will be slow, I am going to go for portability
-// over performance. The functions here divide pairs of floating point
-// values with Truncate, Floor and Ceiling semantics. And I have versions
-// suitable for use with each of the four floating point precisions I
-// can ever use. I either say "ugh" or possibly "wheee - what fun" depending
-// on whether I have anything more important to do!
-// I am supposing that a RoundToNearest mode is what simple use of "/"
-// provides so I do not need to do anything special for that here.
-
-// For these I will want code that increments or decrements a floating
-// point value when I need to round up or down.
-
-// For short and single floats I pass values around as doubles. The
-// relevant floating point representations are:
+// For short and single and double floats I pass values around as doubles.
+// This is what C++ typically does! Long floats will be passed using
+// FLOAT_128. The relevant floating point representations are:
 //   short    20 bit mantissa 8 bit exponent
 //   single   24 bit mantissa 8 bit exponent
 //   double   53 bit mantissa 11 bit exponent
 //   long    113 bit mantissa 15 bit exponent 
 
-double truncate_to_short(double a)
-{   uint64_t aa = bit_cast<uint64_t>(a);
-    aa &= 0xfffffffe00000000LLU;
-    return bit_cast<double>(aa);
+// I can move to the next-following or the previous floating point value
+// in each representation by incrementing or decrementing the integer
+// representation (taking care not to adjust an infinity or a NaN)
+
+double short_next_float(double a)
+{   if (!isfinite(a)) return a;
+    return bit_cast<double>(bit_cast<uint64_t>(a) + 0x00000010'00000000);
 }
 
-double truncate_to_single(double a)
-{   uint64_t aa = bit_cast<uint64_t>(a);
-    aa &= 0xffffffffe0000000LLU;
-    return bit_cast<double>(aa);
+double single_next_float(double a)
+{   if (!isfinite(a)) return a;
+    return bit_cast<double>(bit_cast<uint64_t>(a) + 0x00000001'00000000);
 }
 
-double short_increment(double a)
-{   uint64_t aa = bit_cast<uint64_t>(a);
-    aa += 0x0000000200000000LLU;
-    return bit_cast<double>(aa);
+double double_next_float(double a)
+{   if (!isfinite(a)) return a;
+    return bit_cast<double>(bit_cast<uint64_t>(a) + 0x00000000'00000001);
 }
 
-double single_increment(double a)
-{   uint64_t aa = bit_cast<uint64_t>(a);
-    aa += 0x0000000020000000LLU;
-    return bit_cast<double>(aa);
+FLOAT_128 long_next_float(FLOAT_128 a)
+{   if (!isfinite(a)) return a;
+    return FLOAT_128(a.getbits() + 1, 0);
 }
 
-double double_increment(double a)
-{   uint64_t aa = bit_cast<uint64_t>(a);
-    aa += 1;
-    return bit_cast<double>(aa);
+double short_previous_float(double a)
+{   if (!isfinite(a)) return a;
+    return bit_cast<double>(bit_cast<uint64_t>(a) - 0x00000010'00000000);
 }
 
-float128_t long_increment(float128_t a)
-{   float128_t aa;
-    aa.v[HIPART] = a.v[HIPART];
-    if ((aa.v[LOPART] = a.v[LOPART]+1) == 0)
-         aa.v[HIPART]++;
-    return aa;
+double single_previous_float(double a)
+{   if (!isfinite(a)) return a;
+    return bit_cast<double>(bit_cast<uint64_t>(a) - 0x00000001'00000000);
 }
 
-double short_decrement(double a)
-{   uint64_t aa = bit_cast<uint64_t>(a);
-    aa -= 0x0000000200000000LLU;
-    return bit_cast<double>(aa);
+double double_previous_float(double a)
+{   if (!isfinite(a)) return a;
+    return bit_cast<double>(bit_cast<uint64_t>(a) - 0x00000000'00000001);
 }
 
-double single_decrement(double a)
-{   uint64_t aa = bit_cast<uint64_t>(a);
-    aa -= 0x0000000020000000LLU;
-    return bit_cast<double>(aa);
+FLOAT_128 long_previous_float(FLOAT_128 a)
+{   if (!isfinite(a)) return a;
+    return FLOAT_128(a.getbits() - 1, 0);
 }
 
-double double_decrement(double a)
-{   uint64_t aa = bit_cast<uint64_t>(a);
-    aa -= 1;
-    return bit_cast<double>(aa);
+// A short float has 1+8+19 bits (sign/exponent/mantissa) but when its
+// value is stored in a double the exponent field will be 11 bits wise, ie
+// we have 1+11+19 = 31. So the low 33 bits of the double need to be
+// discarded to leave a proper value for it.
+
+double round_to_short(double a)
+{   if (!isfinite(a)) return a;
+    uint64_t w = bit_cast<uint64_t>(a);
+    uint64_t lo = w & 0x00000001'ffffffff;
+    w -= lo;
+    if (lo > 0x1'00000000 ||
+        (lo == 0x1'00000000 && (w & 0x2'00000000) != 0))
+        lo += 0x00000002'00000000;
+    return bit_cast<double>(w);
 }
 
-float128_t long_decrement(float128_t a)
-{   float128_t aa;
-    aa.v[HIPART] = a.v[HIPART];
-    if (a.v[LOPART] == 0) aa.v[HIPART]--;
-    aa.v[LOPART] = a.v[LOPART]-1;
-    return aa;
+// Rounding to a regular single-precision float is much easier!!!
+
+double round_to_single(double a)
+{   return (double)(float)a;
 }
 
-double short_truncate(double a, double b)
-{
-// The code here supposed that the inputs are both short floats that
-// have been widened to doubles, so they only have 20 bits of (active)
-// mantissa.
-    double q = truncate_to_short(a/b);
-    double aa = q*b;         // will be computed accurately.
-    if (aa == a) return q;   // no rounding involved.
-    if (aa > a)
-    {   if ((a>0.0) == (b>0.0)) q = short_decrement(q);
-    }
-    else if ((a>=0.0) != (b>0.0)) q = short_increment(q);
-    return q;
+// Now I will need to handle round, truncate, floor and ceiling.
+// Each of these functions compute a/b with the particular rounding mode
+// and leave a remainder in f_remainder or lf_remainder.
+// The remainder will be suitable for the same width of float as is
+// indicated by the function name.
+
+double f_remainder;
+FLOAT_128 lf_remainder;
+
+double short_round(double a, double b)
+{   double q = round_to_short(a/b);
+    f_remainder = round_to_short(fma(-q, b, a));
+    return q; 
+}
+
+double single_round(double a, double b)
+{   double q = round_to_single(a/b);
+    f_remainder = round_to_single(fma(-q, b, a));
+    return q; 
+}
+
+double double_round(double a, double b)
+{   double q = a/b;
+    f_remainder = fma(-q, b, a);
+    return q; 
+}
+
+FLOAT_128 long_round(FLOAT_128 a, FLOAT_128 b)
+{   FLOAT_128 q = a/b;
+    lf_remainder = fma(-q, b, a);
+    return q; 
 }
 
 double short_floor(double a, double b)
-{   double q = truncate_to_short(a/b);
-// 20+20 < 53
-    double aa = q*b;         // will be computed accurately.
-    if (aa == a) return q;   // no rounding involved.
-    if (aa > a)
-    {   if ((a>0.0) == (b>0.0)) q = short_decrement(q);
+{   double q = round_to_short(a/b);
+    f_remainder = round_to_short(fma(-q, b, a));
+    if (f_remainder > 0.0)
+    {   q = short_previous_float(q);
+        f_remainder = round_to_short(fma(-q, b, a));
     }
-    else if ((a>=0.0) != (b>0.0)) q = short_increment(q);
-    return q;
-}
-
-double short_ceiling(double a, double b)
-{   double q = truncate_to_short(a/b);
-// 20+20 < 53
-    double aa = q*b;         // will be computed accurately.
-    if (aa == a) return q;   // no rounding involved.
-    if (aa > a)
-    {   if ((a>0.0) == (b>0.0)) q = short_decrement(q);
-    }
-    else if ((a>=0.0) != (b>0.0)) q = short_increment(q);
-    return q;
-}
-
-double single_truncate(double a, double b)
-{   double q = truncate_to_single(a/b);
-// 24+24<53 
-    double aa = q*b;         // will be computed accurately.
-    if (aa == a) return q;   // no rounding involved.
-    if (aa > a)
-    {   if ((a>0.0) == (b>0.0)) q = single_decrement(q);
-    }
-    else if ((a>=0.0) != (b>0.0)) q = single_increment(q);
-    return q;
+    return q; 
 }
 
 double single_floor(double a, double b)
-{   double q = truncate_to_single(a/b);
-// 24+24<53 
-    double aa = q*b;         // will be computed accurately.
-    if (aa == a) return q;   // no rounding involved.
-    if (aa > a) q = single_decrement(q);
-    return q;
-}
-
-double single_ceiling(double a, double b)
-{   double q = truncate_to_single(a/b);
-// 24+24<53 
-    double aa = q*b;         // will be computed accurately.
-    if (aa == a) return q;   // no rounding involved.
-    if (aa < a) q = single_increment(q);
-    return q;
-}
-
-// This splits a double precision value that has 53-bits of mantissa
-// as a = h + l where the lowPart can be either +ve or -ve.
-// I am then going to want to do this to two input numbers and then
-// evaluate h1*h2 + h1*l2 + l1*h2 + l1*l2 and I will want each of
-// those multiplications to be performed exactly. So what will be
-// needed is for each of h amd l to have just 26 bits with that achieved
-// by having h rounded to nearest. Let me consider just for a moment the
-// case when the rounding is at exactly the half way point so one might
-// agonise about whether to round up or down. Well in that case the low
-// part will be just exactly 0.5ulp relative to the high part so it does
-// not use up all its bits.
-
-double split_double_in_two(double a, double &lowPart)
-{   uint64_t aa = bit_cast<uint64_t>(a);
-    aa += 0x0000000008000000LLU;
-    aa &= 0xfffffffff7000000LLU;
-    double highPart = bit_cast<double>(aa);
-    lowPart = a - highPart;
-    return highPart;
-}
-
-double double_truncate(double a, double b)
-{   double q = a/b;      // properly rounded so within 0.5ulp of accurate
-// I now want to compute a double precision value for q*b
-    double bhi, blo, qhi, qlo;
-    bhi = split_double_in_two(b, blo);
-    qhi = split_double_in_two(q, qlo);
-    double ahi = bhi*qhi;
-    double amid1 = bhi*qlo;
-    double amid2 = blo*qhi;
-    double alo = blo*qlo;
-// Well I will want to subtract a from all of those and by the
-// way things are constructed its value is almost exactly the
-// same as ahi!
-    ahi -= a;
-    ahi += amid1;  // Am I doing enough here?
-    ahi += amid2;
-    ahi += alo;
-// Now the sign of ahi will tell me if q was high, exact or low/
-    if (ahi == 0.0) return q;
-    else if (ahi > 0.0)
-    {   if (q > 0.0) return double_decrement(q);
+{   double q = round_to_single(a/b);
+    f_remainder = round_to_single(fma(-q, b, a));
+    if (f_remainder > 0.0)
+    {   q = single_previous_float(q);
+        f_remainder = round_to_single(fma(-q, b, a));
     }
-    else if (q < 0.0) return double_increment(q);
-    else return q;
+    return q; 
 }
 
 double double_floor(double a, double b)
-{   double q = a/b;      // properly rounded so within 0.5ulp of accurate
-// I now want to compute a double precision value for q*b
-    double bhi, blo, qhi, qlo;
-    bhi = split_double_in_two(b, blo);
-    qhi = split_double_in_two(q, qlo);
-    double ahi = bhi*qhi;
-    double amid1 = bhi*qlo;
-    double amid2 = blo*qhi;
-    double alo = blo*qlo;
-// Well I will want to subtract a from all of those and by the
-// way things are constructed its value is almost exactly the
-// same as ahi!
-    ahi -= a;
-    ahi += amid1;  // Am I doing enough here?
-    ahi += amid2;
-    ahi += alo;
-// Now the sign of ahi will tell me if q was high, exact or low/
-    if (ahi == 0.0) return q;
-    else if (ahi > 0.0) return double_decrement(q);
-    else return q;
+{   double q = a/b;
+    f_remainder = fma(-q, b, a);
+    if (f_remainder > 0.0)
+    {   q = double_previous_float(q);
+        f_remainder = fma(-q, b, a);
+    }
+    return q; 
+}
+
+FLOAT_128 long_floor(FLOAT_128 a, FLOAT_128 b)
+{   FLOAT_128 q = a/b;
+    lf_remainder = fma(-q, b, a);
+    if (lf_remainder > LF_C(0.0))
+    {   q = long_previous_float(q);
+        f_remainder = fma(-q, b, a);
+    }
+    return q; 
+}
+
+double short_ceiling(double a, double b)
+{   double q = round_to_short(a/b);
+    f_remainder = round_to_short(fma(-q, b, a));
+    if (f_remainder < 0.0)
+    {   q = short_next_float(q);
+        f_remainder = round_to_short(fma(-q, b, a));
+    }
+    return q; 
+}
+
+double single_ceiling(double a, double b)
+{   double q = round_to_single(a/b);
+    f_remainder = round_to_single(fma(-q, b, a));
+    if (f_remainder < 0.0)
+    {   q = single_next_float(q);
+        f_remainder = round_to_single(fma(-q, b, a));
+    }
+    return q; 
 }
 
 double double_ceiling(double a, double b)
-{   double q = a/b;      // properly rounded so within 0.5ulp of accurate
-// I now want to compute a double precision value for q*b
-    double bhi, blo, qhi, qlo;
-    bhi = split_double_in_two(b, blo);
-    qhi = split_double_in_two(q, qlo);
-    double ahi = bhi*qhi;
-    double amid1 = bhi*qlo;
-    double amid2 = blo*qhi;
-    double alo = blo*qlo;
-// Well I will want to subtract a from all of those and by the
-// way things are constructed its value is almost exactly the
-// same as ahi!
-    ahi -= a;
-    ahi += amid1;  // Am I doing enough here?
-    ahi += amid2;
-    ahi += alo;
-// Now the sign of ahi will tell me if q was high, exact or low/
-    if (ahi == 0.0) return q;
-    else if (ahi < 0.0) return double_increment(q);
-    else return q;
+{   double q = a/b;
+    f_remainder = fma(-q, b, a);
+    if (f_remainder < 0.0)
+    {   q = double_next_float(q);
+        f_remainder = fma(-q, b, a);
+    }
+    return q; 
 }
 
-float128_t split_long_in_two(float128_t a, float128_t &lowPart)
-{   float128_t aa = a;
-    if ((aa.v[LOPART] += 0x0080000000000000LLU) < a.v[LOPART])
-        aa.v[HIPART]++;
-    aa.v[LOPART] &= 0xff00000000000000LLU;
-    lowPart = f128_sub(a, aa);
-    return aa;
+FLOAT_128 long_ceiling(FLOAT_128 a, FLOAT_128 b)
+{   FLOAT_128 q = a/b;
+    lf_remainder = fma(-q, b, a);
+    if (lf_remainder < LF_C(0.0))
+    {   q = long_next_float(q);
+        f_remainder = fma(-q, b, a);
+    }
+    return q; 
 }
 
-float128_t long_truncate(float128_t a, float128_t b)
-{
-// I should be able to in effect copy the code from the double precision
-// version and use it here. I will do that later on! @@@@@@@@@@@@
-    return f128_div(a, b);
+double short_trunc(double a, double b)
+{   double q = round_to_short(a/b);
+    f_remainder = round_to_short(fma(-q, b, a));
+    if (q < 0.0 && f_remainder < 0.0)
+    {   q = short_next_float(q);
+        f_remainder = round_to_short(fma(-q, b, a));
+    }
+    else if (q > 0.0 && f_remainder > 0.0)
+    {   q = short_previous_float(q);
+        f_remainder = round_to_short(fma(-q, b, a));
+    }
+    return q; 
 }
 
-float128_t long_floor(float128_t a, float128_t b)
-{
-    return f128_div(a, b);
+double single_trunc(double a, double b)
+{   double q = round_to_single(a/b);
+    f_remainder = round_to_single(fma(-q, b, a));
+    if (q < 0.0 && f_remainder < 0.0)
+    {   q = single_next_float(q);
+        f_remainder = round_to_short(fma(-q, b, a));
+    }
+    else if (q > 0.0 && f_remainder > 0.0)
+    {   q = single_previous_float(q);
+        f_remainder = round_to_short(fma(-q, b, a));
+    }
+    return q; 
 }
 
-float128_t long_ceiling(float128_t a, float128_t b)
-{
-    return f128_div(a, b);
+double double_trunc(double a, double b)
+{   double q = a/b;
+    f_remainder = fma(-q, b, a);
+    if (q < 0.0 && f_remainder < 0.0)
+    {   q = double_next_float(q);
+        f_remainder = round_to_short(fma(-q, b, a));
+    }
+    else if (q > 0.0 && f_remainder > 0.0)
+    {   q = double_previous_float(q);
+        f_remainder = round_to_short(fma(-q, b, a));
+    }
+    return q; 
 }
 
+FLOAT_128 long_trunc(FLOAT_128 a, FLOAT_128 b)
+{   FLOAT_128 q = a/b;
+    lf_remainder = fma(-q, b, a);
+    if (q < LF_C(0.0) && f_remainder < LF_C(0.0))
+    {   q = long_next_float(q);
+        lf_remainder = round_to_short(fma(-q, b, a));
+    }
+    else if (q > LF_C(0.0) && f_remainder > LF_C(0.0))
+    {   q = long_previous_float(q);
+        lf_remainder = round_to_short(fma(-q, b, a));
+    }
+    return q; 
+}
 
 LispObject Float::op(LispObject a)
 {   return unary<LispObject,Float>("float", a);
 }
 
-// A mere cast to double here would not guarantee the rounding mode in
+// A mere cast to double here would not guarantee the floor-ing mode in
 // cases that the integer was longer than 52 bits.
+
 LispObject Float::op(Fixnum a)
 {   return make_boxfloat(arithlib_lowlevel::Double::op(a.intval()));
 }
 
-// In this next one note thar arithlib has a class Float that converts
+// In this next one note that arithlib has a class Float that converts
 // to a C++ float and a separate one called Double that converts to a
 // C++ double and hence is what I need here!
+
 LispObject Float::op(uint64_t *a)
 {   return make_boxfloat(arithlib_lowlevel::Double::op(a));
 }
@@ -378,12 +346,7 @@ LispObject Float::op(double a)
 }
 
 LispObject Float::op(LFlt a)
-{   float64_t f = f128_to_f64(a.floatval());
-// Ha ha - the jolly activity here is a response to the Strict Aliasing Rules
-// that (I believe) allow me to feel safe if I move things treating it as
-// byte data.
-    double d;
-    std::memcpy(&d, &f, sizeof(double));
+{   double d = (double)a.floatval();
     return make_boxfloat(d);
 }
 
@@ -411,83 +374,67 @@ LispObject Float::op(LispObject a, LispObject b)
 }
 
 LispObject Float::op(LispObject a, Fixnum b)
-{   return binaryR<LispObject,Float>("float", a,
-            b);
+{   return binaryR<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(LispObject a, uint64_t *b)
-{   return binaryR<LispObject,Float>("float", a,
-            b);
+{   return binaryR<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(LispObject a, Rat b)
-{   return binaryR<LispObject,Float>("float", a,
-            b);
+{   return binaryR<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(LispObject a, Cpx b)
-{   return binaryR<LispObject,Float>("float", a,
-            b);
+{   return binaryR<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(LispObject a, SFlt b)
-{   return binaryR<LispObject,Float>("float", a,
-            b);
+{   return binaryR<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(LispObject a, Flt b)
-{   return binaryR<LispObject,Float>("float", a,
-            b);
+{   return binaryR<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(LispObject a, double b)
-{   return binaryR<LispObject,Float>("float", a,
-            b);
+{   return binaryR<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(LispObject a, LFlt b)
-{   return binaryR<LispObject,Float>("float", a,
-            b);
+{   return binaryR<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(Fixnum a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a,
-            b);
+{   return binaryL<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(uint64_t *a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a,
-            b);
+{   return binaryL<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(Rat a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a,
-            b);
+{   return binaryL<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(Cpx a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a,
-            b);
+{   return binaryL<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(SFlt a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a,
-            b);
+{   return binaryL<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(Flt a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a,
-            b);
+{   return binaryL<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(double a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a,
-            b);
+{   return binaryL<LispObject,Float>("float", a, b);
 }
 
 LispObject Float::op(LFlt a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a,
-            b);
+{   return binaryL<LispObject,Float>("float", a, b);
 }
 
 // fixnum FLOAT fixnum
@@ -658,22 +605,17 @@ LispObject Float::op(LFlt a, Cpx b)
 // rounding. The later conversion to a short float may then round again,
 // and the combined effect may be that rounding is not quite right!
 
-// @@@@
-
 LispObject Float::op(Fixnum a, SFlt b)
 {   return pack_short_float(double_float_val(Float::op(a)));
 }
 
 // bignum FLOAT short float
-// Ditto here @@@@
 
 LispObject Float::op(uint64_t *a, SFlt b)
 {   return pack_short_float(double_float_val(Float::op(a)));
 }
 
 // rational FLOAT short float
-// This is a case where the ratio needs careful conversion to
-// a short float. @@@@
 LispObject Float::op(Rat a, SFlt b)
 {   return pack_short_float(double_float_val(Float::op(a)));
 }
@@ -702,131 +644,154 @@ LispObject Float::op(double a, SFlt b)
 }
 
 // long float FLOAT short float
-// Rounding again needs to be done in a single step. @@@@
+
+// Note that here we go LFly => double => short_float so the rounding is
+// done in two steps, which is not always correct.
+
 LispObject Float::op(LFlt a, SFlt b)
 {   return pack_short_float(double_float_val(Float::op(a)));
 }
 
 // fixnum FLOAT single float
-// Rounding again needs to be done in a single step. @@@@
+
 LispObject Float::op(Fixnum a, Flt b)
 {   return pack_single_float(double_float_val(Float::op(a)));
 }
 
 // bignum FLOAT single float
-// Rounding again needs to be done in a single step. @@@@
+
 LispObject Float::op(uint64_t *a, Flt b)
 {   return pack_single_float(double_float_val(Float::op(a)));
 }
 
 // rational FLOAT single float
-// Rounding again needs to be done in a single step. @@@@
+
 LispObject Float::op(Rat a, Flt b)
 {   return pack_single_float(double_float_val(Float::op(a)));
 }
 
 // complex FLOAT single float
+
 LispObject Float::op(Cpx a, Flt b)
 {   return pack_single_float(double_float_val(Float::op(a)));
 }
 
 // short float FLOAT single float
+
 LispObject Float::op(SFlt a, Flt b)
 {   return pack_single_float(double_float_val(Float::op(a)));
 }
 
 // single float FLOAT single float
+
 LispObject Float::op(Flt a, Flt b)
 {   return a.value();
 }
 
 // double float FLOAT single float
+
 LispObject Float::op(double a, Flt b)
 {   return pack_single_float(double_float_val(Float::op(a)));
 }
 
 // long float FLOAT single float
-// Rounding again needs to be done in a single step. @@@@
+
 LispObject Float::op(LFlt a, Flt b)
 {   return pack_single_float(double_float_val(Float::op(a)));
 }
 
 // fixnum FLOAT double float
+
 LispObject Float::op(Fixnum a, double b)
 {   return Float::op(a);
 }
 
 // bignum FLOAT double float
+
 LispObject Float::op(uint64_t *a, double b)
 {   return Float::op(a);
 }
 
 // rational FLOAT double float
+
 LispObject Float::op(Rat a, double b)
 {   return Float::op(a);
 }
 
 // complex FLOAT double float
+
 LispObject Float::op(Cpx a, double b)
 {   return Float::op(a);
 }
 
 // short float FLOAT double float
+
 LispObject Float::op(SFlt a, double b)
 {   return Float::op(a);
 }
 
 // single float FLOAT double float
+
 LispObject Float::op(Flt a, double b)
 {   return Float::op(a);
 }
 
 // double float FLOAT double float
+
 LispObject Float::op(double a, double b)
 {   return make_boxfloat(a);
 }
 
 // long float FLOAT double float
+
 LispObject Float::op(LFlt a, double b)
 {   return Float::op(a);
 }
 
 // fixnum FLOAT long float
+
 LispObject Float::op(Fixnum a, LFlt b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // bignum FLOAT long float
+
 LispObject Float::op(uint64_t *a, LFlt b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // rational FLOAT long float
+
 LispObject Float::op(Rat a, LFlt b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // complex FLOAT long float
+
 LispObject Float::op(Cpx a, LFlt b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // short float FLOAT long float
+
 LispObject Float::op(SFlt a, LFlt b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // single float FLOAT long float
+
 LispObject Float::op(Flt a, LFlt b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // double float FLOAT long float
+
 LispObject Float::op(double a, LFlt b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // long float FLOAT long float
+
 LispObject Float::op(LFlt a, LFlt b)
 {   return make_boxfloat128(a.floatval());
 }
@@ -846,7 +811,7 @@ float RawFloat32::op(uint64_t *a)
 float RawFloat32::op(Rat a)
 {   int64_t px, qx;
 // The code here avoids problems with overflow but if I am worried about
-// perfect rounding in every case I may need to do more.
+// perfect rounding. I may need to do more.
     double p =
        unary<double,Frexp>("frexp", a.numerator(), px);
     double q =
@@ -868,12 +833,11 @@ float RawFloat32::op(Flt a)
 }
 
 float RawFloat32::op(double a)
-{   return a;
+{   return (float)a;
 }
 
 float RawFloat32::op(LFlt a)
-{   float32_t f = f128_to_f32(a.floatval());
-    return bit_cast<float>(f.v);
+{   return (float)a.floatval();
 }
 
 double RawFloat::op(LispObject a)
@@ -891,7 +855,7 @@ double RawFloat::op(uint64_t *a)
 double RawFloat::op(Rat a)
 {   int64_t px, qx;
 // The code here avoids problems with overflow but if I am worried about
-// perfect rounding in every case I may need to do more.
+// perfect rounding.
     double p =
        unary<double,Frexp>("frexp", a.numerator(), px);
     double q =
@@ -917,66 +881,50 @@ double RawFloat::op(double a)
 }
 
 double RawFloat::op(LFlt a)
-{   float64_t f = f128_to_f64(a.floatval());
-// Ha ha - the jolly activity here is a response to the Strict Aliasing Rules
-// that (I believe) allow me to feel safe if I move things treating it as
-// byte data.
-    double d;
-    std::memcpy(&d, &f, sizeof(double));
-    return d;
+{   return (double)a.floatval();
 }
 
-float128_t Float128::op(LispObject a)
-{   //return
-    //    unary<float128_t,Float128>("float128", a);
-    return i64_to_f128(0);
+FLOAT_128 Float128::op(LispObject a)
+{   return unary<FLOAT_128,Float128>("float128", a);
 }
 
-float128_t Float128::op(Fixnum a)
-{   return i64_to_f128(a.intval());
+FLOAT_128 Float128::op(Fixnum a)
+{   return (FLOAT_128)(int128_t)a.intval();
 }
 
-float128_t Float128::op(uint64_t *a)
+FLOAT_128 Float128::op(uint64_t *a)
 {   return arithlib_lowlevel::Float128::op(a);
 }
 
-float128_t Float128::op(Rat a)
+FLOAT_128 Float128::op(Rat a)
 {   int64_t px=0, qx=0;
-    float128_t p = Frexp128::op(a.numerator(), px);
-    float128_t q = Frexp128::op(a.denominator(), qx);
+    FLOAT_128 p = Frexp128::op(a.numerator(), px);
+    FLOAT_128 q = Frexp128::op(a.denominator(), qx);
 // Again perfect rounding might mean I really need a bit more work.
-    float128_t d = f128_div(p, q);
-    f128_ldexp(&d, px-qx);
-    return d;
+    FLOAT_128 d = p / q;
+    return ldexp(d, px-qx);
 }
 
-float128_t Float128::op(Cpx a)
+FLOAT_128 Float128::op(Cpx a)
 {   aerror1("bad argument for float128", a.value());
-    return i64_to_f128(0);
+    return LF_C(0.0);
 }
 
-float128_t Float128::op(SFlt a)
+FLOAT_128 Float128::op(SFlt a)
 {   double d = a.floatval();
-    float64_t dd;
-    std::memcpy(&dd, &d, sizeof(double));
-    return f64_to_f128(dd);
+    return (FLOAT_128)d;
 }
 
-float128_t Float128::op(Flt a)
+FLOAT_128 Float128::op(Flt a)
 {   double d = a.floatval();
-    float64_t dd;
-    std::memcpy(&dd, &d, sizeof(double));
-    return f64_to_f128(dd);
+    return (FLOAT_128)d;
 }
 
-float128_t Float128::op(double a)
-{   double d = a;
-    float64_t dd;
-    std::memcpy(&dd, &d, sizeof(double));
-    return f64_to_f128(dd);
+FLOAT_128 Float128::op(double a)
+{   return (FLOAT_128)a;
 }
 
-float128_t Float128::op(LFlt a)
+FLOAT_128 Float128::op(LFlt a)
 {   return a.floatval();
 }
 
@@ -989,8 +937,8 @@ LispObject Fix::op(Fixnum a)
 }
 
 LispObject Fix::op(uint64_t *a)
-{   return reinterpret_cast<LispObject>(reinterpret_cast<char *>
-                                   (a) - 8 + TAG_NUMBERS);
+{   return reinterpret_cast<LispObject>(
+               reinterpret_cast<char *>(a) - 8 + TAG_NUMBERS);
 }
 
 LispObject Fix::op(Rat a)
@@ -1026,7 +974,8 @@ LispObject Truncate::op(Fixnum a)
 }
 
 LispObject Truncate::op(uint64_t *a)
-{   return reinterpret_cast<LispObject>(reinterpret_cast<char *>(a) - 8 + TAG_NUMBERS);
+{   return reinterpret_cast<LispObject>(
+               reinterpret_cast<char *>(a) - 8 + TAG_NUMBERS);
 }
 
 LispObject Truncate::op(Rat a)
@@ -1062,7 +1011,8 @@ LispObject Floor::op(Fixnum a)
 }
 
 LispObject Floor::op(uint64_t *a)
-{   return reinterpret_cast<LispObject>(reinterpret_cast<char *>(a) - 8 + TAG_NUMBERS);
+{   return reinterpret_cast<LispObject>(
+        reinterpret_cast<char *>(a) - 8 + TAG_NUMBERS);
 }
 
 LispObject Floor::op(Rat a)
@@ -1337,9 +1287,9 @@ double Frexp::op(LFlt a, int64_t &xx)
 {   return frexp_finalize(Float::op(a), 0, xx);
 }
 
-LispObject frexp_finalize(float128_t d, int x)
+LispObject frexp_finalize(FLOAT_128 d, int x)
 {   int x1;
-    f128_frexp(d, &d, &x1);
+    d = frexp(d, x1);
     return cons(fixnum_of_int(x+x1), make_boxfloat128(d));
 }
 
@@ -1349,16 +1299,16 @@ LispObject Frexp128::op(Fixnum a)
 
 LispObject Frexp128::op(uint64_t *a)
 {   int64_t x;
-    float128_t d = arithlib_lowlevel::Frexp128::op(a, x);
+    FLOAT_128 d = arithlib_lowlevel::Frexp128::op(a, x);
     return frexp_finalize(d, x);
 }
 
 LispObject Frexp128::op(Rat a)
 {   int64_t xp=0;
-    float128_t p = Frexp128::op(a.numerator(), xp);
+    FLOAT_128 p = Frexp128::op(a.numerator(), xp);
     int64_t xq=0;
-    float128_t q = Frexp128::op(a.denominator(), xq);
-    return frexp_finalize(f128_div(p, q), xp-xq);
+    FLOAT_128 q = Frexp128::op(a.denominator(), xq);
+    return frexp_finalize(p / q, xp-xq);
 }
 
 LispObject Frexp128::op(Cpx a)
@@ -1381,55 +1331,53 @@ LispObject Frexp128::op(LFlt a)  // maybe this should return just a double?
 {   return frexp_finalize(a.floatval(), 0);
 }
 
-float128_t Frexp128::op(LispObject a, int64_t &xx)
-{   //return unary<float128_t,Frexp128>("frexp128",
-    //        a, xx);
-    return i64_to_f128(0);
+FLOAT_128 Frexp128::op(LispObject a, int64_t &xx)
+{   return unary<FLOAT_128,Frexp128>("frexp128", a, xx);
 }
 
-float128_t frexp_finalize(float128_t d, int x, int64_t &xx)
+FLOAT_128 frexp_finalize(FLOAT_128 d, int x, int64_t &xx)
 {   int x1;
-    f128_frexp(d, &d, &x1);
+    d = frexp(d, x1);
     xx = x + x1;
     return d;
 }
 
-float128_t Frexp128::op(Fixnum a, int64_t &xx)
+FLOAT_128 Frexp128::op(Fixnum a, int64_t &xx)
 {   return frexp_finalize(Float128::op(a), 0, xx);
 }
 
-float128_t Frexp128::op(uint64_t *a, int64_t &xx)
+FLOAT_128 Frexp128::op(uint64_t *a, int64_t &xx)
 {   int64_t x = 0;
-    float128_t d = arithlib_lowlevel::Frexp128::op(a, x);
+    FLOAT_128 d = arithlib_lowlevel::Frexp128::op(a, x);
     return frexp_finalize(d, x, xx);
 }
 
-float128_t Frexp128::op(Rat a, int64_t &xx)
+FLOAT_128 Frexp128::op(Rat a, int64_t &xx)
 {   int64_t xp = 0;
-    float128_t p = Frexp128::op(a.numerator(), xp);
+    FLOAT_128 p = Frexp128::op(a.numerator(), xp);
     int64_t xq = 0;
-    float128_t q = Frexp128::op(a.denominator(), xq);
-    return frexp_finalize(f128_div(p, q), xp-xq, xx);
+    FLOAT_128 q = Frexp128::op(a.denominator(), xq);
+    return frexp_finalize(p / q, xp-xq, xx);
 }
 
-float128_t Frexp128::op(Cpx a, int64_t &xx)
+FLOAT_128 Frexp128::op(Cpx a, int64_t &xx)
 {   aerror1("bad argument for frexp", a.value());
-    return i64_to_f128(0);
+    return LF_C(0.0);
 }
 
-float128_t Frexp128::op(SFlt a, int64_t &xx)
+FLOAT_128 Frexp128::op(SFlt a, int64_t &xx)
 {   return frexp_finalize(Float128::op(a), 0, xx);
 }
 
-float128_t Frexp128::op(Flt a, int64_t &xx)
+FLOAT_128 Frexp128::op(Flt a, int64_t &xx)
 {   return frexp_finalize(Float128::op(a), 0, xx);
 }
 
-float128_t Frexp128::op(double a, int64_t &xx)
+FLOAT_128 Frexp128::op(double a, int64_t &xx)
 {   return frexp_finalize(Float128::op(a), 0, xx);
 }
 
-float128_t Frexp128::op(LFlt a, int64_t &xx)  // maybe this should return just a double?
+FLOAT_128 Frexp128::op(LFlt a, int64_t &xx)  // maybe this should return just a double?
 {   return frexp_finalize(a.floatval(), 0, xx);
 }
 
@@ -1473,8 +1421,8 @@ LispObject Ldexp::op(double a, Fixnum b)
 }
 
 LispObject Ldexp::op(LFlt a, Fixnum b)
-{   float128_t f = a.floatval();
-    f128_ldexp(&f, b.intval());
+{   FLOAT_128 f = a.floatval();
+    f = ldexp(f, b.intval());
     return make_boxfloat128(f);
 }
 
@@ -1528,10 +1476,18 @@ LispObject Ldexp::op(double a, uint64_t *b)
 // I am not dealing with a NaN in the float128 case at present.
 
 LispObject Ldexp::op(LFlt a, uint64_t *b)
-{   if (Minusp::op(b)) return make_boxfloat128(i64_to_f128(0));
-    float128_t f = a.floatval();
-    f128_ldexp(&f, 100000000);
-    return make_boxfloat128(f);
+{   FLOAT_128 f = a.floatval();
+// if the exponent is to be set to a bignum then the result will be either
+// zero or infinity. But with the original sign of a. Well except that
+// ldexp(0.0, anything will be zero... and infinities and NaNs will not
+// change.
+    if (f == LF_C(0.0) ||
+        isnan(f) ||
+        isinf(f)) return make_boxfloat128(f);
+    FLOAT_128 r =
+        Minusp::op(b) ? LF_C(0.0) : PLUSINF128();
+    if (f.signbit()) r = -r;
+    return make_boxfloat128(r);
 }
 
 LispObject Sqrt::op(LispObject a)
@@ -1578,7 +1534,7 @@ LispObject Sqrt::op(double a)
 }
 
 LispObject Sqrt::op(LFlt a)
-{   return make_boxfloat128(f128_sqrt(a.floatval()));
+{   return make_boxfloat128(sqrt(a.floatval()));
 }
 
 LispObject Isqrt::op(LispObject a)
@@ -1623,21 +1579,19 @@ LispObject Nfp_infinite(LispObject env, LispObject a)
     {   case XTAG_SFLOAT:
             if (std::fpclassify(value_of_immediate_float(a)) == FP_INFINITE)
                 return lisp_true;
-            return nil;
+            else return nil;
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
             {
                 case LONG_FLOAT_HEADER:
-                    if (isinf128(*reinterpret_cast<float128_t *>(&long_float_val(
-                                           a))))
-                        return lisp_true;
-                    return nil;
+                    if (isinf(long_float_val(a))) return lisp_true;
+                    else return nil;
                 case SINGLE_FLOAT_HEADER:
                 case DOUBLE_FLOAT_HEADER:
                     if (std::fpclassify(double_float_val(a)) == FP_INFINITE)
                         return lisp_true;
-                    return nil;
+                    else return nil;
             }
         default:
             break;
@@ -1659,15 +1613,14 @@ LispObject Nfp_nan(LispObject env, LispObject a)
             {   case SINGLE_FLOAT_HEADER:
                     if (std::fpclassify(single_float_val(a)) == FP_NAN)
                         return lisp_true;
-                    return nil;
+                    else return nil;
                 case LONG_FLOAT_HEADER:
-                    if (isnan128(*reinterpret_cast<float128_t *>(&long_float_val(a))))
-                        return lisp_true;
-                    return nil;
+                    if (isnan(long_float_val(a))) return lisp_true;
+                    else return nil;
                 case DOUBLE_FLOAT_HEADER:
                     if (std::fpclassify(double_float_val(a)) == FP_NAN)
                         return lisp_true;
-                    return nil;
+                    else return nil;
             }
         default:
             break;
@@ -1687,7 +1640,7 @@ LispObject Nfp_finite(LispObject env, LispObject a)
             switch (flthdr(a))
             {
                 case LONG_FLOAT_HEADER:
-                    if (f128_finite(*reinterpret_cast<float128_t *>(&long_float_val(a))))
+                    if (isfinite(long_float_val(a)))
                         return lisp_true;
                     return nil;
                 case SINGLE_FLOAT_HEADER:
@@ -1721,7 +1674,7 @@ LispObject Nfp_subnorm(LispObject env, LispObject a)
                         return  lisp_true;
                     else return nil;
                 case LONG_FLOAT_HEADER:
-                    if (f128_subnorm(*reinterpret_cast<float128_t *>(&long_float_val(a))))
+                    if (!isnormal(long_float_val(a)))
                         return lisp_true;
                     return nil;
                 case DOUBLE_FLOAT_HEADER:
@@ -1755,9 +1708,7 @@ LispObject Nfp_signbit(LispObject env, LispObject a)
             {   case SINGLE_FLOAT_HEADER:
                     return std::signbit(single_float_val(a)) ? lisp_true : nil;
                 case LONG_FLOAT_HEADER:
-                    return f128_negative(
-                        *reinterpret_cast<float128_t *> (&long_float_val(a))) ?
-                        lisp_true : nil;
+                    return signbit(long_float_val(a)) ? lisp_true : nil;
                 case DOUBLE_FLOAT_HEADER:
                     return std::signbit(double_float_val(a)) ? lisp_true : nil;
             }
@@ -1834,10 +1785,10 @@ LispObject Nfloat_sign2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     if (is_bfloat(b) &&
         flthdr(b) == LONG_FLOAT_HEADER)
-    {   float128_t d = float128_of_number(b);
+    {   FLOAT_128 d = float128_of_number(b);
 // If a is another long float then float_of_number may overflow, but
 // here I am only interested in its sign, and -infinity is still negative.
-        if (float_of_number(a) < 0.0) f128_negate(&d);
+        if (float_of_number(a) < LF_C(0.0)) d = - d;
         return make_boxfloat128(d);
     }
     double d = float_of_number(b);
@@ -1853,9 +1804,9 @@ LispObject Nfloat_sign1(LispObject env, LispObject a)
 {   SingleValued fn;
     if (is_bfloat(1) &&
         flthdr(a) == LONG_FLOAT_HEADER)
-    {   float128_t d = float128_of_number(a);
-        float128_t r = f128_1;
-        if (f128_negative(d)) f128_negate(&r);
+    {   FLOAT_128 d = float128_of_number(a);
+        FLOAT_128 r = LF_C(1.0);
+        if (signbit(d)) r = -r;
         return make_boxfloat128(r);
     }
     double d = float_of_number(a);
@@ -1984,27 +1935,28 @@ LispObject Nround(LispObject env, LispObject a, LispObject b)
 // double precision version.
 
 static LispObject Nlisp_fix_sub128(LispObject a, int roundmode)
-{   float128_t *d = reinterpret_cast<float128_t *>(long_float_addr(a));
-    if (isnan128(*d)) return aerror("NaN in fix");
-    if (isinf128(*d)) return aerror("infinity in fix");
-    int x = f128_exponent(*d);
+{   FLOAT_128 d = long_float_val(a);
+    if (isnan(d)) return aerror("NaN in fix");
+    if (isinf(d)) return aerror("infinity in fix");
+    int x;
+    frexp(d, x);
 // Here I will limit the range where I convert to directly to a
 // 64-bit integer. I make this a slightly lower limit than I applied
-// when converting 64-bit floats because here the float128_t could be
+// when converting 64-bit floats because here the FLOAT_128 could be
 // really really close to the integer limit and so might overflow on
 // rounding the conversion.
     if (x < 62)
-    {   int64_t n = f128M_to_i64(d, roundmode, false);
-// Here the softfloat library does rounding for me. Hoorah!
+    {   int64_t n = (int64_t)d;
+// @@@ Must adjust using roundmode here
         return make_lisp_integer64(n);
     }
 // Now I know that the result will be at least a 62-bit integer.
-    float128_t d2;
-    f128_frexp(*d, &d2, &x);
+    FLOAT_128 d2;
+    d2 = frexp(d, x);
     uint64_t hi, lo;
     f128_mantissa(d2, hi, lo);
     int128_t ii = (static_cast<uint128_t>(hi | 0x1000000000000ULL)<<64) | lo;
-    if (f128_negative(*d)) ii = -ii;
+    if (signbit(d)) ii = -ii;
     x -= 113;
 // Now the result needs to be shifted left by x bits. Well if x<0 it needs to
 // shift right and in that case I need to think about rounding modes.
@@ -2253,7 +2205,7 @@ LispObject Nfround(LispObject env, LispObject a1, LispObject a2)
 }
 
 LispObject Nscale_float128(LispObject a, intptr_t x)
-{   float128_t d = long_float_val(a);
+{   FLOAT_128 d = long_float_val(a);
     if (isnan128(d)) return a;
     if (x >= 0x40000) x = 0x40000;
     else if (x <= -0x40000) x = -0x40000;
@@ -2386,7 +2338,7 @@ LispObject Nmodf(LispObject env, LispObject a1)
 {   SingleValued fn;
     float fi, ff;
     double di, df;
-    float128_t li, lf;
+    FLOAT_128 li, lf;
     switch (a1 & XTAG_BITS)
     {   default:
             return cons(a1, make_boxfloat(0.0));
@@ -2413,7 +2365,7 @@ LispObject Nmodf(LispObject env, LispObject a1)
 }
 
 LispObject Ndecode_long_float(LispObject a)
-{   float128_t d = long_float_val(a);
+{   FLOAT_128 d = long_float_val(a);
     if (isinf128(d) || isnan128(d))
     {   if (trap_floating_overflow) return aerror("decode-float");
         else return nil; // infinity or NaN
@@ -2431,7 +2383,7 @@ LispObject Ndecode_long_float(LispObject a)
         f128_set_exponent(&d, 0x3fff);
     }
     LispObject sign = make_boxfloat128(f128_1);
-    if (neg) f128_negate(reinterpret_cast<float128_t *>(long_float_addr(sign)));
+    if (neg) f128_negate(reinterpret_cast<FLOAT_128 *>(long_float_addr(sign)));
     {   a = make_boxfloat128(d);
         errexit();
     }
@@ -2481,7 +2433,7 @@ LispObject Ndecode_float(LispObject env, LispObject a)
 }
 
 LispObject Ninteger_decode_long_float(LispObject a)
-{   float128_t d = long_float_val(a);
+{   FLOAT_128 d = long_float_val(a);
     if (isinf128(d) || isnan128(d))
     {   if (trap_floating_overflow) return aerror("integer-decode-float");
         else return nil; // infinity or NaN
@@ -2563,3 +2515,4 @@ LispObject Ninteger_decode_float(LispObject env, LispObject a)
 #endif // ARITHLIB
 
 // end of arith-float.cpp
+

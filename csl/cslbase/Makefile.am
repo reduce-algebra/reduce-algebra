@@ -353,14 +353,16 @@ if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
-		arith-elem.cpp arith-misc.cpp
-ARITHDEP=arithlib.cpp
+		arith-elem.cpp arith-misc.cpp \
+		multiply.cpp karatoom.cpp fftmul.cpp randomnum.cpp
+
+ARITHDEP=arithlib.h
 else !arithlib
 arith_sources =
 ARITHDEP=
 endif !arithlib
 
-gc_sources = newcslgc.cpp newallocate.cpp gc-check.cpp
+gc_sources = cslgc.cpp allocate.cpp gc-check.cpp
 
 if enable_webgui
 webgui_sources = embwebgui.cpp webdriver.cpp
@@ -927,7 +929,10 @@ endif !mac_framework
 # taken as specifing conflicting actions.
 
 if arithlib
-csl-arithlib.$(OBJEXT):		$(HDRS)
+csl-multiply.$(OBJEXT):		$(HDRS)
+csl-karatoom.$(OBJEXT):		$(HDRS)
+csl-fftmul.$(OBJEXT):		$(HDRS)
+csl-randomnum.$(OBJEXT):	$(HDRS)
 csl-arith-setup.$(OBJEXT):	$(HDRS)
 csl-arith-plus.$(OBJEXT):	$(HDRS)
 csl-arith-times.$(OBJEXT):	$(HDRS)
@@ -940,7 +945,10 @@ csl-arith-modular.$(OBJEXT):	$(HDRS)
 csl-arith-elem.$(OBJEXT):	$(HDRS)
 csl-arith-misc.$(OBJEXT):	$(HDRS)
 
-bootstrapreduce-arithlib.$(OBJEXT):	$(HDRS)
+bootstrapreduce-multiply.$(OBJEXT):	$(HDRS)
+bootstrapreduce-karatoom.$(OBJEXT):	$(HDRS)
+bootstrapreduce-fftmul.$(OBJEXT):	$(HDRS)
+bootstrapreduce-randomnum.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-setup.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-plus.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-times.$(OBJEXT):	$(HDRS)
@@ -953,7 +961,10 @@ bootstrapreduce-arith-modular.$(OBJEXT):$(HDRS)
 bootstrapreduce-arith-elem.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-misc.$(OBJEXT):	$(HDRS)
 
-reduce-arithlib.$(OBJEXT):	$(HDRS)
+reduce-multiply.$(OBJEXT):	$(HDRS)
+reduce-karatoom.$(OBJEXT):	$(HDRS)
+reduce-fftmul.$(OBJEXT):	$(HDRS)
+reduce-randomnum.$(OBJEXT):	$(HDRS)
 reduce-arith-setup.$(OBJEXT):	$(HDRS)
 reduce-arith-plus.$(OBJEXT):	$(HDRS)
 reduce-arith-times.$(OBJEXT):	$(HDRS)
@@ -966,7 +977,10 @@ reduce-arith-modular.$(OBJEXT):	$(HDRS)
 reduce-arith-elem.$(OBJEXT):	$(HDRS)
 reduce-arith-misc.$(OBJEXT):	$(HDRS)
 
-reduce-web-arithlib.$(OBJEXT):		$(HDRS)
+reduce_web-multiply.$(OBJEXT):		$(HDRS)
+reduce_web-karatoom.$(OBJEXT):		$(HDRS)
+reduce_web-fftmul.$(OBJEXT):		$(HDRS)
+reduce_web-randomnum.$(OBJEXT):		$(HDRS)
 reduce_web-arith-setup.$(OBJEXT):	$(HDRS)
 reduce_web-arith-plus.$(OBJEXT):	$(HDRS)
 reduce_web-arith-times.$(OBJEXT):	$(HDRS)
@@ -981,7 +995,7 @@ reduce_web-arith-misc.$(OBJEXT):	$(HDRS)
 
 endif arithlib
 
-csl-newallocate.$(OBJEXT):	$(HDRS)
+csl-allocate.$(OBJEXT):	$(HDRS)
 csl-arith01.$(OBJEXT):	$(HDRS)
 csl-arith02.$(OBJEXT):	$(HDRS)
 csl-arith03.$(OBJEXT):	$(HDRS)
@@ -1014,7 +1028,7 @@ csl-fns1.$(OBJEXT):	$(HDRS)
 csl-fns2.$(OBJEXT):	$(HDRS)
 csl-fns3.$(OBJEXT):	$(HDRS)
 csl-lisphash.$(OBJEXT):	$(HDRS)
-csl-newcslgc.$(OBJEXT):	$(HDRS)
+csl-cslgc.$(OBJEXT):	$(HDRS)
 csl-gc-check.$(OBJEXT):	$(HDRS)
 csl-ompsetup.$(OBJEXT):	$(HDRS)
 csl-openmath.$(OBJEXT):	$(HDRS)
@@ -1028,7 +1042,7 @@ csl-serialize.$(OBJEXT):$(HDRS)
 csl-winsupport.$(OBJEXT):$(HDRS)
 csl-inthash.$(OBJEXT):	$(HDRS)
 
-bootstrapreduce-newallocate.$(OBJEXT):	$(HDRS)
+bootstrapreduce-allocate.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith01.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith02.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith03.$(OBJEXT):	$(HDRS)
@@ -1061,7 +1075,7 @@ bootstrapreduce-fns1.$(OBJEXT):		$(HDRS)
 bootstrapreduce-fns2.$(OBJEXT):		$(HDRS)
 bootstrapreduce-fns3.$(OBJEXT):		$(HDRS)
 bootstrapreduce-lisphash.$(OBJEXT):	$(HDRS)
-bootstrapreduce-newcslgc.$(OBJEXT):	$(HDRS)
+bootstrapreduce-cslgc.$(OBJEXT):	$(HDRS)
 bootstrapreduce-gc-check.$(OBJEXT):	$(HDRS)
 bootstrapreduce-ompsetup.$(OBJEXT):	$(HDRS)
 bootstrapreduce-openmath.$(OBJEXT):	$(HDRS)
@@ -1075,7 +1089,7 @@ bootstrapreduce-serialize.$(OBJEXT):	$(HDRS)
 bootstrapreduce-winsupport.$(OBJEXT):	$(HDRS)
 bootstrapreduce-inthash.$(OBJEXT):	$(HDRS)
 
-reduce-newallocate.$(OBJEXT):	$(HDRS)
+reduce-allocate.$(OBJEXT):	$(HDRS)
 reduce-arith01.$(OBJEXT):	$(HDRS)
 reduce-arith02.$(OBJEXT):	$(HDRS)
 reduce-arith03.$(OBJEXT):	$(HDRS)
@@ -1108,7 +1122,7 @@ reduce-fns1.$(OBJEXT):		$(HDRS)
 reduce-fns2.$(OBJEXT):		$(HDRS)
 reduce-fns3.$(OBJEXT):		$(HDRS)
 reduce-lisphash.$(OBJEXT):	$(HDRS)
-reduce-newcslgc.$(OBJEXT):	$(HDRS)
+reduce-cslgc.$(OBJEXT):		$(HDRS)
 reduce-gc-check.$(OBJEXT):	$(HDRS)
 reduce-ompsetup.$(OBJEXT):	$(HDRS)
 reduce-openmath.$(OBJEXT):	$(HDRS)
@@ -1183,7 +1197,7 @@ reduce-u58.$(OBJEXT):	$(HDRS)
 reduce-u59.$(OBJEXT):	$(HDRS)
 reduce-u60.$(OBJEXT):	$(HDRS)
 
-reduce_web-newallocate.$(OBJEXT):	$(HDRS)
+reduce_web-allocate.$(OBJEXT):	$(HDRS)
 reduce_web-arith01.$(OBJEXT):	$(HDRS)
 reduce_web-arith02.$(OBJEXT):	$(HDRS)
 reduce_web-arith03.$(OBJEXT):	$(HDRS)
@@ -1216,7 +1230,7 @@ reduce_web-fns1.$(OBJEXT):	$(HDRS)
 reduce_web-fns2.$(OBJEXT):	$(HDRS)
 reduce_web-fns3.$(OBJEXT):	$(HDRS)
 reduce_web-lisphash.$(OBJEXT):	$(HDRS)
-reduce_web-newcslgc.$(OBJEXT):	$(HDRS)
+reduce_web-cslgc.$(OBJEXT):	$(HDRS)
 reduce_web-gc-check.$(OBJEXT):	$(HDRS)
 reduce_web-ompsetup.$(OBJEXT):	$(HDRS)
 reduce_web-openmath.$(OBJEXT):	$(HDRS)
@@ -1400,36 +1414,6 @@ endif mac_framework
 else !wx
 WXDEPS=
 endif !wx
-
-# The file arithlib.cpp is maintained in the form of a top level file
-# arithlib.base.cpp and a collection of files that it uses "#include" to
-# get merged in. The utility flatten performs the expansion for me. The
-# consequence of this is that arithlib.cpp is a single free-standing
-# header-only library, but if you also #include one of the things it
-# incorporates (eg threadloc.h or lvector.h) then there will be no clash.
-
-$(cslbase)/flatten:	flatten.cpp
-	g++ $(CXXFLAGS) $(cslbase)/flatten.cpp -o $(cslbase)/flatten
-
-$(cslbase)/lvector.h:	$(cslbase)/flatten $(cslbase)/lvector.base.h \
-		$(cslbase)/threadloc.h
-	cd $(cslbase) && ./flatten lvector.base.h lvector.h
-
-$(cslbase)/multiply.cpp:	$(cslbase)/flatten \
-		$(cslbase)/multiply.base.cpp $(cslbase)/inlinemul.cpp \
-		$(cslbase)/lvector.h $(cslbase)/cthread.cpp \
-		$(cslbase)/fftmod.cpp
-	cd $(cslbase) && ./flatten multiply.base.cpp multiply.cpp
-
-$(cslbase)/arithlib.cpp:	$(cslbase)/flatten \
-		$(cslbase)/arithlib.base.cpp $(cslbase)/lvector.h \
-		$(cslbase)/acnutil.h $(cslbase)/multiply.base.cpp \
-		$(cslbase)/fftutils.cpp $(cslbase)/fftmod.cpp \
-		$(cslbase)/cthread.cpp
-	printf "\n\n=== Prepare arithlib source\n\n";
-	cd $(cslbase) && ./flatten arithlib.base.cpp arithlib.cpp
-
-$(cslbase)/arithlib.h:	$(cslbase)/arithlib.cpp
 
 $(cslbase)/geninline:	$(cslbase)/geninline.cpp
 	g++ $(CXXFLAGS) $(cslbase)/geninline.cpp -o $(cslbase)/geninline

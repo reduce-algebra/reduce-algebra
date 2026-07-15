@@ -564,7 +564,7 @@ extern LispObject Nfround(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Nscale_float(LispObject env, LispObject a1, LispObject a2);
 
 extern LispObject N_rationalf(double d);
-extern LispObject N_rationalf128(long float d);
+extern LispObject N_rationalf128(FLOAT_128 d);
 
 } // end of namespace
 
