@@ -91,28 +91,6 @@ FLOAT_128 long_previous_float(FLOAT_128 a)
     return FLOAT_128(a.getbits() - 1, 0);
 }
 
-// A short float has 1+8+19 bits (sign/exponent/mantissa) but when its
-// value is stored in a double the exponent field will be 11 bits wise, ie
-// we have 1+11+19 = 31. So the low 33 bits of the double need to be
-// discarded to leave a proper value for it.
-
-double round_to_short(double a)
-{   if (!isfinite(a)) return a;
-    uint64_t w = bit_cast<uint64_t>(a);
-    uint64_t lo = w & 0x00000001'ffffffff;
-    w -= lo;
-    if (lo > 0x1'00000000 ||
-        (lo == 0x1'00000000 && (w & 0x2'00000000) != 0))
-        lo += 0x00000002'00000000;
-    return bit_cast<double>(w);
-}
-
-// Rounding to a regular single-precision float is much easier!!!
-
-double round_to_single(double a)
-{   return (double)(float)a;
-}
-
 // Now I will need to handle round, truncate, floor and ceiling.
 // Each of these functions compute a/b with the particular rounding mode
 // and leave a remainder in f_remainder or lf_remainder.
@@ -1939,7 +1917,7 @@ static LispObject Nlisp_fix_sub128(LispObject a, int roundmode)
     if (isnan(d)) return aerror("NaN in fix");
     if (isinf(d)) return aerror("infinity in fix");
     int x;
-    frexp(d, x);
+    d = frexp(d, x);
 // Here I will limit the range where I convert to directly to a
 // 64-bit integer. I make this a slightly lower limit than I applied
 // when converting 64-bit floats because here the FLOAT_128 could be
@@ -1953,9 +1931,9 @@ static LispObject Nlisp_fix_sub128(LispObject a, int roundmode)
 // Now I know that the result will be at least a 62-bit integer.
     FLOAT_128 d2;
     d2 = frexp(d, x);
-    uint64_t hi, lo;
-    f128_mantissa(d2, hi, lo);
-    int128_t ii = (static_cast<uint128_t>(hi | 0x1000000000000ULL)<<64) | lo;
+    uint128_t m = d2.mantissa();
+// Because this comes out of frexp it is a properly normalised value.
+    int128_t ii = m | (((uint128_t)1)<<112); // Put back hidden bit.
     if (signbit(d)) ii = -ii;
     x -= 113;
 // Now the result needs to be shifted left by x bits. Well if x<0 it needs to
@@ -1974,13 +1952,13 @@ static LispObject Nlisp_fix_sub128(LispObject a, int roundmode)
                             (frac == topBit && (ii&1) != 0)) ii++;
                         break;
             case FIX_FLOOR:
-                        if (frac != 0 && f128_negative(*d)) ii++;
+                        if (frac != 0 && d < LF_C(0.0)) ii++;
                         break;
             case FIX_CEILING:
-                        if (frac != 0 && !f128_negative(*d)) ii++;
+                        if (frac != 0 && d > LF_C(0.0)) ii++;
                         break;
         }
-        if (f128_negative(*d)) ii = -ii;
+        if (d < LF_C(0.0)) ii = -ii;
         return make_lisp_integer128(ii);
     }
     return LeftShift::op(make_lisp_integer128(ii), fixnum_of_int(x));
@@ -1992,8 +1970,7 @@ static LispObject Nlisp_fix_sub128(LispObject a, int roundmode)
 // be rejected.
 
 static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
-{
-    if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
+{   if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
         return Nlisp_fix_sub128(a, roundmode);
     double d = float_of_number(a);
     if (std::isnan(d)) return aerror("NaN in fix");
@@ -2206,25 +2183,8 @@ LispObject Nfround(LispObject env, LispObject a1, LispObject a2)
 
 LispObject Nscale_float128(LispObject a, intptr_t x)
 {   FLOAT_128 d = long_float_val(a);
-    if (isnan128(d)) return a;
-    if (x >= 0x40000) x = 0x40000;
-    else if (x <= -0x40000) x = -0x40000;
-    if (f128_subnorm(d))
-    {   f128M_mul(&d, &f128_N1, &d);
-        x -= 4096;
-    }
-    x += f128_exponent(d);
-    if (x >= 0x7fff)         // result will be infinite
-        f128_make_infinite(&d);
-    else if (x <= 0)         // result underflows
-    {   if (x < -113) f128_make_zero(&d);
-        else
-        {   f128_set_exponent(&d, x+4096);
-// If there is a risk I need to generate a subnormal result do it this way.
-            f128M_div(&d, &f128_N1, &d);
-        }
-    }
-    else f128_set_exponent(&d, x);
+    if (isnan(d) || isinf(d)) return a;
+    d = ldexp(d, (int)x);
     return make_boxfloat128(d);
 }
 
@@ -2358,7 +2318,7 @@ LispObject Nmodf(LispObject env, LispObject a1)
                     df = std::modf(double_float_val(a1), &di);
                     return cons(make_boxfloat(di), make_boxfloat(df));
                 case LONG_FLOAT_HEADER:
-                    lf = arithlib_lowlevel::modf(long_float_val(a1), li);
+                    lf = modf(long_float_val(a1), li);
                     return cons(make_boxfloat128(li), make_boxfloat128(lf));
             }
     }
@@ -2366,27 +2326,25 @@ LispObject Nmodf(LispObject env, LispObject a1)
 
 LispObject Ndecode_long_float(LispObject a)
 {   FLOAT_128 d = long_float_val(a);
-    if (isinf128(d) || isnan128(d))
+    if (isinf(d) || isnan(d))
     {   if (trap_floating_overflow) return aerror("decode-float");
         else return nil; // infinity or NaN
     }
     bool neg = false;
     int x = 0;
-    if (f128_negative(d)) f128_negate(&d), neg = true;
-    if (f128M_eq(&d, &f128_0)) x = 0;
+    if (signbit(d)) d = -d, neg = true;
+    if (d == LF_C(0.0)) x = 0;
     else
-    {   if (f128_subnorm(d))
-        {   f128M_mul(&d, &f128_N1, &d);
+    {   if (!isnormal(d))
+        {   d = d * arithlib_implementation::f128_N1;
             x -= 4096;
         }
-        x += f128_exponent(d) - 0x3fff;
-        f128_set_exponent(&d, 0x3fff);
+        int x1;
+        d = frexp(d, x1);
+        x += x1;
     }
-    LispObject sign = make_boxfloat128(f128_1);
-    if (neg) f128_negate(reinterpret_cast<FLOAT_128 *>(long_float_addr(sign)));
-    {   a = make_boxfloat128(d);
-        errexit();
-    }
+    LispObject sign = make_boxfloat128(neg ? LF_C(-1.0) : LF_C(1.0));
+    a = make_boxfloat128(d);
 #ifdef COMMON
 // Until and unless Standard Lisp supports multiple values this has to
 // return a list in standard lisp mode.
@@ -2434,37 +2392,41 @@ LispObject Ndecode_float(LispObject env, LispObject a)
 
 LispObject Ninteger_decode_long_float(LispObject a)
 {   FLOAT_128 d = long_float_val(a);
-    if (isinf128(d) || isnan128(d))
+    if (isinf(d) || isnan(d))
     {   if (trap_floating_overflow) return aerror("integer-decode-float");
         else return nil; // infinity or NaN
     }
-    if (f128M_eq(&d, &f128_0))
+    if (d == LF_C(0.0))
+    {
 #ifdef COMMON
-    {   mv_2 = fixnum_of_int(0);
-        mv_3 = fixnum_of_int(f128_negative(d) ? -1 : 1);
-        nvalues(fixnum_of_int(0), 3);
-    }
+        mv_2 = fixnum_of_int(0);
+        mv_3 = fixnum_of_int(signbit(d) ? -1 : 1);
+        return nvalues(fixnum_of_int(0), 3);
 #else
         return list3(fixnum_of_int(0), fixnum_of_int(0),
-                     fixnum_of_int(f128_negative(d) ? -1 : 1));
+                     fixnum_of_int(signbit(d) ? -1 : 1));
+    }
 #endif
     bool neg = false;
-    if (f128_negative(d))
-    {   f128_negate(&d);
+    if (signbit(d))
+    {   d = -d;
         neg = true;
     }
-    uint64_t hi, lo;
-    f128_mantissa(d, hi, lo);
-    int x = f128_exponent(d);
-    a = make_lisp_integer128((static_cast<int128_t>(hi)<<64) | lo);
+    int x;
+    d = frexp(d, x);
+    x = x - 113;
+    if (d == LF_C(0.0)) x = 0;
+    uint128_t ipart = (uint128_t)ldexp(d, 113);
+    LispObject v1 = make_lisp_integer128(ipart);
+    LispObject v2 = fixnum_of_int(x);
+    LispObject v3 = fixnum_of_int(neg ? -1 : 1);    
 #ifdef COMMON
-    {   mv_2 = fixnum_of_int(x);
-        mv_3 = neg ? fixnum_of_int(-1) : fixnum_of_int(1);
-        return nvalues(a, 3);
+    {   mv_2 = v2
+        mv_3 = v3
+        return nvalues(v1, 3);
     }
 #else
-    return list3(a, fixnum_of_int(x),
-                 neg ? fixnum_of_int(-1) : fixnum_of_int(1));
+    return list3(v1, v2, v3);
 #endif // COMMON
 }
 
@@ -2496,9 +2458,8 @@ LispObject Ninteger_decode_float(LispObject env, LispObject a)
         neg = true;
     }
     int x;
-    d = frexp(d, &x);
-    a = make_lisp_integer64(static_cast<int64_t>(
-        d*16384.0*16384.0*16384.9*32.0));
+    d = frexp(d, x);
+    a = make_lisp_integer64((int64_t)std::ldexp(d, 63));
     x -= 63;
 #ifdef COMMON
     mv_2 = fixnum_of_int(x);
