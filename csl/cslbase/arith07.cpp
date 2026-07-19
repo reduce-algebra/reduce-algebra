@@ -38,12 +38,13 @@
 
 // $Id$
 
+#ifndef ARITHLIB
+
 #include "headers.h"
 
 namespace CSL_LISP
 {
 
-#ifndef ARITHLIB
 
 LispObject copyb(LispObject a)
 //
@@ -221,9 +222,9 @@ LispObject negate(LispObject a)
     }
 }
 
-#endif // ARITHLIB
-
 
 } // end of namespace
+
+#endif // ARITHLIB
 
 // end of arith07.cpp

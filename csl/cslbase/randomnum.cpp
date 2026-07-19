@@ -73,7 +73,7 @@
 namespace arithlib_implementation
 {
 
-inline unsigned int system_randomness()
+unsigned int system_randomness()
 {   std::random_device basic_randomness;
     static unsigned int r = 1234567;
 // In pathological cases trying to get data from a random_device can fail
@@ -176,7 +176,7 @@ void reseed(Digit n)
 // values. To get a full 64-bit range merely call mersenne_twister()
 // directly.
 
-inline Digit uniformUint64(Digit n)
+Digit uniformUint64(Digit n)
 {   if (n <= 1) return 0;
 // I I want the remainder operation on the last line of this function to
 // return a uniformly distributed result. To ensure that I want r to be
@@ -199,7 +199,7 @@ inline Digit uniformUint64(Digit n)
 // a bignum using (up to) the given number of bits. So eg uniformPositive(3)
 // should return 0,1,2,3,4,5,6 or 7 each with equal probability.
 
-inline void uniformPositive(std::uint64_t* r, std::size_t &lenr,
+void uniformPositive(std::uint64_t* r, std::size_t &lenr,
                             std::size_t bits)
 {   if (bits == 0)
     {   r[0] = 0;
@@ -213,7 +213,7 @@ inline void uniformPositive(std::uint64_t* r, std::size_t &lenr,
     while (lenr!=1 && shrinkable(r[lenr-1], r[lenr-2])) lenr--;
 }
 
-inline std::intptr_t uniformPositive(std::size_t n)
+std::intptr_t uniformPositive(std::size_t n)
 {   std::size_t lenr = (n + 63)/64;
     if (lenr == 0) lenr = 1; // special case!
     std::size_t save = lenr;
@@ -227,7 +227,7 @@ inline std::intptr_t uniformPositive(std::size_t n)
 // Note that while uniform_unsigned(0) can only return the value 0,
 // uniformSigned(0) can return -1 or 0.
 
-inline void uniformSigned(std::uint64_t* r, std::size_t &lenr,
+void uniformSigned(std::uint64_t* r, std::size_t &lenr,
                           std::size_t bits)
 {   lenr = 1 + bits/64;
     for (std::size_t i=0; i<lenr; i++)
@@ -244,7 +244,7 @@ inline void uniformSigned(std::uint64_t* r, std::size_t &lenr,
     }
 }
 
-inline std::intptr_t uniformSigned(std::size_t n)
+std::intptr_t uniformSigned(std::size_t n)
 {   std::size_t lenr = n/64+1;
     std::size_t save = lenr;
     std::uint64_t* r = reserve(lenr);
@@ -252,11 +252,11 @@ inline std::intptr_t uniformSigned(std::size_t n)
     return confirmSize(r, save, lenr);
 }
 
-inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena);
+std::size_t bignumBits(const std::uint64_t* a, std::size_t lena);
 
 // Generate a value in the range 0 .. a-1 using a uniform distribution
 
-inline void uniformUpto(std::uint64_t* a, std::size_t lena,
+void uniformUpto(std::uint64_t* a, std::size_t lena,
                         std::uint64_t* r,
                         std::size_t &lenr)
 {   std::size_t n = bignumBits(a, lena);
@@ -274,7 +274,7 @@ inline void uniformUpto(std::uint64_t* a, std::size_t lena,
     }
 }
 
-inline std::intptr_t uniformUpto(std::intptr_t aa)
+std::intptr_t uniformUpto(std::intptr_t aa)
 {   if (storedAsFixnum(aa))
     {   Digit r = uniformUint64(static_cast<Digit>
                                          (intOfHandle(
@@ -312,7 +312,7 @@ inline std::intptr_t uniformUpto(std::intptr_t aa)
 // close to powers of 2 can easily be "edge cases" that deserve extra attention
 // during testing.
 
-inline void fudgeDistribution(const std::uint64_t* a,
+void fudgeDistribution(const std::uint64_t* a,
                               std::size_t lena,
                               std::uint64_t* r, std::size_t &lenr, int n)
 {   lenr = lena;
@@ -352,7 +352,7 @@ inline void fudgeDistribution(const std::uint64_t* a,
     else truncatePositive(r, lenr);
 }
 
-inline std::intptr_t fudgeDistribution(std::intptr_t aa, int n)
+std::intptr_t fudgeDistribution(std::intptr_t aa, int n)
 {   std::uint64_t* a;
     std::size_t lena;
     Digit w[2];
@@ -378,7 +378,7 @@ inline std::intptr_t fudgeDistribution(std::intptr_t aa, int n)
 // not a very nice distribution from a mathematical perspective, but is is
 // nevertheless a useful one to have in some test code.
 
-inline void randomUptoBits(std::uint64_t* r, std::size_t &lenr,
+void randomUptoBits(std::uint64_t* r, std::size_t &lenr,
                            std::size_t n)
 {   std::size_t bits = static_cast<std::size_t>(uniformUint64(n));
     if (bits == 0)
@@ -396,7 +396,7 @@ inline void randomUptoBits(std::uint64_t* r, std::size_t &lenr,
     if (bits%64 == 0) r[lenr++] = 0;
 }
 
-inline std::intptr_t randomUptoBits(std::size_t bits)
+std::intptr_t randomUptoBits(std::size_t bits)
 {   std::size_t m = 1+bits/64;
     if (m == 0) m = 1;
     std::uint64_t* r = reserve(m);

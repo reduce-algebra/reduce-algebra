@@ -41,21 +41,6 @@
 namespace CSL_LISP
 {
 
-// The intent here is to take a single precision floating point value and
-// mask off its low 4 bits. The code here is a fine example of the sort
-// of thing that runs up against strict aliasing rules. Here I believe that
-// the use of memmove ought to sort that out!
-
-double N_truncate20(double d)
-{   Float_union aa;
-    aa.f = d;
-    std::memmove(&aa.i, &aa.f, sizeof(aa.f));
-    if ((aa.i & 0x1f) != 0x08) aa.i += 8;    // rounding.
-    aa.i &= ~0xf;
-    std::memmove(&aa.f, &aa.i, sizeof(aa.f));
-    return aa.f;
-}
-
 LispObject N_make_power_of_two(size_t n)
 //
 // Create the number 2^n where n is positive.  Used to make the
@@ -91,7 +76,7 @@ LispObject N_rationalf(double d)
 // and less error-prone that writing 4503599627370496.0 ...
     int64_t m = static_cast<int64_t>(d * 0x1.0p52); // 2.0^52
     x -= 52;
-    int trail = nlz(m); // m != 0 so this is safe!
+    int trail = nlz((uint64_t)m); // m != 0 so this is safe!
     m = m/(1<<trail);
     x += trail;
 // Now m is an odd (64-bit) integer and x the binary exponent by which it
@@ -104,9 +89,9 @@ LispObject N_rationalf(double d)
 
 // This does much the same for 128-bit floats.
 
-int N_rationalf128(float128_t d)
-{   uint128_t bits = static_cast<uint128_t>(d.v[HIPART])<<64 | d.v[LOPART];
-    int x = static_cast<int64_t>(bits>>112) & 0x7fff;
+LispObject N_rationalf128(FLOAT_128 d)
+{   uint128_t bits = d.getbits();
+    int x = static_cast<int>(bits>>112) & 0x7fff;
     bool sign = (bits>>127) != 0;
     uint128_t m = bits & ((static_cast<uint128_t>(1)<<113) - 1);
 // detect infinities and NaNs.
@@ -247,11 +232,9 @@ LispObject N_rationalizef(double dd, int bits)
 // the original floating point value. In the situation here the ratios
 // being worked with should not lead to NaNs, infinities or sub-normalised
 // numbers...
-    while (bits==53 ? d != static_cast<double>(u1)/static_cast<double>
-           (v1) :
-           bits==24 ? d != static_cast<float>(static_cast<double>
-                   (u1)/static_cast<double>(v1)) :
-           d != N_truncate20(static_cast<double>(u1)/static_cast<double>(v1)))
+    while (bits==53 ? d != static_cast<double>(u1)/static_cast<double>(v1) :
+           bits==24 ? (float)d != (float)((double)u1/(double)v1) :
+           round_to_short(d) != round_to_short((double)u1/(double)v1))
     {   a = p/q;
         uint64_t u2 = u0 + a*u1;
         uint64_t v2 = v0 + a*v1;
@@ -273,8 +256,8 @@ LispObject N_rationalizef(double dd, int bits)
 //
 // FP128_SMALL_LIMIT is 2^-113 and is used in N_rationalizef128.
 
-static float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
-static float128_t FP128_SMALL_LIMIT = {{0, INT64_C(0x3f8e000000000000)}};
+static FLOAT_128 FP128_INT_LIMIT = FLOAT_128(UINT32_C(0x406f0000), nullptr);
+static FLOAT_128 FP128_SMALL_LIMIT = FLOAT_128(UINT32_C(0x3f8e0000), nullptr);
 
 // This is expected to adjust the ratio returned to support 113 bits
 // of precision.
@@ -288,24 +271,22 @@ static float128_t FP128_SMALL_LIMIT = {{0, INT64_C(0x3f8e000000000000)}};
 //--         (uint32_t)(a >> 32), (uint32_t)a);
 //-- }
 
-// Now I need to be able to convert between float128_t and uint128_t with
+// Now I need to be able to convert between FLOAT_128 and uint128_t with
 // "fix" and "float" operations. I will only concern myself with positive
 // numbers, and my expected use will be that I only attempt to fix
 // values that will fit within 113 bits (ie well within 128), and
 // I will only float values that are in around the same range.
 
-uint128_t N_uint128_fix(float128_t *a)
-{   if (f128M_eq(a, &f128_0)) return 0;
+uint128_t N_uint128_fix(FLOAT_128 a)
+{   if (a == LF_C(0.0)) return 0;
 // I am not going to do anything clever with NaN or infinity here - they
 // are just not permitted and would lead to chaos.
-    float128_t aa;
+    FLOAT_128 aa;
     int x;
-    f128_frexp(*a, &aa, &x);
+    aa = frexp(a, x);
 // Now I take the 113 bits of mantissa (including an implicit bit) and
 // shuffle to be in the form of the uint128_t integer.
-    uint64_t hi = (aa.v[HIPART] & UINT64_C(0x0000ffffffffffff)) |
-                  UINT64_C(0x0001000000000000);
-    uint128_t w = aa.v[LOPART] | (uint128_t(hi)<<64);
+    uint128_t w = aa.getbits();
 // Now I may need to shift b by an amount determined by x.
     x = x - 113;
     if (x > 0) w = w<<x;
@@ -313,11 +294,8 @@ uint128_t N_uint128_fix(float128_t *a)
     return w;
 }
 
-void N_uint128_float(uint128_t a, float128_t *b)
-{   if (a == 0)
-    {   *b = f128_0;
-        return;
-    }
+FLOAT_128 uint128_float(uint128_t a)
+{   if (a == 0) return (FLOAT_128)0.0;
     int x = 113;
 // Now I want to normalize the integer so that the bit at position
 // 00010000:00000000:00000000:00000000 is set, ie the one that will be
@@ -342,20 +320,19 @@ void N_uint128_float(uint128_t a, float128_t *b)
     }
     uint64_t ahi = (uint64_t)(a>>64) & UINT64_C(0x0000ffffffffffff);
     ahi = ahi | ((uint64_t)(x + 0x3ffe)<<48);
-    b->v[HIPART] = ahi;
-    b->v[LOPART] = (uint64_t)a;
+    return FLOAT_128((((uint128_t)ahi)<<64) | (uint64_t)a, 0);
 }
 
-LispObject N_rationalizef128(float128_t *dd)
-{   float128_t d = *dd;
-    if (f128_zerop(d)) return fixnum_of_int(0);
-    if (f128_negative(d)) f128_negate(&d);
+LispObject N_rationalizef128(FLOAT_128 d)
+{   if (d == LF_C(0.0)) return fixnum_of_int(0);
+    bool neg = signbit(d);
+    if (neg) d = - d;
 // Maybe the float is in fact exactly an integer.
-    if (f128M_le(&FP128_INT_LIMIT, &d))
-        return Nlisp_fix(make_boxfloat128(*dd), FIX_ROUND);
+    if (FP128_INT_LIMIT <= d)
+        return Nlisp_fix(make_boxfloat128(neg ? -d : d), FIX_ROUND);
 // I am slightly more conservative as to when I decide that the
 // result I return will be just the reciprocal of an integer.
-    if (f128M_le(&d, &FP128_SMALL_LIMIT))
+    if (d <= FP128_SMALL_LIMIT)
     {   LispObject r = N_rationalf128(d);
         r = Nlisp_ifix(denominator(r), numerator(r), FIX_ROUND);
         return make_ratio(fixnum_of_int(1), r);
@@ -364,12 +341,11 @@ LispObject N_rationalizef128(float128_t *dd)
     uint128_t a;
     uint128_t u0, u1;
     uint128_t v0, v1;
-    if (f128M_le(&f128_1, &d))
+    if (LF_C(1.0) <=  d)
     {   int x;
-        float128_t d1;
-        f128_frexp(d, &d1, &x);
-        f128_ldexp(&d1, 113);
-        p = N_uint128_fix(&d1);
+        FLOAT_128 d1 = frexp(d, x);
+        d1 = ldexp(d1, 113);
+        p = N_uint128_fix(d1);
         q = uint128_t(1) << (113-x);
         u1 = p/q;
         a = p%q;
@@ -381,12 +357,12 @@ LispObject N_rationalizef128(float128_t *dd)
     }
     else
     {   int x;
-        float128_t d1, d2;
-        f128_frexp(d, &d1, &x);
-        f128_ldexp(&d1, 113);
-        p = N_uint128_fix(&d1);
-        f128M_div(&f128_1, &d, &d2);
-        a = N_uint128_fix(&d2);
+        FLOAT_128 d1, d2;
+        d1 = frexp(d, x);
+        d1 = ldexp(d1, 113);
+        p = N_uint128_fix(d1);
+        d2 = LF_C(1.0) / d;
+        a = N_uint128_fix(d2);
         uint128_t w1;
         if (113-x < 128) w1 = uint128_t(1) << (113-x);
         else w1 = 0;
@@ -404,11 +380,7 @@ LispObject N_rationalizef128(float128_t *dd)
         v0 = 1;
         v1 = a;
     }
-    float128_t du1, dv1, q2;
-    while (N_uint128_float(u1, &du1),
-           N_uint128_float(v1, &dv1),
-           f128M_div(&du1, &dv1, &q2),
-           !f128M_eq(&d, &q2))
+    while (d != (uint128_float(u1) / uint128_float(v1)))
     {   uint128_t a1;
         if (q == 0)
         {   std::printf("\n+++ Trouble in N_rationalizef128. q = 0\n");
@@ -422,7 +394,7 @@ LispObject N_rationalizef128(float128_t *dd)
         v0 = v1; v1 = v2;
     }
     LispObject p1;
-    if (f128_negative(*dd)) p1 = make_lisp_integer128(-u1);
+    if (neg) p1 = make_lisp_integer128(-u1);
     else p1 = make_lisp_unsigned128(u1);
     if (v1 == 1) return p1;
     LispObject q1 = make_lisp_unsigned128(v1);
@@ -450,7 +422,7 @@ LispObject N_rational(LispObject a)
         case TAG_BOXFLOAT+TAG_XBIT:
             if (flthdr(a) == LONG_FLOAT_HEADER)
                 return N_rationalf128(
-                    *reinterpret_cast<float128_t *>(long_float_addr(a)));
+                    *reinterpret_cast<FLOAT_128 *>(long_float_addr(a)));
             else
                 return N_rationalf(float_of_number(a));
         default:
@@ -485,8 +457,7 @@ LispObject N_rationalize(LispObject a)
                 case DOUBLE_FLOAT_HEADER:
                     return N_rationalizef(double_float_val(a), 53);
                 case LONG_FLOAT_HEADER:
-                    return N_rationalizef128(reinterpret_cast<float128_t *>(long_float_addr(
-                                               a)));
+                    return N_rationalizef128(long_float_val(a));
             }
         default:
             return aerror1("bad arg for rationalize", a);
@@ -530,44 +501,37 @@ LispObject Nrandom(LispObject env, LispObject a, LispObject bb)
     {   Header h = flthdr(a);
         if (h == LONG_FLOAT_HEADER)
         {   aerror1("random can not cope with long floats yet", a);
+            FLOAT_128 d = float128_of_number(a), v;
+            do
+            {   uint128_t r = arithlib::mersenne_twister();
+                r = (r<<64) ^ arithlib::mersenne_twister();
+                v = (FLOAT_128)r;
+                v = d*ldexp(v, -128);    // scale to correct range
+            } 
+            while (v == d);   // loop on unusual case where FP value rounds up
+            a = make_boxfloat128(v);
+            return a;
         }
         double d = float_of_number(a), v;
-// The calculation here turns 62 bits of integer data into a floating
-// point number in the range 0.0 (inclusive) to 1.0 (exclusive).  Well,
-// to be more precise, rounding the value to the machine's floating point
-// format may round it up to be exactly 1.0, so I discard and cases where
-// that happens (once in several blue moons...).  If I wrote code that
-// knew exactly how many bits my floating point format had I could avoid
-// the need for that extra test, but it does not seem very painful to me
-// and I prefer the more portable code.
         do
         {   uint64_t r = arithlib::mersenne_twister();
             v = static_cast<double>(r);
-            v /= 16384.0; // 2^16  I divide by 2^16 four times because
-            v /= 16384.0; // 2^16  I think that the literal for 2^64 is
-            v /= 16384.0; // 2^16  too big to be obvious or memorable and
-            v /= 16384.0; // 2^16  in the hope that a compiler will optimise!
-            v *= d;       // scale up to correct range
+            v = d*std::ldexp(v, -64);    // scale to correct range
         } 
         while (v == d);   // loop on unusual case where FP value rounds up
         a = make_boxfloat(v, floatWant(h));
         return a;
     }
     if (is_sfloat(a))
-    {   Float_union d;
-        Float_union v;
-        int32_t vi, di;
-        d.f = value_of_immediate_float(a);
+    {   float d = round_to_short(value_of_immediate_float(a));
+        float v;
         do
         {   uint64_t r = arithlib::mersenne_twister();
             float r1 = static_cast<float>(r&0xffffffff)/16384.0/16384.0;
-            v.f = r1*d.f;
-            std::memcpy(&vi, &v.f, sizeof(v.f));
-            std::memcpy(&di, &d.f, sizeof(d.f));
+            v = r1*d;
         }
-        while ((vi & ~0xf) == (di & ~0xf));
-        d.f = v.f;
-        return pack_immediate_float(v.f, a);
+        while (round_to_short(v) == d);
+        return pack_short_float(v);
     }
     return aerror1("random-number", a);
 }

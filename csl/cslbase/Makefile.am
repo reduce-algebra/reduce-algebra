@@ -354,7 +354,8 @@ arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
 		arith-elem.cpp arith-misc.cpp \
-		multiply.cpp karatoom.cpp fftmul.cpp randomnum.cpp
+		multiply.cpp karatoom.cpp fftmul.cpp divide.cpp \
+		randomnum.cpp convflt.cpp bigprint.cpp
 
 ARITHDEP=arithlib.h
 else !arithlib
@@ -932,7 +933,10 @@ if arithlib
 csl-multiply.$(OBJEXT):		$(HDRS)
 csl-karatoom.$(OBJEXT):		$(HDRS)
 csl-fftmul.$(OBJEXT):		$(HDRS)
+csl-divide.$(OBJEXT):		$(HDRS)
 csl-randomnum.$(OBJEXT):	$(HDRS)
+csl-convflt.$(OBJEXT):		$(HDRS)
+csl-bigprint.$(OBJEXT):		$(HDRS)
 csl-arith-setup.$(OBJEXT):	$(HDRS)
 csl-arith-plus.$(OBJEXT):	$(HDRS)
 csl-arith-times.$(OBJEXT):	$(HDRS)
@@ -948,7 +952,10 @@ csl-arith-misc.$(OBJEXT):	$(HDRS)
 bootstrapreduce-multiply.$(OBJEXT):	$(HDRS)
 bootstrapreduce-karatoom.$(OBJEXT):	$(HDRS)
 bootstrapreduce-fftmul.$(OBJEXT):	$(HDRS)
+bootstrapreduce-divide.$(OBJEXT):	$(HDRS)
 bootstrapreduce-randomnum.$(OBJEXT):	$(HDRS)
+bootstrapreduce-convflt.$(OBJEXT):	$(HDRS)
+bootstrapreduce-bigprint.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-setup.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-plus.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-times.$(OBJEXT):	$(HDRS)
@@ -964,7 +971,10 @@ bootstrapreduce-arith-misc.$(OBJEXT):	$(HDRS)
 reduce-multiply.$(OBJEXT):	$(HDRS)
 reduce-karatoom.$(OBJEXT):	$(HDRS)
 reduce-fftmul.$(OBJEXT):	$(HDRS)
+reduce-divide.$(OBJEXT):	$(HDRS)
 reduce-randomnum.$(OBJEXT):	$(HDRS)
+reduce-convflt.$(OBJEXT):	$(HDRS)
+reduce-bigprint.$(OBJEXT):	$(HDRS)
 reduce-arith-setup.$(OBJEXT):	$(HDRS)
 reduce-arith-plus.$(OBJEXT):	$(HDRS)
 reduce-arith-times.$(OBJEXT):	$(HDRS)
@@ -980,7 +990,10 @@ reduce-arith-misc.$(OBJEXT):	$(HDRS)
 reduce_web-multiply.$(OBJEXT):		$(HDRS)
 reduce_web-karatoom.$(OBJEXT):		$(HDRS)
 reduce_web-fftmul.$(OBJEXT):		$(HDRS)
+reduce_web-divide.$(OBJEXT):		$(HDRS)
 reduce_web-randomnum.$(OBJEXT):		$(HDRS)
+reduce_web-convflt.$(OBJEXT):		$(HDRS)
+reduce-web-bigprint.$(OBJEXT):		$(HDRS)
 reduce_web-arith-setup.$(OBJEXT):	$(HDRS)
 reduce_web-arith-plus.$(OBJEXT):	$(HDRS)
 reduce_web-arith-times.$(OBJEXT):	$(HDRS)

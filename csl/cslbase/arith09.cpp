@@ -38,12 +38,12 @@
 
 // $Id$
 
+#ifndef ARITHLIB
+
 #include "headers.h"
 
 namespace CSL_LISP
 {
-
-#ifndef ARITHLIB
 
 #define topdigit(a) \
     static_cast<int32_t>(bignum_digits(a)[(bignum_length(a)-CELL)/4-1])
@@ -1123,8 +1123,8 @@ LispObject logand2(LispObject a, LispObject b)
     else return aerror2("bad arg for logand", a, b);
 }
 
-#endif // ARITHLIB
-
 } // end namespace
+
+#endif // ARITHLIB
 
 // end of arith09.cpp

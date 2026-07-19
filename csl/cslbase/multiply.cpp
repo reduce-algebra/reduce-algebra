@@ -47,7 +47,7 @@ namespace arithlib_implementation
 
 // increment the N-digit number x by n.
 
-inline void increment(std::uint64_t* x, std::size_t N, Digit n=1)
+void increment(std::uint64_t* x, std::size_t N, Digit n=1)
 {   if ((x[0] += n) >= n) return;
     for (std::size_t i=1; i<N; i++)
     {   if (++x[i] != 0) return;
@@ -56,7 +56,7 @@ inline void increment(std::uint64_t* x, std::size_t N, Digit n=1)
 
 // z = x + y and return a carry, where x, y and z are N digit numbers.
 
-inline Digit addWithCarry(const std::uint64_t* x,
+Digit addWithCarry(const std::uint64_t* x,
                                   const std::uint64_t* y,
                                   std::uint64_t* z, std::size_t N)
 {   Digit c = addWithCarry(x[0], y[0], z[0]);
@@ -67,7 +67,7 @@ inline Digit addWithCarry(const std::uint64_t* x,
 
 // As above except that c is a "carry in".
 
-inline Digit addWithCarry(const std::uint64_t* x,
+Digit addWithCarry(const std::uint64_t* x,
                                   const std::uint64_t* y,
                                   Digit c,
                                   std::uint64_t* z, std::size_t N)
@@ -77,7 +77,7 @@ inline Digit addWithCarry(const std::uint64_t* x,
 }
 // z = x - y and return a borrow.
 
-inline Digit subtractWithBorrow(const std::uint64_t* x,
+Digit subtractWithBorrow(const std::uint64_t* x,
                                         const std::uint64_t* y,
                                         std::uint64_t* z, std::size_t N)
 {   Digit b = subtractWithBorrow(x[0], y[0], z[0]);
@@ -1316,7 +1316,7 @@ static void kara(ConstDigitPtr a, std::size_t N,
 // fuss about the class name.
 
 [[gnu::always_inline]]
-inline void generalMul(ConstDigitPtr a, std::size_t N,
+void generalMul(ConstDigitPtr a, std::size_t N,
                        ConstDigitPtr b, std::size_t M,
                        DigitPtr result)
 {   BigMultiplication::generalMul(a, N, b, M, result);
@@ -1326,7 +1326,7 @@ inline void generalMul(ConstDigitPtr a, std::size_t N,
 // but using clear (if less efficient code) so it can be use as a
 // reference implementation during testing.
 
-inline void verySimpleMul(ConstDigitPtr a, std::size_t N,
+void verySimpleMul(ConstDigitPtr a, std::size_t N,
                           ConstDigitPtr b, std::size_t M,
                           DigitPtr result)
 {   BigMultiplication::verySimpleMul(a, N, b, M, result);
@@ -1359,7 +1359,7 @@ inline void verySimpleMul(ConstDigitPtr a, std::size_t N,
 // can be used to document the intent of everything else. I will also use
 // it when the sizes M and N are very different.
 
-inline void referencePartMul(const std::uint64_t* u, size_t N,
+void referencePartMul(const std::uint64_t* u, size_t N,
                              const std::uint64_t* v, size_t M,
                              std::uint64_t* w,
                              size_t from=0, size_t to=SIZE_MAX)
@@ -1376,7 +1376,7 @@ inline void referencePartMul(const std::uint64_t* u, size_t N,
 // The "classical" version is what will be used for multiplications
 // involving not too many digits, and is pretty straightforward.
 
-inline void classicalPartMul(const std::uint64_t* u, size_t N,
+void classicalPartMul(const std::uint64_t* u, size_t N,
                              const std::uint64_t* v, size_t M,
                              std::uint64_t* w,
                              size_t from=0, size_t to=SIZE_MAX)
@@ -1430,7 +1430,7 @@ inline void classicalPartMul(const std::uint64_t* u, size_t N,
 // G Henriot and P Zimmermanm, "A long note on Mulder's Short Product"
 // Journal of Symbolic Computation Volume 37, 3, March 2004, Pages 391-401
 
-inline Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
+Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
                             const std::uint64_t* v, size_t M,
                             std::uint64_t* w,
                             size_t from, size_t to);
@@ -1440,7 +1440,7 @@ inline Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
 // because from, to and w need adjustment and the calculations that
 // set their values seemed most easily expressed here.
 
-inline Digit shiftedFastPartMulAdd(const std::uint64_t* u, size_t N,
+Digit shiftedFastPartMulAdd(const std::uint64_t* u, size_t N,
                                    const std::uint64_t* v, size_t M,
                                    std::uint64_t* w,
                                    size_t from, size_t to,
@@ -1465,7 +1465,7 @@ inline Digit shiftedFastPartMulAdd(const std::uint64_t* u, size_t N,
 // and where "to" is such that quite a lot of the high digits of the
 // result are not wanted.
 
-inline void lowPartMul(const std::uint64_t* u,
+void lowPartMul(const std::uint64_t* u,
                        const std::uint64_t* v, size_t N,
                        std::uint64_t*  w,
                        size_t from, size_t to)
@@ -1493,7 +1493,7 @@ inline void lowPartMul(const std::uint64_t* u,
 // even though in C++ it is legal to have a pointer to the location
 // one beyond a vector.
 
-inline Digit propagateCarry(Digit carry, std::uint64_t* w, size_t len)
+Digit propagateCarry(Digit carry, std::uint64_t* w, size_t len)
 {   if (carry==0 || len==0) return carry;
     for (;;)
     {   carry = addWithCarry(*w, carry, *w);
@@ -1504,9 +1504,9 @@ inline Digit propagateCarry(Digit carry, std::uint64_t* w, size_t len)
     }
 }
 
-inline const size_t midmul_threshold = 20;
+const size_t midmul_threshold = 20;
 
-inline void fastPartMul(const std::uint64_t* u, size_t N,
+void fastPartMul(const std::uint64_t* u, size_t N,
                         const std::uint64_t* v, size_t M,
                         std::uint64_t* w,
                         size_t from=0, size_t to=SIZE_MAX)
@@ -1605,7 +1605,7 @@ inline void fastPartMul(const std::uint64_t* u, size_t N,
 // Note that default values for from and to were set up in the declaration
 // and must not be repeated here.
 
-inline Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
+Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
                             const std::uint64_t* v, size_t M,
                             std::uint64_t* w,
                             size_t from, size_t to)
@@ -1630,7 +1630,7 @@ inline Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
 // This is because in the perfect result there may have been carries
 // passed on up from lower partial products.
 
-inline Digit fastSlice(const std::uint64_t* u, size_t N,
+Digit fastSlice(const std::uint64_t* u, size_t N,
                        const std::uint64_t* v, size_t M,
                        size_t from=0, size_t bits = 0)
 {   stkvector<Digit> shiftedU(N+1);
@@ -1678,7 +1678,7 @@ inline Digit fastSlice(const std::uint64_t* u, size_t N,
 // This is the main entrypoint to the (big) integer multiplication code. It
 // takes two signed numbers and forms their product.
 
-inline void bigmultiply(
+void bigmultiply(
         const std::uint64_t* a, std::size_t lena,
         const std::uint64_t* b, std::size_t lenb,
         std::uint64_t* c, std::size_t &lenc)
@@ -1714,7 +1714,7 @@ inline void bigmultiply(
     lenc = lena;
 }
 
-inline void classicalbigmultiply(
+void classicalbigmultiply(
         const std::uint64_t* a, std::size_t lena,
         const std::uint64_t* b, std::size_t lenb,
         std::uint64_t* c, std::size_t &lenc)
@@ -1742,7 +1742,7 @@ inline void classicalbigmultiply(
 //===========================================================================
 //===========================================================================
 
-inline std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
+std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::size_t n = lena+lenb;
@@ -1755,7 +1755,7 @@ inline std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
     return confirmSize(p, n, final_n);
 }
 
-inline std::intptr_t Times::op(SignedDigit a, SignedDigit b)
+std::intptr_t Times::op(SignedDigit a, SignedDigit b)
 {   SignedDigit hi;
     Digit lo;
     signedMultiply64(a, b, hi, lo);
@@ -1774,7 +1774,7 @@ inline std::intptr_t Times::op(SignedDigit a, SignedDigit b)
     return confirmSize(r, 2, 2);
 }
 
-inline std::intptr_t Times::op(SignedDigit a, std::uint64_t* b)
+std::intptr_t Times::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     std::uint64_t* c = reserve(lenb+1);
     Digit hi = 0;
@@ -1793,11 +1793,11 @@ inline std::intptr_t Times::op(SignedDigit a, std::uint64_t* b)
     return confirmSize(c, lenb+1, lenc);
 }
 
-inline std::intptr_t Times::op(std::uint64_t* a, SignedDigit b)
+std::intptr_t Times::op(std::uint64_t* a, SignedDigit b)
 {   return Times::op(b, a);
 }
 
-inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, std::uint64_t* b)
+std::intptr_t ClassicalTimes::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::size_t n = lena+lenb;
@@ -1810,7 +1810,7 @@ inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, std::uint64_t* b)
     return confirmSize(p, n, final_n);
 }
 
-inline std::intptr_t ClassicalTimes::op(SignedDigit a, SignedDigit b)
+std::intptr_t ClassicalTimes::op(SignedDigit a, SignedDigit b)
 {   SignedDigit hi;
     Digit lo;
     signedMultiply64(a, b, hi, lo);
@@ -1829,7 +1829,7 @@ inline std::intptr_t ClassicalTimes::op(SignedDigit a, SignedDigit b)
     return confirmSize(r, 2, 2);
 }
 
-inline std::intptr_t ClassicalTimes::op(SignedDigit a, std::uint64_t* b)
+std::intptr_t ClassicalTimes::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     std::uint64_t* c = reserve(lenb+1);
     Digit hi = 0;
@@ -1848,7 +1848,7 @@ inline std::intptr_t ClassicalTimes::op(SignedDigit a, std::uint64_t* b)
     return confirmSize(c, lenb+1, lenc);
 }
 
-inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, SignedDigit b)
+std::intptr_t ClassicalTimes::op(std::uint64_t* a, SignedDigit b)
 {   return ClassicalTimes::op(b, a);
 }
 
@@ -1867,7 +1867,7 @@ inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, SignedDigit b)
 // clear to me, but for now I am setting it as 3 times the point at which
 // ordinary multiplications moves on from classical methods.
 
-inline void bigsquare(std::uint64_t* a, std::size_t lena,
+void bigsquare(std::uint64_t* a, std::size_t lena,
                       std::uint64_t* r, std::size_t &lenr)
 {   if (lena > 24)
     {   bigmultiply(a, lena, a, lena, r, lenr);
@@ -1921,7 +1921,7 @@ inline void bigsquare(std::uint64_t* a, std::size_t lena,
     truncateNegative(r, lenr);
 }
 
-inline std::intptr_t Square::op(std::uint64_t* a)
+std::intptr_t Square::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
     std::size_t n = 2*lena;
     std::uint64_t* p = reserve(n);
@@ -1930,7 +1930,7 @@ inline std::intptr_t Square::op(std::uint64_t* a)
     return confirmSize(p, n, final_n);
 }
 
-inline std::intptr_t Square::op(SignedDigit a)
+std::intptr_t Square::op(SignedDigit a)
 {   Digit hi, lo;
     multiply64(a, a, hi, lo);
     if (a < 0) hi -= 2u*static_cast<Digit>(a);
@@ -1952,7 +1952,7 @@ inline std::intptr_t Square::op(SignedDigit a)
     return confirmSize(p, 2, 2);
 }
 
-inline std::intptr_t Isqrt::op(std::uint64_t* a)
+std::intptr_t Isqrt::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Isqrt::op(static_cast<SignedDigit>(a[0]));
     std::size_t lenx = (lena+1)/2;
@@ -1998,7 +1998,7 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
     return r;
 }
 
-inline std::intptr_t Isqrt::op(SignedDigit aa)
+std::intptr_t Isqrt::op(SignedDigit aa)
 {   if (aa <= 0) return intToBignum(0);
     Digit a = static_cast<Digit>(aa);
     std::size_t w = 64 - CSL_LISP::nlz(a);
@@ -2027,7 +2027,7 @@ inline std::intptr_t Isqrt::op(SignedDigit aa)
 // must be at least the size of the result, but it is not clear that any
 // useful saving spece saving can be found down that path.
 
-inline void bigpow(std::uint64_t* a, std::size_t lena,
+void bigpow(std::uint64_t* a, std::size_t lena,
                    Digit n,
                    std::uint64_t* v,
                    std::uint64_t* w,
@@ -2068,7 +2068,7 @@ inline void bigpow(std::uint64_t* a, std::size_t lena,
 // The code that dispatches into here should have filtered cases such that
 // the exponent n is not 0, 1 or 2 here.
 
-inline std::intptr_t Pow::op(std::uint64_t* a, SignedDigit n)
+std::intptr_t Pow::op(std::uint64_t* a, SignedDigit n)
 {   std::size_t lena = numberSize(a);
 //  1^(-n) == 1,
 //  (-1)^(-n) == 1 if n is even or -1 if n is odd.
@@ -2113,7 +2113,7 @@ inline std::intptr_t Pow::op(std::uint64_t* a, SignedDigit n)
 
 // Again the cases n = 0, 1 and 2 have been filtered out
 
-inline std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
+std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
 {   if (n < 0)
     {   int z = 0;
         if (a == 1) z = 1;
@@ -2153,11 +2153,11 @@ inline std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
     return confirmSize(r, olenr, lenr);
 }
 
-inline double Pow::op(std::uint64_t* a, double n)
+double Pow::op(std::uint64_t* a, double n)
 {   return std::pow(Double::op(a), n);
 }
 
-inline double Pow::op(SignedDigit a, double n)
+double Pow::op(SignedDigit a, double n)
 {   return std::pow(Double::op(a), n);
 }
 

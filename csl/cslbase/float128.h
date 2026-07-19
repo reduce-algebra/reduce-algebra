@@ -335,6 +335,7 @@ public:
     bool isinfornan() const;
     FLOAT_128 ldexp(int x) const;
     FLOAT_128 frexp(int& x) const;
+    FLOAT_128 modf(FLOAT_128& ii) const;
     FLOAT_128 abs() const;
     FLOAT_128 maxabs(FLOAT_128) const;
 // Casts
@@ -1668,6 +1669,10 @@ inline FLOAT_128 ldexp(FLOAT_128 v, int x)
 
 inline FLOAT_128 frexp(FLOAT_128 v, int& x)
 {   return v.frexp(x);
+}
+
+inline FLOAT_128 modf(FLOAT_128 v, FLOAT_128& ii)
+{   return v.modf(ii);
 }
 
 inline bool isinf(FLOAT_128 v)

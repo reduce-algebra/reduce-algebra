@@ -52,7 +52,7 @@ namespace arithlib_implementation
 // give sensible output if passed an infinity or a NaN and so they should be
 // filtered out before it is called.
 
-inline void doubleToBits(double d, SignedDigit &mantissa, int &exponent)
+void doubleToBits(double d, SignedDigit &mantissa, int &exponent)
 {   if (d == 0.0)
     {   mantissa = 0;
         exponent = 0;
@@ -106,7 +106,7 @@ void longfloatToBits(FLOAT_128 d,
     exponent -= 113;
 }
 
-inline void doubleTo_virtualBignum(double d,
+void doubleTo_virtualBignum(double d,
                                    SignedDigit& top, Digit& next,
                                    std::size_t& len,
                                    RoundingMode mode)
@@ -196,7 +196,7 @@ inline void doubleTo_virtualBignum(double d,
         }
     }
 }
-inline void longfloatTo_virtualBignum(FLOAT_128 d,
+void longfloatTo_virtualBignum(FLOAT_128 d,
                                      SignedDigit& top,
                                      Digit& mid,
                                      Digit& next,
@@ -300,7 +300,7 @@ inline void longfloatTo_virtualBignum(FLOAT_128 d,
     }
 }
 
-inline std::intptr_t doubleToInt(double d, RoundingMode mode)
+std::intptr_t doubleToInt(double d, RoundingMode mode)
 {
 // I return 0 if the input is a NaN or either +infinity or -infinity.
 // This is somewhat arbitrary, but right now I am not minded to raise an
@@ -320,7 +320,7 @@ inline std::intptr_t doubleToInt(double d, RoundingMode mode)
     return confirmSize(r, len, len);
 }
 
-inline std::intptr_t longfloatToInt(FLOAT_128 d, RoundingMode mode)
+std::intptr_t longfloatToInt(FLOAT_128 d, RoundingMode mode)
 {   if (d == LF_C(0.0) ||
         isinf(d) ||
         isnan(d)) return intToHandle(0);
@@ -343,7 +343,7 @@ inline std::intptr_t longfloatToInt(FLOAT_128 d, RoundingMode mode)
     return confirmSize(r, len, len);
 }
 
-inline float castTo_float(double d)
+float castTo_float(double d)
 {
 // If the argument is a NaN then return a NaN of type float.
     if (std::isnan(d)) return std::nanf("");
@@ -385,7 +385,7 @@ inline float castTo_float(double d)
 // is in force - which I jolly well expect to be IEEE!
     return (r1 < r2 ? r1 : r2) + static_cast<float>(err1);
 }
-inline float Float::op(SignedDigit a)
+float Float::op(SignedDigit a)
 {
 // if |a| < 2^52 I can convert to a double exactly
     if (a > -0x10000000000000 && a < 0x10000000000000)
@@ -405,7 +405,7 @@ inline float Float::op(SignedDigit a)
                          static_cast<double>(mid));
 }
 
-inline float Float::op(std::uint64_t* a)
+float Float::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Float::op(static_cast<SignedDigit>(a[0]));
 // Now I need to do something similar to that done for the int64_t case
@@ -471,7 +471,7 @@ inline float Float::op(std::uint64_t* a)
     return ldexpf(d, static_cast<int>(128-24-lz+64*(lena-2)));
 }
 
-inline double Frexp::op(SignedDigit a, SignedDigit& x)
+double Frexp::op(SignedDigit a, SignedDigit& x)
 {
 // The bad news here is that I am not confident that C++ will guarantee
 // to round large integer values in any particular way when it converts
@@ -500,7 +500,7 @@ inline double Frexp::op(SignedDigit a, SignedDigit& x)
     return d;
 }
 
-inline double Double::op(SignedDigit a)
+double Double::op(SignedDigit a)
 {
 // One would obviously like to go "return (double)a;" however C++ says
 //  "If the value being converted is in the range of values that can
@@ -516,7 +516,7 @@ inline double Double::op(SignedDigit a)
     return d + static_cast<double>(hi);
 }
 
-inline double Frexp::op(std::uint64_t* a, SignedDigit& x)
+double Frexp::op(std::uint64_t* a, SignedDigit& x)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Frexp::op(static_cast<SignedDigit>(a[0]), x);
 // Now I need to do something similar to that done for the int64_t case
@@ -583,18 +583,18 @@ inline double Frexp::op(std::uint64_t* a, SignedDigit& x)
     return d;
 }
 
-inline double Double::op(std::uint64_t* a)
+double Double::op(std::uint64_t* a)
 {   SignedDigit x = 0;
     double d = Frexp::op(a, x);
     if (x > 10000) x = 10000;
     return std::ldexp(d, static_cast<int>(x));
 }
 
-inline FLOAT_128 Float128::op(SignedDigit a)
+FLOAT_128 Float128::op(SignedDigit a)
 {   return (FLOAT_128)a;
 }
 
-inline FLOAT_128 Frexp128::op(SignedDigit a, SignedDigit& x)
+FLOAT_128 Frexp128::op(SignedDigit a, SignedDigit& x)
 {   using namespace CSL_LISP;
     FLOAT_128 d = (FLOAT_128)a;
     int x1;
@@ -603,7 +603,7 @@ inline FLOAT_128 Frexp128::op(SignedDigit a, SignedDigit& x)
     return d;
 }
 
-inline FLOAT_128 Frexp128::op(std::uint64_t* a, SignedDigit& x)
+FLOAT_128 Frexp128::op(std::uint64_t* a, SignedDigit& x)
 {   std::size_t lena = numberSize(a);
     if (lena == 1) return Float128::op(static_cast<SignedDigit>(a[0]));
     Digit top113, top113a;
@@ -691,7 +691,7 @@ inline FLOAT_128 Frexp128::op(std::uint64_t* a, SignedDigit& x)
     return d;
 }
 
-inline FLOAT_128 Float128::op(std::uint64_t* a)
+FLOAT_128 Float128::op(std::uint64_t* a)
 {   using namespace CSL_LISP;
     SignedDigit x = 0;
     FLOAT_128 d = Frexp128::op(a, x);

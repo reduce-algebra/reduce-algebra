@@ -1307,18 +1307,14 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         return a;
     }
     if (is_sfloat(a))
-    {   float_union d;
-        float_union v;
-        d.f = value_of_immediate_float(a);
+    {   float d = bit_cast<float>(short_float_val(a));
+        float v;
         do
-        {   v.f = static_cast<float>(
-                      static_cast<int32_t>(Crand() & 0x7fffffff)) /
-                  static_cast<float>(TWO_31);
-            v.f = v.f*d.f;
+        {   v = (float)(Crand() & 0x7fffffff) / (float)TWO_31;
+            v = round_to_short(v*d);
         }
-        while ((v.i & ~0xf) == (d.i & ~0xf));
-        d.f = v.f;
-        return pack_immediate_float(v.f, a);
+        while (v == d);
+        return pack_short_float(v);
     }
     return aerror1("random-number", a);
 }
@@ -1414,18 +1410,14 @@ LispObject Lrandom_1(LispObject env, LispObject a)
         return a;
     }
     if (is_sfloat(a))
-    {   float_union d;
-        float_union v;
-        d.i = a - XTAG_SFLOAT;
+    {   float d = short_float_val(a);
+        float f;
         do
-        {   v.f = static_cast<float>(
-                      static_cast<int32_t>(Crand() & 0x7fffffff)) /
-                  static_cast<float>(TWO_31);
-            v.f = v.f*d.f;
+        {   f = (float)(Crand() & 0x7fffffff) / (float)TWO_31;
+            f = f*d;
         }
-        while ((v.i & ~0xf) == (d.i & ~0xf));
-        d.f = v.f;
-        return low32((d.i & ~0xf) + XTAG_SFLOAT);
+        while (f == bit_cast<float>(d));
+        return pack_short_float(f);
     }
     return aerror1("random-number", a);
 }

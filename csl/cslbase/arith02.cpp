@@ -40,12 +40,12 @@
 
 // $Id$
 
+#ifndef ARITHLIB
+
 #include "headers.h"
 
 namespace CSL_LISP
 {
-
-#ifndef ARITHLIB
 
 //
 // Now for multiplication
@@ -1367,8 +1367,8 @@ LispObject times2(LispObject a, LispObject b)
     }
 }
 
-#endif // ARITHLIB
-
 } // end of namespace
+
+#endif // ARITHLIB
 
 // end of arith02.cpp

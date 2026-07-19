@@ -512,7 +512,7 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
 // Here I hash single floats as if they had been represented in the way that
 // they would have been on a 64-bit machine. This is so that the values
 // returned by sxhash can be consistent across platforms.
-            {   uint64_t v = intfloat32_t_val(key);
+            {   uint64_t v = bit_cast<uint32_t>(single_float_val(key));
                 v = (v<<32) + XTAG_SFLOAT + XTAG_FLOAT32;
                 UPDATE(r, v);
                 return r;
@@ -521,21 +521,20 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
             case DOUBLE_FLOAT_HEADER:
                 UPDATE32(r, (uint64_t)h);
                 if (double_float_val(key) == 0.0) UPDATE(r, 0);
-                else UPDATE(r, intfloat64_t_val(key));
+                else UPDATE(r, bit_cast<uint64_t>(double_float_val(key)));
                 return r;
             case LONG_FLOAT_HEADER:
                 UPDATE32(r, (uint64_t)h);
 // Here +0.0 and -0.0 hash to the same value.
-                if (iszero(long_float_val(key)))
+                FLOAT_128 ff = long_float_val(key);
+                if (ff == LF_C(0.0))
                 {   UPDATE(r, 0);
                     UPDATE(r, 0);
                 }
                 else
-                {
-// This hashes based on all 16 bytes and so in the cases where FLOAT_128
-// is narrower than that the unused bits must be set to zero.
-                    UPDATE(r, intfloat128_t_val0(key));
-                    UPDATE(r, intfloat128_t_val1(key));
+                {   uint128_t w = ff.getbits();
+                    UPDATE(r, (uint64_t)(w>>64));
+                    UPDATE(r, (uint64_t)w);
                 }
                 return r;
         }

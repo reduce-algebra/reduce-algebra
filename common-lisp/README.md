@@ -1,7 +1,7 @@
 # REDUCE on Common Lisp
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**<br/>
-Time-stamp: <2026-05-10 16:50:26 franc>
+Time-stamp: <2026-07-13 17:51:43 franc>
 
 * [Building REDUCE](#building-reduce)
 * [Running REDUCE](#running-reduce)
@@ -10,6 +10,7 @@ Time-stamp: <2026-05-10 16:50:26 franc>
 * [Implementation-specific functionality](#implementation-specific-functionality)
 * [Status](#status)
 * [Known limitations](#known-limitations)
+* [Common versus Standard Lisp](#common-versus-standard-lisp)
 * [To do](#to-do)
 
 From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Guy L. Steele Jr.](https://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html):
@@ -254,6 +255,11 @@ All test results very similar to those for Windows, except no differences for nu
 ## Known limitations
 
 I cannot see any way to support the REDUCE facilities for restricting execution time on CLISP or CCL.  In more detail: the file `rlisp/inter.red` defines procedures `with!-timeout` and similar that use a Lisp timer or garbage collection hook, but neither exists in CLISP or CCL.  Therefore, the procedures `with!-timeout` and similar just run without any restriction, so don't use CLISP or CCL REDUCE is you need this facility!  It works on SBCL.
+
+
+## Common versus Standard Lisp
+
+One fundamental difference between Common Lisp and Standard Lisp is that (by default) variables in Common Lisp are [lexically scoped](https://en.wikipedia.org/wiki/Scope_(computer_programming)#Lexical_scope), whereas Standard Lisp does not offer lexical scope (although it can be emulated with a bit of care).  In practice, this means that code written for Standard Lisp (essentially all of REDUCE) automatically runs in Common Lisp (as far as variable scope is concerned), whereas code written for Common Lisp that relies on lexically scoped variables in lambda expression may require some modification to run on Standard Lisp.  Judicious choice of variable names can be used to keep distinct lexically-scoped variables distinct, and fluid declarations can be used to link instances of lexically-scoped variables that would otherwise be distinct.  I explore this issue in an [experimental REDUCE package](https://github.com/fjwright/sparsematrix?tab=readme-ov-file#readme-ov-file) that I am developing.
 
 
 ## To do

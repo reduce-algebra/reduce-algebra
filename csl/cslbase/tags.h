@@ -61,9 +61,10 @@ namespace CSL_LISP
 // data type for the type LispObject. A result will be that anywhere in
 // the code where I am sloppy about putting such an object into an int32_t
 // I will have trouble, and anywhere that I use absolute numeric offsets
-// instead of multiples of sizeof(LispObject) there can be pain.
+// instead of multiples of sizeof(LispObject) there can be pain
 
-typedef intptr_t LispObject;
+
+using LispObject = intptr_t;
 
 // Headers are also LispObjects, but I give them a separate typedef
 // name to help me keep their identity separate.  There is only any
@@ -73,7 +74,7 @@ typedef intptr_t LispObject;
 // calculation on them. But by making the type distinct from LispObject
 // I probably risk some strict aliasing pain!
 
-typedef uintptr_t Header;
+using Header = uintptr_t;
 
 // LispObject is a datatype where the low 3 bits are used as tags -
 // this idea works provided all memory addresses needed can be kept
@@ -140,22 +141,18 @@ typedef LispObject (*func5)(LispObject a1, LispObject a2, LispObject a3,
 typedef LispObject (*func6)(LispObject a1, LispObject a2, LispObject a3,
                             LispObject a4, LispObject a5, LispObject a6);
 typedef LispObject no_args(LispObject env);
-typedef LispObject one_arg(LispObject env,
-                           LispObject a1);
-typedef LispObject two_args(LispObject env,
-                            LispObject a1, LispObject a2);
+typedef LispObject one_arg(LispObject env, LispObject a1);
+typedef LispObject two_args(LispObject env, LispObject a1, LispObject a2);
 typedef LispObject three_args(LispObject env,
-                            LispObject a1, LispObject a2, LispObject a3);
+                              LispObject a1, LispObject a2, LispObject a3);
 typedef LispObject fourup_args(LispObject env,
                                LispObject a1, LispObject a2,
                                LispObject a3, LispObject a4up);
 typedef bool (*func1b)(LispObject a1);
 typedef bool (*func2b)(LispObject a1, LispObject a2);
 typedef LispObject (*shim0)(func0);
-typedef LispObject (*shim1)(func1,
-                            LispObject a1);
-typedef LispObject (*shim2)(func2,
-                            LispObject a1, LispObject a2);
+typedef LispObject (*shim1)(func1, LispObject a1);
+typedef LispObject (*shim2)(func2, LispObject a1, LispObject a2);
 typedef LispObject (*shim3)(func3,
                             LispObject a1, LispObject a2, LispObject a3);
 typedef LispObject (*shim4)(func4,
@@ -164,16 +161,14 @@ typedef LispObject (*shim4)(func4,
 typedef LispObject (*shim5)(func5,
                             LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4, LispObject a5);
-typedef LispObject (*boolshim1)(func1b,
-                                LispObject a1);
-typedef LispObject (*boolshim2)(func2b,
-                                LispObject a1, LispObject a2);
+typedef LispObject (*boolshim1)(func1b, LispObject a1);
+typedef LispObject (*boolshim2)(func2b, LispObject a1, LispObject a2);
 typedef LispObject (*errfunc0)(const char*);
 typedef LispObject (*errfunc1)(const char*, LispObject);
 typedef LispObject (*errfunc2)(const char*, LispObject, LispObject);
 typedef LispObject (*errfunc2s)(const char*, const char*, LispObject);
 
-typedef struct Symbol_Head_
+struct Symbol_Head
 {   Header header;       // Header as for other vector-like types
     LispObject value;    // Global or special value cell
 //
@@ -194,7 +189,7 @@ typedef struct Symbol_Head_
     three_args *function3;   // Executable code always (just 3 args)
 //
     fourup_args *function4up;// Executable code always (3 args + list of rest)
-} Symbol_Head;
+};
 
 // The above is 13 cells long on a 64-bit system or 14 on a 32-bit one,
 // and this means that even on a 32-bit computer its size is a multiple
@@ -640,10 +635,10 @@ inline bool car_legal(LispObject p)
 {   return is_cons(p);
 }
 
-typedef struct Cons_Cell_
+struct Cons_Cell
 {   LispObject car;
     LispObject cdr;
-} Cons_Cell;
+};
 
 
 extern bool valid_address(void *pointer);
@@ -2332,27 +2327,6 @@ inline void incCount(LispObject p, uint32_t m=1)
     if (low < m) pp->countHigh++;
 }
 
-// From C++23 onwards there will be fixed width floating point types
-// float32_t, float64_t and float128_t. However it will be some while before
-// I can properly use those. So for now I will ASSUME that float denotes
-// 32-bit IEEE and double is 64-bit IEEE. I provide a type FLOAT_128
-// (and also COMPLEX_128) that I make as cross-platform as I can.
-
-typedef union _float_union
-{   float f;
-    uint32_t i;
-} float_union;
-
-typedef union _double_union
-{   double f;
-    uint64_t i;
-} double_union;
-
-typedef union _longDouble_union
-{   FLOAT_128 f;
-    uint128_t i;
-} longdouble_union;
-
 // The following macro clears any bits in a LispObject above the
 // bottom 32.
 
@@ -2360,7 +2334,7 @@ inline LispObject low32(LispObject a)
 {   return static_cast<LispObject>(static_cast<uint32_t>(a));
 }
 
-typedef struct Big_Number_
+struct alignas(8) Big_Number
 {
 // see "arith.h" for a description of bignum formats
     Header h;
@@ -2370,7 +2344,7 @@ typedef struct Big_Number_
 // 64-bit case it will need to be an even number because the
 // header word at the front of a bignum becomes 64-bits long.
     uint32_t d[1];  // generally more digits than this
-} Big_Number;
+};
 
 inline size_t bignum_length(LispObject b)
 {   return length_of_header(numhdr(b));
@@ -2460,11 +2434,11 @@ inline uintptr_t pack_hdrlength(size_t n)
 {   return static_cast<intptr_t>(n)<<(Tw+7);
 }
 
-typedef struct Rational_Number_
+struct Rational_Number
 {   Header header;
     LispObject num;
     LispObject den;
-} Rational_Number;
+};
 
 inline LispObject& numerator(LispObject r)
 {   return ((Rational_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->num;
@@ -2474,11 +2448,11 @@ inline LispObject& denominator(LispObject r)
 {   return ((Rational_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->den;
 }
 
-typedef struct Complex_Number_
+struct Complex_Number
 {   Header header;
     LispObject real;
     LispObject imag;
-} Complex_Number;
+};
 
 inline LispObject& real_part(LispObject r)
 {   return ((Complex_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->real;
@@ -2488,54 +2462,35 @@ inline LispObject& imag_part(LispObject r)
 {   return ((Complex_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->imag;
 }
 
-typedef struct Single_Float_
+struct Single_Float
 {   Header header;
-    union float_or_int
-    {   float f;
-        int32_t i;
-    } f;
-} Single_Float;
+    float f;
+};
 
 inline float short_float_val(LispObject v)
-{   float_union x;
+{
 #if SIXTY_FOUT_BIT
-    x.i = v >> 32;
+    return bit_cast<float>((uint32_t)(v >> 32));
 #else // SIXTY_FOUR_BIT
-    x.i = v - XTAG_SFLOAT;
+    return bit_cast<float>((uint32_t)(v-XTAG_SFLOAT));
 #endif // SIXTY_FOUR_BIT
-    std::memmove(&x.f, &x.i, sizeof(x.f));
-    return x.f;
 }
 
 inline float& single_float_val(LispObject v)
-{   return ((Single_Float *)(reinterpret_cast<char*>(v)-TAG_BOXFLOAT))->f.f;
-}
-
-inline int32_t& intfloat32_t_val(LispObject v)
-{   return ((Single_Float *)(reinterpret_cast<char*>(v)-TAG_BOXFLOAT))->f.i;
+{   return *(float*)(reinterpret_cast<char*>(v)-TAG_BOXFLOAT);
 }
 
 // The structures here are not actually used - because I can not get
 // as strong control of alignment as I would like. So I use macros that
 // do address arithmetic explicitly for me...
 //
-//  typedef struct Double_Float_
+//  struct alignas(8) Double_Float
 //  {
 //      Header header;
-//  // I want the data to be nicely aligned ecen in the case that
+//  // I want the data to be nicely aligned even in the case that
 //  // a Header is only 32-bits wide.
-//      alignas (8) union double_or_ints {
-//          double f;
-//          int32_t i[2];
-//          int64_t ii;
-//      } f;
-//  } Double_Float;
-
-typedef union _Double_union
-{   double f;
-    uint32_t i[2];
-    uint64_t i64;
-} Double_union;
+//      alignas (8) double f;
+//  };
 
 inline constexpr size_t SIZEOF_DOUBLE_FLOAT = 16;
 
@@ -2564,38 +2519,15 @@ inline double& double_float_val(LispObject v)
         reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 
-inline int64_t& intfloat64_t_val(LispObject v)
-{
-#ifdef DEBUG
-    my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0);
-#endif // DEBUG
-    return *reinterpret_cast<int64_t*>(
-        reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
-}
-
-inline int32_t& intfloat64_t_val_hi(LispObject v)
-{   return *reinterpret_cast<int32_t*>(reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
-}
-
-inline int32_t& intfloat64_t_val_lo(LispObject v)
-{   return *reinterpret_cast<int32_t*>(reinterpret_cast<char*>(v) + (12-TAG_BOXFLOAT));
-}
-
 // Again I do not actually introduce the struct...
 //
-//  typedef struct Long_Float_
-//  {
-//      Header header;
+//  struct alignas(8) Long_Float
+//  {   Header header;
 //  What follows ALWAYS starts exactly 8 bytes on from the start
 //  of the object, ie (8-TAG_BOXFLOAT) bytes on from the tagged pointer
 //  that identifies it.
-//      alignas (8) union long_or_ints {
-//          FLOAT_128 f128;
-//          int32_t i[4];
-//          int64_t ii[2];
-//          int128_t iii;
-//      } f;
-//  } Long_Float;
+//      alignas (8) FLOAT_128 f128;
+//  };
 
 inline constexpr size_t SIZEOF_LONG_FLOAT = 24;
 inline FLOAT_128* long_float_addr(LispObject v)
@@ -2610,41 +2542,6 @@ inline int32_t& long_float_pad(LispObject v)
 inline FLOAT_128& long_float_val(LispObject v)
 {   return *reinterpret_cast<FLOAT_128*>(
         reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
-}
-
-inline int128_t& intfloat128_t_val(LispObject v)
-{   return *reinterpret_cast<int128_t *>(
-        reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
-}
-
-inline int64_t& intfloat128_t_val0(LispObject v)
-{   return *reinterpret_cast<int64_t*>(
-        reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
-}
-
-inline int64_t& intfloat128_t_val1(LispObject v)
-{   return *reinterpret_cast<int64_t*>(
-        reinterpret_cast<char*>(v) + (16-TAG_BOXFLOAT));
-}
-
-inline int32_t& intfloat128_t_val32_0(LispObject v)
-{   return *reinterpret_cast<int32_t*>(
-        reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
-}
-
-inline int32_t& intfloat128_t_val32_1(LispObject v)
-{   return *reinterpret_cast<int32_t*>(
-        reinterpret_cast<char*>(v) + (12-TAG_BOXFLOAT));
-}
-
-inline int32_t& intfloat128_t_val32_2(LispObject v)
-{   return *reinterpret_cast<int32_t*>(
-        reinterpret_cast<char*>(v) + (16-TAG_BOXFLOAT));
-}
-
-inline int32_t& intfloat128_t_val32_3(LispObject v)
-{   return *reinterpret_cast<int32_t*>(
-        reinterpret_cast<char*>(v) + (20-TAG_BOXFLOAT));
 }
 
 // Values to go in exit_reason at times when exceptions are being thrown.

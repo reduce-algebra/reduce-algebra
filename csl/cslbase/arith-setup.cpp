@@ -42,6 +42,8 @@
 namespace CSL_LISP
 {
 
+#ifndef NEW
+
 setup_type const arith_setup[] =
 {   DEF_1("modf",         Nmodf),
     {"plus",              Nplus, Nplus, Nplus, Nplus, Nplus},
@@ -248,35 +250,6 @@ setup_type const arith_setup[] =
     DEF_1("signum",       Nsignum),
     {"atan",              G0Wother, Natan, Natan_2, G3Wother, G4Wother},
     DEF_2("logb",         Nlog_2),
-    DEF_2("native-carg",  Ncarg),
-    DEF_2("native-cabs",  Ncabs),
-    DEF_2("native-cexp",  Ncexp),
-    DEF_2("native-clog",  Nclog),
-    DEF_2("native-csqrt", Ncsqrt),
-    DEF_2("native-csin",  Ncsin),
-    DEF_2("native-ccos",  Nccos),
-    DEF_2("native-ctan",  Nctan),
-    DEF_2("native-ccsc",  Nccsc),
-    DEF_2("native-csec",  Ncsec),
-    DEF_2("native-ccot",  Nccot),
-    DEF_2("native-casin", Ncasin),
-    DEF_2("native-cacos", Ncacos),
-    DEF_2("native-catan", Ncatan),
-    DEF_2("native-cacsc", Ncacsc),
-    DEF_2("native-casec", Ncasec),
-    DEF_2("native-cacot", Ncacot),
-    DEF_2("native-csinh", Ncsinh),
-    DEF_2("native-ccosh", Nccosh),
-    DEF_2("native-ctanh", Nctanh),
-    DEF_2("native-ccsch", Nccsch),
-    DEF_2("native-csech", Ncsech),
-    DEF_2("native-ccoth", Nccoth),
-    DEF_2("native-casinh",Ncasinh),
-    DEF_2("native-cacosh",Ncacosh),
-    DEF_2("native-catanh",Ncatanh),
-    DEF_2("native-cacsch",Ncacsch),
-    DEF_2("native-casech",Ncasech),
-    DEF_2("native-cacoth",Ncacoth),
     DEF_1("numerator",    Nnumerator),
     DEF_1("denominator",  Ndenominator),
     DEF_1("realpart",     Nrealpart),
@@ -326,6 +299,70 @@ setup_type const arith_setup[] =
     DEF_1("trap-floating-overflow", Ntrap_floating_overflow),
     {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
+#else // NEW
+
+setup_type const arith_setup[] =
+{
+    DEF_1("abs",          Labsval),
+    DEF_1("acos",         Lacos),
+    DEF_1("acosd",        Lacosd),
+    DEF_1("acosh",        Lacosh),
+    DEF_1("acot",         Lacot),
+    DEF_1("acotd",        Lacotd),
+    DEF_1("acoth",        Lacoth),
+    DEF_1("acsc",         Lacsc),
+    DEF_1("acscd",        Lacscd),
+    DEF_1("acsch",        Lacsch),
+    DEF_1("asec",         Lasec),
+    DEF_1("asecd",        Lasecd),
+    DEF_1("asech",        Lasech),
+    DEF_1("asin",         Lasin),
+    DEF_1("asind",        Lasind),
+    DEF_1("asinh",        Lasinh),
+    DEF_1("atand",        Latand),
+    DEF_2("atan2",        Latan),
+    DEF_2("atan2d",       Latand),
+    DEF_1("atanh",        Latanh),
+    DEF_1("cbrt",         Lcbrt),
+    DEF_1("cos",          Lcos),
+    DEF_1("cosd",         Lcosd),
+    DEF_1("cosh",         Lcosh),
+    DEF_1("cot",          Lcot),
+    DEF_1("cotd",         Lcotd),
+    DEF_1("coth",         Lcoth),
+    DEF_1("csc",          Lcsc),
+    DEF_1("cscd",         Lcscd),
+    DEF_1("csch",         Lcsch),
+    DEF_1("exp",          Lexp),
+    DEF_2("expt",         Lexpt),
+    DEF_2("hypot",        Lhypot),
+    DEF_1("ln",           Lln),
+    {"log",               G0Wother, Lln, Llog_2, G3Wother, G4Wother},
+    DEF_1("log2",         Llog2),
+    DEF_1("log10",        Llog10),
+    DEF_1("sec",          Lsec),
+    DEF_1("secd",         Lsecd),
+    DEF_1("sech",         Lsech),
+    DEF_1("sin",          Lsin),
+    DEF_1("sind",         Lsind),
+    DEF_1("sinh",         Lsinh),
+    DEF_1("sqrt",         Lsqrt),
+    DEF_1("tan",          Ltan),
+    DEF_1("tand",         Ltand),
+    DEF_1("tanh",         Ltanh),
+    DEF_1("cis",          Lcis),
+//  DEF_1("isqrt",        Lisqrt),
+    DEF_1("phase",        Lphase),
+    DEF_1("signum",       Lsignum),
+    {"atan",              G0Wother, Latan, Latan, G3Wother, G4Wother},
+    DEF_2("logb",         Llog_2),
+    {nullptr,             nullptr, nullptr, nullptr, nullptr, nullptr}
+};
+
+#endif // NEW
+
+
 
 } // end of namespace
 

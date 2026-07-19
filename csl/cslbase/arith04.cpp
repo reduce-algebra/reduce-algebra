@@ -38,12 +38,12 @@
 
 // $Id$
 
+#ifndef ARITHLIB
+
 #include "headers.h"
 
 namespace CSL_LISP
 {
-
-#ifndef ARITHLIB
 
 LispObject make_n_word_bignum(int32_t a2, uint32_t a1, uint32_t a0,
                               size_t n)
@@ -181,20 +181,6 @@ LispObject rationalf(double d)
     return make_ratio(w, den);
 }
 
-// The intent here is to take a single precision floating point value and
-// mask off its low 4 bits. The code here is a fine example of the sort
-// of thing that runs up against strict aliasing rules. Here I believe that
-// the use of memcpy ought to sort that out!
-
-double truncate20(double d)
-{   float_union aa, bb;
-    aa.f = d;
-    std::memcpy(&bb, &aa, sizeof(bb));
-    bb.i &= ~0xf;
-    std::memcpy(&aa, &bb, sizeof(aa));
-    return aa.f;
-}
-
 static LispObject rationalizef(double dd, int bits)
 //
 // This is expected to give a 'nice' rational approximation to the
@@ -312,7 +298,7 @@ static LispObject rationalizef(double dd, int bits)
            (v1) :
            bits==24 ? d != static_cast<float>(static_cast<double>
                    (u1)/static_cast<double>(v1)) :
-           d != truncate20(static_cast<double>(u1)/static_cast<double>(v1)))
+           d != round_to_short(static_cast<double>(u1)/static_cast<double>(v1)))
     {   a = p/q;
         uint64_t u2 = u0 + a*u1;
         uint64_t v2 = v0 + a*v1;
@@ -1543,8 +1529,8 @@ bool geq2(LispObject a, LispObject b)
 {   return geq(a, b);
 }
 
-#endif // ARITHLIB
-
 } // end of namespace
+
+#endif // ARITHLIB
 
 // end of arith04.cpp

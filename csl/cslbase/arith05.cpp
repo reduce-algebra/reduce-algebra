@@ -37,12 +37,12 @@
 
 // $Id$
 
+#ifndef ARITHLIB
+
 #include "headers.h"
 
 namespace CSL_LISP
 {
-
-#ifndef ARITHLIB
 
 uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 //
@@ -438,8 +438,8 @@ void print_bighexoctbin(LispObject u, int radix, int width,
     }
 }
 
-#endif // ARITHLIB
-
 } // end of namespace
+
+#endif // ARITHLIB
 
 // end of arith05.cpp

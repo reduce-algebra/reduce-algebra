@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-06-10 17:46:14 franc>
+;; Time-stamp: <2026-06-24 12:09:54 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -3844,14 +3844,19 @@ rather like errorset."
 - SIZE is a non-negative integer that determines approximately the
   number of entries that can be inserted without having to enlarge the
   hash table.
-- If TYPE is 0 then the test used is eq, otherwise it is cl:equal.
+- If TYPE is 0 or 'eq then the test used is cl:eq, otherwise it is
+  cl:equal.
 - EXPANSION specifies how much to increase the size of the hash-table
   when it becomes full.  This can be an integer greater than zero,
   which is the number of entries to add, or it can be a floating-point
   number greater than 1, which is the ratio of the new size to the old
   size.  The default value for this argument is implementation-dependent."
+  ;; In PSL, type must be one of 0, 'eq, 3, 'equal,
+  ;; where 0 ≡ 'eq and 3 ≡ 'equal.
+  ;; CSL is more flexible: type fixed and > 0 means 'equal.
   `(make-hash-table
-    :test (if (eql ,type 0) 'eq 'cl:equal) ; should this be equalp?
+    :test (if (cl:member ,type '(0 eq))
+              'cl:eq 'cl:equal)         ; should this be equalp?
     :size ,size
     ,@(and expansion `(:rehash-size ,expansion))))
 

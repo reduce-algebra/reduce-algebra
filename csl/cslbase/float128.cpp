@@ -253,9 +253,14 @@ FLOAT128REP FLOAT_128::rep() const
 {   return v;
 }
 
+// This returns a 112-bit value that is the mantissa field - and to get
+// a full value one would need tt=o attach the "hidden bit". This is
+// used for instance in a check as to whether it is zero and thereby
+// whether a value is an infinity or a NaN.
+
 uint128_t FLOAT_128::mantissa() const
 {   uint128_t w = bit_cast<uint128_t>(v);
-    return (bit_cast<uint128_t>(w)<<16)>>16;
+    return (w<<16)>>16;
 }
 
 // Useful tests etc
@@ -498,6 +503,52 @@ FLOAT_128 FLOAT_128::frexp(int& x) const
     else b = (b | (((uint128_t)0x3fff)<<112)) & ~(((uint128_t)1)<<126);
     x = xx - 0x3fff;
     return FLOAT_128(b, true);
+#endif
+}
+
+FLOAT_128 FLOAT_128::modf(FLOAT_128& ii) const
+{
+#if defined USE_LONG_DOUBLE
+    long double i;
+    FLOAT_128 r = FLOAT_128(std::modf(v, &i), 1.0f);
+    ii = i;
+    return r;
+#elif defined USE_QUADMATH
+    __float128 i;
+    FLOAT_128 r = FLOAT_128(modfq(v, &i), 1.0f);
+    ii = i;
+    return r;
+#elif defined USE_CLANG_FLOAT128
+    __float128 i;
+    FLOAT_128 r = FLOAT_128(modff128(v, &i), 1.0f);
+    ii = i;
+    return r;
+#else
+// Sets ii to the integer part of v and returns the fractional part, the
+// two parts of the result having the same sign.
+    if (isnan())
+    {   ii = NAN128();
+        return ii;
+    }
+    else if (isinf())
+    {   ii = *this;
+        return signbit() ? -LF_C(0.0) : LF_C(0.0);
+    }
+    else if (v > LF_C(-1.0) && v < LF_C(1.0))
+    {   ii = signbit() ? -LF_C(0.0) : LF_C(0.0);
+        return *this;
+    }
+// if |v| > 2^113 then it denotes an integer, and for any value
+// with mangnitude up to to 2^127 its integer part will fit exactly in
+// int128_t. I transition methods at 1.0e35 which lies between these
+// values.
+    if (x > LF_C(1.0e35) || x < -LF_C(1.0e35)
+    {   ii - *this;
+        return LF_C(0.0);
+    } 
+    int128_t i = (int128_t)v; 
+    ii = (FLOAT_128)i;
+    return *this - ii;
 #endif
 }
 
