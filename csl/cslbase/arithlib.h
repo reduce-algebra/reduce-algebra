@@ -245,7 +245,7 @@
 // to use this code and when you will probably not. Wikipedia lists rather
 // a large number of arbitrary precision arithmetic packages on the web page
 // en.wikipedia.org/wiki/List_of_arbitrary-precision_arithmetic_software.
-// As well as free-stanidng libraries a range of programming languages feature
+// As well as free-standing libraries a range of programming languages feature
 // big-number arithmetic as a standard feature. It may be fair to suggest
 // that for use from C++ the most visible option is GMP with some users liking
 // to use it via Boost. Given a view that GMP is the market leader I will

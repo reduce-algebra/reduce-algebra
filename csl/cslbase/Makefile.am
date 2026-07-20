@@ -348,7 +348,7 @@ endif !mac_framework
 
 all-local:	$(CSL_IMG) $(REDUCE_IMG)
 
-THREADDEP=lvector.h threadloc.h
+THREADDEP=threadloc.h
 if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
@@ -357,7 +357,7 @@ arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		multiply.cpp karatoom.cpp fftmul.cpp divide.cpp \
 		randomnum.cpp convflt.cpp bigprint.cpp
 
-ARITHDEP=arithlib.h
+ARITHDEP=arithlib.h lvector.h
 else !arithlib
 arith_sources =
 ARITHDEP=
