@@ -781,7 +781,7 @@ int float128_to_binary(FLOAT_128 d, int64_t &mhi, uint64_t &mlo)
         return 0;
     }
     int x;
-    d = frexp(d, &x);
+    d = frexp(d, x);
 // now d is in the range +/-[0.5, 1) and the input had value d*2^x
 // If I multiply by 2^112 I get an integer as required...
     uint128_t ii = (uint128_t)ldexp(d, 112); 

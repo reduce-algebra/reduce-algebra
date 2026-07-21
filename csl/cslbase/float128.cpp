@@ -534,7 +534,7 @@ FLOAT_128 FLOAT_128::modf(FLOAT_128& ii) const
     {   ii = *this;
         return signbit() ? -LF_C(0.0) : LF_C(0.0);
     }
-    else if (v > LF_C(-1.0) && v < LF_C(1.0))
+    else if (*this > LF_C(-1.0) && *this < LF_C(1.0))
     {   ii = signbit() ? -LF_C(0.0) : LF_C(0.0);
         return *this;
     }
@@ -542,8 +542,8 @@ FLOAT_128 FLOAT_128::modf(FLOAT_128& ii) const
 // with mangnitude up to to 2^127 its integer part will fit exactly in
 // int128_t. I transition methods at 1.0e35 which lies between these
 // values.
-    if (x > LF_C(1.0e35) || x < -LF_C(1.0e35)
-    {   ii - *this;
+    if (*this > LF_C(1.0e35) || *this < -LF_C(1.0e35))
+    {   ii = *this;
         return LF_C(0.0);
     } 
     int128_t i = (int128_t)v; 

@@ -446,7 +446,7 @@ uint128_t uint128_fix(FLOAT_128 a)
 // are just not permitted and would lead to chaos.
     FLOAT_128 aa;
     int x;
-    aa = frexp(a, &x);
+    aa = frexp(a, x);
 // Now I take the 113 bits of mantissa (including an implicit bit) and
 // shuffle to be in the form of the uint128_t integer.
     uint64_t lo, hi;
@@ -511,7 +511,7 @@ static LispObject rationalizef128(FLOAT_128 dd)
     if ((FLOAT_128)1.0 <= d)
     {   int x;
         FLOAT_128 d1;
-        d1 = frexp(d,  &x);
+        d1 = frexp(d,  x);
         d1 = ldexp(d1, 113);
         p = uint128_fix(d1);
         q = uint128_t(1) << (113-x);
@@ -526,7 +526,7 @@ static LispObject rationalizef128(FLOAT_128 dd)
     else
     {   int x;
         FLOAT_128 d1, d2;
-        d1 = frexp(d, &x);
+        d1 = frexp(d, x);
         d1 = ldexp(d1, 113);
         p = uint128_fix(d1);
         d2 = (FLOAT_128)1.0 / d;
