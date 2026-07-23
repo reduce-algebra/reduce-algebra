@@ -141,11 +141,17 @@
          currentoffset*
 	 faslblockend*
 	 maxfasloffset*
+	 bittablebase*
 	 bittableoffset*
          faslfilenameformat*
          fasl-idnumber-property*
          staticlispsize*
          staticlispbase*
+	 codebase*
+	 staticlispbittablebase*
+	 staticlispbittableoffset*
+	 orderedidlist*
+	 nextidnumber*
 	 ))
 
 (setq faslfilenameformat* "%w.b")
@@ -374,7 +380,6 @@
   (binarywrite codeout* (compiler-constant 'faslout-magic))
   (allocatefaslspaces))
 
-(fluid '(codebase* bittablebase* orderedidlist* nextidnumber*))
 
 (de findidnumber (u)
   (prog (i)
@@ -433,6 +438,11 @@
                     (setq bittableoffset* (iadd1 bittableoffset*)))))
     (when (igreaterp bittableoffset* maxfasloffset*)
       (fatalerror "BPS exhausted during FaslOut; output file too large"))))
+
+(de update-staticlisp-bittable (numberofentries firstentry)
+    (let ((bittablebase* staticlispbittablebase*)
+	  (bittableoffset* staticlispbittableoffset*))
+      (update-bittable numberofentries firstentry)))
 
 (de allocatefaslspaces ()
   (prog (b)
