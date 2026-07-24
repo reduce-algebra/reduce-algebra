@@ -43,7 +43,7 @@
 (on fast-integers)
 
 (fluid '(tokenbuffer argumentblock))
-(global '(nextstaticlisp))
+(fluid '(nextstaticlisp))
 
 (de dumpfasl (file)
   (prog (fid                  % file pointer 
