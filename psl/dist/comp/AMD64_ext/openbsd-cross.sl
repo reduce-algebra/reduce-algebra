@@ -52,7 +52,11 @@
 
 (compiletime (load if-system))
 
+(fluid '(nextstaticlisp))
+
 (fluid '(bittable-entries-per-word nilnumber* dataout*))
+
+(fluid '(staticlispbase* staticlispbittablebase* staticlispbittableoffset*))
 
 (setq addressingunitsperitem 8)
 (setq bittable-entries-per-word 32)
@@ -491,13 +495,23 @@
 	       (oldslbase (gtstaticlisp 0))
 	       (newslbase (gtstaticlisp sl-size)))
 	  (foreach sl-item in (car GlobalStaticLispList*) do
-		   (DepositInstruction sl-item)
+		   (DepositStaticLispItem sl-item)
 		   (rplacd sl-item (plus2 (cdr sl-item) oldslbase))
 		   )
 	  )
 	)
     )
 
+(de DepositStaticLispItem (u)
+  (let ((CodeBase* staticlispbase*)
+	(CurrentOffset* CurrentStaticOffset*)
+	(bittablebase* staticlispbittablebase*)
+	(bittableoffset* staticlispbittableoffset*))
+    (DepositInstruction u)
+    (setq CurrentStaticOffset* CurrentOffset*
+	  staticlispbittableoffset* bittableoffset*)))
+
+      
 (de AppendContents (ExpressionLabelPair)
   (prog (Expression UpperBound I offset)
 
@@ -545,7 +559,7 @@
 (de SLLabelOffset (label)
     (let ((l (assoc label GlobalStaticLispList*)))
       (cond ((null l) (StdError (Bldmsg "Static Label %w not found" label)))
-	    (t (times2 addressingunitperitem (cdr l))))))
+	    (t (times2 addressingunitsperitem (cdr l))))))
 
 %(fluid '(nextstaticlispNumber*))
 

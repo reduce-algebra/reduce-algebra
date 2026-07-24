@@ -535,6 +535,8 @@
         (wrs oldout)
         (codeblocktrailer)))
 
+(fluid '(*comment))
+
 (de asmoutlap1 (x)
   (prog (fn)
         (return (cond ((stringp x) (printlabel x))
@@ -557,6 +559,9 @@
 			      (progn (prin2 '!,)
 				     % COMMA                          
 				     (printoperand u))))
+	     (when *comment
+	       (tab 35) (prin2 "# ") (prin2 *comment)
+	       (setq *comment nil))
 	     (prin2 !$eol!$)))))))
 
 (put 'call 'asmpseudoop 'asmprintcall)
@@ -599,6 +604,9 @@
   (cond ((stringp (cadr x)) (prin2 (cadr x)))
 	((idp (cadr x)) (prin2 (findlabel (cadr x))))
 	(t (printoperand (cadr x))))
+  (when *comment
+    (tab 35) (prin2 "# ") (prin2 *comment)
+    (setq *comment nil))
   (prin2 !$eol!$)
 )
 
@@ -708,7 +716,9 @@
    (list 'times2 
          (compiler-constant 'addressingunitsperfunctioncell) 
          (list 'idloc (cadr x))))
-  (prin2 "(%r14)"))
+  (prin2 "(") (prin2 (get 'symfnc 'RegisterName)) (prin2 ")")
+  (when *asmprintids (setq *comment (cadr x)))
+)
 
 (put 'entry 'operandprintfunction 'asmentry)
 
@@ -733,10 +743,15 @@
 (de asmsyslispvarsprint (x)
   (prin2 (findgloballabel (cadr x))))
 
+(fluid '(*asmprintids))
+(setq *asmprintids t)
+
 (de asmprintvaluecell (x)
   (printexpression (list 'times (compiler-constant 'addressingunitsperitem) 
                          (list 'idloc (cadr x))))
-  (prin2 "(%r13)"))
+  (prin2 "(") (prin2 (get 'symval 'RegisterName)) (prin2 ")")
+  (when *asmprintids (setq *comment (cadr x)))
+)
 
 (deflist '((fluid asmprintvaluecell) (!$fluid asmprintvaluecell) 
            (global asmprintvaluecell) (!$global asmprintvaluecell))

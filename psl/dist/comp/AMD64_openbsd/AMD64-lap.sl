@@ -690,9 +690,10 @@
            (T1    7) % RDI
            (T2    6) % RSI
            (T3    8)
-           (T4    9)
+           (staticlisp 9)
            (heaplast 10) (heaptrapbound 11)
-           (staticlisp 12) (nil 13) (symval 14) (symfnc 15)
+           (bnkstkptr 12)
+	   (nil 13) (symval 14) (symfnc 15)
 
            (r8 8) (r9 9) (r10 10) (r11 11)
            (r12 12) (r13 13) (r14 14) (r15 15)
@@ -1568,7 +1569,7 @@
       ((equal (first x) 'entry) (depositentry x))
       (t (stderror (bldmsg "Expression too complicated %r" x))))))
 
-(de depositquadwordexpression (x)
+(de DepositQuadWordExpression (x)
   % Only limited expressions now handled
   (let (y)
     (cond
@@ -1633,6 +1634,9 @@
                               (wPlus2 CodeBase* (LabelOffset InfPart))) 
                              ((equal (first InfPart) 'IDLoc) 
                               (IDInf (second InfPart))) 
+                             ((equal (first InfPart) 'SLLoc) 
+                              (wPlus2 CurrentStaticOffset*
+				      (SLLabelOffset (second InfPart))))
                              (t 
                                 (StdError 
                                     (BldMsg "Unknown inf in MkItem %r"
@@ -1870,7 +1874,7 @@
 
 (setq !64bitregs '((reg 1) (reg 2) (reg 3) (reg 4) (reg 5) (reg st)
                   (reg rax) (reg rbx) (reg rcx) (reg rdx)
-                  (reg t3) (reg t4) (reg NIL) (reg heaplast) 
+                  (reg t3) (reg NIL) (reg heaplast) 
                   (reg bndstkptr) (reg symval) (reg staticlisp)
                   (reg symfnc) (reg heaptrapbound) 
                   (reg t1) (reg t2) (reg esp) (reg rdi) (reg rsi)
@@ -1879,7 +1883,7 @@
                   ))
 
 (setq upper64bitregs '(
-                  (reg t3) (reg t4) (reg NIL) (reg heaplast) 
+                  (reg t3) (reg NIL) (reg heaplast) 
                   (reg bndstkptr) (reg symval) (reg staticlisp) 
                   (reg symfnc) (reg heaptrapbound)
                   (reg r8) (reg r9) (reg r10) (reg r11)

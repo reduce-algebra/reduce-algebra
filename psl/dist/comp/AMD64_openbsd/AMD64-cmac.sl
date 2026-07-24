@@ -427,10 +427,6 @@
 (DefCMacro *Move                          %  (*Move Source Destination)
    ( Equal              )                  % if source=dest then do nothing
    ((fixzerop   regp) (xor ArgTwo ArgTwo))
-%%   ((onep       regp) (xor ArgTwo ArgTwo)
-%%		      (inc ArgTwo))
-%%   ((minus1p    regp) (xor ArgTwo ArgTwo)
-%%		      (dec ArgTwo))
    ((Fluidp     regp) (movq (displacement (reg symval) ArgOne) ArgTwo))
    ((AnyP       regP) (mov ARGONE ARGTWO))
    ((regp     Fluidp) (movq ArgOne (displacement (reg symval) ArgTwo)))
