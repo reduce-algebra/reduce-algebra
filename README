@@ -1,9 +1,24 @@
                        REDUCE - Open Source release
 
 
+                                 July 2026
+
+From the original version in 2009 a great deal has changed!
+There are many new packages (utf8, lpdo, guardian, breduce, cdiff,
+bibasis... sstools, coeff2, f5) as mantioned in packages/package.map,
+and many existing ones have been updated either to address "issues"
+or to extend their capabilities. The original Lisp systems (PSL and CSL)
+have been subject to continuous development so that they have adapted to
+modern computer architectures and operating systems and to reflect the
+amounts of memory readily available now. In addition to those, there is
+now support for building Reduce on top of Common Lisp and a "reduce-web".
+The manual has been reworked to reflect these changes and has been tidied
+up in many ways.
+
+
                                January 2025
 
-The revision number is pushing towards 7000 so the coomment here is
+The revision number is pushing towards 7000 so the comment here is
 really just to note that the project is still active!
 
 

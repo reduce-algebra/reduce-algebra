@@ -22,9 +22,8 @@
 # Specify the name of this "application" and a version number
 AC_INIT([FOXTESTS],[1.4.21])
 
-# This seemed to work with 2.57 so despite other parts of the code needing
-# a yet newer version I will leave this here.
-AC_PREREQ([2.72])
+# This seemed to work with 2.57...
+AC_PREREQ([2.71])
 
 here=`pwd`
 AC_MSG_NOTICE([+++ Configuring FOX tests in directory $here +++])

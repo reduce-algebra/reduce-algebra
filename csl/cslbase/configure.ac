@@ -70,7 +70,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_COPYRIGHT([Codemist])
 
-AC_PREREQ([2.72])
+AC_PREREQ([2.71])
 
 # My source file is expected to have "csl.cpp" in it. This is just a small
 # sanity check in case somebody tries to configure with directories
@@ -198,6 +198,17 @@ fi
 # --std=gnu++17 ann use the first found. The option is handled by both
 # gcc and clang. THose using other compilers may need to do something
 # else!
+
+# It seems that if you call AC_COMPILE_IFELSE out of the blue in such a way
+# that the compilation fails (eg with CXXFLAGS that are not accepotable) that
+# the configure suffers an abrupt halt. SO here I try one with the initial
+# or default configuration so that when I try with "-std=gnu++26" and that
+# fails (say) the script continues and tries with lower options.
+
+AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+  [[
+    int main(int argc, char* argv[]) { return 0; }
+  ]])])
 
 OLDCXXFLAGS="$CXXFLAGS"
 for std in gnu++26 gnu++23 gnu++20 gnu++17 c++17

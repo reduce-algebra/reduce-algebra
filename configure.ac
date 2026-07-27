@@ -51,7 +51,7 @@ AC_COPYRIGHT([The REDUCE project])
 # availability, although an enthusiastic person could probably get things
 # working without them.
 
-AC_PREREQ([2.72])
+AC_PREREQ([2.71])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([.])
 
