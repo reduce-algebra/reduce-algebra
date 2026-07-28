@@ -47,7 +47,7 @@ include './include/begin-body.php';
         <a href="https://apps.apple.com/us/app/icas/id394637176">iCAS</a>
         is a commercial version of REDUCE packaged for the Apple
         iPhone and iPad.
-    </li> -->
+    </li>
     <li>
         Symbolic is a CLI version of REDUCE packaged for Android.
         It was developed from
@@ -62,7 +62,7 @@ include './include/begin-body.php';
         However, it may not install on recent versions of Android.
         Users have reported that, with a little effort, it can be persuaded to
         install on Android 12 but that it will not install on Android 13.
-    </li>
+    </li> -->
 </ul>
 <p>
     The following Android apps are available only as source code, not
@@ -170,6 +170,14 @@ include './include/begin-body.php';
         which has evolved into the
         <a href="http://math.drhuang.com/science/mathematics/software/">Math
             Handbook Calculator</a>
+    </li>
+</ul>
+
+<h2>Useful links</h2>
+<ul>
+    <li>
+        <a href="https://math.unm.edu/~wester/cas_review.html">
+            A Critique of the Mathematical Abilities of CA Systems</a>
     </li>
 </ul>
 
