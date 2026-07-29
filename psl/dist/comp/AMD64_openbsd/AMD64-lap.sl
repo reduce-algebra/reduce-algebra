@@ -1502,6 +1502,29 @@
 (put '*entry 'InstructionLength 0)
 
 % ------------------------------------------------------------
+% Static Lisp Operations
+% ------------------------------------------------------------
+
+(put 'FULLWORD 'SLSizeFn 'length)
+
+(de count-sl-stringwords (str)
+  (iquotient (iplus2 (size str) 9) 8))
+
+(put 'string 'SLSizeFn 'count-sl-stringwords)
+
+(de count-sl-halfwords (hh)
+  (iquotient (iplus2 (times2 (length hh) 2) 9) 8))
+
+(put 'halfword 'SLSizeFn 'count-sl-halfwords)
+
+(de count-sl-bytes (bb)
+  (iquotient (iplus2 (length bb) 9) 8))
+
+(put 'byte 'SLSizeFn 'count-sl-bytes)
+
+(put 'float 'SLSizeFn '1)
+
+% ------------------------------------------------------------
 % Depositing Operations
 % ------------------------------------------------------------
 
