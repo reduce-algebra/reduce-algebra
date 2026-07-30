@@ -721,10 +721,10 @@ error
         (setq d (if (weq d 0) 1 (wquotientdouble 1 0 d)))
         (bigtest (print (list "scale factor " (sys2int d))))
 	% Now, at the same time, I remove the sign information from U and V
-	% and scale them so that the leading coefficeint in V is fairly large;
+	% and scale them so that the leading coefficient in V is fairly large;
 	   % protect possible gc in bsmalltimes2 from bigits in the stack
-	(setq x (wshift d (minus(difference bitsperword 8))) 
-	  d (wshift (wshift d 8)-8) )
+	(setq x (wshift d (minus (difference bitsperword 8))) 
+	      d (wshift (wshift d 8) -8) )
         (setq *second-value* 0)
 	(setq v1 (bsmalltimes2 v d x))
 	(setq d (+w d (wshift x (difference bitsperword 8) )))
@@ -1406,60 +1406,60 @@ error
 % ---------------------------- GCDN -------------------------------
 %
 % Lehmers algorithm for numerical gcd 
-% Knuth Vol 2 (2nd ed.) page 329
+% Knuth Vol 2 (2nd ed.) section 4.5.2, algorithm L, page 329
  
 (commentoutcode
 
 (de biggcdn (u v)
-     % We are sure that both, u and v are "true" bignums with at least
-     % two bigits. 
-   (prog(u^ v^ A B C D TT q ttt w lu lv)
-	 (when (bbminusp u)(setq u (bminus u)))
-	 (when (bbminusp v)(setq v (bminus v)))
-   L1    (when (or (not(bigp u))  (not (bigp v)))
-	       (return (cleanstack (biggcdn1 u v))))
-	 (setq lu (bbsize u) lv (bbsize v))
-	 (cond ((igreaterp lu lv)  (setq tt(remainder u v))
-				   (setq u v v tt)
-				   (go L1))
-	       ((ilessp    lu lv)  (setq v (remainder v u)) 
-				   (go L1)))
-	     % now u and v have equal length (first bigit of same order)
-	 (setq u^ (igetv u lu) v^ (igetv v lv))
-	 (setq A 1 B 0 C 0 D 1)
-   L2    (when (or (izerop (+w v^ C)) (izerop (+w v^ D)))
-	       (go L4))
-	 (setq q (iquotient(+w u^ A)(+w v^ C)))  
-	 (when (not(weq q (iquotient(+w u^ B)(+w v^ D))))
-	       (go L4))
-   L3    (setq TT (if (weq C 0) A (idifference A(itimes2 q C)))
-	       A  C
-	       C  TT
-	       TT (if (weq D 0) B (idifference B(itimes2 q D)))
-	       B  D
-	       D  TT
-	       TT (idifference u^ (itimes2 q v^))
-	       u^ v^
-	       v^ TT)
-	 (go L2)    
-   L4    (if (weq B 0)
-	     (if (weq 0 (setq TT (remainder u v))) (return (cleanstack v))
-			(setq u v v TT))
-	     (progn
-	       (setq u^ (setq v^ (setq q 0)))
-	       (setq TT (cond((eq A 0) 0)
+    %% We are sure that both, u and v are "true" bignums with at least
+    %% two bigits. 
+  (prog (u^ v^ A B C D TT q w lu lv)
+        (when (bbminusp u) (setq u (bminus u)))
+        (when (bbminusp v) (setq v (bminus v)))
+   L1   (when (or (not(bigp u)) (not (bigp v)))
+              (return (cleanstack (biggcdn1 u v))))
+	(setq lu (bbsize u) lv (bbsize v))
+	(cond ((igreaterp lu lv) (setq TT (remainder u v))
+	                         (setq u v v TT)
+				 (go L1))
+              ((ilessp    lu lv) (setq v (remainder v u)) 
+				 (go L1)))
+        %% now u and v have equal length (first bigit of same order)
+	(setq u^ (igetv u lu) v^ (igetv v lv))
+	(setq A 1 B 0 C 0 D 1)
+   L2   (when (or (izerop (+w v^ C)) (izerop (+w v^ D)))
+	      (go L4))
+	(setq q (iquotient (+w u^ A) (+w v^ C)))  
+	(when (not(weq q (iquotient (+w u^ B) (+w v^ D))))
+	      (go L4))
+   L3   (setq TT (if (weq C 0) A (idifference A (itimes2 q C)))
+	      A  C
+	      C  TT
+	      TT (if (weq D 0) B (idifference B (itimes2 q D)))
+	      B  D
+	      D  TT
+	      TT (idifference u^ (itimes2 q v^))
+	      u^ v^
+	      v^ TT)
+	(go L2)    
+   L4   (if (weq B 0)
+	    (if (weq 0 (setq TT (remainder u v))) (return (cleanstack v))
+                (setq u v v TT))
+	    (progn
+	      (setq u^ (setq v^ (setq q 0)))
+	      (setq TT (cond ((eq A 0) 0)
 			     ((eq A 1) u)
 			     (t (times A u))))
-	       (setq TT (cond((eq B 0) TT)
+	      (setq TT (cond ((eq B 0) TT)
 			     ((eq B 1) (plus TT v))
 			     (t (plus TT (times B v)))))
-	       (setq w (cond((eq C 0) 0) 
-			     ((eq C 1) u) 
-			     (t (times C u))))
-	       (setq w (cond ((eq D 0) w) 
-			     ((eq D 1) (plus w v))
-			     (t (plus w (times D v)))))
-	       (setq u Tt v w)))
+	      (setq w (cond ((eq C 0) 0) 
+			    ((eq C 1) u) 
+			    (t (times C u))))
+	      (setq w (cond ((eq D 0) w) 
+			    ((eq D 1) (plus w v))
+			    (t (plus w (times D v)))))
+              (setq u TT v w)))
 	 (go L1)))
  
 )
@@ -1527,6 +1527,17 @@ error
     (oldfloatfix u)
     (bigfromfloat u)))
 
+%% fix needs to be redefined: the standard definition in arithmetic.sl
+%% converts a fixnum outside of betap range into a bignum.
+%% (Here betap range means integers that fit in a halfword)
+%% Make sure to not convert any integer argument in fix!
+(de fix (x)
+        (case (wand (wplus2 (tag x) 1) 31)
+           ((0 1 2 3) x)                % posint negint fixnum bignum
+           ((4)   (floatfix x))               %floatnum            
+           (nil   (nonnumber1error x 'fix))
+))
+
 (de betap (x)
   % test if NUMBER in reduced INUM range                                   
   (if (intp x) (and (wleq x betahi!*) (wgeq x betalow!*)) nil))
@@ -1556,8 +1567,8 @@ error
    (setq BigFloatLow!* (bminus BigFloatHi!*))))
 
 (prog (y syshi syslo ieee-mt-len1)
-	% Lowest value of Ai
-	% here assume 2's complement
+        % Lowest value of Ai
+        % here assume 2's complement
 %% For 64 bit word length the number of bits is greater than the
 %%  number of bits in the IEEE mantissa. In this case the largest integer
 %%  than can be safely converted into a float consists of
@@ -1566,7 +1577,7 @@ error
 %%  This is different from the previous case if bitsperword > 54
      (setq ieee-mt-len1 54)		% number of bits in IEEE mantissa
      (setq y (twopower (idifference bitsperword 2)))
-	% eg, 36 bits, 2^35-1=2^34+2^34-1
+     %% eg, 36 bits, 2^35-1=2^34+2^34-1
      (setq syshi (plus y (difference y 1)))
      (if (igreaterp bitsperword ieee-mt-len1)
        (setq syshi

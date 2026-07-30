@@ -445,10 +445,8 @@
 
 
 (de AppendOneConstant (ExpressionLabelPair)
-    (prog (offset)
-	  (setq offset (get-sl-offset))
-	  (AddStaticLispLabel (cdr ExpressionLabelPair))
-          (return (AppendStaticItem (car ExpressionLabelPair)))))
+  (AddStaticLispLabel (cdr ExpressionLabelPair))
+  (AppendStaticItem (car ExpressionLabelPair)))
 
 (de AppendStaticItem (Expression)
   (AddFullStaticWord (ExpandItem Expression)))
@@ -480,13 +478,24 @@
 		    ))
       offset)))
 
-(de count-stringwords (str)
+(put 'FULLWORD 'SLSizeFn 'length)
+
+(de count-sl-stringwords (str)
   (iquotient (iplus2 (size str) 9) 8))
 
-(put 'string 'SLSizeFn 'count-stringwords)
-(put 'float 'SLSizeFn '2)
+(put 'string 'SLSizeFn 'count-sl-stringwords)
 
-(put 'FULLWORD 'StaticLispSize 1)
+(de count-sl-halfwords (hh)
+  (iquotient (iplus2 (times2 (length hh) 2) 9) 8))
+
+(put 'halfword 'SLSizeFn 'count-sl-halfwords)
+
+(de count-sl-bytes (bb)
+  (iquotient (iplus2 (length bb) 9) 8))
+
+(put 'byte 'SLSizeFn 'count-sl-bytes)
+
+(put 'float 'SLSizeFn '2)
 
 
 (de AppendStaticLisp ()
