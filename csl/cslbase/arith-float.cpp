@@ -251,11 +251,11 @@ double double_trunc(double a, double b)
 FLOAT_128 long_trunc(FLOAT_128 a, FLOAT_128 b)
 {   FLOAT_128 q = a/b;
     lf_remainder = fma(-q, b, a);
-    if (q < LF_C(0.0) && f_remainder < LF_C(0.0))
+    if (q < LF_C(0.0) && lf_remainder < LF_C(0.0))
     {   q = long_next_float(q);
         lf_remainder = round_to_short(fma(-q, b, a));
     }
-    else if (q > LF_C(0.0) && f_remainder > LF_C(0.0))
+    else if (q > LF_C(0.0) && lf_remainder > LF_C(0.0))
     {   q = long_previous_float(q);
         lf_remainder = round_to_short(fma(-q, b, a));
     }
@@ -1768,7 +1768,7 @@ LispObject Nfloat_sign2(LispObject env, LispObject a, LispObject b)
     {   FLOAT_128 d = float128_of_number(b);
 // If a is another long float then float_of_number may overflow, but
 // here I am only interested in its sign, and -infinity is still negative.
-        if (float_of_number(a) < LF_C(0.0)) d = - d;
+        if (float128_of_number(a) < LF_C(0.0)) d = -d;
         return make_boxfloat128(d);
     }
     double d = float_of_number(b);
