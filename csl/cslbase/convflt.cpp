@@ -32,11 +32,13 @@
 
 // $Id$
 
+#if __has_include("config.h")
+#include "config.h"
+#endif
+
 #include "arithlib.h"
 #include <climits>
 
-namespace arithlib_implementation
-{
 
 // When doubles and FLOAT_128 values where available are to be
 // compared against a bignum to get proper results the double should
@@ -202,8 +204,7 @@ void longfloatTo_virtualBignum(FLOAT_128 d,
                                      Digit& next,
                                      std::size_t& len,
                                      RoundingMode mode)
-{   using namespace CSL_LISP;
-    if (d == LF_C(0.0))
+{   if (d == LF_C(0.0))
     {   top = mid = next = 0;
         len = 1;
         return;
@@ -266,7 +267,7 @@ void longfloatTo_virtualBignum(FLOAT_128 d,
     }
     else
     {   Digit lowbit = mhi & (-static_cast<Digit>(mhi));
-        lz = 64 + 63 - CSL_LISP::nlz(lowbit); // low zero bits
+        lz = 64 + 63 - nlz(lowbit); // low zero bits
     }
     shiftright(mhi, mlo, lz);
     exponent += lz;
@@ -438,8 +439,8 @@ float Float::op(std::uint64_t* a)
     }
     if (!carried) next |= 1;
 // Now I need to do something very much like the code for the int64_t case.
-    if (top == 0) lz = CSL_LISP::nlz(next) + 64;
-    else lz = CSL_LISP::nlz(top);
+    if (top == 0) lz = nlz(next) + 64;
+    else lz = nlz(top);
 //
 //  uint64_t top24 = {top,next} >> (128-24-lz);
     int sh = 128-24-lz;
@@ -487,7 +488,7 @@ double Frexp::op(SignedDigit a, SignedDigit& x)
 // Because top53 >= 2^53 the number of leading zeros in its representation is
 // at most 10. Ha ha. That guaranteed that the shift below will not overflow
 // and is why I chose my range as I did.
-    int lz = CSL_LISP::nlz(top53);
+    int lz = nlz(top53);
     Digit low = top53 << (lz+53);
     top53 = top53 >> (64-53-lz);
     if (low > 0x8000000000000000U) top53++;
@@ -549,8 +550,8 @@ double Frexp::op(std::uint64_t* a, SignedDigit& x)
     }
     if (!carried) next |= 1;
 // Now I need to do something very much like the code for the int64_t case.
-    if (top == 0) lz = CSL_LISP::nlz(next) + 64;
-    else lz = CSL_LISP::nlz(top);
+    if (top == 0) lz = nlz(next) + 64;
+    else lz = nlz(top);
 //
 //  uint64_t top53 = {top,next} >> (128-53-lz);
     int sh = 128-53-lz;
@@ -595,8 +596,7 @@ FLOAT_128 Float128::op(SignedDigit a)
 }
 
 FLOAT_128 Frexp128::op(SignedDigit a, SignedDigit& x)
-{   using namespace CSL_LISP;
-    FLOAT_128 d = (FLOAT_128)a;
+{   FLOAT_128 d = (FLOAT_128)a;
     int x1;
     d = frexp(d, x1);
     x = x1;
@@ -640,8 +640,8 @@ FLOAT_128 Frexp128::op(std::uint64_t* a, SignedDigit& x)
 // zero, but if it is then next1 will have its top bit set, and so within
 // these bits I certainly have the 113 that I need to obtain an accurate
 // floating point value.
-    if (top == 0) lz = CSL_LISP::nlz(next1) + 64;
-    else lz = CSL_LISP::nlz(top);
+    if (top == 0) lz = nlz(next1) + 64;
+    else lz = nlz(top);
 //
 //  uint64_t {top113,top112a} = {top,next1,next2} >> (128-113-lz);
     int sh = 192-113-lz;
@@ -692,13 +692,10 @@ FLOAT_128 Frexp128::op(std::uint64_t* a, SignedDigit& x)
 }
 
 FLOAT_128 Float128::op(std::uint64_t* a)
-{   using namespace CSL_LISP;
-    SignedDigit x = 0;
+{   SignedDigit x = 0;
     FLOAT_128 d = Frexp128::op(a, x);
     if (x > 100000) x = 100000;
     return ldexp(d, static_cast<int>(x));
 }
-
-}; // end of namespace
 
 // end of convflt.cpp

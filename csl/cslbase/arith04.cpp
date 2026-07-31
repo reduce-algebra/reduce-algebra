@@ -38,12 +38,12 @@
 
 // $Id$
 
-#ifndef ARITHLIB
-
 #include "headers.h"
 
 namespace CSL_LISP
 {
+
+#ifndef ARITHLIB
 
 LispObject make_n_word_bignum(int32_t a2, uint32_t a1, uint32_t a0,
                               size_t n)
@@ -181,6 +181,20 @@ LispObject rationalf(double d)
     return make_ratio(w, den);
 }
 
+// The intent here is to take a single precision floating point value and
+// mask off its low 4 bits. The code here is a fine example of the sort
+// of thing that runs up against strict aliasing rules. Here I believe that
+// the use of memcpy ought to sort that out!
+
+double truncate20(double d)
+{   float_union aa, bb;
+    aa.f = d;
+    std::memcpy(&bb, &aa, sizeof(bb));
+    bb.i &= ~0xf;
+    std::memcpy(&aa, &bb, sizeof(aa));
+    return aa.f;
+}
+
 static LispObject rationalizef(double dd, int bits)
 //
 // This is expected to give a 'nice' rational approximation to the
@@ -298,7 +312,7 @@ static LispObject rationalizef(double dd, int bits)
            (v1) :
            bits==24 ? d != static_cast<float>(static_cast<double>
                    (u1)/static_cast<double>(v1)) :
-           d != round_to_short(static_cast<double>(u1)/static_cast<double>(v1)))
+           d != truncate20(static_cast<double>(u1)/static_cast<double>(v1)))
     {   a = p/q;
         uint64_t u2 = u0 + a*u1;
         uint64_t v2 = v0 + a*v1;
@@ -320,11 +334,11 @@ static LispObject rationalizef(double dd, int bits)
 //
 // FP128_SMALL_LIMIT is 2^-113 and is used in rationalizef128.
 
-static FLOAT_128 FP128_INT_LIMIT(((uint128_t)0x406fU)<<112, 0);
-static FLOAT_128 FP128_MINUS_INT_LIMIT(((uint128_t)0xc06fU)<<112, 0);
-static FLOAT_128 FP128_SMALL_LIMIT(((uint128_t)0x3f8eU)<<112, 0);
+static FLOAT_128 FP128_INT_LIMIT(((uint128_t)0x406fU)<<112, i128());
+static FLOAT_128 FP128_MINUS_INT_LIMIT(((uint128_t)0xc06fU)<<112, i128());
+static FLOAT_128 FP128_SMALL_LIMIT(((uint128_t)0x3f8eU)<<112, i128());
 
-#include "float128.h"
+// #include "float128.h"
 
 LispObject rationalf128(FLOAT_128 d)
 {
@@ -486,7 +500,7 @@ FLOAT_128 uint128_float(uint128_t a)
     }
     uint64_t ahi = (uint64_t)(a>>64) & UINT64_C(0x0000ffffffffffff);
     ahi = ahi | ((uint64_t)(x + 0x3ffe)<<48);
-    return FLOAT_128((((uint128_t)ahi)<<64) | (uint64_t)a, 0);
+    return FLOAT_128((((uint128_t)ahi)<<64) | (uint64_t)a, i128());
 }
 
 static LispObject rationalizef128(FLOAT_128 dd)
@@ -511,7 +525,7 @@ static LispObject rationalizef128(FLOAT_128 dd)
     if ((FLOAT_128)1.0 <= d)
     {   int x;
         FLOAT_128 d1;
-        d1 = frexp(d,  x);
+        d1 = frexp(d, x);
         d1 = ldexp(d1, 113);
         p = uint128_fix(d1);
         q = uint128_t(1) << (113-x);
@@ -1529,8 +1543,8 @@ bool geq2(LispObject a, LispObject b)
 {   return geq(a, b);
 }
 
-} // end of namespace
-
 #endif // ARITHLIB
+
+} // end of namespace
 
 // end of arith04.cpp

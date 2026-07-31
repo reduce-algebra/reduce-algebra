@@ -82,6 +82,7 @@
 // Well: the slow versions will only be included if you compile with
 // "-DTESTFFT".
 
+
 #ifndef ARITHLIB_VERSION
 #include <cstdint>
 #include <iostream>
@@ -98,7 +99,7 @@
 // that applies the given function to each item in the vector.
 
 #include "cthread.cpp" 
-#include "lvectorh"
+#include "Lvector.base.h"
 
 // For testing I will want...
 #include <cmath>

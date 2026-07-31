@@ -1,7 +1,7 @@
 // float128.h                                   Copyright (C) 2026 Codemist
 
-#ifndef header_float128_h
-#define header_float128_h 1
+#ifndef __header_float128_h
+#define __header_float128_h 1
 
 // $Id: float128.h 7327 2026-03-07 17:06:01Z arthurcnorman $
 
@@ -85,7 +85,9 @@
 // you would ideally like - so sometimes you may need to insert explicit
 // casts.
 
-
+#if __has_include("config.h")
+#include "config.h"
+#endif
 
 #if defined USE_LONG_DOUBLE
 // On the Macintosh and sometimes when compiling for Windows the type
@@ -106,6 +108,7 @@ static_assert(((long double)1.0 + 1.0e-34) != 1.0,
 
 #include "int128.h"  // for int128_t and uint128_t
 #include "bitmaps.h" // for nlz()
+#include "crfloat.h" // accurate 64-bit maths functions if available.
 
 // I will defined classes FLOAT_128 and COMPLEX_128 and provide
 // a range of elementary functions over them. Since my class differs
@@ -259,6 +262,18 @@ using FLOAT128REP = uint128_t;
 // various other things that FLOAT128REP expands into can need 16 byte
 // alignment.
 
+class top32
+{
+};
+
+class i128
+{
+};
+
+class fromrep
+{
+};
+
 class alignas(16) FLOAT_128
 {
 private:
@@ -286,16 +301,14 @@ public:
     }
 #endif
 // Accessing the representation
-// In the next two constructors the "float" and "int" arguments are to
-// tag these as accessing the representation not any abstraction. The
-// constructors should be called with 0.0f or 0 as their second argument,
-// and the value used is ignored.
-    FLOAT_128(FLOAT128REP, float);            // construct from a FLOAT128REP
+// In the next two constructors the final arguments are not used at
+// run time but are there to disambiguate things.
+    FLOAT_128(FLOAT128REP, [[maybe_unused]]fromrep y); // from a FLOAT128REP
     FLOAT128REP rep() const;
-    FLOAT_128(uint128_t x, [[maybe_unused]]int y)  // Inject a bit pattern
+    FLOAT_128(uint128_t x, [[maybe_unused]]i128 y)  // Inject a bit pattern
     {   v = bit_cast<FLOAT128REP>(x);
     }
-    FLOAT_128(uint32_t x, [[maybe_unused]]void* y) // the top 32 bits
+    FLOAT_128(uint32_t x, [[maybe_unused]]top32 y) // the top 32 bits
     {   v = bit_cast<FLOAT128REP>(((uint128_t)x)<<96);
     }
     FLOAT_128(uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4)
@@ -335,7 +348,7 @@ public:
     bool isinfornan() const;
     FLOAT_128 ldexp(int x) const;
     FLOAT_128 frexp(int& x) const;
-    FLOAT_128 modf(FLOAT_128& ii) const;
+    FLOAT_128 modf(FLOAT_128& ipart) const;
     FLOAT_128 abs() const;
     FLOAT_128 maxabs(FLOAT_128) const;
 // Casts
@@ -1663,16 +1676,16 @@ constexpr void string_to_160(const char* s,
     exponent = x;
 }
 
-inline FLOAT_128 ldexp(FLOAT_128 v, int x)
+inline FLOAT_128 ldexp(const FLOAT_128 v, int x)
 {   return v.ldexp(x);
 }
 
-inline FLOAT_128 frexp(FLOAT_128 v, int& x)
+inline FLOAT_128 frexp(const FLOAT_128 v, int& x)
 {   return v.frexp(x);
 }
 
-inline FLOAT_128 modf(FLOAT_128 v, FLOAT_128& ii)
-{   return v.modf(ii);
+inline FLOAT_128 modf(const FLOAT_128 v, FLOAT_128& ipart)
+{   return v.modf(ipart);
 }
 
 inline bool isinf(FLOAT_128 v)
@@ -1785,7 +1798,7 @@ external_declaration_2(hypot)
 
 extern FLOAT_128 expt(FLOAT_128 a, int128_t n);
 
-#endif // header__float128_h
+#endif // __header_float128_h
 
 // end of float128.h
 

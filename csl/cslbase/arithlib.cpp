@@ -1,5 +1,7 @@
 // Big Number arithmetic.                             A C Norman, 2019-2026
 
+// To use this  #include "arithlib.cpp" as a header-only library.
+
 #ifndef __arithlib_cpp
 #define __arithlib_cpp 1
 
@@ -378,7 +380,7 @@
 // too bad, but in many places I will in fact write the rather wordy but very
 // explicit (1ULL<<n).
 
-#define ARITHLIB_VERSION 1003
+#define ARITHLIB_VERSION 1002
 
 // The next comment is mainly prospective! At present one is expected
 // to go '#include "arithlib.cpp"' in any file that will use this. The
@@ -485,6 +487,589 @@ inline bool inChild = false;
 #include <type_traits>
 #include <algorithm>
 #include <filesystem>
+
+// bitmaps.h                                    Copyright (C) 2026 Codemist
+
+#ifndef header_bitmaps_h
+#define header_bitmaps_h 1
+
+// $Id$
+
+
+/**************************************************************************
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+// Some support for bitmaps that us uint64_t as their base. This is in
+// a separate file since it may be useful elsewhere. I also include
+// support for finding the first and last bits within a 64-bit word, since
+// those are operations used to speed up some of the searches here.
+
+// I should cross reference std::bitset which provides packed bit arrays,
+// but my version here provides setting, clearing and testing of ranges
+// of bits not just individual ones, and it gives me functions that search
+// for the previous or next set or clear bit.
+// I should possibly (probably!) bring my naming into step with std::bitset
+// for the operations that are supported there.
+
+#include <cstdint>
+#include <cstdio>
+
+#ifndef __has_include
+#define __has_include(name) 0
+#endif // __has_include
+
+#if __has_include(<bit>)
+#include <bit>
+#endif // <bit> header
+
+//#if __has_include(<bitset>)
+//#include <bitset>
+//#endif // <bitset> header
+
+using std::uint64_t;
+using std::size_t;
+
+namespace CSL_LISP
+{
+
+#ifndef  HAVE_NLZ_AND_NTZ
+
+#if defined _cpp_lib_bitops
+
+// C++20 provides functions for counting zeros. Unlike the GNU intrinsics
+// they have defined behaviour when presented with a zero word.
+
+constexpr inline int nlz(uint64_t x)
+{   return countl_zero(x);
+}
+
+constexpr inline int ntz(uint64_t x)
+{   return countr_zero(x);
+}
+
+constexpr inline int countBits(uint64_t x)
+{   return std::popcount(x);
+}
+
+#elif defined __GNUC__
+
+// Note that __GNUC__ also gets defined by clang on the Macintosh, so
+// this code is probably optimized there too. The intrinsic must never be
+// called with a zero argument, so I filter that case.
+
+// Count the leading zeros in a 64-bit word.
+
+constexpr inline int nlz(uint64_t x)
+{   return x==0 ? 64 : __builtin_clzll(x);
+}
+
+// Count the trailing zeros in a 64-bit word.
+
+constexpr inline int ntz(uint64_t x)
+{   return x==0 ? 64 : __builtin_ctzll(x);
+}
+
+constexpr inline int countBits(uint64_t x)
+{   return __builtin_popcount(x);
+}
+
+#else // __GNUC__
+
+// A generic implementation just in case that is needed!
+
+class nlztable64
+{
+public:
+    int8_t v[67] = {-1};
+    constexpr nlztable64()
+    {   uint64_t z = 0;
+        for (int i=0; i<64; i++)
+        {   v[z%67] = 64-i;
+            z = 2*z+1;
+        }
+    }
+};
+constexpr inline nlztable64 nlz64;
+
+constexpr inline int nlz(uint64_t x)
+{   x |= x>>1;
+    x |= x>>2;
+    x |= x>>4;
+    x |= x>>8;
+    x |= x>>16;
+    x |= x>>32;
+// Now x is a number with all bits up as far as its highest one set, and I
+// have achieved that without performing any tests.
+// 2 is a primitive root mod 67, so all the values of 2^k (0<=k<64) are
+// distinct mod 67. So the same will apply for (2^k-1) which are the
+// values I have here. So a simple lookup in a table of size 67 does the
+// job for me.
+    return nlz64.v[x % 67];
+}
+
+// This code is to identify the least significant bit in a 64-bit
+// value. The function leastBit() just removes all other bits.
+
+constexpr inline uint64_t leastBit(uint64_t n)
+{   return n & (-n);
+}
+
+// ntz find the bit-number of the least significant bit, So here are some
+// values it will return:
+//    1      0
+//    2      1
+//    4      2
+//    8      3
+//   16      4
+// etc. The name is for "Number of Trailing Zeros".
+// If the input value is zero it returns 64, but the GNU builtin does not
+// guarantee any such behaviour, so zero input should be considered illegal.
+
+// This is related to the function intlog2() in tags.h, but that function
+// is only to be applied on inputs that are a power of 2.
+
+class ntztable64
+{
+public:
+    int8_t v[67] = {0};
+    constexpr ntztable64()
+    {   uint64_t z = 1;
+        for (int i=0; i<64; i++)
+        {   v[z%67] = i;
+            z = 2*z;
+        }
+    }
+};
+constexpr inline ntztable64 ntz64;
+    
+constexpr inline int ntz(uint64_t n)
+{   return ntz64.v[x % 67];
+}
+
+// The version here is expected to be a good one when the expected number
+// of set bits is small.
+
+constexpr inline int countBits(uint64_t x)
+{   int r = 0;
+    while (x != 0)
+    {   r++;
+        x -= x & (-x);
+    }
+    return r;
+}
+
+#endif // __GNUC__
+
+#define HAVE_NLZ_AND_NTZ
+#endif // HAVE_NLZ_AND_NTZ
+
+
+#define NLZ_DEFINED 1
+#define NTZ_DEFINED 1
+
+// The overload here for 128-bit integers always uses my own code. It does
+// not clash with any overloads of system-provided versions since they
+// are not called "nlz"!
+
+class nlztable128
+{
+public:
+    int8_t v[131] = {-1};
+    constexpr nlztable128()
+    {   uint128_t z = 0;
+        for (int i=0; i<128; i++)
+        {   v[z%131] = 128-i;
+            z = 2*z+1;
+        }
+    }
+};
+constexpr inline nlztable128 nlz128;
+
+#if 0
+// Probably on many machines nlz on 64-bit values will use an intrinsic
+// that can explout machine instructions to do the hard work. I do
+// not expect C++-provided 128 support to be especially strong, so
+// here I decompose that case into looking at the top and bottom
+// 64 bits as relevant.
+
+constexpr inline int nlz(uint128_t x)
+{   if ((x>>64) == 0) 64 + nlz((uint64_t)x)
+    else return nlz((uint64_t)(x>>64));
+}
+#endif
+
+constexpr inline int nlz(uint128_t x)
+{   if (x == 0) return 128;
+    x |= x>>1;
+    x |= x>>2;
+    x |= x>>4;
+    x |= x>>8;
+    x |= x>>16;
+    x |= x>>32;
+    x |= x>>64;
+// Now x is a number with all bits up as far as its highest one set, and I
+// have achieved that without performing any tests.
+// 2 is a primitive root mod 131, so all the values of 2^k (0<=k<128) are
+// distinct mod 131. So the same will apply for (2^k-1) which are the
+// values I have here. So a simple lookup in a table of size 131 does the
+// job for me.
+    return nlz128.v[x % 131];
+}
+
+// These functions view map[] as an array of 64-bit values with bits counted
+// least significant first. They set, clear or test bits. The ones that work
+// on ranges handle bits from m up with a given length and the test returns
+// true if any of the bits in the range are set.
+// nextOneBit() and friends return the index of the next relevant set or
+// cleared bit at or beyond the location specified, and need to know the
+// size (measured in bits) of the map because there may not be a further
+// bit to report. In that case they return SIZE_MAX.
+
+// Everything here assumes that n is such that the nth bit is within the
+// map array. No overflow checks are made.
+
+inline void setBit(uint64_t map[], size_t n)
+{   map[n/64] |= 1ULL << (n%64);
+}
+
+inline void clearBit(uint64_t map[], size_t n)
+{   map[n/64] &= ~(1ULL << (n%64));
+}
+
+inline void flipBit(uint64_t map[], size_t n)
+{   map[n/64] ^= 1ULL << (n%64);
+}
+
+inline bool testBit(uint64_t map[], size_t n)
+{   return ((map[n/64] >> (n%64)) & 1) != 0;
+}
+
+// These work on the bits from m to m+length-1 inclusive.
+
+inline void setBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) map[word1] |= (mask1 & mask2);
+    else
+    {   map[word1] |= mask1;
+        for (size_t k=word1+1; k<word2; k++) map[k] = ones;
+        map[word2] |= mask2;
+    }
+}
+
+inline void clearBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) map[word1] &= ~(mask1 & mask2);
+    else
+    {   map[word1] &= ~mask1;
+        for (size_t k=word1+1; k<word2; k++) map[k] = 0;
+        map[word2] &= ~mask2;
+    }
+}
+
+inline void flipBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) map[word1] ^= (mask1 & mask2);
+    else
+    {   map[word1] ^= mask1;
+        for (size_t k=word1+1; k<word2; k++) map[k] ^= ones;
+        map[word2] ^= mask2;
+    }
+}
+
+// Count the number of 1 bits in the specified range.
+
+inline int countBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) return countBits(map[word1] & mask1 & mask2);
+    else
+    {   int r = countBits(map[word1] & mask1);
+        for (size_t k=word1+1; k<word2; k++)
+            r += countBits(map[k]);
+        return r + countBits(map[word2] & mask2);
+    }
+}
+
+// testBits(map, start, length) == (countBits(map, start, length) != 0)
+
+inline bool testBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) return (map[word1] & mask1 & mask2) != 0;
+    else
+    {   if ((map[word1] & mask1) != 0) return true;
+        for (size_t k=word1+1; k<word2; k++)
+            if (map[k] != 0) return true;
+        return (map[word2] & mask2) != 0;
+    }
+}
+
+// This finds the next bit at or beyond n that is set supposing there is
+// one present in the map. If not it returns SIZE_MAX. Note that the
+// mapSize is counting in bits.
+
+inline size_t nextOneBit(uint64_t map[], size_t mapSize, size_t n)
+{   if (n >= mapSize) return SIZE_MAX;
+// The first test has to allow for the possibility that it is within a
+// single word of the map.
+    size_t word = n/64;
+    size_t bitpos = n%64;
+    n -= bitpos;          // now n refers to a word boundary.
+    uint64_t bits;
+    static const uint64_t ones = static_cast<uint64_t>(-1);
+    if ((bits = map[word] & (ones<<bitpos)) != 0)
+        return n + ntz(bits);
+// Skip past any words that are all zero in the map.
+    do
+    {   word++;
+        n += 64;
+        if (n >= mapSize) return SIZE_MAX;
+    } while ((bits = map[word]) == 0);
+    n += ntz(bits);
+    if (n >= mapSize) return SIZE_MAX;
+    else return n;
+}
+
+// Note that in these search functions mapSize does not need to be
+// a multiple of 64. The size is specified in bits not bytes or words.
+
+inline size_t nextZeroBit(uint64_t map[], size_t mapSize, size_t n)
+{   if (n >= mapSize) return SIZE_MAX;
+// The first test has to allow for the possibility that it is within a
+// single word of the map.
+    size_t word = n/64;
+    size_t bitpos = n%64;
+    n -= bitpos;          // now n refers to a word boundary.
+    static const uint64_t ones = static_cast<uint64_t>(-1);
+    uint64_t bits;
+    if ((bits = ~map[word] & (ones<<bitpos)) != 0)
+        return n + ntz(bits);
+// Skip past any words that are all ones in the map.
+    do
+    {   word++;
+        n += 64;
+        if (n >= mapSize) return SIZE_MAX;
+    } while ((bits = ~map[word]) == 0);
+    n += ntz(bits);
+    if (n >= mapSize) return SIZE_MAX;
+    else return n;
+}
+
+// When I look for a previous 1 or 0 bit I will search all the way
+// to the start of the array. I could provide a further overload that
+// searched backwards down as far as a specified limit, but at present
+// I do not need that...
+
+inline size_t previousOneBit(uint64_t map[], size_t n)
+{   if (n == SIZE_MAX) return SIZE_MAX;
+    size_t word = n/64;
+    size_t bitpos = n%64;
+    n -= bitpos;
+    static const uint64_t ones = static_cast<uint64_t>(-1);
+    uint64_t bits;
+    if ((bits = map[word] & (ones >> (63-bitpos))) != 0)
+        return n + 63 - nlz(bits);
+    do
+    {   if (word == 0) return SIZE_MAX;
+        word--;
+        n -= 64;
+    } while ((bits = map[word]) == 0);
+    return n + 63 - nlz(bits);
+}
+
+inline size_t previousZeroBit(uint64_t map[], size_t n)
+{   if (n == SIZE_MAX) return SIZE_MAX;
+    size_t word = n/64;
+    size_t bitpos = n%64;
+    n -= bitpos;
+    static const uint64_t ones = static_cast<uint64_t>(-1);
+    uint64_t bits;
+    if ((bits = ~map[word] & (ones >> (63-bitpos))) != 0)
+        return n + 63 - nlz(bits);
+    do
+    {   if (word == 0) return SIZE_MAX;
+        word--;
+        n -= 64;
+    } while ((bits = ~map[word]) == 0);
+    return n + 63 - nlz(bits);
+}
+
+} // end namespace
+
+using CSL_LISP::nlz;
+using CSL_LISP::ntz;
+using CSL_LISP::countBits;
+
+#endif // header_bitmaps_h
+
+// end of bitmaps.h
+
+// float128.h                                   Copyright (C) 2026 Codemist
+
+#ifndef __header_float128_h
+#define __header_float128_h 1
+
+// $Id$
+
+
+/**************************************************************************
+ * Copyright (C) 2026, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+
+// STATUS:                                                    21 June 2026.
+// When built either on an x86_64 using g++ where the quadmath library
+// is available, or on aarch64 Linux where "long double" is a 128-bit type
+// this should now support all the elementary functions I want both on real
+// and on complex arguments.
+// As of mid 2026 it seems that the Macintosh does not provide a 128-bit
+// floating point type via Xcode and clang. (I see some suggestion that
+// a version of g++ via homebrew may have quadmath.h present, but that is
+// not a very comfortable path forward). Also the current Xcode does
+// not provide <stdfloat> and thus the C++23 options... so I need to do
+// EVERYTHING in software there!
+// Windows/x86_64 is OK with quadmath. Windows/aarch64 awaits a build
+// environment that I am happy using and that is stable! But the fallback
+// to using software for everything means I can cope come what may.
+//
+// The potential build options that now work well in at least some cases
+// but need finshing off are:
+//   Use of the C++23 std::float128_t type which provides arithmetic but
+//       does not come with a math library.
+//   Compilation using clang where there is a type __float128 and
+//       support for real but not complex elementary functions.
+//   Configurations where all 128-bit floating point needs to be
+//       implemented in software.
+// These cases should get sorted out in order to have a fully portable
+// rounded setup. The only one that at present is liable to be called
+// for is use of clang on Windows on ARM where in some cases it may be
+// that long double is just a 64-bit type. At the moment I am not yet
+// supporting build there (for a range of other reasons) so this is not
+// urgent.
+//
+// A current issue is that for numbers that are too small to be normalised
+// in the usual way I do not round calculations properly. Just now now
+// I will take the view that these numbers already suffer lower precision
+// than other cases and few people will notuce if it is even worse than
+// that> But when I get round to it I will wish to sort that out!
+
+// OVERVIEW:
+// This introduces types FLOAT_128 and COMPLEX_128. A literal for FLOAT_128
+// should be presented as for instance LF_C(1.23245e67). The usual range
+// of elementary functions should work on FLOAT_128 and COMPLEX_128 and the
+// names used are sin, cos, exp, log and so on. Utility functions such
+// as frexp and ldexp and tests for NaN and infinity values exist.
+// Output via "std::cout <<" is possible but the level of control over
+// the print format is limited. Input using "std::cin >>" has not been
+// implemented.
+// These types may not interact with other C++ numeric types as smoothly as
+// you would ideally like - so sometimes you may need to insert explicit
+// casts.
+
+#if __has_include("config.h")
+#include "config.h"
+#endif
+
+#if defined USE_LONG_DOUBLE
+// On the Macintosh and sometimes when compiling for Windows the type
+// "long double" is too narrow. In some of those cases if you try to
+// run this with USE_LONG_DOUBLE set it will necessarily fail.
+// Check for that here.
+static_assert(((long double)1.0 + 1.0e-34) != 1.0,
+              "long double is not a 128-bit IEEE float");
+#endif
+
+#include <cstdint>
+#include <iostream>
+#include <iomanip>
+#include <cstring>
+#include <cmath>
+#include <cfloat>
+#include <complex>
 
 // "int128.h":                 128 bit integer types for C++
 //                             Copyright Jason Lee, Arthur Norman 2013-2026
@@ -2508,10 +3093,10 @@ inline std::string to_hexstring(int128_t a)
 #endif // __int128_h__
 
 // end of int128.h
-// float128.h                                   Copyright (C) 2026 Codemist
+// crfloat.h                               Copyright (C) 1990-2026 Codemist
 
-#ifndef header_float128_h
-#define header_float128_h 1
+#ifndef header_crfloat_h
+#define header_crfloat_h 1
 
 // $Id$
 
@@ -2545,550 +3130,144 @@ inline std::string to_hexstring(int128_t a)
  * DAMAGE.                                                                *
  *************************************************************************/
 
+// "crlibm" is a portable library of floating point elementary functions
+// guaranteed to round properly. Using it when I can is good not just
+// for the accuracy but because that gets results bit for bit identical
+// across platforms and so regression testing becomes easier.
+// crlibm development work ceased some while ago and there is a successor
+// "CORE-MATH" that carries the objective forward - but that does not
+// offer an easy to pick up stand-alone version. Its objective is much
+// more to get its technology merged into major and widely used maths
+// libraries. So for instnce the GNU version of libc has adopted some
+// of their functions and the AMD libm uses at least a few. As of 2026
+// their web-site asserts that CMU Common Lisp is in the process if migrating
+// to use them. If all C/C++ libraries were perfect it would not be
+// necessary for me to do this here!
 
-// STATUS:                                                    21 June 2026.
-// When built either on an x86_64 using g++ where the quadmath library
-// is available, or on aarch64 Linux where "long double" is a 128-bit type
-// this should now support all the elementary functions I want both on real
-// and on complex arguments.
-// As of mid 2026 it seems that the Macintosh does not provide a 128-bit
-// floating point type via Xcode and clang. (I see some suggestion that
-// a version of g++ via homebrew may have quadmath.h present, but that is
-// not a very comfortable path forward). Also the current Xcode does
-// not provide <stdfloat> and thus the C++23 options... so I need to do
-// EVERYTHING in software there!
-// Windows/x86_64 is OK with quadmath. Windows/aarch64 awaits a build
-// environment that I am happy using and that is stable! But the fallback
-// to using software for everything means I can cope come what may.
-//
-// The potential build options that now work well in at least some cases
-// but need finshing off are:
-//   Use of the C++23 std::float128_t type which provides arithmetic but
-//       does not come with a math library.
-//   Compilation using clang where there is a type __float128 and
-//       support for real but not complex elementary functions.
-//   Configurations where all 128-bit floating point needs to be
-//       implemented in software.
-// These cases should get sorted out in order to have a fully portable
-// rounded setup. The only one that at present is liable to be called
-// for is use of clang on Windows on ARM where in some cases it may be
-// that long double is just a 64-bit type. At the moment I am not yet
-// supporting build there (for a range of other reasons) so this is not
-// urgent.
-//
-// A current issue is that for numbers that are too small to be normalised
-// in the usual way I do not round calculations properly. Just now now
-// I will take the view that these numbers already suffer lower precision
-// than other cases and few people will notuce if it is even worse than
-// that> But when I get round to it I will wish to sort that out!
+#ifdef HAVE_CRLIBM
 
-// OVERVIEW:
-// This introduces types FLOAT_128 and COMPLEX_128. A literal for FLOAT_128
-// should be presented as for instance LF_C(1.23245e67). The usual range
-// of elementary functions should work on FLOAT_128 and COMPLEX_128 and the
-// names used are sin, cos, exp, log and so on. Utility functions such
-// as frexp and ldexp and tests for NaN and infinity values exist.
-// Output via "std::cout <<" is possible but the level of control over
-// the print format is limited. Input using "std::cin >>" has not been
-// implemented.
-// These types may not interact with other C++ numeric types as smoothly as
-// you would ideally like - so sometimes you may need to insert explicit
-// casts.
+// crlibm aims to produce correctly rounded results in all cases.
+// The functions from it selected here are the ones that round to
+// nearest (as distinct from trunc, floor or ceiling versuions). The
+// code I use here only covers double precision. I am taking the view
+// that I do not care very much about single precision, and crlibm
+// does not support 128-bit floats and CORE-MATH only has a bit of
+// support at that precision.
 
 
+#include "crlibm.h"
 
-#if defined USE_LONG_DOUBLE
-// On the Macintosh and sometimes when compiling for Windows the type
-// "long double" is too narrow. In some of those cases if you try to
-// run this with USE_LONG_DOUBLE set it will necessarily fail.
-// Check for that here.
-static_assert(((long double)1.0 + 1.0e-34) != 1.0,
-              "long double is not a 128-bit IEEE float");
-#endif
+inline double CSLsin(double x)
+{   return sin_rn(x);
+}
+inline double CSLcos(double x)
+{   return cos_rn(x);
+}
+inline double CSLtan(double x)
+{   return tan_rn(x);
+}
+inline double CSLsinh(double x)
+{   return sinh_rn(x);
+}
+inline double CSLcosh(double x)
+{   return cosh_rn(x);
+}
+inline double CSLasin(double x)
+{   return asin_rn(x);
+}
+inline double CSLacos(double x)
+{   return acos_rn(x);
+}
+inline double CSLatan(double x)
+{   return atan_rn(x);
+}
+inline double CSLexp(double x)
+{   return exp_rn(x);
+}
+inline double CSLexp2(double x)
+{   return exp2_rn(x);
+}
+inline double CSLlog(double x)
+{   return log_rn(x);
+}
+inline double CSLlog2(double x)
+{   return log2_rn(x);
+}
+inline double CSLlog10(double x)
+{   return log10_rn(x);
+}
+inline double CSLpow(double x, double y)
+{   return pow_rn(x, y);
+}
 
-#include <cstdint>
-#include <iostream>
-#include <iomanip>
-#include <cstring>
+#else // HAVE_CRLIBM
+
 #include <cmath>
-#include <cfloat>
-#include <complex>
 
-// bitmaps.h                                    Copyright (C) 2026 Codemist
+using std::sin;
+using std::cos;
+using std::tan;
+using std::sinh;
+using std::cosh;
+using std::asin;
+using std::acos;
+using std::atan;
+using std::exp;
+using std::exp2;
+using std::log;
+using std::log2;
+using std::log10;
+using std::pow;
 
-#ifndef header_bitmaps_h
-#define header_bitmaps_h 1
-
-// $Id$
-
-
-/**************************************************************************
- * Copyright (C) 2026, Codemist.                         A C Norman       *
- *                                                                        *
- * Redistribution and use in source and binary forms, with or without     *
- * modification, are permitted provided that the following conditions are *
- * met:                                                                   *
- *                                                                        *
- *     * Redistributions of source code must retain the relevant          *
- *       copyright notice, this list of conditions and the following      *
- *       disclaimer.                                                      *
- *     * Redistributions in binary form must reproduce the above          *
- *       copyright notice, this list of conditions and the following      *
- *       disclaimer in the documentation and/or other materials provided  *
- *       with the distribution.                                           *
- *                                                                        *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
- * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
- * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
- * DAMAGE.                                                                *
- *************************************************************************/
-
-// Some support for bitmaps that us uint64_t as their base. This is in
-// a separate file since it may be useful elsewhere. I also include
-// support for finding the first and last bits within a 64-bit word, since
-// those are operations used to speed up some of the searches here.
-
-// I should cross reference std::bitset which provides packed bit arrays,
-// but my version here provides setting, clearing and testing of ranges
-// of bits not just individual ones, and it gives me functions that search
-// for the previous or next set or clear bit.
-// I should possibly (probably!) bring my naming into step with std::bitset
-// for the operations that are supported there.
-
-#include <cstdint>
-#include <cstdio>
-
-#ifndef __has_include
-#define __has_include(name) 0
-#endif // __has_include
-
-#if __has_include(<bit>)
-#include <bit>
-#endif // <bit> header
-
-//#if __has_include(<bitset>)
-//#include <bitset>
-//#endif // <bitset> header
-
-using std::uint64_t;
-using std::size_t;
-
-namespace CSL_LISP
-{
-
-#ifndef  HAVE_NLZ_AND_NTZ
-
-#if defined _cpp_lib_bitops
-
-// C++20 provides functions for counting zeros. Unlike the GNU intrinsics
-// they have defined behaviour when presented with a zero word.
-
-constexpr inline int nlz(uint64_t x)
-{   return countl_zero(x);
+inline double CSLsin(double x)
+{   return std::sin(x);
+}
+inline double CSLcos(double x)
+{   return std::cos(x);
+}
+inline double CSLtan(double x)
+{   return std::tan(x);
+}
+inline double CSLsinh(double x)
+{   return std::sinh(x);
+}
+inline double CSLcosh(double x)
+{   return std::cosh(x);
+}
+inline double CSLasin(double x)
+{   return std::asin(x);
+}
+inline double CSLacos(double x)
+{   return std::acos(x);
+}
+inline double CSLatan(double x)
+{   return std::atan(x);
+}
+inline double CSLexp(double x)
+{   return std::exp(x);
+}
+inline double CSLexp2(double x)
+{   return std::exp2(x);
+}
+inline double CSLlog(double x)
+{   return std::log(x);
+}
+inline double CSLlog2(double x)
+{   return std::log2(x);
+}
+inline double CSLlog10(double x)
+{   return std::log10(x);
+}
+inline double CSLpow(double x, double y)
+{   return std::pow(x, y);
 }
 
-constexpr inline int ntz(uint64_t x)
-{   return countr_zero(x);
-}
-
-constexpr inline int countBits(uint64_t x)
-{   return std::popcount(x);
-}
-
-#elif defined __GNUC__
-
-// Note that __GNUC__ also gets defined by clang on the Macintosh, so
-// this code is probably optimized there too. The intrinsic must never be
-// called with a zero argument, so I filter that case.
-
-// Count the leading zeros in a 64-bit word.
-
-constexpr inline int nlz(uint64_t x)
-{   return x==0 ? 64 : __builtin_clzll(x);
-}
-
-// Count the trailing zeros in a 64-bit word.
-
-constexpr inline int ntz(uint64_t x)
-{   return x==0 ? 64 : __builtin_ctzll(x);
-}
-
-constexpr inline int countBits(uint64_t x)
-{   return __builtin_popcount(x);
-}
-
-#else // __GNUC__
-
-// A generic implementation just in case that is needed!
-
-class nlztable64
-{
-public:
-    int8_t v[67] = {-1};
-    constexpr nlztable64()
-    {   uint64_t z = 0;
-        for (int i=0; i<64; i++)
-        {   v[z%67] = 64-i;
-            z = 2*z+1;
-        }
-    }
-};
-constexpr inline nlztable64 nlz64;
-
-constexpr inline int nlz(uint64_t x)
-{   x |= x>>1;
-    x |= x>>2;
-    x |= x>>4;
-    x |= x>>8;
-    x |= x>>16;
-    x |= x>>32;
-// Now x is a number with all bits up as far as its highest one set, and I
-// have achieved that without performing any tests.
-// 2 is a primitive root mod 67, so all the values of 2^k (0<=k<64) are
-// distinct mod 67. So the same will apply for (2^k-1) which are the
-// values I have here. So a simple lookup in a table of size 67 does the
-// job for me.
-    return nlz64.v[x % 67];
-}
-
-// This code is to identify the least significant bit in a 64-bit
-// value. The function leastBit() just removes all other bits.
-
-constexpr inline uint64_t leastBit(uint64_t n)
-{   return n & (-n);
-}
-
-// ntz find the bit-number of the least significant bit, So here are some
-// values it will return:
-//    1      0
-//    2      1
-//    4      2
-//    8      3
-//   16      4
-// etc. The name is for "Number of Trailing Zeros".
-// If the input value is zero it returns 64, but the GNU builtin does not
-// guarantee any such behaviour, so zero input should be considered illegal.
-
-// This is related to the function intlog2() in tags.h, but that function
-// is only to be applied on inputs that are a power of 2.
-
-class ntztable64
-{
-public:
-    int8_t v[67] = {0};
-    constexpr ntztable64()
-    {   uint64_t z = 1;
-        for (int i=0; i<64; i++)
-        {   v[z%67] = i;
-            z = 2*z;
-        }
-    }
-};
-constexpr inline ntztable64 ntz64;
-    
-constexpr inline int ntz(uint64_t n)
-{   return ntz64.v[x % 67];
-}
-
-// The version here is expected to be a good one when the expected number
-// of set bits is small.
-
-constexpr inline int countBits(uint64_t x)
-{   int r = 0;
-    while (x != 0)
-    {   r++;
-        x -= x & (-x);
-    }
-    return r;
-}
-
-#endif // __GNUC__
-
-#define HAVE_NLZ_AND_NTZ
-#endif // HAVE_NLZ_AND_NTZ
+#endif // HAVE_CRLIBM
 
 
-#define NLZ_DEFINED 1
-#define NTZ_DEFINED 1
+#endif // header_crfloat_h
 
-// The overload here for 128-bit integers always uses my own code. It does
-// not clash with any overloads of system-provided versions since they
-// are not called "nlz"!
-
-class nlztable128
-{
-public:
-    int8_t v[131] = {-1};
-    constexpr nlztable128()
-    {   uint128_t z = 0;
-        for (int i=0; i<128; i++)
-        {   v[z%131] = 128-i;
-            z = 2*z+1;
-        }
-    }
-};
-constexpr inline nlztable128 nlz128;
-
-#if 0
-// Probably on many machines nlz on 64-bit values will use an intrinsic
-// that can explout machine instructions to do the hard work. I do
-// not expect C++-provided 128 support to be especially strong, so
-// here I decompose that case into looking at the top and bottom
-// 64 bits as relevant.
-
-constexpr inline int nlz(uint128_t x)
-{   if ((x>>64) == 0) 64 + nlz((uint64_t)x)
-    else return nlz((uint64_t)(x>>64));
-}
-#endif
-
-constexpr inline int nlz(uint128_t x)
-{   if (x == 0) return 128;
-    x |= x>>1;
-    x |= x>>2;
-    x |= x>>4;
-    x |= x>>8;
-    x |= x>>16;
-    x |= x>>32;
-    x |= x>>64;
-// Now x is a number with all bits up as far as its highest one set, and I
-// have achieved that without performing any tests.
-// 2 is a primitive root mod 131, so all the values of 2^k (0<=k<128) are
-// distinct mod 131. So the same will apply for (2^k-1) which are the
-// values I have here. So a simple lookup in a table of size 131 does the
-// job for me.
-    return nlz128.v[x % 131];
-}
-
-// These functions view map[] as an array of 64-bit values with bits counted
-// least significant first. They set, clear or test bits. The ones that work
-// on ranges handle bits from m up with a given length and the test returns
-// true if any of the bits in the range are set.
-// nextOneBit() and friends return the index of the next relevant set or
-// cleared bit at or beyond the location specified, and need to know the
-// size (measured in bits) of the map because there may not be a further
-// bit to report. In that case they return SIZE_MAX.
-
-// Everything here assumes that n is such that the nth bit is within the
-// map array. No overflow checks are made.
-
-inline void setBit(uint64_t map[], size_t n)
-{   map[n/64] |= 1ULL << (n%64);
-}
-
-inline void clearBit(uint64_t map[], size_t n)
-{   map[n/64] &= ~(1ULL << (n%64));
-}
-
-inline void flipBit(uint64_t map[], size_t n)
-{   map[n/64] ^= 1ULL << (n%64);
-}
-
-inline bool testBit(uint64_t map[], size_t n)
-{   return ((map[n/64] >> (n%64)) & 1) != 0;
-}
-
-// These work on the bits from m to m+length-1 inclusive.
-
-inline void setBits(uint64_t map[], size_t m, size_t length)
-{   static const uint64_t ones = static_cast<uint64_t>(-1);
-    size_t n = m + length - 1;
-    size_t word1 = m/64;
-    size_t word2 = n/64;
-    size_t bitpos1 = m%64;
-    size_t bitpos2 = n%64;
-    uint64_t mask1 = ones << bitpos1;
-    uint64_t mask2 = ones >> (63-bitpos2);
-    if (word1 == word2) map[word1] |= (mask1 & mask2);
-    else
-    {   map[word1] |= mask1;
-        for (size_t k=word1+1; k<word2; k++) map[k] = ones;
-        map[word2] |= mask2;
-    }
-}
-
-inline void clearBits(uint64_t map[], size_t m, size_t length)
-{   static const uint64_t ones = static_cast<uint64_t>(-1);
-    size_t n = m + length - 1;
-    size_t word1 = m/64;
-    size_t word2 = n/64;
-    size_t bitpos1 = m%64;
-    size_t bitpos2 = n%64;
-    uint64_t mask1 = ones << bitpos1;
-    uint64_t mask2 = ones >> (63-bitpos2);
-    if (word1 == word2) map[word1] &= ~(mask1 & mask2);
-    else
-    {   map[word1] &= ~mask1;
-        for (size_t k=word1+1; k<word2; k++) map[k] = 0;
-        map[word2] &= ~mask2;
-    }
-}
-
-inline void flipBits(uint64_t map[], size_t m, size_t length)
-{   static const uint64_t ones = static_cast<uint64_t>(-1);
-    size_t n = m + length - 1;
-    size_t word1 = m/64;
-    size_t word2 = n/64;
-    size_t bitpos1 = m%64;
-    size_t bitpos2 = n%64;
-    uint64_t mask1 = ones << bitpos1;
-    uint64_t mask2 = ones >> (63-bitpos2);
-    if (word1 == word2) map[word1] ^= (mask1 & mask2);
-    else
-    {   map[word1] ^= mask1;
-        for (size_t k=word1+1; k<word2; k++) map[k] ^= ones;
-        map[word2] ^= mask2;
-    }
-}
-
-// Count the number of 1 bits in the specified range.
-
-inline int countBits(uint64_t map[], size_t m, size_t length)
-{   static const uint64_t ones = static_cast<uint64_t>(-1);
-    size_t n = m + length - 1;
-    size_t word1 = m/64;
-    size_t word2 = n/64;
-    size_t bitpos1 = m%64;
-    size_t bitpos2 = n%64;
-    uint64_t mask1 = ones << bitpos1;
-    uint64_t mask2 = ones >> (63-bitpos2);
-    if (word1 == word2) return countBits(map[word1] & mask1 & mask2);
-    else
-    {   int r = countBits(map[word1] & mask1);
-        for (size_t k=word1+1; k<word2; k++)
-            r += countBits(map[k]);
-        return r + countBits(map[word2] & mask2);
-    }
-}
-
-// testBits(map, start, length) == (countBits(map, start, length) != 0)
-
-inline bool testBits(uint64_t map[], size_t m, size_t length)
-{   static const uint64_t ones = static_cast<uint64_t>(-1);
-    size_t n = m + length - 1;
-    size_t word1 = m/64;
-    size_t word2 = n/64;
-    size_t bitpos1 = m%64;
-    size_t bitpos2 = n%64;
-    uint64_t mask1 = ones << bitpos1;
-    uint64_t mask2 = ones >> (63-bitpos2);
-    if (word1 == word2) return (map[word1] & mask1 & mask2) != 0;
-    else
-    {   if ((map[word1] & mask1) != 0) return true;
-        for (size_t k=word1+1; k<word2; k++)
-            if (map[k] != 0) return true;
-        return (map[word2] & mask2) != 0;
-    }
-}
-
-// This finds the next bit at or beyond n that is set supposing there is
-// one present in the map. If not it returns SIZE_MAX. Note that the
-// mapSize is counting in bits.
-
-inline size_t nextOneBit(uint64_t map[], size_t mapSize, size_t n)
-{   if (n >= mapSize) return SIZE_MAX;
-// The first test has to allow for the possibility that it is within a
-// single word of the map.
-    size_t word = n/64;
-    size_t bitpos = n%64;
-    n -= bitpos;          // now n refers to a word boundary.
-    uint64_t bits;
-    static const uint64_t ones = static_cast<uint64_t>(-1);
-    if ((bits = map[word] & (ones<<bitpos)) != 0)
-        return n + ntz(bits);
-// Skip past any words that are all zero in the map.
-    do
-    {   word++;
-        n += 64;
-        if (n >= mapSize) return SIZE_MAX;
-    } while ((bits = map[word]) == 0);
-    n += ntz(bits);
-    if (n >= mapSize) return SIZE_MAX;
-    else return n;
-}
-
-// Note that in these search functions mapSize does not need to be
-// a multiple of 64. The size is specified in bits not bytes or words.
-
-inline size_t nextZeroBit(uint64_t map[], size_t mapSize, size_t n)
-{   if (n >= mapSize) return SIZE_MAX;
-// The first test has to allow for the possibility that it is within a
-// single word of the map.
-    size_t word = n/64;
-    size_t bitpos = n%64;
-    n -= bitpos;          // now n refers to a word boundary.
-    static const uint64_t ones = static_cast<uint64_t>(-1);
-    uint64_t bits;
-    if ((bits = ~map[word] & (ones<<bitpos)) != 0)
-        return n + ntz(bits);
-// Skip past any words that are all ones in the map.
-    do
-    {   word++;
-        n += 64;
-        if (n >= mapSize) return SIZE_MAX;
-    } while ((bits = ~map[word]) == 0);
-    n += ntz(bits);
-    if (n >= mapSize) return SIZE_MAX;
-    else return n;
-}
-
-// When I look for a previous 1 or 0 bit I will search all the way
-// to the start of the array. I could provide a further overload that
-// searched backwards down as far as a specified limit, but at present
-// I do not need that...
-
-inline size_t previousOneBit(uint64_t map[], size_t n)
-{   if (n == SIZE_MAX) return SIZE_MAX;
-    size_t word = n/64;
-    size_t bitpos = n%64;
-    n -= bitpos;
-    static const uint64_t ones = static_cast<uint64_t>(-1);
-    uint64_t bits;
-    if ((bits = map[word] & (ones >> (63-bitpos))) != 0)
-        return n + 63 - nlz(bits);
-    do
-    {   if (word == 0) return SIZE_MAX;
-        word--;
-        n -= 64;
-    } while ((bits = map[word]) == 0);
-    return n + 63 - nlz(bits);
-}
-
-inline size_t previousZeroBit(uint64_t map[], size_t n)
-{   if (n == SIZE_MAX) return SIZE_MAX;
-    size_t word = n/64;
-    size_t bitpos = n%64;
-    n -= bitpos;
-    static const uint64_t ones = static_cast<uint64_t>(-1);
-    uint64_t bits;
-    if ((bits = ~map[word] & (ones >> (63-bitpos))) != 0)
-        return n + 63 - nlz(bits);
-    do
-    {   if (word == 0) return SIZE_MAX;
-        word--;
-        n -= 64;
-    } while ((bits = ~map[word]) == 0);
-    return n + 63 - nlz(bits);
-}
-
-} // end namespace
-
-using CSL_LISP::nlz;
-using CSL_LISP::ntz;
-using CSL_LISP::countBits;
-
-#endif // header_bitmaps_h
-
-// end of bitmaps.h
-
+// end of crfloat.h
 
 // I will defined classes FLOAT_128 and COMPLEX_128 and provide
 // a range of elementary functions over them. Since my class differs
@@ -3242,6 +3421,18 @@ using FLOAT128REP = uint128_t;
 // various other things that FLOAT128REP expands into can need 16 byte
 // alignment.
 
+class top32
+{
+};
+
+class i128
+{
+};
+
+class fromrep
+{
+};
+
 class alignas(16) FLOAT_128
 {
 private:
@@ -3269,16 +3460,14 @@ public:
     }
 #endif
 // Accessing the representation
-// In the next two constructors the "float" and "int" arguments are to
-// tag these as accessing the representation not any abstraction. The
-// constructors should be called with 0.0f or 0 as their second argument,
-// and the value used is ignored.
-    FLOAT_128(FLOAT128REP, float);            // construct from a FLOAT128REP
+// In the next two constructors the final arguments are not used at
+// run time but are there to disambiguate things.
+    FLOAT_128(FLOAT128REP, [[maybe_unused]]fromrep y); // from a FLOAT128REP
     FLOAT128REP rep() const;
-    FLOAT_128(uint128_t x, [[maybe_unused]]int y)  // Inject a bit pattern
+    FLOAT_128(uint128_t x, [[maybe_unused]]i128 y)  // Inject a bit pattern
     {   v = bit_cast<FLOAT128REP>(x);
     }
-    FLOAT_128(uint32_t x, [[maybe_unused]]void* y) // the top 32 bits
+    FLOAT_128(uint32_t x, [[maybe_unused]]top32 y) // the top 32 bits
     {   v = bit_cast<FLOAT128REP>(((uint128_t)x)<<96);
     }
     FLOAT_128(uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4)
@@ -3318,6 +3507,7 @@ public:
     bool isinfornan() const;
     FLOAT_128 ldexp(int x) const;
     FLOAT_128 frexp(int& x) const;
+    FLOAT_128 modf(FLOAT_128& ipart) const;
     FLOAT_128 abs() const;
     FLOAT_128 maxabs(FLOAT_128) const;
 // Casts
@@ -3901,9 +4091,9 @@ extern constexpr void string_to_160(const char* s,
     bool& sign, int32_t& exponent, uint128_t& mantissa);
 
 constexpr inline FLOAT160 string_to_float160(const char* s)
-{   bool sign;
-    int32_t x;
-    uint128_t m;
+{   bool sign = false;
+    int32_t x = 0;
+    uint128_t m = 0;
     string_to_160(s, sign, x, m);
     return FLOAT160(sign, x, m);
 }
@@ -4645,12 +4835,16 @@ constexpr void string_to_160(const char* s,
     exponent = x;
 }
 
-inline FLOAT_128 ldexp(FLOAT_128 v, int x)
+inline FLOAT_128 ldexp(const FLOAT_128 v, int x)
 {   return v.ldexp(x);
 }
 
-inline FLOAT_128 frexp(FLOAT_128 v, int* x)
-{   return v.frexp(*x);
+inline FLOAT_128 frexp(const FLOAT_128 v, int& x)
+{   return v.frexp(x);
+}
+
+inline FLOAT_128 modf(const FLOAT_128 v, FLOAT_128& ipart)
+{   return v.modf(ipart);
 }
 
 inline bool isinf(FLOAT_128 v)
@@ -4761,7 +4955,9 @@ external_declaration_2(atan2d)
 external_declaration_2(expt)
 external_declaration_2(hypot)
 
-#endif // header__float128_h
+extern FLOAT_128 expt(FLOAT_128 a, int128_t n);
+
+#endif // __header_float128_h
 
 // end of float128.h
 
@@ -6149,44 +6345,37 @@ private:
 public:
 
 //    a default constuctor
-    [[gnu::always_inline]]
     vecpointer()
     {   data = nullptr;
     }
 
 //    a copy constructor
-    [[gnu::always_inline]]
     vecpointer(const vecpointer<T>& a)
     {   data = a.data;
     }
 
 //    constructor from nullptr
-    [[gnu::always_inline]]
     vecpointer(std::nullptr_t a)
     {   data = nullptr;
     }
 
 //    constructor from a T*
     template <typename S>
-    [[gnu::always_inline]]
     vecpointer(S* a)
     {   data = reinterpret_cast<T*>(a);
     }
 
 //    constructor from a T* but with a length specifier
-    [[gnu::always_inline]]
     vecpointer(T* a, std::size_t n)
     {   data = a;
     }
 
 //    constructor from a intptr_t
-    [[gnu::always_inline]]
     vecpointer(std::intptr_t a)
     {   data = reinterpret_cast<T*>(a);
     }
 
 //    setsize() - a no-op in this case.
-    [[gnu::always_inline]]
     void setsize(std::size_t n)
     {}
 
@@ -6196,131 +6385,125 @@ public:
     }
 
 //    discard()     for deleting its contents
-    [[gnu::always_inline]]
     void discard()
     {   delete [] data;
         data = nullptr;
     }
 
 //    operator*             indirection
-    [[gnu::always_inline]]
     T& operator*()
     {   return *data;
     }
-    [[gnu::always_inline]]
     T operator*() const
     {   return *data;
     }
 
 //    operator[]            subscripting
-    [[gnu::always_inline]]
     T& operator[](std::size_t n)
     {   return data[n];
     }
-    [[gnu::always_inline]]
     T operator[](std::size_t n) const
     {   return data[n];
     }
 
 //    operator=
-    [[gnu::always_inline]]
     vecpointer<T>& operator=(const vecpointer<T> a)
     {   data = a.data;
         return *this;
     }
 
 //    operator+(integer)
-    [[gnu::always_inline]]
     vecpointer<T> operator+(std::ptrdiff_t n)
     {   return vecpointer<T>(data + n);
     }
 
+//    operator+(integer)
+    vecpointer<T> operator+(std::size_t n)
+    {   return vecpointer<T>(data + n);
+    }
+
 //    operator-(integer)
-    [[gnu::always_inline]]
     vecpointer<T> operator-(std::ptrdiff_t n)
     {   return vecpointer<T>(data - n);
     }
 
+//    operator-(integer)
+    vecpointer<T> operator-(std::size_t n)
+    {   return vecpointer<T>(data - n);
+    }
+
 //    operator-(vecpointer<T>)
-    [[gnu::always_inline]]
     std::ptrdiff_t operator-(vecpointer<T> a)
     {   return data - (T*)a;
     }
 
 //    operator+= and operator-=
-    [[gnu::always_inline]]
     vecpointer<T>& operator+=(std::ptrdiff_t n)
     {   data += n;
         return *this;
     }
-    [[gnu::always_inline]]
+    vecpointer<T>& operator+=(std::size_t n)
+    {   data += n;
+        return *this;
+    }
     vecpointer<T>& operator-=(std::ptrdiff_t n)
+    {   data -= n;
+        return *this;
+    }
+    vecpointer<T>& operator-=(std::size_t n)
     {   data -= n;
         return *this;
     }
 
 //    operator++ and operator--  (pre and post versions of each)
-    [[gnu::always_inline]]
     vecpointer<T>& operator++()
     {   ++data;
         return *this;
     }
-    [[gnu::always_inline]]
     vecpointer<T>& operator--()
     {   --data;
         return *this;
     }
-    [[gnu::always_inline]]
     vecpointer<T> operator++(int)
     {   return vecpointer<T>(data++);
     }
-    [[gnu::always_inline]]
     vecpointer<T> operator--(int)
     {   return vecpointer<T>(data--);
     }
 
 //    operator== and operator!= to compare against a nullptr or
 //                              another vecpointer<T>
-    [[gnu::always_inline]]
     bool operator==(std::nullptr_t a)
     {   return data == nullptr;
     }
-    [[gnu::always_inline]]
     bool operator!=(std::nullptr_t a)
     {   return data != nullptr;
     }
-    [[gnu::always_inline]]
     bool operator==(const vecpointer<T> a)
     {   return data == a.data;
     }
-    [[gnu::always_inline]]
     bool operator!=(const vecpointer<T> a)
     {   return data != a.data;
     }
 
 //    casts into T*
-    [[gnu::always_inline]]
     operator T*()
     {   return data;
     }
 
 //    casts into intptr_t
-    [[gnu::always_inline]]
     operator std::intptr_t()
     {   return reinterpret_cast<std::intptr_t>(data);
     }
 
-    [[gnu::always_inline]]
     operator void*()
     {   return static_cast<void*>(data);
     }
 
-    [[gnu::always_inline]]
     operator const void*()
     {   return static_cast<const void*>(data);
     }
 
-    [[gnu::always_inline]]
     operator vecpointer<const T>()
     {   return vecpointer<const T>(data);
     }
@@ -6341,13 +6524,11 @@ public:
 };
 
 template <typename T>
-[[gnu::always_inline]]
 inline vecpointer<T> setSize(vecpointer<T> v, std::size_t n)
 {   return v;
 }
 
 template <typename T>
-[[gnu::always_inline]]
 inline vecpointer<T> setSize(T* v, std::size_t n)
 {   return v;
 }
@@ -6502,8 +6683,22 @@ public:
         return vecpointer<T>(data->data, data->limit, nn);
     }
 
+//    operator+(integer)
+    vecpointer<T> operator+(std::size_t n)
+    {   std::size_t nn = n + data->offset;
+        lvector_assert(nn < data->limit);
+        return vecpointer<T>(data->data, data->limit, nn);
+    }
+
 //    operator-(integer)
     vecpointer<T> operator-(std::ptrdiff_t n)
+    {   std::size_t nn = data->offset - n;
+        lvector_assert(nn < data->limit);
+        return vecpointer<T>(data->data, data->limit, nn);
+    }
+
+//    operator-(integer)
+    vecpointer<T> operator-(std::size_t n)
     {   std::size_t nn = data->offset - n;
         lvector_assert(nn < data->limit);
         return vecpointer<T>(data->data, data->limit, nn);
@@ -6522,7 +6717,20 @@ public:
         lvector_assert(data->offset < data->limit);
         return *this;
     }
+
+    vecpointer<T>& operator+=(std::size_t n)
+    {   data->offset += n;
+        lvector_assert(data->offset < data->limit);
+        return *this;
+    }
+
     vecpointer<T>& operator-=(std::ptrdiff_t n)
+    {   data->offset -= n;
+        lvector_assert(data->offset < data->limit);
+        return *this;
+    }
+
+    vecpointer<T>& operator-=(std::size_t n)
     {   data->offset -= n;
         lvector_assert(data->offset < data->limit);
         return *this;
@@ -6773,7 +6981,6 @@ public:
     }
 
 // convert to vecpointer
-    [[gnu::always_inline]]
     operator vecpointer<T>()
     {
 #ifdef DEBUG
@@ -6782,7 +6989,6 @@ public:
         return vecpointer<T>(data);
 #endif // DEBUG
     }
-    [[gnu::always_inline]]
     operator vecpointer<const T>()
     {
 #ifdef DEBUG
@@ -6792,7 +6998,6 @@ public:
 #endif // DEBUG
     }
 
-    [[gnu::always_inline]]
     vecpointer<T> operator+(std::size_t n)
     {
 #ifdef DEBUG
@@ -6803,21 +7008,17 @@ public:
     }
 
 // convert to T*
-    [[gnu::always_inline]]
     operator T*()
     {   return data;
     }
-    [[gnu::always_inline]]
     operator const T*()
     {   return data;
     }
-    [[gnu::always_inline]]
     operator void*()
     {   return static_cast<void*>(data);
     }
 
 //    operator[]            subscripting
-    [[gnu::always_inline]]
     T& operator[](std::size_t n)
     {
 #ifdef DEBUG
@@ -6825,7 +7026,6 @@ public:
 #endif // DEBUG
         return data[n];
     }
-    [[gnu::always_inline]]
     T operator[](std::size_t n) const
     {
 #ifdef DEBUG
@@ -6835,7 +7035,6 @@ public:
     }
 
 //    operator*            subscripting
-    [[gnu::always_inline]]
     T& operator*()
     {
 #ifdef DEBUG
@@ -6843,7 +7042,6 @@ public:
 #endif // DEBUG
         return data[0];
     }
-    [[gnu::always_inline]]
     T operator*() const
     {
 #ifdef DEBUG
@@ -10757,12 +10955,12 @@ inline int countBits(Digit x)
 // binary representation of n-1.
 
 inline std::size_t next_power_of_2(std::size_t n)
-{   return (static_cast<std::size_t>(1)) << (64-CSL_LISP::nlz(
+{   return (static_cast<std::size_t>(1)) << (64-nlz(
                 static_cast<Digit>(n-1)));
 }
 
 inline unsigned int logNextPowerOf2(std::size_t n)
-{   return 64-CSL_LISP::nlz(static_cast<Digit>(n-1));
+{   return 64-nlz(static_cast<Digit>(n-1));
 }
 
 // I am going to represent bignums as arrays of 64-bit digits.
@@ -11385,7 +11583,7 @@ inline void fudgeDistribution(const std::uint64_t* a,
             if (a[lena-1] == 0)
             {   if (lena>1) r[lena-2] = 1ULL<<63;
             }
-            else r[lena-1] = 1ULL << (63-CSL_LISP::nlz(a[lena-1]));
+            else r[lena-1] = 1ULL << (63-nlz(a[lena-1]));
             if ((n&7) == 0) // decrement it
             {   if (lena!=1 || a[0]!=0) // avoid decrementing zero.
                 {   std::uint64_t* p = r;
@@ -11553,119 +11751,23 @@ inline std::intptr_t unsignedInt128ToBignum(Digit  high,
 // I am only going to support little endian machines,,,
 
 inline FLOAT_128
-f128_0      = {{0, INT64_C(0x0000000000000000)}},
-f128_half   = {{0, INT64_C(0x3ffe000000000000)}},
-f128_mhalf  = {{0, INT64_C(0xbffe000000000000)}},
-f128_1      = {{0, INT64_C(0x3fff000000000000)}},
-f128_m1     = {{0, INT64_C(0xbfff000000000000)}},
-f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
+f128_0      (0x00000000, top32()),
+f128_half   (0x3ffe0000, top32()),
+f128_mhalf  (0xbffe0000, top32()),
+f128_1      (0x3fff0000, top32()),
+f128_m1     (0xbfff0000, top32()),
+f128_N1     (0x4fff0000, top32()); // 2^4096
 
 inline bool f128_zero(FLOAT_128 p)
-{   return (p.v[HIPART] & 0x7fffffffffffffff) == 0 &&
-           p.v[LOPART] == 0;
+{   return p == LF_C(0.0);
 }
 
 inline bool f128_infinite(FLOAT_128 p)
-{   return (p.v[HIPART] & 0x7fffffffffffffff) == 0x7fff000000000000 &&
-           p.v[LOPART] == 0;
+{   return isinf(p);
 }
 
 inline bool f128_nan(FLOAT_128 p)
-{   return (p.v[HIPART] & 0x7fff000000000000) == 0x7fff000000000000 &&
-           ((p.v[HIPART] & 0x0000ffffffffffff) != 0 ||
-            p.v[LOPART] != 0);
-}
-
-inline FLOAT_128 ldexp(FLOAT_128 p, int x)
-{   if (f128_zero(p) ||
-        f128_infinite(p) ||
-        f128_nan(p)) return p;  // special cases!
-// Calculate the value I expect to want to leave in the exponent field.
-    x = ((p.v[HIPART] >> 48) & 0x7fff) + x;
-// In case of overflow leave an infinity of the right sign. This involves
-// forcing all bits of the exponent to be 1, all bits of the mantissa to be
-// zero and leaving the sign bit unaltered.
-    if (x >= 0x7fff)
-    {   p.v[HIPART] |= INT64_C(0x7fff000000000000);
-        p.v[HIPART] &= INT64_C(0xffff000000000000);
-        p.v[LOPART] = 0;
-        return p;
-    }
-// Using ldexp() to decrease an expeonent can lead to underflow. The value
-// 0 in x here would be the exponent one below that of the smallest
-// normal number, so a value < -114 corresponds to a number so much smaller
-// that it would not even qualify as a sub-norm. But even in that case
-// I need to preserve the sign bit.
-    else if (x < -114)
-    {   p.v[HIPART] &= INT64_C(
-                           0x8000000000000000); // preserve sign of input
-        p.v[LOPART] = 0;
-        return p;
-    }
-// In the case that ldexp underflows I have to be especially careful
-// because of the joys of sub-normal numbers and gradual underflow.
-// I deal with this by first forcing the exponent to be one that will
-// not lead to a sub-norm and then using a multiply to scale it down.
-    if (x <= 0)
-    {   p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-                      (static_cast<Digit>(x+4096) << 48);
-        p = f128_div(p, f128_N1);
-    }
-    else p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-                           (static_cast<Digit>(x) << 48);
-    return p;
-}
-
-inline FLOAT_128 frexp(FLOAT_128 p, int &x)
-{   if (f128_zero(p) ||
-        f128_infinite(p) ||
-        f128_nan(p))
-    {   x = 0;
-        return p;
-    }
-    int px = ((p.v[HIPART] >> 48) & 0x7fff);
-// If I had a sub-normal number I will multiply if by 2^4096 before
-// extracting its exponent. Doing that will have turned any non-zero
-// sub-norm into a legitimate normalized number while not getting large
-// enough to risk overflow...
-    if (px == 0)
-    {   p = f128_mul(p, f128_N1);
-        px = ((p.v[HIPART] >> 48) & 0x7fff) - 4096;
-    }
-// Now I can set the exponent field such that the resulting number is in
-// the range 0.5 <= p < 1.0.
-    p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-                  (static_cast<Digit>(0x3ffe) << 48);
-// .. and adjust the exponent value that I will return so it is if the
-// scaled mantissa is now exactly the same as the input.
-    x = px - 0x3ffe;
-    return p;
-}
-
-// return fractional part and set i to integer part. Since this is in C++
-// I can use a reference argument for i now a pointer and I can overload the
-// vanilla name "modf" along the style of the way C++11 does.
-
-inline FLOAT_128 modf(FLOAT_128 d, FLOAT_128 &i)
-{   i = d;
-// Extract the exponent
-    int x = ((d.v[HIPART] >> 48) & 0x7fff) - 0x3ffe;
-// If |d| < 1.0 then the integer part is zero.
-    if (x <= 0) i = f128_0;
-// Next look at cases where the integer part will life entirely within
-// the high word.
-    else if (x <= 49)   // 49 not 48 because of hidden bit.
-    {   i.v[HIPART] &=
-            ASR(static_cast<SignedDigit>(0xffff000000000000), x-1);
-        i.v[LOPART] = 0;
-    }
-    else if (x <= 112)
-    {   i.v[LOPART] &= (-1ULL) << (113-x);
-    }
-// If the number is large enough then then it is its own integer part, and
-// the fractional part will be zero.
-    else return f128_0;
-    return f128_sub(d, i);
+{   return isnan(p);
 }
 
 // When doubles (and FLOAT_128 values where available) are to be
@@ -11718,9 +11820,7 @@ inline void shiftleft(SignedDigit &hi, Digit &lo, int n)
     }
 }
 
-inline void shiftleft(SignedDigit &hi, Digit &mid,
-                      Digit &lo,
-                      int n)
+inline void shiftleft(SignedDigit &hi, Digit &mid, Digit &lo, int n)
 {   if (n == 0) return;
     else if (n < 64)
     {   hi = ASL(hi, n) | (mid >> (64-n));
@@ -11844,7 +11944,7 @@ inline void doubleTo_virtualBignum(double d,
 // Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer.
     Digit lowbit = mantissa & -static_cast<Digit>
                            (mantissa);
-    int lz = 63 - CSL_LISP::nlz(lowbit); // low zero bits
+    int lz = 63 - nlz(lowbit); // low zero bits
     mantissa = ASR(mantissa, lz);
     exponent += lz;
 // Now mantissa has its least significant bit a "1".
@@ -11878,29 +11978,31 @@ inline void doubleTo_virtualBignum(double d,
 // lead to nonsense output. Subnormal numbers are got wrong at present!
 
 inline void longfloatToBits(FLOAT_128 d,
-                           SignedDigit &mhi, Digit &mlo,
-                           int &exponent)
-{   if (f128_nan(d) || f128_zero(d))
+                            SignedDigit &mhi, Digit &mlo,
+                            int &exponent)
+{   if (isnan(d) || iszero(d))
     {   mhi = mlo = 0;
         exponent = 0;
         return;
     }
-    else if (f128_infinite(d))
-    {   if (f128_lt(d, f128_0)) mhi = mlo = -1;
+    else if (isinf(d))
+    {   if (signbit(d)) mhi = mlo = -1;
         else mhi = mlo = 0;
         exponent = INT_MAX;
         return;
     }
 // With FLOAT_128 the easier way to go is to access the bit-patterns.
-    exponent = ((d.v[HIPART] >> 48) & 0x7fff);
-    if (exponent == 0) // subnormal number
-    {   d = f128_mul(d, f128_N1);
+    uint64_t HIPART, LOPART;
+    d.getbits(HIPART, LOPART);
+    exponent = (HIPART >> 48) & 0x7fff);
+    if (exponent == 0)          // subnormal number
+    {   d = d * f128_N1;
         exponent -= 4096;
     }
     exponent -= 0x3ffe;
-    mhi = (d.v[HIPART] & 0xffffffffffff) | 0x0001000000000000;
-    mlo = d.v[LOPART];
-    if (static_cast<SignedDigit>(d.v[HIPART]) < 0)
+    mhi = (HIPART & 0xffffffffffff) | 0x0001000000000000;
+    mlo = LOPART;
+    if (static_cast<SignedDigit>(HIPART) < 0)
     {   mlo = -mlo;
         if (mlo == 0) mhi = -mhi;
         else mhi = ~mhi;
@@ -11920,29 +12022,29 @@ inline void dec128(SignedDigit &hi, Digit &lo)
 // the way it would end up as a bignum.
 
 inline void longfloatTo_virtualBignum(FLOAT_128 d,
-                                     SignedDigit &top,
-                                     Digit &mid,
-                                     Digit &next,
-                                     std::size_t &len,
-                                     RoundingMode mode)
+                                      SignedDigit &top,
+                                      Digit &mid,
+                                      Digit &next,
+                                      std::size_t &len,
+                                      RoundingMode mode)
 {   using namespace CSL_LISP;
-    if (f128_zero(d))
+    if (d == LF_C(0.0))
     {   top = mid = next = 0;
         len = 1;
         return;
     }
-    else if (f128_nan(d))
+    else if (isnan(d))
     {   top = mid = next = 0;
         len = 0;
         return;
     }
-    else if (f128_infinite(d))
-    {   if (f128_lt(d, f128_0)) top = mid = next = -1;
+    else if (isinf(d))
+    {   if (signbit(d)) top = mid = next = -1;
         else top = mid = next = 0;
         len = SIZE_MAX;
         return;
     }
-    bool sign = f128_negative(d);
+    bool sign = signbit(d);
     SignedDigit mhi;
     Digit mlo;
     int exponent;
@@ -11964,10 +12066,10 @@ inline void longfloatTo_virtualBignum(FLOAT_128 d,
             case TRUNC:  // the effect of modf is this already.
                 break;
             case FLOOR:
-                if (fracpart != 0 && f128_lt(d, f128_0)) mantissa++;
+                if (fracpart != 0 && signbit(d)) mantissa++;
                 break;
             case CEILING:
-                if (fracpart != 0 && !f128_lt(d, f128_0)) mantissa++;
+                if (fracpart != 0 && !signbit(d)) mantissa++;
                 break;
         }
         if (sign) mantissa = -mantissa;
@@ -11985,11 +12087,11 @@ inline void longfloatTo_virtualBignum(FLOAT_128 d,
     int lz;
     if (mlo != 0)
     {   Digit lowbit = mlo & (-mlo);
-        lz = 63 - CSL_LISP::nlz(lowbit); // low zero bits
+        lz = 63 - nlz(lowbit); // low zero bits
     }
     else
     {   Digit lowbit = mhi & (-static_cast<Digit>(mhi));
-        lz = 64 + 63 - CSL_LISP::nlz(lowbit); // low zero bits
+        lz = 64 + 63 - nlz(lowbit); // low zero bits
     }
     shiftright(mhi, mlo, lz);
     exponent += lz;
@@ -12060,9 +12162,9 @@ inline std::intptr_t ceilingDoubleToInt(double d)
 }
 
 inline std::intptr_t longfloatToInt(FLOAT_128 d, RoundingMode mode)
-{   if (f128_zero(d) ||
-        f128_infinite(d) ||
-        f128_nan(d)) return intToHandle(0);
+{   if (d == LF_C(0.0)) ||
+        isinf(d) ||
+        isnan(d)) return intToHandle(0);
     SignedDigit top;
     Digit mid, next;
     std::size_t len;
@@ -12233,8 +12335,8 @@ inline float Float::op(std::uint64_t* a)
     }
     if (!carried) next |= 1;
 // Now I need to do something very much like the code for the int64_t case.
-    if (top == 0) lz = CSL_LISP::nlz(next) + 64;
-    else lz = CSL_LISP::nlz(top);
+    if (top == 0) lz = nlz(next) + 64;
+    else lz = nlz(top);
 //
 //  uint64_t top24 = {top,next} >> (128-24-lz);
     int sh = 128-24-lz;
@@ -12282,7 +12384,7 @@ inline double Frexp::op(SignedDigit a, SignedDigit &x)
 // Because top53 >= 2^53 the number of leading zeros in its representation is
 // at most 10. Ha ha. That guaranteed that the shift below will not overflow
 // and is why I chose my range as I did.
-    int lz = CSL_LISP::nlz(top53);
+    int lz = nlz(top53);
     Digit low = top53 << (lz+53);
     top53 = top53 >> (64-53-lz);
     if (low > 0x8000000000000000U) top53++;
@@ -12344,8 +12446,8 @@ inline double Frexp::op(std::uint64_t* a, SignedDigit &x)
     }
     if (!carried) next |= 1;
 // Now I need to do something very much like the code for the int64_t case.
-    if (top == 0) lz = CSL_LISP::nlz(next) + 64;
-    else lz = CSL_LISP::nlz(top);
+    if (top == 0) lz = nlz(next) + 64;
+    else lz = nlz(top);
 //
 //  uint64_t top53 = {top,next} >> (128-53-lz);
     int sh = 128-53-lz;
@@ -12392,8 +12494,8 @@ inline FLOAT_128 Float128::op(SignedDigit a)
 inline FLOAT_128 Frexp128::op(SignedDigit a, SignedDigit &x)
 {   using namespace CSL_LISP;
     FLOAT_128 d = i64_to_f128(a), d1;
-    int xi = 0;
-    f128_frexp(d, &d1, &xi); // in the CSL sources.
+    int32_t xi = 0;
+    frexp(d, &d1, xi);
     x = xi;
     return d1;
 }
@@ -12435,8 +12537,8 @@ inline FLOAT_128 Frexp128::op(std::uint64_t* a, SignedDigit &x)
 // zero, but if it is then next1 will have its top bit set, and so within
 // these bits I certainly have the 113 that I need to obtain an accurate
 // floating point value.
-    if (top == 0) lz = CSL_LISP::nlz(next1) + 64;
-    else lz = CSL_LISP::nlz(top);
+    if (top == 0) lz = nlz(next1) + 64;
+    else lz = nlz(top);
 //
 //  uint64_t {top113,top112a} = {top,next1,next2} >> (128-113-lz);
     int sh = 192-113-lz;
@@ -12480,9 +12582,8 @@ inline FLOAT_128 Frexp128::op(std::uint64_t* a, SignedDigit &x)
 //  FLOAT_128 d = i64_to_f128({top113, top113a});
     FLOAT_128 d = i64_to_f128(top113);
     FLOAT_128 two32 = i64_to_f128(0x100000000);
-    d = f128_add(f128_mul(f128_mul(two32, two32), d),
-                 ui64_to_f128(top113a));
-    if (sign) d = f128_sub(i64_to_f128(0), d);
+    d = (two32 * two32 * d) + (FLOAT_128)top113a;
+    if (sign) d = - d;
     x = 192-113-lz+64*(lena-2);
     return d;
 }
@@ -12494,8 +12595,7 @@ inline FLOAT_128 Float128::op(std::uint64_t* a)
     if (x > 100000) x = 100000;
 // There is an implementation of ldexp() for 128-bit floats in
 // the CSL source file FLOAT_128,h.
-    f128_ldexp(&d, static_cast<int>(x));
-    return d;
+    return ldexp(d, static_cast<int>(x));
 }
 
 inline const Digit ten19 = UINT64_C(10000000000000000000);
@@ -12608,7 +12708,7 @@ inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena)
         }
         top--;
     }
-    return 64*(lena-1) + (top==0 ? 0 : 64-CSL_LISP::nlz(top));
+    return 64*(lena-1) + (top==0 ? 0 : 64-nlz(top));
 }
 
 // I want an estimate of the number of bytes that it will take to
@@ -13158,10 +13258,10 @@ inline FLOAT_128 FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
 inline FLOAT_128 FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
 
 inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, FLOAT_128 b)
-{   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
+{   if (isnan(b)) return false;  // a NaN
     SignedDigit top = static_cast<SignedDigit>(a[lena-1]);
-    if (top >= 0 && f128_lt(b, f128_0)) return false;
-    if (top < 0 && !f128_lt(b, f128_0)) return false;
+    if (top >= 0 && signbit(b)) return false;
+    if (top < 0 && !signbit(b)) return false;
 // Now the two inputs have the same sign.
     if (lena == 1 ||
         (lena == 2 &&
@@ -13172,13 +13272,13 @@ inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, FLOAT_128 b)
     {
 // Here the integer is of modest size - if the float is huge we can
 // resolve matters cheaply.
-        if (f128_lt(FP128_INT_LIMIT, b) ||
-            f128_lt(b, FP128_MINUS_INT_LIMIT)) return false;
+        if (FP128_INT_LIMIT < b ||
+            b < FP128_MINUS_INT_LIMIT) return false;
 // Convert a to a longfloat and compare. The conversion will not lose any
 // information because the |a| <= 2^112 so it will fit within the mantissa
 // bits that are available.
         FLOAT_128 aa = Float128::op(a);
-        return f128_eq(aa, b);
+        return aa == b;
     }
     else
     {
@@ -13194,7 +13294,7 @@ inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, FLOAT_128 b)
 }
 
 inline bool Eqn::op(SignedDigit a, FLOAT_128 b)
-{   return f128_eq(i64_to_f128(a), b);
+{   return (FLOAT_129)a == b;
 }
 
 inline bool Eqn::op(std::uint64_t* a, FLOAT_128 b)
@@ -13273,7 +13373,7 @@ inline bool Neqn::op(double a, std::uint64_t* b)
 }
 
 inline bool Neqn::op(SignedDigit a, FLOAT_128 b)
-{   return !f128_eq(i64_to_f128(a), b);
+{   return (FLOAT_128)a != b;
 }
 
 inline bool Neqn::op(std::uint64_t* a, FLOAT_128 b)
@@ -13509,8 +13609,7 @@ inline bool Greaterp::op(double a, std::uint64_t* b)
 inline bool greaterpbigfloat(std::uint64_t* a, std::size_t lena,
                              FLOAT_128 b,
                              bool great, bool ifequal)
-{   if (f128_nan(b)) return
-            false;  // Comparisons involving a NaN => false.
+{   if (isnan(b)) return false;  // Comparisons involving a NaN => false.
     SignedDigit top = static_cast<SignedDigit>(a[lena-1]);
     if (top >= 0 && f128_lt(b, f128_0)) return great;
     if (top < 0 && !f128_lt(b, f128_0)) return !great;
@@ -14296,14 +14395,14 @@ inline std::size_t LowBit::op(std::uint64_t* a)
     {   std::size_t r=0, i=0;
         while (a[i++]==-1ULL) r += 64;
         Digit w = ~a[i-1];
-        return 64-CSL_LISP::nlz(w & (-w))+r;
+        return 64-nlz(w & (-w))+r;
     }
     else if (lena==1 && a[0]==0) return 0;
     else
     {   std::size_t r=0, i=0;
         while (a[i++]==0) r += 64;
         Digit w = a[i-1];
-        return 64-CSL_LISP::nlz(w & (-w))+r;
+        return 64-nlz(w & (-w))+r;
     }
 }
 
@@ -14313,7 +14412,7 @@ inline std::size_t LowBit::op(SignedDigit aa)
     else if (aa < 0) a = ~static_cast<Digit>(aa);
     else a = aa;
     a = a & (-a); // keeps only the lowest bit
-    return 64-CSL_LISP::nlz(a);
+    return 64-nlz(a);
 }
 
 inline std::size_t IntegerLength::op(std::uint64_t* a)
@@ -14325,7 +14424,7 @@ inline std::size_t IntegerLength::op(SignedDigit aa)
     if (aa == 0 || aa == -1) return 0;
     else if (aa < 0) a = -static_cast<Digit>(aa) - 1;
     else a = aa;
-    return 64-CSL_LISP::nlz(a);
+    return 64-nlz(a);
 }
 
 // This function should return the top 64-bits of an integer in the
@@ -14347,14 +14446,14 @@ inline Digit Top64Bits::op(std::uint64_t* a)
         (n == 2 && a[2] == 0))
         return Top64Bits::op(static_cast<int64_t>(a[0]));
     if (a[n-1] == 0) n--;
-    int lz = CSL_LISP::nlz(a[n-1]);
+    int lz = nlz(a[n-1]);
     if (lz == 0) return a[n-1];
     return (a[n-1] << lz) | (a[n-2] >> (64-lz));
 }
 
 inline Digit Top64Bits::op(SignedDigit a)
 {   if (a == 0) return 0;    // Only non-normalised case
-    return static_cast<uint64_t>(a) << CSL_LISP::nlz((Digit)a);
+    return static_cast<uint64_t>(a) << nlz((Digit)a);
 }
 
 inline std::size_t Logcount::op(std::uint64_t* a)
@@ -15103,6 +15202,10 @@ private:
 // M<=7 but N can be arbitrary. These cases represent bulky and perhaps
 // ugly in-line code but I expect them to be the most performance
 // critical parts of the base for multiplication.
+
+// inlinemul.cpp: C++ code generated by geninline.cpp
+// Subject to BSD license as shown in other files here
+// $Id$
 
 
 [[gnu::always_inline]]
@@ -20676,6 +20779,862 @@ static void balancedMul(ConstDigitPtr a, ConstDigitPtr b, std::size_t N,
     }
 }
 
+// end of inlinemul.cpp
+
+inline constexpr std::size_t MUL_INLINE_LIMIT = 7;
+
+
+inline void inlineMul_1_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   multiply64(a[0], b[0], result[1], result[0]);
+}
+
+inline void inlineMul_2_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[2] = dlo;
+}
+
+inline void inlineMul_2_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[3] = dlo;
+}
+
+inline void inlineMul_3_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[3] = dlo;
+}
+
+inline void inlineMul_3_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[4] = dlo;
+}
+
+inline void inlineMul_3_3(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[5] = dlo;
+}
+
+inline void inlineMul_4_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[4] = dlo;
+}
+
+inline void inlineMul_4_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[5] = dlo;
+}
+
+extern void inlineMul_4_3(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_4_4(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+inline void inlineMul_5_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[5] = dlo;
+}
+
+inline void inlineMul_5_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    multiply64(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[6] = dlo;
+}
+
+extern void inlineMul_5_3(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_5_4(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_5_5(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+inline void inlineMul_6_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[6] = dlo;
+}
+
+extern void inlineMul_6_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_6_3(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_6_4(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_6_5(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_6_6(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+inline void inlineMul_7_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    multiply64(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    multiply64(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    multiply64(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[7] = dlo;
+}
+
+extern void inlineMul_7_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_7_3(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_7_4(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_7_5(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_7_6(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_7_7(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_8_8(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_9_9(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_10_10(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_11_11(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_12_12(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_13_13(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_14_14(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+extern void inlineMul_15_15(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result);
+
+inline void inlineMul_1(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    multiply64(a[0], b[0], lo, result[0]);
+    for (std::size_t k=1; k<N; k++)
+    {
+        multiply64(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    result[N+0] = lo;
+}
+
+inline void inlineMul_2(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    multiply64(a[0], b[0], lo, result[0]);
+    multiply64(a[0], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[1], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    for (std::size_t k=2; k<N; k++)
+    {
+        multiply64(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        multiply64(a[k-1], b[1], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    multiply64(a[N-1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+0] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    result[N+1] = lo;
+}
+
+inline void inlineMul_3(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    multiply64(a[0], b[0], lo, result[0]);
+    multiply64(a[0], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[1], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    multiply64(a[0], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[2], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    for (std::size_t k=3; k<N; k++)
+    {
+        multiply64(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        multiply64(a[k-1], b[1], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        multiply64(a[k-2], b[2], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    multiply64(a[N-1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[N-2], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+0] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    multiply64(a[N-1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    result[N+2] = lo;
+}
+
+inline void inlineMul_4(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    multiply64(a[0], b[0], lo, result[0]);
+    multiply64(a[0], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[1], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    multiply64(a[0], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[2], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    multiply64(a[0], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[2], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[3], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[3] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    for (std::size_t k=4; k<N; k++)
+    {
+        multiply64(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        multiply64(a[k-1], b[1], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        multiply64(a[k-2], b[2], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        multiply64(a[k-3], b[3], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    multiply64(a[N-1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[N-2], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[N-3], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+0] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    multiply64(a[N-1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    multiply64(a[N-2], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    multiply64(a[N-1], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    result[N+3] = lo;
+}
+
+extern void inlineMul_5(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result);
+
+extern void inlineMul_6(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result);
+
+extern void inlineMul_7(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result);
+
+inline void smallCaseMul(ConstDigitPtr a, std::size_t N,
+                         ConstDigitPtr b, std::size_t M,
+                         DigitPtr result)
+{
+// For this I will already have checked that both M and N are at most
+// 7 and so that switch statement will cover all the possibilities and
+// everything should then expand to inline code.
+    switch (MUL_INLINE_LIMIT*N + M)
+    {
+        case 7*1+2:
+            std::swap(a, b);
+        case 7*2+1:
+            inlineMul_2_1(a, b, result);
+            return;
+        case 7*2+2:
+            inlineMul_2_2(a, b, result);
+            return;
+        case 7*1+3:
+            std::swap(a, b);
+        case 7*3+1:
+            inlineMul_3_1(a, b, result);
+            return;
+        case 7*2+3:
+            std::swap(a, b);
+        case 7*3+2:
+            inlineMul_3_2(a, b, result);
+            return;
+        case 7*3+3:
+            inlineMul_3_3(a, b, result);
+            return;
+        case 7*1+4:
+            std::swap(a, b);
+        case 7*4+1:
+            inlineMul_4_1(a, b, result);
+            return;
+        case 7*2+4:
+            std::swap(a, b);
+        case 7*4+2:
+            inlineMul_4_2(a, b, result);
+            return;
+        case 7*3+4:
+            std::swap(a, b);
+        case 7*4+3:
+            inlineMul_4_3(a, b, result);
+            return;
+        case 7*4+4:
+            inlineMul_4_4(a, b, result);
+            return;
+        case 7*1+5:
+            std::swap(a, b);
+        case 7*5+1:
+            inlineMul_5_1(a, b, result);
+            return;
+        case 7*2+5:
+            std::swap(a, b);
+        case 7*5+2:
+            inlineMul_5_2(a, b, result);
+            return;
+        case 7*3+5:
+            std::swap(a, b);
+        case 7*5+3:
+            inlineMul_5_3(a, b, result);
+            return;
+        case 7*4+5:
+            std::swap(a, b);
+        case 7*5+4:
+            inlineMul_5_4(a, b, result);
+            return;
+        case 7*5+5:
+            inlineMul_5_5(a, b, result);
+            return;
+        case 7*1+6:
+            std::swap(a, b);
+        case 7*6+1:
+            inlineMul_6_1(a, b, result);
+            return;
+        case 7*2+6:
+            std::swap(a, b);
+        case 7*6+2:
+            inlineMul_6_2(a, b, result);
+            return;
+        case 7*3+6:
+            std::swap(a, b);
+        case 7*6+3:
+            inlineMul_6_3(a, b, result);
+            return;
+        case 7*4+6:
+            std::swap(a, b);
+        case 7*6+4:
+            inlineMul_6_4(a, b, result);
+            return;
+        case 7*5+6:
+            std::swap(a, b);
+        case 7*6+5:
+            inlineMul_6_5(a, b, result);
+            return;
+        case 7*6+6:
+            inlineMul_6_6(a, b, result);
+            return;
+        case 7*1+7:
+            std::swap(a, b);
+        case 7*7+1:
+            inlineMul_7_1(a, b, result);
+            return;
+        case 7*2+7:
+            std::swap(a, b);
+        case 7*7+2:
+            inlineMul_7_2(a, b, result);
+            return;
+        case 7*3+7:
+            std::swap(a, b);
+        case 7*7+3:
+            inlineMul_7_3(a, b, result);
+            return;
+        case 7*4+7:
+            std::swap(a, b);
+        case 7*7+4:
+            inlineMul_7_4(a, b, result);
+            return;
+        case 7*5+7:
+            std::swap(a, b);
+        case 7*7+5:
+            inlineMul_7_5(a, b, result);
+            return;
+        case 7*6+7:
+            std::swap(a, b);
+        case 7*7+6:
+            inlineMul_7_6(a, b, result);
+            return;
+        case 7*7+7:
+            inlineMul_7_7(a, b, result);
+            return;
+        default: arithlib_abort("bad smallCaseMul");
+    }
+}
+
+extern void simpleMul(ConstDigitPtr a, size_t N,
+                      ConstDigitPtr b, std::size_t M,
+                      DigitPtr result);
+
+inline void bigBySmallMul(ConstDigitPtr a, std::size_t N,
+                          ConstDigitPtr b, std::size_t M,
+                          DigitPtr result)
+{   switch (M)
+    {
+        case 1:
+            inlineMul_1(a, N, b, result); return;
+        case 2:
+            inlineMul_2(a, N, b, result); return;
+        case 3:
+            inlineMul_3(a, N, b, result); return;
+        case 4:
+            inlineMul_4(a, N, b, result); return;
+        case 5:
+            inlineMul_5(a, N, b, result); return;
+        case 6:
+            inlineMul_6(a, N, b, result); return;
+        case 7:
+            inlineMul_7(a, N, b, result); return;
+        default: arithlib_abort("bad bigBySmallMul");
+    }
+}
+
+inline void balancedMul(ConstDigitPtr a, ConstDigitPtr b, std::size_t N,
+                        DigitPtr result)
+{   switch (N)
+    {   default: simpleMul(a, N, b, N, result); return;
+        case 1:  inlineMul_1_1(a, b, result);   return;
+        case 2:  inlineMul_2_2(a, b, result);   return;
+        case 3:  inlineMul_3_3(a, b, result);   return;
+        case 4:  inlineMul_4_4(a, b, result);   return;
+        case 5:  inlineMul_5_5(a, b, result);   return;
+        case 6:  inlineMul_6_6(a, b, result);   return;
+        case 7:  inlineMul_7_7(a, b, result);   return;
+        case 8:  inlineMul_8_8(a, b, result);   return;
+        case 9:  inlineMul_9_9(a, b, result);   return;
+        case 10:  inlineMul_10_10(a, b, result);   return;
+        case 11:  inlineMul_11_11(a, b, result);   return;
+        case 12:  inlineMul_12_12(a, b, result);   return;
+        case 13:  inlineMul_13_13(a, b, result);   return;
+        case 14:  inlineMul_14_14(a, b, result);   return;
+        case 15:  inlineMul_15_15(a, b, result);   return;
+    }
+}
+
 
 // The vector a has M digits and result has N (with N>=M). Add the
 // value in a into result and return any carry.
@@ -21712,6 +22671,7 @@ public:
 // Well: the slow versions will only be included if you compile with
 // "-DTESTFFT".
 
+
 #ifndef ARITHLIB_VERSION
 #include <cstdint>
 #include <iostream>
@@ -21727,6 +22687,7 @@ public:
 //     runInThreads(vector<T>v, void (*fn)(T));
 // that applies the given function to each item in the vector.
 
+#include "Lvector.base.h"
 
 // For testing I will want...
 #include <cmath>
@@ -23709,7 +24670,7 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
     std::size_t lenx = (lena+1)/2;
     std::uint64_t* x = reserve(lenx);
     for (std::size_t i=0; i<lenx; i++) x[i] = 0;
-    std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - CSL_LISP::nlz(a[lena-1]);
+    std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - nlz(a[lena-1]);
     bitstop /= 2;
     if ((lena%2) == 0) bitstop += 32;
     x[lenx-1] = 1ULL << bitstop;
@@ -23752,7 +24713,7 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
 inline std::intptr_t Isqrt::op(SignedDigit aa)
 {   if (aa <= 0) return intToBignum(0);
     Digit a = static_cast<Digit>(aa);
-    std::size_t w = 64 - CSL_LISP::nlz(a);
+    std::size_t w = 64 - nlz(a);
     Digit x0 = a >> (w/2);
 // The iteration here converges to sqrt(a) from above, but I believe that
 // when the value stops changing it will be at floor(sqrt(a)). There are
@@ -23877,7 +24838,7 @@ inline std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
     else if (n == 0) return intToHandle(1);
     Digit absa = (a < 0 ? -static_cast<Digit>
                           (a) : static_cast<Digit>(a));
-    std::size_t bitsa = 64 - CSL_LISP::nlz(absa);
+    std::size_t bitsa = 64 - nlz(absa);
     Digit hi, bitsr;
     multiply64(n, bitsa, hi, bitsr);
     Digit lenr1 = 2 + bitsr/64;
@@ -24428,7 +25389,7 @@ inline void unsigned_long_division(std::uint64_t* a,
 //
 // The scaling is done here using a shift, which seems cheaper to sort out
 // then multiplication by a single-digit value.
-    int ss = CSL_LISP::nlz(b[lenb-1]);
+    int ss = nlz(b[lenb-1]);
 // When I scale the dividend expands into an extra digit but the scale
 // factor has been chosen so that the divisor does not.
     a[lena] = scale_for_division(a, lena, ss);
@@ -25024,9 +25985,9 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // to normalize that to get 128 bits to work with however the top bits
 // of a and b lie within the words.
     Digit a0=a[lena-1], a1=a[lena-2], a2=(lena>2 ? a[lena-3] : 0);
-    int lza = CSL_LISP::nlz(a0);
+    int lza = nlz(a0);
     Digit b0=b[lenb-1], b1=b[lenb-2], b2=(lenb>2 ? b[lenb-3] : 0);
-    int lzb = CSL_LISP::nlz(b0);
+    int lzb = nlz(b0);
 // I will sort out how many more bits are involved in a than in b. If
 // this number is large I will invent a number q of the form q=q0*2^q1
 // with q0 using almost all of 64 bits and go "a = a - q*b;". This
@@ -25098,8 +26059,8 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // At least I have filtered away the possibility {b0,b1}={0,0}.
 // I will grab the top 64 bits of a and the top corresponding bits of b,
 // because then I can do a (cheap) 64-by-64 division.
-            int lza1 = a0==0 ? 64+CSL_LISP::nlz(a1) : CSL_LISP::nlz(a0);
-            int lzb1 = b0==0 ? 64+CSL_LISP::nlz(b1) : CSL_LISP::nlz(b0);
+            int lza1 = a0==0 ? 64+nlz(a1) : nlz(a0);
+            int lzb1 = b0==0 ? 64+nlz(b1) : nlz(b0);
             if (lzb1 > lza1+60) break; // quotient will be too big
             Digit ahi, bhi;
             if (lza1 == 0) ahi = a0;

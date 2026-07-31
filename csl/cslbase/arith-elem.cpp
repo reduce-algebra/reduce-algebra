@@ -36,25 +36,15 @@
 
 // $Id$
 
-// NOTE:
-// This started as a copy of the older file arith10.cpp with functions
-// just renamed to fit in with the way I am setting up new arithmetic.
-// When everything is fully stable I will remove the original versions
-// of the code from arith10.cpp so that the versions here are the only
-// ones. Also arith13.cpp for complex elementary functions.
-
-// And HA HA since then arith10 has been rather thoroughly rewritten so
-// I should copy in the new version here..
 
 #include "headers.h"
-
-namespace CSL_LISP
-{
 
 /*****************************************************************************/
 //**              Transcendental functions etcetera.                       **
 /*****************************************************************************/
 
+namespace CSL_LISP
+{
 
 // where the imaginary part is zero ought I to reduce it to a real
 // value?
@@ -113,6 +103,7 @@ static LispObject makenum(LispObject a, int32_t n)
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
+                case TYPE_NEW_BIGNUM:
                 case TYPE_RATNUM:
                     return fixnum_of_int(n);
                 case TYPE_COMPLEX_NUM:
@@ -160,19 +151,19 @@ static LispObject CSLpowi(LispObject a, uint64_t n)
     else if ((n & 1) == 0)
     {   a = CSLpowi(a, n/2);
         errexit();
-        return times2(a, a);
+        return Times::op(a, a);
     }
     else
     {   LispObject b;
         b = CSLpowi(a, n/2);
         errexit();
-        b = times2(b, b);
+        b = Times::op(b, b);
         errexit();
-        return times2(a, b);
+        return Times::op(a, b);
     }
 }
 
-LispObject Lexpt(LispObject env, LispObject a, LispObject b)
+LispObject Nexpt(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     if (!is_number(a) || !is_number(b)) return aerror2("expt", a, b);
     double d, e;
@@ -246,9 +237,9 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 // I worry that if instead I compute (1.0/a)^n that rounding in computing
 // 1.0/a could be amplified unduly. But still that is what I do.
 #ifdef COMMON
-            a = CLquot2(fixnum_of_int(1), a);
+            a = CLQuotient::op(fixnum_of_int(1), a);
 #else
-            a = quot2(fixnum_of_int(1), a);
+            a = Quotient::op(fixnum_of_int(1), a);
 #endif
             a = CSLpowi(a, -nn);
         }
@@ -367,7 +358,8 @@ LispObject N ## a (LispObject env, LispObject a1) \
     return trigfn(enum_ ## a, a1); \
 }
 
-  functions
+functions
+
 #undef FF
 
 using f64f64 = double (*)(double);
@@ -397,7 +389,10 @@ fn_definitions function_table[] =
 //  {"hypot",    f64hypot,     c64hypot,       f128hypot,     c128hypot},
 
 
-LispObject Latan(LispObject env, LispObject y, LispObject x)
+// At present atan9 and atan2d do not handle FLOAT_128 and that is bad.
+// But for now I just want files that lead to code that links!
+
+LispObject Natan2(LispObject env, LispObject y, LispObject x)
 {   SingleValued fn;
     double u, v, r;
     u = float_of_number(x);
@@ -417,7 +412,7 @@ LispObject Latan(LispObject env, LispObject y, LispObject x)
     return x;
 }
 
-LispObject Latand(LispObject env, LispObject y, LispObject x)
+LispObject Natan2d(LispObject env, LispObject y, LispObject x)
 {   SingleValued fn;
     double u, v, r;
     u = float_of_number(x);
@@ -431,27 +426,36 @@ LispObject Latand(LispObject env, LispObject y, LispObject x)
     return x;
 }
 
-LispObject Llog_2(LispObject env, LispObject a, LispObject b)
+// 2-arg log is logarithm to a specified base.
+
+LispObject Nlog_2(LispObject env, LispObject a, LispObject b)
 // Log with specified base.
 {   SingleValued fn;
     a = Nlog(nil, a);
     errexit();
     b = Nlog(nil, b);
     errexit();
-    return quot2(a, b);
+    return Quotient::op(a, b);
 }
 
-#ifdef ISQRT_IMPLEMENTED_PROPERLY
-// This can only be used when it is implemented properly!
+// hypotenuse is not done yet
 
-static LispObject Lisqrt(LispObject, LispObject a)
+LispObject Nhypot(LispObject env, LispObject x, LispObject y)
+{   SingleValued fn;
+// This version does not avoid premature underfow or overflow when the
+// arguments are floating point.
+    x = Plus::op(Square::op(x), Square::op(y));
+    return Nsqrt(nil, x);
+}
+
+LispObject Nisqrt(LispObject, LispObject a)
 {   SingleValued fn;
     double d;
 // This makes some pretence at computing an integer square root, but it
 // does so incredibly clumsily by mapping onto a floating point value and
 // then expecting the square root computed that way to fit into a fixnum,
 // ie to be at worst 27 or 60 bits long. That is not at all good enough for
-// serious use so I am disabling it for now!
+// serious use.
     switch (static_cast<int>(a) & TAG_BITS)
     {   case TAG_FIXNUM:
             d = static_cast<double>(int_of_fixnum(a));
@@ -460,6 +464,7 @@ static LispObject Lisqrt(LispObject, LispObject a)
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
+                case TYPE_NEW_BIGNUM:
                     d = float_of_number(a);
                     break;
                 default:
@@ -475,9 +480,7 @@ static LispObject Lisqrt(LispObject, LispObject a)
     return fixnum_of_int((int32_t)d);
 }
 
-#endif  // ISQRT
-
-LispObject Labsval(LispObject env, LispObject a)
+LispObject Nabsval(LispObject env, LispObject a)
 // I call this Labsval not Labs because a non-case-sensitive linker
 // would confuse Labs with labs, and labs is defined in the C libraries...
 // Of course I do not think that case-insensitive linkers should be allowed
@@ -492,6 +495,7 @@ LispObject Labsval(LispObject env, LispObject a)
             switch (ha)
             {   case TYPE_BIGNUM:
                 case TYPE_RATNUM:
+                case TYPE_NEW_BIGNUM:
                     break;
                 case TYPE_COMPLEX_NUM:
                 {   std::complex<double> c1;
@@ -514,40 +518,39 @@ LispObject Labsval(LispObject env, LispObject a)
         default:
             return aerror1("bad arg for abs",  a);
     }
-    if (minusp(a)) a = negate(a);
+    if (Minusp::op(a)) a = Minus::op(a);
     return a;
 }
 
-#if 0
-
-static LispObject Lphase(LispObject env, LispObject a)
+LispObject Nphase(LispObject env, LispObject a)
 {   SingleValued fn;
     bool s;
     double d;
     if (is_numbers(a) && is_complex(a))
-        return Latan(nil, imag_part(a), real_part(a));
-    s = minusp(a);
+        return Natan2(nil, imag_part(a), real_part(a));
+    s = Minusp::op(a);
     if (s) d = -M_PI;
     else d = M_PI;
     a = make_boxfloat(d, WANT_DOUBLE_FLOAT);
     return a;
-// /* Wrong precision, I guess
+// /* Wrong precision, I suspect! If I have a short, single or long float as
+// input that should set the type of the output.
 }
 
-static LispObject Lsignum(LispObject env, LispObject a)
+LispObject Nsignum(LispObject env, LispObject a)
 {   SingleValued fn;
 //* This seems an expensive way of doing things - huh? Maybe complex values?
     bool z;
     LispObject w;
-    z = zerop(a);
-    if (z) return a;
-    w = Labsval(nil, a);
+    z = Nzerop(nil, a);
+    if (z != nil) return a;
+    w = Nabsval(nil, a);
     errexit();
-    a = quot2(a, w);
+    a = Quotient::op(a, w);
     return a;
 }
 
-static LispObject Lcis(LispObject, LispObject a)
+LispObject Ncis(LispObject, LispObject a)
 // Implement as exp(i*a) - this permits complex args which goes
 // beyond the specification of Common Lisp.
 {   SingleValued fn;
@@ -557,11 +560,10 @@ static LispObject Lcis(LispObject, LispObject a)
 // it seems a bit gross to multiply by i by calling times2(), but
 // doing so avoids loads of messy type dispatch code here and
 // I am not over-worried about performance at this level (yet).
-    a = times2(a, ii);
+    a = Times::op(a, ii);
     return Nexp(nil, a);
 }
 
-#endif
 
 // This one piece of code does the type-dispatch for the main collection
 // of elementary functions.
@@ -590,6 +592,7 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
+                case TYPE_NEW_BIGNUM:
                 case TYPE_RATNUM:
                     d = float_of_number(a);
                     break;
@@ -635,71 +638,6 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
         return make_boxfloat(r, restype);
     }
 }
-
-
-#if 0
-// This probably goes into arith-setup.cpp
-
-setup_type const arith_elem[] =
-{
-    DEF_1("abs",          Labsval),
-    DEF_1("acos",         Lacos),
-    DEF_1("acosd",        Lacosd),
-    DEF_1("acosh",        Lacosh),
-    DEF_1("acot",         Lacot),
-    DEF_1("acotd",        Lacotd),
-    DEF_1("acoth",        Lacoth),
-    DEF_1("acsc",         Lacsc),
-    DEF_1("acscd",        Lacscd),
-    DEF_1("acsch",        Lacsch),
-    DEF_1("asec",         Lasec),
-    DEF_1("asecd",        Lasecd),
-    DEF_1("asech",        Lasech),
-    DEF_1("asin",         Lasin),
-    DEF_1("asind",        Lasind),
-    DEF_1("asinh",        Lasinh),
-    DEF_1("atand",        Latand),
-    DEF_2("atan2",        Latan),
-    DEF_2("atan2d",       Latand),
-    DEF_1("atanh",        Latanh),
-    DEF_1("cbrt",         Lcbrt),
-    DEF_1("cos",          Lcos),
-    DEF_1("cosd",         Lcosd),
-    DEF_1("cosh",         Lcosh),
-    DEF_1("cot",          Lcot),
-    DEF_1("cotd",         Lcotd),
-    DEF_1("coth",         Lcoth),
-    DEF_1("csc",          Lcsc),
-    DEF_1("cscd",         Lcscd),
-    DEF_1("csch",         Lcsch),
-    DEF_1("exp",          Lexp),
-    DEF_2("expt",         Lexpt),
-    DEF_2("hypot",        Lhypot),
-    DEF_1("ln",           Lln),
-    {"log",               G0Wother, Lln, Llog_2, G3Wother, G4Wother},
-    DEF_1("log2",         Llog2),
-    DEF_1("log10",        Llog10),
-    DEF_1("sec",          Lsec),
-    DEF_1("secd",         Lsecd),
-    DEF_1("sech",         Lsech),
-    DEF_1("sin",          Lsin),
-    DEF_1("sind",         Lsind),
-    DEF_1("sinh",         Lsinh),
-    DEF_1("sqrt",         Lsqrt),
-    DEF_1("tan",          Ltan),
-    DEF_1("tand",         Ltand),
-    DEF_1("tanh",         Ltanh),
-    DEF_1("cis",          Lcis),
-//  DEF_1("isqrt",        Lisqrt),
-    DEF_1("phase",        Lphase),
-    DEF_1("signum",       Lsignum),
-    {"atan",              G0Wother, Latan, Latan, G3Wother, G4Wother},
-    DEF_2("logb",         Llog_2),
-    {nullptr,             nullptr, nullptr, nullptr, nullptr, nullptr}
-};
-
-#endif
-
 
 } // end of namespace
 

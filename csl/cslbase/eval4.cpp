@@ -1119,7 +1119,7 @@ LispObject jitcoded_0(LispObject def)
     {   qfn0(def) = bytecoded_0;
         return bytecoded_0(def);
     }
-    qfn0(def) = reinterpret_cast<no_argns*>(code);
+    qfn0(def) = reinterpret_cast<no_args*>(code);
 // When a funcion is bytecoded its environment cell holds a dotted pair
 // of the bytecode-vector and a vector of literals that it can refer to.
 // When it is in native code only the latter is needed. But I will save the

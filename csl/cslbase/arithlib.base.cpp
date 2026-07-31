@@ -1,5 +1,7 @@
 // Big Number arithmetic.                             A C Norman, 2019-2026
 
+// To use this  #include "arithlib.cpp" as a header-only library.
+
 #ifndef __arithlib_cpp
 #define __arithlib_cpp 1
 
@@ -378,7 +380,7 @@
 // too bad, but in many places I will in fact write the rather wordy but very
 // explicit (1ULL<<n).
 
-#define ARITHLIB_VERSION 1003
+#define ARITHLIB_VERSION 1002
 
 // The next comment is mainly prospective! At present one is expected
 // to go '#include "arithlib.cpp"' in any file that will use this. The
@@ -486,13 +488,12 @@ inline bool inChild = false;
 #include <algorithm>
 #include <filesystem>
 
-#include "int128.h"
-#include "float128.h"
 #include "bitmaps.h"
+#include "float128.h"
 #include "threadloc.h"
 #include "cthread.cpp"
 #include "acnutil.h"
-#include "lvector.base.h"
+#include "lvector.h"
 #include "fftutils.cpp"
 
 namespace arithlib_implementation
@@ -3417,12 +3418,12 @@ inline int countBits(Digit x)
 // binary representation of n-1.
 
 inline std::size_t next_power_of_2(std::size_t n)
-{   return (static_cast<std::size_t>(1)) << (64-CSL_LISP::nlz(
+{   return (static_cast<std::size_t>(1)) << (64-nlz(
                 static_cast<Digit>(n-1)));
 }
 
 inline unsigned int logNextPowerOf2(std::size_t n)
-{   return 64-CSL_LISP::nlz(static_cast<Digit>(n-1));
+{   return 64-nlz(static_cast<Digit>(n-1));
 }
 
 // I am going to represent bignums as arrays of 64-bit digits.
@@ -4045,7 +4046,7 @@ inline void fudgeDistribution(const std::uint64_t* a,
             if (a[lena-1] == 0)
             {   if (lena>1) r[lena-2] = 1ULL<<63;
             }
-            else r[lena-1] = 1ULL << (63-CSL_LISP::nlz(a[lena-1]));
+            else r[lena-1] = 1ULL << (63-nlz(a[lena-1]));
             if ((n&7) == 0) // decrement it
             {   if (lena!=1 || a[0]!=0) // avoid decrementing zero.
                 {   std::uint64_t* p = r;
@@ -4213,119 +4214,23 @@ inline std::intptr_t unsignedInt128ToBignum(Digit  high,
 // I am only going to support little endian machines,,,
 
 inline FLOAT_128
-f128_0      = {{0, INT64_C(0x0000000000000000)}},
-f128_half   = {{0, INT64_C(0x3ffe000000000000)}},
-f128_mhalf  = {{0, INT64_C(0xbffe000000000000)}},
-f128_1      = {{0, INT64_C(0x3fff000000000000)}},
-f128_m1     = {{0, INT64_C(0xbfff000000000000)}},
-f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
+f128_0      (0x00000000, top32()),
+f128_half   (0x3ffe0000, top32()),
+f128_mhalf  (0xbffe0000, top32()),
+f128_1      (0x3fff0000, top32()),
+f128_m1     (0xbfff0000, top32()),
+f128_N1     (0x4fff0000, top32()); // 2^4096
 
 inline bool f128_zero(FLOAT_128 p)
-{   return (p.v[HIPART] & 0x7fffffffffffffff) == 0 &&
-           p.v[LOPART] == 0;
+{   return p == LF_C(0.0);
 }
 
 inline bool f128_infinite(FLOAT_128 p)
-{   return (p.v[HIPART] & 0x7fffffffffffffff) == 0x7fff000000000000 &&
-           p.v[LOPART] == 0;
+{   return isinf(p);
 }
 
 inline bool f128_nan(FLOAT_128 p)
-{   return (p.v[HIPART] & 0x7fff000000000000) == 0x7fff000000000000 &&
-           ((p.v[HIPART] & 0x0000ffffffffffff) != 0 ||
-            p.v[LOPART] != 0);
-}
-
-inline FLOAT_128 ldexp(FLOAT_128 p, int x)
-{   if (f128_zero(p) ||
-        f128_infinite(p) ||
-        f128_nan(p)) return p;  // special cases!
-// Calculate the value I expect to want to leave in the exponent field.
-    x = ((p.v[HIPART] >> 48) & 0x7fff) + x;
-// In case of overflow leave an infinity of the right sign. This involves
-// forcing all bits of the exponent to be 1, all bits of the mantissa to be
-// zero and leaving the sign bit unaltered.
-    if (x >= 0x7fff)
-    {   p.v[HIPART] |= INT64_C(0x7fff000000000000);
-        p.v[HIPART] &= INT64_C(0xffff000000000000);
-        p.v[LOPART] = 0;
-        return p;
-    }
-// Using ldexp() to decrease an expeonent can lead to underflow. The value
-// 0 in x here would be the exponent one below that of the smallest
-// normal number, so a value < -114 corresponds to a number so much smaller
-// that it would not even qualify as a sub-norm. But even in that case
-// I need to preserve the sign bit.
-    else if (x < -114)
-    {   p.v[HIPART] &= INT64_C(
-                           0x8000000000000000); // preserve sign of input
-        p.v[LOPART] = 0;
-        return p;
-    }
-// In the case that ldexp underflows I have to be especially careful
-// because of the joys of sub-normal numbers and gradual underflow.
-// I deal with this by first forcing the exponent to be one that will
-// not lead to a sub-norm and then using a multiply to scale it down.
-    if (x <= 0)
-    {   p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-                      (static_cast<Digit>(x+4096) << 48);
-        p = f128_div(p, f128_N1);
-    }
-    else p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-                           (static_cast<Digit>(x) << 48);
-    return p;
-}
-
-inline FLOAT_128 frexp(FLOAT_128 p, int &x)
-{   if (f128_zero(p) ||
-        f128_infinite(p) ||
-        f128_nan(p))
-    {   x = 0;
-        return p;
-    }
-    int px = ((p.v[HIPART] >> 48) & 0x7fff);
-// If I had a sub-normal number I will multiply if by 2^4096 before
-// extracting its exponent. Doing that will have turned any non-zero
-// sub-norm into a legitimate normalized number while not getting large
-// enough to risk overflow...
-    if (px == 0)
-    {   p = f128_mul(p, f128_N1);
-        px = ((p.v[HIPART] >> 48) & 0x7fff) - 4096;
-    }
-// Now I can set the exponent field such that the resulting number is in
-// the range 0.5 <= p < 1.0.
-    p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-                  (static_cast<Digit>(0x3ffe) << 48);
-// .. and adjust the exponent value that I will return so it is if the
-// scaled mantissa is now exactly the same as the input.
-    x = px - 0x3ffe;
-    return p;
-}
-
-// return fractional part and set i to integer part. Since this is in C++
-// I can use a reference argument for i now a pointer and I can overload the
-// vanilla name "modf" along the style of the way C++11 does.
-
-inline FLOAT_128 modf(FLOAT_128 d, FLOAT_128 &i)
-{   i = d;
-// Extract the exponent
-    int x = ((d.v[HIPART] >> 48) & 0x7fff) - 0x3ffe;
-// If |d| < 1.0 then the integer part is zero.
-    if (x <= 0) i = f128_0;
-// Next look at cases where the integer part will life entirely within
-// the high word.
-    else if (x <= 49)   // 49 not 48 because of hidden bit.
-    {   i.v[HIPART] &=
-            ASR(static_cast<SignedDigit>(0xffff000000000000), x-1);
-        i.v[LOPART] = 0;
-    }
-    else if (x <= 112)
-    {   i.v[LOPART] &= (-1ULL) << (113-x);
-    }
-// If the number is large enough then then it is its own integer part, and
-// the fractional part will be zero.
-    else return f128_0;
-    return f128_sub(d, i);
+{   return isnan(p);
 }
 
 // When doubles (and FLOAT_128 values where available) are to be
@@ -4378,9 +4283,7 @@ inline void shiftleft(SignedDigit &hi, Digit &lo, int n)
     }
 }
 
-inline void shiftleft(SignedDigit &hi, Digit &mid,
-                      Digit &lo,
-                      int n)
+inline void shiftleft(SignedDigit &hi, Digit &mid, Digit &lo, int n)
 {   if (n == 0) return;
     else if (n < 64)
     {   hi = ASL(hi, n) | (mid >> (64-n));
@@ -4504,7 +4407,7 @@ inline void doubleTo_virtualBignum(double d,
 // Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer.
     Digit lowbit = mantissa & -static_cast<Digit>
                            (mantissa);
-    int lz = 63 - CSL_LISP::nlz(lowbit); // low zero bits
+    int lz = 63 - nlz(lowbit); // low zero bits
     mantissa = ASR(mantissa, lz);
     exponent += lz;
 // Now mantissa has its least significant bit a "1".
@@ -4538,29 +4441,31 @@ inline void doubleTo_virtualBignum(double d,
 // lead to nonsense output. Subnormal numbers are got wrong at present!
 
 inline void longfloatToBits(FLOAT_128 d,
-                           SignedDigit &mhi, Digit &mlo,
-                           int &exponent)
-{   if (f128_nan(d) || f128_zero(d))
+                            SignedDigit &mhi, Digit &mlo,
+                            int &exponent)
+{   if (isnan(d) || iszero(d))
     {   mhi = mlo = 0;
         exponent = 0;
         return;
     }
-    else if (f128_infinite(d))
-    {   if (f128_lt(d, f128_0)) mhi = mlo = -1;
+    else if (isinf(d))
+    {   if (signbit(d)) mhi = mlo = -1;
         else mhi = mlo = 0;
         exponent = INT_MAX;
         return;
     }
 // With FLOAT_128 the easier way to go is to access the bit-patterns.
-    exponent = ((d.v[HIPART] >> 48) & 0x7fff);
-    if (exponent == 0) // subnormal number
-    {   d = f128_mul(d, f128_N1);
+    uint64_t HIPART, LOPART;
+    d.getbits(HIPART, LOPART);
+    exponent = (HIPART >> 48) & 0x7fff);
+    if (exponent == 0)          // subnormal number
+    {   d = d * f128_N1;
         exponent -= 4096;
     }
     exponent -= 0x3ffe;
-    mhi = (d.v[HIPART] & 0xffffffffffff) | 0x0001000000000000;
-    mlo = d.v[LOPART];
-    if (static_cast<SignedDigit>(d.v[HIPART]) < 0)
+    mhi = (HIPART & 0xffffffffffff) | 0x0001000000000000;
+    mlo = LOPART;
+    if (static_cast<SignedDigit>(HIPART) < 0)
     {   mlo = -mlo;
         if (mlo == 0) mhi = -mhi;
         else mhi = ~mhi;
@@ -4580,29 +4485,29 @@ inline void dec128(SignedDigit &hi, Digit &lo)
 // the way it would end up as a bignum.
 
 inline void longfloatTo_virtualBignum(FLOAT_128 d,
-                                     SignedDigit &top,
-                                     Digit &mid,
-                                     Digit &next,
-                                     std::size_t &len,
-                                     RoundingMode mode)
+                                      SignedDigit &top,
+                                      Digit &mid,
+                                      Digit &next,
+                                      std::size_t &len,
+                                      RoundingMode mode)
 {   using namespace CSL_LISP;
-    if (f128_zero(d))
+    if (d == LF_C(0.0))
     {   top = mid = next = 0;
         len = 1;
         return;
     }
-    else if (f128_nan(d))
+    else if (isnan(d))
     {   top = mid = next = 0;
         len = 0;
         return;
     }
-    else if (f128_infinite(d))
-    {   if (f128_lt(d, f128_0)) top = mid = next = -1;
+    else if (isinf(d))
+    {   if (signbit(d)) top = mid = next = -1;
         else top = mid = next = 0;
         len = SIZE_MAX;
         return;
     }
-    bool sign = f128_negative(d);
+    bool sign = signbit(d);
     SignedDigit mhi;
     Digit mlo;
     int exponent;
@@ -4624,10 +4529,10 @@ inline void longfloatTo_virtualBignum(FLOAT_128 d,
             case TRUNC:  // the effect of modf is this already.
                 break;
             case FLOOR:
-                if (fracpart != 0 && f128_lt(d, f128_0)) mantissa++;
+                if (fracpart != 0 && signbit(d)) mantissa++;
                 break;
             case CEILING:
-                if (fracpart != 0 && !f128_lt(d, f128_0)) mantissa++;
+                if (fracpart != 0 && !signbit(d)) mantissa++;
                 break;
         }
         if (sign) mantissa = -mantissa;
@@ -4645,11 +4550,11 @@ inline void longfloatTo_virtualBignum(FLOAT_128 d,
     int lz;
     if (mlo != 0)
     {   Digit lowbit = mlo & (-mlo);
-        lz = 63 - CSL_LISP::nlz(lowbit); // low zero bits
+        lz = 63 - nlz(lowbit); // low zero bits
     }
     else
     {   Digit lowbit = mhi & (-static_cast<Digit>(mhi));
-        lz = 64 + 63 - CSL_LISP::nlz(lowbit); // low zero bits
+        lz = 64 + 63 - nlz(lowbit); // low zero bits
     }
     shiftright(mhi, mlo, lz);
     exponent += lz;
@@ -4720,9 +4625,9 @@ inline std::intptr_t ceilingDoubleToInt(double d)
 }
 
 inline std::intptr_t longfloatToInt(FLOAT_128 d, RoundingMode mode)
-{   if (f128_zero(d) ||
-        f128_infinite(d) ||
-        f128_nan(d)) return intToHandle(0);
+{   if (d == LF_C(0.0)) ||
+        isinf(d) ||
+        isnan(d)) return intToHandle(0);
     SignedDigit top;
     Digit mid, next;
     std::size_t len;
@@ -4893,8 +4798,8 @@ inline float Float::op(std::uint64_t* a)
     }
     if (!carried) next |= 1;
 // Now I need to do something very much like the code for the int64_t case.
-    if (top == 0) lz = CSL_LISP::nlz(next) + 64;
-    else lz = CSL_LISP::nlz(top);
+    if (top == 0) lz = nlz(next) + 64;
+    else lz = nlz(top);
 //
 //  uint64_t top24 = {top,next} >> (128-24-lz);
     int sh = 128-24-lz;
@@ -4942,7 +4847,7 @@ inline double Frexp::op(SignedDigit a, SignedDigit &x)
 // Because top53 >= 2^53 the number of leading zeros in its representation is
 // at most 10. Ha ha. That guaranteed that the shift below will not overflow
 // and is why I chose my range as I did.
-    int lz = CSL_LISP::nlz(top53);
+    int lz = nlz(top53);
     Digit low = top53 << (lz+53);
     top53 = top53 >> (64-53-lz);
     if (low > 0x8000000000000000U) top53++;
@@ -5004,8 +4909,8 @@ inline double Frexp::op(std::uint64_t* a, SignedDigit &x)
     }
     if (!carried) next |= 1;
 // Now I need to do something very much like the code for the int64_t case.
-    if (top == 0) lz = CSL_LISP::nlz(next) + 64;
-    else lz = CSL_LISP::nlz(top);
+    if (top == 0) lz = nlz(next) + 64;
+    else lz = nlz(top);
 //
 //  uint64_t top53 = {top,next} >> (128-53-lz);
     int sh = 128-53-lz;
@@ -5052,8 +4957,8 @@ inline FLOAT_128 Float128::op(SignedDigit a)
 inline FLOAT_128 Frexp128::op(SignedDigit a, SignedDigit &x)
 {   using namespace CSL_LISP;
     FLOAT_128 d = i64_to_f128(a), d1;
-    int xi = 0;
-    f128_frexp(d, &d1, &xi); // in the CSL sources.
+    int32_t xi = 0;
+    frexp(d, &d1, xi);
     x = xi;
     return d1;
 }
@@ -5095,8 +5000,8 @@ inline FLOAT_128 Frexp128::op(std::uint64_t* a, SignedDigit &x)
 // zero, but if it is then next1 will have its top bit set, and so within
 // these bits I certainly have the 113 that I need to obtain an accurate
 // floating point value.
-    if (top == 0) lz = CSL_LISP::nlz(next1) + 64;
-    else lz = CSL_LISP::nlz(top);
+    if (top == 0) lz = nlz(next1) + 64;
+    else lz = nlz(top);
 //
 //  uint64_t {top113,top112a} = {top,next1,next2} >> (128-113-lz);
     int sh = 192-113-lz;
@@ -5140,9 +5045,8 @@ inline FLOAT_128 Frexp128::op(std::uint64_t* a, SignedDigit &x)
 //  FLOAT_128 d = i64_to_f128({top113, top113a});
     FLOAT_128 d = i64_to_f128(top113);
     FLOAT_128 two32 = i64_to_f128(0x100000000);
-    d = f128_add(f128_mul(f128_mul(two32, two32), d),
-                 ui64_to_f128(top113a));
-    if (sign) d = f128_sub(i64_to_f128(0), d);
+    d = (two32 * two32 * d) + (FLOAT_128)top113a;
+    if (sign) d = - d;
     x = 192-113-lz+64*(lena-2);
     return d;
 }
@@ -5154,8 +5058,7 @@ inline FLOAT_128 Float128::op(std::uint64_t* a)
     if (x > 100000) x = 100000;
 // There is an implementation of ldexp() for 128-bit floats in
 // the CSL source file FLOAT_128,h.
-    f128_ldexp(&d, static_cast<int>(x));
-    return d;
+    return ldexp(d, static_cast<int>(x));
 }
 
 inline const Digit ten19 = UINT64_C(10000000000000000000);
@@ -5268,7 +5171,7 @@ inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena)
         }
         top--;
     }
-    return 64*(lena-1) + (top==0 ? 0 : 64-CSL_LISP::nlz(top));
+    return 64*(lena-1) + (top==0 ? 0 : 64-nlz(top));
 }
 
 // I want an estimate of the number of bytes that it will take to
@@ -5818,10 +5721,10 @@ inline FLOAT_128 FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
 inline FLOAT_128 FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
 
 inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, FLOAT_128 b)
-{   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
+{   if (isnan(b)) return false;  // a NaN
     SignedDigit top = static_cast<SignedDigit>(a[lena-1]);
-    if (top >= 0 && f128_lt(b, f128_0)) return false;
-    if (top < 0 && !f128_lt(b, f128_0)) return false;
+    if (top >= 0 && signbit(b)) return false;
+    if (top < 0 && !signbit(b)) return false;
 // Now the two inputs have the same sign.
     if (lena == 1 ||
         (lena == 2 &&
@@ -5832,13 +5735,13 @@ inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, FLOAT_128 b)
     {
 // Here the integer is of modest size - if the float is huge we can
 // resolve matters cheaply.
-        if (f128_lt(FP128_INT_LIMIT, b) ||
-            f128_lt(b, FP128_MINUS_INT_LIMIT)) return false;
+        if (FP128_INT_LIMIT < b ||
+            b < FP128_MINUS_INT_LIMIT) return false;
 // Convert a to a longfloat and compare. The conversion will not lose any
 // information because the |a| <= 2^112 so it will fit within the mantissa
 // bits that are available.
         FLOAT_128 aa = Float128::op(a);
-        return f128_eq(aa, b);
+        return aa == b;
     }
     else
     {
@@ -5854,7 +5757,7 @@ inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, FLOAT_128 b)
 }
 
 inline bool Eqn::op(SignedDigit a, FLOAT_128 b)
-{   return f128_eq(i64_to_f128(a), b);
+{   return (FLOAT_129)a == b;
 }
 
 inline bool Eqn::op(std::uint64_t* a, FLOAT_128 b)
@@ -5933,7 +5836,7 @@ inline bool Neqn::op(double a, std::uint64_t* b)
 }
 
 inline bool Neqn::op(SignedDigit a, FLOAT_128 b)
-{   return !f128_eq(i64_to_f128(a), b);
+{   return (FLOAT_128)a != b;
 }
 
 inline bool Neqn::op(std::uint64_t* a, FLOAT_128 b)
@@ -6169,8 +6072,7 @@ inline bool Greaterp::op(double a, std::uint64_t* b)
 inline bool greaterpbigfloat(std::uint64_t* a, std::size_t lena,
                              FLOAT_128 b,
                              bool great, bool ifequal)
-{   if (f128_nan(b)) return
-            false;  // Comparisons involving a NaN => false.
+{   if (isnan(b)) return false;  // Comparisons involving a NaN => false.
     SignedDigit top = static_cast<SignedDigit>(a[lena-1]);
     if (top >= 0 && f128_lt(b, f128_0)) return great;
     if (top < 0 && !f128_lt(b, f128_0)) return !great;
@@ -6956,14 +6858,14 @@ inline std::size_t LowBit::op(std::uint64_t* a)
     {   std::size_t r=0, i=0;
         while (a[i++]==-1ULL) r += 64;
         Digit w = ~a[i-1];
-        return 64-CSL_LISP::nlz(w & (-w))+r;
+        return 64-nlz(w & (-w))+r;
     }
     else if (lena==1 && a[0]==0) return 0;
     else
     {   std::size_t r=0, i=0;
         while (a[i++]==0) r += 64;
         Digit w = a[i-1];
-        return 64-CSL_LISP::nlz(w & (-w))+r;
+        return 64-nlz(w & (-w))+r;
     }
 }
 
@@ -6973,7 +6875,7 @@ inline std::size_t LowBit::op(SignedDigit aa)
     else if (aa < 0) a = ~static_cast<Digit>(aa);
     else a = aa;
     a = a & (-a); // keeps only the lowest bit
-    return 64-CSL_LISP::nlz(a);
+    return 64-nlz(a);
 }
 
 inline std::size_t IntegerLength::op(std::uint64_t* a)
@@ -6985,7 +6887,7 @@ inline std::size_t IntegerLength::op(SignedDigit aa)
     if (aa == 0 || aa == -1) return 0;
     else if (aa < 0) a = -static_cast<Digit>(aa) - 1;
     else a = aa;
-    return 64-CSL_LISP::nlz(a);
+    return 64-nlz(a);
 }
 
 // This function should return the top 64-bits of an integer in the
@@ -7007,14 +6909,14 @@ inline Digit Top64Bits::op(std::uint64_t* a)
         (n == 2 && a[2] == 0))
         return Top64Bits::op(static_cast<int64_t>(a[0]));
     if (a[n-1] == 0) n--;
-    int lz = CSL_LISP::nlz(a[n-1]);
+    int lz = nlz(a[n-1]);
     if (lz == 0) return a[n-1];
     return (a[n-1] << lz) | (a[n-2] >> (64-lz));
 }
 
 inline Digit Top64Bits::op(SignedDigit a)
 {   if (a == 0) return 0;    // Only non-normalised case
-    return static_cast<uint64_t>(a) << CSL_LISP::nlz((Digit)a);
+    return static_cast<uint64_t>(a) << nlz((Digit)a);
 }
 
 inline std::size_t Logcount::op(std::uint64_t* a)
@@ -8005,7 +7907,7 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
     std::size_t lenx = (lena+1)/2;
     std::uint64_t* x = reserve(lenx);
     for (std::size_t i=0; i<lenx; i++) x[i] = 0;
-    std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - CSL_LISP::nlz(a[lena-1]);
+    std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - nlz(a[lena-1]);
     bitstop /= 2;
     if ((lena%2) == 0) bitstop += 32;
     x[lenx-1] = 1ULL << bitstop;
@@ -8048,7 +7950,7 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
 inline std::intptr_t Isqrt::op(SignedDigit aa)
 {   if (aa <= 0) return intToBignum(0);
     Digit a = static_cast<Digit>(aa);
-    std::size_t w = 64 - CSL_LISP::nlz(a);
+    std::size_t w = 64 - nlz(a);
     Digit x0 = a >> (w/2);
 // The iteration here converges to sqrt(a) from above, but I believe that
 // when the value stops changing it will be at floor(sqrt(a)). There are
@@ -8173,7 +8075,7 @@ inline std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
     else if (n == 0) return intToHandle(1);
     Digit absa = (a < 0 ? -static_cast<Digit>
                           (a) : static_cast<Digit>(a));
-    std::size_t bitsa = 64 - CSL_LISP::nlz(absa);
+    std::size_t bitsa = 64 - nlz(absa);
     Digit hi, bitsr;
     multiply64(n, bitsa, hi, bitsr);
     Digit lenr1 = 2 + bitsr/64;
@@ -8724,7 +8626,7 @@ inline void unsigned_long_division(std::uint64_t* a,
 //
 // The scaling is done here using a shift, which seems cheaper to sort out
 // then multiplication by a single-digit value.
-    int ss = CSL_LISP::nlz(b[lenb-1]);
+    int ss = nlz(b[lenb-1]);
 // When I scale the dividend expands into an extra digit but the scale
 // factor has been chosen so that the divisor does not.
     a[lena] = scale_for_division(a, lena, ss);
@@ -9320,9 +9222,9 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // to normalize that to get 128 bits to work with however the top bits
 // of a and b lie within the words.
     Digit a0=a[lena-1], a1=a[lena-2], a2=(lena>2 ? a[lena-3] : 0);
-    int lza = CSL_LISP::nlz(a0);
+    int lza = nlz(a0);
     Digit b0=b[lenb-1], b1=b[lenb-2], b2=(lenb>2 ? b[lenb-3] : 0);
-    int lzb = CSL_LISP::nlz(b0);
+    int lzb = nlz(b0);
 // I will sort out how many more bits are involved in a than in b. If
 // this number is large I will invent a number q of the form q=q0*2^q1
 // with q0 using almost all of 64 bits and go "a = a - q*b;". This
@@ -9394,8 +9296,8 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // At least I have filtered away the possibility {b0,b1}={0,0}.
 // I will grab the top 64 bits of a and the top corresponding bits of b,
 // because then I can do a (cheap) 64-by-64 division.
-            int lza1 = a0==0 ? 64+CSL_LISP::nlz(a1) : CSL_LISP::nlz(a0);
-            int lzb1 = b0==0 ? 64+CSL_LISP::nlz(b1) : CSL_LISP::nlz(b0);
+            int lza1 = a0==0 ? 64+nlz(a1) : nlz(a0);
+            int lzb1 = b0==0 ? 64+nlz(b1) : nlz(b0);
             if (lzb1 > lza1+60) break; // quotient will be too big
             Digit ahi, bhi;
             if (lza1 == 0) ahi = a0;

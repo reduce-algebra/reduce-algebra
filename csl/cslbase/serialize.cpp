@@ -913,7 +913,7 @@ FLOAT_128 read_f128()
 {   uint128_t n = 0;
     for (int i=0; i<16; i++)
         n = n | (((uint128_t)read_data_byte())<<(8*i));
-    return FLOAT_128(n, 0);
+    return FLOAT_128(n, i128());
 }
 
 void write_f128(FLOAT_128 f)

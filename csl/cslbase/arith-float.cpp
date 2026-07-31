@@ -39,6 +39,8 @@
 namespace CSL_LISP
 {
 
+using namespace arithlib_implementation;
+
 // For short and single and double floats I pass values around as doubles.
 // This is what C++ typically does! Long floats will be passed using
 // FLOAT_128. The relevant floating point representations are:
@@ -68,7 +70,7 @@ double double_next_float(double a)
 
 FLOAT_128 long_next_float(FLOAT_128 a)
 {   if (!isfinite(a)) return a;
-    return FLOAT_128(a.getbits() + 1, 0);
+    return FLOAT_128(a.getbits() + 1, i128());
 }
 
 double short_previous_float(double a)
@@ -88,7 +90,7 @@ double double_previous_float(double a)
 
 FLOAT_128 long_previous_float(FLOAT_128 a)
 {   if (!isfinite(a)) return a;
-    return FLOAT_128(a.getbits() - 1, 0);
+    return FLOAT_128(a.getbits() - 1, i128());
 }
 
 // Now I will need to handle round, truncate, floor and ceiling.
@@ -268,7 +270,7 @@ LispObject Float::op(LispObject a)
 // cases that the integer was longer than 52 bits.
 
 LispObject Float::op(Fixnum a)
-{   return make_boxfloat(arithlib_lowlevel::Double::op(a.intval()));
+{   return make_boxfloat(Double::op(a.intval()));
 }
 
 // In this next one note that arithlib has a class Float that converts
@@ -276,7 +278,7 @@ LispObject Float::op(Fixnum a)
 // C++ double and hence is what I need here!
 
 LispObject Float::op(uint64_t *a)
-{   return make_boxfloat(arithlib_lowlevel::Double::op(a));
+{   return make_boxfloat(Double::op(a));
 }
 
 // One can not just turn the numerator and denominator into floats and
@@ -779,11 +781,11 @@ float RawFloat32::op(LispObject a)
 }
 
 float RawFloat32::op(Fixnum a)
-{   return arithlib_lowlevel::Float::op(a.intval());
+{   return Float::op(a.intval());
 }
 
 float RawFloat32::op(uint64_t *a)
-{   return arithlib_lowlevel::Float::op(a);
+{   return Float::op(a);
 }
 
 float RawFloat32::op(Rat a)
@@ -823,11 +825,11 @@ double RawFloat::op(LispObject a)
 }
 
 double RawFloat::op(Fixnum a)
-{   return arithlib_lowlevel::Double::op(a.intval());
+{   return Double::op(a.intval());
 }
 
 double RawFloat::op(uint64_t *a)
-{   return arithlib_lowlevel::Double::op(a);
+{   return Double::op(a);
 }
 
 double RawFloat::op(Rat a)
@@ -871,7 +873,7 @@ FLOAT_128 Float128::op(Fixnum a)
 }
 
 FLOAT_128 Float128::op(uint64_t *a)
-{   return arithlib_lowlevel::Float128::op(a);
+{   return arithlib_implementation::Float128::op(a);
 }
 
 FLOAT_128 Float128::op(Rat a)
@@ -928,19 +930,19 @@ LispObject Fix::op(Cpx a)
 }
 
 LispObject Fix::op(SFlt a)
-{   return arithlib_lowlevel::truncDoubleToInt(a.floatval());
+{   return truncDoubleToInt(a.floatval());
 }
 
 LispObject Fix::op(Flt a)
-{   return arithlib_lowlevel::truncDoubleToInt(a.floatval());
+{   return truncDoubleToInt(a.floatval());
 }
 
 LispObject Fix::op(double a)
-{   return arithlib_lowlevel::truncDoubleToInt(a);
+{   return truncDoubleToInt(a);
 }
 
 LispObject Fix::op(LFlt a)
-{   return arithlib_lowlevel::truncFloat128ToInt(a.floatval());
+{   return truncFloat128ToInt(a.floatval());
 }
 
 LispObject Truncate::op(LispObject a)
@@ -965,19 +967,19 @@ LispObject Truncate::op(Cpx a)
 }
 
 LispObject Truncate::op(SFlt a)
-{   return arithlib_lowlevel::truncDoubleToInt(a.floatval());
+{   return truncDoubleToInt(a.floatval());
 }
 
 LispObject Truncate::op(Flt a)
-{   return arithlib_lowlevel::truncDoubleToInt(a.floatval());
+{   return truncDoubleToInt(a.floatval());
 }
 
 LispObject Truncate::op(double a)
-{   return arithlib_lowlevel::truncDoubleToInt(a);
+{   return truncDoubleToInt(a);
 }
 
 LispObject Truncate::op(LFlt a)
-{   return arithlib_lowlevel::truncFloat128ToInt(a.floatval());
+{   return truncFloat128ToInt(a.floatval());
 }
 
 LispObject Floor::op(LispObject a)
@@ -1003,19 +1005,19 @@ LispObject Floor::op(Cpx a)
 }
 
 LispObject Floor::op(SFlt a)
-{   return arithlib_lowlevel::floorDoubleToInt(a.floatval());
+{   return floorDoubleToInt(a.floatval());
 }
 
 LispObject Floor::op(Flt a)
-{   return arithlib_lowlevel::floorDoubleToInt(a.floatval());
+{   return floorDoubleToInt(a.floatval());
 }
 
 LispObject Floor::op(double a)
-{   return arithlib_lowlevel::floorDoubleToInt(a);
+{   return floorDoubleToInt(a);
 }
 
 LispObject Floor::op(LFlt a)
-{   return arithlib_lowlevel::floorFloat128ToInt(a.floatval());
+{   return floorFloat128ToInt(a.floatval());
 }
 
 LispObject Ceiling::op(LispObject a)
@@ -1041,19 +1043,19 @@ LispObject Ceiling::op(Cpx a)
 }
 
 LispObject Ceiling::op(SFlt a)
-{   return arithlib_lowlevel::ceilingDoubleToInt(a.floatval());
+{   return ceilingDoubleToInt(a.floatval());
 }
 
 LispObject Ceiling::op(Flt a)
-{   return arithlib_lowlevel::ceilingDoubleToInt(a.floatval());
+{   return ceilingDoubleToInt(a.floatval());
 }
 
 LispObject Ceiling::op(double a)
-{   return arithlib_lowlevel::ceilingDoubleToInt(a);
+{   return ceilingDoubleToInt(a);
 }
 
 LispObject Ceiling::op(LFlt a)
-{   return arithlib_lowlevel::ceilingFloat128ToInt(a.floatval());
+{   return ceilingFloat128ToInt(a.floatval());
 }
 
 LispObject Ftruncate::op(LispObject a)
@@ -1078,19 +1080,19 @@ LispObject Ftruncate::op(Cpx a)
 }
 
 LispObject Ftruncate::op(SFlt a)
-{   return arithlib_lowlevel::truncDoubleToInt(a.floatval());
+{   return truncDoubleToInt(a.floatval());
 }
 
 LispObject Ftruncate::op(Flt a)
-{   return arithlib_lowlevel::truncDoubleToInt(a.floatval());
+{   return truncDoubleToInt(a.floatval());
 }
 
 LispObject Ftruncate::op(double a)
-{   return arithlib_lowlevel::truncDoubleToInt(a);
+{   return truncDoubleToInt(a);
 }
 
 LispObject Ftruncate::op(LFlt a)
-{   return arithlib_lowlevel::truncFloat128ToInt(a.floatval());
+{   return truncFloat128ToInt(a.floatval());
 }
 
 LispObject Ffloor::op(LispObject a)
@@ -1114,19 +1116,19 @@ LispObject Ffloor::op(Cpx a)
 }
 
 LispObject Ffloor::op(SFlt a)
-{   return arithlib_lowlevel::floorDoubleToInt(a.floatval());
+{   return floorDoubleToInt(a.floatval());
 }
 
 LispObject Ffloor::op(Flt a)
-{   return arithlib_lowlevel::floorDoubleToInt(a.floatval());
+{   return floorDoubleToInt(a.floatval());
 }
 
 LispObject Ffloor::op(double a)
-{   return arithlib_lowlevel::floorDoubleToInt(a);
+{   return floorDoubleToInt(a);
 }
 
 LispObject Ffloor::op(LFlt a)
-{   return arithlib_lowlevel::floorFloat128ToInt(a.floatval());
+{   return floorFloat128ToInt(a.floatval());
 }
 
 LispObject Fceiling::op(LispObject a)
@@ -1150,19 +1152,19 @@ LispObject Fceiling::op(Cpx a)
 }
 
 LispObject Fceiling::op(SFlt a)
-{   return arithlib_lowlevel::ceilingDoubleToInt(a.floatval());
+{   return ceilingDoubleToInt(a.floatval());
 }
 
 LispObject Fceiling::op(Flt a)
-{   return arithlib_lowlevel::ceilingDoubleToInt(a.floatval());
+{   return ceilingDoubleToInt(a.floatval());
 }
 
 LispObject Fceiling::op(double a)
-{   return arithlib_lowlevel::ceilingDoubleToInt(a);
+{   return ceilingDoubleToInt(a);
 }
 
 LispObject Fceiling::op(LFlt a)
-{   return arithlib_lowlevel::ceilingFloat128ToInt(a.floatval());
+{   return ceilingFloat128ToInt(a.floatval());
 }
 
 // (frexp nn) => (double-float . fixnum)
@@ -1183,7 +1185,7 @@ LispObject Frexp::op(Fixnum a)
 
 LispObject Frexp::op(uint64_t *a)
 {   int64_t x;
-    double d = arithlib_lowlevel::Frexp::op(a, x);
+    double d = Frexp::op(a, x);
     return frexp_finalize(d, x);
 }
 
@@ -1232,7 +1234,7 @@ double Frexp::op(Fixnum a, int64_t &xx)
 
 double Frexp::op(uint64_t *a, int64_t &xx)
 {   int64_t x;
-    double d = arithlib_lowlevel::Frexp::op(a, x);
+    double d = arithlib_implementation::Frexp::op(a, x);
     return frexp_finalize(d, x, xx);
 }
 
@@ -1277,7 +1279,7 @@ LispObject Frexp128::op(Fixnum a)
 
 LispObject Frexp128::op(uint64_t *a)
 {   int64_t x;
-    FLOAT_128 d = arithlib_lowlevel::Frexp128::op(a, x);
+    FLOAT_128 d = Frexp128::op(a, x);
     return frexp_finalize(d, x);
 }
 
@@ -1326,7 +1328,7 @@ FLOAT_128 Frexp128::op(Fixnum a, int64_t &xx)
 
 FLOAT_128 Frexp128::op(uint64_t *a, int64_t &xx)
 {   int64_t x = 0;
-    FLOAT_128 d = arithlib_lowlevel::Frexp128::op(a, x);
+    FLOAT_128 d = arithlib_implementation::Frexp128::op(a, x);
     return frexp_finalize(d, x, xx);
 }
 
@@ -1520,11 +1522,11 @@ LispObject Isqrt::op(LispObject a)
 }
 
 LispObject Isqrt::op(Fixnum a)
-{   return arithlib_lowlevel::Isqrt::op(a.intval());
+{   return Isqrt::op(a.intval());
 }
 
 LispObject Isqrt::op(uint64_t *a)
-{   return arithlib_lowlevel::Isqrt::op(a);
+{   return arithlib_implementation::Isqrt::op(a);
 }
 
 LispObject Isqrt::op(Rat a)
@@ -2471,9 +2473,9 @@ LispObject Ninteger_decode_float(LispObject env, LispObject a)
 #endif
 }
 
-} // end of namespace
-
 #endif // ARITHLIB
+
+} // end of namespace
 
 // end of arith-float.cpp
 

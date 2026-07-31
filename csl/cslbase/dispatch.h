@@ -60,7 +60,9 @@
 //                     value while on a 64-bit one it can contain the bits
 //                     that represent the floating point value.
 // 64-bit floats.      Passed as "double" values, ie in native floating point.
-// 128-bit floats.     A class LFlt containing a FLOAT_128.
+// 128-bit floats.     A class LFlt containing a FLOAT_128. Well these days
+//                     I could just make LFlt a synonym for FLOAT_128. Or
+//                     better just use FLOAT_128 directly.
 
 // Because that leaves 8 different sorts of number a general operation like
 // "plus" will need to provide 64 fragments of code to cover all the
@@ -82,7 +84,7 @@
 // Reading this file ought to convince you just how messy having generic
 // arithmetic with quite a few types can be!
 
-// arithlib.h needs to know that it will be being used in a way that
+// arithlib.cpp needs to know that it will be being used in a way that
 // interfaces with a Lisp system rather than being used as a free-standing
 // C++ library.
 
@@ -102,10 +104,10 @@ namespace CSL_LISP
 
 // Bignums are passed as uintptr_t* pointers to a block of digits
 // Doubles are passed using the C++ type double
-// and I expect the above three cases to be the most common. Other types
-// are wrapped in almost trivial class objects so the object-type captures
-// what they represent. The value() accessor gets the tagged LispObject back
-// while more specialist accessors get at the real data.
+// Long doubles are passed LFlt now but later on will use FLOAT_128.
+// Other types are wrapped in trivial class objects so the object-type
+// captures what they represent. The value() accessor gets the tagged
+// LispObject back while more specialist accessors get at the real data.
 
 // Fixnum
 // uint64_t*
@@ -142,20 +144,20 @@ inline uint64_t *bignum_intval(LispObject a)
 {   return (uint64_t *)(a - TAG_NUMBERS + 8);
 }
 
-class Bignum // for big integers
-{
-public:
-    LispObject v;
-    Bignum(LispObject a)
-    {   v = a;
-    }
-    LispObject value()
-    {   return v;
-    }
-    uint64_t *intval()
-    {   return (uint64_t *)(v - TAG_NUMBERS + 8);
-    }
-};
+//== class Big // for big integers
+//== {
+//== public:
+//==     LispObject v;
+//==     Big(LispObject a)
+//==     {   v = a;
+//==     }
+//==     LispObject value()
+//==     {   return v;
+//==     }
+//==     uint64_t *intval()
+//==     {   return (uint64_t *)(v - TAG_NUMBERS + 8);
+//==     }
+//== };
 
 class Rat // for rational numbers
 {

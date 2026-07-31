@@ -72,35 +72,6 @@
 
 #define lengthOf(v) (sizeof(v)/sizeof(v[0]))
 
-// Raising a 128-bit float to an integer power is done the same way
-// regardless of how the numbers are stored.
-
-FLOAT_128 iexpt(FLOAT_128 a, uint128_t n)
-{   if (n == 1) return a;
-    FLOAT_128 b = iexpt(a*a, n/2);
-    if (n%2 != 0) b = a*b;
-    return b;
-}
-
-FLOAT_128 expt(FLOAT_128 a, int128_t n)
-{   if (n == 0) return LF_C(1.0);
-    else if (a == LF_C(0.0))
-    {   if (n > 0)
-        {   if (!signbit(a)) return LF_C(0.0);
-            else return a;
-        }
-        if (signbit(a) && n%2 != 0) return MINUSINF128();
-        else return PLUSINF128();
-    }
-    else if (a == LF_C(1.0)) return a;
-    else if (a == LF_C(-1.0))
-    {   if (n%2 == 0) return LF_C(1.0);
-        else return LF_C(-1.0);
-    }
-    else if (n < 0) return expt(LF_C(1.0)/a, -n);
-    else return iexpt(a, (uint128_t)n);
-}
- 
 #ifdef USE_LONG_DOUBLE
 
 #define delegate128(fn, base) \
@@ -2165,5 +2136,34 @@ COMPLEX_128 rsqrt(COMPLEX_128 z)
 
 #undef delegateC128
 #undef delegatebinaryC128
+
+// Raising a 128-bit float to an integer power is done the same way
+// regardless of how I represent FLOAT_128.
+
+FLOAT_128 iexpt(FLOAT_128 a, uint128_t n)
+{   if (n == 1) return a;
+    FLOAT_128 b = iexpt(a*a, n/2);
+    if (n%2 != 0) b = a*b;
+    return b;
+}
+
+FLOAT_128 expt(FLOAT_128 a, int128_t n)
+{   if (n == 0) return LF_C(1.0);
+    else if (a == LF_C(0.0))
+    {   if (n > 0)
+        {   if (!signbit(a)) return LF_C(0.0);
+            else return a;
+        }
+        if (signbit(a) && n%2 != 0) return MINUSINF128();
+        else return PLUSINF128();
+    }
+    else if (a == LF_C(1.0)) return a;
+    else if (a == LF_C(-1.0))
+    {   if (n%2 == 0) return LF_C(1.0);
+        else return LF_C(-1.0);
+    }
+    else if (n < 0) return expt(LF_C(1.0)/a, -n);
+    else return iexpt(a, (uint128_t)n);
+}
 
 // end of elem128.cpp

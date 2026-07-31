@@ -169,6 +169,7 @@ extern LispObject lisp_fix(LispObject a, int roundmode);
 extern LispObject lisp_ifix(LispObject a, LispObject b,
                             int roundmode);
 
+
 // A short float has 1+8+19 bits (sign/exponent/mantissa) but when its
 // value is stored in a double the exponent field will be 11 bits wise, ie
 // we have 1+11+19 = 31. So the low 33 bits of the double need to be
@@ -243,11 +244,12 @@ inline bool floating_edge_case(double r)
     (static_cast<int32_t>(bignum_digits(a)[((bignum_length(a)-CELL)/4)-1])<0)
 
 inline double value_of_immediate_float(LispObject a)
-{   uint32_t i;
+{   float_union aa;
     if (SIXTY_FOUR_BIT)
-        i = static_cast<int32_t>(static_cast<uint64_t>(a)>>32);
-    else i = static_cast<int32_t>(a-XTAG_SFLOAT);
-    return bit_cast<float>(i);
+        aa.i = static_cast<int32_t>(static_cast<uint64_t>(a)>>32);
+    else aa.i = static_cast<int32_t>(a - XTAG_SFLOAT);
+    std::memmove(&aa.f, &aa.i, sizeof(aa.f)); // defeat strict aliasing!
+    return aa.f;
 }
 
 extern LispObject make_boxfloat(double a, FloatType type=WANT_DOUBLE_FLOAT);
@@ -267,52 +269,37 @@ inline FloatType floatWant(Header h)
     }
 }
 
-extern double round_to_short(double d);
-extern double round_to_single(double d);
-
-// l1 will be either a short or an immediate-packed single float. l2
-// can be 0 or much the same. So we will have
-//    (l1 & XTAG_BITS) == TAG_SFLOAT
-// On a 32-bit machine that is all there is to it. On a 64-bit one
-// the XTAG_FLOAT32 bit is also set then the value packed will be a single
-// float. Also on 64-bit systems the payload floating point data is kept in
-// within the top 32-bits of the word.
-
-inline LispObject pack_immediate_float(double d,
-                                       LispObject l1, LispObject l2=0)
-{   bool single = SIXTY_FOUR_BIT &&
-                  ((l1 | l2) & XTAG_FLOAT32) != 0;
-    if (single) d = round_to_single(d);
-    else d = round_to_short(d);
-    float f = (float)d;
-// If I have used round_to_short then f will have its lowert 4 bits all zero.
-    if (trap_floating_overflow &&
-        floating_edge_case(f))
-    {   if (single) return aerror("exception with single float");
-        else return aerror("exception with short float");
-    }
-    LispObject r;
-    if (SIXTY_FOUR_BIT)
-    {   r = bit_cast<uint32_t>(f);
-        r = (((uintptr_t)r)<<32) + XTAG_SFLOAT;
-        if (single) r = r + XTAG_FLOAT32;
-    }
-    else r = bit_cast<uint32_t>(f) + XTAG_SFLOAT;
-    return r;
-}
-
 // Pack something as a short (28-bit) float
 
 inline LispObject pack_short_float(double d)
-{   return pack_immediate_float(d, XTAG_SFLOAT);
+{   float_union aa;
+    aa.f = d;
+    if (trap_floating_overflow &&
+        floating_edge_case(aa.f))
+        return aerror("exception with short float");
+    std::memmove(&aa.i, &aa.f, sizeof(aa.f)); // defeat strict aliasing!
+    if ((aa.i & 0x1f) != 0x08) aa.i += 8;
+    aa.i &= ~0xf;
+    if (SIXTY_FOUR_BIT)
+        return static_cast<LispObject>(
+            (static_cast<uint64_t>(aa.i)) << 32) + XTAG_SFLOAT;
+    else return aa.i + XTAG_SFLOAT;
 }
 
-// Create a single (32-bit) float. On 64-bit systems it is immediate,
-// while on 32-bit ones it is boxed.
+// Create a single (32-bit) float. Just like make_single_float but inlined
+// in the 64-bit case
 
 inline LispObject pack_single_float(double d)
 {   if (SIXTY_FOUR_BIT)
-        return pack_immediate_float(d, XTAG_SFLOAT+XTAG_FLOAT32);
+    {   float_union aa;
+        aa.f = d;
+        if (trap_floating_overflow &&
+            floating_edge_case(aa.f))
+            return aerror("exception with single float");
+        std::memmove(&aa.i, &aa.f, sizeof(aa.f)); // defeat strict aliasing!
+        return static_cast<LispObject>(
+            static_cast<uint64_t>(aa.i) << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
+    }
     else
     {   LispObject r = get_basic_vector(TAG_BOXFLOAT,
                                         TYPE_SINGLE_FLOAT,
@@ -323,6 +310,47 @@ inline LispObject pack_single_float(double d)
             return aerror("exception with single float");
         return r;
     }
+}
+
+// Pack either a 28 or 32-bit float with type Lisp value "l1" indicating
+// whether 28 or 32 bits are relevant. On a 32-bit machine l1 will always
+// be a 28-bit value. If a second argument l2 is provided the width of the
+// result will match the wider of the two.
+
+inline LispObject pack_immediate_float(double d, LispObject l1,
+                                                 LispObject l2=0)
+{   float_union aa;
+    aa.f = d;
+// The next line is intended to make this safe with regard to strict aliasing!
+    std::memmove(&aa.i, &aa.f, sizeof(aa.f));
+    if (trap_floating_overflow &&
+        floating_edge_case(aa.f))
+    {   if (((l1 | l2) & XTAG_FLOAT32) != 0)
+            return aerror("exception with single float");
+        else return aerror("exception with short float");
+    }
+// Note the amazing fact that in IEEE floating point formats adding
+// a small integer value to the representation of a float increments that
+// float in "units in the last place". The amazing thing is that the
+// still applies if the value added causes carries that lead to a change
+// in the exponent field. So when I add 8 and then mask by ~0xf I achieve
+// rounding. If I was even more fussy I would go
+//       if ((aa.i & 0x1f) != 0x08) aa.i += 8;
+//       aa.i &= ~0xf;
+// which rounds up on the half-way case only of without rounding the result
+// would be odd. Hah that is streaightforward enough that I will do it!
+    if (SIXTY_FOUR_BIT)
+    {   if (((l1 | l2) & XTAG_FLOAT32) == 0)
+        {   if ((aa.i & 0x1f) != 0x08)  aa.i += 8;
+            aa.i &= ~0xf;
+        }
+        return static_cast<LispObject>(
+            (static_cast<uint64_t>(aa.i) << 32) +
+            XTAG_SFLOAT + ((l1 | l2) & XTAG_FLOAT32));
+    }
+    if ((aa.i & 0x1f) != 0x08)  aa.i += 8;
+    aa.i &= ~0xf;
+    return aa.i + XTAG_SFLOAT;
 }
 
 // double floats 
@@ -437,12 +465,14 @@ inline bool lessp_di64(double a, int64_t b)
 
 extern LispObject negateb(LispObject);
 extern LispObject copyb(LispObject);
+#ifndef ARITHLIB
 extern LispObject negate(LispObject);
 extern LispObject plus2(LispObject a, LispObject b);
 extern LispObject difference2(LispObject a, LispObject b);
 extern LispObject times2(LispObject a, LispObject b);
 extern LispObject quot2(LispObject a, LispObject b);
 extern LispObject CLquot2(LispObject a, LispObject b);
+#endif
 extern LispObject quotbn(LispObject a, int32_t n);
 extern LispObject quotbn1(LispObject a, int32_t n);
 #define QUOTBB_QUOTIENT_NEEDED    1

@@ -321,7 +321,7 @@ LispObject decode_long_float(LispObject a)
         {   d = ldexp(d, 4096);
             x -= 4096;
         }
-        int x1;
+        int32_t x1;
         d = frexp(d, x1);
         x = x + x1;
     }
@@ -836,7 +836,7 @@ static LispObject lisp_fix_sub128(LispObject a, int roundmode)
 {   FLOAT_128 d = long_float_val(a);
     if (isnan(d)) return aerror("NaN in fix");
     if (isinf(d)) return aerror("infinity in fix");
-    int x;
+    int32_t x;
     frexp(d, x);
 // Here I will limit the range where I convert to an int64_t value because
 // a long float could have a value of (say) INT64_MAX+0.75, and then the

@@ -383,6 +383,7 @@ private:
 // critical parts of the base for multiplication.
 
 #include "inlinemul.cpp"
+#include "inlinemul1.cpp"
 
 
 // The vector a has M digits and result has N (with N>=M). Add the
