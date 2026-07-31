@@ -173,11 +173,31 @@ include './include/begin-body.php';
     </li>
 </ul>
 
-<h2>Useful links</h2>
+<h2>Other computer algebra documentation</h2>
+<p>
+    Links to some chapters from the book
+    <em><a href="https://math.unm.edu/~wester/cas/book/contents.html">Computer Algebra Systems: A Practical Guide</a></em>,
+    edited by Michael J. Wester
+    (John Wiley & Sons, Chichester, United Kingdom, ISBN 0-471-98353-5, xvi+436 pages, 1999):
+</p>
 <ul>
     <li>
-        <a href="https://math.unm.edu/~wester/cas_review.html">
-            A Critique of the Mathematical Abilities of CA Systems</a>
+        Chapter 3: <em><a href="https://math.unm.edu/~wester/cas/book/Wester.pdf">
+                A Critique of the Mathematical Abilities of CA Systems</a></em> by Michael Wester;
+        <a href="https://math.unm.edu/~wester/cas_review.html">test details</a>
+    </li>
+    <li>
+        Chapter 6: <em><a href="https://www.mathematik.uni-kassel.de/~koepf/Publikationen/cheby.pdf">
+                Efficient Computation of Chebyshev Polynomials in Computer Algebra</a></em> by Wolfram Koepf
+    </li>
+    <li>
+        Chapter 8: <em><a href="https://www.informatik.uni-leipzig.de/~graebe/ComputerAlgebra/Publications/WesterBook.pdf">
+                About the Polynomial System Solve Facility of Axiom, Macsyma, Maple, Mathematica, MuPAD, and Reduce</a></em>
+        by Hans-Gert Gräbe
+    </li>
+    <li>
+        Appendix C: <em><a href="https://math.unm.edu/~wester/cas/synonyms.pdf">
+                Computer Algebra Synonyms</a></em> by Michael Wester
     </li>
 </ul>
 
