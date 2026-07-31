@@ -816,8 +816,9 @@ float RawFloat32::op(double a)
 {   return (float)a;
 }
 
+// Doing the rounding in two steps here is bad.
 float RawFloat32::op(LFlt a)
-{   return (float)a.floatval();
+{   return (float)(double)a.floatval();
 }
 
 double RawFloat::op(LispObject a)
