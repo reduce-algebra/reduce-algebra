@@ -47,6 +47,23 @@
 printf "MFLAGS=<%s> MKFLAGS=<%s> MAKECMDGOALS=<%s> args=<%s>\n" \
        "$MFLAGS"    "$MKFLAGS"   "$MAKECMDGOALS"   "$*"
 
+# If I pass "--debug=w" to GNU make it reports why each action it takes
+# has been triggered. Often that will be along the lines of "update target
+# 'foo.o' due to: target does not exist" when you build things for the
+# first time. However "make" on the macintosh does not support this
+# scheme (only a much more verbose "--debug" options that reports on
+# fine-grained activity and is dauntingly bulky). So I apply this everywhere
+# except on the Mac.
+
+case `uname` in
+*Darwin*)
+  MFLAGS=""
+  ;;
+*)
+  MFLAGS="--debug=w"
+  ;;
+esac
+
 args=""
 flags=""
 buildcsl="no"
@@ -274,27 +291,48 @@ case $args in
   ;;
 esac
 
-# The complications here are to do with the fact thatr a CSL build involves
+# The complications here are to do with the fact that a CSL build involves
 # building a "bootstrapreduce" and using that to map a selection of Reduce
 # functions into C++. This mapping is generic across all CSL variants and
-# so I *need* it to happen befote I complete any one CSL build but I really
+# so I *need* it to happen before I complete any one CSL build but I really
 # *want* it to happen only once even if I am rebuilding multiple CSL
 # variants.
+# The scheme I appply is:
+# (1) Bring bootstrapreduce and bootstrapreduce.img up to date
+#     for all the cases that are to be rebuilt.
+# (2) Identify ONE of them ane use it to create the C++ code. This
+#     makes files u01.cpp to u60.cpp (and corresponding *.lsp files)
+# (3) Continue to build csl and reduce based on what has now been done.
+
+rc=0
 
 if test "$firstcsl" != ""
 then
-  $MAKE -C "$firstcsl" c-code MYFLAGS="$flags"
-  rc=$?
-else
-  rc=0
+  for dd in $list
+  do
+    if test -f $dd/Makefile
+    then
+      printf "++ Build bootstrapreduce.img in directory $dd\n"
+      $MAKE $MFLAGS -C $dd $flags $args MYFLAGS="$flags" bootstrapreduce.img
+      rc1=$?
+      rc=$(($rc1 > $rc ? $rc1 : $rc))
+    fi
+  done
+# Now I use ONE of the perhaps many versions of bootstrapreduce to
+# create the generated C++ code.
+  $MAKE $MFLAGS -C "$firstcsl" c-code MYFLAGS="$flags"
+  rc1=$?
+  rc=$(($rc1 > $rc ? $rc1 : $rc))
 fi
+
+# Now complete all the builds.
 
 for dd in $list
 do
   if test -f $dd/Makefile
   then
     printf "++ Build in directory $dd\n"
-    $MAKE -C $dd $flags $args MYFLAGS="$flags"
+    $MAKE $MFLAGS -C $dd $flags $args MYFLAGS="$flags"
     rc1=$?
     rc=$(($rc1 > $rc ? $rc1 : $rc)) 
   fi

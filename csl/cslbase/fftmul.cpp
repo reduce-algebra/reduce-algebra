@@ -82,36 +82,13 @@
 // Well: the slow versions will only be included if you compile with
 // "-DTESTFFT".
 
+#include "headers.h"
 
-#ifndef ARITHLIB_VERSION
-#include <cstdint>
-#include <iostream>
-#include <iomanip>
-#include <bit>
-#include <utility>
-#include <algorithm>
-#include <vector>
-#include <thread>
+namespace arithlib_implementation
+{
 
-// The following will provide support for some parallel execution.
-// It provides a call
-//     runInThreads(vector<T>v, void (*fn)(T));
-// that applies the given function to each item in the vector.
+using namespace CSL_LISP;
 
-#include "cthread.cpp" 
-#include "Lvector.base.h"
-
-// For testing I will want...
-#include <cmath>
-#include <random>
-#include <ctime>
-#include <chrono>
-#include <thread>
-#include <atomic>
-#include <cassert>
-#include "fftutils.cpp"
-using namespace fftutils;
-#endif // ARITHLIB_VERSION
 
 //*************************************************************************
 //*************************************************************************
@@ -128,7 +105,7 @@ using namespace fftutils;
 // distinctly faster than this, but has much longer code with loops
 // unrolled etc.
 
-static void slowmul(ConstDigitPtr a, size_t lena,
+void slowmul(ConstDigitPtr a, size_t lena,
                     ConstDigitPtr b, size_t lenb,
                     DigitPtr c)
 {   size_t N = lena+lenb;
@@ -161,7 +138,7 @@ static void slowmul(ConstDigitPtr a, size_t lena,
 // I code up more complicated versions.
 
 template <Digit32 P, Digit32 omega>
-static void slow_ft(DigitPtr32 a, size_t N)
+void slow_ft(DigitPtr32 a, size_t N)
 {   Digit32 root = exptmod(omega, (int32_t)(LCMlengths/N), P);
     stkvector<Digit32> temp(N);
     for (size_t i=0; i<N; i++)
@@ -178,7 +155,7 @@ static void slow_ft(DigitPtr32 a, size_t N)
 // the reciprocal of the root of unity used in the first version.
 
 template <Digit32 P, Digit32 omega>
-static void inverse_slow_ft(DigitPtr32 a, size_t N)
+void inverse_slow_ft(DigitPtr32 a, size_t N)
 {   Digit32 root = exptmod(omega, (int32_t)(LCMlengths-LCMlengths/N), P);
     stkvector<Digit32> temp(N);
     for (Digit32 i=0; i<N; i++)
@@ -227,14 +204,14 @@ static void inverse_slow_ft(DigitPtr32 a, size_t N)
 // Dispatch into the potentially SIMD-optimised version of the FFT code.
 
 template <uint32_t P, uint32_t cube_root>
-static void dif_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
+void dif_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 {   if (avx_available) avx_dif_ft<P,cube_root>(x, N, omegas);
     else if (sse4_available) sse4_dif_ft<P,cube_root>(x, N, omegas);
     else generic_dif_ft<P,cube_root>(x, N, omegas);
 }
 
 template <uint32_t P, uint32_t cube_root>
-static void dit_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
+void dit_ft(DigitPtr32 x, size_t N, DigitPtr32 omegas)
 {   if (avx_available) avx_dit_ft<P,cube_root>(x, N, omegas);
     else if (sse4_available) sse4_dit_ft<P,cube_root>(x, N, omegas);
     else generic_dit_ft<P,cube_root>(x, N, omegas);
@@ -475,7 +452,7 @@ public:
 // template expansion with each of the 5 primes I use. 
 
 template <Digit32 P, Digit32 omega>
-static void useOneModulus1(FFTParams& d)
+void useOneModulus1(FFTParams& d)
 {   size_t N = d.N;
     DigitPtr32 a = d.ws;
     DigitPtr32 b = d.ws+N;
@@ -520,7 +497,7 @@ static void useOneModulus1(FFTParams& d)
 #endif
 }
 
-static void useOneModulus(FFTParams d)
+void useOneModulus(FFTParams d)
 {   switch (d.which)
     {
     case 1:
@@ -541,10 +518,9 @@ static void useOneModulus(FFTParams d)
     }
 }
 
-template <bool parallel=true>
-static void fftmul(ConstDigitPtr a, size_t lena,
+void fftmul(ConstDigitPtr a, size_t lena,
                    ConstDigitPtr b, size_t lenb,
-                   DigitPtr c)
+                   DigitPtr c, bool parallel)
 {
     size_t N = roundUp23(lena+lenb);
 // Grab all the workspace I need. It looks like a lot! But note that
@@ -569,7 +545,8 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     prinvec("a", a, lena);
     prinvec("b", b, lenb);
 #endif
-    runInThreads<parallel>(subtasks, useOneModulus);
+    if (parallel) runInThreads<true>(subtasks, useOneModulus);
+    else runInThreads<false>(subtasks, useOneModulus);
 // The product mod Q1 is left on ws1 etc.
 
 // Use the Chinese Remainder Theorem to turn the modular results back
@@ -611,5 +588,7 @@ static void fftmul(ConstDigitPtr a, size_t lena,
     if (carry1 != 0)
         std::cout << "Bad carry = " << carry1 << "\n";;
 }
+
+} // end of namespace
 
 // end of fftmod.cpp

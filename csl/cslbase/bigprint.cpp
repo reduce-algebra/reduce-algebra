@@ -32,10 +32,11 @@
 
 // $Id$
 
-#include "arithlib.h"
+#if __has_include("config.h")
+#include "config.h"
+#endif
 
-namespace arithlib_implementation
-{
+#include "arithlib.h"
 
 std::intptr_t stringToBignum(const char* s)
 {   bool sign = false;
@@ -493,7 +494,5 @@ string_handle bignumToStringBinary(std::intptr_t aa)
     }
     return confirmSizeString(r, m, p-reinterpret_cast<char*>(r));
 }
-
-}; // end of namespace
 
 // end of bigprint.cpp

@@ -1,4 +1,4 @@
-// newallocate.h                          Copyright (C) Codemist, 2018-2026
+// allocate.h                             Copyright (C) Codemist, 2018-2026
 
 
 /**************************************************************************
@@ -1741,5 +1741,5 @@ inline Page* findPage(uintptr_t p)
 
 #endif // header_newallocate_h
 
-// end of newallocate.h
+// end of allocate.h
 

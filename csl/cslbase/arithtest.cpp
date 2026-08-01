@@ -33,7 +33,7 @@
 
 // $Id$
 
-#include "arithlib.h"
+#include "arithlib.cpp"
 
 #include <cstdlib>
 #include <cmath>
@@ -73,7 +73,7 @@ using namespace arithlib;
     !defined TEST_ISQRT && \
     !defined TEST_FLOAT
 
-//#define COMPARE_GMP 1
+#define COMPARE_GMP 1
 #define TEST_SOME_BASICS 1
 #define TEST_RANDOM 1
 #define TEST_BITWISE 1
@@ -1014,4 +1014,4 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// end of test.cpp
+// end of arithtest.cpp

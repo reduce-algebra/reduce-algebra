@@ -78,7 +78,7 @@ LispObject make_complex(LispObject r, LispObject i)
     if (i == fixnum_of_int(0) ||
         ((is_short_float(i) || is_single_float(i) || is_double_float(i)) &&
          float_of_number(i) == 0.0) ||
-        (is_long_float(i) && iszero(long_float_val(i))))
+        (is_long_float(i) && long_float_val(i) == LF_C(0.0)))
         return r;
     stackcheck();
     v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM, sizeof(Complex_Number));
@@ -198,6 +198,10 @@ uint64_t sixty_four_bits_unsigned(LispObject a)
 //      |___ this start point must be at an address that is 8 mod 16,
 //           so that the float itself is 16 byte aligned.
 
+bool floating_edge_case(FLOAT_128 x)
+{   return isnan(x) || isinf(x);
+}
+
 LispObject make_boxfloat128(FLOAT_128 a)
 {   LispObject r;
     r = get_aligned_basic_vector(TAG_BOXFLOAT, TYPE_FLOAT, SIZEOF_LONG_FLOAT);
@@ -255,142 +259,6 @@ double float_of_number(LispObject a)
 // and since I am supposed to have checked the object type already
 // this OUGHT not to arrive - bit raising an exception seems over-keen.
                 return 0.0;
-        }
-    }
-}
-
-// This must return a FLOAT_128 value for the bignum together with
-// and amount to adjust the exponent by. I want this to be correctly
-// rounded, and that makes the code messier than one might have hoped.
-
-
-FLOAT_128 bignum_to_float128(LispObject a, int& x)
-{   size_t len = length_of_header(numhdr(a));
-    size_t n = (len-CELL-8)/8;  // Last index into the data
-    uint64_t* p = (uint64_t*)(a + CELL - TAG_NUMBERS);
-    x = 0;
-    if (n == 0) return (FLOAT_128)(int64_t)p[0];
-    if (n == 1)
-    {   int128_t i = (int64_t)p[1];
-        i = (((uint128_t)i)<<64) | p[0];
-// The following line will round to nearest.
-        return (FLOAT_128)i;
-    }
-// Now by bignum has at least 3 digits. I will start by making it positive.
-    bool sign = minusp(a);
-    if (sign)
-    {   a = Minus::op(a);
-// If you negate a negative bignum it could possibly get one digit
-// longer. Specifically if the top digit starts off as 0x80000000...
-// the made-positive version will have to have a zero word inserted ahead of
-// that. If that happens we can have a bignum that starts off as
-// {0, MMMM, NNNN} with the top bit of MMMM set, Or we can have one
-// where the high digit is non-zero. In all cases there are more than
-// 113 significan bits within those 3 digits.
-        len = length_of_header(numhdr(a));
-        n = (len-CELL-8)/8;  // Last index into the data
-    }
-// I collect those top digits.
-    uint64_t hi = p[n];
-    uint64_t mid = p[n-1];
-    uint64_t lo = p[n-2];
-// I will shift those to make the very top bit non-zero;
-    if ((hi>>63) != 0) x = 64*n;
-    else if (hi == 0)
-    {   hi = mid;
-        mid = lo;
-        lo = 0;
-        x = 64*n - 64;
-    }
-    else
-    {   int shift = nlz(hi);
-        hi = (hi<<shift) | (mid>>(64-shift));
-        mid = (mid<<shift) | (lo>>(64-shift));
-        lo = (lo<<shift);
-        x = 64*n - shift;
-    }
-// Now some rounding. The value I am setting up needs to keep 113 bits
-// so I need to lose the low 15 bits of mid.
-    uint64_t guard = mid & 0x7fff;
-    mid &= ~0xffffffffffff8000;
-    bool roundup = false;
-    if (guard > 0x4000) roundup = true;
-    else if (guard == 0x4000 && (mid & 0x8000) != 0)
-    {   if (lo != 0) roundup = true;
-        else
-        {   for (size_t i=0; i < n-2; i++)
-            {   if (p[i] != 0)
-                {   roundup = true;
-                    break;
-                }
-            }
-        }
-    }
-    if (roundup)
-    {   mid += 0x8000;
-        if (mid == 0)
-        {   hi++;
-            if (hi == 0)
-            {   hi = 0x8000000000000000;
-                x += 64;
-            }
-        }
-    }
-    FLOAT_128 r((((uint128_t)hi)<<64) | mid, 0);
-    if (sign) r = -r;
-    return r;
-}
-
-
-FLOAT_128 float128_of_number(LispObject a)
-// Return a 128-bit floating point value for the given Lisp
-// number, or 0.0 in case of trouble.
-{   if (is_fixnum(a)) return (FLOAT_128)(int64_t)int_of_fixnum(a);
-    else if (is_sfloat(a))
-    {   uint32_t wi;
-        if (SIXTY_FOUR_BIT) wi = (int32_t)((uint64_t)a>>32);
-        else wi = a - XTAG_SFLOAT;
-        return (FLOAT_128)bit_cast<float>(wi);
-    }
-    else if (is_bfloat(a))
-    {   Header h = flthdr(a);
-        switch (h)
-        {   case SINGLE_FLOAT_HEADER:
-                if (SIXTY_FOUR_BIT)
-                    aerror("boxed single float on 64-bit system");
-                return (FLOAT_128)single_float_val(a);
-            case DOUBLE_FLOAT_HEADER:
-                return (FLOAT_128)double_float_val(a);
-            case LONG_FLOAT_HEADER:
-                return long_float_val(a);
-            default:
-                return (FLOAT_128)0.0;
-        }
-    }
-    else
-    {   Header h = numhdr(a);
-        int x1;
-        FLOAT_128 r1, r2;
-        switch (type_of_header(h))
-        {   case TYPE_BIGNUM:
-                r1 = bignum_to_float128(a, x1);
-                r1 = ldexp(r1, x1);
-                return r1;
-            case TYPE_RATNUM:
-            {   int x2;
-                LispObject na = numerator(a);
-                a = denominator(a);
-                if (is_fixnum(na)) r1 = float128_of_number(na), x1 = 0;
-                else r1 = bignum_to_float128(na, x1);
-                if (is_fixnum(a)) r2 = float128_of_number(a), x2 = 0;
-                else r2 = bignum_to_float128(a, x2);
-                return ldexp(r1/r2, x1 - x2);
-            }
-            default:
-// If the value was non-numeric or a complex number I hand back 0.0,
-// and since I am supposed to have checked the object type already
-// this OUGHT not to arrive - but raising an exception seems over-keen.
-                return (FLOAT_128)0.0;
         }
     }
 }
@@ -681,56 +549,6 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
     return r;
 }
 
-static FLOAT_128 f128_TWO_31(((uint128_t)0x401e) << 112, 0);
-
-static FLOAT_128 bignum_to_float128(LispObject v, int32_t h, int *xp)
-// Convert a Lisp bignum to get a 128-bit floating point value.
-// This uses at most the top 5 digits of the bignum's representation
-// since that is enough to achieve full accuracy.
-// This can not overflow, because it leaves an exponent-adjustment value
-// in *xp. You need "ldexp(r, *xp)" afterwards.
-//
-// WELL actually just using the top 5 digits us not enough! Consider an
-// integer whose mantissa has 0.5 in the last place, then a long string of
-// zero bits and then MAYBE a final trailing 1 that could force rounding up
-// rather than down...
-{   int32_t n = (h-CELL-4)/4;  // Last index into the data
-    int x = 31*static_cast<int>(n);
-    int32_t msd = (int32_t)bignum_digits(v)[n];
-// NB signed conversion on next line
-    FLOAT_128 r, w1, w2;
-    r = (FLOAT_128)(msd);
-    switch (n)
-    {   default:        // for very big numbers combine in 5 digits
-            w1 = (FLOAT_128)bignum_digits(v)[--n];
-            w2 = f128_TWO_31*r;
-            r = w1+w2;
-            x -= 31;
-        // drop through
-        case 3:
-            w1 = (FLOAT_128)bignum_digits(v)[--n];
-            w2 = f128_TWO_31*r;
-            r = w1+w2;
-            x -= 31;
-        // drop through
-        case 2:
-            w1 = (FLOAT_128)bignum_digits(v)[--n];
-            w2 = f128_TWO_31*r;
-            r = w1+w2;
-            x -= 31;
-        // drop through
-        case 1:
-            w1 = (FLOAT_128)bignum_digits(v)[--n];
-            w2 = f128_TWO_31*r;
-            r = w1+w2;
-            x -= 31;
-        // drop through
-        case 0: break;  // do no more
-    }
-    *xp = x;
-    return r;
-}
-
 // Now two functions that will help me to turn floats into (potentially big)
 // integers or rationals, or to compare floats with bignums.
 
@@ -939,61 +757,6 @@ double float_of_number(LispObject a)
 // and since I am supposed to have checked the object type already
 // this OUGHT not to arrive - bit raising an exception seems over-keen.
                 return 0.0;
-        }
-    }
-}
-
-FLOAT_128 float128_of_number(LispObject a)
-// Return a 128-bit floating point value for the given Lisp
-// number, or 0.0 in case of trouble.
-{   if (is_fixnum(a)) return (FLOAT_128)(int64_t)int_of_fixnum(a);
-    else if (is_sfloat(a))
-    {   int32_t i;
-        if (SIXTY_FOUR_BIT) i = (int32_t)((uint64_t)a>>32);
-        else i = a - XTAG_SFLOAT;
-        return (FLOAT_128)bit_cast<float>(i);
-    }
-    else if (is_bfloat(a))
-    {   Header h = flthdr(a);
-        switch (h)
-        {   case SINGLE_FLOAT_HEADER:
-                if (SIXTY_FOUR_BIT)
-                    aerror("boxed single float on 64-bit system");
-                return (FLOAT_128)single_float_val(a);
-            case DOUBLE_FLOAT_HEADER:
-                return (FLOAT_128)double_float_val(a);
-            case LONG_FLOAT_HEADER:
-                return long_float_val(a);
-            default:
-                return (FLOAT_128)0.0;
-        }
-    }
-    else
-    {   Header h = numhdr(a);
-        int x1;
-        FLOAT_128 r1, r2;
-        switch (type_of_header(h))
-        {   case TYPE_BIGNUM:
-                r1 = bignum_to_float128(a, length_of_header(h), &x1);
-                r1 = ldexp(r1, x1);
-                return r1;
-            case TYPE_RATNUM:
-            {   int x2;
-                LispObject na = numerator(a);
-                a = denominator(a);
-                if (is_fixnum(na)) r1 = float128_of_number(na), x1 = 0;
-                else r1 = bignum_to_float128(na,
-                              length_of_header(numhdr(na)), &x1);
-                if (is_fixnum(a)) r2 = float128_of_number(a), x2 = 0;
-                else r2 = bignum_to_float128(a,
-                              length_of_header(numhdr(a)), &x2);
-                return ldexp(r1/r2, x1 - x2);
-            }
-            default:
-// If the value was non-numeric or a complex number I hand back 0.0,
-// and since I am supposed to have checked the object type already
-// this OUGHT not to arrive - but raising an exception seems over-keen.
-                return (FLOAT_128)0.0;
         }
     }
 }
@@ -2428,6 +2191,111 @@ LispObject sub1(LispObject p)
 }
 
 #endif // ARITHLIB
+
+static FLOAT_128 f128_TWO_31(0x401e0000, top32());
+
+static FLOAT_128 bignum_to_float128(LispObject v, int32_t h, int *xp)
+// Convert a Lisp bignum to get a 128-bit floating point value.
+// This uses at most the top 5 digits of the bignum's representation
+// since that is enough to achieve full accuracy.
+// This can not overflow, because it leaves an exponent-adjustment value
+// in *xp. You need "ldexp(r, *xp)" afterwards.
+//
+// WELL actually just using the top 5 digits us not enough! Consider an
+// integer whose mantissa has 0.5 in the last place, then a long string of
+// zero bits and then MAYBE a final trailing 1 that could force rounding up
+// rather than down...
+{   int32_t n = (h-CELL-4)/4;  // Last index into the data
+    int x = 31*static_cast<int>(n);
+    int32_t msd = (int32_t)bignum_digits(v)[n];
+// NB signed conversion on next line
+    FLOAT_128 r, w1, w2;
+    r = (FLOAT_128)(msd);
+    switch (n)
+    {   default:        // for very big numbers combine in 5 digits
+            w1 = (FLOAT_128)bignum_digits(v)[--n];
+            w2 = f128_TWO_31*r;
+            r = w1+w2;
+            x -= 31;
+        // drop through
+        case 3:
+            w1 = (FLOAT_128)bignum_digits(v)[--n];
+            w2 = f128_TWO_31*r;
+            r = w1+w2;
+            x -= 31;
+        // drop through
+        case 2:
+            w1 = (FLOAT_128)bignum_digits(v)[--n];
+            w2 = f128_TWO_31*r;
+            r = w1+w2;
+            x -= 31;
+        // drop through
+        case 1:
+            w1 = (FLOAT_128)bignum_digits(v)[--n];
+            w2 = f128_TWO_31*r;
+            r = w1+w2;
+            x -= 31;
+        // drop through
+        case 0: break;  // do no more
+    }
+    *xp = x;
+    return r;
+}
+
+FLOAT_128 float128_of_number(LispObject a)
+// Return a 128-bit floating point value for the given Lisp
+// number, or 0.0 in case of trouble.
+{   if (is_fixnum(a)) return (FLOAT_128)(int64_t)int_of_fixnum(a);
+    else if (is_sfloat(a))
+    {   float_union w;
+        if (SIXTY_FOUR_BIT) w.i = (int32_t)((uint64_t)a>>32);
+        else w.i = a - XTAG_SFLOAT;
+        return (FLOAT_128)w.f;
+    }
+    else if (is_bfloat(a))
+    {   Header h = flthdr(a);
+        switch (h)
+        {   case SINGLE_FLOAT_HEADER:
+                if (SIXTY_FOUR_BIT)
+                    aerror("boxed single float on 64-bit system");
+                return (FLOAT_128)single_float_val(a);
+            case DOUBLE_FLOAT_HEADER:
+                return (FLOAT_128)double_float_val(a);
+            case LONG_FLOAT_HEADER:
+                return long_float_val(a);
+            default:
+                return (FLOAT_128)0.0;
+        }
+    }
+    else
+    {   Header h = numhdr(a);
+        int x1;
+        FLOAT_128 r1, r2;
+        switch (type_of_header(h))
+        {   case TYPE_BIGNUM:
+                r1 = bignum_to_float128(a, length_of_header(h), &x1);
+                r1 = ldexp(r1, x1);
+                return r1;
+            case TYPE_RATNUM:
+            {   int x2;
+                LispObject na = numerator(a);
+                a = denominator(a);
+                if (is_fixnum(na)) r1 = float128_of_number(na), x1 = 0;
+                else r1 = bignum_to_float128(na,
+                              length_of_header(numhdr(na)), &x1);
+                if (is_fixnum(a)) r2 = float128_of_number(a), x2 = 0;
+                else r2 = bignum_to_float128(a,
+                              length_of_header(numhdr(a)), &x2);
+                return ldexp(r1/r2, x1 - x2);
+            }
+            default:
+// If the value was non-numeric or a complex number I hand back 0.0,
+// and since I am supposed to have checked the object type already
+// this OUGHT not to arrive - but raising an exception seems over-keen.
+                return (FLOAT_128)0.0;
+        }
+    }
+}
 
 } // end of namespace
 

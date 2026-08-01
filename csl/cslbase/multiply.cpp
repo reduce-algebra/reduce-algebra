@@ -1,4 +1,8 @@
-// multiply.cpp                                   Copyright A C Norman 2926
+// multiply.cpp                            Copyright (C) 1990-2026 Codemist
+
+
+// $Id$
+
 
 /**************************************************************************
  * Copyright (C) 2026, Codemist.                         A C Norman       *
@@ -29,65 +33,15 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id$
-
-//=========================================================================
-//=========================================================================
-// multiplication, squaring and exponentiation.
-//=========================================================================
-//=========================================================================
-
-
-#include "arithlib.h"
+#include "headers.h"
 
 namespace arithlib_implementation
 {
 
-// I need some sub-functions that add and subtract N-digit numbers.
-
-// increment the N-digit number x by n.
-
-void increment(std::uint64_t* x, std::size_t N, Digit n=1)
-{   if ((x[0] += n) >= n) return;
-    for (std::size_t i=1; i<N; i++)
-    {   if (++x[i] != 0) return;
-    }
-}
-
-// z = x + y and return a carry, where x, y and z are N digit numbers.
-
-Digit addWithCarry(const std::uint64_t* x,
-                                  const std::uint64_t* y,
-                                  std::uint64_t* z, std::size_t N)
-{   Digit c = addWithCarry(x[0], y[0], z[0]);
-    for (std::size_t i=1; i<N; i++)
-        c = addWithCarry(x[i], y[i], c, z[i]);
-    return c;
-}
-
-// As above except that c is a "carry in".
-
-Digit addWithCarry(const std::uint64_t* x,
-                                  const std::uint64_t* y,
-                                  Digit c,
-                                  std::uint64_t* z, std::size_t N)
-{   for (std::size_t i=0; i<N; i++)
-        c = addWithCarry(x[i], y[i], c, z[i]);
-    return c;
-}
-// z = x - y and return a borrow.
-
-Digit subtractWithBorrow(const std::uint64_t* x,
-                                        const std::uint64_t* y,
-                                        std::uint64_t* z, std::size_t N)
-{   Digit b = subtractWithBorrow(x[0], y[0], z[0]);
-    for (std::size_t i=1; i<N; i++)
-        b = subtractWithBorrow(x[i], y[i], b, z[i]);
-    return b;
-}
+using namespace CSL_LISP;
 
 
-// integers.
+// Multiply integers.
 
 // Overall plan:
 //    (1) Cases from 1x1 to 7x7 are dealt with using special code
@@ -158,21 +112,133 @@ Digit subtractWithBorrow(const std::uint64_t* x,
 // calculation will not be a sharp bound and will be very fragile against
 // small changes in the code.
 
-#include <atomic>
+// When I get to big-integer multiplication I will use two or three
+// worker threads so that elapsed times for really large multiplications
+// are reduced somewhat. Well ideally by a factor approaching 3. I have
+// a framework of support for the threads called runInThreads.
+
+// Each worker thread needs some data that it shares with the main thread.
+// this structure encapsulates that.
+
+// Above this length (measured in 64-bit digits) I will use fast
+// multiplication based on FFT.
+// The threshold here will depend on the machine you are running on,
+// but this is probably close enough across the platforms that I care about.
+
+// Ha ha - I use this startup-time to determine whether I seem to be
+// running under the Windows Subbsystem for Linux. I want to know this
+// because at least at present it seems that it might impact break-even
+// points between various schemes for multiplication.
+
+bool const under_WSL =
+   ([](){
+     return std::filesystem::exists("/usr/bin/wslinfo");
+   })();
+
+// Multiplications where M and N are both no more than than 7
+// are done by unrolled and inlined special code.
+// From when the larger is at least KARASTART I will use Karatsuba,
+// and from KARABIG on it will not be just Karatsuba but the top
+// level decomosition will be run using multiple threads.
+// Beyond FFT_THRESHOLD I will use an FFT-based scheme. That means that
+// Karatsuba and Toom only ever run on smaller cases than that and so
+// the amount of workspace they need is bounded and I can allocate it
+// statically.
+
+// inline constexpr std::size_t MUL_INLINE_LIMIT = 7;
+
+// The thresholds at which I transition from classical multiplication
+// to use of Karatsuba (and Toom-3-2) and the one where I activate
+// multiple thhreads may want to differ on different machines. I have
+// a range of settings with values based on measurements on machines I
+// have access to, but the values may well not be quite optimal even there
+// and my machines may not yield the experience that others will have!
+
+// By predefining preprocessor symbols KARASTART and KARABIG I can
+// override my defaults here.
+
+#ifndef KARASTART
+
+#if defined WIN32                             // Windows (x86_64)
+// Tested using x86_64-w64-mingw-g++ on an Intel i7-8086K.
+const std::size_t KARASTART = 16;
+
+#elif defined __CYGWIN__                      // Windows (x86_64)
+// Tested using Cygwin g++ on an Intel i7-8086K.
+const std::size_t KARASTART = 16;
+
+#elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
+// Tested on Macbook m1.
+const std::size_t KARASTART = 25;
+
+#elif defined __ARM_ARCH_8A                   // Raspberry Pi 5
+// Measured in a Raspberry Pi 5 running Raspberry Pi OS in 64-bit mode.
+const std::size_t KARASTART = 16;
+
+#elif defined __ARM_ARCH                      // Other Raspberry Pi etc
+// Measured on a Raspberry Pi 5.
+// If a 32-bit operating system is in use probably 22 would be a better
+// number, but by now I will expect "everybody" to be running 64-bit.
+const std::size_t KARASTART = 16;
+
+#else                                         // other (eg generic Linux)
+// Figure rather guessed from all the above, but applicable in a Linux
+// vm running on the Windows machine I test on!
+const std::size_t KARASTART = 16;
+#endif
+
+#endif // KARASTART
+
+#ifndef KARABIG
+
+// Measurements in December 2025 on a Windows 11 machine, with Cygwin and
+// under WSL show a need for very high values here - and I do not understand
+// what has changed. But eg when I use the same computer and run Linux
+// directly I see a much lower cut-off as against running using WSL2.
+// Hmmmmmm.
+
+#if defined WIN32                             // Windows (x86_64)
+//static const std::size_t KARABIG = 60;
+const std::size_t KARABIG = 400;
+#elif defined __CYGWIN__                      // Cygwin/Windows (x86_64)
+//static const std::size_t KARABIG = 65;
+const std::size_t KARABIG = 400;
+#elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
+const std::size_t KARABIG = 352;
+#elif defined __ARM_ARCH_8A                   // Raspberry p 5
+const std::size_t KARABIG = 72;
+#elif defined __ARM_ARCH                      // Other Raspberry pi etc
+const std::size_t KARABIG = 50;
+#else                                         // other (eg generic Linux)
+std::size_t KARABIG = ([](){ return under_WSL ? 400 : 144;})();
+#endif
+
+#endif // KARABIG
+
+
+#ifndef FFT_THRESHOLD
+#ifdef __arm64__
+const std::size_t FFT_THRESHOLD = 5000;
+#else // __arm64__
+// The next value might plausibly need to depend on whether you are running
+// under WSL.
+const std::size_t FFT_THRESHOLD = 10000;
+#endif // __arm64__
+#endif // FFT_THRESHOLD
 
 // I am trying to round lengths up to multiples of 16 to gete my data
 // really well aligned...
 
-static constexpr std::size_t workspaceSize(std::size_t M)
+constexpr std::size_t workspaceSize(std::size_t M)
 {   return (6*M+15)&(-16);
 }
 
-// At the top level toom32<true>() can use a little over 7*L workspace for
+// At the top level toom32(...,true) can use a little over 7*L workspace for
 // itself, where L=max(N/3,M/2). But N<=1.85*M and M is large enough that
 // I will ignore rounding. Then plus the need for four parallel
 // sub-multiplications. I will use a rounded up 2M/3 as my bound on L.
 
-static constexpr std::size_t topWorkspaceSize(std::size_t M)
+constexpr std::size_t topWorkspaceSize(std::size_t M)
 {   size_t toomLen = ((2*M+2)/3 + 15)&(-16);
     return 7*toomLen + 4*workspaceSize(toomLen);
 }
@@ -186,7 +252,7 @@ static constexpr std::size_t topWorkspaceSize(std::size_t M)
 // threads that may need it are created that they allocate the memory
 // that is required.
 
-static thread_local Digit* TLworkspace = nullptr;
+thread_local Digit* TLworkspace = nullptr;
 
 class MultiplicationTask
 {
@@ -211,16 +277,11 @@ public:
     }
 };
 
-class BigMultiplication
-{
-
-public:
-
 // verySimpleMul exists ONLY for testing - specifically to generate
 // reference products that the output from other more complicated code
 // can be compared against.
 
-static void verySimpleMul(ConstDigitPtr a, std::size_t N,
+void verySimpleMul(ConstDigitPtr a, std::size_t N,
                           ConstDigitPtr b, std::size_t M,
                           DigitPtr result)
 {   Digit carry = 0, lo = 0, hi = 0;
@@ -258,7 +319,7 @@ static void verySimpleMul(ConstDigitPtr a, std::size_t N,
 // that leads to each having simpler start and end conditions, and I
 // hope that reduces overhead.
 
-static void simpleMul(ConstDigitPtr a, std::size_t N,
+void simpleMul(ConstDigitPtr a, std::size_t N,
                       ConstDigitPtr b, std::size_t M,
                       DigitPtr result)
 {
@@ -347,23 +408,13 @@ static void simpleMul(ConstDigitPtr a, std::size_t N,
     result[k] = lo;
 }
 
-private:
-
-// inline1.cpp is a generated file that provides multiplication of
-// various fairly small bignums in the form of straight-line code.
-// The idea is that multiplication of rather small bignums will be
-// especially common and also particularly liable to be sensitive to
-// overheads of various sorts. If it is rendered as straight-line code
-// that perhaps gives an optimising compiler the best possible chance to
-// do a good job with it.
-
-#include "inlinemul.cpp"
+#include "inlinemul2.cpp"
 
 
 // The vector a has M digits and result has N (with N>=M). Add the
 // value in a into result and return any carry.
 
-static Digit addMdigits(ConstDigitPtr a, std::size_t M, DigitPtr result, std::size_t N)
+Digit addMdigits(ConstDigitPtr a, std::size_t M, DigitPtr result, std::size_t N)
 {   Digit carry = addWithCarry(a[0], result[0], result[0]);
     std::size_t i=1;
 //@@for (; i<M; i++)
@@ -385,8 +436,7 @@ static Digit addMdigits(ConstDigitPtr a, std::size_t M, DigitPtr result, std::si
 
 // result = a + b with a carry-in
 
-[[gnu::always_inline]]
-static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
+Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
                      ConstDigitPtr b, std::size_t lenB,
                      Digit carry,
                      DigitPtr result)
@@ -411,8 +461,7 @@ static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
 
 // result = a + b
 
-[[gnu::always_inline]]
-static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
+Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
                      ConstDigitPtr b, std::size_t lenB,
                      DigitPtr result)
 {   return karaAdd(a, lenA, b, lenB, 0, result);
@@ -420,8 +469,7 @@ static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
 
 // result = a - b
 
-[[gnu::always_inline]]
-static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
+Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
                           ConstDigitPtr b, std::size_t lenB,
                           DigitPtr result)
 {   Digit borrow = 0;
@@ -446,8 +494,7 @@ static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
 
 // result = b - a;
 
-[[gnu::always_inline]]
-static Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
+Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
                              ConstDigitPtr b, std::size_t lenB,
                              DigitPtr result)
 {   Digit borrow = 0;
@@ -476,8 +523,7 @@ static Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
 
 // Replace a and b with a-b and a+b.
 
-[[gnu::always_inline]]
-static void karaDifferenceAndSum(DigitPtr a, DigitPtr b,
+void karaDifferenceAndSum(DigitPtr a, DigitPtr b,
                                  std::size_t len,
                                  Digit& carry,
                                  Digit& borrow)
@@ -491,8 +537,7 @@ static void karaDifferenceAndSum(DigitPtr a, DigitPtr b,
 
 // Propogate a carry.
 
-[[gnu::always_inline]]
-static void karaCarry(Digit carry, DigitPtr v)
+void karaCarry(Digit carry, DigitPtr v)
 {   size_t i = 0;
     while (carry != 0)
     {   carry = addWithCarry(v[i], carry, v[i]);
@@ -502,8 +547,7 @@ static void karaCarry(Digit carry, DigitPtr v)
 
 // Propogate a borrow.
 
-[[gnu::always_inline]]
-static void karaBorrow(Digit borrow, DigitPtr v)
+void karaBorrow(Digit borrow, DigitPtr v)
 {   size_t i = 0;
     while (borrow != 0)
     {   borrow = subtractWithBorrow(v[i], borrow, v[i]);
@@ -514,7 +558,7 @@ static void karaBorrow(Digit borrow, DigitPtr v)
 // This divides a value by 2, where the value has a signed top digit
 // and a vector of unsigned additional digits.
 
-static SignedDigit karaHalve(SignedDigit top, DigitPtr a, std::size_t len)
+SignedDigit karaHalve(SignedDigit top, DigitPtr a, std::size_t len)
 {   Digit carry = top & 1;
     top = top - carry;
     for (size_t i=len-1; i!=0; i--)
@@ -526,8 +570,7 @@ static SignedDigit karaHalve(SignedDigit top, DigitPtr a, std::size_t len)
     return top/2;
 }
 
-[[gnu::always_inline]]
-static void differenceLengthsMatch(ConstDigitPtr low, std::size_t length,
+void differenceLengthsMatch(ConstDigitPtr low, std::size_t length,
                                    ConstDigitPtr high, DigitPtr result)
 {   Digit borrow = subtractWithBorrow(low[0], high[0], result[0]);
 //@@for (std::size_t i=1; i<length; i++)
@@ -541,8 +584,7 @@ static void differenceLengthsMatch(ConstDigitPtr low, std::size_t length,
         borrow = subtractWithBorrow(low[i], high[i], borrow, result[i]);
 }
 
-[[gnu::always_inline]]
-static bool differenceLengthsDiffer(ConstDigitPtr low, std::size_t lenLow,
+bool differenceLengthsDiffer(ConstDigitPtr low, std::size_t lenLow,
                                     ConstDigitPtr high, std::size_t lenHigh,
                                     DigitPtr result)
 {   Digit borrow = subtractWithBorrow(low[0], high[0], result[0]);
@@ -579,8 +621,7 @@ static bool differenceLengthsDiffer(ConstDigitPtr low, std::size_t lenLow,
 // smaller value. So in that case the correct absolute value of
 // the differenfce will be 0000_1000_0000
 
-[[gnu::always_inline]]
-static bool absDifference(ConstDigitPtr low, std::size_t lenLow,
+bool absDifference(ConstDigitPtr low, std::size_t lenLow,
                           ConstDigitPtr high, std::size_t lenHigh,
                           DigitPtr result)
 {   if (lenHigh != lenLow)
@@ -613,7 +654,7 @@ static bool absDifference(ConstDigitPtr low, std::size_t lenLow,
 
 //=========================================================================
 
-// Some of the functions here have are templated with a boolean
+// Some of the functions here have a boolean
 // called "thread". When this is true the code is entitled to cause
 // worker threads to be launched to perform subsidiary multiplications.
 // The multi-thread decomposition may only happen once, and that is enforced
@@ -637,10 +678,7 @@ static bool absDifference(ConstDigitPtr low, std::size_t lenLow,
 // size of the inputs and in each case the behaviour triggered is
 // to call a function that is not tagged as always-inline.
 
-public:
-
-[[gnu::always_inline]]
-static void generalMul(ConstDigitPtr a, std::size_t N,
+void generalMul(ConstDigitPtr a, std::size_t N,
                        ConstDigitPtr b, std::size_t M,
                        DigitPtr result)
 {
@@ -678,7 +716,7 @@ static void generalMul(ConstDigitPtr a, std::size_t N,
     else biggerMul(a, N, b, M, result);
 }
 
-static void biggerMul(ConstDigitPtr a, std::size_t N,
+void biggerMul(ConstDigitPtr a, std::size_t N,
                       ConstDigitPtr b, std::size_t M,
                       DigitPtr result)
 {
@@ -700,34 +738,32 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
         TLworkspace = workspace = new Digit[topWorkspaceSize(FFT_THRESHOLD)];
     if (4*N <= 5*M)
     {   if (N < KARABIG) kara(a, N, b, M, result, workspace);
-        else kara<true>(a, N, b, M, result, workspace);
+        else kara(a, N, b, M, result, workspace, true);
     }
     else if (20*N <= 37*M)
     {   if (N < KARABIG) toom32(a, N, b, M, result, workspace);
-        else toom32<true>(a, N, b, M, result, workspace);
+        else toom32(a, N, b, M, result, workspace, true);
 #ifdef TRACE_TIMES
         display("toom32res", result, N+M);
 #endif // TRACE_TIMES
     }
     else 
-    {   innerGeneralMul<true>(a, N, b, M, result, workspace);
+    {   innerGeneralMul(a, N, b, M, result, workspace, true);
 #ifdef TRACE_TIMES
         display("unbalancedres", result, N+M);
 #endif // TRACE_TIMES
     }
 }
 
-private:
-
 // When thread is false this is being used when Kara or Toom32
 // recurses and so most of the time we will have M==N>KARASTART/2. With
 // thread true it is from the top-level and may fire up some workers.
 
-template <bool thread=false>
-static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
-                            ConstDigitPtr b, std::size_t M,
-                            DigitPtr result,
-                            DigitPtr workspace)
+void innerGeneralMul(ConstDigitPtr a, std::size_t N,
+                     ConstDigitPtr b, std::size_t M,
+                     DigitPtr result,
+                     DigitPtr workspace,
+                     bool thread)
 {
 #ifdef TRACE_TIMES
     displayIndent += 2;
@@ -735,7 +771,7 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
     display("innergeneralb", b, M);
     displayIndent -= 2;
 #endif // TRACE_TIMES
-    if constexpr (!thread)
+    if (!thread)
     {   if ((N|M) <= 7)
         {   smallCaseMul(a, N, b, M, result);
             return;
@@ -762,35 +798,34 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
 // Here I will call Kara if N <= 1.25*M.
     if (4*N <= 5*M)
     {   if (N > FFT_THRESHOLD) fftmul(a, N, b, M, result);
-        else kara<thread>(a, N, b, M, result, workspace);
+        else kara(a, N, b, M, result, workspace, thread);
     }
 // If N <= 1.85*M I will use toom32.
     else if (20*N <= 37*M)
     {   if (N > FFT_THRESHOLD) fftmul(a, N, b, M, result);
-        else toom32<thread>(a, N, b, M, result, workspace);
+        else toom32(a, N, b, M, result, workspace, thread);
     }
 // If M and N are significantly different I will split the product
 // into two or more components, all better balanced.
-    else innerBigMul<thread>(a, N, b, M, result, workspace);
+    else innerBigMul(a, N, b, M, result, workspace, thread);
     displayIndent -= 2;
 }
 
 // This version is just for N*N products - a case which arises in recursive
 // calls from Karatsuba and Toom32. These are never top level!
 
-static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
-                            ConstDigitPtr b,
-                            DigitPtr result,
-                            DigitPtr workspace)
+void innerGeneralMul(ConstDigitPtr a, std::size_t N,
+                     ConstDigitPtr b,
+                     DigitPtr result,
+                     DigitPtr workspace)
 {   if (N < KARASTART) balancedMul(a, b, N, result);
     else kara(a, N, b, N, result, workspace);
 }
 
-template <bool thread=false>
-static void innerBigMul(ConstDigitPtr a, std::size_t N,
+void innerBigMul(ConstDigitPtr a, std::size_t N,
                         ConstDigitPtr b, std::size_t M,
                         DigitPtr result,
-                        DigitPtr workspace)
+                        DigitPtr workspace, bool thread)
 {
 #ifdef TRACE_TIMES
     display2("% innerBigMul", N, M);
@@ -803,7 +838,7 @@ static void innerBigMul(ConstDigitPtr a, std::size_t N,
 #ifdef TRACE_TIMES
     display2("innerBig starting toom of", step, M);
 #endif // TRACE_TIMES
-    toom32<thread>(a, step, b, M, result, workspace);
+    toom32(a, step, b, M, result, workspace, thread);
 #ifdef TRACE_TIMES
     display("firsttoom32res", result, step+M);
 #endif // TRACE_TIMES
@@ -820,7 +855,7 @@ static void innerBigMul(ConstDigitPtr a, std::size_t N,
             display("save", save, M);
             display2("% Another ", step, M);
 #endif // TRACE_TIMES
-            toom32<thread>(a, step, b, M, result, workspace);
+            toom32(a, step, b, M, result, workspace, thread);
             addMdigits(save, M, result, step+M);
 #ifdef TRACE_TIMES
             display("partial", result, step+M);
@@ -841,11 +876,11 @@ static void innerBigMul(ConstDigitPtr a, std::size_t N,
 #ifdef TRACE_TIMES
         display("save", save, M);
 #endif // TRACE_TIMES
-        if (4*N > 5*M) toom32<thread>(a, N, b, M, result, workspace);
-        else if (N >= M) kara<thread>(a, N, b, M, result, workspace);
+        if (4*N > 5*M) toom32(a, N, b, M, result, workspace, thread);
+        else if (N >= M) kara(a, N, b, M, result, workspace, thread);
 // Now N < M so I need to flip order for the calls...
         else if (N < KARASTART) simpleMul(b, M, a, N, result);
-        else if (5*N >= 4*M) kara<thread>(b, M, a, N, result, workspace);
+        else if (5*N >= 4*M) kara(b, M, a, N, result, workspace, thread);
 // Should I worry about the potential recursion depth here?
 // I will consider how the product M*N decreases rather than how either
 // separately changes. One limiting case is if a single Karatsuba has
@@ -864,7 +899,7 @@ static void innerBigMul(ConstDigitPtr a, std::size_t N,
 // comprehensive ranges of M and N and that showed that for large inputs the
 // worst depth observed was 1.5*log2(min(N,M)) for cases where M and N
 // would possibly reach here.
-        else innerGeneralMul<thread>(b, M, a, N, result, workspace);
+        else innerGeneralMul(b, M, a, N, result, workspace, thread);
 #ifdef TRACE_TIMES
         display("addin", result, N+M);
 #endif // TRACE_TIMES
@@ -909,15 +944,14 @@ static void innerBigMul(ConstDigitPtr a, std::size_t N,
 //
 // merge d1, d2 in accounting for how they overlap each other and d0, d3.
 
-static void useMultiplicationTask(MultiplicationTask d)
+void useMultiplicationTask(MultiplicationTask d)
 {   innerGeneralMul(d.a, d.lena, d.b, d.lenb, d.c, d.ws);
 }
 
-template <bool thread=false>
-static void toom32(ConstDigitPtr a, std::size_t N,
-                   ConstDigitPtr b, std::size_t M,
-                   DigitPtr res,
-                   DigitPtr workspace)
+void toom32(ConstDigitPtr a, std::size_t N,
+            ConstDigitPtr b, std::size_t M,
+            DigitPtr res,
+            DigitPtr workspace, bool thread)
 {
 // I will start by viewing a as (ahigh, amid, alow) and b as (bhigh, blow)
 // where amid, alow, blow all have the same size (toomLen). Then
@@ -941,7 +975,7 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     assert(aHighLen <= toomLen);
 #endif // DEBUG
 #ifdef TRACE_TIMES
-    if constexpr (thread)
+    if (thread)
         display2("start parallel toom32", N, M);
     else display2("start toom32", N, M);
     display2("toomlen, aHighen", toomLen, aHighLen);
@@ -963,7 +997,7 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     DigitPtr aSum, aDiff, bSum, bDiff, D0, D1, D2, D3;
     Digit aSumTop, bSumTop;
     SignedDigit aDiffTop, bDiffTop, D1Top, D2Top;
-    if constexpr (thread)
+    if (thread)
     {   aSum = setSize(workspace+4*toomLen, toomLen);
         aDiff = setSize(workspace+5*toomLen, toomLen);
         bSum = setSize(workspace+6*toomLen, toomLen);
@@ -996,7 +1030,7 @@ static void toom32(ConstDigitPtr a, std::size_t N,
 //@ display("bsum", bSumTop, bSum, toomLen);
 //@ display("bdiff", bDiffTop, bDiff, toomLen);
 #endif // TRACE_TIMES
-    if constexpr (thread)
+    if (thread)
     {   std::size_t wsize = workspaceSize(toomLen);
         std::vector<MultiplicationTask> subtasks =
         {   MultiplicationTask(aLow, toomLen, bLow, toomLen,
@@ -1133,7 +1167,7 @@ static void toom32(ConstDigitPtr a, std::size_t N,
 //@ display("halfdiff", D1Top, D1, 2*toomLen);
 //@ display("halfsum", D2Top, D2, 2*toomLen);
 #endif // TRACE_TIMES
-    if constexpr (!thread) // These already computed in the threaded version
+    if (!thread) // These already computed in the threaded version
     {   innerGeneralMul(aLow, toomLen, bLow, D0, workspace);
         innerGeneralMul(aHigh, aHighLen, bHigh, bHighLen, D3, workspace);
     }
@@ -1203,18 +1237,17 @@ static void toom32(ConstDigitPtr a, std::size_t N,
 // case we need
 // d1 := p1 - p0 - p2;      alow*bhigh + amid*blow
 
-template <bool thread=false>
-static void kara(ConstDigitPtr a, std::size_t N,
+void kara(ConstDigitPtr a, std::size_t N,
                  ConstDigitPtr b, std::size_t M,
                  DigitPtr result,
-                 DigitPtr workspace)
+                 DigitPtr workspace, bool thread)
 {   std::size_t lowSize = (N+1)/2;
     std::size_t aHighLen = N-lowSize;
     std::size_t bHighLen = M-lowSize;
     ConstDigitPtr aHigh = a+lowSize;
     ConstDigitPtr bHigh = b+lowSize;
 #ifdef TRACE_TIMES
-    if constexpr (thread)
+    if (thread)
         display2("start parallel kara", N, M);
     else display2("start kara", N, M);
     display("ahigh", aHigh, aHighLen);
@@ -1229,7 +1262,7 @@ static void kara(ConstDigitPtr a, std::size_t N,
     DigitPtr aDiff, bDiff;
     DigitPtr ws;
     std::size_t wsize = workspaceSize(lowSize);
-    if constexpr (thread)
+    if (thread)
     {   aDiff = workspace+2*lowSize;
         bDiff = workspace+3*lowSize;
         ws = workspace+4*lowSize;
@@ -1246,7 +1279,7 @@ static void kara(ConstDigitPtr a, std::size_t N,
     display("bdiff", bDiff, lowSize);
     std::cout << "% sign = " << sign << "\n";
 #endif // TRACE_TIMES
-    if constexpr (thread)
+    if (thread)
     {   std::vector<MultiplicationTask> subtasks =
         {   MultiplicationTask(aDiff, lowSize, bDiff, lowSize,
                      workspace, ws),
@@ -1309,859 +1342,8 @@ static void kara(ConstDigitPtr a, std::size_t N,
 #endif // TRACE_TIMES
 }  
 
-}; // end of BigMultiplication class
-
-// Now the external world needs access to the entrypoint "generalMul"
-// so I provide a shim that calls it so that others do not need to
-// fuss about the class name.
-
-[[gnu::always_inline]]
-void generalMul(ConstDigitPtr a, std::size_t N,
-                       ConstDigitPtr b, std::size_t M,
-                       DigitPtr result)
-{   BigMultiplication::generalMul(a, N, b, M, result);
-}
-
-// verySimpleMul is intended to deliver the same results as generalMul
-// but using clear (if less efficient code) so it can be use as a
-// reference implementation during testing.
-
-void verySimpleMul(ConstDigitPtr a, std::size_t N,
-                          ConstDigitPtr b, std::size_t M,
-                          DigitPtr result)
-{   BigMultiplication::verySimpleMul(a, N, b, M, result);
-}
-
-// End of integer multiplication code.
-//=========================================================================
+} // end of namespace
 
 
-// Now some code that delivers just some of the digits from a product.
+// End of multiply.cpp
 
-// Return (in w) the digits from "from" to "to" (inclusive) from
-// the product of u by v. "from" defaults to zero and "to" to a high
-// value - the product runs from 0 (inclusive) to N+M (exclusive)
-// and if "to" is overlarge no output data beyond the real digits of
-// the product are put into w.
-// When "from" is non-zero the lowest result in w may be incorrect by
-// being low by up to [maybe] min(N,M). That is because in the perfect
-// result there may have been carries passed on up from lower partial
-// products.
-
-// Note that the digit correspoding to "from" is put in the first
-// location in the output vector, and that vector should be
-// (min(N+M-1, to)-from) in length.
-
-// The "reference" version does a full multiplication (which may use
-// Karatsuba) and then keeps just some of the digits. If only a small
-// slice of the result is needed the full multiplication will generate
-// many unnecessary digits. But the code here is very simple and
-// can be used to document the intent of everything else. I will also use
-// it when the sizes M and N are very different.
-
-void referencePartMul(const std::uint64_t* u, size_t N,
-                             const std::uint64_t* v, size_t M,
-                             std::uint64_t* w,
-                             size_t from=0, size_t to=SIZE_MAX)
-{   stkvector<Digit> temp(N+M);
-// This reference implementation just forms the full product and then
-// copies the words [from..to] to where they are needed. It needs
-// workspace for the full product to calculated, and
-// stkvector<Digit> temp(N+M) arranges for that one way or another.
-    generalMul(u, N, v, M, temp);
-    to = std::min(to, N+M-1);
-    for (size_t i=from; i<=to; i++) w[i-from] = temp[i];
-}
-
-// The "classical" version is what will be used for multiplications
-// involving not too many digits, and is pretty straightforward.
-
-void classicalPartMul(const std::uint64_t* u, size_t N,
-                             const std::uint64_t* v, size_t M,
-                             std::uint64_t* w,
-                             size_t from=0, size_t to=SIZE_MAX)
-{   Digit lo=0, hi=0, carry=0, hi1;
-    to = std::min(to, N+M-1);
-// The curious expression here is intended to lead to branch-free code
-// that sets the range of digits to be combined forming partial
-// products. The idea is that ((-boolVal) & X will) yield the
-// same result as (boolVal ? X : 0). So here we have
-//     k < M :    imin = 0
-//     k >= M :   imin = k - kenv + 1
-//     k < N :    imax = k
-//     k >= N :   imax = N - 1
-    if (from != 0)
-    {
-        size_t imin = (-(from>=M+1)) & (from - M);
-        size_t imax = N - 1 - ((-(from<N+1)) & (N - from));
-        for (size_t i=imin; i<=imax; i++)
-        {   arithlib_assert(from>=i+1);
-            multiply64(u[i], v[from-i-1], lo, hi1, lo);
-            carry += ((hi += hi1) < hi1);
-        }
-// I form the partial products for one earlier row because the high
-// parts of them contribute fully to the digits that I want. But I discard
-// the result apart from keeping anything that has carried out from it.
-        // w[-1] = lo;
-        lo = hi;
-        hi = carry;
-        carry = 0;
-    }
-    for (size_t k=from; k<=to; k++)
-    {   size_t imin = (-(k>=M)) & (k - M + 1);
-        size_t imax = N - 1 - ((-(k<N)) & (N - 1 - k));
-        for (size_t i=imin; i<=imax; i++)
-        {   multiply64(u[i], v[k-i], lo, hi1, lo);
-            carry += ((hi += hi1) < hi1);
-        }
-        w[k-from] = lo;
-        lo = hi;
-        hi = carry;
-        carry = 0;
-    }
-}
-
-// A "fast" multiply decomposes the calculation in a way based on
-// work by Mulder.
-//
-// See Mulder, T. "On Short Multiplications and Divisions." AAECC 11,
-// 6988 (2000). https://doi.org/10.1007/s002000000037
-// and also see
-// G Henriot and P Zimmermanm, "A long note on Mulder's Short Product"
-// Journal of Symbolic Computation Volume 37, 3, March 2004, Pages 391-401
-
-Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
-                            const std::uint64_t* v, size_t M,
-                            std::uint64_t* w,
-                            size_t from, size_t to);
-
-// This forms a sub-product and adds it in. This is made into
-// a separate function allowing for a shift by uShift, vShift
-// because from, to and w need adjustment and the calculations that
-// set their values seemed most easily expressed here.
-
-Digit shiftedFastPartMulAdd(const std::uint64_t* u, size_t N,
-                                   const std::uint64_t* v, size_t M,
-                                   std::uint64_t* w,
-                                   size_t from, size_t to,
-                                   size_t uShift, size_t vShift)
-{   size_t h = uShift + vShift;
-    if (to <= h) return 0;
-    to -= h;
-    if (from < h)
-    {   w = w + (h-from);
-        from = 0;
-    }
-    else
-    {   from -= h;
-    }
-    return fastPartMulAdd(u+uShift, N,
-                          v+vShift, M,
-                          w,
-                          from, to);
-}
-
-// This computes the product of two numbers each of which are N digits long
-// and where "to" is such that quite a lot of the high digits of the
-// result are not wanted.
-
-void lowPartMul(const std::uint64_t* u,
-                       const std::uint64_t* v, size_t N,
-                       std::uint64_t*  w,
-                       size_t from, size_t to)
-{   size_t split = std::min(N, ((7*to)/10 + 1) & ~1);
-    size_t gap = N-split;
-    if (gap <= 3) split = N;
-    referencePartMul(u, split,
-                     v, split,
-                     w,
-                     from, to);
-    if (split == N) return;
-    shiftedFastPartMulAdd(u, N,
-                          v, gap,
-                          w,
-                          from, to,
-                          0, split);
-    shiftedFastPartMulAdd(u, split,
-                          v, gap,
-                          w,
-                          from, to,
-                          split, 0);
-}
-
-// I code this so that w does not overshoot the end of the vector w,
-// even though in C++ it is legal to have a pointer to the location
-// one beyond a vector.
-
-Digit propagateCarry(Digit carry, std::uint64_t* w, size_t len)
-{   if (carry==0 || len==0) return carry;
-    for (;;)
-    {   carry = addWithCarry(*w, carry, *w);
-        if (carry==0) return 0;
-        len--;
-        if (len==0) return carry;
-        w++;
-    }
-}
-
-const size_t midmul_threshold = 20;
-
-void fastPartMul(const std::uint64_t* u, size_t N,
-                        const std::uint64_t* v, size_t M,
-                        std::uint64_t* w,
-                        size_t from=0, size_t to=SIZE_MAX)
-{
-// Any digits in either u or v beyond "to" can be discarded since they can
-// not contribute to the desired part of the result.
-    if (to<N-1) N = to+1;
-    if (to<M-1) M = to+1;
-    if (N > M)          // ensure that u is the shorter argument
-    {   std::swap(u, v);
-        std::swap(N, M);
-    }
-    if (from>N-1)
-    {   size_t shift = from-(N-1);
-        if (M-shift >= N)
-        {   v += shift;
-            M -= shift;
-            to -= shift;
-            from -= shift;
-        }
-    }
-    to = std::min(to, N+M-1);
-// If either the smaller operand is small or if the slice of the result
-// I want is narrow I fall back to classical long multiplication.
-    if ((to-from) < midmul_threshold || N < midmul_threshold)
-    {   classicalPartMul(u, N, v, M, w, from, to);
-        return;
-    }
-    if (3*N < M)
-    {
-// This special case will apply if the two input integers are very
-// different in size. It is here because a previous revision of this
-// code could end up recursing ridiculously deeply in such cases when
-// in fact almost all of the product needed computing so calculating
-// it all as is done here was not a severe overhead.
-        referencePartMul(u, N, v, M, w, from, to);
-        return;
-    }
-// The following rather strange calculation decide how to split the
-// full product calculation into parts. The ideas built into it
-// are:
-// . We can never split off a balanced multiplication larger than NxN.
-// . When we split one off it should have an even size since we hope
-//   to be able to use Karatsuba on it.
-// . The size should be such that the split-off square multiplication
-//   uses input data beyond the "from" threshold. Here I set things
-//   such that if I will want K high digits in my result I form the
-//   product of two 0.7K digit numbers for form a 1.4K digit intermediate
-//   result and then ignore the low 0.4K digits of that. The fraction 0.7
-//   is not going to be optimal - even more in the case of unbalanced
-//   lengths of inputs, but is probably a reasonable approximation to the
-//   best and so is what I use. If one was in a situation where both
-//   arguments were the same fixed size and the fraction of the output
-//   needed was fixed it would be proper to tune this carefully.
-    size_t split = std::min(N, ((7*(N+M-from))/10 + 1) & ~1);
-// Do the first square multiplication... This is always done as by forming a
-// full 2*split digit product and the intent is that it always uses
-// Karatsuba.
-// Well if "to" is a significant limit on how many digits are required
-// this might be improved upon by doing Mulder-like decompostion upwards
-// towards "to" as well as downwards towards "from".
-    size_t shift = N+M-2*split;
-// I will generally need to add in components of the final result, and
-// so I zero out parts of w that will not be set by filling in the first
-// product.
-    for (size_t i=from; i<shift && i<=to; i++) w[i-from] = 0;
-    lowPartMul(u+(N-split), v+(M-split), split,
-               from>shift ? w : w + (shift-from),
-               from>shift ? from-shift : 0,
-               to-shift);
-    size_t P = N+M-1-split;     // higest digit from lower parts
-    if (from > P) return;
-    Digit carry;
-    if (split == N)
-    {   if (N == M) return;
-        carry = fastPartMulAdd(u, N, v, M-split, w, from, to);
-    }
-    else
-    {   shift = M-split;
-// This can recurse and as such is ugly - but at an earlier stage I have
-// ensured that M can only be a modest multiple of N so the recursion
-// depth here can never be deep enough to worry me.
-        carry = fastPartMulAdd(u, N,
-                               v, shift,
-                               w,
-                               from, to);
-        carry += shiftedFastPartMulAdd(u, N-split,
-                                       v, split,
-                                       w,
-                                       from, to,
-                                       0, shift);
-    }
-    if (to > P) propagateCarry(carry, w+(P-from+1), to-P);
-}
-
-// Note that default values for from and to were set up in the declaration
-// and must not be repeated here.
-
-Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
-                            const std::uint64_t* v, size_t M,
-                            std::uint64_t* w,
-                            size_t from, size_t to)
-{   to = std::min(to, N+M-1);
-// A special case here is when M is much larger then N, since with
-// naive code this can end up allocating a really big temporary vector
-// and calling fastMul to fill it in - and that will hive of a chunk
-// of size N at the top and then recurse to get here again. The effect
-// can be both very deep recursion and use of a quite unreasonable
-// amount of working space. But I avoid getting here in that case!
-    stkvector<Digit> temp(to-from+1);
-    fastPartMul(u, N, v, M, temp, from, to);
-    Digit carry = 0;
-    for (size_t i=0; i<N+M-from+1 && i<=to-from; i++)
-        carry = addWithCarry(w[i], temp[i], carry, w[i]);
-    return carry;
-}
-
-// Returns the digit at position "from:bits" from the product of u by v.
-// Some low bits of the result may be incorrect with the result being
-// potentially less than the ideal result by at most min(M,N).
-// This is because in the perfect result there may have been carries
-// passed on up from lower partial products.
-
-Digit fastSlice(const std::uint64_t* u, size_t N,
-                       const std::uint64_t* v, size_t M,
-                       size_t from=0, size_t bits = 0)
-{   stkvector<Digit> shiftedU(N+1);
-    if (bits != 0)
-    {   Digit carry = 0;
-        for (size_t i=N; i!=0; i--)
-        {   Digit d = u[i-1];
-            shiftedU[i] = (d>>bits) | (carry<<(64-bits));
-            carry = d;
-        }
-// The "0u" on the next line is to avoid a C++ ambiguity that arises
-// at least on 32-bit platforms where int and size_t are the same
-// width.
-        shiftedU[0u] = carry<<(64-bits);
-        u = shiftedU;
-        N++;
-        from++;
-    }
-    Digit lo=0, hi=0, hi1;
-// The curious expression here is intended to lead to branch-free code
-// that sets the range of digits to be combined forming partial
-// products. The idea is that ((-boolVal) & X will) yield the
-// same result as (boolVal ? X : 0). So here we have
-//     k < M :    imin = 0
-//     k >= M :   imin = k - kenv + 1
-//     k < N :    imax = k
-//     k >= N :   imax = N - 1
-//
-// First generate high parts of the partial products from the row
-// below "from" and leave that in hi.
-    size_t imin = (-(from>=M+1)) & (from - M);
-    size_t imax = N - 1 - ((-(from<N+1)) & (N - from));
-    for (size_t i=imin; i<=imax; i++)
-    {   multiply64(u[i], v[from-i-1], lo, hi1, lo);
-        hi += hi1;
-    }
-// Now add in the low parts of the partial products in row "from".
-    imin = (-(from>=M)) & (from - M + 1);
-    imax = N - 1 - ((-(from<N)) & (N - 1 - from));
-    for (size_t i=imin; i<=imax; i++)
-        multiply64(u[i], v[from-i], hi, hi1, hi);
-    return hi;
-}
-
-// This is the main entrypoint to the (big) integer multiplication code. It
-// takes two signed numbers and forms their product.
-
-void bigmultiply(
-        const std::uint64_t* a, std::size_t lena,
-        const std::uint64_t* b, std::size_t lenb,
-        std::uint64_t* c, std::size_t &lenc)
-{
-// For this a and b must be treated as 2s complement signed numbers,
-// and the length lenc returned but ensure that the top digit of the
-// product is not a redundant zero or -1.
-    generalMul(a, lena, b, lenb, c);
-#ifdef CHECK_TIMES
-    {   stkvector<Digit> c1(lena+lenb);
-        verySimpleMul(a, lena, b, lenb, c1);
-        for (size_t i=0; i<lena+lenb; i++)
-        {   if (c[i] != c1[i])
-            {   std::cout << "\n% CHECK_TIMES\n";
-                display("a", a, lena);
-                display("b", b, lenb);
-                display("true", c1, lena+lenb);
-                display("mine", c, lena+lenb);
-                arithlib_abort("failure in multiplication");
-            }
-        }
-    }
-#endif // CHECK_TIMES
-    if (negative(a[lena-1])) subtractWithBorrow(c+lena, b, c+lena, lenb);
-    if (negative(b[lenb-1])) subtractWithBorrow(c+lenb, a, c+lenb, lena);
-    lena += lenb;
-// A case like {0,0x80000...} times the same leads at this stage to
-// {0, 0, 0x40000...} and the length needs to be shrunk by two words. The
-// way I code this is intended to have a chance of compiling into branch-
-// free code and execute faster than "if (shrinkable(..)) lena--;".
-    lena -= shrinkable(c[lena-1], c[lena-2]);
-    lena -= shrinkable(c[lena-1], c[lena-2]);
-    lenc = lena;
-}
-
-void classicalbigmultiply(
-        const std::uint64_t* a, std::size_t lena,
-        const std::uint64_t* b, std::size_t lenb,
-        std::uint64_t* c, std::size_t &lenc)
-{
-// For this a and b must be treated as 2s complement signed numbers,
-// and the length lenc returned but ensure that the top digit of the
-// product is not a redundant zero or -1.
-    if (lena < lenb)
-    {   std::swap(a, b);
-        std::swap(lena, lenb);
-    }
-    verySimpleMul(a, lena, b, lenb, c);
-    if (negative(a[lena-1])) subtractWithBorrow(c+lena, b, c+lena, lenb);
-    if (negative(b[lenb-1])) subtractWithBorrow(c+lenb, a, c+lenb, lena);
-    lena += lenb;
-// A case like {0,0x80000...} times the same leads at this stage to
-// {0, 0, 0x40000...} and the length needs to be shrunk by two words. The
-// way I code this is intended to have a chance of compiling into branch-
-// free code and execute faster than "if (shrinkable(..)) lena--;".
-    lena -= shrinkable(c[lena-1], c[lena-2]);
-    lena -= shrinkable(c[lena-1], c[lena-2]);
-    lenc = lena;
-}
-
-//===========================================================================
-//===========================================================================
-
-std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
-{   std::size_t lena = numberSize(a);
-    std::size_t lenb = numberSize(b);
-    std::size_t n = lena+lenb;
-    std::uint64_t* p = reserve(n);
-    std::size_t final_n;
-// bigmultiply already tries to detect and handle small cases specially,
-// but it could be that detecting some very small cases here - ie even
-// earlier - would be worthwhile.
-    bigmultiply(a, lena, b, lenb, p, final_n);
-    return confirmSize(p, n, final_n);
-}
-
-std::intptr_t Times::op(SignedDigit a, SignedDigit b)
-{   SignedDigit hi;
-    Digit lo;
-    signedMultiply64(a, b, hi, lo);
-    if ((hi==0 && positive(lo)) ||
-        (hi==-1 && negative(lo)))
-    {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo)))
-            LIKELY
-            return intToHandle(static_cast<SignedDigit>(lo));
-        std::uint64_t* r = reserve(1);
-        r[0] = lo;
-        return confirmSize(r, 1, 1);
-    }
-    std::uint64_t* r = reserve(2);
-    r[0] = lo;
-    r[1] = hi;
-    return confirmSize(r, 2, 2);
-}
-
-std::intptr_t Times::op(SignedDigit a, std::uint64_t* b)
-{   std::size_t lenb = numberSize(b);
-    std::uint64_t* c = reserve(lenb+1);
-    Digit hi = 0;
-    for (std::size_t i=0; i<lenb; i++)
-        multiply64(a, b[i], hi, hi, c[i]);
-    c[lenb] = hi;
-    if (negative(a))
-    {   Digit carry = 1;
-        for (std::size_t i=0; i<lenb; i++)
-            carry = addWithCarry(c[i+1], ~b[i], carry, c[i+1]);
-    }
-    if (negative(b[lenb-1])) c[lenb] -= a;
-    std::size_t lenc = lenb+1;
-    truncatePositive(c, lenc);
-    truncateNegative(c, lenc);
-    return confirmSize(c, lenb+1, lenc);
-}
-
-std::intptr_t Times::op(std::uint64_t* a, SignedDigit b)
-{   return Times::op(b, a);
-}
-
-std::intptr_t ClassicalTimes::op(std::uint64_t* a, std::uint64_t* b)
-{   std::size_t lena = numberSize(a);
-    std::size_t lenb = numberSize(b);
-    std::size_t n = lena+lenb;
-    std::uint64_t* p = reserve(n);
-    std::size_t final_n;
-// bigmultiply already tries to detect and handle small cases specially,
-// but it could be that detecting some very small cases here - ie even
-// earlier - would be worthwhile.
-    classicalbigmultiply(a, lena, b, lenb, p, final_n);
-    return confirmSize(p, n, final_n);
-}
-
-std::intptr_t ClassicalTimes::op(SignedDigit a, SignedDigit b)
-{   SignedDigit hi;
-    Digit lo;
-    signedMultiply64(a, b, hi, lo);
-    if ((hi==0 && positive(lo)) ||
-        (hi==-1 && negative(lo)))
-    {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo)))
-            LIKELY
-            return intToHandle(static_cast<SignedDigit>(lo));
-        std::uint64_t* r = reserve(1);
-        r[0] = lo;
-        return confirmSize(r, 1, 1);
-    }
-    std::uint64_t* r = reserve(2);
-    r[0] = lo;
-    r[1] = hi;
-    return confirmSize(r, 2, 2);
-}
-
-std::intptr_t ClassicalTimes::op(SignedDigit a, std::uint64_t* b)
-{   std::size_t lenb = numberSize(b);
-    std::uint64_t* c = reserve(lenb+1);
-    Digit hi = 0;
-    for (std::size_t i=0; i<lenb; i++)
-        multiply64(a, b[i], hi, hi, c[i]);
-    c[lenb] = hi;
-    if (negative(a))
-    {   Digit carry = 1;
-        for (std::size_t i=0; i<lenb; i++)
-            carry = addWithCarry(c[i+1], ~b[i], carry, c[i+1]);
-    }
-    if (negative(b[lenb-1])) c[lenb] -= a;
-    std::size_t lenc = lenb+1;
-    truncatePositive(c, lenc);
-    truncateNegative(c, lenc);
-    return confirmSize(c, lenb+1, lenc);
-}
-
-std::intptr_t ClassicalTimes::op(std::uint64_t* a, SignedDigit b)
-{   return ClassicalTimes::op(b, a);
-}
-
-// For big multi-digit numbers squaring can be done almost twice as fast
-// as general multiplication.
-// eg (a0,a1,a2,a3)^2 can be expressed as
-// a0^2+a1^2+a2^2+a3^2 + 2*(a0*a1+a0*a2+a0*a3+a1*a2+a1*a3+a2*a3)
-// where the part that has been doubled uses symmetry to reduce the work.
-//
-// For negative inputs I can form the product first treating the inputs
-// as if they had been unsigned, and then subtract 2*2^w*a from the result.
-//
-// I think my view here is that I should still be willing to move across
-// to Karatsuba, but only at a distinctly larger threshold than for
-// simple multiplication. Just where that threshold should be is not really
-// clear to me, but for now I am setting it as 3 times the point at which
-// ordinary multiplications moves on from classical methods.
-
-void bigsquare(std::uint64_t* a, std::size_t lena,
-                      std::uint64_t* r, std::size_t &lenr)
-{   if (lena > 24)
-    {   bigmultiply(a, lena, a, lena, r, lenr);
-        return;
-    }
-    for (std::size_t i=0; i<2*lena; i++) r[i] = 0;
-    Digit carry;
-    lenr = 2*lena;
-    for (std::size_t i=0; i<lena; i++)
-    {   Digit hi = 0;
-// Note that all the terms I add in here will need to be doubled in the
-// final accounting.
-        for (std::size_t j=i+1; j<lena; j++)
-        {   Digit lo;
-            multiply64(a[i], a[j], hi, hi, lo);
-            hi += addWithCarry(lo, r[i+j], r[i+j]);
-        }
-        r[i+lena] = hi;
-    }
-// Double the part that has been computed so far.
-    carry = 0;
-    for (std::size_t i=0; i<2*lena; i++)
-    {   Digit w = r[i];
-        r[i] = (w << 1) | carry;
-        carry = w >> 63;
-    }
-// Now add in the bits that do not get doubled.
-    carry = 0;
-    Digit hi = 0;
-    for (std::size_t i=0; i<lena; i++)
-    {   Digit lo;
-        multiply64(a[i], a[i], r[2*i], hi, lo);
-        carry = addWithCarry(lo, carry, r[2*i]);
-        carry = addWithCarry(hi, r[2*i+1], carry, r[2*i+1]);
-    }
-// Now if the input had been negative I have a correction to apply...
-// I subtract 2a from the top half of the result.
-    if (negative(a[lena-1]))
-    {   Digit carry = 1;
-        int fromprev = 0;
-        for (std::size_t i=0; i<lena; i++)
-        {   Digit d = a[i];
-            Digit w = (d<<1) | fromprev;
-            fromprev = static_cast<int>(d>>63);
-            carry = addWithCarry(r[lena+i], ~w, carry, r[lena+i]);
-        }
-    }
-// The actual value may be 1 word shorter than this.
-//  test top digit or r and if necessary reduce lenr.
-    truncatePositive(r, lenr);
-    truncateNegative(r, lenr);
-}
-
-std::intptr_t Square::op(std::uint64_t* a)
-{   std::size_t lena = numberSize(a);
-    std::size_t n = 2*lena;
-    std::uint64_t* p = reserve(n);
-    std::size_t final_n;
-    bigsquare(a, lena, p, final_n);
-    return confirmSize(p, n, final_n);
-}
-
-std::intptr_t Square::op(SignedDigit a)
-{   Digit hi, lo;
-    multiply64(a, a, hi, lo);
-    if (a < 0) hi -= 2u*static_cast<Digit>(a);
-// Now I have a 128-bit product of the inputs
-    if ((hi == 0 && positive(lo)) ||
-        (hi == static_cast<Digit>(-1) && negative(lo)))
-    {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo)))
-            LIKELY
-            return intToHandle(static_cast<SignedDigit>(lo));
-        else
-        {   std::uint64_t* p = reserve(1);
-            p[0] = lo;
-            return confirmSize(p, 1, 1);
-        }
-    }
-    std::uint64_t* p = reserve(2);
-    p[0] = lo;
-    p[1] = hi;
-    return confirmSize(p, 2, 2);
-}
-
-std::intptr_t Isqrt::op(std::uint64_t* a)
-{   std::size_t lena = numberSize(a);
-    if (lena == 1) return Isqrt::op(static_cast<SignedDigit>(a[0]));
-    std::size_t lenx = (lena+1)/2;
-    std::uint64_t* x = reserve(lenx);
-    for (std::size_t i=0; i<lenx; i++) x[i] = 0;
-    std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - CSL_LISP::nlz(a[lena-1]);
-    bitstop /= 2;
-    if ((lena%2) == 0) bitstop += 32;
-    x[lenx-1] = 1ULL << bitstop;
-    if (bitstop == 63) x[lenx-1]--; // ensure it is still positive!
-// I now have a first approximation to the square root as a number that is
-// a power of 2 with about half the bit-length of a. I will degenerate into
-// using generic arithmetic here even though that may have extra costs.
-//
-// I could perhaps reasonably use uint64_t arithmetic for a first few
-// iterations, only looking at the most significant digit of the input.
-// That would save time, however at present I do not expect this function
-// to be time critical in any plausible application, and so I will keep
-// things simple(er).
-    Bignum biga(true, vectorToHandle(a));
-    Bignum bigx(true, confirmSize(x, lenx, lenx));
-// I will do the first step outside the loop to guarantee that my
-// approximation is an over-estimate before I try the end-test.
-//         bigx = (bigx + biga/bigx) >> 1;
-// The push/pop mess here feels extreme and I should probably re-code this
-// using lower level interfaces.
-    Bignum w1 = biga/bigx;
-    w1 = bigx + w1;
-    bigx = w1 >> 1;
-    for (;;)
-    {   w1 = biga/bigx;
-        w1 = bigx + w1;
-        Bignum y = w1 >> 1;
-        if (y >= bigx) break;
-        bigx = y;
-    }
-// The Bignum "biga" encapsulated my argument: when its destructor is called
-// I do not want the input vector "a" to be clobbered, so I clobber the
-// bignum first to break the link. Ditto bigx.
-    biga.val = 0;
-    std::intptr_t r = bigx.val;
-    bigx.val = 0;
-    return r;
-}
-
-std::intptr_t Isqrt::op(SignedDigit aa)
-{   if (aa <= 0) return intToBignum(0);
-    Digit a = static_cast<Digit>(aa);
-    std::size_t w = 64 - CSL_LISP::nlz(a);
-    Digit x0 = a >> (w/2);
-// The iteration here converges to sqrt(a) from above, but I believe that
-// when the value stops changing it will be at floor(sqrt(a)). There are
-// some cases where the sequence ends up alternating between two adjacent
-// values. Because my input is at most 2^63-1 the number of iterations
-// written here will always suffice.
-    Digit x1 = (x0 + a/x0)/2;
-    Digit x2 = (x1 + a/x1)/2;
-    if (x2 >= x1) return unsignedIntToBignum(x1);
-    Digit x3 = (x2 + a/x2)/2;
-    if (x3 >= x2) return unsignedIntToBignum(x2);
-    Digit x4 = (x3 + a/x3)/2;
-    if (x4 >= x3) return unsignedIntToBignum(x3);
-    Digit x5 = (x4 + a/x4)/2;
-    if (x5 >= x4) return unsignedIntToBignum(x4);
-    return unsignedIntToBignum(x5);
-}
-
-// This raises a bignum to a positive integer power. If the power is n then
-// the size of the output may be n*lena. The two vectors v and w are workspace
-// and must both be of size (at least) the size that the result could end
-// up as. Well with greater subtlty we can see that the sum of their sizes
-// must be at least the size of the result, but it is not clear that any
-// useful saving spece saving can be found down that path.
-
-void bigpow(std::uint64_t* a, std::size_t lena,
-                   Digit n,
-                   std::uint64_t* v,
-                   std::uint64_t* w,
-                   std::uint64_t* r, std::size_t &lenr, std::size_t maxlenr)
-{   if (n == 0)
-    {   r[0] = 0;
-        lenr = 1;
-        return;
-    }
-//  LispObject r = fixnum_of_int(1);
-//  while (n != 1)
-//  {   if ((n & 1) != 0) r = Times::op(r, a);
-//      a = Square::op(a);
-//      n = n/2;
-//  }
-//  return Times::op(r, a);
-    internalCopy(a, lena, v);
-    std::size_t lenv = lena, lenw;
-    r[0] = 1;
-    lenr = 1;
-    while (n != 1)
-    {   if ((n & 1) != 0)
-        {   bigmultiply(r, lenr, v, lenv, w, lenw);
-            internalCopy(w, lenr=lenw, r);
-        }
-        bigsquare(v, lenv, w, lenw);
-        internalCopy(w, lenv=lenw, v);
-        n = n/2;
-    }
-    bigmultiply(r, lenr, v, lenv, w, lenw);
-    internalCopy(w, lenr=lenw, r);
-}
-
-// In cases where n is too large this can fail. At present I deal with that
-// with arithlib_assert() statements rather than any comfortable scheme for
-// reporting the trouble.
-
-// The code that dispatches into here should have filtered cases such that
-// the exponent n is not 0, 1 or 2 here.
-
-std::intptr_t Pow::op(std::uint64_t* a, SignedDigit n)
-{   std::size_t lena = numberSize(a);
-//  1^(-n) == 1,
-//  (-1)^(-n) == 1 if n is even or -1 if n is odd.
-//  a^(-n) == 0 when a is not -1, 0 or 1.
-    if (n < 0)
-    {   int z = 0;
-        if (lena == 0)
-        {   if (static_cast<SignedDigit>(a[0]) == 1) z = 1;
-            else if (static_cast<SignedDigit>(a[0]) == -1)
-                z = (n%1==0 ? 1 : -1);
-            else arithlib_assert(a[0] != 0u);
-        }
-// 0^(-n) is an error
-// 1^(-n) = 1
-// (-1)^(-n) = +1 or -1 depending on whether n is odd or even
-// x^(-n) = 0 otherwise.
-        return intToBignum(z);
-    }
-// 6^n = 0
-    std::size_t bitsa = bignumBits(a, lena);
-    Digit hi, bitsr;
-    multiply64(n, bitsa, hi, bitsr);
-    arithlib_assert(hi==0); // Check that size is at least somewhat sane!
-// I estimate the largest size that my result could be, but then add
-// an extra word because the internal working of multiplication can
-// write a zero beyond its true result - eg if you are multiplying a pair
-// of 1-word numbers together it will believe that the result could be 2
-// words wide even if in fact you know it will not be.
-    Digit lenr1 = 2 + bitsr/64;
-    std::size_t lenr = static_cast<std::size_t>(lenr1);
-// if size_t was more narrow than 64-bits I could lose information in
-// truncating from uint64_t to size_t.
-    Digit olenr = lenr;
-    std::uint64_t* r = reserve(lenr);
-    std::uint64_t* v = reserve(lenr);
-    std::uint64_t* w = reserve(lenr);
-    bigpow(a, lena, static_cast<Digit>(n), v, w, r, lenr, lenr);
-    abandon(w);
-    abandon(v);
-    return confirmSize(r, olenr, lenr);
-}
-
-// Again the cases n = 0, 1 and 2 have been filtered out
-
-std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
-{   if (n < 0)
-    {   int z = 0;
-        if (a == 1) z = 1;
-        else if (a == -1) z = (n%1==0);
-        else arithlib_assert(a != 0);
-        return intToHandle(z);
-    }
-    if (a == 0) return intToHandle(0);
-    else if (a == 1) return intToHandle(a);
-    else if (n == 0) return intToHandle(1);
-    Digit absa = (a < 0 ? -static_cast<Digit>
-                          (a) : static_cast<Digit>(a));
-    std::size_t bitsa = 64 - CSL_LISP::nlz(absa);
-    Digit hi, bitsr;
-    multiply64(n, bitsa, hi, bitsr);
-    Digit lenr1 = 2 + bitsr/64;
-    if (bitsr < 64) // Can do all the work as machine integers.
-    {   SignedDigit result = 1;
-        for (;;)
-        {   if (n%2 != 0) result *= a;
-            if ((n = n/2) == 0) break;
-            a *= a;
-        }
-        return intToBignum(result);
-    }
-    std::size_t lenr = static_cast<std::size_t>(lenr1);
-// if size_t was more narrow than 64-bits I could lose information in
-// truncating from uint64_t to size_t.
-    Digit olenr = lenr;
-    std::uint64_t* r = reserve(lenr);
-    std::uint64_t* v = reserve(lenr);
-    std::uint64_t* w = reserve(lenr);
-    Digit aa[1] = {static_cast<Digit>(a)};
-    bigpow(aa, 1, static_cast<Digit>(n), v, w, r, lenr, lenr);
-    abandon(w);
-    abandon(v);
-    return confirmSize(r, olenr, lenr);
-}
-
-double Pow::op(std::uint64_t* a, double n)
-{   return std::pow(Double::op(a), n);
-}
-
-double Pow::op(SignedDigit a, double n)
-{   return std::pow(Double::op(a), n);
-}
-
-}; // end of namespace
-
-
-// end of multiply.cpp

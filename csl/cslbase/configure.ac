@@ -70,7 +70,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_COPYRIGHT([Codemist])
 
-AC_PREREQ([2.71])
+AC_PREREQ([2.72])
 
 # My source file is expected to have "csl.cpp" in it. This is just a small
 # sanity check in case somebody tries to configure with directories
@@ -199,17 +199,6 @@ fi
 # gcc and clang. THose using other compilers may need to do something
 # else!
 
-# It seems that if you call AC_COMPILE_IFELSE out of the blue in such a way
-# that the compilation fails (eg with CXXFLAGS that are not accepotable) that
-# the configure suffers an abrupt halt. SO here I try one with the initial
-# or default configuration so that when I try with "-std=gnu++26" and that
-# fails (say) the script continues and tries with lower options.
-
-AC_COMPILE_IFELSE([AC_LANG_SOURCE(
-  [[
-    int main(int argc, char* argv[]) { return 0; }
-  ]])])
-
 OLDCXXFLAGS="$CXXFLAGS"
 for std in gnu++26 gnu++23 gnu++20 gnu++17 c++17
 do
@@ -291,13 +280,6 @@ AC_MSG_NOTICE([CXXFLAGS==$CXXFLAGS])
 
 # if MACHEPS is lower than 1.0e-34 then I have 128-bit floats. I could
 # as an alternative check (LDBL_MANT_DIG==113).
-
-AC_ARG_WITH(softfloat,
-   AS_HELP_STRING([--with-softfloat], [force use of software FLOAT128 for testing]),
-   [AC_DEFINE(USE_SOFT_FLOAT128, [1], [Force software long double])
-    AC_MSG_NOTICE([Use software 128-bit floats])
-    f128_identified="yes"],
-   [])
 
 if test "$f128_identified" != "yes"
 then
@@ -404,9 +386,9 @@ AC_DEFINE_UNQUOTED(HOST_OS,"$host_os",[Name of Operating System])
 
 AC_ARG_WITH(lto,
    AS_HELP_STRING([--with-lto],
-                  [Force extreme optimisation with gcc]),
+                  [Link-time optimisation with gcc and clang]),
    [],
-   [with_lto="no"])
+   [with_lto="yes"])
 
 AC_ARG_WITH(fox,
   AS_HELP_STRING([--with-fox],
@@ -2065,7 +2047,6 @@ AM_CONDITIONAL(arithlib, test "$with_arithlib" = "yes")
 AM_CONDITIONAL(cygpath, test "$CYGPATH" != "no")
 AM_CONDITIONAL(valgrind, test "$VALGRIND" = "valgrind")
 AM_CONDITIONAL(crlibm, test "$with_crlibm" != "no")
-AM_CONDITIONAL(softfloat, test "$with_softfloat" != "no")
 AM_CONDITIONAL(redfront, test "$with_redfront" != "no")
 AM_CONDITIONAL(profile, test "$enable_profile" != "no")
 AM_CONDITIONAL(debug, test "$enable_debug" != "no")

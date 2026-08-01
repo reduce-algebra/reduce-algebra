@@ -2103,31 +2103,32 @@ restart:
 // The tag bits for a short float match those for a fixnum if I just look
 // at the low 3 bits. Yuk - that means I need an extra test here.
             if (is_sfloat(u))
-            {   uint32_t i;
+            {   float_union uu;
 // The following passes the correct value for either 28 or 32-bit floats.
                 int xmark = 's';
                 if (SIXTY_FOUR_BIT)
-                {   i = (int32_t)((int64_t)u>>32);
+                {   uu.i = (int32_t)((int64_t)u>>32);
                     if ((u & XTAG_FLOAT32) != 0) xmark = 'f';
                 }
-                else i = u - XTAG_SFLOAT;
+                else uu.i = u - XTAG_SFLOAT;
                 if ((escaped_printing & escape_hex) || force_hex)
-                {   std::snprintf(my_buff, sizeof(my_buff), "%.8x%c", i, xmark);
+                {   std::snprintf(my_buff, sizeof(my_buff), "%.8x%c", uu.i, xmark);
                     goto float_print_tidyup;
                 }
                 else if ((escaped_printing & escape_octal || force_octal))
-                {   std::snprintf(my_buff, sizeof(my_buff), "%.11o%c", i, xmark);
+                {   std::snprintf(my_buff, sizeof(my_buff), "%.11o%c", uu.i, xmark);
                     goto float_print_tidyup;
                 }
                 else if ((escaped_printing & escape_binary) || force_binary)
                 {   char *cp = my_buff;
                     for (int b=31; b>=0; b--)
-                        *cp++ = '0' + ((i >> b) & 1);
+                        *cp++ = '0' + ((uu.i >> b) & 1);
                     *cp++ = xmark;
                     *cp = 0;
                     goto float_print_tidyup;
                 }
-                fp_sprint(my_buff, bit_cast<float>(i), print_precision, xmark);
+                std::memmove(&uu.f, &uu.i, sizeof(uu.f));
+                fp_sprint(my_buff, static_cast<double>(uu.f), print_precision, xmark);
                 goto float_print_tidyup;
             }
             if ((escaped_printing & escape_hex) || force_hex)
@@ -3236,78 +3237,75 @@ restart:
 // least) to guarantee to treat me kindly despite this. But even with that
 // I would be relying on behaviour not blessed by the current C++ standards.
                     if (escaped_printing & escape_checksum)
-                    {   float f = single_float_val(u);
-                        uint32_t v = bit_cast<uint32_t>(f);
+                    {   int32_t v = intfloat32_t_val(u);
                         std::snprintf(my_buff, sizeof(my_buff), "@F%.8x", v);
                     }
                     else if ((escaped_printing & escape_hex) || force_hex)
-                    {   float f = single_float_val(u);
-                        std::snprintf(my_buff, sizeof(my_buff),
-                                      "{%.8" PRIx32 ":%#.8g}",
-                                     bit_cast<uint32_t>(f), (double)f);
+                    {   uint32_t *p = (uint32_t *)&single_float_val(u);
+                        std::snprintf(my_buff, sizeof(my_buff), "{%.8" PRIx32 ":%#.8g}",
+                                     p[0], static_cast<double>(single_float_val(u)));
                     }
                     else if ((escaped_printing & escape_octal) || force_octal)
-                    {   float f = single_float_val(u);
-                        uint32_t i = bit_cast<uint32_t>(f);
-                        std::snprintf(my_buff, sizeof(my_buff),
-                                     "{%.11" PRIo32 ":%#.8g}",
-                                     i, (double)f);
+                    {   uint32_t *p = (uint32_t *)&double_float_val(u);
+                        std::snprintf(my_buff, sizeof(my_buff), "{%.11" PRIo32 ":%#.8g}",
+                                     p[0], static_cast<double>(single_float_val(u)));
                     }
                     else fp_sprint(my_buff,
-                                   (double)(single_float_val(u)),
-                                   print_precision, 'f');
+                                       static_cast<double>(single_float_val(u)), print_precision, 'f');
                     break;
                 case DOUBLE_FLOAT_HEADER:
 // Hexadecimal printing of floating point numbers is only provided for
 // here to help with nasty low-level debugging.  The output will not be
 // directly re-readable.
                     if (escaped_printing & escape_checksum)
-                    {   double f = double_float_val(u);
-                        std::snprintf(my_buff, sizeof(my_buff),
-                            "@F%.16" PRIx64, bit_cast<uint64_t>(f));
+                    {   int64_t v = intfloat64_t_val(u);
+                        std::snprintf(my_buff, sizeof(my_buff), "@F%.8" PRIx64, v);
                     }
                     else if ((escaped_printing & escape_hex) || force_hex)
-                    {   double f = double_float_val(u);
+                    {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         std::snprintf(my_buff, sizeof(my_buff),
-                                     "{%.16" PRIx64 ":%#.15g}",
-                                     bit_cast<uint64_t>(f), f);
+                                     "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
+                                     p[1], p[0], static_cast<double>(double_float_val(u)));
                     }
                     else if ((escaped_printing & escape_octal) || force_octal)
-                    {   double f = double_float_val(u);
-                        std::snprintf(my_buff, sizeof(my_buff),
-                                     "{%.23" PRIo64 ":%#.8g}",
-                                     bit_cast<uint64_t>(f), f);
+                    {   uint32_t *p = (uint32_t *)&double_float_val(u);
+                        std::snprintf(my_buff, sizeof(my_buff), "{%.11" PRIo32 "/%.11" PRIo32 ":%#.8g}",
+                                     p[1], p[0], static_cast<double>(double_float_val(u)));
                     }
                     else fp_sprint(my_buff, double_float_val(u),
                                        print_precision, 'e');
                     break;
                 case LONG_FLOAT_HEADER:
                     if (escaped_printing & escape_checksum)
-                    {   int128_t i = long_float_val(u).getbits();
-                        std::snprintf(my_buff, sizeof(my_buff),
-                            "@F%.16" PRIx64 "/%" PRIx64,
-                            (uint64_t)(i>>64), (uint64_t)i);
+                    {   int64_t v0 = intfloat128_t_val0(u);
+                        int64_t v1 = intfloat128_t_val1(u);
+                        std::snprintf(my_buff, sizeof(my_buff), "@F%.8" PRIx64 "/%" PRIx64, v1, v0);
                     }
                     else if ((escaped_printing & escape_hex) || force_hex)
-                    {   uint128_t i = long_float_val(u).getbits();
+                    {   uint32_t *p = (uint32_t *)&long_float_val(u);
                         char *o = my_buff;
-                        o += std::snprintf(o, 12, "{%.8" PRIx32, (uint32_t)(i>>96));
-                        o += std::snprintf(o, 12, "/%.8" PRIx32, (uint32_t)(i>>64));
-                        o += std::snprintf(o, 12, "/%.8" PRIx32, (uint32_t)(i>>32));
-                        o += std::snprintf(o, 12, "/%.8" PRIx32, (uint32_t)i);
+                        o += std::snprintf(o, 12, "{%.8" PRIx32, p[3]);
+                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[2]);
+                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[1]);
+                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[0]);
                         *o++ = ':';
+// The use of "long double" here is not portable because I am trying
+// to display a 128-bit float and long double may be 64 or 80 bits.
+// But this is in the context that I am printing in hexadacimal and the
+// natural floating point value is something I see as an extra used in
+// cases that are liable to be in the middle of a debugging session.
                         o += snprintf(o, 48, "%.34LG",
                                      (long double)long_float_val(u));
                         *o++ = '}';
                         *o = 0;
                     }
                     else if ((escaped_printing & escape_octal) || force_octal)
-                    {   uint128_t i = long_float_val(u).getbits();
+                    {   uint32_t *p = (uint32_t *)&long_float_val(u);
                         char *o = my_buff;
-                        o += std::snprintf(o, 16, "{%.11" PRIo32, (uint32_t)(i>>96));
-                        o += std::snprintf(o, 16, "/%.11" PRIo32, (uint32_t)(i>>64));
-                        o += std::snprintf(o, 16, "/%.11" PRIo32, (uint32_t)(i>>32));
-                        o += std::snprintf(o, 16, "/%.11" PRIo32, (uint32_t)i);
+                        o += std::snprintf(o, 16, "{%.11" PRIo32, p[3]);
+                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[2]);
+                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[1]);
+                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[0]);
                         *o++ = ':';
                         o += snprintf(o, 48, "%.34LG",
                                       (long double)long_float_val(u));
@@ -3320,7 +3318,8 @@ restart:
                                           print_precision, 'L');
                     break;
                 default:
-                    std::snprintf(my_buff, sizeof(my_buff), "?%p?", reinterpret_cast<void *>(u));
+                    std::snprintf(my_buff, sizeof(my_buff),
+                                  "?%p?", reinterpret_cast<void *>(u));
                     break;
             }
         float_print_tidyup:   // label to join in from short float printing

@@ -631,7 +631,7 @@ LispObject intern(size_t len, bool escaped, int startAddr)
                         reinterpret_cast<const char*>(&boffo_char(0)),
                         sign, x, m);
                     return make_boxfloat128(
-                        FLOAT_128(f160tof128rep(sign, x, m), 0));
+                        FLOAT_128(f160tof128rep(sign, x, m), i128()));
             }
         }
     }

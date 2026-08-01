@@ -68,21 +68,23 @@
 // delays initialization of any of the variables within the following
 // function until the function is first used!
 
+#if __has_include("config.h")
+#include "config.h"
+#endif
+
 #include "arithlib.h"
 
-namespace arithlib_implementation
-{
 
 unsigned int system_randomness()
 {   std::random_device basic_randomness;
     static unsigned int r = 1234567;
 // In pathological cases trying to get data from a random_device can fail
 // and raise an error, which I catch here so that I can return a rather
-// arbitrary value in that case. I add in basic_randomness() in to r
-// so that this function is yet more likely to return different values
-// if called several times.
+// arbitrary value in that case. I add in basic_randomness() in to a static
+// value r so that this function is yet more likely to return different
+// values if called several times.
     try
-    {   r += basic_randomness();
+    {   r += basic_randomness() + 7654321;
     }
     catch (const std::exception &e)
     {   r++;
@@ -324,7 +326,7 @@ void fudgeDistribution(const std::uint64_t* a,
             if (a[lena-1] == 0)
             {   if (lena>1) r[lena-2] = 1ULL<<63;
             }
-            else r[lena-1] = 1ULL << (63-CSL_LISP::nlz(a[lena-1]));
+            else r[lena-1] = 1ULL << (63-nlz(a[lena-1]));
             if ((n&7) == 0) // decrement it
             {   if (lena!=1 || a[0]!=0) // avoid decrementing zero.
                 {   std::uint64_t* p = r;
@@ -404,7 +406,5 @@ std::intptr_t randomUptoBits(std::size_t bits)
     randomUptoBits(r, lenr, bits);
     return confirmSize(r, m, lenr);
 }
-
-}; // end of namespace
 
 // end of randomnum.cpp

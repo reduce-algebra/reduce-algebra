@@ -353,7 +353,7 @@ void timetest(size_t N, int ntrials)
     }
     auto tt2 = microseconds();
     for (int trial=0; trial<ntrials; trial++)
-    {   fftmul(a, N, b, N, c);
+    {   fftmul<false>(a, N, b, N, c);
     }
     auto tt3 = microseconds();
 

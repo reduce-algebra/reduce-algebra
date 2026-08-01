@@ -31,10 +31,7 @@
 
 // $Id$
 
-#include "arithlib.h"
-
-namespace arithlib_implementation
-{
+#include "headers.h"
 
 //
 // Division with the main number representation being 2s complement
@@ -548,7 +545,7 @@ void unsigned_long_division(std::uint64_t* a,
 //
 // The scaling is done here using a shift, which seems cheaper to sort out
 // then multiplication by a single-digit value.
-    int ss = CSL_LISP::nlz(b[lenb-1]);
+    int ss = nlz(b[lenb-1]);
 // When I scale the dividend expands into an extra digit but the scale
 // factor has been chosen so that the divisor does not.
     a[lena] = scale_for_division(a, lena, ss);
@@ -1144,9 +1141,9 @@ void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // to normalize that to get 128 bits to work with however the top bits
 // of a and b lie within the words.
     Digit a0=a[lena-1], a1=a[lena-2], a2=(lena>2 ? a[lena-3] : 0);
-    int lza = CSL_LISP::nlz(a0);
+    int lza = nlz(a0);
     Digit b0=b[lenb-1], b1=b[lenb-2], b2=(lenb>2 ? b[lenb-3] : 0);
-    int lzb = CSL_LISP::nlz(b0);
+    int lzb = nlz(b0);
 // I will sort out how many more bits are involved in a than in b. If
 // this number is large I will invent a number q of the form q=q0*2^q1
 // with q0 using almost all of 64 bits and go "a = a - q*b;". This
@@ -1218,8 +1215,8 @@ void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // At least I have filtered away the possibility {b0,b1}={0,0}.
 // I will grab the top 64 bits of a and the top corresponding bits of b,
 // because then I can do a (cheap) 64-by-64 division.
-            int lza1 = a0==0 ? 64+CSL_LISP::nlz(a1) : CSL_LISP::nlz(a0);
-            int lzb1 = b0==0 ? 64+CSL_LISP::nlz(b1) : CSL_LISP::nlz(b0);
+            int lza1 = a0==0 ? 64+nlz(a1) : nlz(a0);
+            int lzb1 = b0==0 ? 64+nlz(b1) : nlz(b0);
             if (lzb1 > lza1+60) break; // quotient will be too big
             Digit ahi, bhi;
             if (lza1 == 0) ahi = a0;
@@ -1620,7 +1617,6 @@ std::intptr_t Lcm::op(SignedDigit a, SignedDigit b)
     else return unsignedIntToBignum(-static_cast<Digit>(MIN_FIXNUM));
 }
 
-#ifdef CSL
 // Support for calculations modulo some integer value...
 
 // Some of these NEED to be inline, so that they are shared across all
@@ -1659,8 +1655,7 @@ std::intptr_t value_of_currentModulus()
 }
 
 std::intptr_t SetModulus::op(SignedDigit n)
-{   using namespace CSL_LISP;
-    if (n < 1)
+{   if (n < 1)
         UNLIKELY
         return (std::intptr_t)aerror1("Invalid arg to set-modulus",
                                       intToHandle(n));
@@ -1672,8 +1667,7 @@ std::intptr_t SetModulus::op(SignedDigit n)
 }
 
 std::intptr_t SetModulus::op(std::uint64_t* n)
-{   using namespace CSL_LISP;
-    if (!Plusp::op(n))
+{   if (!Plusp::op(n))
         UNLIKELY
         return (std::intptr_t)aerror1("Invalid arg to set-modulus",
                                       vectorToHandle(n));
@@ -1734,7 +1728,6 @@ std::intptr_t ModularPlus::op(SignedDigit a, std::uint64_t* b)
 {
 // One of the inputs here is a bignum, and that can only be valid if we
 // have a large modulus.
-    using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
@@ -1755,8 +1748,7 @@ std::intptr_t ModularPlus::op(std::uint64_t* a, SignedDigit b)
 
 std::intptr_t ModularPlus::op(std::uint64_t* a,
                                      std::uint64_t* b)
-{   using namespace CSL_LISP;
-    if (modulusSize != modulus_big)
+{   if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(a));
@@ -1777,8 +1769,7 @@ std::intptr_t ModularDifference::op(SignedDigit a, SignedDigit b)
 }
 
 std::intptr_t ModularDifference::op(SignedDigit a, std::uint64_t* b)
-{   using namespace CSL_LISP;
-    if (modulusSize != modulus_big)
+{   if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(b));
@@ -1790,8 +1781,7 @@ std::intptr_t ModularDifference::op(SignedDigit a, std::uint64_t* b)
 }
 
 std::intptr_t ModularDifference::op(std::uint64_t* a, SignedDigit b)
-{   using namespace CSL_LISP;
-    if (modulusSize != modulus_big)
+{   if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(a));
@@ -1799,8 +1789,7 @@ std::intptr_t ModularDifference::op(std::uint64_t* a, SignedDigit b)
 }
 
 std::intptr_t ModularDifference::op(std::uint64_t* a, std::uint64_t* b)
-{   using namespace CSL_LISP;
-    if (modulusSize != modulus_big)
+{   if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                                       vectorToHandle(a));
@@ -1860,23 +1849,19 @@ std::intptr_t ModularTimes::op(std::uint64_t* a, std::uint64_t* b)
 
 
 std::intptr_t ModularExpt::op(SignedDigit a, SignedDigit b)
-{   using namespace CSL_LISP;
-    return (std::intptr_t)aerror("incomplete ModularExpt");
+{   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 std::intptr_t ModularExpt::op(SignedDigit a, std::uint64_t* b)
-{   using namespace CSL_LISP;
-    return (std::intptr_t)aerror("incomplete ModularExpt");
+{   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 std::intptr_t ModularExpt::op(std::uint64_t* a, SignedDigit b)
-{   using namespace CSL_LISP;
-    return (std::intptr_t)aerror("incomplete ModularExpt");
+{   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 std::intptr_t ModularExpt::op(std::uint64_t* a, std::uint64_t* b)
-{   using namespace CSL_LISP;
-    return (std::intptr_t)aerror("incomplete ModularExpt");
+{   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 
@@ -1929,8 +1914,7 @@ std::intptr_t ModularMinus::op(SignedDigit a)
 }
 
 std::intptr_t ModularMinus::op(std::uint64_t* a)
-{   using namespace CSL_LISP;
-    if (modulusSize != modulus_big)
+{   if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad argument for modular-minus",
                                       vectorToHandle(a));
@@ -1945,7 +1929,6 @@ std::intptr_t generalModularReciprocal(std::intptr_t aa,
 // GCD code. Also it could save memory turnover by re-using the space
 // from intermediate results. At least for now I will be happy if I just
 // implement a version that actually works!
-    using namespace CSL_LISP;
     intptr_t a = vectorToHandle(largeModulus());
     intptr_t b = aa;
     intptr_t x = intToHandle(0);
@@ -1972,8 +1955,7 @@ std::intptr_t generalModularReciprocal(std::intptr_t aa,
 }
 
 std::intptr_t ModularReciprocal::op(SignedDigit aa)
-{   using namespace CSL_LISP;
-    if (aa <= 0)
+{   if (aa <= 0)
         UNLIKELY
         return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
                                       intToHandle(aa));
@@ -2008,8 +1990,7 @@ std::intptr_t ModularReciprocal::op(std::uint64_t* a)
 }
 
 std::intptr_t SafeModularReciprocal::op(SignedDigit aa)
-{   using namespace CSL_LISP;
-    if (aa <= 0)
+{   if (aa <= 0)
         UNLIKELY
         return (std::intptr_t)aerror1(
             "bad argument to safe-modular-reciprocal",
@@ -2040,8 +2021,5 @@ std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
 {   return generalModularReciprocal(vectorToHandle(a), true);
 }
 
-#endif // CSL
-
-}; // end of namespace
 
 // end of division.cpp

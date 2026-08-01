@@ -791,12 +791,14 @@ void report_file(const char* s)
 // list that explicitly. This helps me avoid some dependency circularities.
 // but note that inline-defs.dat may not be in the current directory.
 // Use of that file-name for any other purposes may cause issues!
+// For related reasons I will not report a file "revision.txt".
 // Here I find the final component of the path - ie the bit following the
 // last "/" or "\" present if there is one of those.
     if ((s1 = std::strrchr(s, '/')) != nullptr) s1++;
     else if ((s1 = std::strrchr(s, '\\')) != nullptr) s1++;
     else s1 = s;
     if (std::strcmp(s1, "inline-defs.dat") == 0) return;
+    if (std::strcmp(s1, "revision.txt") == 0) return;
     for (char* s1 : dependency_map)
     {   if (std::strcmp(s, s1)==0) return; // already recorded
     }

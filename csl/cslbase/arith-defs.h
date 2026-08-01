@@ -56,11 +56,6 @@ extern LispObject Ntimes(LispObject env, LispObject a1);
 extern LispObject Ntimes(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Ntimes(LispObject env, LispObject a1, LispObject a2, LispObject a3);
 extern LispObject Ntimes(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
-extern LispObject Nclassicaltimes(LispObject env);
-extern LispObject Nclassicaltimes(LispObject env, LispObject a1);
-extern LispObject Nclassicaltimes(LispObject env, LispObject a1, LispObject a2);
-extern LispObject Nclassicaltimes(LispObject env, LispObject a1, LispObject a2, LispObject a3);
-extern LispObject Nclassicaltimes(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
 extern LispObject Nquotient(LispObject env);
 extern LispObject Nquotient(LispObject env, LispObject a1);
 extern LispObject Nquotient(LispObject env, LispObject a1, LispObject a2);
@@ -182,36 +177,6 @@ extern LispObject Nmin(LispObject env, LispObject a1, LispObject a2,
 extern LispObject Nmin(LispObject env, LispObject a1, LispObject a2,
                                        LispObject a3, LispObject a4plus);
 
-
-extern LispObject Ncarg(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncabs(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncexp(LispObject env, LispObject re, LispObject im);
-extern LispObject Nclog(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncsqrt(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncsin(LispObject env, LispObject re, LispObject im);
-extern LispObject Nccos(LispObject env, LispObject re, LispObject im);
-extern LispObject Nctan(LispObject env, LispObject re, LispObject im);
-extern LispObject Nccsc(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncsec(LispObject env, LispObject re, LispObject im);
-extern LispObject Nccot(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncasin(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncacos(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncatan(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncacsc(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncasec(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncacot(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncsinh(LispObject env, LispObject re, LispObject im);
-extern LispObject Nccosh(LispObject env, LispObject re, LispObject im);
-extern LispObject Nctanh(LispObject env, LispObject re, LispObject im);
-extern LispObject Nccsch(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncsech(LispObject env, LispObject re, LispObject im);
-extern LispObject Nccoth(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncasinh(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncacosh(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncatanh(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncacsch(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncasech(LispObject env, LispObject re, LispObject im);
-extern LispObject Ncacoth(LispObject env, LispObject re, LispObject im);
 
 extern LispObject Nnumerator(LispObject env, LispObject a);
 extern LispObject Ndenominator(LispObject env, LispObject a);

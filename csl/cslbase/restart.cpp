@@ -1035,14 +1035,14 @@ static int alpha1(const void* a, const void* b)
 //   input!-libraries and output!-library
 //   Some values needed by the JIT.
 
-FLOAT_128 f128_NaN   = FLOAT_128(0x7fff8000, nullptr); 
-FLOAT_128 f128_inf   = FLOAT_128(0x7fff0000, nullptr); 
-FLOAT_128 f128_minf  = FLOAT_128(0xffff0000, nullptr); 
+FLOAT_128 f128_NaN   = FLOAT_128(0x7fff8000, top32()); 
+FLOAT_128 f128_inf   = FLOAT_128(0x7fff0000, top32()); 
+FLOAT_128 f128_minf  = FLOAT_128(0xffff0000, top32()); 
  
-FLOAT_128 f128_epsilon      = FLOAT_128(0x3f8f0000, nullptr);
+FLOAT_128 f128_epsilon      = FLOAT_128(0x3f8f0000, top32());
 //      1.925929944387235853055977942584927319e-34_Q ;
 
-FLOAT_128 f128_half_epsilon = FLOAT_128(0x3f8e0000U, nullptr);
+FLOAT_128 f128_half_epsilon = FLOAT_128(0x3f8e0000U, top32());
 //      9.629649721936179265279889712924636593e-35_Q ;
 
 FLOAT_128 f128_max          = FLOAT_128(0x7ffeffffU, -1U, -1U, -1U);
@@ -1057,10 +1057,10 @@ FLOAT_128 f128_min          = FLOAT_128(0U, 0U, 0U, 1U);
 FLOAT_128 f128_negmin       = FLOAT_128(0x80000000U, 0U, 0U, 1U);
 //      (-6.47517511943802511092443895822764655e-4966_) ;
 
-FLOAT_128 f128_normmin      = FLOAT_128(0x00010000U, nullptr);
+FLOAT_128 f128_normmin      = FLOAT_128(0x00010000U, top32());
 //      3.36210314311209350626267781732175260e-4932_Q ;
 
-FLOAT_128 f128_negnormmin   = FLOAT_128(0x80010000U, nullptr);
+FLOAT_128 f128_negnormmin   = FLOAT_128(0x80010000U, top32());
 //      (-3.36210314311209350626267781732175260e-4932_Q) ;
 
 

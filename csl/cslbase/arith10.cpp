@@ -493,9 +493,11 @@ static LispObject Lisqrt(LispObject, LispObject a)
     return fixnum_of_int((int32_t)d);
 }
 
-#endif
+#endif // ISQRT OK.
 
 #endif // ARITHLIB
+
+#ifndef ARITHLIB
 
 LispObject Labsval(LispObject env, LispObject a)
 // I call this Labsval not Labs because a non-case-sensitive linker
@@ -503,6 +505,8 @@ LispObject Labsval(LispObject env, LispObject a)
 // Of course I do not think that case-insensitive linkers should be allowed
 // to remain in service....
 {   SingleValued fn;
+// The special case here is that of complex numbers. Otherwise I just need
+// to check the sign of a and negate if the value is negative.
     switch (static_cast<int>(a) & TAG_BITS)
     {   case TAG_FIXNUM:
 //      case XTAG_SFLOAT:
@@ -537,8 +541,6 @@ LispObject Labsval(LispObject env, LispObject a)
     if (minusp(a)) a = negate(a);
     return a;
 }
-
-#ifndef ARITHLIB
 
 static LispObject Lphase(LispObject env, LispObject a)
 {   SingleValued fn;
@@ -717,6 +719,6 @@ setup_type const arith10_setup[] =
     {nullptr,             nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
-} // end namespace
+} // end of namespace
 
 // end of arith10.cpp

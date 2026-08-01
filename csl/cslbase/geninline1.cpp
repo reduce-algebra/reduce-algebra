@@ -34,6 +34,7 @@
 
 
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 
 // I have some templated code as follows that I wanted to have generate
@@ -89,34 +90,43 @@
 // }
 
 
-void generate(std::size_t N, std::size_t M)
-{   std::cout << "\n";
-    std::cout << "[[gnu::always_inline]]\n";
-    std::cout << "static void inlineMul_" << N << "_" << M
+void generate(std::ofstream& out1, std::ofstream& out2, std::size_t N, std::size_t M)
+{
+//@ out1 << "static void inlineMul_" << N << "_" << M
+//@           << "(ConstDigitPtr a,\n";
+    std::ofstream& out = N*M < 11 ? out1 : out2;
+    const char* tag = N*M < 11 ? "inline " : "";
+    out << "\n" << tag << "void inlineMul_" << N << "_" << M
               << "(ConstDigitPtr a,\n";
-    std::cout << "                          ConstDigitPtr b,\n";
-    std::cout << "                          DigitPtr result)\n";
+    out << "                          ConstDigitPtr b,\n";
+    out << "                          DigitPtr result)\n";
+    if (N*M >= 11)
+    {   out1 << "\n" << tag << "extern void inlineMul_" << N << "_" << M
+             << "(ConstDigitPtr a,\n";
+        out1 << "                          ConstDigitPtr b,\n";
+        out1 << "                          DigitPtr result);\n";
+    }
     if (N==1 && M==1)
-    {   std::cout << "{   multiply64(a[0], b[0], result[1], result[0]);\n";
-        std::cout << "}\n";
+    {   out << "{   multiply64(a[0], b[0], result[1], result[0]);\n";
+        out << "}\n";
         return;
     }
-    std::cout << "{   uint64_t dhi, dlo;\n";
-    std::cout << "    multiply64(a[0], b[0], dlo, result[0]);\n";
-    std::cout << "    dhi = 0;\n";
-    std::cout << "    uint64_t whi, carry;\n";
+    out << "{   uint64_t dhi, dlo;\n";
+    out << "    multiply64(a[0], b[0], dlo, result[0]);\n";
+    out << "    dhi = 0;\n";
+    out << "    uint64_t whi, carry;\n";
     for (std::size_t k=1; k<N+M-1; k++)
-    {   std::cout << "    carry = 0;\n";
+    {   out << "    carry = 0;\n";
         for (std::size_t i=(k<M?0:k+1-M); i<std::min(N, k+1); i++)
-        {   std::cout << "    multiply64(a[" << i << "], b[" << (k-i) << "], dlo, whi, dlo);\n";
-            std::cout << "    carry += addWithCarry(dhi, whi, dhi);\n";
+        {   out << "    multiply64(a[" << i << "], b[" << (k-i) << "], dlo, whi, dlo);\n";
+            out << "    carry += addWithCarry(dhi, whi, dhi);\n";
         }
-        std::cout << "    result[" << k << "] = dlo;\n";
-        std::cout << "    dlo = dhi;\n";
-        std::cout << "    dhi = carry;\n";
+        out << "    result[" << k << "] = dlo;\n";
+        out << "    dlo = dhi;\n";
+        out << "    dhi = carry;\n";
     }
-    std::cout << "    result[" << (N+M-1) << "] = dlo;\n";
-    std::cout << "}\n";
+    out << "    result[" << (N+M-1) << "] = dlo;\n";
+    out << "}\n";
 }
 
 // Now one that multiplies by a number that has M digits for known M.
@@ -124,7 +134,6 @@ void generate(std::size_t N, std::size_t M)
 // is greater than the static one M.
 
 // template <size_t M>
-// [[gnu::always_inline]]
 // inline void inlineMul(ConstDigitPtr a, std::size_t N,
 //                       ConstDigitPtr b,
 //                       DigitPtr result)
@@ -180,113 +189,128 @@ void generate(std::size_t N, std::size_t M)
 
 
 
-void generate(std::size_t M)
-{   std::cout << "\n";
-    std::cout << "[[gnu::always_inline]]\n";
-    std::cout << "static void inlineMul_" << M
-              << "(ConstDigitPtr a, std::size_t N,\n";
-    std::cout << "                        ConstDigitPtr b,\n";
-    std::cout << "                        DigitPtr result)\n";
-    std::cout << "{   Digit carry = 0, lo, hi = 0, hi1;\n";
-    std::cout << "    multiply64(a[0], b[0], lo, result[0]);\n";
+void generate(std::ofstream& out1, std::ofstream& out2, std::size_t M)
+{   std::ofstream& out = M<5 ? out1 : out2;
+    const char* tag = M<5 ? "\ninline " : "\n"; 
+    out << tag << "void inlineMul_" << M
+               << "(ConstDigitPtr a, std::size_t N,\n";
+    out << "                        ConstDigitPtr b,\n";
+    out << "                        DigitPtr result)\n";
+
+    if (M >= 5)
+    {   out1 << "\nextern void inlineMul_" << M
+             << "(ConstDigitPtr a, std::size_t N,\n";
+        out1 << "                        ConstDigitPtr b,\n";
+        out1 << "                        DigitPtr result);\n";
+    }
+    out << "{   Digit carry = 0, lo, hi = 0, hi1;\n";
+    out << "    multiply64(a[0], b[0], lo, result[0]);\n";
     for (std::size_t k=1; k<M; k++)
     {   for (std::size_t i=0; i<=k; i++)
-        {   std::cout << "    multiply64(a[" << i << "], b[" << (k-i) << "], lo, hi1, lo);\n";
-            std::cout << "    carry += addWithCarry(hi, hi1, hi);\n";
+        {   out << "    multiply64(a[" << i << "], b[" << (k-i) << "], lo, hi1, lo);\n";
+            out << "    carry += addWithCarry(hi, hi1, hi);\n";
         }
-        std::cout << "    result[" << k << "] = lo;\n";
-        std::cout << "    lo = hi;\n";
-        std::cout << "    hi = carry;\n";
-        std::cout << "    carry = 0;\n";
+        out << "    result[" << k << "] = lo;\n";
+        out << "    lo = hi;\n";
+        out << "    hi = carry;\n";
+        out << "    carry = 0;\n";
     }
-    std::cout << "    for (std::size_t k=" << M << "; k<N; k++)\n";
-    std::cout << "    {\n";
+    out << "    for (std::size_t k=" << M << "; k<N; k++)\n";
+    out << "    {\n";
     for (std::size_t j=0; j<M; j++)
     {
-        std::cout << "        multiply64(a[k-" << j << "], b[" << j << "], lo, hi1, lo);\n";
-        std::cout << "        carry += addWithCarry(hi, hi1, hi);\n";
+        out << "        multiply64(a[k-" << j << "], b[" << j << "], lo, hi1, lo);\n";
+        out << "        carry += addWithCarry(hi, hi1, hi);\n";
     }
-    std::cout << "        result[k] = lo;\n";
-    std::cout << "        lo = hi;\n";
-    std::cout << "        hi = carry;\n";
-    std::cout << "        carry = 0;\n";
-    std::cout << "    }\n";
+    out << "        result[k] = lo;\n";
+    out << "        lo = hi;\n";
+    out << "        hi = carry;\n";
+    out << "        carry = 0;\n";
+    out << "    }\n";
 
     for (std::size_t k1=0; k1<M-1; k1++)
     {   for (std::size_t i1=k1+1; i1<M; i1++)
-        {   std::cout << "    multiply64(a[N-" << (i1-k1) << "], b[" << i1 << "], lo, hi1, lo);\n";
-            std::cout << "    carry += addWithCarry(hi, hi1, hi);\n";
+        {   out << "    multiply64(a[N-" << (i1-k1) << "], b[" << i1 << "], lo, hi1, lo);\n";
+            out << "    carry += addWithCarry(hi, hi1, hi);\n";
         }
-        std::cout << "    result[N+" << k1 <<"] = lo;\n";
-        std::cout << "    lo = hi;\n";
-        std::cout << "    hi = carry;\n";
-        std::cout << "    carry = 0;\n";
+        out << "    result[N+" << k1 <<"] = lo;\n";
+        out << "    lo = hi;\n";
+        out << "    hi = carry;\n";
+        out << "    carry = 0;\n";
     }
-    std::cout << "    result[N+" << (M-1) << "] = lo;\n";
-    std::cout << "}\n";
+    out << "    result[N+" << (M-1) << "] = lo;\n";
+    out << "}\n";
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    std::ofstream out1(argv[1]);
+    std::ofstream out2(argv[2]);
+
+    out1 << "\ninline constexpr std::size_t MUL_INLINE_LIMIT = 7;\n\n";
+
     for (std::size_t N=1; N<=7; N++)
         for (std::size_t M=1; M<=N; M++)
-            generate(N, M);
+            generate(out1, out2, N, M);
     for (std::size_t N=8; N<=15; N++)
-        generate(N, N);
+        generate(out1, out2, N, N);
     for (std::size_t N=1; N<=7; N++)
-        generate(N);
+        generate(out1, out2, N);
 
-    std::cout << "\n";
-    std::cout << "static void smallCaseMul(ConstDigitPtr a, std::size_t N,\n";
-    std::cout << "                         ConstDigitPtr b, std::size_t M,\n";
-    std::cout << "                         DigitPtr result)\n";
-    std::cout << "{\n";
-    std::cout << "// For this I will already have checked that both M and N are at most\n";
-    std::cout << "// 7 and so that switch statement will cover all the possibilities and\n";
-    std::cout << "// everything should then expand to inline code.\n";
-    std::cout << "    switch (MUL_INLINE_LIMIT*N + M)\n";
-    std::cout << "    {\n";
+    out1 << "\n";
+    out1 << "inline void smallCaseMul(ConstDigitPtr a, std::size_t N,\n";
+    out1 << "                         ConstDigitPtr b, std::size_t M,\n";
+    out1 << "                         DigitPtr result)\n";
+    out1 << "{\n";
+    out1 << "// For this I will already have checked that both M and N are at most\n";
+    out1 << "// 7 and so that switch statement will cover all the possibilities and\n";
+    out1 << "// everything should then expand to inline code.\n";
+    out1 << "    switch (MUL_INLINE_LIMIT*N + M)\n";
+    out1 << "    {\n";
     for (std::size_t N=2; N<=7; N++)
     {   for (std::size_t M=1; M<N; M++)
-        {   std::cout << "        case 7*" << M << "+" << N << ":\n";
-            std::cout << "            std::swap(a, b);\n";
-            std::cout << "        case 7*" << N << "+" << M << ":\n";
-            std::cout << "            inlineMul_" << N << "_" << M
+        {   out1 << "        case 7*" << M << "+" << N << ":\n";
+            out1 << "            std::swap(a, b);\n";
+            out1 << "        case 7*" << N << "+" << M << ":\n";
+            out1 << "            inlineMul_" << N << "_" << M
                       << "(a, b, result);\n";
-            std::cout << "            return;\n";
+            out1 << "            return;\n";
         }
-        std::cout << "        case 7*" << N << "+" << N << ":\n";
-        std::cout << "            inlineMul_" << N << "_" << N
+        out1 << "        case 7*" << N << "+" << N << ":\n";
+        out1 << "            inlineMul_" << N << "_" << N
                   << "(a, b, result);\n";
-        std::cout << "            return;\n";
+        out1 << "            return;\n";
     }
-    std::cout << "        default: arithlib_abort(\"bad smallCaseMul\");\n";
-    std::cout << "    }\n";
-    std::cout << "}\n";
-    std::cout << "\n";
-    std::cout << "static void bigBySmallMul(ConstDigitPtr a, std::size_t N,\n";
-    std::cout << "                          ConstDigitPtr b, std::size_t M,\n";
-    std::cout << "                          DigitPtr result)\n";
-    std::cout << "{   switch (M)\n";
-    std::cout << "    {\n";
+    out1 << "        default: arithlib_abort(\"bad smallCaseMul\");\n";
+    out1 << "    }\n";
+    out1 << "}\n";
+    out1 << "\n";
+    out1 << "extern void simpleMul(ConstDigitPtr a, size_t N,\n";
+    out1 << "                      ConstDigitPtr b, std::size_t M,\n";
+    out1 << "                      DigitPtr result);\n\n";
+    out1 << "inline void bigBySmallMul(ConstDigitPtr a, std::size_t N,\n";
+    out1 << "                          ConstDigitPtr b, std::size_t M,\n";
+    out1 << "                          DigitPtr result)\n";
+    out1 << "{   switch (M)\n";
+    out1 << "    {\n";
     for (std::size_t M=1; M<=7; M++)
-    {   std::cout << "        case " << M << ":\n";
-        std::cout << "            inlineMul_" << M
+    {   out1 << "        case " << M << ":\n";
+        out1 << "            inlineMul_" << M
                   << "(a, N, b, result); return;\n";
     }
-    std::cout << "        default: arithlib_abort(\"bad bigBySmallMul\");\n";
-    std::cout << "    }\n";
-    std::cout << "}\n";
-    std::cout << "\n";
-    std::cout << "static void balancedMul(ConstDigitPtr a, ConstDigitPtr b, std::size_t N,\n";
-    std::cout << "                       DigitPtr result)\n";
-    std::cout << "{   switch (N)\n";
-    std::cout << "    {   default: simpleMul(a, N, b, N, result); return;\n";
+    out1 << "        default: arithlib_abort(\"bad bigBySmallMul\");\n";
+    out1 << "    }\n";
+    out1 << "}\n";
+    out1 << "\n";
+    out1 << "inline void balancedMul(ConstDigitPtr a, ConstDigitPtr b, std::size_t N,\n";
+    out1 << "                        DigitPtr result)\n";
+    out1 << "{   switch (N)\n";
+    out1 << "    {   default: simpleMul(a, N, b, N, result); return;\n";
     for (std::size_t N=1; N<=15; N++)
-        std::cout << "        case " << N << ":  inlineMul_" << N
+        out1 << "        case " << N << ":  inlineMul_" << N
                   << "_" << N << "(a, b, result);   return;\n";
-    std::cout << "    }\n";
-    std::cout << "}\n";
+    out1 << "    }\n";
+    out1 << "}\n";
     return 0;
 }
 

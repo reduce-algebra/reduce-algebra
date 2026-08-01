@@ -40,12 +40,12 @@
 // $Id$
 
 
-#ifndef ARITHLIB
-
 #include "headers.h"
 
 namespace CSL_LISP
 {
+
+#ifndef ARITHLIB
 
 LispObject rembi(LispObject a, LispObject b)
 {   if (b == fixnum_of_int(0)) return aerror2("bad arg for remainder", a, b);
@@ -1193,8 +1193,8 @@ bool SL_numeq2(LispObject a, LispObject b)
     }
 }
 
-} // end namespace
-
 #endif // ARITHLIB
+
+} // end namespace
 
 // end of arith11.cpp

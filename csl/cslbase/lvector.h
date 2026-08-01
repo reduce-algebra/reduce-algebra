@@ -143,44 +143,37 @@ private:
 public:
 
 //    a default constuctor
-    [[gnu::always_inline]]
     vecpointer()
     {   data = nullptr;
     }
 
 //    a copy constructor
-    [[gnu::always_inline]]
     vecpointer(const vecpointer<T>& a)
     {   data = a.data;
     }
 
 //    constructor from nullptr
-    [[gnu::always_inline]]
     vecpointer(std::nullptr_t a)
     {   data = nullptr;
     }
 
 //    constructor from a T*
     template <typename S>
-    [[gnu::always_inline]]
     vecpointer(S* a)
     {   data = reinterpret_cast<T*>(a);
     }
 
 //    constructor from a T* but with a length specifier
-    [[gnu::always_inline]]
     vecpointer(T* a, std::size_t n)
     {   data = a;
     }
 
 //    constructor from a intptr_t
-    [[gnu::always_inline]]
     vecpointer(std::intptr_t a)
     {   data = reinterpret_cast<T*>(a);
     }
 
 //    setsize() - a no-op in this case.
-    [[gnu::always_inline]]
     void setsize(std::size_t n)
     {}
 
@@ -190,131 +183,125 @@ public:
     }
 
 //    discard()     for deleting its contents
-    [[gnu::always_inline]]
     void discard()
     {   delete [] data;
         data = nullptr;
     }
 
 //    operator*             indirection
-    [[gnu::always_inline]]
     T& operator*()
     {   return *data;
     }
-    [[gnu::always_inline]]
     T operator*() const
     {   return *data;
     }
 
 //    operator[]            subscripting
-    [[gnu::always_inline]]
     T& operator[](std::size_t n)
     {   return data[n];
     }
-    [[gnu::always_inline]]
     T operator[](std::size_t n) const
     {   return data[n];
     }
 
 //    operator=
-    [[gnu::always_inline]]
     vecpointer<T>& operator=(const vecpointer<T> a)
     {   data = a.data;
         return *this;
     }
 
 //    operator+(integer)
-    [[gnu::always_inline]]
     vecpointer<T> operator+(std::ptrdiff_t n)
     {   return vecpointer<T>(data + n);
     }
 
+//    operator+(integer)
+    vecpointer<T> operator+(std::size_t n)
+    {   return vecpointer<T>(data + n);
+    }
+
 //    operator-(integer)
-    [[gnu::always_inline]]
     vecpointer<T> operator-(std::ptrdiff_t n)
     {   return vecpointer<T>(data - n);
     }
 
+//    operator-(integer)
+    vecpointer<T> operator-(std::size_t n)
+    {   return vecpointer<T>(data - n);
+    }
+
 //    operator-(vecpointer<T>)
-    [[gnu::always_inline]]
     std::ptrdiff_t operator-(vecpointer<T> a)
     {   return data - (T*)a;
     }
 
 //    operator+= and operator-=
-    [[gnu::always_inline]]
     vecpointer<T>& operator+=(std::ptrdiff_t n)
     {   data += n;
         return *this;
     }
-    [[gnu::always_inline]]
+    vecpointer<T>& operator+=(std::size_t n)
+    {   data += n;
+        return *this;
+    }
     vecpointer<T>& operator-=(std::ptrdiff_t n)
+    {   data -= n;
+        return *this;
+    }
+    vecpointer<T>& operator-=(std::size_t n)
     {   data -= n;
         return *this;
     }
 
 //    operator++ and operator--  (pre and post versions of each)
-    [[gnu::always_inline]]
     vecpointer<T>& operator++()
     {   ++data;
         return *this;
     }
-    [[gnu::always_inline]]
     vecpointer<T>& operator--()
     {   --data;
         return *this;
     }
-    [[gnu::always_inline]]
     vecpointer<T> operator++(int)
     {   return vecpointer<T>(data++);
     }
-    [[gnu::always_inline]]
     vecpointer<T> operator--(int)
     {   return vecpointer<T>(data--);
     }
 
 //    operator== and operator!= to compare against a nullptr or
 //                              another vecpointer<T>
-    [[gnu::always_inline]]
     bool operator==(std::nullptr_t a)
     {   return data == nullptr;
     }
-    [[gnu::always_inline]]
     bool operator!=(std::nullptr_t a)
     {   return data != nullptr;
     }
-    [[gnu::always_inline]]
     bool operator==(const vecpointer<T> a)
     {   return data == a.data;
     }
-    [[gnu::always_inline]]
     bool operator!=(const vecpointer<T> a)
     {   return data != a.data;
     }
 
 //    casts into T*
-    [[gnu::always_inline]]
     operator T*()
     {   return data;
     }
 
 //    casts into intptr_t
-    [[gnu::always_inline]]
     operator std::intptr_t()
     {   return reinterpret_cast<std::intptr_t>(data);
     }
 
-    [[gnu::always_inline]]
     operator void*()
     {   return static_cast<void*>(data);
     }
 
-    [[gnu::always_inline]]
     operator const void*()
     {   return static_cast<const void*>(data);
     }
 
-    [[gnu::always_inline]]
     operator vecpointer<const T>()
     {   return vecpointer<const T>(data);
     }
@@ -335,13 +322,11 @@ public:
 };
 
 template <typename T>
-[[gnu::always_inline]]
 inline vecpointer<T> setSize(vecpointer<T> v, std::size_t n)
 {   return v;
 }
 
 template <typename T>
-[[gnu::always_inline]]
 inline vecpointer<T> setSize(T* v, std::size_t n)
 {   return v;
 }
@@ -496,8 +481,22 @@ public:
         return vecpointer<T>(data->data, data->limit, nn);
     }
 
+//    operator+(integer)
+    vecpointer<T> operator+(std::size_t n)
+    {   std::size_t nn = n + data->offset;
+        lvector_assert(nn < data->limit);
+        return vecpointer<T>(data->data, data->limit, nn);
+    }
+
 //    operator-(integer)
     vecpointer<T> operator-(std::ptrdiff_t n)
+    {   std::size_t nn = data->offset - n;
+        lvector_assert(nn < data->limit);
+        return vecpointer<T>(data->data, data->limit, nn);
+    }
+
+//    operator-(integer)
+    vecpointer<T> operator-(std::size_t n)
     {   std::size_t nn = data->offset - n;
         lvector_assert(nn < data->limit);
         return vecpointer<T>(data->data, data->limit, nn);
@@ -516,7 +515,20 @@ public:
         lvector_assert(data->offset < data->limit);
         return *this;
     }
+
+    vecpointer<T>& operator+=(std::size_t n)
+    {   data->offset += n;
+        lvector_assert(data->offset < data->limit);
+        return *this;
+    }
+
     vecpointer<T>& operator-=(std::ptrdiff_t n)
+    {   data->offset -= n;
+        lvector_assert(data->offset < data->limit);
+        return *this;
+    }
+
+    vecpointer<T>& operator-=(std::size_t n)
     {   data->offset -= n;
         lvector_assert(data->offset < data->limit);
         return *this;
@@ -768,7 +780,6 @@ public:
     }
 
 // convert to vecpointer
-    [[gnu::always_inline]]
     operator vecpointer<T>()
     {
 #ifdef DEBUG
@@ -777,7 +788,6 @@ public:
         return vecpointer<T>(data);
 #endif // DEBUG
     }
-    [[gnu::always_inline]]
     operator vecpointer<const T>()
     {
 #ifdef DEBUG
@@ -787,7 +797,6 @@ public:
 #endif // DEBUG
     }
 
-    [[gnu::always_inline]]
     vecpointer<T> operator+(std::size_t n)
     {
 #ifdef DEBUG
@@ -798,21 +807,17 @@ public:
     }
 
 // convert to T*
-    [[gnu::always_inline]]
     operator T*()
     {   return data;
     }
-    [[gnu::always_inline]]
     operator const T*()
     {   return data;
     }
-    [[gnu::always_inline]]
     operator void*()
     {   return static_cast<void*>(data);
     }
 
 //    operator[]            subscripting
-    [[gnu::always_inline]]
     T& operator[](std::size_t n)
     {
 #ifdef DEBUG
@@ -820,7 +825,6 @@ public:
 #endif // DEBUG
         return data[n];
     }
-    [[gnu::always_inline]]
     T operator[](std::size_t n) const
     {
 #ifdef DEBUG
@@ -830,7 +834,6 @@ public:
     }
 
 //    operator*            subscripting
-    [[gnu::always_inline]]
     T& operator*()
     {
 #ifdef DEBUG
@@ -838,7 +841,6 @@ public:
 #endif // DEBUG
         return data[0];
     }
-    [[gnu::always_inline]]
     T operator*() const
     {
 #ifdef DEBUG

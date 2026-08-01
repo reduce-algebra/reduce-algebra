@@ -306,4 +306,8 @@ Aug 2024.     If the user closes the window in the GUI on an X-based version
 March 2025.   Make font size for menus track the size that the main window
               font will have at the start of a particular run.
 
+July 2026.    At least on a temporary basis I have removed used of the
+              CSL_LISP namespace in files that are my own code and that
+              interact with CSL.
+
 <end of CHANGED>

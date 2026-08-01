@@ -49,7 +49,7 @@ LispObject Lfrexp(LispObject env, LispObject a)
 {   SingleValued fn;
     if (is_long_float(a))
     {   FLOAT_128 d;
-        int x;
+        int32_t x;
         d = frexp(long_float_val(a), x);
         return cons(fixnum_of_int(x), make_boxfloat128(d));
     }

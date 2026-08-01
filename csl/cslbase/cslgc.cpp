@@ -1898,7 +1898,7 @@ void aprint(LispObject* x)
 
 // This version only supports the first segment of pages... and it does not
 // do any checking for the validity of either of its arguments. It is probably
-// quite close to what unAddr() in allocate.h ought to have been. I give
+// quite close to what unAddr() in newallocate.h ought to have been. I give
 // it a very short name since I will be using it while debugging and typing
 // in uses of it to gdb.
 

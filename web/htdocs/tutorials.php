@@ -4,9 +4,9 @@ include './include/begin-head.php';
 ?>
 
 <style type="text/css">
- pre {
-     margin: 0
- }
+    pre {
+        margin: 0
+    }
 </style>
 
 <?php
@@ -22,7 +22,8 @@ include './include/begin-body.php';
     <li>Select a directory on your computer to contain the
         <code>lessons</code> directory then download
         <a href="tutorials/lessons.zip">lessons.zip</a>
-        to this directory and unzip it.</li>
+        to this directory and unzip it.
+    </li>
     <li>If you have the
         <a href="https://en.wikipedia.org/wiki/Apache_Subversion">subversion</a>
         program installed then select a directory on your computer to
@@ -40,7 +41,8 @@ include './include/begin-body.php';
         file listing, download the file to your computer, optionally
         create a directory on your computer called <code>lessons</code>
         (although you can call it whatever you want) and save the file
-        there.</li>
+        there.
+    </li>
 </ul>
 <p>
     The lesson files are intended to be perused in REDUCE (although
@@ -58,11 +60,13 @@ include './include/begin-body.php';
         normally, click on the
         <code>File / Read...</code> menu item, find your
         <code>lessons</code> directory in the file selector and then select a lesson file, such as
-        <code>less1.red</code>.</li>
+        <code>less1.red</code>.
+    </li>
     <li>One way to run the lessons in PSL REDUCE is to start it
-    normally and then execute a command of the following form
-    (customized as appropriate for your computer):
-        <pre>in &quot;path/to/lessons/less1.red&quot;;</pre></li>
+        normally and then execute a command of the following form
+        (customized as appropriate for your computer):
+        <pre>in &quot;path/to/lessons/less1.red&quot;;</pre>
+    </li>
 </ul>
 <p>
     It is advisable to run each lesson in a new REDUCE session,
@@ -73,14 +77,14 @@ include './include/begin-body.php';
 <p>
     The following tutorials cover the application of REDUCE to a range
     of elementary mathematics problems at pre-university and
-    first/second-year undergraduate level.  If you spot any errors or
+    first/second-year undergraduate level. If you spot any errors or
     have better solutions then please
     <a href="https://sourceforge.net/users/fjwright/">let us know</a>.
     Other tutorials may follow as they are developed.
 </p>
 <p>
     It is assumed that the reader is familiar with the mathematics,
-    which is not explained here.  Please refer to the
+    which is not explained here. Please refer to the
     <strong>REDUCE User&apos;s Manual</strong> <small>[
         <a href="manual/manual.html">HTML</a> |
         <a href="manual/manual.pdf">PDF</a> ]</small> for details of
@@ -104,16 +108,14 @@ include './include/begin-body.php';
 
 <h2 id="egger">Example scripts by Dieter (Olli) Egger</h2>
 <p>
-    Dieter Egger is the author of
-    <a href="https://play.google.com/store/apps/details?id=de.dieteregger.symbolic">Symbolic</a>,
-    a REDUCE app for Android available from Google Play, and some of
-    the scripts available here are those used as demonstrations for
-    Symbolic as shown in the screenshots on Google Play.  Other
-    scripts relate to Dieter&apos;s research in curved space-time.  A
-    brief description of all his scripts, with links to them, is
+    Dieter Egger is the author of <em>Symbolic</em>, a REDUCE app for Android
+    (which is unfortunately no longer available), and some of the scripts
+    available here are those that were used as demonstrations for <em>Symbolic</em>.
+    Other scripts relate to Dieter&apos;s research in curved space-time.
+    A brief description of all his scripts, with links to them, is
     available in either <a href="tutorials/EggerScripts.php">German</a>
     (his original version) or <a href="tutorials/EggerScripts.en.php">English</a>,
-    although the scripts themselves are all in English.  The whole
+    although the scripts themselves are all in English. The whole
     collection of scripts is also available as a
     <a href="tutorials/EggerReduceScripts.zip">zip archive</a>.
 </p>
@@ -123,13 +125,26 @@ include './include/begin-body.php';
 </p>
 <ul>
     <li><a href="tutorials/Metrik.pdf">&Uuml;ber eine spezielle Metrik
-        &ndash; Alternative Kosmologie</a>.  This paper (in German)
+            &ndash; Alternative Kosmologie</a>. This paper (in German)
         ends with several REDUCE scripts.</li>
     <li><a href="tutorials/MetricUniverse.pdf">About a Special Metric
-        &ndash; Dark Matter and Dark Energy transmogrified</a>.  This
+            &ndash; Dark Matter and Dark Energy transmogrified</a>. This
         paper (in English) is a longer version of the above paper that
         references some of the scripts available via the links above.
         (The link given at the end of the paper no longer works.)</li>
+</ul>
+
+<h2>Course texts by Hans-Gert Gräbe (in German)</h2>
+<ul>
+    <li>
+        <a href="tutorials/Graebe/Graebe-red.pdf">Scriptum zum REDUCE -Praktikum</a>
+    </li>
+    <li>
+        <a href="tutorials/Graebe/eca97.pdf">Skript zum Kurs Einführung in die Computeralgebra Wintersemester 1997/98</a>
+    </li>
+    <li>
+        <a href="tutorials/Graebe/ca_intro98.pdf">Kurzeinführung in die CAS Maple, MuPAD und Reduce</a>
+    </li>
 </ul>
 
 </div><!-- opened in begin-body.php -->
@@ -139,4 +154,5 @@ include './include/footer.php';
 ?>
 
 </body>
+
 </html>
