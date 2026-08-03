@@ -2344,13 +2344,16 @@ static LispObject read_hash(LispObject stream)
 
 #endif // COMMON
 
-bool is_constituent(int c)
-{   if (c == EOF) return false;
-    if (c & ESCAPED_CHAR) return true;   // escaped
-    switch (c)
-    {
+class constituent_table_class
+{
+public:
+    bool v[256];
+    constituent_table_class()
+    {   for (int c=0; c<255; c++)
+        {   if (c <= ' ') v[c] = false;
+            else switch (c)
+            {
 // The following characters terminate symbols
-        case ' ':   case '\n':  case '\t':  case '\v':  case '\f':  case 0:
         case '(':   case ')':   case '\'':  case ';':   case '"':   case '`':
         case ',':   case '\r':
         case CTRL_D:     // character 4 is EOF in ASCII
@@ -2359,17 +2362,28 @@ bool is_constituent(int c)
         case '@':   case '#':   case '$':   case '%':   case '^':   case '&':
         case '=':   case '{':   case '}':   case '[':   case ']':   case ':':
         case '<':   case '>':   case '?':   case '!':   case '|':
-// case '_':    In OLD Standard Lisp underscore was a break character -
-// these days it is classified rather oddly, in that it does not terminate
-// a symbol but behaves specially if it starts one.
-// What about '.', which may need to be treated specially?
         case '.':
 #endif
-            return false;
+                v[c] = false;
+                break;
         default:
-            return true;
+                v[c] = true;
+                break;
+            }
+        }
     }
-}
+};
+
+static constituent_table_class constituent_table;
+
+// This version bets that the table lookup here will be smoother than
+// use of the switch construction.
+
+bool is_constituent(int c)
+{   if (c & ESCAPED_CHAR) return true;
+    else if ((uint32_t)c > 255) return false;
+    else return constituent_table.v[c];
+} 
 
 static LispObject backquote_expander(LispObject a)
 {   LispObject w1, f;

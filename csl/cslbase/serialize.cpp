@@ -2074,12 +2074,12 @@ up:
 // stack s to track how far along it I am, and need to do special things when
 // I am almost complete
     if (!is_cons(s))
-    {   std::fprintf(stderr, "s bad at line %d in serialize.cpp\n", __LINE__);
+    {   std::fprintf(stderr, "'s' bad at line %d in serialize.cpp\n", __LINE__);
         simple_print(stderr, s);
         my_abort("serialization");
     }
     if (!is_fixnum(car(s)))
-    {   std::fprintf(stderr, "car s bad at line %d in serialize.cpp\n", __LINE__);
+    {   std::fprintf(stderr, "'car s' bad at line %d in serialize.cpp\n", __LINE__);
         simple_print(stderr, car(s));
         my_abort("serialization");
     }

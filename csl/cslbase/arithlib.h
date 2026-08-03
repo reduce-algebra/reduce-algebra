@@ -1,17 +1,17 @@
-// Big Number arithmetic.                             A C Norman, 2019-2026
+// arithlib.h                               Copyright A C Norman, 2019-2026
 
-// To use this  #include "arithlib.h" as a header-only library.
+// Header file for big-number (etc) arithmetic.
 
-#ifndef __arithlib_cpp
-#define __arithlib_cpp 1
+#ifndef __arithlib_h
+#define __arithlib_h 1
+
+#define LISP 1
+#define CSL 1
 
 // To do:
 //    Write full documentation! [Meanwhile there is a reasonably extended
 //     commentary included as comments here, and a file arithtest.cpp that
 //     can accompany it and illustrate its use]
-//    Re-work long division to approximate Karatsuba complexity.
-//    Check and mend toom3 multiplication as necessary.
-//    Split into header file and implementation file(s).
 
 /**************************************************************************
  * Copyright (C) 2019-2026, Codemist.                    A C Norman       *
@@ -501,6 +501,67 @@ namespace arithlib_implementation
 
 using namespace fftutils;
 
+inline uint64_t mulcounts[11][11];
+inline size_t biggestM = 0, biggestN = 0;
+
+inline void initcounts()
+{   for (size_t i=0; i<11; i++)
+        for (size_t j=0; j<11; j++) mulcounts[i][j] = 0;
+}
+
+inline void showcounts()
+{   std::cout << "    fix     1      2      3      4-6    7-9   10-12";
+    std::cout << "  13-17  18-24  25-35   >35\n";
+    for (size_t i=0; i<11; i++)
+    {   for (size_t j=0; j<11; j++)
+            std::cout << std::setw(7) << mulcounts[i][j];
+        std::cout << "\n";
+    }
+    std::cout << "Biggest M, N = " << biggestM << ", " << biggestN << "\n";
+}
+
+
+inline size_t bucket(size_t n)
+{   switch (n)
+    {
+    case 0:
+        return 0;
+    case 1:
+        return 1;
+    case 2:
+        return 2;
+    case 3:
+        return 3;
+    case 4: case 5: case 6:
+        return 4;
+    case 7: case 8: case 9:
+        return 5;
+    case 10: case 11: case 12:
+        return 6;
+    case 13: case 14: case 15: case 16: case 17:
+        return 7;
+    case 18: case 19: case 20: case 21: case 22: case 23: case 24:
+        return 8;
+    case 25: case 26: case 27: case 28: case 29: case 30: case 31:
+    case 32: case 33: case 34: case 35:
+        return 9;
+    default:
+        return 10;
+    }
+}
+
+#ifdef DEBUG
+inline void countmul(size_t M, size_t N)
+{   if (M > biggestM) biggestM = M;
+    if (N > biggestN) biggestN = N;
+    mulcounts[bucket(M)][bucket(N)]++;
+}
+#else // DEBUG
+[[gnu::always_inline]]
+inline void countmul(size_t M, size_t N)
+{}
+#endif // DEBUG
+
 // My (big) integers are represented with 64-bit digits in a 2s complement
 // notation, so the most significant digit is signed and the rest are
 // unsigned.
@@ -707,10 +768,14 @@ inline void assert1(bool ok, const char* why, const char* location)
     }
 }
 
+#ifdef DEBUG
 #define arithlib_assert(...)                                 \
     arithlib_implementation::assert1(__VA_ARGS__,            \
                       "arithlib_assert(" #__VA_ARGS__ ")",   \
                       __FILE__ " line " STRINGIFY(__LINE__))
+#else // DEBUG
+#define arithlib_assert(...) do {} while (false)
+#endif // DEBUG
 
 
 // At times during development it is useful to be able to send messages
@@ -856,11 +921,7 @@ inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
 inline void abandon(std::uint64_t* p);
 inline void abandon(std::intptr_t h);
 
-#if defined LISP
 typedef std::intptr_t string_handle;
-#else // LISP
-typedef char* string_handle;
-#endif // LISP
 
 inline string_handle confirmSizeString(char* p, std::size_t n,
                                        std::size_t final);
@@ -1407,7 +1468,7 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 
 //=========================================================================
 //=========================================================================
-// The LISP code is for incorporation in VSL or CSL
+// The LISP code is for incorporation in CSL
 //=========================================================================
 //=========================================================================
 
@@ -6996,6 +7057,9 @@ inline std::intptr_t Plus::op(SignedDigit a, SignedDigit b)
     return confirmSize(r, 1, 1);
 }
 
+// I suspect that I can add a fixnum to a bignum just slightly faster than
+// this. 
+
 inline std::intptr_t Plus::op(SignedDigit a, std::uint64_t* b)
 {   Digit aa[1];
     aa[0] = a;
@@ -7706,6 +7770,7 @@ inline void classicalbigmultiply(
 inline std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
+    countmul(lena, lenb);
     std::size_t n = lena+lenb;
     std::uint64_t* p = reserve(n);
     std::size_t final_n;
@@ -7717,7 +7782,8 @@ inline std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
 }
 
 inline std::intptr_t Times::op(SignedDigit a, SignedDigit b)
-{   SignedDigit hi;
+{   countmul(0, 0);
+    SignedDigit hi;
     Digit lo;
     signedMultiply64(a, b, hi, lo);
     if ((hi==0 && positive(lo)) ||
@@ -7737,6 +7803,7 @@ inline std::intptr_t Times::op(SignedDigit a, SignedDigit b)
 
 inline std::intptr_t Times::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
+    countmul(0, lenb);
     std::uint64_t* c = reserve(lenb+1);
     Digit hi = 0;
     for (std::size_t i=0; i<lenb; i++)
@@ -7829,6 +7896,7 @@ inline void bigsquare(std::uint64_t* a, std::size_t lena,
 
 inline std::intptr_t Square::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
+    countmul(lena, lena);
     std::size_t n = 2*lena;
     std::uint64_t* p = reserve(n);
     std::size_t final_n;
@@ -7837,7 +7905,8 @@ inline std::intptr_t Square::op(std::uint64_t* a)
 }
 
 inline std::intptr_t Square::op(SignedDigit a)
-{   Digit hi, lo;
+{   countmul(0, 0);
+    Digit hi, lo;
     multiply64(a, a, hi, lo);
     if (a < 0) hi -= 2u*static_cast<Digit>(a);
 // Now I have a 128-bit product of the inputs
@@ -8588,8 +8657,12 @@ inline void unsigned_long_division(std::uint64_t* a,
 // factor has been chosen so that the divisor does not.
     a[lena] = scale_for_division(a, lena, ss);
     lena++;
+#ifdef DEBUG
     uint64_t w = scale_for_division(b, lenb, ss);
     arithlib_assert(w == 0);
+#else // DEBUG
+    (void)scale_for_division(b, lenb, ss);
+#endif // DEBUG
     lenq = lena-lenb; // potential length of quotient.
     std::size_t m = lenq-1;
     for (;;)
@@ -10223,6 +10296,6 @@ using arithlib_implementation::ConstDigitPtr;
 using arithlib_implementation::castTo_float;
 }
 
-#endif // __arithlib_cpp
+#endif // __arithlib_h
 
 // end of arithlib.h

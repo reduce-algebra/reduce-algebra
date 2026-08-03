@@ -926,8 +926,26 @@ extern FLOAT_128 f128_negnormmin;
 namespace CSL_LISP
 {
 
+[[gnu::always_inline]]
 inline bool Dzerop(LispObject n)
-{   return is_number(n) && Zerop::op(n);
+{
+#ifdef OLD
+    return is_number(n) && Zerop::op(n);
+#else
+    if (is_fixnum(n)) return n == fixnum_of_int(0);
+    else if (is_bfloat(n))
+    {   Header h = flthdr(n);
+        if (h == SINGLE_FLOAT_HEADER)
+            return single_float_val(n) == 0.0;
+        else if (h == DOUBLE_FLOAT_HEADER)
+            return double_float_val(n) == 0.0;
+        else if (h == LONG_FLOAT_HEADER)
+            return long_float_val(n) == LF_C(0.0);
+        else return false;
+    }
+    else if (is_sfloat(n)) return short_float_val(n) == 0.0;
+    else return false;
+#endif
 }
 
 #else // ARITHLIB
@@ -1008,16 +1026,8 @@ inline bool Dzerop(LispObject n)
 
 #endif // ARITHLIB
 
-#ifdef COUNT_MULTIPLICATION
-#define MULSIZE 50
-extern uint64_t multSizes[MULSIZE][MULSIZE];
-extern size_t biggestMult;
-extern uint64_t shortResult, longResult;
-#endif
-
 extern intptr_t float128_to_5_digits(FLOAT_128 d,
     int32_t& a4, uint32_t& a3, uint32_t& a2, uint32_t& a1, uint32_t& a0);
-
 
 } // end of namespace
 
