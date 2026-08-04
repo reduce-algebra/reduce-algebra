@@ -143,8 +143,12 @@ extern "C"
 
 #define preprocessor_arg1(a, ...) #a
 
+#ifdef DEBUG
 #define my_assert(...) \
    my_assert1(__LINE__, __FILE__, preprocessor_arg1(__VA_ARGS__), __VA_ARGS__)
+#else // DEBUG
+#define my_assert(...) do { } while (false)
+#endif // DEBUG
 
 template <typename F>
 inline void my_assert1(unsigned int line, const char* file,

@@ -946,7 +946,7 @@ inline uintptr_t harderGet2Words()
 // Here consFringe == consLimit. One possibility is tha this is because
 // consLimit points at a pinned item, and there could of course be
 // several consecutive pinned things. And in a bad case that could
-// extend so that the very last location in the Page was pinned. Another
+#// extend so that the very last location in the Page was pinned. Another
 // possibility is that consLimit==consEnd so the Page is already all used up.
 // The loop here skips over pinned stuff.
     while (consFringe < consEnd &&
@@ -972,28 +972,26 @@ inline uintptr_t harderGet2Words()
 
 extern uintptr_t consCounter;
 
+[[gnu::always_inline]]
 inline uintptr_t get2Words()
-{
-#if defined DEBUG || 1
-    consCounter++;
+{   consCounter++;
     if (garbage_collection_permitted &&
         !withinGarbageCollector &&
-        consCounter==gcEvery)
+        consCounter==gcEvery) [[unlikely]]
     {   garbage_collect("gc-every");
         consCounter = 0;
     }
-#endif // DEBUG
     uintptr_t r = consFringe;
-    if (r < consLimit)
+    if (r < consLimit) [[likely]]
     {   consFringe += sizeof(ConsCell);
         return r;
     }
     return harderGet2Words();
 }
 
-// The next two may provide very minor speedup for list2 and list3 in what
+// The next few may provide very minor speedup for list2, list3, list4 in what
 // I hope will be the common case where allocation can be sequential. They
-// have to be calle din two steps - the first will check if the second would
+// have to be called in two steps - the first will check if the second would
 // be valid.
 
 inline bool get4WordsValid()
@@ -1011,9 +1009,18 @@ inline bool get6WordsValid()
 }
 
 inline uintptr_t get6Words()
-{
-    uintptr_t r = consFringe;
+{   uintptr_t r = consFringe;
     consFringe += 3*sizeof(ConsCell);
+    return r;
+}
+
+inline bool get8WordsValid()
+{   return consFringe + 3*sizeof(ConsCell) < consLimit;
+}
+
+inline uintptr_t get8Words()
+{   uintptr_t r = consFringe;
+    consFringe += 4*sizeof(ConsCell);
     return r;
 }
 
@@ -1436,14 +1443,66 @@ inline LispObject list3star(LispObject a, LispObject b, LispObject c,
 
 inline LispObject list4(LispObject a, LispObject b, LispObject c,
                         LispObject d)
-{   LispObject w = list2(c, d);
-    return list2star(a, b, w);
+{   if (get8WordsValid()) LIKELY
+    {   LispObject r1 = get8Words() + TAG_CONS;
+        LispObject r2 = r1 + sizeof(ConsCell);
+        LispObject r3 = r2 + sizeof(ConsCell);
+        LispObject r4 = r3 + sizeof(ConsCell);
+        car(r1) = a;
+        cdr(r1) = r2;
+        car(r2) = b;
+        cdr(r2) = r3;
+        car(r3) = c;
+        cdr(r3) = r4;
+        car(r4) = d;
+        cdr(r4) = nil;
+        return r1;
+    }
+    LispObject r4 = get2Words() + TAG_CONS;
+    car(r4) = d;
+    cdr(r4) = nil;
+    LispObject r3 = get2Words() + TAG_CONS;
+    car(r3) = c;
+    cdr(r3) = r4;
+    LispObject r2 = get2Words() + TAG_CONS;
+    car(r2) = b;
+    cdr(r2) = r3;
+    LispObject r1 = get2Words() + TAG_CONS;
+    car(r1) = a;
+    cdr(r1) = r2;
+    return r1;
 }
 
 inline LispObject list4star(LispObject a, LispObject b, LispObject c,
                             LispObject d, LispObject e)
-{   LispObject w = list2star(c, d, e);
-    return list2star(a, b, w);
+{   if (get8WordsValid()) LIKELY
+    {   LispObject r1 = get8Words() + TAG_CONS;
+        LispObject r2 = r1 + sizeof(ConsCell);
+        LispObject r3 = r2 + sizeof(ConsCell);
+        LispObject r4 = r3 + sizeof(ConsCell);
+        car(r1) = a;
+        cdr(r1) = r2;
+        car(r2) = b;
+        cdr(r2) = r3;
+        car(r3) = c;
+        cdr(r3) = r4;
+        car(r4) = d;
+        cdr(r4) = e;
+        return r1;
+    }
+    LispObject r4 = get2Words() + TAG_CONS;
+    car(r4) = d;
+    cdr(r4) = e;
+    LispObject r3 = get2Words() + TAG_CONS;
+    car(r3) = c;
+    cdr(r3) = r4;
+    LispObject r2 = get2Words() + TAG_CONS;
+    car(r2) = b;
+    cdr(r2) = r3;
+    LispObject r1 = get2Words() + TAG_CONS;
+    car(r1) = a;
+    cdr(r1) = r2;
+    return r1;
 }
 
 inline LispObject acons(LispObject a, LispObject b, LispObject c)

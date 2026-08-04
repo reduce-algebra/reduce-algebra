@@ -325,8 +325,8 @@ LispObject Float::op(double a)
 {   return make_boxfloat(a);
 }
 
-LispObject Float::op(LFlt a)
-{   double d = (double)a.floatval();
+LispObject Float::op(FLOAT_128 a)
+{   double d = (double)a;
     return make_boxfloat(d);
 }
 
@@ -381,7 +381,7 @@ LispObject Float::op(LispObject a, double b)
 {   return binaryR<LispObject,Float>("float", a, b);
 }
 
-LispObject Float::op(LispObject a, LFlt b)
+LispObject Float::op(LispObject a, FLOAT_128 b)
 {   return binaryR<LispObject,Float>("float", a, b);
 }
 
@@ -413,7 +413,7 @@ LispObject Float::op(double a, LispObject b)
 {   return binaryL<LispObject,Float>("float", a, b);
 }
 
-LispObject Float::op(LFlt a, LispObject b)
+LispObject Float::op(FLOAT_128 a, LispObject b)
 {   return binaryL<LispObject,Float>("float", a, b);
 }
 
@@ -454,7 +454,7 @@ LispObject Float::op(double a, Fixnum b)
 }
 
 // long float FLOAT fixnum
-LispObject Float::op(LFlt a, Fixnum b)
+LispObject Float::op(FLOAT_128 a, Fixnum b)
 {   return Float::op(a);
 }
 
@@ -494,7 +494,7 @@ LispObject Float::op(double a, uint64_t *b)
 }
 
 // long float FLOAT bignum
-LispObject Float::op(LFlt a, uint64_t *b)
+LispObject Float::op(FLOAT_128 a, uint64_t *b)
 {   return Float::op(a);
 }
 
@@ -534,7 +534,7 @@ LispObject Float::op(double a, Rat b)
 }
 
 // long float FLOAT rational
-LispObject Float::op(LFlt a, Rat b)
+LispObject Float::op(FLOAT_128 a, Rat b)
 {   return Float::op(a);
 }
 
@@ -574,7 +574,7 @@ LispObject Float::op(double a, Cpx b)
 }
 
 // long float FLOAT complex
-LispObject Float::op(LFlt a, Cpx b)
+LispObject Float::op(FLOAT_128 a, Cpx b)
 {   return Float::op(a);
 }
 
@@ -628,7 +628,7 @@ LispObject Float::op(double a, SFlt b)
 // Note that here we go LFly => double => short_float so the rounding is
 // done in two steps, which is not always correct.
 
-LispObject Float::op(LFlt a, SFlt b)
+LispObject Float::op(FLOAT_128 a, SFlt b)
 {   return pack_short_float(double_float_val(Float::op(a)));
 }
 
@@ -676,7 +676,7 @@ LispObject Float::op(double a, Flt b)
 
 // long float FLOAT single float
 
-LispObject Float::op(LFlt a, Flt b)
+LispObject Float::op(FLOAT_128 a, Flt b)
 {   return pack_single_float(double_float_val(Float::op(a)));
 }
 
@@ -724,56 +724,56 @@ LispObject Float::op(double a, double b)
 
 // long float FLOAT double float
 
-LispObject Float::op(LFlt a, double b)
+LispObject Float::op(FLOAT_128 a, double b)
 {   return Float::op(a);
 }
 
 // fixnum FLOAT long float
 
-LispObject Float::op(Fixnum a, LFlt b)
+LispObject Float::op(Fixnum a, FLOAT_128 b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // bignum FLOAT long float
 
-LispObject Float::op(uint64_t *a, LFlt b)
+LispObject Float::op(uint64_t *a, FLOAT_128 b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // rational FLOAT long float
 
-LispObject Float::op(Rat a, LFlt b)
+LispObject Float::op(Rat a, FLOAT_128 b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // complex FLOAT long float
 
-LispObject Float::op(Cpx a, LFlt b)
+LispObject Float::op(Cpx a, FLOAT_128 b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // short float FLOAT long float
 
-LispObject Float::op(SFlt a, LFlt b)
+LispObject Float::op(SFlt a, FLOAT_128 b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // single float FLOAT long float
 
-LispObject Float::op(Flt a, LFlt b)
+LispObject Float::op(Flt a, FLOAT_128 b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // double float FLOAT long float
 
-LispObject Float::op(double a, LFlt b)
+LispObject Float::op(double a, FLOAT_128 b)
 {   return make_boxfloat128(Float128::op(a));
 }
 
 // long float FLOAT long float
 
-LispObject Float::op(LFlt a, LFlt b)
-{   return make_boxfloat128(a.floatval());
+LispObject Float::op(FLOAT_128 a, FLOAT_128 b)
+{   return make_boxfloat128(a);
 }
 
 float RawFloat32::op(LispObject a)
@@ -817,8 +817,8 @@ float RawFloat32::op(double a)
 }
 
 // Doing the rounding in two steps here is bad.
-float RawFloat32::op(LFlt a)
-{   return (float)(double)a.floatval();
+float RawFloat32::op(FLOAT_128 a)
+{   return (float)(double)a;
 }
 
 double RawFloat::op(LispObject a)
@@ -861,8 +861,8 @@ double RawFloat::op(double a)
 {   return a;
 }
 
-double RawFloat::op(LFlt a)
-{   return (double)a.floatval();
+double RawFloat::op(FLOAT_128 a)
+{   return (double)a;
 }
 
 FLOAT_128 Float128::op(LispObject a)
@@ -905,8 +905,8 @@ FLOAT_128 Float128::op(double a)
 {   return (FLOAT_128)a;
 }
 
-FLOAT_128 Float128::op(LFlt a)
-{   return a.floatval();
+FLOAT_128 Float128::op(FLOAT_128 a)
+{   return a;
 }
 
 LispObject Fix::op(LispObject a)
@@ -942,8 +942,8 @@ LispObject Fix::op(double a)
 {   return truncDoubleToInt(a);
 }
 
-LispObject Fix::op(LFlt a)
-{   return truncFloat128ToInt(a.floatval());
+LispObject Fix::op(FLOAT_128 a)
+{   return truncFloat128ToInt(a);
 }
 
 LispObject Truncate::op(LispObject a)
@@ -979,8 +979,8 @@ LispObject Truncate::op(double a)
 {   return truncDoubleToInt(a);
 }
 
-LispObject Truncate::op(LFlt a)
-{   return truncFloat128ToInt(a.floatval());
+LispObject Truncate::op(FLOAT_128 a)
+{   return truncFloat128ToInt(a);
 }
 
 LispObject Floor::op(LispObject a)
@@ -1017,8 +1017,8 @@ LispObject Floor::op(double a)
 {   return floorDoubleToInt(a);
 }
 
-LispObject Floor::op(LFlt a)
-{   return floorFloat128ToInt(a.floatval());
+LispObject Floor::op(FLOAT_128 a)
+{   return floorFloat128ToInt(a);
 }
 
 LispObject Ceiling::op(LispObject a)
@@ -1055,8 +1055,8 @@ LispObject Ceiling::op(double a)
 {   return ceilingDoubleToInt(a);
 }
 
-LispObject Ceiling::op(LFlt a)
-{   return ceilingFloat128ToInt(a.floatval());
+LispObject Ceiling::op(FLOAT_128 a)
+{   return ceilingFloat128ToInt(a);
 }
 
 LispObject Ftruncate::op(LispObject a)
@@ -1092,8 +1092,8 @@ LispObject Ftruncate::op(double a)
 {   return truncDoubleToInt(a);
 }
 
-LispObject Ftruncate::op(LFlt a)
-{   return truncFloat128ToInt(a.floatval());
+LispObject Ftruncate::op(FLOAT_128 a)
+{   return truncFloat128ToInt(a);
 }
 
 LispObject Ffloor::op(LispObject a)
@@ -1128,8 +1128,8 @@ LispObject Ffloor::op(double a)
 {   return floorDoubleToInt(a);
 }
 
-LispObject Ffloor::op(LFlt a)
-{   return floorFloat128ToInt(a.floatval());
+LispObject Ffloor::op(FLOAT_128 a)
+{   return floorFloat128ToInt(a);
 }
 
 LispObject Fceiling::op(LispObject a)
@@ -1164,8 +1164,8 @@ LispObject Fceiling::op(double a)
 {   return ceilingDoubleToInt(a);
 }
 
-LispObject Fceiling::op(LFlt a)
-{   return ceilingFloat128ToInt(a.floatval());
+LispObject Fceiling::op(FLOAT_128 a)
+{   return ceilingFloat128ToInt(a);
 }
 
 // (frexp nn) => (double-float . fixnum)
@@ -1214,7 +1214,7 @@ LispObject Frexp::op(double a)
 {   return frexp_finalize(a, 0);
 }
 
-LispObject Frexp::op(LFlt a)
+LispObject Frexp::op(FLOAT_128 a)
 {   return frexp_finalize(Float::op(a), 0);
 }
 
@@ -1264,7 +1264,7 @@ double Frexp::op(double a, int64_t &xx)
 {   return frexp_finalize(static_cast<double>(a), 0, xx);
 }
 
-double Frexp::op(LFlt a, int64_t &xx)
+double Frexp::op(FLOAT_128 a, int64_t &xx)
 {   return frexp_finalize(Float::op(a), 0, xx);
 }
 
@@ -1308,8 +1308,8 @@ LispObject Frexp128::op(double a)
 {   return frexp_finalize(a, 0);
 }
 
-LispObject Frexp128::op(LFlt a)  // maybe this should return just a double?
-{   return frexp_finalize(a.floatval(), 0);
+LispObject Frexp128::op(FLOAT_128 a)  // maybe this should return just a double?
+{   return frexp_finalize(a, 0);
 }
 
 FLOAT_128 Frexp128::op(LispObject a, int64_t &xx)
@@ -1358,8 +1358,8 @@ FLOAT_128 Frexp128::op(double a, int64_t &xx)
 {   return frexp_finalize(Float128::op(a), 0, xx);
 }
 
-FLOAT_128 Frexp128::op(LFlt a, int64_t &xx)  // maybe this should return just a double?
-{   return frexp_finalize(a.floatval(), 0, xx);
+FLOAT_128 Frexp128::op(FLOAT_128 a, int64_t &xx)  // maybe this should return just a double?
+{   return frexp_finalize(a, 0, xx);
 }
 
 LispObject Ldexp::op(LispObject a, LispObject b)
@@ -1401,8 +1401,8 @@ LispObject Ldexp::op(double a, Fixnum b)
     return make_boxfloat(d);
 }
 
-LispObject Ldexp::op(LFlt a, Fixnum b)
-{   FLOAT_128 f = a.floatval();
+LispObject Ldexp::op(FLOAT_128 a, Fixnum b)
+{   FLOAT_128 f = a;
     f = ldexp(f, b.intval());
     return make_boxfloat128(f);
 }
@@ -1456,8 +1456,8 @@ LispObject Ldexp::op(double a, uint64_t *b)
 
 // I am not dealing with a NaN in the float128 case at present.
 
-LispObject Ldexp::op(LFlt a, uint64_t *b)
-{   FLOAT_128 f = a.floatval();
+LispObject Ldexp::op(FLOAT_128 a, uint64_t *b)
+{   FLOAT_128 f = a;
 // if the exponent is to be set to a bignum then the result will be either
 // zero or infinity. But with the original sign of a. Well except that
 // ldexp(0.0, anything will be zero... and infinities and NaNs will not
@@ -1514,8 +1514,8 @@ LispObject Sqrt::op(double a)
 {   return make_boxfloat(std::sqrt(a));
 }
 
-LispObject Sqrt::op(LFlt a)
-{   return make_boxfloat128(sqrt(a.floatval()));
+LispObject Sqrt::op(FLOAT_128 a)
+{   return make_boxfloat128(sqrt(a));
 }
 
 LispObject Isqrt::op(LispObject a)
@@ -1550,8 +1550,8 @@ LispObject Isqrt::op(double a)
 {   return aerror1("bad argument for isqrt", make_boxfloat(a));
 }
 
-LispObject Isqrt::op(LFlt a)
-{   return aerror1("bad argument for isqrt", make_boxfloat128(a.value()));
+LispObject Isqrt::op(FLOAT_128 a)
+{   return aerror1("bad argument for isqrt", make_boxfloat128(a));
 }
 
 LispObject Nfp_infinite(LispObject env, LispObject a)

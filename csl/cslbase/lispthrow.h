@@ -128,6 +128,7 @@ class PushCount
 {
 public:
     int n;
+    [[gnu::always_inline]]
     PushCount(int count)
     {   n = count;
     }
@@ -138,6 +139,7 @@ class RealSave
 private:
     LispObject *ssave;
 public:
+    [[gnu::always_inline]]
     RealSave(PushCount count)
     {   ssave = stack;
 // The coding here may look slightly unusual, but is written on the basis
@@ -150,6 +152,7 @@ public:
         for (int i=1; i<=count.n; i++)
             ssave[i] = nil;
     }
+    [[gnu::always_inline]]
     RealSave(LispObject a1)
     {   ssave = stack;
         stack = ssave + 1;
@@ -164,6 +167,7 @@ public:
         if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
+    [[gnu::always_inline]]
     RealSave(LispObject a1, PushCount count)
     {   ssave = stack;
         stack = ssave + count.n + 1;
@@ -174,6 +178,7 @@ public:
         for (int i=2; i<=count.n+1; i++)
             ssave[i] = nil;
     }
+    [[gnu::always_inline]]
     RealSave(LispObject a1, LispObject a2)
     {   ssave = stack;
         stack = ssave + 2;
@@ -184,6 +189,7 @@ public:
         if (is_exception(a2)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
+    [[gnu::always_inline]]
     RealSave(LispObject a1, LispObject a2, LispObject a3)
     {   ssave = stack;
         stack = ssave + 3;
@@ -545,6 +551,7 @@ class bind_fluid_stack
     int name_loc;
     int val_loc;
 public:
+    [[gnu::always_inline]]
     bind_fluid_stack(int e, int name, int val)
     {   saveStack = stack;
         env_loc = e;
@@ -562,6 +569,7 @@ public:
 #endif
         saveStack[val] = qvalue(elt(saveStack[e], name));
     }
+    [[gnu::always_inline]]
     ~bind_fluid_stack()
     {
 #ifdef TRACE_FLUID

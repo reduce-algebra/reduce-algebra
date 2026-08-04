@@ -1010,6 +1010,10 @@ static LispObject lisp_main()
 // a NaN for 0.0/0.0 rather than raising an exception.
     trap_floating_overflow = false;
     tty_count = 0;
+#ifdef DEBUG
+    arithlib_implementation::initcounts();
+    atexit(arithlib_implementation::showcounts);
+#endif // DEBUG
     while (true)
 // The sole purpose of the while loop here is to allow me to proceed
 // for a second try if I get a (cold-start) call.
@@ -3579,48 +3583,6 @@ int ENTRYPOINT(int argc, const char* argv[])
         res = EXIT_FAILURE;
     }
     report_dependencies();
-#if defined COUNT_MULTIPLICATION && defined ARITHLIB
-    {   using namespace std::chrono_literals;
-        std::stringstream buf;
-        auto t = std::time(nullptr);
-        auto tm = std::localtime(&t);
-// If the environment variable PACKAGE is set I base the log-file name
-// on that. In all cases its name has the day-number-in-year, hour, minute
-// and second present.
-        auto pp = std::getenv("PACKAGE");
-        if (pp == nullptr)
-            buf << std::put_time(tm, "multcounts%j:%H:%M:%S.data");
-        else buf << pp << std::put_time(tm, ":stats%j:%H:%M:%S.data");
-// If I sleep for just over a second any subsequent log file from this
-// process will end up with a different name!
-        std::this_thread::sleep_for(1050ms);
-        FILE* stats = std::fopen(buf.str().c_str(), "w");
-        if (stats != nullptr)
-        {
-// A header line that indicates the size of the big table that follows.
-           std::fprintf(stats, "\n++ MultCounts ++\n");
-// Largest number of digits in a bignum seen as INPUT to a multiplication.
-            std::fprintf(stats, "biggest bignum: %u\n",
-                                (unsigned int)biggestMult);
-// For products of fixnums the number of cases the result was
-// still a fixnum and the number of cases it had become a bignum.
-            std::fprintf(stats, "fixnum*fixnum: %" PRIu64 " %" PRIu64 "\n",
-                                shortResult, longResult);
-// A square table showing the number of cases of an N*M-digit multiplication
-// where N or M being zero indicated a fixnum input. The final row and
-// column include counts for all cases beyond that limit.
-            std::fprintf(stats, "data: %d\n", MULSIZE);
-            for (size_t i=0; i<MULSIZE; i++)
-            {   for (size_t j=0; j<MULSIZE; j++)
-                    std::fprintf(stats, "%u, ", (unsigned int)multSizes[i][j]);
-                std::fprintf(stats, "\n");
-            }
-// A line that marks the end of the data.
-            std::fprintf(stats, "++ End of counts ++\n");
-            std::fclose(stats);
-        }
-    }
-#endif // COUNT_MULTIPLICATION && ARITHLIB
 #ifdef USE_MPI
     MPI_Finalize();
 #endif // USE_MPI

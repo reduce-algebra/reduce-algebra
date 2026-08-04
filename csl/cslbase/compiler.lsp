@@ -3738,6 +3738,46 @@ c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf
 
 (put (quote cdr) (quote c!:opcode_printer) (function c!:pcdr))
 
+(de c!:pcaar (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (progn (
+c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf 
+"    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n" r3 r3) (c!:printf 
+"#endif\n")))) (c!:printf "    %v = car(%v);\n" r1 r3) (cond ((not 
+!*unsafecar) (progn (c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf 
+"    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n" r1 r1) (c!:printf 
+"#endif\n")))) (c!:printf "    %v = car(%v);\n" r1 r1)))
+
+(put (quote caar) (quote c!:opcode_printer) (function c!:pcaar))
+
+(de c!:pcadr (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (progn (
+c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf 
+"    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n" r3 r3) (c!:printf 
+"#endif\n")))) (c!:printf "    %v = cdr(%v);\n" r1 r3) (cond ((not 
+!*unsafecar) (progn (c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf 
+"    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n" r1 r1) (c!:printf 
+"#endif\n")))) (c!:printf "    %v = car(%v);\n" r1 r1)))
+
+(put (quote cadr) (quote c!:opcode_printer) (function c!:pcadr))
+
+(de c!:pcdar (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (progn (
+c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf 
+"    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n" r3 r3) (c!:printf 
+"#endif\n")))) (c!:printf "    %v = car(%v);\n" r1 r3) (cond ((not 
+!*unsafecar) (progn (c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf 
+"    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n" r1 r1) (c!:printf 
+"#endif\n")))) (c!:printf "    %v = cdr(%v);\n" r1 r1)))
+
+(put (quote cdar) (quote c!:opcode_printer) (function c!:pcdar))
+
+(de c!:pcddr (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (progn (
+c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf 
+"    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n" r3 r3) (c!:printf 
+"#endif\n")))) (c!:printf "    %v = cdr(%v);\n" r1 r3) (cond ((not 
+!*unsafecar) (progn (c!:printf "#ifndef UNSAFE_CAR\n") (c!:printf 
+"    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n" r1 r1) (c!:printf 
+"#endif\n")))) (c!:printf "    %v = cdr(%v);\n" r1 r1)))
+
+(put (quote cddr) (quote c!:opcode_printer) (function c!:pcddr))
+
 (de c!:pqcar (op r1 r2 r3) (c!:printf "    %v = car(%v);\n" r1 r3))
 
 (put (quote qcar) (quote c!:opcode_printer) (function c!:pqcar))
@@ -4063,10 +4103,10 @@ op) (quote c!:read_r3)) (put op (quote c!:code) (function c!:builtin_one))))
 list op) (quote c!:read_r2)) (flag (list op) (quote c!:read_r3)) (put op (
 quote c!:code) (function c!:builtin_two))))
 
-(prog (var1285) (setq var1285 (quote (car cdr qcar qcdr null not atom numberp
-fixp iminusp iminus iadd1 isub1 modular!-minus))) lab1284 (cond ((null 
-var1285) (return nil))) (prog (n) (setq n (car var1285)) (c!:one_operand n)) 
-(setq var1285 (cdr var1285)) (go lab1284))
+(prog (var1285) (setq var1285 (quote (car cdr qcar qcdr caar cadr cdar cddr 
+null not atom numberp fixp iminusp iminus iadd1 isub1 modular!-minus))) 
+lab1284 (cond ((null var1285) (return nil))) (prog (n) (setq n (car var1285))
+(c!:one_operand n)) (setq var1285 (cdr var1285)) (go lab1284))
 
 (prog (var1287) (setq var1287 (quote (eq equal atsoc memq iplus2 idifference 
 assoc member itimes2 ilessp igreaterp qgetv get modular!-plus 

@@ -1307,6 +1307,72 @@ symbolic procedure c!:pcdr(op, r1, r2, r3);
 
 put('cdr, 'c!:opcode_printer, function c!:pcdr);
 
+symbolic procedure c!:pcaar(op, r1, r2, r3);
+  begin
+    if not !*unsafecar then <<
+        c!:printf("#ifndef UNSAFE_CAR\n");
+        c!:printf("    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n", r3, r3);
+        c!:printf("#endif\n") >>;
+    c!:printf("    %v = car(%v);\n", r1, r3);
+    if not !*unsafecar then <<
+        c!:printf("#ifndef UNSAFE_CAR\n");
+        c!:printf("    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n", r1, r1);
+        c!:printf("#endif\n") >>;
+    c!:printf("    %v = car(%v);\n", r1, r1)
+  end;
+
+put('caar, 'c!:opcode_printer, function c!:pcaar);
+
+symbolic procedure c!:pcadr(op, r1, r2, r3);
+  begin
+    if not !*unsafecar then <<
+        c!:printf("#ifndef UNSAFE_CAR\n");
+        c!:printf("    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n", r3, r3);
+        c!:printf("#endif\n") >>;
+    c!:printf("    %v = cdr(%v);\n", r1, r3);
+    if not !*unsafecar then <<
+        c!:printf("#ifndef UNSAFE_CAR\n");
+        c!:printf("    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n", r1, r1);
+        c!:printf("#endif\n") >>;
+    c!:printf("    %v = car(%v);\n", r1, r1)
+  end;
+
+put('cadr, 'c!:opcode_printer, function c!:pcadr);
+
+symbolic procedure c!:pcdar(op, r1, r2, r3);
+  begin
+    if not !*unsafecar then <<
+        c!:printf("#ifndef UNSAFE_CAR\n");
+        c!:printf("    if (!car_legal(%v)) UNLIKELY return carerror(%v);\n", r3, r3);
+        c!:printf("#endif\n") >>;
+    c!:printf("    %v = car(%v);\n", r1, r3);
+    if not !*unsafecar then <<
+        c!:printf("#ifndef UNSAFE_CAR\n");
+        c!:printf("    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n", r1, r1);
+        c!:printf("#endif\n") >>;
+    c!:printf("    %v = cdr(%v);\n", r1, r1)
+  end;
+
+put('cdar, 'c!:opcode_printer, function c!:pcdar);
+
+symbolic procedure c!:pcddr(op, r1, r2, r3);
+  begin
+    if not !*unsafecar then <<
+        c!:printf("#ifndef UNSAFE_CAR\n");
+        c!:printf("    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n", r3, r3);
+        c!:printf("#endif\n") >>;
+    c!:printf("    %v = cdr(%v);\n", r1, r3);
+    if not !*unsafecar then <<
+        c!:printf("#ifndef UNSAFE_CAR\n");
+        c!:printf("    if (!car_legal(%v)) UNLIKELY return cdrerror(%v);\n", r1, r1);
+        c!:printf("#endif\n") >>;
+    c!:printf("    %v = cdr(%v);\n", r1, r1)
+  end;
+
+put('cddr, 'c!:opcode_printer, function c!:pcddr);
+
+
+
 % These are explicitly non-checking versions!
 
 symbolic procedure c!:pqcar(op, r1, r2, r3);
@@ -1753,7 +1819,8 @@ symbolic procedure c!:two_operands op;
     flag(list op, 'c!:read_r3);
     put(op, 'c!:code, function c!:builtin_two) >>;
 
-for each n in '(car cdr qcar qcdr null not atom numberp fixp iminusp
+for each n in '(car cdr qcar qcdr caar cadr cdar cddr
+                null not atom numberp fixp iminusp
                 iminus iadd1 isub1 modular!-minus) do c!:one_operand n;
 #if common!-lisp!-mode
 for each n in '(eq equal atsoc memq iplus2 idifference

@@ -79,7 +79,7 @@ bool Eqn::op(LispObject a, double b)
 {   return binaryR<bool,Eqn>("eqn", a, b);
 }
 
-bool Eqn::op(LispObject a, LFlt b)
+bool Eqn::op(LispObject a, FLOAT_128 b)
 {   return binaryR<bool,Eqn>("eqn", a, b);
 }
 
@@ -111,7 +111,7 @@ bool Eqn::op(double a, LispObject b)
 {   return binaryL<bool,Eqn>("eqn", a, b);
 }
 
-bool Eqn::op(LFlt a, LispObject b)
+bool Eqn::op(FLOAT_128 a, LispObject b)
 {   return binaryL<bool,Eqn>("eqn", a, b);
 }
 
@@ -145,7 +145,7 @@ bool Eqn::op(double a, Fixnum b)
 {   return false;
 }
 // long float == fixnum
-bool Eqn::op(LFlt a, Fixnum b)
+bool Eqn::op(FLOAT_128 a, Fixnum b)
 {   return false;
 }
 // fixnum == bignum
@@ -177,7 +177,7 @@ bool Eqn::op(double a, uint64_t *b)
 {   return false;
 }
 // long float == bignum
-bool Eqn::op(LFlt a, uint64_t *b)
+bool Eqn::op(FLOAT_128 a, uint64_t *b)
 {   return false;
 }
 // fixnum == rational
@@ -211,7 +211,7 @@ bool Eqn::op(double a, Rat b)
 {   return false;
 }
 // long float == rational
-bool Eqn::op(LFlt a, Rat b)
+bool Eqn::op(FLOAT_128 a, Rat b)
 {   return false;
 }
 // fixnum == complex
@@ -244,7 +244,7 @@ bool Eqn::op(double a, Cpx b)
 {   return false;
 }
 // long float == complex
-bool Eqn::op(LFlt a, Cpx b)
+bool Eqn::op(FLOAT_128 a, Cpx b)
 {   return false;
 }
 // fixnum == short float
@@ -276,7 +276,7 @@ bool Eqn::op(double a, SFlt b)
 {   return false;
 }
 // long float == short float
-bool Eqn::op(LFlt a, SFlt b)
+bool Eqn::op(FLOAT_128 a, SFlt b)
 {   return false;
 }
 // fixnum == single float
@@ -308,7 +308,7 @@ bool Eqn::op(double a, Flt b)
 {   return false;
 }
 // long float == single float
-bool Eqn::op(LFlt a, Flt b)
+bool Eqn::op(FLOAT_128 a, Flt b)
 {   return false;
 }
 // fixnum == double float
@@ -340,40 +340,40 @@ bool Eqn::op(double a, double b)
 {   return (a == b);
 }
 // long float == double float
-bool Eqn::op(LFlt a, double b)
+bool Eqn::op(FLOAT_128 a, double b)
 {   return false;
 }
 // fixnum == long float
-bool Eqn::op(Fixnum a, LFlt b)
+bool Eqn::op(Fixnum a, FLOAT_128 b)
 {   return false;
 }
 // bignum == long float
-bool Eqn::op(uint64_t *a, LFlt b)
+bool Eqn::op(uint64_t *a, FLOAT_128 b)
 {   return false;
 }
 // rational == long float
-bool Eqn::op(Rat a, LFlt b)
+bool Eqn::op(Rat a, FLOAT_128 b)
 {   return false;
 }
 // complex == long float
-bool Eqn::op(Cpx a, LFlt b)
+bool Eqn::op(Cpx a, FLOAT_128 b)
 {   return false;
 }
 // short float == long float
-bool Eqn::op(SFlt a, LFlt b)
+bool Eqn::op(SFlt a, FLOAT_128 b)
 {   return false;
 }
 // single float == long float
-bool Eqn::op(Flt a, LFlt b)
+bool Eqn::op(Flt a, FLOAT_128 b)
 {   return false;
 }
 // double float == long float
-bool Eqn::op(double a, LFlt b)
+bool Eqn::op(double a, FLOAT_128 b)
 {   return false;
 }
 // long float == long float
-bool Eqn::op(LFlt a, LFlt b)
-{   return a.floatval() == b.floatval();
+bool Eqn::op(FLOAT_128 a, FLOAT_128 b)
+{   return a == b;
 }
 
 // (cleqn a b) compares two numbers and returns true if they have the same
@@ -420,7 +420,7 @@ bool CLEqn::op(LispObject a, double b)
 {   return binaryR<bool,CLEqn>("eqn", a, b);
 }
 
-bool CLEqn::op(LispObject a, LFlt b)
+bool CLEqn::op(LispObject a, FLOAT_128 b)
 {   return binaryR<bool,CLEqn>("eqn", a, b);
 }
 
@@ -452,7 +452,7 @@ bool CLEqn::op(double a, LispObject b)
 {   return binaryL<bool,CLEqn>("eqn", a, b);
 }
 
-bool CLEqn::op(LFlt a, LispObject b)
+bool CLEqn::op(FLOAT_128 a, LispObject b)
 {   return binaryL<bool,CLEqn>("eqn", a, b);
 }
 
@@ -491,8 +491,8 @@ bool CLEqn::op(double a, Fixnum b)
 {   return arithlib_lowlevel::Eqn::op(a, b.intval());
 }
 // long float CL== fixnum
-bool CLEqn::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Eqn::op(a.floatval(), b.intval());
+bool CLEqn::op(FLOAT_128 a, Fixnum b)
+{   return arithlib_lowlevel::Eqn::op(a, b.intval());
 }
 // fixnum CL== bignum
 bool CLEqn::op(Fixnum a, uint64_t *b)
@@ -528,8 +528,8 @@ bool CLEqn::op(double a, uint64_t *b)
 {   return arithlib_lowlevel::Eqn::op(a, b);
 }
 // long float CL== bignum
-bool CLEqn::op(LFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Eqn::op(a.floatval(), b);
+bool CLEqn::op(FLOAT_128 a, uint64_t *b)
+{   return arithlib_lowlevel::Eqn::op(a, b);
 }
 // fixnum CL== rational
 bool CLEqn::op(Fixnum a, Rat b)
@@ -583,8 +583,8 @@ bool CLEqn::op(double a, Rat b)
 extern LispObject N_rationalf128(FLOAT_128 d);
 
 // long float CL== rational
-bool CLEqn::op(LFlt aa, Rat b)
-{   FLOAT_128 a = aa.floatval();
+bool CLEqn::op(FLOAT_128 aa, Rat b)
+{   FLOAT_128 a = aa;
     if (isnan(a) || isinf(a)) return false;
     LispObject aaa = N_rationalf128(a);
     return binaryR<bool,CLEqn>("CLeqn", aaa, b);
@@ -619,7 +619,7 @@ bool CLEqn::op(double a, Cpx b)
 {   return false;
 }
 // long float CL== complex
-bool CLEqn::op(LFlt a, Cpx b)
+bool CLEqn::op(FLOAT_128 a, Cpx b)
 {   return false;
 }
 // fixnum CL== short float
@@ -651,8 +651,8 @@ bool CLEqn::op(double a, SFlt b)
 {   return (a == b.floatval());
 }
 // long float CL== short float
-bool CLEqn::op(LFlt a, SFlt b)
-{   return a.floatval() == Float128::op(b);
+bool CLEqn::op(FLOAT_128 a, SFlt b)
+{   return a == Float128::op(b);
 }
 // fixnum CL== single float
 bool CLEqn::op(Fixnum a, Flt b)
@@ -683,8 +683,8 @@ bool CLEqn::op(double a, Flt b)
 {   return (a == b.floatval());
 }
 // long float CL== single float
-bool CLEqn::op(LFlt a, Flt b)
-{   return a.floatval() == Float128::op(b);
+bool CLEqn::op(FLOAT_128 a, Flt b)
+{   return a == Float128::op(b);
 }
 // fixnum CL== double float
 bool CLEqn::op(Fixnum a, double b)
@@ -715,40 +715,40 @@ bool CLEqn::op(double a, double b)
 {   return (a == b);
 }
 // long float CL== double float
-bool CLEqn::op(LFlt a, double b)
-{   return a.floatval() == Float128::op(b);
+bool CLEqn::op(FLOAT_128 a, double b)
+{   return a == Float128::op(b);
 }
 // fixnum CL== long float
-bool CLEqn::op(Fixnum a, LFlt b)
+bool CLEqn::op(Fixnum a, FLOAT_128 b)
 {   return Eqn::op(b, a);
 }
 // bignum CL== long float
-bool CLEqn::op(uint64_t *a, LFlt b)
+bool CLEqn::op(uint64_t *a, FLOAT_128 b)
 {   return Eqn::op(b, a);
 }
 // rational CL== long float
-bool CLEqn::op(Rat a, LFlt b)
+bool CLEqn::op(Rat a, FLOAT_128 b)
 {   return Eqn::op(b, a);
 }
 // complex CL== long float
-bool CLEqn::op(Cpx a, LFlt b)
+bool CLEqn::op(Cpx a, FLOAT_128 b)
 {   return false;
 }
 // short float CL== long float
-bool CLEqn::op(SFlt a, LFlt b)
+bool CLEqn::op(SFlt a, FLOAT_128 b)
 {   return Eqn::op(b, a);
 }
 // single float CL== long float
-bool CLEqn::op(Flt a, LFlt b)
+bool CLEqn::op(Flt a, FLOAT_128 b)
 {   return Eqn::op(b, a);
 }
 // double float CL== long float
-bool CLEqn::op(double a, LFlt b)
+bool CLEqn::op(double a, FLOAT_128 b)
 {   return Eqn::op(b, a);
 }
 // long float CL== long float
-bool CLEqn::op(LFlt a, LFlt b)
-{   return a.floatval() == b.floatval();
+bool CLEqn::op(FLOAT_128 a, FLOAT_128 b)
+{   return a == b;
 }
 
 // (neqn a b) is defined as (not (eqn a b)) so if the two operands are
@@ -788,7 +788,7 @@ bool Neqn::op(LispObject a, double b)
 {   return binaryR<bool,Neqn>("neqn", a, b);
 }
 
-bool Neqn::op(LispObject a, LFlt b)
+bool Neqn::op(LispObject a, FLOAT_128 b)
 {   return binaryR<bool,Neqn>("neqn", a, b);
 }
 
@@ -820,7 +820,7 @@ bool Neqn::op(double a, LispObject b)
 {   return binaryL<bool,Neqn>("neqn", a, b);
 }
 
-bool Neqn::op(LFlt a, LispObject b)
+bool Neqn::op(FLOAT_128 a, LispObject b)
 {   return binaryL<bool,Neqn>("neqn", a, b);
 }
 
@@ -858,7 +858,7 @@ bool Neqn::op(double a, Fixnum b)
 {   return true;
 }
 // long float != fixnum
-bool Neqn::op(LFlt a, Fixnum b)
+bool Neqn::op(FLOAT_128 a, Fixnum b)
 {   return true;
 }
 // fixnum != bignum
@@ -890,7 +890,7 @@ bool Neqn::op(double a, uint64_t *b)
 {   return true;
 }
 // long float != bignum
-bool Neqn::op(LFlt a, uint64_t *b)
+bool Neqn::op(FLOAT_128 a, uint64_t *b)
 {   return true;
 }
 // fixnum != rational
@@ -924,7 +924,7 @@ bool Neqn::op(double a, Rat b)
 {   return true;
 }
 // long float != rational
-bool Neqn::op(LFlt a, Rat b)
+bool Neqn::op(FLOAT_128 a, Rat b)
 {   return true;
 }
 // fixnum != complex
@@ -957,7 +957,7 @@ bool Neqn::op(double a, Cpx b)
 {   return true;
 }
 // long float != complex
-bool Neqn::op(LFlt a, Cpx b)
+bool Neqn::op(FLOAT_128 a, Cpx b)
 {   return true;
 }
 // fixnum != short float
@@ -989,7 +989,7 @@ bool Neqn::op(double a, SFlt b)
 {   return true;
 }
 // long float != short float
-bool Neqn::op(LFlt a, SFlt b)
+bool Neqn::op(FLOAT_128 a, SFlt b)
 {   return true;
 }
 // fixnum != single float
@@ -1021,7 +1021,7 @@ bool Neqn::op(double a, Flt b)
 {   return true;
 }
 // long float != single float
-bool Neqn::op(LFlt a, Flt b)
+bool Neqn::op(FLOAT_128 a, Flt b)
 {   return true;
 }
 // fixnum != double float
@@ -1053,40 +1053,40 @@ bool Neqn::op(double a, double b)
 {   return (a != b);
 }
 // long float != double float
-bool Neqn::op(LFlt a, double b)
+bool Neqn::op(FLOAT_128 a, double b)
 {   return true;
 }
 // fixnum != long float
-bool Neqn::op(Fixnum a, LFlt b)
+bool Neqn::op(Fixnum a, FLOAT_128 b)
 {   return true;
 }
 // bignum != long float
-bool Neqn::op(uint64_t *a, LFlt b)
+bool Neqn::op(uint64_t *a, FLOAT_128 b)
 {   return true;
 }
 // rational != long float
-bool Neqn::op(Rat a, LFlt b)
+bool Neqn::op(Rat a, FLOAT_128 b)
 {   return true;
 }
 // complex != long float
-bool Neqn::op(Cpx a, LFlt b)
+bool Neqn::op(Cpx a, FLOAT_128 b)
 {   return true;
 }
 // short float != long float
-bool Neqn::op(SFlt a, LFlt b)
+bool Neqn::op(SFlt a, FLOAT_128 b)
 {   return true;
 }
 // single float != long float
-bool Neqn::op(Flt a, LFlt b)
+bool Neqn::op(Flt a, FLOAT_128 b)
 {   return true;
 }
 // double float != long float
-bool Neqn::op(double a, LFlt b)
+bool Neqn::op(double a, FLOAT_128 b)
 {   return true;
 }
 // long float != long float
-bool Neqn::op(LFlt a, LFlt b)
-{   return a.floatval() != b.floatval();
+bool Neqn::op(FLOAT_128 a, FLOAT_128 b)
+{   return a != b;
 }
 
 // (greaterp a b) is reasonably straightforward for integers and floats.
@@ -1125,7 +1125,7 @@ bool Greaterp::op(LispObject a, double b)
 {   return binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
-bool Greaterp::op(LispObject a, LFlt b)
+bool Greaterp::op(LispObject a, FLOAT_128 b)
 {   return binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
@@ -1157,7 +1157,7 @@ bool Greaterp::op(double a, LispObject b)
 {   return binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
-bool Greaterp::op(LFlt a, LispObject b)
+bool Greaterp::op(FLOAT_128 a, LispObject b)
 {   return binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
@@ -1204,9 +1204,8 @@ bool Greaterp::op(double a, Fixnum b)
 {   return arithlib_lowlevel::Greaterp::op(a, b.intval());
 }
 // long float > fixnum
-bool Greaterp::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op(a.floatval(),
-                                           (int64_t)b.intval());
+bool Greaterp::op(FLOAT_128 a, Fixnum b)
+{   return arithlib_lowlevel::Greaterp::op(a, (int64_t)b.intval());
 }
 // fixnum > bignum
 bool Greaterp::op(Fixnum a, uint64_t *b)
@@ -1240,8 +1239,8 @@ bool Greaterp::op(double a, uint64_t *b)
 {   return arithlib_lowlevel::Greaterp::op(a, b);
 }
 // long float > bignum
-bool Greaterp::op(LFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Greaterp::op(a.floatval(), b);
+bool Greaterp::op(FLOAT_128 a, uint64_t *b)
+{   return arithlib_lowlevel::Greaterp::op(a, b);
 }
 // fixnum > rational
 bool Greaterp::op(Fixnum a, Rat b)
@@ -1285,8 +1284,8 @@ bool Greaterp::op(double a, Rat b)
     return binaryR<bool,Greaterp>("greaterp", aa, b);
 }
 // long float > rational
-bool Greaterp::op(LFlt a, Rat b)
-{   FLOAT_128 d = a.floatval();
+bool Greaterp::op(FLOAT_128 a, Rat b)
+{   FLOAT_128 d = a;
     if (isnan(d)) return false;         // a is a NaN
     if (isinf(d)) return !signbit(d);   // a is infinite
     LispObject aa = N_rationalf128(d);
@@ -1321,7 +1320,7 @@ bool Greaterp::op(double a, Cpx b)
 {   return false;
 }
 // long float > complex
-bool Greaterp::op(LFlt a, Cpx b)
+bool Greaterp::op(FLOAT_128 a, Cpx b)
 {   return false;
 }
 // fixnum > short float
@@ -1353,8 +1352,8 @@ bool Greaterp::op(double a, SFlt b)
 {   return (a > b.floatval());
 }
 // long float > short float
-bool Greaterp::op(LFlt a, SFlt b)
-{   return Float128::op(b) < a.floatval();
+bool Greaterp::op(FLOAT_128 a, SFlt b)
+{   return Float128::op(b) < a;
 }
 // fixnum > single float
 bool Greaterp::op(Fixnum a, Flt b)
@@ -1385,8 +1384,8 @@ bool Greaterp::op(double a, Flt b)
 {   return (a > b.floatval());
 }
 // long float > single float
-bool Greaterp::op(LFlt a, Flt b)
-{   return Float128::op(b) < a.floatval();
+bool Greaterp::op(FLOAT_128 a, Flt b)
+{   return Float128::op(b) < a;
 }
 // fixnum > double float
 bool Greaterp::op(Fixnum a, double b)
@@ -1417,40 +1416,40 @@ bool Greaterp::op(double a, double b)
 {   return (a > b);
 }
 // long float > double float
-bool Greaterp::op(LFlt a, double b)
-{   return Float128::op(b) < a.floatval();
+bool Greaterp::op(FLOAT_128 a, double b)
+{   return Float128::op(b) < a;
 }
 // fixnum > long float
-bool Greaterp::op(Fixnum a, LFlt b)
+bool Greaterp::op(Fixnum a, FLOAT_128 b)
 {   return Lessp::op(b, a);
 }
 // bignum > long float
-bool Greaterp::op(uint64_t *a, LFlt b)
+bool Greaterp::op(uint64_t *a, FLOAT_128 b)
 {   return Lessp::op(b, a);
 }
 // rational > long float
-bool Greaterp::op(Rat a, LFlt b)
+bool Greaterp::op(Rat a, FLOAT_128 b)
 {   return Lessp::op(b, a);
 }
 // complex > long float
-bool Greaterp::op(Cpx a, LFlt b)
+bool Greaterp::op(Cpx a, FLOAT_128 b)
 {   return false;
 }
 // short float > long float
-bool Greaterp::op(SFlt a, LFlt b)
+bool Greaterp::op(SFlt a, FLOAT_128 b)
 {   return Lessp::op(b, a);
 }
 // single float > long float
-bool Greaterp::op(Flt a, LFlt b)
+bool Greaterp::op(Flt a, FLOAT_128 b)
 {   return Lessp::op(b, a);
 }
 // double float > long float
-bool Greaterp::op(double a, LFlt b)
+bool Greaterp::op(double a, FLOAT_128 b)
 {   return Lessp::op(b, a);
 }
 // long float > long float
-bool Greaterp::op(LFlt a, LFlt b)
-{   return b.floatval() < a.floatval();
+bool Greaterp::op(FLOAT_128 a, FLOAT_128 b)
+{   return b < a;
 }
 
 // (geq a b) is very much like (greaterp a b)...
@@ -1487,7 +1486,7 @@ bool Geq::op(LispObject a, double b)
 {   return binaryR<bool,Geq>("geq", a, b);
 }
 
-bool Geq::op(LispObject a, LFlt b)
+bool Geq::op(LispObject a, FLOAT_128 b)
 {   return binaryR<bool,Geq>("geq", a, b);
 }
 
@@ -1519,7 +1518,7 @@ bool Geq::op(double a, LispObject b)
 {   return binaryL<bool,Geq>("geq", a, b);
 }
 
-bool Geq::op(LFlt a, LispObject b)
+bool Geq::op(FLOAT_128 a, LispObject b)
 {   return binaryL<bool,Geq>("geq", a, b);
 }
 
@@ -1557,8 +1556,8 @@ bool Geq::op(double a, Fixnum b)
 {   return arithlib_lowlevel::Geq::op(a, (int64_t)b.intval());
 }
 // long float >= fixnum
-bool Geq::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op(a.floatval(), (int64_t)b.intval());
+bool Geq::op(FLOAT_128 a, Fixnum b)
+{   return arithlib_lowlevel::Geq::op(a, (int64_t)b.intval());
 }
 // fixnum >= bignum
 bool Geq::op(Fixnum a, uint64_t *b)
@@ -1590,8 +1589,8 @@ bool Geq::op(double a, uint64_t *b)
 {   return arithlib_lowlevel::Geq::op(a, b);
 }
 // long float >= bignum
-bool Geq::op(LFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Geq::op(a.floatval(), b);
+bool Geq::op(FLOAT_128 a, uint64_t *b)
+{   return arithlib_lowlevel::Geq::op(a, b);
 }
 // fixnum >= rational
 bool Geq::op(Fixnum a, Rat b)
@@ -1635,8 +1634,8 @@ bool Geq::op(double a, Rat b)
     return binaryR<bool,Geq>("geq", aa, b);
 }
 // long float >= rational
-bool Geq::op(LFlt a, Rat b)
-{   FLOAT_128 d = a.floatval();
+bool Geq::op(FLOAT_128 a, Rat b)
+{   FLOAT_128 d = a;
     if (isnan(d)) return false;         // a is a NaN
     if (isinf(d)) return !signbit(d);   // a is infinite
     LispObject aa = N_rationalf128(d);
@@ -1671,7 +1670,7 @@ bool Geq::op(double a, Cpx b)
 {   return false;
 }
 // long float >= complex
-bool Geq::op(LFlt a, Cpx b)
+bool Geq::op(FLOAT_128 a, Cpx b)
 {   return false;
 }
 // fixnum >= short float
@@ -1703,8 +1702,8 @@ bool Geq::op(double a, SFlt b)
 {   return (a >= b.floatval());
 }
 // long float >= short float
-bool Geq::op(LFlt a, SFlt b)
-{   return Float128::op(b) <= a.floatval();
+bool Geq::op(FLOAT_128 a, SFlt b)
+{   return Float128::op(b) <= a;
 }
 
 // fixnum >= single float
@@ -1736,8 +1735,8 @@ bool Geq::op(double a, Flt b)
 {   return (a >= b.floatval());
 }
 // long float >= single float
-bool Geq::op(LFlt a, Flt b)
-{   return Float128::op(b) <= a.floatval();
+bool Geq::op(FLOAT_128 a, Flt b)
+{   return Float128::op(b) <= a;
 }
 // fixnum >= double float
 bool Geq::op(Fixnum a, double b)
@@ -1768,40 +1767,40 @@ bool Geq::op(double a, double b)
 {   return (a >= b);
 }
 // long float >= double float
-bool Geq::op(LFlt a, double b)
-{   return Float128::op(b) <= a.floatval();
+bool Geq::op(FLOAT_128 a, double b)
+{   return Float128::op(b) <= a;
 }
 // fixnum >= long float
-bool Geq::op(Fixnum a, LFlt b)
+bool Geq::op(Fixnum a, FLOAT_128 b)
 {   return Leq::op(b, a);
 }
 // bignum >= long float
-bool Geq::op(uint64_t *a, LFlt b)
+bool Geq::op(uint64_t *a, FLOAT_128 b)
 {   return Leq::op(b, a);
 }
 // rational >= long float
-bool Geq::op(Rat a, LFlt b)
+bool Geq::op(Rat a, FLOAT_128 b)
 {   return Leq::op(b, a);
 }
 // complex >= long float
-bool Geq::op(Cpx a, LFlt b)
+bool Geq::op(Cpx a, FLOAT_128 b)
 {   return false;
 }
 // short float >= long float
-bool Geq::op(SFlt a, LFlt b)
+bool Geq::op(SFlt a, FLOAT_128 b)
 {   return Leq::op(b, a);
 }
 // single float >= long float
-bool Geq::op(Flt a, LFlt b)
+bool Geq::op(Flt a, FLOAT_128 b)
 {   return Leq::op(b, a);
 }
 // double float >= long float
-bool Geq::op(double a, LFlt b)
+bool Geq::op(double a, FLOAT_128 b)
 {   return Leq::op(b, a);
 }
 // long float >= long float
-bool Geq::op(LFlt a, LFlt b)
-{   return b.floatval() <= a.floatval();
+bool Geq::op(FLOAT_128 a, FLOAT_128 b)
+{   return b <= a;
 }
 
 bool Lessp::op(LispObject a, LispObject b)
@@ -1836,7 +1835,7 @@ bool Lessp::op(LispObject a, double b)
 {   return binaryR<bool,Lessp>("lessp", a, b);
 }
 
-bool Lessp::op(LispObject a, LFlt b)
+bool Lessp::op(LispObject a, FLOAT_128 b)
 {   return binaryR<bool,Lessp>("lessp", a, b);
 }
 
@@ -1868,7 +1867,7 @@ bool Lessp::op(double a, LispObject b)
 {   return binaryL<bool,Lessp>("lessp", a, b);
 }
 
-bool Lessp::op(LFlt a, LispObject b)
+bool Lessp::op(FLOAT_128 a, LispObject b)
 {   return binaryL<bool,Lessp>("lessp", a, b);
 }
 
@@ -1906,9 +1905,8 @@ bool Lessp::op(double a, Fixnum b)
 {   return arithlib_lowlevel::Lessp::op(a, (int64_t)b.intval());
 }
 // long float < fixnum
-bool Lessp::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op(a.floatval(),
-                                        (int64_t)b.intval());
+bool Lessp::op(FLOAT_128 a, Fixnum b)
+{   return arithlib_lowlevel::Lessp::op(a, (int64_t)b.intval());
 }
 // fixnum < bignum
 bool Lessp::op(Fixnum a, uint64_t *b)
@@ -1942,8 +1940,8 @@ bool Lessp::op(double a, uint64_t *b)
 {   return arithlib_lowlevel::Lessp::op(a, b);
 }
 // long float < bignum
-bool Lessp::op(LFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Lessp::op(a.floatval(), b);
+bool Lessp::op(FLOAT_128 a, uint64_t *b)
+{   return arithlib_lowlevel::Lessp::op(a, b);
 }
 // fixnum < rational
 bool Lessp::op(Fixnum a, Rat b)
@@ -1987,8 +1985,8 @@ bool Lessp::op(double a, Rat b)
     return binaryR<bool,Lessp>("lessp", aa, b);
 }
 // long float < rational
-bool Lessp::op(LFlt a, Rat b)
-{   FLOAT_128 d = a.floatval();
+bool Lessp::op(FLOAT_128 a, Rat b)
+{   FLOAT_128 d = a;
     if (isnan(d)) return false;         // a is a NaN
     if (isinf(d)) return signbit(d);    // a is infinite
     LispObject aa = N_rationalf128(d);
@@ -2024,7 +2022,7 @@ bool Lessp::op(double a, Cpx b)
 {   return false;
 }
 // long float < complex
-bool Lessp::op(LFlt a, Cpx b)
+bool Lessp::op(FLOAT_128 a, Cpx b)
 {   return false;
 }
 // fixnum < short float
@@ -2056,8 +2054,8 @@ bool Lessp::op(double a, SFlt b)
 {   return (a < b.floatval());
 }
 // long float < short float
-bool Lessp::op(LFlt a, SFlt b)
-{   return a.floatval() < Float128::op(b);
+bool Lessp::op(FLOAT_128 a, SFlt b)
+{   return a < Float128::op(b);
 }
 // fixnum < single float
 bool Lessp::op(Fixnum a, Flt b)
@@ -2088,8 +2086,8 @@ bool Lessp::op(double a, Flt b)
 {   return (a < b.floatval());
 }
 // long float < single float
-bool Lessp::op(LFlt a, Flt b)
-{   return a.floatval() < Float128::op(b);
+bool Lessp::op(FLOAT_128 a, Flt b)
+{   return a < Float128::op(b);
 }
 // fixnum < double float
 bool Lessp::op(Fixnum a, double b)
@@ -2120,40 +2118,40 @@ bool Lessp::op(double a, double b)
 {   return (a < b);
 }
 // long float < double float
-bool Lessp::op(LFlt a, double b)
-{   return a.floatval() < Float128::op(b);
+bool Lessp::op(FLOAT_128 a, double b)
+{   return a < Float128::op(b);
 }
 // fixnum < long float
-bool Lessp::op(Fixnum a, LFlt b)
+bool Lessp::op(Fixnum a, FLOAT_128 b)
 {   return Greaterp::op(b, a);
 }
 // bignum < long float
-bool Lessp::op(uint64_t *a, LFlt b)
+bool Lessp::op(uint64_t *a, FLOAT_128 b)
 {   return Greaterp::op(b, a);
 }
 // rational < long float
-bool Lessp::op(Rat a, LFlt b)
+bool Lessp::op(Rat a, FLOAT_128 b)
 {   return Greaterp::op(b, a);
 }
 // complex < long float
-bool Lessp::op(Cpx a, LFlt b)
+bool Lessp::op(Cpx a, FLOAT_128 b)
 {   return false;
 }
 // short float < long float
-bool Lessp::op(SFlt a, LFlt b)
+bool Lessp::op(SFlt a, FLOAT_128 b)
 {   return Greaterp::op(b, a);
 }
 // single float < long float
-bool Lessp::op(Flt a, LFlt b)
+bool Lessp::op(Flt a, FLOAT_128 b)
 {   return Greaterp::op(b, a);
 }
 // double float < long float
-bool Lessp::op(double a, LFlt b)
+bool Lessp::op(double a, FLOAT_128 b)
 {   return Greaterp::op(b, a);
 }
 // long float < long float
-bool Lessp::op(LFlt a, LFlt b)
-{   return a.floatval() < b.floatval();
+bool Lessp::op(FLOAT_128 a, FLOAT_128 b)
+{   return a < b;
 }
 
 bool Leq::op(LispObject a, LispObject b)
@@ -2188,7 +2186,7 @@ bool Leq::op(LispObject a, double b)
 {   return binaryR<bool,Leq>("leq", a, b);
 }
 
-bool Leq::op(LispObject a, LFlt b)
+bool Leq::op(LispObject a, FLOAT_128 b)
 {   return binaryR<bool,Leq>("leq", a, b);
 }
 
@@ -2220,7 +2218,7 @@ bool Leq::op(double a, LispObject b)
 {   return binaryL<bool,Leq>("leq", a, b);
 }
 
-bool Leq::op(LFlt a, LispObject b)
+bool Leq::op(FLOAT_128 a, LispObject b)
 {   return binaryL<bool,Leq>("leq", a, b);
 }
 
@@ -2258,9 +2256,8 @@ bool Leq::op(double a, Fixnum b)
 {   return arithlib_lowlevel::Leq::op(a, (int64_t)b.intval());
 }
 // long float <= fixnum
-bool Leq::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op(a.floatval(),
-                                      (int64_t)b.intval());
+bool Leq::op(FLOAT_128 a, Fixnum b)
+{   return arithlib_lowlevel::Leq::op(a, (int64_t)b.intval());
 }
 // fixnum <= bignum
 bool Leq::op(Fixnum a, uint64_t *b)
@@ -2294,8 +2291,8 @@ bool Leq::op(double a, uint64_t *b)
 {   return arithlib_lowlevel::Leq::op(a, b);
 }
 // long float <= bignum
-bool Leq::op(LFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Leq::op(a.floatval(), b);
+bool Leq::op(FLOAT_128 a, uint64_t *b)
+{   return arithlib_lowlevel::Leq::op(a, b);
 }
 // fixnum <= rational
 bool Leq::op(Fixnum a, Rat b)
@@ -2339,8 +2336,8 @@ bool Leq::op(double a, Rat b)
     return binaryR<bool,Leq>("leq", aa, b);
 }
 // long float <= rational
-bool Leq::op(LFlt a, Rat b)
-{   FLOAT_128 d = a.floatval();
+bool Leq::op(FLOAT_128 a, Rat b)
+{   FLOAT_128 d = a;
     if (isnan(d)) return false;          // a is a NaN
     if (isinf(d)) return signbit(d);     // a is infinite
     LispObject aa = N_rationalf128(d);
@@ -2375,7 +2372,7 @@ bool Leq::op(double a, Cpx b)
 {   return false;
 }
 // long float <= complex
-bool Leq::op(LFlt a, Cpx b)
+bool Leq::op(FLOAT_128 a, Cpx b)
 {   return false;
 }
 // fixnum <= short float
@@ -2407,8 +2404,8 @@ bool Leq::op(double a, SFlt b)
 {   return (a <= b.floatval());
 }
 // long float <= short float
-bool Leq::op(LFlt a, SFlt b)
-{   return a.floatval() <= Float128::op(b);
+bool Leq::op(FLOAT_128 a, SFlt b)
+{   return a <= Float128::op(b);
 }
 // fixnum <= single float
 bool Leq::op(Fixnum a, Flt b)
@@ -2439,8 +2436,8 @@ bool Leq::op(double a, Flt b)
 {   return (a <= b.floatval());
 }
 // long float <= single float
-bool Leq::op(LFlt a, Flt b)
-{   return a.floatval() <= Float128::op(b);
+bool Leq::op(FLOAT_128 a, Flt b)
+{   return a <= Float128::op(b);
 }
 // fixnum <= double float
 bool Leq::op(Fixnum a, double b)
@@ -2471,40 +2468,40 @@ bool Leq::op(double a, double b)
 {   return (a <= b);
 }
 // long float <= double float
-bool Leq::op(LFlt a, double b)
-{   return a. floatval() <= Float128::op(b);
+bool Leq::op(FLOAT_128 a, double b)
+{   return a <= Float128::op(b);
 }
 // fixnum <= long float
-bool Leq::op(Fixnum a, LFlt b)
+bool Leq::op(Fixnum a, FLOAT_128 b)
 {   return Geq::op(b, a);
 }
 // bignum <= long float
-bool Leq::op(uint64_t *a, LFlt b)
+bool Leq::op(uint64_t *a, FLOAT_128 b)
 {   return Geq::op(b, a);
 }
 // rational <= long float
-bool Leq::op(Rat a, LFlt b)
+bool Leq::op(Rat a, FLOAT_128 b)
 {   return Geq::op(b, a);
 }
 // complex <= long float
-bool Leq::op(Cpx a, LFlt b)
+bool Leq::op(Cpx a, FLOAT_128 b)
 {   return false;
 }
 // short float <= long float
-bool Leq::op(SFlt a, LFlt b)
+bool Leq::op(SFlt a, FLOAT_128 b)
 {   return Geq::op(b, a);
 }
 // single float <= long float
-bool Leq::op(Flt a, LFlt b)
+bool Leq::op(Flt a, FLOAT_128 b)
 {   return Geq::op(b, a);
 }
 // double float <= long float
-bool Leq::op(double a, LFlt b)
+bool Leq::op(double a, FLOAT_128 b)
 {   return Geq::op(b, a);
 }
 // long float <= long float
-bool Leq::op(LFlt a, LFlt b)
-{   return a.floatval() <= b.floatval();
+bool Leq::op(FLOAT_128 a, FLOAT_128 b)
+{   return a <= b;
 }
 
 bool Onep::op(LispObject a)
@@ -2539,8 +2536,8 @@ bool Onep::op(double a)
 {   return a == 1.0;
 }
 
-bool Onep::op(LFlt a)
-{   return a.floatval() == LF_C(1.0);
+bool Onep::op(FLOAT_128 a)
+{   return a == LF_C(1.0);
 }
 
 bool MinusOnep::op(LispObject a)
@@ -2575,8 +2572,8 @@ bool MinusOnep::op(double a)
 {   return a == -1.0;
 }
 
-bool MinusOnep::op(LFlt a)
-{   return a.floatval() == -LF_C(1.0);
+bool MinusOnep::op(FLOAT_128 a)
+{   return a == -LF_C(1.0);
 }
 
 bool Zerop::op(LispObject a)
@@ -2611,8 +2608,8 @@ bool Zerop::op(double a)
 {   return a == 0.0;
 }
 
-bool Zerop::op(LFlt a)
-{   return a.floatval() == LF_C(0.0);
+bool Zerop::op(FLOAT_128 a)
+{   return a == LF_C(0.0);
 }
 
 bool Oddp::op(LispObject a)
@@ -2672,8 +2669,8 @@ bool Minusp::op(double a)
 }
 
 // Note that minusp (-0) will yield false here...
-bool Minusp::op(LFlt a)
-{   return a.floatval() < LF_C(0.0);
+bool Minusp::op(FLOAT_128 a)
+{   return a < LF_C(0.0);
 }
 
 bool Plusp::op(LispObject a)
@@ -2708,8 +2705,8 @@ bool Plusp::op(double a)
 {   return a > 0.0;
 }
 
-bool Plusp::op(LFlt a)
-{   return LF_C(0.0) < a.floatval();
+bool Plusp::op(FLOAT_128 a)
+{   return LF_C(0.0) < a;
 }
 
 LispObject Abs::op(LispObject a)
@@ -2751,9 +2748,9 @@ LispObject Abs::op(double a)
     else return make_boxfloat(a);
 }
 
-LispObject Abs::op(LFlt a)
+LispObject Abs::op(FLOAT_128 a)
 {   if (Minusp::op(a)) return Minus::op(a);
-    else return make_boxfloat128(a.value());
+    else return make_boxfloat128(a);
 }
 
 LispObject Nonep(LispObject env, LispObject a1)
