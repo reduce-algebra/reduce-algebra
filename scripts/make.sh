@@ -60,7 +60,12 @@ case `uname` in
   MFLAGS=""
   ;;
 *)
-  MFLAGS="--debug=w"
+  if test "`uname -ms`" = "Linux i686"
+  then
+    MFLAGS=""
+  else
+    MFLAGS="--debug=w"
+  fi
   ;;
 esac
 
