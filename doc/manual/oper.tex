@@ -754,14 +754,14 @@ information may be found in the \hyperlink{SPECFNS}{SPECFN package}.
 \index{Integral functions}
 \ttindextype{Si}{(sine integral) operator}\ttindextype{Shi}{(hyperbolic sine integral) operator}\ttindextype{Chi}{(hyperbolic cosine integral) operator}
 \ttindextype{Ci}{(cosine integral) operator}\ttindextype{Ei}{(exponential integral) operator}\ttindextype{Li}{(logarithmic integral) operator}
-\ttindextype{Erf}{(error function) operator}\ttindextype{Fresnel\_S}{(Fresnel sine integral) operator}\ttindextype{Fresnel\_C}{(Fresnel cosine integral) operator}
+\ttindextype{erf}{(error function) operator}\ttindextype{Fresnel\_S}{(Fresnel sine integral) operator}\ttindextype{Fresnel\_C}{(Fresnel cosine integral) operator}
 \textbf{Integral Functions:}
 \begin{verbatim}
-    Ei Li Si Ci Shi Chi Erf Fresnel_S Fresnel_C
+    Ei Li Si Ci Shi Chi erf Fresnel_S Fresnel_C
 \end{verbatim}
 All these functions are unary;
 the first six are the exponential, logarithmic, sine and
-cosine integrals and their hyperbolic counterparts. \f{Erf},
+cosine integrals and their hyperbolic counterparts. \f{erf},
 \f{Fresnel\_S} and \f{Fresnel\_C} are the error function and the Fresnel
 sine and cosine integrals respectively.
 
@@ -1644,7 +1644,7 @@ the integral by substitution. It is normally off.
 \hypertarget{operator:ERF}{}
 
 If a function appears in the integrand that is not one of the functions
-\texttt{exp, Erf, tan, atan, log, dilog}\ttindex{exp}\ttindextype{Erf}{(error function) operator}
+\texttt{exp, erf, tan, atan, log, dilog}\ttindex{exp}\ttindextype{erf}{(error function) operator}
 \ttindex{tan}\ttindex{atan}\ttindex{log}\ttindex{dilog}
 then the algorithm will make an
 attempt to integrate the argument if it can, differentiate it and reach a

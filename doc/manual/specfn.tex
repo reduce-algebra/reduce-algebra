@@ -195,7 +195,7 @@ switch is on by default.
 \hypertarget{operator:CI}{}
 \hypertarget{operator:DILOG}{}
 \hypertarget{operator:EI}{}
-\hypertarget{operator:Erf}{}
+\hypertarget{operator:erf}{}
 \hypertarget{operator:SI}{}
 \hypertarget{operator:Shi}{}
 \hypertarget{operator:Fresnel_S}{}
@@ -204,7 +204,7 @@ switch is on by default.
 \ttindextype{Si}{(sine integral) operator}\ttindextype{Shi}{(hyperbolic sine integral) operator}
 \ttindextype{Chi}{(hyperbolic cosine integral) operator}\ttindextype{Ci}{(cosine integral) operator}
 \ttindextype{Li}{(logarithmic integral) operator}\ttindextype{Ei}{(exponential integral) operator}
-\ttindextype{Erf}{(error function) operator}
+\ttindextype{erf}{(error function) operator}\ttindextype{erfinv}{(inverse error function) operator}
 \ttindex{Fresnel\_S}\ttindex{Fresnel\_C}
 \hypertarget{INTEGF}{}
 
@@ -223,6 +223,11 @@ C(z) & = \int_0^z \cos\left(\frac{\pi}{2} t^2\right)\, \mathrm{d}t\\
 S(z) & = \int_0^z \sin\left(\frac{\pi}{2} t^2\right)\, \mathrm{d}t
 \end{align*}
 respectively.
+
+It also includes \f{erfinv} and \f{erfcinv}, which are the inverse
+functions of respectively erf and erfc.  To use them,
+the \package{SPECFN} package must be loaded; they do not autoload the
+package.
 
 The exponential and related integrals are defined by the following:
 \begin{align*}
@@ -1142,8 +1147,10 @@ $\mathrm{Si}(z)-\pi/2$ & \f{s\_i(z)}\\
 $\mathrm{Ci}(z)$ & \f{Ci(z)}\\
 $\mathrm{Shi}(z)$ & \f{Shi(z)}\\
 $\mathrm{Chi}(z)$ & \f{Chi(z)}\\
-$\mathrm{erf}(z)$ & \f{Erf(z)}\\
+$\mathrm{erf}(z)$ & \f{erf(z)}\\
+$\mathrm{erf}^{-1}(z)$ & \f{erfinv(z)}\\
 $1-\mathrm{erf}(z)$ & \f{erfc(z)}\\
+$\mathrm{erfc}^{-1}(z)$ & \f{erfcinv(z)}\\
 $\mathrm{Ei}(z)$ & \f{Ei(z)}\\
 $\mathrm{Ei}(\log(z))$ & \f{Li(z)}\\
 $C(x)$ & \f{Fresnel\_C(x)}\\
