@@ -1,0 +1,132 @@
+load_package specfn;
+
+
+
+erf(-x);
+
+
+ - erf(x)
+
+erf(0);
+
+
+0
+
+erfinv 1;
+
+
+infinity
+
+erfinv(-1);
+
+
+ - infinity
+
+erfinv erf x;
+
+
+x
+
+erf erfinv x;
+
+
+x
+
+solve(erf x = y, x);
+
+
+{x=erfinv(y)}
+
+solve(erfinv x = y, x);
+
+
+{x=erf(y)}
+
+
+on rounded;
+
+
+
+erf(1.0);
+
+
+0.84270079295
+
+erfinv(ws);
+
+
+1
+
+
+erf(-1.0);
+
+
+-0.84270079295
+
+erfinv(ws);
+
+
+-1
+
+
+for i := 0 : 9 do
+   begin scalar x := 0.1*i, y := erfinv x;
+      write "erfinv ", x, " = ", y, " : ",
+         if erf y = x then "accurate" else "inaccurate"
+   end;
+
+
+erfinv 0 = 0 : accurate
+
+erfinv 0.1 = 0.0888559904943 : accurate
+
+erfinv 0.2 = 0.179143454621 : accurate
+
+erfinv 0.3 = 0.272462714727 : accurate
+
+erfinv 0.4 = 0.370807158594 : accurate
+
+erfinv 0.5 = 0.476936276204 : accurate
+
+erfinv 0.6 = 0.59511608145 : accurate
+
+erfinv 0.7 = 0.732869077959 : accurate
+
+erfinv 0.8 = 0.906193802437 : accurate
+
+erfinv 0.9 = 1.16308715368 : accurate
+
+
+for i := 2 : 12 do
+   begin scalar x := 1.0 - 0.1^i, y := erfinv x;
+      write "erfinv ", x, " = ", y, " : ",
+         if erf y = x then "accurate" else "inaccurate"
+   end;
+
+
+erfinv 0.99 = 1.82138636772 : accurate
+
+erfinv 0.999 = 2.32675376551 : accurate
+
+erfinv 0.9999 = 2.75106390571 : accurate
+
+erfinv 0.99999 = 3.12341327434 : accurate
+
+erfinv 0.999999 = 3.45891073727 : accurate
+
+erfinv 0.9999999 = 3.76656258161 : accurate
+
+erfinv 0.99999999 = 4.05223724337 : accurate
+
+erfinv 0.999999999 = 4.32000539413 : accurate
+
+erfinv 0.9999999999 = 4.5728249725 : accurate
+
+erfinv 0.99999999999 = 4.81274402865 : accurate
+
+erfinv 0.999999999999 = 5.04165812783 : inaccurate
+
+
+;
+
+end;

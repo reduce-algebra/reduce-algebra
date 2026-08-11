@@ -236,6 +236,53 @@ algebraic procedure compute!:int!:functions(x,f);
     return result
   end;
 
+% Inverse error functions; see
+% https://en.wikipedia.org/wiki/Error_function#Inverse_functions.
+
+algebraic;
+
+operator erfinv, erfcinv;
+
+let erfcinv(~x) => erfinv(1-x);
+
+flag('(erfinv), 'odd);
+let erfinv 1 => infinity;
+
+let erfinv erf ~x => x;
+let erf erfinv ~x => x;              % strictly true only for |x| <= 1
+
+% Solve interface:
+put('erf, 'inverse, 'erfinv);
+put('erfinv, 'inverse, 'erf);        % strictly true only for |x| <= 1
+
+% Numerical evaluation:
+let erfinv(~x) => numeric!-erfinv x
+   when numberp x and realvaluedp x and abs(x) < 1 and lisp !*rounded;
+
+procedure numeric!-erfinv(x);
+   % Return a numerical approximation to the inverse error function
+   % for real arguments x such that |x| < 1, outside which range it is
+   % undefined.  Do this by solving erf y = x using Newton-Raphson
+   % iteration.  This is good for |x| < 1 - 1e-11 but nearer the ends
+   % of the domain it becomes unreliable and a different algorithm
+   % would be better.  Should only be called with "on rounded".
+   % Initial approximation from first term of Bürmann series.
+   if x < 0 then -numeric!-erfinv(-x) else
+   begin scalar const := sqrt(pi)/2.0,
+         epsilon := 10^(-precision 0),  % 1.0e-12 by default
+         dy, y := sqrt(-log(1-x^2));
+      integer count;
+      % write "approx. # 0 = ", y;
+      repeat <<
+         count := count + 1;
+         dy := const*exp(y^2)*(compute!:int!:functions(y,erf) - x);
+         y := y - dy;
+         % write "approx. # ", count, " = ", y;
+      >> until abs dy < epsilon or count = 100;
+      if count = 100 then rederr "numeric erfinv failed to converge";
+      return y;
+   end;
+
 endmodule;
 
 end;

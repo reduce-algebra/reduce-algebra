@@ -68,7 +68,7 @@ for all x let df(sqrt x,x)=sqrt x/(2*x);
 symbolic inline procedure sq!-is!-sign u;
    % Returns t is s.q. u is either 1, -1, or 0
    denr u = 1 and (nu=1 or nu=-1 or nu=0) where nu=numr u;
-   
+
 symbolic procedure sign!-of u;
   % Returns -1,0 or 1 if the sign of u is known. Otherwise nil.
    (denr s = 1 and numberp(s:=numr s) and s) where s = simp!-sign{u};
@@ -83,7 +83,7 @@ symbolic procedure simp!-sign1 u;
        else if car u eq '!:rd!: then
  	  (if rd!:zerop u then nil else if rd!:minusp u then -1 else 1) ./ 1
 %       This may be wrong in general, eg. sign(abs(y)) would always return 1, even if y is later set to 0.
-%       else if car u eq 'abs then 1 ./ 1 
+%       else if car u eq 'abs then 1 ./ 1
        else if car u eq 'minus then negsq simp!-sign1 cadr u
        else if car u eq 'times then simp!-sign!-times u
        else if car u eq 'quotient then simp!-sign!-quot u
@@ -200,10 +200,10 @@ sign_rules :=
 %%   sign( ~x / ~y) =>  sign x * sign y
 %%         when y neq 1 and (numberp sign x or numberp sign y),
 %%   sign( ~x + ~y) =>  sign x when sign x = sign y,
-%%   sign( ~x ^ ~n) => 1 when fixp (n/2) and 
+%%   sign( ~x ^ ~n) => 1 when fixp (n/2) and
 %%                            lisp(not (!*complex or !*precise_complex)),
 %%   sign( ~x ^ ~n) => sign x^n when fixp n and numberp sign x,
-%%   sign( ~x ^ ~n) => sign x when fixp n and 
+%%   sign( ~x ^ ~n) => sign x when fixp n and
 %%                                 lisp(not (!*complex or !*precise_complex)),
 %%   sign(sqrt ~a)  => 1 when sign a=1,
      sign(sinh ~x)  => sign(x) when numberp sign(x) or realvaluedp x,
@@ -437,7 +437,7 @@ let
 
  tand((~~w + ~~k)/~~d)
      => tand(w/d + k/d-fix repart(k/(d*180))*180)
-     when ((ratnump(rp) and abs(rp) >= 180) where rp => repart(k/d)),        
+     when ((ratnump(rp) and abs(rp) >= 180) where rp => repart(k/d)),
 
  cotd((~~w + ~~k)/~~d)
      => cotd(w/d + k/d-fix repart(k/(d*180))*180)
@@ -483,7 +483,7 @@ let sin((~x + ~~k*pi)/~~d) => sign repart(k/d)*cos(x/d + i*pi*impart(k/d))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Rules to shift by 180 into the interval (-90,  +90)
- 
+
 let
  sind((~~w + ~~k)/~~d)
      => -sind(w/d + k/d-sign(repart(k/d))*180)
@@ -516,7 +516,7 @@ let
 % We need to handle only 90 shifts here because
 % the bigger shifts are already covered by the rules above.
 
-let 
+let
     sind((~~x + ~~k)/~~d) => sign repart(k/d)*cosd(x/d+i*impart(k/d))
          when  abs repart(k/d) = 90,
 
@@ -597,20 +597,20 @@ let asin(~x)=>pi/2 - acos(x) when knowledge_about(acos,x,asin),
     acsch(~x) => acsc(-i*x)/i when knowledge_about(acsc,-i*x,acsch),
     asech(~x) => asec(x)/i when knowledge_about(asec,x,asech);
 
-let 
+let
      cosd(~x) => sind(90-x)
          when x neq 0 and knowledge_about(sind, 90-x, cosd),
-%  Test for x /= 0 necessary to avoid circularity in pattern matcher 
-%  with the rule for 90 deg shifts for sin 
+%  Test for x /= 0 necessary to avoid circularity in pattern matcher
+%  with the rule for 90 deg shifts for sin
 % note third argument of knowledge_about prevents rule triggering for args
 % x+/-pi/2
-    tand(~x) => trigquot(sind(x),cosd(x)) 
+    tand(~x) => trigquot(sind(x),cosd(x))
              when knowledge_about(sind,x,cosd),
     cotd(~x) => trigquot(cosd(x),sind(x))
                when  knowledge_about(sind,x,cosd),
     secd(~x) => 1/cosd(x) when knowledge_about(cosd,x,sind),
     cscd(~x) => 1/sind(x) when knowledge_about(sind,x,cosd);
-  
+
 % area functions
 
 let asind(~x) => 90 - acosd(x) when knowledge_about(acosd,x,asind),
@@ -692,7 +692,7 @@ let
 % We need to handle only pi/2 shifts here because
 % the bigger shifts are already covered by the rules above.
 
-let 
+let
     sinh((~~x + ~~k*pi)/~~d) => i*sign impart(k/d)*cosh(x/d + pi*repart(k/d))
          when abs impart(k/d) = 1/2,
 
@@ -787,7 +787,7 @@ for j:=1:2 do begin scalar olddmode,!*msg;
 symbolic procedure !*bar u;
   % construct an overlined fancy-symbol for the complex conjugate of u
   if (stringp u or idp u) then
-    list2string(append(explode2 "\overline {", 
+    list2string(append(explode2 "\overline {",
                     append(explode2 u, explode2 '!})))
   else typerr(u, "a string or identifier");
 
@@ -800,7 +800,7 @@ symbolic procedure complex_conjugates u;
   %% u should consist of one (or more, comma-separated) lists of
   %% two identifiers. It associates the two identifiers as mutual
   %% complex-conjugates. If the first is an operator, the second is
-  %% also declared as an operator, if necessary. A fancy!-print symbol 
+  %% also declared as an operator, if necessary. A fancy!-print symbol
   %% is automatically constructed and installed for the second identifier
   %% from that of the first -- by adding overlining.
 begin scalar v, conjv, fsym, rs;
@@ -808,10 +808,10 @@ begin scalar v, conjv, fsym, rs;
     if atom pr or not (car pr = 'list and length(cdr pr) = 2) then
        typerr(u, "a 2-element list");
     if not idp(v := cadr pr) then
-       typerr(v, "identifier"); 
+       typerr(v, "identifier");
     if not idp(conjv := caddr pr) then
        typerr(conjv, "identifier");
- 
+
      rs := {'list, {'replaceby, {'conj, v}, conjv}} . rs;
 
      if get(v, 'simpfn) then <<
@@ -889,16 +889,16 @@ put('atan2,'simpfn,'simpiden);  %temporary, see below
 let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2),
     df(atan2d(~y,~x),~z) => 180/pi*(x*df(y, z)-y*df(x, z))/(x^2+y^2);
 
-% This procedure now works for complex arguments and gives results compatible 
+% This procedure now works for complex arguments and gives results compatible
 % with the numerical results returned by cratan2!* (and rdatan2!*)
 % It may currently be somewhat inefficient as it frequently inter-converts
-% between prefix and standard quotient forms 
+% between prefix and standard quotient forms
 symbolic procedure simp!-atan2 u;
-<< if length u neq 2 then  
+<< if length u neq 2 then
       rerror(alg,17,list("Wrong number of arguments to", 'atan2));
    (if val then val    % where val=valuechk('atan2, u)
     else % NB some simplifications seem to fail if !*complex=t
-    begin scalar x,y,z,v,w, !*complex; 
+    begin scalar x,y,z,v,w, !*complex;
        y := reval car u;
        x := reval cadr u;
 
@@ -908,22 +908,22 @@ symbolic procedure simp!-atan2 u;
           return simpatan2r(y, x);
 
        % save simplified original arguments for default return value
-       u := {y, x};  
+       u := {y, x};
 
        if x=0 then <<
       	  z:= simp!-sign1 prepsq simprepart list y;
       	  if null numr z then z:= simp!-sign1 reval {'quotient, y, 'i};
-      	  if denr z=1 and fixp numr z then 
+      	  if denr z=1 and fixp numr z then
 	     return multsq(z, simp {'quotient,'pi, 2})>>
        else if y=0 then <<
       	  z:= simp!-sign1 prepsq simprepart list x;
       	  if null numr z then z:= simp!-sign1 reval {'quotient, x, 'i};
-      	  if denr z=1 and fixp numr z then 
+      	  if denr z=1 and fixp numr z then
 	     if numr z=1 then return nil ./ 1
 	     else return simp 'pi>>
        else <<
       	  z := simp!* {'plus, {'expt, x, 2}, {'expt, y, 2}};
-      	  if null numr z then 
+      	  if null numr z then
 	     rerror(alg, 212, "Essential singularity encountered in atan");
       	  x := {'quotient, x, {'sqrt, z:=prepsq z}};
       	  y := {'quotient, y, {'sqrt, z}};
@@ -942,19 +942,19 @@ symbolic procedure simp!-atan2 u;
 >>;
 
 put('atan2,'simpfn,'simp!-atan2);
-  
+
 symbolic procedure simpatan2r(y, x);
 begin scalar z,v,w;
 % Arguments are real and simplified
-   if x=0 then << 
+   if x=0 then <<
       z := simp!-sign1 y;
-      if null numr z then rerror(alg, 211, "atan2(0, 0) formed") 
+      if null numr z then rerror(alg, 211, "atan2(0, 0) formed")
       else return quotsq(simp {'quotient, 'pi, 2}, z)>>
    else if y=0 then <<
       z := simp!-sign1 x;
       return multsq(addsq(1 ./ 1, quotsq((-1) ./ 1, z)),
 	            simp {'quotient, 'pi, 2})>>
-   else << 
+   else <<
       z := simp!-sign1 x; v := simp!-sign1 y;
       if denr z=1 and fixp numr z and denr v=1 and fixp numr v then <<
        	 w := simp {'atan, {'quotient, y, x}};
@@ -965,12 +965,12 @@ begin scalar z,v,w;
    return simpiden {'atan2, y, x};
 end;
 
-let 
+let
    atan2d(~y, 0) => sign(y)*90
       when y neq 0 and  fixp sign(y),
    atan2d(0, ~x) => (if sign(x)=1 then 0 else 180)
       when x neq 0 and fixp sign(x),
-   atan2d(~y, ~x) => (if sign(x)=1 then 0 
+   atan2d(~y, ~x) => (if sign(x)=1 then 0
                      else if sign(y)=1 then 180
                      else -180) + atand(y/x)
       when fixp sign(x) and fixp sign(y);
@@ -1005,6 +1005,12 @@ for all x let df(erf x,x)=2*sqrt(pi)*e**(-x**2)/pi;
 
 let erf (~x) => compute!:int!:functions(x,erf)
                 when numberp x and abs(x)<5 and lisp !*rounded;
+
+let erf (~x) => sign(x)                 % accurate to about 1e-12
+   when numberp x and abs(x)>=5 and lisp !*rounded;
+% For higher accuracy, use first 2 or 3 terms of the Bürmann series;
+% see https://en.wikipedia.org/wiki/Error_function#Inverse_functions.
+% (The first term alone is less accurate than just sign(x)!)
 
 let erfc(~x) => 1 - erf(x);
 let erfi(~z)  => -i * erf(i*z);
@@ -1185,11 +1191,11 @@ let {
  csc(~n*pi*arbint(~i) + ~~x) => csc((if evenp n then 0 else 1)*pi*arbint(i) + x)
   when fixp n,
  cot(~n*pi*arbint(~i) + ~~x) => cot(x) when fixp n,
- exp(~n*i*pi*arbint(~k) + ~~x) => 
+ exp(~n*i*pi*arbint(~k) + ~~x) =>
       exp((if evenp n then 0 else 1)*i*pi*arbint(k) + x) when fixp n
 };
 
-let 
+let
  cosd(~n*arbint(~k) + ~~x) => cosd(x+(n-fix(n/360)*360)*arbint(k))
     when fixp(n) and abs n >= 360,
 
@@ -1212,4 +1218,3 @@ let
 endmodule;
 
 end;
-
