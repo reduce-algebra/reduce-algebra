@@ -8,7 +8,7 @@
                     continue;
                 }
 #ifdef ARITHLIB
-                A_reg = Plus::op(B_reg, A_reg);
+                A_reg = PlusNop(B_reg, A_reg);
 #else // ARITHLIB
                 A_reg = plus2(B_reg, A_reg);
 #endif // ARITHLIB

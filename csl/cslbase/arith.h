@@ -244,12 +244,11 @@ inline bool floating_edge_case(double r)
     (static_cast<int32_t>(bignum_digits(a)[((bignum_length(a)-CELL)/4)-1])<0)
 
 inline double value_of_immediate_float(LispObject a)
-{   float_union aa;
+{   uint32_t aa;
     if (SIXTY_FOUR_BIT)
-        aa.i = static_cast<int32_t>(static_cast<uint64_t>(a)>>32);
-    else aa.i = static_cast<int32_t>(a - XTAG_SFLOAT);
-    std::memmove(&aa.f, &aa.i, sizeof(aa.f)); // defeat strict aliasing!
-    return aa.f;
+        aa = static_cast<int32_t>(static_cast<uint64_t>(a)>>32);
+    else aa = static_cast<int32_t>(a - XTAG_SFLOAT);
+    return bit_cast<float>(aa);
 }
 
 extern LispObject make_boxfloat(double a, FloatType type=WANT_DOUBLE_FLOAT);
@@ -291,19 +290,18 @@ inline LispObject pack_short_float(double d)
 
 inline LispObject pack_single_float(double d)
 {   if (SIXTY_FOUR_BIT)
-    {   float_union aa;
-        aa.f = d;
+    {   float aa;
+        aa = d;
         if (trap_floating_overflow &&
-            floating_edge_case(aa.f))
+            floating_edge_case(aa))
             return aerror("exception with single float");
-        std::memmove(&aa.i, &aa.f, sizeof(aa.f)); // defeat strict aliasing!
-        return static_cast<LispObject>(
-            static_cast<uint64_t>(aa.i) << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
+        uint64_t i = bit_cast<uint32_t>(aa);
+        return static_cast<LispObject>((i << 32) + XTAG_SFLOAT + XTAG_FLOAT32);
     }
     else
     {   LispObject r = get_basic_vector(TAG_BOXFLOAT,
                                         TYPE_SINGLE_FLOAT,
-                                        sizeof(Single_Float));
+                                        2*CELL);
         single_float_val(r) = static_cast<float>(d);
         if (trap_floating_overflow &&
             floating_edge_case(single_float_val(r)))
@@ -902,21 +900,21 @@ extern FLOAT_128 f128_negnormmin;
 #define GSUB1                   Nsub1
 #define GTIMES                  Ntimes
 #define GZEROP                  Nzerop
-#define DPLUS2                  Plus::op
-#define DDIFFERENCE2            Difference::op
-#define DADD1                   Add1::op
-#define DSUB1                   Sub1::op
-#define DLOGNOT                 Lognot::op
-#define DASH                    Leftshift::op
-#define DQUOT                   Quotient::op
-#define DCREMAINDER             Remainder::op
-#define DTIMES2                 Times::op
-#define DNEGATE                 Minus::op
-#define DRATIONAL               Rational::op
-#define DLESSP2                 Lessp::op
-#define DLESSEQ2                Leq::op
-#define DGREATERP2              Greaterp::op
-#define DGEQ2                   Geq::op
+#define DPLUS2                  PlusNop
+#define DDIFFERENCE2            DifferenceNop
+#define DADD1                   Add1Nop
+#define DSUB1                   Sub1Nop
+#define DLOGNOT                 LognotNop
+#define DASH                    LeftshiftNop
+#define DQUOT                   QuotientNop
+#define DCREMAINDER             RemainderNop
+#define DTIMES2                 TimesNop
+#define DNEGATE                 MinusNop
+#define DRATIONAL               RationalNop
+#define DLESSP2                 LesspNop
+#define DLESSEQ2                LeqNop
+#define DGREATERP2              GreaterpNop
+#define DGEQ2                   GeqNop
 #define DZEROP                  Dzerop     // must accept non-numbers
 
 } // end namespace
@@ -929,9 +927,6 @@ namespace CSL_LISP
 [[gnu::always_inline]]
 inline bool Dzerop(LispObject n)
 {
-#ifdef OLD
-    return is_number(n) && Zerop::op(n);
-#else
     if (is_fixnum(n)) return n == fixnum_of_int(0);
     else if (is_bfloat(n))
     {   Header h = flthdr(n);
@@ -945,7 +940,6 @@ inline bool Dzerop(LispObject n)
     }
     else if (is_sfloat(n)) return short_float_val(n) == 0.0;
     else return false;
-#endif
 }
 
 #else // ARITHLIB

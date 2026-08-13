@@ -5,7 +5,7 @@
 // I do not in-line even the integer case here, since overflow checking
 // is a slight mess.
 #ifdef ARITHLIB
-                A_reg = Times::op(B_reg, A_reg);
+                A_reg = TimesNop(B_reg, A_reg);
 #else // ARITHLIB
                 A_reg = times2(B_reg, A_reg);
 #endif // ARITHLIB

@@ -151,15 +151,15 @@ static LispObject CSLpowi(LispObject a, uint64_t n)
     else if ((n & 1) == 0)
     {   a = CSLpowi(a, n/2);
         errexit();
-        return Times::op(a, a);
+        return Binary(Times, a, a);
     }
     else
     {   LispObject b;
         b = CSLpowi(a, n/2);
         errexit();
-        b = Times::op(b, b);
+        b = Binary(Times, b, b);
         errexit();
-        return Times::op(a, b);
+        return Binary(Times, a, b);
     }
 }
 
@@ -237,9 +237,9 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
 // I worry that if instead I compute (1.0/a)^n that rounding in computing
 // 1.0/a could be amplified unduly. But still that is what I do.
 #ifdef COMMON
-            a = CLQuotient::op(fixnum_of_int(1), a);
+            a = Binary(CLQuotient, fixnum_of_int(1), a);
 #else
-            a = Quotient::op(fixnum_of_int(1), a);
+            a = Binary(Quotient, fixnum_of_int(1), a);
 #endif
             a = CSLpowi(a, -nn);
         }
@@ -435,7 +435,7 @@ LispObject Nlog_2(LispObject env, LispObject a, LispObject b)
     errexit();
     b = Nlog(nil, b);
     errexit();
-    return Quotient::op(a, b);
+    return Binary(Quotient, a, b);
 }
 
 // hypotenuse is not done yet
@@ -444,7 +444,7 @@ LispObject Nhypot(LispObject env, LispObject x, LispObject y)
 {   SingleValued fn;
 // This version does not avoid premature underfow or overflow when the
 // arguments are floating point.
-    x = Plus::op(Square::op(x), Square::op(y));
+    x = Binary(Plus, Unary(Square, x), Unary(Square, y));
     return Nsqrt(nil, x);
 }
 
@@ -518,7 +518,7 @@ LispObject Nabsval(LispObject env, LispObject a)
         default:
             return aerror1("bad arg for abs",  a);
     }
-    if (Minusp::op(a)) a = Minus::op(a);
+    if (BoolUnary(Minusp, a)) a = Unary(Minus, a);
     return a;
 }
 
@@ -528,7 +528,7 @@ LispObject Nphase(LispObject env, LispObject a)
     double d;
     if (is_numbers(a) && is_complex(a))
         return Natan2(nil, imag_part(a), real_part(a));
-    s = Minusp::op(a);
+    s = BoolUnary(Minusp, a);
     if (s) d = -M_PI;
     else d = M_PI;
     a = make_boxfloat(d, WANT_DOUBLE_FLOAT);
@@ -546,7 +546,7 @@ LispObject Nsignum(LispObject env, LispObject a)
     if (z != nil) return a;
     w = Nabsval(nil, a);
     errexit();
-    a = Quotient::op(a, w);
+    a = Binary(Quotient, a, w);
     return a;
 }
 
@@ -560,7 +560,7 @@ LispObject Ncis(LispObject, LispObject a)
 // it seems a bit gross to multiply by i by calling times2(), but
 // doing so avoids loads of messy type dispatch code here and
 // I am not over-worried about performance at this level (yet).
-    a = Times::op(a, ii);
+    a = Binary(Times, a, ii);
     return Nexp(nil, a);
 }
 

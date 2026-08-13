@@ -7,7 +7,7 @@
                     continue;
                 }
 #ifdef ARITHLIB
-                A_reg = Add1::op(A_reg);
+                A_reg = Add1Nop(A_reg);
 #else // ARITHLIB
                 A_reg = plus2(A_reg, fixnum_of_int(1));
 #endif

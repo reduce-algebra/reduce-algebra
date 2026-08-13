@@ -34,6 +34,13 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+// *** I now thing that truncate, floor, ceiling are not sensibly used with
+//     complex numbers. And I propose not to worry about any difference that
+//     an option that says "round" might be different from what I get
+//     if I just use "quotient". This would all get extra interesting
+//     for complex numbers with integer or rational components where
+//     division is not naturally even roughly exact.
+
 #include "arith-headers.h"
 
 namespace CSL_LISP
@@ -262,15 +269,11 @@ FLOAT_128 long_trunc(FLOAT_128 a, FLOAT_128 b)
     return q; 
 }
 
-LispObject Float::op(LispObject a)
-{   return unary<LispObject,Float>("float", a);
-}
-
 // A mere cast to double here would not guarantee the floor-ing mode in
 // cases that the integer was longer than 52 bits.
 
 LispObject Float::op(Fixnum a)
-{   return make_boxfloat(Double::op(a.intval()));
+{   return make_boxfloat(arithlib_lowlevel::Double::op(int_of_fixnum(a)));
 }
 
 // In this next one note that arithlib has a class Float that converts
@@ -278,7 +281,7 @@ LispObject Float::op(Fixnum a)
 // C++ double and hence is what I need here!
 
 LispObject Float::op(uint64_t *a)
-{   return make_boxfloat(Double::op(a));
+{   return make_boxfloat(arithlib_lowlevel::Double::op(a));
 }
 
 // One can not just turn the numerator and denominator into floats and
@@ -294,8 +297,8 @@ LispObject Float::op(uint64_t *a)
 LispObject Float::op(Rat a)
 {   LispObject p = a.numerator(),
                q = a.denominator();
-    bool neg = Minusp::op(p);
-    if (neg) p = Minus::op(p);
+    bool neg = BoolUnary(Minusp, p);
+    if (neg) p = Unary(Minus, p);
     size_t lp = IntegerLength::op(p),
            lq = IntegerLength::op(q);
     uint64_t ptop = Top64Bits::op(p),
@@ -306,7 +309,7 @@ LispObject Float::op(Rat a)
 // just occasionally I will be off by 1 and need to adjust.
     zprintf("Float::op %d %.16x %.16x\n", shift, ptop, qtop);
     return aerror("float of rat not coded yet");
-//    return Float::op(a.numerator()) / Float::op(a.denominator());
+//    return Unary(Float, a.numerator()) / Unary(Float, a.denominator());
 }
 
 LispObject Float::op(Cpx a)
@@ -348,74 +351,6 @@ LispObject Float::op(FLOAT_128 a)
 // floating point support fails strict challenges to be as perfect as one
 // might imagine - both in terms of correct vs incorrect rounding and in
 // instances where premature overflow can arise.              ACN June 2020
-
-LispObject Float::op(LispObject a, LispObject b)
-{   return binary<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(LispObject a, Fixnum b)
-{   return binaryR<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(LispObject a, uint64_t *b)
-{   return binaryR<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(LispObject a, Rat b)
-{   return binaryR<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(LispObject a, Cpx b)
-{   return binaryR<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(LispObject a, SFlt b)
-{   return binaryR<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(LispObject a, Flt b)
-{   return binaryR<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(LispObject a, double b)
-{   return binaryR<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(LispObject a, FLOAT_128 b)
-{   return binaryR<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(Fixnum a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(uint64_t *a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(Rat a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(Cpx a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(SFlt a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(Flt a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(double a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a, b);
-}
-
-LispObject Float::op(FLOAT_128 a, LispObject b)
-{   return binaryL<LispObject,Float>("float", a, b);
-}
 
 // fixnum FLOAT fixnum
 
@@ -776,12 +711,8 @@ LispObject Float::op(FLOAT_128 a, FLOAT_128 b)
 {   return make_boxfloat128(a);
 }
 
-float RawFloat32::op(LispObject a)
-{   return unary<double,RawFloat32>("float32", a);
-}
-
 float RawFloat32::op(Fixnum a)
-{   return Float::op(a.intval());
+{   return Float::op(a);
 }
 
 float RawFloat32::op(uint64_t *a)
@@ -789,13 +720,11 @@ float RawFloat32::op(uint64_t *a)
 }
 
 float RawFloat32::op(Rat a)
-{   int64_t px, qx;
+{   int64_t px=0, qx=0;
 // The code here avoids problems with overflow but if I am worried about
 // perfect rounding. I may need to do more.
-    double p =
-       unary<double,Frexp>("frexp", a.numerator(), px);
-    double q =
-       unary<double,Frexp>("frexp", a.denominator(), qx);
+    double p = unary<double,Frexp>(a.numerator(), px);
+    double q = unary<double,Frexp>(a.denominator(), qx);
     return (float)std::ldexp(p/q, px-qx);
 }
 
@@ -821,26 +750,20 @@ float RawFloat32::op(FLOAT_128 a)
 {   return (float)(double)a;
 }
 
-double RawFloat::op(LispObject a)
-{   return unary<double,RawFloat>("float", a);
-}
-
 double RawFloat::op(Fixnum a)
-{   return Double::op(a.intval());
+{   return arithlib_lowlevel::Double::op(int_of_fixnum(a));
 }
 
 double RawFloat::op(uint64_t *a)
-{   return Double::op(a);
+{   return arithlib_lowlevel::Double::op(a);
 }
 
 double RawFloat::op(Rat a)
-{   int64_t px, qx;
+{   int64_t px=0, qx=0;
 // The code here avoids problems with overflow but if I am worried about
 // perfect rounding.
-    double p =
-       unary<double,Frexp>("frexp", a.numerator(), px);
-    double q =
-       unary<double,Frexp>("frexp", a.denominator(), qx);
+    double p = unary<double,Frexp>(a.numerator(), px);
+    double q = unary<double,Frexp>(a.denominator(), qx);
     return std::ldexp(p/q, px-qx);
 }
 
@@ -865,12 +788,8 @@ double RawFloat::op(FLOAT_128 a)
 {   return (double)a;
 }
 
-FLOAT_128 Float128::op(LispObject a)
-{   return unary<FLOAT_128,Float128>("float128", a);
-}
-
 FLOAT_128 Float128::op(Fixnum a)
-{   return (FLOAT_128)(int128_t)a.intval();
+{   return (FLOAT_128)(int128_t)a;
 }
 
 FLOAT_128 Float128::op(uint64_t *a)
@@ -909,12 +828,8 @@ FLOAT_128 Float128::op(FLOAT_128 a)
 {   return a;
 }
 
-LispObject Fix::op(LispObject a)
-{   return unary<LispObject,Fix>("fix", a);
-}
-
 LispObject Fix::op(Fixnum a)
-{   return a.value();
+{   return a;
 }
 
 LispObject Fix::op(uint64_t *a)
@@ -923,7 +838,7 @@ LispObject Fix::op(uint64_t *a)
 }
 
 LispObject Fix::op(Rat a)
-{   return Quotient::op(a.numerator(), a.denominator());
+{   return Binary(Quotient, a.numerator(), a.denominator());
 }
 
 LispObject Fix::op(Cpx a)
@@ -946,12 +861,8 @@ LispObject Fix::op(FLOAT_128 a)
 {   return truncFloat128ToInt(a);
 }
 
-LispObject Truncate::op(LispObject a)
-{   return unary<LispObject,Truncate>("truncate", a);
-}
-
 LispObject Truncate::op(Fixnum a)
-{   return a.value();
+{   return a;
 }
 
 LispObject Truncate::op(uint64_t *a)
@@ -960,7 +871,7 @@ LispObject Truncate::op(uint64_t *a)
 }
 
 LispObject Truncate::op(Rat a)
-{   return Quotient::op(a.numerator(), a.denominator());
+{   return Binary(Quotient, a.numerator(), a.denominator());
 }
 
 LispObject Truncate::op(Cpx a)
@@ -983,12 +894,8 @@ LispObject Truncate::op(FLOAT_128 a)
 {   return truncFloat128ToInt(a);
 }
 
-LispObject Floor::op(LispObject a)
-{   return unary<LispObject,Floor>("floor", a);
-}
-
 LispObject Floor::op(Fixnum a)
-{   return a.value();
+{   return a;
 }
 
 LispObject Floor::op(uint64_t *a)
@@ -997,7 +904,7 @@ LispObject Floor::op(uint64_t *a)
 }
 
 LispObject Floor::op(Rat a)
-{   return Quotient::op(a.numerator(), a.denominator());
+{   return Binary(Quotient, a.numerator(), a.denominator());
 // Need to round towards -infinity here.
 }
 
@@ -1021,12 +928,8 @@ LispObject Floor::op(FLOAT_128 a)
 {   return floorFloat128ToInt(a);
 }
 
-LispObject Ceiling::op(LispObject a)
-{   return unary<LispObject,Ceiling>("ceiling", a);
-}
-
 LispObject Ceiling::op(Fixnum a)
-{   return a.value();
+{   return a;
 }
 
 LispObject Ceiling::op(uint64_t *a)
@@ -1035,7 +938,7 @@ LispObject Ceiling::op(uint64_t *a)
 }
 
 LispObject Ceiling::op(Rat a)
-{   return Quotient::op(a.numerator(), a.denominator());
+{   return Binary(Quotient, a.numerator(), a.denominator());
 // need to truncate towards +infinity here
 }
 
@@ -1059,12 +962,8 @@ LispObject Ceiling::op(FLOAT_128 a)
 {   return ceilingFloat128ToInt(a);
 }
 
-LispObject Ftruncate::op(LispObject a)
-{   return unary<LispObject,Ftruncate>("floor", a);
-}
-
 LispObject Ftruncate::op(Fixnum a)
-{   return a.value();
+{   return a;
 }
 
 LispObject Ftruncate::op(uint64_t *a)
@@ -1073,7 +972,7 @@ LispObject Ftruncate::op(uint64_t *a)
 }
 
 LispObject Ftruncate::op(Rat a)
-{   return Quotient::op(a.numerator(), a.denominator());
+{   return Binary(Quotient, a.numerator(), a.denominator());
 }
 
 LispObject Ftruncate::op(Cpx a)
@@ -1096,12 +995,8 @@ LispObject Ftruncate::op(FLOAT_128 a)
 {   return truncFloat128ToInt(a);
 }
 
-LispObject Ffloor::op(LispObject a)
-{   return unary<LispObject,Ffloor>("floor", a);
-}
-
 LispObject Ffloor::op(Fixnum a)
-{   return a.value();
+{   return a;
 }
 
 LispObject Ffloor::op(uint64_t *a)
@@ -1109,7 +1004,7 @@ LispObject Ffloor::op(uint64_t *a)
 }
 
 LispObject Ffloor::op(Rat a)
-{   return Quotient::op(a.numerator(), a.denominator());
+{   return Binary(Quotient, a.numerator(), a.denominator());
 }
 
 LispObject Ffloor::op(Cpx a)
@@ -1132,12 +1027,8 @@ LispObject Ffloor::op(FLOAT_128 a)
 {   return floorFloat128ToInt(a);
 }
 
-LispObject Fceiling::op(LispObject a)
-{   return unary<LispObject,Fceiling>("ceiling", a);
-}
-
 LispObject Fceiling::op(Fixnum a)
-{   return a.value();
+{   return a;
 }
 
 LispObject Fceiling::op(uint64_t *a)
@@ -1145,7 +1036,7 @@ LispObject Fceiling::op(uint64_t *a)
 }
 
 LispObject Fceiling::op(Rat a)
-{   return Quotient::op(a.numerator(), a.denominator());
+{   return Binary(Quotient, a.numerator(), a.denominator());
 }
 
 LispObject Fceiling::op(Cpx a)
@@ -1170,28 +1061,24 @@ LispObject Fceiling::op(FLOAT_128 a)
 
 // (frexp nn) => (double-float . fixnum)
 
-LispObject Frexp::op(LispObject a)
-{   return unary<LispObject,Frexp>("frexp", a);
-}
-
 LispObject frexp_finalize(double d, int x)
-{   int x1;
+{   int x1 = 0 ;
     d = std::frexp(d, &x1);
     return cons(fixnum_of_int(x + x1), make_boxfloat(d));
 }
 
 LispObject Frexp::op(Fixnum a)
-{   return frexp_finalize(static_cast<double>(a.intval()), 0);
+{   return frexp_finalize(static_cast<double>(a), 0);
 }
 
 LispObject Frexp::op(uint64_t *a)
-{   int64_t x;
+{   int64_t x = 0;
     double d = Frexp::op(a, x);
     return frexp_finalize(d, x);
 }
 
 LispObject Frexp::op(Rat a)
-{   int64_t xp;
+{   int64_t xp = 0;
     double p = Frexp::op(a.numerator(), xp);
     int64_t xq;
     double q = Frexp::op(a.denominator(), xq);
@@ -1219,30 +1106,26 @@ LispObject Frexp::op(FLOAT_128 a)
 }
 
 double frexp_finalize(double d, int x, int64_t &xx)
-{   int x1;
+{   int x1 = 0;
     d = std::frexp(d, &x1);
     xx = x + x1;
     return d;
 }
 
-double Frexp::op(LispObject a, int64_t &xx)
-{   return unary<double,Frexp>("frexp", a, xx);
-}
-
 double Frexp::op(Fixnum a, int64_t &xx)
-{   return frexp_finalize(static_cast<double>(a.intval()), 0, xx);
+{   return frexp_finalize(static_cast<double>(a), 0, xx);
 }
 
 double Frexp::op(uint64_t *a, int64_t &xx)
-{   int64_t x;
+{   int64_t x = 0;
     double d = arithlib_implementation::Frexp::op(a, x);
     return frexp_finalize(d, x, xx);
 }
 
 double Frexp::op(Rat a, int64_t &xx)
-{   int64_t xp;
+{   int64_t xp = 0;
     double p = Frexp::op(a.numerator(), xp);
-    int64_t xq;
+    int64_t xq = 0;
     double q = Frexp::op(a.denominator(), xq);
     return frexp_finalize(p/q, xp-xq, xx);
 }
@@ -1269,17 +1152,17 @@ double Frexp::op(FLOAT_128 a, int64_t &xx)
 }
 
 LispObject frexp_finalize(FLOAT_128 d, int x)
-{   int x1;
+{   int x1 = 0;
     d = frexp(d, x1);
     return cons(fixnum_of_int(x+x1), make_boxfloat128(d));
 }
 
 LispObject Frexp128::op(Fixnum a)
-{   return frexp_finalize(static_cast<double>(a.intval()), 0);
+{   return frexp_finalize(static_cast<double>(a), 0);
 }
 
 LispObject Frexp128::op(uint64_t *a)
-{   int64_t x;
+{   int64_t x = 0;
     FLOAT_128 d = Frexp128::op(a, x);
     return frexp_finalize(d, x);
 }
@@ -1312,12 +1195,8 @@ LispObject Frexp128::op(FLOAT_128 a)  // maybe this should return just a double?
 {   return frexp_finalize(a, 0);
 }
 
-FLOAT_128 Frexp128::op(LispObject a, int64_t &xx)
-{   return unary<FLOAT_128,Frexp128>("frexp128", a, xx);
-}
-
 FLOAT_128 frexp_finalize(FLOAT_128 d, int x, int64_t &xx)
-{   int x1;
+{   int x1 = 0;
     d = frexp(d, x1);
     xx = x + x1;
     return d;
@@ -1362,121 +1241,8 @@ FLOAT_128 Frexp128::op(FLOAT_128 a, int64_t &xx)  // maybe this should return ju
 {   return frexp_finalize(a, 0, xx);
 }
 
-LispObject Ldexp::op(LispObject a, LispObject b)
-{   return ibinary<LispObject,Ldexp>("ldexp", a,
-            b);
-}
-
-LispObject Ldexp::op(Fixnum a, Fixnum b)
-{   double d = std::ldexp(static_cast<double>(a.intval()), b.intval());
-    return make_boxfloat(d);
-}
-
-LispObject Ldexp::op(uint64_t *a, Fixnum b)
-{   double d = std::ldexp(Float::op(a), b.intval());
-    return make_boxfloat(d);
-}
-
-LispObject Ldexp::op(Rat a, Fixnum b)
-{   double d = std::ldexp(Float::op(a), b.intval());
-    return make_boxfloat(d);
-}
-
-LispObject Ldexp::op(Cpx a, Fixnum b)
-{   return aerror1("bad argument for ldexp", a.value());
-}
-
-LispObject Ldexp::op(SFlt a, Fixnum b)
-{   double d = std::ldexp(a.floatval(), b.intval());
-    return pack_short_float(d);
-}
-
-LispObject Ldexp::op(Flt a, Fixnum b)
-{   double d = std::ldexp(a.floatval(), b.intval());
-    return pack_single_float(d);
-}
-
-LispObject Ldexp::op(double a, Fixnum b)
-{   double d = std::ldexp(a, b.intval());
-    return make_boxfloat(d);
-}
-
-LispObject Ldexp::op(FLOAT_128 a, Fixnum b)
-{   FLOAT_128 f = a;
-    f = ldexp(f, b.intval());
-    return make_boxfloat128(f);
-}
-
-// If the exponent imposed by ldexp is a bignum I map to zero if it is
-// negative and I force in an exponent of 10000000 otherwise, expecting
-// that to leave 0.0 as 0.0 but turn everything else into an infinity.
-
-LispObject Ldexp::op(Fixnum a, uint64_t *b)
-{   if (Minusp::op(b)) return make_boxfloat(0.0);
-    double d = std::ldexp(static_cast<double>(a.intval()), 100000000);
-    return make_boxfloat(d);
-}
-
-LispObject Ldexp::op(uint64_t *a, uint64_t *b)
-{   if (Minusp::op(b)) return make_boxfloat(0.0);
-    double d = std::ldexp(Float::op(a), 100000000);
-    return make_boxfloat(d);
-}
-
-LispObject Ldexp::op(Rat a, uint64_t *b)
-{   if (Minusp::op(b)) return make_boxfloat(0.0);
-    double d = std::ldexp(Float::op(a), 100000000);
-    return make_boxfloat(d);
-}
-
-LispObject Ldexp::op(Cpx a, uint64_t *b)
-{   return aerror1("bad argument for ldexp", a.value());
-}
-
-LispObject Ldexp::op(SFlt a, uint64_t *b)
-{   if (Minusp::op(b)) return pack_short_float(
-                                      a.floatval() == a.floatval() ? 0.0 : 0.0/0.0);
-    double d = std::ldexp(a.floatval(), 100000000);
-    return pack_short_float(d);
-}
-
-LispObject Ldexp::op(Flt a, uint64_t *b)
-{   if (Minusp::op(b)) return pack_single_float(
-                                      a.floatval() == a.floatval() ? 0.0 : 0.0/0.0);
-    double d = std::ldexp(a.floatval(), 100000000);
-    return pack_single_float(d);
-}
-
-LispObject Ldexp::op(double a, uint64_t *b)
-{   if (Minusp::op(b)) return make_boxfloat(a == a ? 0.0 : 0.0/0.0,
-                                            WANT_DOUBLE_FLOAT);
-    double d = std::ldexp(a, 100000000);
-    return make_boxfloat(d);
-}
-
-// I am not dealing with a NaN in the float128 case at present.
-
-LispObject Ldexp::op(FLOAT_128 a, uint64_t *b)
-{   FLOAT_128 f = a;
-// if the exponent is to be set to a bignum then the result will be either
-// zero or infinity. But with the original sign of a. Well except that
-// ldexp(0.0, anything will be zero... and infinities and NaNs will not
-// change.
-    if (f == LF_C(0.0) ||
-        isnan(f) ||
-        isinf(f)) return make_boxfloat128(f);
-    FLOAT_128 r =
-        Minusp::op(b) ? LF_C(0.0) : PLUSINF128();
-    if (f.signbit()) r = -r;
-    return make_boxfloat128(r);
-}
-
-LispObject Sqrt::op(LispObject a)
-{   return unary<LispObject,Sqrt>("sqrt", a);
-}
-
 LispObject Sqrt::op(Fixnum a)
-{   return make_boxfloat(std::sqrt(static_cast<double>(a.intval())));
+{   return make_boxfloat(std::sqrt(static_cast<double>(a)));
 }
 
 LispObject Sqrt::op(uint64_t *a)
@@ -1484,7 +1250,7 @@ LispObject Sqrt::op(uint64_t *a)
 }
 
 LispObject Sqrt::op(Rat a)
-{   int64_t px, qx;
+{   int64_t px = 0, qx = 0;
     double p = Frexp::op(a.numerator(), px);
     double q = Frexp::op(a.denominator(), qx);
     if (px%2 != 0)
@@ -1518,12 +1284,8 @@ LispObject Sqrt::op(FLOAT_128 a)
 {   return make_boxfloat128(sqrt(a));
 }
 
-LispObject Isqrt::op(LispObject a)
-{   return iunary<LispObject,Isqrt>("isqrt", a);
-}
-
 LispObject Isqrt::op(Fixnum a)
-{   return Isqrt::op(a.intval());
+{   return arithlib_implementation::Isqrt::op(a);
 }
 
 LispObject Isqrt::op(uint64_t *a)
@@ -1564,11 +1326,13 @@ LispObject Nfp_infinite(LispObject env, LispObject a)
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
-            {
-                case LONG_FLOAT_HEADER:
+            {   case LONG_FLOAT_HEADER:
                     if (isinf(long_float_val(a))) return lisp_true;
                     else return nil;
                 case SINGLE_FLOAT_HEADER:
+                    if (std::fpclassify(single_float_val(a)) == FP_INFINITE)
+                        return lisp_true;
+                    else return nil;
                 case DOUBLE_FLOAT_HEADER:
                     if (std::fpclassify(double_float_val(a)) == FP_INFINITE)
                         return lisp_true;
@@ -1919,7 +1683,7 @@ static LispObject Nlisp_fix_sub128(LispObject a, int roundmode)
 {   FLOAT_128 d = long_float_val(a);
     if (isnan(d)) return aerror("NaN in fix");
     if (isinf(d)) return aerror("infinity in fix");
-    int x;
+    int x = 0;
     d = frexp(d, x);
 // Here I will limit the range where I convert to directly to a
 // 64-bit integer. I make this a slightly lower limit than I applied
@@ -1964,7 +1728,7 @@ static LispObject Nlisp_fix_sub128(LispObject a, int roundmode)
         if (d < LF_C(0.0)) ii = -ii;
         return make_lisp_integer128(ii);
     }
-    return LeftShift::op(make_lisp_integer128(ii), fixnum_of_int(x));
+    return IBinary(LeftShift, make_lisp_integer128(ii), fixnum_of_int(x));
 }
 
 // This converts from a double to a Lisp integer, which will
@@ -2027,7 +1791,7 @@ static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
 // going to end up as a bignum. I am going to favour simplicity and
 // code clarity over performance here! In these cases there is no
 // rounding in the conversion and so no need to consider rounding modes.
-    int x;
+    int x = 0;
     double d1 = frexp(d, &x);
 // now d is in the range +- [0.5,1) and pne wpi;d need to multiply by
 // 2^x to recover the original value;
@@ -2035,8 +1799,8 @@ static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
 // Now d3 is in the range +- [2^54, 2^55) and so can be converted to
 // a 64-bit integer without any rounding. And x is the amount this
 // needs to be shifted left to yield the final result...
-    return LeftShift::op(make_lisp_integer64(static_cast<int64_t>(d2)),
-                         fixnum_of_int(x));
+    return IBinary(LeftShift, make_lisp_integer64(static_cast<int64_t>(d2)),
+                              fixnum_of_int(x));
 }
 
 // This converts from a ratio to a Lisp integer.  It has to apply
@@ -2044,9 +1808,9 @@ static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
 
 LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
 {   LispObject p = numerator(a), q = denominator(a), q1, r1, w;
-    q1 = Quotient::op(p, q);
+    q1 = Binary(Quotient, p, q);
     errexit();
-    r1 = Remainder::op(p, q);
+    r1 = Binary(Remainder, p, q);
     errexit();
 // The quotient is now in q1 and the remainder in r1. The original fraction
 // is still (p/q).
@@ -2057,38 +1821,38 @@ LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
 // Here r1 is the eventual remainder. If it is less then -q/2 or greater
 // then q/2 I will need to adjust things. And if it is equal in either of
 // those edge cases I need to think even harder!
-            w = Times::op(r1, fixnum_of_int(2));
+            w = Binary(Times, r1, fixnum_of_int(2));
             errexit();
-            if (Minusp::op(w)) w = Minus::op(w);
+            if (BoolUnary(Minusp, w)) w = Unary(Minus, w);
             errexit();
-            if (Greaterp::op(w, q) ||
-                (Eqn::op(w, q) && Oddp::op(q1)))
-            {   if (Minusp::op(r1))
-                {   r1 = Plus::op(r1, q);
+            if (BoolBinary(Greaterp, w, q) ||
+                (BoolBinary(Eqn, w, q) && IBoolUnary(Oddp, q1)))
+            {   if (BoolUnary(Minusp, r1))
+                {   r1 = Binary(Plus, r1, q);
                     errexit();
-                    q1 = Sub1::op(q1);
+                    q1 = Unary(Sub1, q1);
                 }
                 else
-                {   r1 = Difference::op(r1, q);
+                {   r1 = Binary(Difference, r1, q);
                     errexit();
-                    q1 = Add1::op(q1);
+                    q1 = Unary(Add1, q1);
                 }
                 errexit();
             }
             break;
         case FIX_FLOOR:
-            if (Minusp::op(r1))
-            {   r1 = Plus::op(r1, q);
+            if (BoolUnary(Minusp, r1))
+            {   r1 = Binary(Plus, r1, q);
                 errexit();
-                q1 = Sub1::op(q1);
+                q1 = Unary(Sub1, q1);
                 errexit();
             }
             break;
         case FIX_CEILING:
-            if (Plusp::op(r1))
-            {   r1 = Difference::op(r1, q);
+            if (BoolUnary(Plusp, r1))
+            {   r1 = Binary(Difference, r1, q);
                 errexit();
-                q1 = Add1::op(q1);
+                q1 = Unary(Add1, q1);
                 errexit();
             }
             break;
@@ -2101,10 +1865,9 @@ LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
 // only ever called with a floating point argument.
 
 LispObject Nlisp_fix(LispObject a, int roundmode)
-{
-    LispObject r = Nlisp_fix_sub(a, roundmode);
+{   LispObject r = Nlisp_fix_sub(a, roundmode);
     errexit();
-    a = Difference::op(a, r);
+    a = Binary(Difference, a, r);
     errexit();
     mv_2 = a;
     return nvalues(r, 2);
@@ -2118,46 +1881,46 @@ LispObject Nlisp_ifix(LispObject a, LispObject b, int roundmode)
 {
     LispObject r2, negb;
     if (is_float(a) || is_float(b))
-    {   a = Quotient::op(a, b);
+    {   a = Binary(Quotient, a, b);
         errexit();
 // If either argument was floating point then the quotient will be.
         LispObject r = Nlisp_fix(a, roundmode);
-        mv_2 = Times::op(mv_2, b);
+        mv_2 = Binary(Times, mv_2, b);
         errexit();
         return nvalues(r, 2);
     }
-    LispObject q = Quotient::op(a, b);
+    LispObject q = Binary(Quotient, a, b);
     errexit();
-    LispObject r = Remainder::op(a, b);
+    LispObject r = Binary(Remainder, a, b);
     errexit();
     switch (roundmode)
     {   case FIX_TRUNCATE:
             break;
         case FIX_ROUND:
 // I will apply a round-to-nearest, with round-to-even to break ties.
-            negb = Minus::op(b);
-            {   r2 = Times::op(r, fixnum_of_int(2));
+            negb = BoolUnary(Minus, b);
+            {   r2 = Binary(Times, r, fixnum_of_int(2));
                 errexit();
             }
-            if (Lessp::op(b, r2) ||
-                (Eqn::op(b, r2) && Oddp::op(q))) goto increase_q;
-            if (Lessp::op(r2, negb) ||
-                (Eqn::op(r2, negb) && Oddp::op(q))) goto decrease_q;
+            if (BoolBinary(Lessp, b, r2) ||
+                (BoolBinary(Eqn, b, r2) && IBoolUnary(Oddp, q))) goto increase_q;
+            if (BoolBinary(Lessp, r2, negb) ||
+                (BoolBinary(Eqn, r2, negb) && IBoolUnary(Oddp, q))) goto decrease_q;
             break;
         case FIX_FLOOR:
-            if (!Minusp::op(r)) break;
+            if (!BoolUnary(Minusp, r)) break;
         decrease_q:
-            r = Plus::op(r, b);
+            r = Binary(Plus, r, b);
             errexit();
-            q = Sub1::op(q);
+            q = Unary(Sub1, q);
             errexit();
             break;
         case FIX_CEILING:
-            if (!Plusp::op(r)) break;
+            if (!BoolUnary(Plusp, r)) break;
         increase_q:
-            r = Difference::op(r, b);
+            r = Binary(Difference, r, b);
             errexit();
-            q = Add1::op(q);
+            q = Unary(Add1, q);
             errexit();
             break;
     }
@@ -2209,92 +1972,93 @@ LispObject Nscale_float(LispObject env, LispObject a, LispObject b)
 
 LispObject Nfloat(LispObject env, LispObject a1)
 {   SingleValued fn;
-    return Float::op(a1);
+    return Unary(Float, a1);
 }
 
 LispObject Nfloat(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Float::op(a1, a2);
+    return Binary(Float, a1, a2);
 }
 
 LispObject Nfix(LispObject env, LispObject a1)
 {   SingleValued fn;
-    return Fix::op(a1);
+    return Unary(Fix, a1);
 }
 
 LispObject Ntruncate(LispObject env, LispObject a1)
 {   SingleValued fn;
-    return Truncate::op(a1);
+    return Unary(Truncate, a1);
 }
 
 LispObject Nfloor(LispObject env, LispObject a1)
 {   SingleValued fn;
-    return Floor::op(a1);
+    return Unary(Floor, a1);
 }
 
 LispObject Nceiling(LispObject env, LispObject a1)
 {   SingleValued fn;
-    return Ceiling::op(a1);
+    return Unary(Ceiling, a1);
 }
 
 LispObject Nftruncate(LispObject env, LispObject a1)
 {   SingleValued fn;
-    return Ftruncate::op(a1);
+    return Unary(Ftruncate, a1);
 }
 
 LispObject Nffloor(LispObject env, LispObject a1)
 {   SingleValued fn;
-    return Ffloor::op(a1);
+    return Unary(Ffloor, a1);
 }
 
 LispObject Nfceiling(LispObject env, LispObject a1)
 {   SingleValued fn;
-    return Fceiling::op(a1);
+    return Unary(Fceiling, a1);
 }
 
 LispObject Ntruncate(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Truncate::op(a1, a2);
+    return Binary(Truncate, a1, a2);
 }
 
 LispObject Nfloor(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Floor::op(a1, a2);
+    return Binary(Floor, a1, a2);
 }
 
 LispObject Nceiling(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Ceiling::op(a1, a2);
+    return Binary(Ceiling, a1, a2);
 }
 
 LispObject Nftruncate(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Ftruncate::op(a1, a2);
+    return Binary(Ftruncate, a1, a2);
 }
 
 LispObject Nffloor(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Ffloor::op(a1, a2);
+    return Binary(Ffloor, a1, a2);
 }
 
 LispObject Nfceiling(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Fceiling::op(a1,  a2);
+    return Binary(Fceiling, a1,  a2);
 }
 
 LispObject Nfloat128(LispObject env, LispObject a1)
 {   SingleValued fn;
-    return make_boxfloat128(Float128::op(a1));
+    return make_boxfloat128(Unary(Float128, a1));
 }
 
 LispObject Nfrexp(LispObject env, LispObject a1)
 {   SingleValued fn;
-    return Frexp::op(a1);
+    return Unary(Frexp, a1);
 }
 
 LispObject Nldexp(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Ldexp::op(a1, a2);
+#pragma message "Nldexp"
+    return make_boxfloat(0.0);
 }
 
 LispObject Nmodf(LispObject env, LispObject a1)
@@ -2342,7 +2106,7 @@ LispObject Ndecode_long_float(LispObject a)
         {   d = d * arithlib_implementation::f128_N1;
             x -= 4096;
         }
-        int x1;
+        int x1 = 0;
         d = frexp(d, x1);
         x += x1;
     }
@@ -2415,7 +2179,7 @@ LispObject Ninteger_decode_long_float(LispObject a)
     {   d = -d;
         neg = true;
     }
-    int x;
+    int x = 0;
     d = frexp(d, x);
     x = x - 113;
     if (d == LF_C(0.0)) x = 0;
@@ -2460,7 +2224,7 @@ LispObject Ninteger_decode_float(LispObject env, LispObject a)
     {   d = -d;
         neg = true;
     }
-    int x;
+    int x = 0;
     d = frexp(d, x);
     a = make_lisp_integer64((int64_t)std::ldexp(d, 63));
     x -= 63;
@@ -2479,4 +2243,3 @@ LispObject Ninteger_decode_float(LispObject env, LispObject a)
 } // end of namespace
 
 // end of arith-float.cpp
-

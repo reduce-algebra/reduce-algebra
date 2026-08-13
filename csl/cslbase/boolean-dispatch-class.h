@@ -1,10 +1,7 @@
 // All methose needed for an arithmetic operation that will return a
 // boolean value. Copyright (C) Codemist 2026.
-{
-public:
-    static bool op(LispObject a, LispObject b);
-    static bool op(LispObject a);  // For unary use.
-    static bool op(Fixnum a);
+
+    static bool op(std::intptr_t a);
     static bool op(uint64_t *a);
     static bool op(Rat a);
     static bool op(Cpx a);
@@ -12,25 +9,15 @@ public:
     static bool op(Flt a);
     static bool op(double a);
     static bool op(FLOAT_128 a);
-    static bool op(Fixnum a, LispObject b);
-    static bool op(uint64_t *a, LispObject b);
-    static bool op(Rat a, LispObject b);
-    static bool op(Cpx a, LispObject b);
-    static bool op(SFlt a, LispObject b);
-    static bool op(Flt a, LispObject b);
-    static bool op(double a, LispObject b);
-    static bool op(FLOAT_128 a, LispObject b);
-    static bool op(LispObject a, Fixnum b);
-    static bool op(Fixnum a, Fixnum b);
-    static bool op(uint64_t *a, Fixnum b);
-    static bool op(Rat a, Fixnum b);
-    static bool op(Cpx a, Fixnum b);
-    static bool op(SFlt a, Fixnum b);
-    static bool op(Flt a, Fixnum b);
-    static bool op(double a, Fixnum b);
-    static bool op(FLOAT_128 a, Fixnum b);
-    static bool op(LispObject a, uint64_t *b);
-    static bool op(Fixnum a, uint64_t *b);
+    static bool op(std::intptr_t a, std::intptr_t b);
+    static bool op(uint64_t *a, std::intptr_t b);
+    static bool op(Rat a, std::intptr_t b);
+    static bool op(Cpx a, std::intptr_t b);
+    static bool op(SFlt a, std::intptr_t b);
+    static bool op(Flt a, std::intptr_t b);
+    static bool op(double a, std::intptr_t b);
+    static bool op(FLOAT_128 a, std::intptr_t b);
+    static bool op(std::intptr_t a, uint64_t *b);
     static bool op(uint64_t *a, uint64_t *b);
     static bool op(Rat a, uint64_t *b);
     static bool op(Cpx a, uint64_t *b);
@@ -38,8 +25,7 @@ public:
     static bool op(Flt a, uint64_t *b);
     static bool op(double a, uint64_t *b);
     static bool op(FLOAT_128 a, uint64_t *b);
-    static bool op(LispObject a, Rat b);
-    static bool op(Fixnum a, Rat b);
+    static bool op(std::intptr_t a, Rat b);
     static bool op(uint64_t *a, Rat b);
     static bool op(Rat a, Rat b);
     static bool op(Cpx a, Rat b);
@@ -47,8 +33,7 @@ public:
     static bool op(Flt a, Rat b);
     static bool op(double a, Rat b);
     static bool op(FLOAT_128 a, Rat b);
-    static bool op(LispObject a, Cpx b);
-    static bool op(Fixnum a, Cpx b);
+    static bool op(std::intptr_t a, Cpx b);
     static bool op(uint64_t *a, Cpx b);
     static bool op(Rat a, Cpx b);
     static bool op(Cpx a, Cpx b);
@@ -56,8 +41,7 @@ public:
     static bool op(Flt a, Cpx b);
     static bool op(double a, Cpx b);
     static bool op(FLOAT_128 a, Cpx b);
-    static bool op(LispObject a, SFlt b);
-    static bool op(Fixnum a, SFlt b);
+    static bool op(std::intptr_t a, SFlt b);
     static bool op(uint64_t *a, SFlt b);
     static bool op(Rat a, SFlt b);
     static bool op(Cpx a, SFlt b);
@@ -65,8 +49,7 @@ public:
     static bool op(Flt a, SFlt b);
     static bool op(double a, SFlt b);
     static bool op(FLOAT_128 a, SFlt b);
-    static bool op(LispObject a, Flt b);
-    static bool op(Fixnum a, Flt b);
+    static bool op(std::intptr_t a, Flt b);
     static bool op(uint64_t *a, Flt b);
     static bool op(Rat a, Flt b);
     static bool op(Cpx a, Flt b);
@@ -74,9 +57,7 @@ public:
     static bool op(Flt a, Flt b);
     static bool op(double a, Flt b);
     static bool op(FLOAT_128 a, Flt b);
-    static bool op(LispObject a, double b);
-    static bool op(LispObject a, FLOAT_128 b);
-    static bool op(Fixnum a, double b);
+    static bool op(std::intptr_t a, double b);
     static bool op(uint64_t *a, double b);
     static bool op(Rat a, double b);
     static bool op(Cpx a, double b);
@@ -84,7 +65,7 @@ public:
     static bool op(Flt a, double b);
     static bool op(double a, double b);
     static bool op(FLOAT_128 a, double b);
-    static bool op(Fixnum a, FLOAT_128 b);
+    static bool op(std::intptr_t a, FLOAT_128 b);
     static bool op(uint64_t *a, FLOAT_128 b);
     static bool op(Rat a, FLOAT_128 b);
     static bool op(Cpx a, FLOAT_128 b);

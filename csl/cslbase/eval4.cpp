@@ -859,8 +859,8 @@ const char *one_arg_names[] =
 {   ONE_ARGS
 };
 
-bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(
-                            one_arg_functions[0])];
+bool one_arg_traceflags[sizeof(one_arg_functions)/
+                        sizeof(one_arg_functions[0])];
 
 #ifdef ARITHLIB
 #define TWO_ARGS \
@@ -924,7 +924,7 @@ bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(
     BI(Ntimes,                     "times2",                 57),  \
     BI(Lxcons,                     "xcons",                  58),  \
     BI(Lequal,                     "equal",                  59),  \
-    BI(Leq,                        "eq",                     60),  \
+    BI(xLeq,                       "eq",                     60),  \
     BI(Lcons,                      "cons",                   61),  \
     BI(Llist_2,                    "list2",                  62),  \
     BI(Lget,                       "get",                    63),  \
@@ -935,7 +935,7 @@ bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(
     BI(Nplus,                      "plus2",                  68),  \
     BI(Ntimes,                     "times2",                 69),  \
     BI(Lequalcar,                  "equalcar",               70),  \
-    BI(Leq,                        "eq",                     71),  \
+    BI(xLeq,                       "eq",                     71),  \
     BI(Lnreverse2,                 "nreverse2",              72),  \
     BI(nullptr,                    nullptr,                  0)
 #else //ARITHLIB
@@ -1000,7 +1000,7 @@ bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(
     BI(Ltimes_2,                   "times2",                 57),  \
     BI(Lxcons,                     "xcons",                  58),  \
     BI(Lequal,                     "equal",                  59),  \
-    BI(Leq,                        "eq",                     60),  \
+    BI(xLeq,                       "eq",                     60),  \
     BI(Lcons,                      "cons",                   61),  \
     BI(Llist_2,                    "list2",                  62),  \
     BI(Lget,                       "get",                    63),  \
@@ -1011,7 +1011,7 @@ bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(
     BI(Lplus_2,                    "plus2",                  68),  \
     BI(Ltimes_2,                   "times2",                 69),  \
     BI(Lequalcar,                  "equalcar",               70),  \
-    BI(Leq,                        "eq",                     71),  \
+    BI(xLeq,                       "eq",                     71),  \
     BI(Lnreverse2,                 "nreverse2",              72),  \
     BI(nullptr,                    nullptr,                  0)
 #endif // ARITHLIB

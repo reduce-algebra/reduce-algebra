@@ -3,7 +3,7 @@
 #if defined BYTECODE
             case OP_LESSP:
 #ifdef ARITHLIB
-                w = Lessp::op(B_reg, A_reg);
+                w = LesspNop(B_reg, A_reg);
 #else // ARITHLIB
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg < A_reg;
                 else
