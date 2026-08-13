@@ -442,13 +442,13 @@ defautoload(odesolve!-eval,odesolve);
 % Numeric module entry points.
 
 %% define .. operator so that you don't get an error when used before autoloaded
-put('!*interval!*,'simpfn,'simpiden);
+% put('!*interval!*,'simpfn,'simpiden);
 
-newtok '((!. !.) !*interval!*);
+% newtok '((!. !.) !*interval!*);
 
-put('!*interval!*,'prtch,'! !.!.! );
+% put('!*interval!*,'prtch,'! !.!.! );
 
-precedence .., or;
+% precedence .., or;
 
 global '(!*trnumeric);
 
@@ -1580,8 +1580,8 @@ maxalgsys_:=20;
 adjust_fnc:=nil;
 orderings_:=nil;
 simple_orderings:=t;
-lex_df:=nil;	
-lex_fc:=t;	
+lex_df:=nil;
+lex_fc:=t;
 collect_sol:=t;
 struc_eqn:=nil;
 quick_decoup:=nil;

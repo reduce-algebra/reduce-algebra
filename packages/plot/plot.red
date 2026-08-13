@@ -67,15 +67,15 @@ fluid '(
 
 % Create .. as infix operator.
 
-begin
-   scalar !*msg;  % So we do not get a redefinition moan at load time
-   newtok '((!. !.) !*interval!*)
-end;
+% begin
+%    scalar !*msg;  % So we do not get a redefinition moan at load time
+%    newtok '((!. !.) !*interval!*)
+% end;
 
-put('!*interval!*,'prtch,'! !.!.! );
+% put('!*interval!*,'prtch,'! !.!.! );
 
-if null get('!*interval!*,'simpfn)
-  then <<precedence .., or; algebraic operator ..>>;
+% if null get('!*interval!*,'simpfn)
+%   then <<precedence .., or; algebraic operator ..>>;
 
  % Reestablished these routines in order to support singularity handling
  % (which was better in some respects in Reduce 3.5) %WN
@@ -109,4 +109,3 @@ macro procedure plotdriver u;
 endmodule;
 
 end;
-

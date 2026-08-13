@@ -3,13 +3,13 @@
 ineq_solve(  (2*x^2+x-1)/(x-1) >=  (x+1/2)^2 ,x);
 
 
-{x=(-0.894358 .. 0.326583),x=(1 .. 2.56777)}
+{x=-0.894358 .. 0.326583,x=1 .. 2.56777}
 
 
 ineq_solve({(2*x^2+x-1)/(x-1) >=  (x+1/2)^2, x>0});
 
 
-{x=(0 .. 0.326583),x=(1 .. 2.56777)}
+{x=0 .. 0.326583,x=1 .. 2.56777}
 
 
 ineq_solve({(2*x^2+x-1)/(x-1) >=  (x+1/2)^2, x<-1});
@@ -31,7 +31,7 @@ reg :=
 ineq_solve(reg,{k,a});
 
 
-{a=(2 .. infinity),k=2*a + 3}
+{a=2 .. infinity,k=2*a + 3}
 
 
 reg:=
@@ -46,11 +46,11 @@ reg:=
 ineq_solve (reg,{k,a,b,c});
 
 
-{c=(1 .. infinity),
+{c=1 .. infinity,
 
- b=(1 .. infinity),
+ b=1 .. infinity,
 
- a=(max( - b + c,b - c) .. b + c - 2),
+ a=max( - b + c,b - c) .. b + c - 2,
 
  k=a + b + c}
 
@@ -80,13 +80,13 @@ lfcond := {d>=0,
 ineq_solve(lfcond,lvars);
 
 
-{d=(2 .. infinity),
+{d=2 .. infinity,
 
- b=(d .. 3*d - 4),
+ b=d .. 3*d - 4,
 
-     b + d + 2
- a=(----------- .. 2*d - 1)}
-         2
+    b + d + 2
+ a=----------- .. 2*d - 1}
+        2
 
 
 clear lfcond,lvars;
@@ -95,10 +95,3 @@ clear lfcond,lvars;
 
 end;
 
-Tested on x86_64-pc-windows CSL
-1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
-Time: ineq  16  0
-1: Leaving REDUCE ... 
-
-
-End of Lisp run after 0.06+0.01 seconds

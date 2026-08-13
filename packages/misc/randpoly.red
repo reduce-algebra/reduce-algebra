@@ -322,13 +322,13 @@ symbolic procedure inttovec!-solve(n, m);
 % Create .. infix operator, avoiding warning if already defined.
 % (It is pre-defined via plot/plothook.sl at least in PSL-REDUCE.)
 
-newtok '( (!. !.) !*interval!*);
+% newtok '( (!. !.) !*interval!*);
 
-precedence .., or;
+% precedence .., or;
 
-algebraic operator ..;
+% algebraic operator ..;
 
-put('!*interval!*, 'prtch, '! !.!.! );
+% put('!*interval!*, 'prtch, '! !.!.! );
 
 put('rand, 'psopfn, 'rand);
 

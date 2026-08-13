@@ -219,8 +219,8 @@ procedure cleargiven$
 put('cleargiven,'stat,'endstat)$
 flag('(cleargiven),'eval)$
 
-newtok'(( !. !. ) isgr)$
-algebraic infix ..$
+% newtok'(( !. !. ) isgr)$                % renamed to !*interval!*
+% algebraic infix ..$
 grids!* := '(one half)$
 
 procedure trlis$
@@ -301,7 +301,7 @@ null atom u and
   begin
     scalar x$
   a:x:=car u$
-    if null atom x and car x eq 'isgr and null atom cdr x
+    if null atom x and car x eq '!*interval!* and null atom cdr x
        and cadr x memq coords!* and null atom cddr x and
        caddr x memq grids!* then rplaca(u,cdr x)
       else return nil$
@@ -320,7 +320,7 @@ a:y:=car x$
   if not(car y memq dvars!*) then return msgpri(
       "Identifier ",car y," is not variable",nil,'hold)$
   z:=cdr y$
-b:if not atom car z and caar z eq 'isgr and cadar z memq coords!* and
+b:if not atom car z and caar z eq '!*interval!* and cadar z memq coords!* and
       caddar z memq grids!* then put(car y,cadar z,caddar z)
     else return errpri2(u,'hold)$
   z:=cdr z$
