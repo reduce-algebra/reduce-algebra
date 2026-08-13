@@ -100,7 +100,7 @@ LispObject Plus::op(double a, Fixnum b)
 
 // long float + fixnum
 LispObject Plus::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a + (FLOAT_128)int_of_fixnum(b));
+{   return make_boxfloat128(a + (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum + bignum
@@ -439,7 +439,7 @@ LispObject Difference::op(double a, Fixnum b)
 
 // long float - fixnum
 LispObject Difference::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a - (FLOAT_128)(int_of_fixnum(b)));
+{   return make_boxfloat128(a - (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum - bignum
@@ -715,7 +715,7 @@ LispObject Difference::op(FLOAT_128 a, double b)
 
 // fixnum - long float
 LispObject Difference::op(Fixnum a, FLOAT_128 b)
-{   return make_boxfloat128((FLOAT_128)int_of_fixnum(a) - b);
+{   return make_boxfloat128((FLOAT_128)(int64_t)int_of_fixnum(a) - b);
 }
 
 // bignum - long float

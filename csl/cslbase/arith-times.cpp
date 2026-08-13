@@ -100,7 +100,7 @@ LispObject Times::op(double a, Fixnum b)
 
 // long float * fixnum
 LispObject Times::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a * (FLOAT_128)int_of_fixnum(b));
+{   return make_boxfloat128(a * (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum * bignum
@@ -219,7 +219,7 @@ LispObject Times::op(FLOAT_128 a, Rat b)
     d1 = frexp(d1, x);
     x += xb;
     d = d * d1;
-    return ldexp(d, x);
+    return make_boxfloat128(ldexp(d, x));
 }
 
 // fixnum * complex
@@ -790,7 +790,7 @@ LispObject match_type(LispObject in, int value)
                 case DOUBLE_FLOAT_HEADER:
                     return make_boxfloat(static_cast<double>(value));
                 case LONG_FLOAT_HEADER:
-                    return make_boxfloat128((FLOAT_128)(value));
+                    return make_boxfloat128((FLOAT_128)(int64_t)value);
                 default:
                     return aerror1("Invalid component in complex number", in);
             }
@@ -1408,7 +1408,7 @@ LispObject Quotient::op(double a, Fixnum b)
 
 // long float / fixnum
 LispObject Quotient::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a / (FLOAT_128)int_of_fixnum(b));
+{   return make_boxfloat128(a / (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum / bignum
@@ -1895,7 +1895,7 @@ LispObject CLQuotient::op(double a, Fixnum b)
 
 // long float CL/ fixnum
 LispObject CLQuotient::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a / (FLOAT_128)int_of_fixnum(b));
+{   return make_boxfloat128(a / (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum CL/ bignum
@@ -3324,7 +3324,7 @@ LispObject Truncate::op(double a, Fixnum b)
 
 // long float truncate fixnum
 LispObject Truncate::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a / (FLOAT_128)int_of_fixnum(b));
+{   return make_boxfloat128(a / (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum truncate bignum
@@ -3752,7 +3752,7 @@ LispObject Ceiling::op(double a, Fixnum b)
 
 // long float ceiling fixnum
 LispObject Ceiling::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a / (FLOAT_128)int_of_fixnum(b));
+{   return make_boxfloat128(a / (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum ceiling bignum
@@ -4180,7 +4180,7 @@ LispObject Floor::op(double a, Fixnum b)
 
 // long float floor fixnum
 LispObject Floor::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a / (FLOAT_128)int_of_fixnum(b));
+{   return make_boxfloat128(a / (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum floor bignum
@@ -4577,7 +4577,7 @@ LispObject Ftruncate::op(double a, Fixnum b)
 
 // long float ftruncate fixnum
 LispObject Ftruncate::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a / (FLOAT_128)int_of_fixnum(b));
+{   return make_boxfloat128(a / (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum ftruncate bignum
@@ -4971,7 +4971,7 @@ LispObject Fceiling::op(double a, Fixnum b)
 
 // long float fceiling fixnum
 LispObject Fceiling::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a / (FLOAT_128)int_of_fixnum(b));
+{   return make_boxfloat128(a / (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum fceiling bignum
@@ -5364,7 +5364,7 @@ LispObject Ffloor::op(double a, Fixnum b)
 
 // long float ffloor fixnum
 LispObject Ffloor::op(FLOAT_128 a, Fixnum b)
-{   return make_boxfloat128(a / (FLOAT_128)int_of_fixnum(b));
+{   return make_boxfloat128(a / (FLOAT_128)(int64_t)int_of_fixnum(b));
 }
 
 // fixnum ffloor bignum
