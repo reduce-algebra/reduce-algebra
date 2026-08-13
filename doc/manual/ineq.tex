@@ -47,7 +47,7 @@ Algebraic numbers are encoded as rounded number approximations.
 \begin{verbatim}
 ineq_solve({(2*x^2+x-1)/(x-1) >=  (x+1/2)^2, x>0});
 
-{x=(0 .. 0.326583),x=(1 .. 2.56777)}
+{x=0 .. 0.326583,x=1 .. 2.56777}
 
  reg:=
  {a + b - c>=0, a - b + c>=0, - a + b + c>=0, 0>=0,
@@ -60,11 +60,11 @@ ineq_solve({(2*x^2+x-1)/(x-1) >=  (x+1/2)^2, x>0});
 
 ineq_solve (reg,{k,a,b,c});
 
-{c=(1 .. infinity),
+{c=1 .. infinity,
 
- b=(1 .. infinity),
+ b=1 .. infinity,
 
- a=(max( - b + c,b - c) .. b + c - 2),
+ a=max( - b + c,b - c) .. b + c - 2,
 
  k=a + b + c}
 \end{verbatim}
