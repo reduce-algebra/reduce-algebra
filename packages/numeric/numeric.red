@@ -50,16 +50,16 @@ switch trnumeric;
 
 % Create .. as infix operator.
 
-begin
-   scalar !*msg;
-   newtok '( (!. !.) !*interval!*);
-   put('!*interval!*,'prtch,'! !.!.! );
-end;
+% begin
+%    scalar !*msg;
+%    newtok '( (!. !.) !*interval!*);
+%    put('!*interval!*,'prtch,'! !.!.! );
+% end;
 
-if null get('!*interval!*,'simpfn) then
-<<precedence .., or;
-  algebraic operator ..;
->>;
+% if null get('!*interval!*,'simpfn) then
+% <<precedence .., or;
+%   algebraic operator ..;
+% >>;
 
 % some common utilities
 
@@ -79,7 +79,7 @@ minus!-infinity!* := '(minus infinity);
 %     if adomainpx(car l,num) and adomainpx(cadr l,num)then return l;
 %     typerr(u,"numeric interval");
 %   end;
-% 
+%
 % symbolic procedure adomainpx(u,num);
 %   % extended algebraic domainp test:
 %   % num = t: u is a domain element;

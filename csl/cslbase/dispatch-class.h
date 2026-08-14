@@ -1,10 +1,7 @@
-// All the cases needed fgor an arithmetic operation.
+// All the cases needed for an arithmetic operation.
 // BSD license, Copyright (C) Codemist 2026
-{
-public:
-    static LispObject op(LispObject a, LispObject b);
-    static LispObject op(LispObject a);  // For unary use.
-    static LispObject op(Fixnum a);
+
+    static LispObject op(std::intptr_t a);
     static LispObject op(uint64_t *a);
     static LispObject op(Rat a);
     static LispObject op(Cpx a);
@@ -12,25 +9,15 @@ public:
     static LispObject op(Flt a);
     static LispObject op(double a);
     static LispObject op(FLOAT_128 a);
-    static LispObject op(Fixnum a, LispObject b);
-    static LispObject op(uint64_t *a, LispObject b);
-    static LispObject op(Rat a, LispObject b);
-    static LispObject op(Cpx a, LispObject b);
-    static LispObject op(SFlt a, LispObject b);
-    static LispObject op(Flt a, LispObject b);
-    static LispObject op(double a, LispObject b);
-    static LispObject op(FLOAT_128 a, LispObject b);
-    static LispObject op(LispObject a, Fixnum b);
-    static LispObject op(Fixnum a, Fixnum b);
-    static LispObject op(uint64_t *a, Fixnum b);
-    static LispObject op(Rat a, Fixnum b);
-    static LispObject op(Cpx a, Fixnum b);
-    static LispObject op(SFlt a, Fixnum b);
-    static LispObject op(Flt a, Fixnum b);
-    static LispObject op(double a, Fixnum b);
-    static LispObject op(FLOAT_128 a, Fixnum b);
-    static LispObject op(LispObject a, uint64_t *b);
-    static LispObject op(Fixnum a, uint64_t *b);
+    static LispObject op(std::intptr_t a, std::intptr_t b);
+    static LispObject op(uint64_t* a, std::intptr_t b);
+    static LispObject op(Rat a, std::intptr_t b);
+    static LispObject op(Cpx a, std::intptr_t b);
+    static LispObject op(SFlt a, std::intptr_t b);
+    static LispObject op(Flt a, std::intptr_t b);
+    static LispObject op(double a, std::intptr_t b);
+    static LispObject op(FLOAT_128 a, std::intptr_t b);
+    static LispObject op(std::intptr_t a, uint64_t *b);
     static LispObject op(uint64_t *a, uint64_t *b);
     static LispObject op(Rat a, uint64_t *b);
     static LispObject op(Cpx a, uint64_t *b);
@@ -38,8 +25,7 @@ public:
     static LispObject op(Flt a, uint64_t *b);
     static LispObject op(double a, uint64_t *b);
     static LispObject op(FLOAT_128 a, uint64_t *b);
-    static LispObject op(LispObject a, Rat b);
-    static LispObject op(Fixnum a, Rat b);
+    static LispObject op(std::intptr_t a, Rat b);
     static LispObject op(uint64_t *a, Rat b);
     static LispObject op(Rat a, Rat b);
     static LispObject op(Cpx a, Rat b);
@@ -47,8 +33,7 @@ public:
     static LispObject op(Flt a, Rat b);
     static LispObject op(double a, Rat b);
     static LispObject op(FLOAT_128 a, Rat b);
-    static LispObject op(LispObject a, Cpx b);
-    static LispObject op(Fixnum a, Cpx b);
+    static LispObject op(std::intptr_t a, Cpx b);
     static LispObject op(uint64_t *a, Cpx b);
     static LispObject op(Rat a, Cpx b);
     static LispObject op(Cpx a, Cpx b);
@@ -56,8 +41,7 @@ public:
     static LispObject op(Flt a, Cpx b);
     static LispObject op(double a, Cpx b);
     static LispObject op(FLOAT_128 a, Cpx b);
-    static LispObject op(LispObject a, SFlt b);
-    static LispObject op(Fixnum a, SFlt b);
+    static LispObject op(std::intptr_t a, SFlt b);
     static LispObject op(uint64_t *a, SFlt b);
     static LispObject op(Rat a, SFlt b);
     static LispObject op(Cpx a, SFlt b);
@@ -65,8 +49,7 @@ public:
     static LispObject op(Flt a, SFlt b);
     static LispObject op(double a, SFlt b);
     static LispObject op(FLOAT_128 a, SFlt b);
-    static LispObject op(LispObject a, Flt b);
-    static LispObject op(Fixnum a, Flt b);
+    static LispObject op(std::intptr_t a, Flt b);
     static LispObject op(uint64_t *a, Flt b);
     static LispObject op(Rat a, Flt b);
     static LispObject op(Cpx a, Flt b);
@@ -74,9 +57,7 @@ public:
     static LispObject op(Flt a, Flt b);
     static LispObject op(double a, Flt b);
     static LispObject op(FLOAT_128 a, Flt b);
-    static LispObject op(LispObject a, double b);
-    static LispObject op(LispObject a, FLOAT_128 b);
-    static LispObject op(Fixnum a, double b);
+    static LispObject op(std::intptr_t a, double b);
     static LispObject op(uint64_t *a, double b);
     static LispObject op(Rat a, double b);
     static LispObject op(Cpx a, double b);
@@ -84,7 +65,7 @@ public:
     static LispObject op(Flt a, double b);
     static LispObject op(double a, double b);
     static LispObject op(FLOAT_128 a, double b);
-    static LispObject op(Fixnum a, FLOAT_128 b);
+    static LispObject op(std::intptr_t a, FLOAT_128 b);
     static LispObject op(uint64_t *a, FLOAT_128 b);
     static LispObject op(Rat a, FLOAT_128 b);
     static LispObject op(Cpx a, FLOAT_128 b);

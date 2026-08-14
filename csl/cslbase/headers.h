@@ -136,13 +136,49 @@ typedef bool boolFn2(LispObject, LispObject);
 typedef LispObject lispFn2(LispObject, LispObject);
 typedef std::intptr_t makebigFn(arithlib_implementation::SignedDigit);
 
-inline boolFn2& JITlessp2Val = Lessp::op;
-inline boolFn2& JITleq2Val = Leq::op;
-inline lispFn2& JITplus2Val = Plus::op;
-inline lispFn2& JITdifference2Val = Difference::op;
-inline lispFn2& JITtimes2Val = Times::op;
-inline lispFn2& JITquotient2Val = Quotient::op;
-inline lispFn2& JITremainderVal = Remainder::op;
+inline bool LesspNop(LispObject a1, LispObject a2)
+{   return BoolBinary(Lessp, a1, a2);
+}
+inline bool GreaterpNop(LispObject a1, LispObject a2)
+{   return BoolBinary(Greaterp, a1, a2);
+}
+inline bool LeqNop(LispObject a1, LispObject a2)
+{   return BoolBinary(Leq, a1, a2);
+}
+inline bool GeqNop(LispObject a1, LispObject a2)
+{   return BoolBinary(Geq, a1, a2);
+}
+inline LispObject MinusNop(LispObject a1)
+{   return Unary(Minus, a1);
+}
+inline LispObject Add1Nop(LispObject a1)
+{   return Unary(Add1, a1);
+}
+inline LispObject Sub1Nop(LispObject a1)
+{   return Unary(Sub1, a1);
+}
+inline LispObject PlusNop(LispObject a1, LispObject a2)
+{   return Binary(Plus, a1, a2);
+}
+inline LispObject DifferenceNop(LispObject a1, LispObject a2)
+{   return Binary(Difference, a1, a2);
+}
+inline LispObject TimesNop(LispObject a1, LispObject a2)
+{   return Binary(Times, a1, a2);
+}
+inline LispObject QuotientNop(LispObject a1, LispObject a2)
+{   return Binary(Quotient, a1, a2);
+}
+inline LispObject RemainderNop(LispObject a1, LispObject a2)
+{   return Binary(Remainder, a1, a2);
+}
+inline boolFn2& JITlessp2Val = LesspNop;
+inline boolFn2& JITleq2Val = LeqNop;
+inline lispFn2& JITplus2Val = PlusNop;
+inline lispFn2& JITdifference2Val = DifferenceNop;
+inline lispFn2& JITtimes2Val = TimesNop;
+inline lispFn2& JITquotient2Val = QuotientNop;
+inline lispFn2& JITremainderVal = RemainderNop;
 inline makebigFn& JITint_from_ptrVal = arithlib_implementation::intToBignum;
 
 #else // ARITHLIB

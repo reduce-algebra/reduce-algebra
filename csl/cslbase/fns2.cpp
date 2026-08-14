@@ -1226,7 +1226,8 @@ bool eql_fn(LispObject a, LispObject b)
     {   Header h = numhdr(a);
         if (h != numhdr(b)) return false;
 #ifdef ARITHLIB
-        else if (type_of_header(h) == TYPE_NEW_BIGNUM) return Eqn::op(a, b);
+        else if (type_of_header(h) == TYPE_NEW_BIGNUM)
+            return Eqn::op(bignum_intval(a), bignum_intval(b));
 #else // ARITHLIB
         else if (type_of_header(h) == TYPE_BIGNUM)
         {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
@@ -1450,7 +1451,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                 }
 #else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                                {   if (!Eqn::op(a, b)) return false;
+                                {   if (!Eqn::op(bignum_intval(a), bignum_intval(b))) return false;
                                     else break;
                                 }
 #endif // ARITHLIB
@@ -1510,7 +1511,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                     }
 #else // ARITHLIB
                     else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                        return Eqn::op(a, b);
+                        return Eqn::op(bignum_intval(a), bignum_intval(b));
 #endif // ARITHLIB
                     else return eql_numbers(a, b);
                 }
@@ -1745,7 +1746,7 @@ bool equal_fn(LispObject a, LispObject b)
                                 }
 #else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                                {   if (!Eqn::op(ca, cb)) return false;
+                                {   if (!Eqn::op(bignum_intval(ca), bignum_intval(cb))) return false;
                                     else break;
                                 }
 #endif // ARITHLIB
@@ -1802,7 +1803,7 @@ bool equal_fn(LispObject a, LispObject b)
                     }
 #else // ARITHLIB
                     else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                        return Eqn::op(a, b);
+                        return Eqn::op(bignum_intval(a), bignum_intval(b));
 #endif // ARITHLIB
                     else return eql_numbers(a, b);
                 }
@@ -1954,7 +1955,7 @@ bool equalp(LispObject a, LispObject b)
                                 }
 #else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                                {   if (!Eqn::op(a, b)) return false;
+                                {   if (!Eqn::op(bignum_intval(a), bignum_intval(b))) return false;
                                     else break;
                                 }
 #endif // ARITHLIB
@@ -2013,7 +2014,7 @@ bool equalp(LispObject a, LispObject b)
                     }
 #else // ARITHLIB
                     else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                        return Eqn::op(a, b);
+                        return Eqn::op(bignum_intval(a), bignum_intval(b));
 #endif // ARITHLIB
                     else return eql_numbers(a, b);
                 }
@@ -2042,7 +2043,7 @@ bool equalp(LispObject a, LispObject b)
     }
 }
 
-LispObject Leq(LispObject env, LispObject a, LispObject b)
+LispObject xLeq(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     return Lispify_predicate(a == b);
 }
@@ -3312,8 +3313,8 @@ setup_type const funcs2_setup[] =
 // remove the name restart!-csl...
     {"restart-lisp",            G0Wother, Lrestart_lisp, Lrestart_lisp2, G3Wother, G4Wother},
     {"restart-csl",             G0Wother, Lrestart_lisp, Lrestart_lisp2, G3Wother, G4Wother},
-    DEF_2("eq",                 Leq),
-    DEF_2("iequal",             Leq),
+    DEF_2("eq",                 xLeq),
+    DEF_2("iequal",             xLeq),
     DEF_2("eqcar",              Leqcar),
     DEF_2("equalcar",           Lequalcar),
     DEF_2("eql",                Leql),

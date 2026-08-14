@@ -85,7 +85,8 @@ parameters:
 \item A range for a variable: this has the form
   \texttt{<variable>=(<lower\_bound> ..\ \allowbreak <upper\_bound>)}
   where \texttt{<lower\_bound>} and \texttt{<upper\_bound>} must be
-  expressions which evaluate to numbers. If no range is specified the
+  expressions which evaluate to numbers, and the parentheses are
+  optional.  If no range is specified the
   default range for independent variables is \texttt{(-10~..~10)} and
   for the dependent variable it is set to the maximum for the
   {\Gnuplot} executable (using double floats on most IEEE machines).
@@ -103,7 +104,7 @@ parameters:
   \begin{center}
     \texttt{<variable>=(<lower\_bound> ..\ <upper\_bound>)/<it>}
   \end{center}
-  where \texttt{<it>} is a positive integer;
+  where \texttt{<it>} is a positive integer and the parentheses are required;
   e.g.\ \texttt{(1~..~5)/30} means the interval from 1 to 5 subdivided
   into 30 pieces of equal size.  A subdivision parameter overrides the
   value of the option \texttt{points} for this variable.

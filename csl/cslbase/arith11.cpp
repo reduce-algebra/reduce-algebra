@@ -975,7 +975,7 @@ static bool numeqff(LispObject a, LispObject b)
 
 // This is for the Common Lisp (= u v) case and so it is expected to
 // accept equality across numeric types... but it entitled to raise an
-// error if an argument is non-numeric. I might be mor egenerous on the
+// error if an argument is non-numeric. I might be more generous on the
 // non-numeric cases.
 
 bool numeq2(LispObject a, LispObject b)

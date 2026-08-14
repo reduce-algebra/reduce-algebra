@@ -145,18 +145,18 @@ flag({'onespace,'show_spaces,'wholespace_dim ,
 
 % taken from INEQ
 
-begin
-   scalar !*msg;  % So we do not get a redefinition moan at load time
-   newtok '((!. !.) !*interval!*)
-end;
+% begin
+%    scalar !*msg;  % So we do not get a redefinition moan at load time
+%    newtok '((!. !.) !*interval!*)
+% end;
 
 % first, introduction of interval through the command a .. b
 
-if null get('!*interval!*,'simpfn) then
-<<precedence .., or;
-  algebraic operator ..;
- put('!*interval!*,'prtch,'! !.!.! );
->>;
+% if null get('!*interval!*,'simpfn) then
+% <<precedence .., or;
+%   algebraic operator ..;
+%  put('!*interval!*,'prtch,'! !.!.! );
+% >>;
 
 symbolic procedure mkinterval(u,v);
 % u et v sont des entiers
@@ -257,7 +257,7 @@ symbolic procedure define_spaces u;
 % define_spaces s={ds,euclidean}
 % or
 % define_spaces s={ds,signature=<number>,indexrange=a .. b}
-  if !*onespace 
+  if !*onespace
      then rederr "For the definition of subspaces the switch onespace needs to be set to off (see the documentation for details)."
    else
   if not fixp sgn!* then rederr "set the global sign please" else
@@ -319,9 +319,9 @@ symbolic procedure space_index_range u;
   x:=get_indexrange_space u;
  return
   if null x then nil
-   else if not eqcar(x,'!*interval!*)
+   else if not (eqcar(x,'equal) and eqcar(caddr x,'!*interval!*))
     then rerror(cantensor,4,list("Invalid indexrange ",x," (Forgot space around .. operator?)"))
-   else bubblesort1( caddr cadr x . caddr x . nil)
+   else bubblesort1(cadr caddr x . caddr caddr x . nil)
  end;
 
 symbolic procedure rem_spaces u;
@@ -470,5 +470,3 @@ symbolic procedure eqn_indices(u,v);
 endmodule;
 
 end;
-
-

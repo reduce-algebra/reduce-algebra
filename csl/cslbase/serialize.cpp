@@ -3552,7 +3552,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                     LispObject w1 = Lmd60(nil, def1);
                     errexit();
 #ifdef ARITHLIB
-                    if (!Eqn::op(w, w1)) getsavedef = false;
+                    if (!BoolBinary(Eqn, w, w1)) getsavedef = false;
 #else // ARITHLIB
                     if (!numeq2(w, w1)) getsavedef = false;
 #endif // ARITHLIB

@@ -420,7 +420,7 @@ static LispObject quotbi(LispObject a, LispObject b)
     mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(-1)) return negateb(a);
-// Fixnum division by zero is an error.
+// Division by zero is an error.
     else if (b == fixnum_of_int(0))
         return aerror2("bad arg for quotient", a, b);
 // Beware: quotbn can only take a 31-bit second argument...

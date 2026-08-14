@@ -92,7 +92,7 @@ LispObject N_rationalf(double d)
 // would need adjusting. On 64-bit machined m could always be a fixnum,
 // but perhaps on a 32-bit platform it could end up boxed.
     LispObject mm = make_lisp_integer64(m);
-    if (x >= 0) return LeftShift::op(mm, fixnum_of_int(x));
+    if (x >= 0) return IBinary(LeftShift, mm, fixnum_of_int(x));
     else return make_ratio(mm, N_make_power_of_two(-x));
 }
 
@@ -124,7 +124,7 @@ LispObject N_rationalf128(FLOAT_128 d)
     m = m >> trail;
     x += trail; 
     LispObject mm = make_lisp_integer128(m);
-    if (x >= 0) return LeftShift::op(mm, fixnum_of_int(x));
+    if (x >= 0) return IBinary(LeftShift, mm, fixnum_of_int(x));
     else return make_ratio(mm, N_make_power_of_two(-x));
 }
 
@@ -572,8 +572,8 @@ LispObject Nnext_random(LispObject)
 
 LispObject Nmake_random_state(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    uint64_t seed = 0;
-    if (!is_fixnum(a)) seed = int_of_fixnum(a); 
+    uint64_t seed = a;
+    seed = 0x1234567*seed ^ b;
     arithlib_lowlevel::reseed(seed);
     return nil;
 }
@@ -809,7 +809,7 @@ LispObject Nconjugate(LispObject env, LispObject a)
     if (is_numbers(a) && is_complex(a))
     {   LispObject r = real_part(a),
                    i = imag_part(a);
-        {   i = Minus::op(i);
+        {   i = Unary(Minus, i);
             errexit();
         }
         a = make_complex(r, i);

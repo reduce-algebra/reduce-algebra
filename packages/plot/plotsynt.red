@@ -31,17 +31,17 @@ fluid '(bye!-actions!*);
 
 % Create .. as the infix operator if not yet done.
 
-begin
-   scalar !*msg;  % prevent message  ".. redefined" during load
-   newtok '( (!. !.) !*interval!*)
-end;
+% begin
+%    scalar !*msg;  % prevent message  ".. redefined" during load
+%    newtok '( (!. !.) !*interval!*)
+% end;
 
-if not(gettype '!*interval!* = 'operator) then
-<<
-   precedence .., or;
-   algebraic operator ..;
-   put('!*interval!*,'prtch,'! !.!.! );
->>;
+% if not(gettype '!*interval!* = 'operator) then
+% <<
+%    precedence .., or;
+%    algebraic operator ..;
+%    put('!*interval!*,'prtch,'! !.!.! );
+% >>;
 
 mkop 'point;
 

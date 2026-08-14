@@ -401,7 +401,7 @@ extern LispObject Ldelete(LispObject env, LispObject a, LispObject b);
 extern LispObject Ldifference_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Ldivide_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lelt(LispObject env, LispObject a, LispObject b);
-extern LispObject Leq(LispObject env, LispObject a, LispObject b);
+extern LispObject xLeq(LispObject env, LispObject a, LispObject b);
 extern LispObject Leqcar(LispObject env, LispObject a, LispObject b);
 extern LispObject Lequalcar(LispObject env, LispObject a, LispObject b);
 extern LispObject Leql(LispObject env, LispObject a, LispObject b);

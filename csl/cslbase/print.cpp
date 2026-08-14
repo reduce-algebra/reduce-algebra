@@ -3237,7 +3237,8 @@ restart:
 // least) to guarantee to treat me kindly despite this. But even with that
 // I would be relying on behaviour not blessed by the current C++ standards.
                     if (escaped_printing & escape_checksum)
-                    {   int32_t v = intfloat32_t_val(u);
+                    {   float f = single_float_val(u);
+                        int32_t v = bit_cast<uint32_t>(f);
                         std::snprintf(my_buff, sizeof(my_buff), "@F%.8x", v);
                     }
                     else if ((escaped_printing & escape_hex) || force_hex)
@@ -5513,6 +5514,26 @@ void simple_prin1(FILE* f, LispObject x)
         return;
     }
 #endif // ARITHLIB
+    else if (is_bfloat(x))
+    {   switch (flthdr(x))
+        {
+        case SINGLE_FLOAT_HEADER:
+            std::fprintf(f, "%.6g", single_float_val(x));
+            return;
+        case DOUBLE_FLOAT_HEADER:
+            std::fprintf(f, "%.12g", double_float_val(x));
+            return;
+        case LONG_FLOAT_HEADER:
+            std::fprintf(f, "LONG-FLOAT" /*, long_float_val(x)*/);
+            return;
+        default:
+            char buffer[32];
+            int clen = std::snprintf(buffer, sizeof(buffer), "@%" PRIx64 "@", (int64_t)x);
+            simple_lineend(f, clen);
+            std::fprintf(f, "%s", buffer);
+            return;
+        }
+    }
     else
     {   char buffer[32];
         int clen = std::snprintf(buffer, sizeof(buffer), "@%" PRIx64 "@", (int64_t)x);

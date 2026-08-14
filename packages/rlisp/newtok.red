@@ -42,8 +42,9 @@ global '(preclis!* fixedpreclis!*);
 
 fixedpreclis!* := '(where !*comma!* setq);
 
-preclis!*:= '(or and member memq equal neq eq geq greaterp leq   % not
-              lessp freeof plus difference times quotient expt cons);
+preclis!*:=
+   '(or and member memq equal !*interval!* neq eq geq greaterp leq % not
+      lessp freeof plus difference times quotient expt cons);
 
 deflist ('(
 %  (not not)
@@ -185,8 +186,8 @@ newtok '((!. !* !*)  to);
 newtok '((!. !* !.)  crossprod);
 newtok '((!. !*)     mult);
 newtok '((!. !. !=)  myequal);
-%   newtok '((!. !.) !*interval!*)
-%   newtok '((!. !.) isgr);
+newtok '((!. !.)     !*interval!*);
+%   newtok '((!. !.) isgr);              % renamed to !*interval!*
 newtok '((!. !/)     over);
 newtok '((!. !:)     id!-quotient);
 newtok '((!. !^)     to);
@@ -257,6 +258,10 @@ put('expt,'prtch,'!*!*);   % To ensure that FORTRAN output is correct.
 flag('(difference minus plus setq),'spaced);
 
 flag('(newtok),'eval);
+
+put('!*interval!*,'simpfn,'simpiden);
+put('!*interval!*,'prtch,'!.!.);
+flag('(!*interval!*),'spaced);
 
 endmodule;
 

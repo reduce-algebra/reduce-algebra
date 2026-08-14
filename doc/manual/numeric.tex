@@ -8,6 +8,7 @@
 The \package{NUMERIC} package implements some numerical (approximative)
 algorithms for \REDUCE, based on the \REDUCE\ rounded mode
 arithmetic.\footnote{This code was written by Herbert Melenk.}
+In input of the form \texttt{x=(a~..~b)}, the parentheses may be omitted.
 These algorithms are implemented for standard cases:
 
 \index{Newton's method}
@@ -60,7 +61,8 @@ equation. E.g.
      x= (2.5 .. 3.5)
 \end{verbatim}
 means that the variable x is taken in the range from 2.5 up to
-3.5. Note, that the bounds can be algebraic
+3.5.  The parentheses may be omitted.
+Note, that the bounds can be algebraic
 expressions, which, however, must evaluate to numeric results.
 In cases where an interval is returned as the result, the lower
 and upper bounds can be extracted by the \texttt{part} operator

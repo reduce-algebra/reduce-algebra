@@ -135,7 +135,7 @@ getlogdir() {
     then
       logdir="csl-debug"
     else
-      logdir="csl:${var#${mc}}"
+      logdir="csl:${var#${mc}-}"
     fi
     ;;
   psl=*)
@@ -147,7 +147,7 @@ getlogdir() {
     then
       logdir="psl:installed"
     else
-      logdir="psl:${var#${mc}}"
+      logdir="psl:${var#${mc}-}"
     fi
     ;;
   sbcl=profile)

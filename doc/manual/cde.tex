@@ -989,7 +989,7 @@ linear combination of graded monomials with arbitrary coefficients, then we
 plug it in the equation of the problem and find conditions on the coefficients
 that fulfill the equation.  To construct a good ansatz, it is required to make
 several attempts with different gradings, possibly including independent
-variables, etc.. For this reason, ansatz-constructing functions are especially
+variables, etc. For this reason, ansatz-constructing functions are especially
 verbose.  In order to use such functions they must be initialized with the
 following command:\ttindextype[CDE]{cde\_grading}{operator}
 \hypertarget{operator:CDE_GRADING}{}
@@ -1338,7 +1338,7 @@ a linear function in odd variables) we produce two lists: the list
 similar list \texttt{l\_grad\_odd} for odd variables:
 \begin{verbatim}
 l_grad_var := der_deg_ordering(0,all_parametric_der)$
-l_grad_odd := {1} . 
+l_grad_odd := {1} .
               der_deg_ordering(1,all_parametric_odd)$
 gradmon := graded_mon(1,10,l_grad_var)$
 gradmon := {1} . gradmon$

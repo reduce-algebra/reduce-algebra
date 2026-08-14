@@ -495,7 +495,7 @@ static uint64_t hash_double_vector(uint64_t r, LispObject key)
 
 static uint64_t hash_eql(uint64_t r, LispObject key)
 // Must return same code for two eql numbers. This regime views
-// numbers as equal if they have the same type aned the same value, so
+// numbers as equal if they have the same type and the same value, so
 // apart from an ugly dispatch to cope with all the different sorts of
 // number this is not too bad. Well it is NASTY because Common Lisp would
 // insist that (eql +0.0 -0.0) => nil, and only (= +0.0 -0.0) or
@@ -511,18 +511,25 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
         {   case SINGLE_FLOAT_HEADER:
 // Here I hash single floats as if they had been represented in the way that
 // they would have been on a 64-bit machine. This is so that the values
-// returned by sxhash can be consistent across platforms.
-            {   uint64_t v = intfloat32_t_val(key);
-                v = (v<<32) + XTAG_SFLOAT + XTAG_FLOAT32;
-                UPDATE(r, v);
+// returned by sxhash can be consistent across platforms. So let me spell that
+// out. I will only come across a boxed single float if I am on a 32-bit
+// machine. On a 64-bit one such a number would be represented in immediate
+// form. So here I convert to what that would have been.
+            {   float v = single_float_val(key);
+                uint64_t i = bit_cast<uint32_t>(v);
+                if (v == 0.0) i = 0; // fir the -0.0 issue.
+                i = (i<<32) + XTAG_SFLOAT + XTAG_FLOAT32;
+                UPDATE(r, i);
                 return r;
             }
             default:
             case DOUBLE_FLOAT_HEADER:
-                UPDATE32(r, (uint64_t)h);
-                if (double_float_val(key) == 0.0) UPDATE(r, 0);
-                else UPDATE(r, intfloat64_t_val(key));
-                return r;
+                {   UPDATE32(r, (uint64_t)h);
+                    double v = double_float_val(key);
+                    if (v == 0.0) UPDATE(r, 0);
+                    else UPDATE(r, bit_cast<uint64_t>(v));
+                    return r;
+                }
             case LONG_FLOAT_HEADER:
                 UPDATE32(r, (uint64_t)h);
 // Here +0.0 and -0.0 hash to the same value.
@@ -573,7 +580,8 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
                 return hash_eq(r, key);  // unknown type of number?
         }
     }
-// For non-numbers I hash as for EQ.
+// For non-numbers I hash as for EQ. I suspect that short and sometimes
+// simple floats come here so the -0.0 issue may arise.
     else return hash_eq(r, key);
 }
 

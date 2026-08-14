@@ -253,7 +253,7 @@ double float_of_number(LispObject a)
 // but if I am worried about perfect rounding I may need to review the
 // code in arith-float.cpp again.
             case TYPE_RATNUM:
-                return RawFloat::op(a);
+                return Unary(RawFloat, a);
             default:
 // If the value was non-numeric or a complex number I hand back 0.0,
 // and since I am supposed to have checked the object type already

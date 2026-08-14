@@ -39,43 +39,14 @@
 namespace CSL_LISP
 {
 
-LispObject ModularPlus::op(LispObject a, LispObject b)
-{   return
-        ibinary<LispObject,ModularPlus>("modular-plus", a,
-                b);
-}
-
-LispObject ModularPlus::op(LispObject a, Fixnum b)
-{   return
-        ibinaryR<LispObject,ModularPlus>("modular-plus", a,
-                b);
-}
-
-LispObject ModularPlus::op(LispObject a, uint64_t *b)
-{   return
-        ibinaryR<LispObject,ModularPlus>("modular-plus", a,
-                b);
-}
-
-LispObject ModularPlus::op(Fixnum a, LispObject b)
-{   return
-        ibinaryL<LispObject,ModularPlus>("modular-plus", a,
-                b);
-}
-
-LispObject ModularPlus::op(uint64_t *a, LispObject b)
-{   return
-        ibinaryL<LispObject,ModularPlus>("modular-plus", a,
-                b);
-}
-
 // fixnum + fixnum
 LispObject ModularPlus::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::ModularPlus::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::ModularPlus::op(int_of_fixnum(a),
+                                              int_of_fixnum(b));
 }
 // bignum + fixnum
 LispObject ModularPlus::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::ModularPlus::op(a, b.intval());
+{   return arithlib_lowlevel::ModularPlus::op(a, int_of_fixnum(b));
 }
 // fixnum + bignum
 LispObject ModularPlus::op(Fixnum a, uint64_t *b)
@@ -86,44 +57,15 @@ LispObject ModularPlus::op(uint64_t *a, uint64_t *b)
 {   return arithlib_lowlevel::ModularPlus::op(a, b);
 }
 
-LispObject ModularTimes::op(LispObject a, LispObject b)
-{   return
-        ibinary<LispObject,ModularTimes>("modular-times",
-                a, b);
-}
-
-LispObject ModularTimes::op(LispObject a, Fixnum b)
-{   return
-        ibinaryR<LispObject,ModularTimes>("modular-times",
-                a, b);
-}
-
-LispObject ModularTimes::op(LispObject a, uint64_t *b)
-{   return
-        ibinaryR<LispObject,ModularTimes>("modular-times",
-                a, b);
-}
-
-LispObject ModularTimes::op(Fixnum a, LispObject b)
-{   return
-        ibinaryL<LispObject,ModularTimes>("modular-times",
-                a, b);
-}
-
-LispObject ModularTimes::op(uint64_t *a, LispObject b)
-{   return
-        ibinaryL<LispObject,ModularTimes>("modular-times",
-                a, b);
-}
-
 // fixnum * fixnum
 LispObject ModularTimes::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::ModularTimes::op(a.intval(),
-            b.intval());
+{   return arithlib_lowlevel::ModularTimes::op(int_of_fixnum(a),
+                                               int_of_fixnum(b));
 }
+
 // bignum * fixnum
 LispObject ModularTimes::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::ModularTimes::op(a, b.intval());
+{   return arithlib_lowlevel::ModularTimes::op(a, int_of_fixnum(b));
 }
 // fixnum * bignum
 LispObject ModularTimes::op(Fixnum a, uint64_t *b)
@@ -134,196 +76,80 @@ LispObject ModularTimes::op(uint64_t *a, uint64_t *b)
 {   return arithlib_lowlevel::ModularTimes::op(a, b);
 }
 
-LispObject ModularDifference::op(LispObject a, LispObject b)
-{   return
-        ibinary<LispObject,ModularDifference>("modular-difference",
-                a, b);
-}
-
-LispObject ModularDifference::op(LispObject a, Fixnum b)
-{   return
-        ibinaryR<LispObject,ModularDifference>("modular-difference",
-                a, b);
-}
-
-LispObject ModularDifference::op(LispObject a, uint64_t *b)
-{   return
-        ibinaryR<LispObject,ModularDifference>("modular-difference",
-                a, b);
-}
-
-LispObject ModularDifference::op(Fixnum a, LispObject b)
-{   return
-        ibinaryL<LispObject,ModularDifference>("modular-difference",
-                a, b);
-}
-
-LispObject ModularDifference::op(uint64_t *a, LispObject b)
-{   return
-        ibinaryL<LispObject,ModularDifference>("modular-difference",
-                a, b);
-}
-
 // fixnum - fixnum
 LispObject ModularDifference::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::ModularDifference::op(a.intval(),
-            b.intval());
+{   return arithlib_lowlevel::ModularDifference::op(int_of_fixnum(a), int_of_fixnum(b));
 }
 // bignum - fixnum
 LispObject ModularDifference::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::ModularDifference::op(a, b.intval());
+{   return arithlib_lowlevel::ModularDifference::op(a, int_of_fixnum(b));
 }
 // fixnum - bignum
 LispObject ModularDifference::op(Fixnum a, uint64_t *b)
-{   return arithlib_lowlevel::ModularDifference::op(a.intval(), b);
+{   return arithlib_lowlevel::ModularDifference::op(int_of_fixnum(a), b);
 }
 // bignum - bignum
 LispObject ModularDifference::op(uint64_t *a, uint64_t *b)
 {   return arithlib_lowlevel::ModularDifference::op(a, b);
 }
 
-LispObject ModularQuotient::op(LispObject a, LispObject b)
-{   return
-        ibinary<LispObject,ModularQuotient>("modular-quotient",
-                a, b);
-}
-
-LispObject ModularQuotient::op(LispObject a, Fixnum b)
-{   return
-        ibinaryR<LispObject,ModularQuotient>("modular-quotient",
-                a, b);
-}
-
-LispObject ModularQuotient::op(LispObject a, uint64_t *b)
-{   return
-        ibinaryR<LispObject,ModularQuotient>("modular-quotient",
-                a, b);
-}
-
-LispObject ModularQuotient::op(Fixnum a, LispObject b)
-{   return
-        ibinaryL<LispObject,ModularQuotient>("modular-quotient",
-                a, b);
-}
-
-LispObject ModularQuotient::op(uint64_t *a, LispObject b)
-{   return
-        ibinaryL<LispObject,ModularQuotient>("modular-quotient",
-                a, b);
-}
-
 // fixnum / fixnum
 LispObject ModularQuotient::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::ModularQuotient::op(a.intval(),
-            b.intval());
+{   return arithlib_lowlevel::ModularQuotient::op(int_of_fixnum(a), int_of_fixnum(b));
 }
 // bignum / fixnum
 LispObject ModularQuotient::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::ModularQuotient::op(a, b.intval());
+{   return arithlib_lowlevel::ModularQuotient::op(a, int_of_fixnum(b));
 }
 // fixnum / bignum
 LispObject ModularQuotient::op(Fixnum a, uint64_t *b)
-{   return arithlib_lowlevel::ModularQuotient::op(a.intval(), b);
+{   return arithlib_lowlevel::ModularQuotient::op(int_of_fixnum(a), b);
 }
 // bignum / bignum
 LispObject ModularQuotient::op(uint64_t *a, uint64_t *b)
 {   return arithlib_lowlevel::ModularQuotient::op(a, b);
 }
 
-//LispObject ModularExpt::op(LispObject a, LispObject b)
-//{   return
-//        ibinary<LispObject,ModularExpt>("modular-expt", a,
-//                b);
-//}
-//
-//// fixnum ** n
-//LispObject ModularExpt::op(Fixnum a, Fixnum b)
-//{   return arithlib_lowlevel::ModularExpt::op(a.intval(), b.intval());
-//}
-//// bignum ** n
-//LispObject ModularExpt::op(uint64_t *a, Fixnum b)
-//{   return arithlib_lowlevel::ModularExpt::op(a, b.intval());
-//}
-//
-//// fixnum ** n
-//LispObject ModularExpt::op(Fixnum a, uint64_t *b)
-//{   return arithlib_lowlevel::ModularExpt::op(a.intval(), b);
-//}
-//// bignum ** n
-//LispObject ModularExpt::op(uint64_t *a, uint64_t *b)
-//{   return arithlib_lowlevel::ModularExpt::op(a, b);
-//}
-
-LispObject ModularReciprocal::op(LispObject a)
-{   return
-        iunary<LispObject,ModularReciprocal>("modular-reciprocal",
-                a);
-}
-
 // -fixnum
 LispObject ModularReciprocal::op(Fixnum a)
-{   return arithlib_lowlevel::ModularReciprocal::op(a.intval());
+{   return arithlib_lowlevel::ModularReciprocal::op(int_of_fixnum(a));
 }
 // -bignum
 LispObject ModularReciprocal::op(uint64_t *a)
 {   return arithlib_lowlevel::ModularReciprocal::op(a);
 }
 
-LispObject SafeModularReciprocal::op(LispObject a)
-{   return
-        iunary<LispObject,SafeModularReciprocal>("modular-reciprocal",
-                a);
-}
-
 // -fixnum
 LispObject SafeModularReciprocal::op(Fixnum a)
-{   return arithlib_lowlevel::SafeModularReciprocal::op(a.intval());
+{   return arithlib_lowlevel::SafeModularReciprocal::op(int_of_fixnum(a));
 }
 // -bignum
 LispObject SafeModularReciprocal::op(uint64_t *a)
 {   return arithlib_lowlevel::SafeModularReciprocal::op(a);
 }
 
-LispObject ModularMinus::op(LispObject a)
-{   return
-        iunary<LispObject,ModularMinus>("modular-minus",
-                a);
-}
-
 // -fixnum
 LispObject ModularMinus::op(Fixnum a)
-{   return arithlib_lowlevel::ModularMinus::op(a.intval());
+{   return arithlib_lowlevel::ModularMinus::op(int_of_fixnum(a));
 }
 // -bignum
 LispObject ModularMinus::op(uint64_t *a)
 {   return arithlib_lowlevel::ModularMinus::op(a);
 }
 
-LispObject SetModulus::op(LispObject a)
-{   return
-        iunary<LispObject,SetModulus>("set-modulus", a);
-}
-
-// -fixnum
 LispObject SetModulus::op(Fixnum a)
-{   return arithlib_lowlevel::SetModulus::op(a.intval());
+{   return arithlib_lowlevel::SetModulus::op(int_of_fixnum(a));
 }
-// -bignum
+// bignum
 LispObject SetModulus::op(uint64_t *a)
 {   return arithlib_lowlevel::SetModulus::op(a);
 }
 
-LispObject ModularNumber::op(LispObject a)
-{   return
-        iunary<LispObject,ModularNumber>("modular-number",
-                a);
-}
-
-// -fixnum
+// fixnum
 LispObject ModularNumber::op(Fixnum a)
-{   return arithlib_lowlevel::ModularNumber::op(a.intval());
+{   return arithlib_lowlevel::ModularNumber::op(int_of_fixnum(a));
 }
-// -bignum
+// bignum
 LispObject ModularNumber::op(uint64_t *a)
 {   return arithlib_lowlevel::ModularNumber::op(a);
 }
@@ -344,8 +170,8 @@ LispObject Nmodular_difference(LispObject env, LispObject a, LispObject b)
         if (r < 0) r += current_modulus;
         return fixnum_of_int(r);
     }
-    a = Difference::op(a, b);
-    if (Minusp::op(a)) a = Plus::op(a, large_modulus);
+    a = Binary(Difference, a, b);
+    if (BoolUnary(Minusp, a)) a = Binary(Plus, a, large_modulus);
     return a;
 }
 
@@ -359,16 +185,16 @@ LispObject Nmodular_minus(LispObject env, LispObject a)
         }
         return a;
     }
-    a = Minus::op(a);
-    if (a != fixnum_of_int(0)) a = Difference::op(large_modulus, a);
+    a = Unary(Minus, a);
+    if (a != fixnum_of_int(0)) a = Binary(Difference, large_modulus, a);
     return a;
 }
 
 LispObject Nmodular_number(LispObject env, LispObject a)
 {   SingleValued fn;
     if (!modulus_is_large)
-        return Mod::op(a, fixnum_of_int(current_modulus));
-    return Mod::op(a, large_modulus);
+        return IBinary(Mod, a, fixnum_of_int(current_modulus));
+    return IBinary(Mod, a, large_modulus);
 }
 
 LispObject Nmodular_plus(LispObject env)
@@ -391,8 +217,8 @@ LispObject Nmodular_plus(LispObject env, LispObject a, LispObject b)
         if (r >= current_modulus) r -= current_modulus;
         return fixnum_of_int(r);
     }
-    a = Plus::op(a, b);
-    if (Geq::op(a, large_modulus)) a = Difference::op(a, large_modulus);
+    a = Binary(Plus, a, b);
+    if (BoolBinary(Geq, a, large_modulus)) a = Binary(Difference, a, large_modulus);
     return a;
 }
 
@@ -409,9 +235,9 @@ LispObject Nmodular_plus(LispObject env, LispObject a1, LispObject a2,
         if (r >= current_modulus) r -= current_modulus;
         return fixnum_of_int(r);
     }
-    a1 = Plus::op(Plus::op(a1, a2), a3);
-    if (Geq::op(a1, large_modulus)) a1 = Difference::op(a1, large_modulus);
-    if (Geq::op(a1, large_modulus)) a1 = Difference::op(a1, large_modulus);
+    a1 = Binary(Plus, Binary(Plus, a1, a2), a3);
+    if (BoolBinary(Geq, a1, large_modulus)) a1 = Binary(Difference, a1, large_modulus);
+    if (BoolBinary(Geq, a1, large_modulus)) a1 = Binary(Difference, a1, large_modulus);
     return a1;
 }
 
@@ -435,15 +261,15 @@ LispObject Nmodular_plus(LispObject env, LispObject a1, LispObject a2,
         }
         return fixnum_of_int(r);
     }
-    a1 = Plus::op(Plus::op(a1, a2), a3);
-    if (Geq::op(a1, large_modulus)) a1 = Difference::op(a1, large_modulus);
-    if (Geq::op(a1, large_modulus)) a1 = Difference::op(a1, large_modulus);
+    a1 = Binary(Plus, Binary(Plus, a1, a2), a3);
+    if (BoolBinary(Geq, a1, large_modulus)) a1 = Binary(Difference, a1, large_modulus);
+    if (BoolBinary(Geq, a1, large_modulus)) a1 = Binary(Difference, a1, large_modulus);
     while (a4plus != nil)
     {   LispObject w = car(a4plus);
         a4plus = cdr(a4plus);
-        a1 = Plus::op(a1, w);
-        if (Geq::op(a1, current_modulus))
-            a1 = Difference::op(a1, current_modulus);
+        a1 = Binary(Plus, a1, w);
+        if (BoolBinary(Geq, a1, current_modulus))
+            a1 = Binary(Difference, a1, current_modulus);
     }
     return a1;
 }
@@ -458,7 +284,7 @@ LispObject Nlarge_modular_reciprocal(LispObject n, bool safe=false)
     {   if (safe) return nil;
         else return aerror1("modular-reciprocal", n);
     }
-    b = Mod::op(b, large_modulus);
+    b = IBinary(Mod, b, large_modulus);
     a = large_modulus;
     while (b != fixnum_of_int(1))
     {   LispObject w, t;
@@ -467,17 +293,17 @@ LispObject Nlarge_modular_reciprocal(LispObject n, bool safe=false)
             else return aerror2("non-prime modulus in modular-reciprocal",
                              large_modulus, n);
         }
-        w = Quotient::op(a, b);
+        w = Binary(Quotient, a, b);
         t = b;
-        b = Times::op(b, w);
-        b = Difference::op(a, b);
+        b = Binary(Times, b, w);
+        b = Binary(Difference, a, b);
         a = t;
         t = y;
-        y = Times::op(y, w);
-        y = Difference::op(x, y);
+        y = Binary(Times, y, w);
+        y = Binary(Difference, x, y);
         x = t;
     }
-    y = Mod::op(y, large_modulus);
+    y = IBinary(Mod, y, large_modulus);
     return y;
 }
 
@@ -584,20 +410,20 @@ LispObject Nmodular_times(LispObject env, LispObject a, LispObject b)
             return fixnum_of_int((intptr_t)r);
         }
     }
-    a = Times::op(a, b);
-    return Mod::op(a, large_modulus);
+    a = Binary(Times, a, b);
+    return IBinary(Mod, a, large_modulus);
 }
 
 LispObject Nmodular_times(LispObject env, LispObject a1, LispObject a2,
                                           LispObject a3)
 {   SingleValued fn;
-    return Nmodular_times(Nmodular_times(env, a1, a2), a3);
+    return Nmodular_times(env, Nmodular_times(env, a1, a2), a3);
 }
 
 LispObject Nmodular_times(LispObject env, LispObject a1, LispObject a2,
                                           LispObject a3, LispObject a4plus)
 {   SingleValued fn;
-    a1 = Nmodular_times(Nmodular_times(env, a1, a2), a3);
+    a1 = Nmodular_times(env, Nmodular_times(env, a1, a2), a3);
     while (a4plus != nil)
     {   a1 = Nmodular_times(env, a2, car(a4plus));
         a4plus = cdr(a4plus);
@@ -613,26 +439,26 @@ LispObject Nmodular_quotient(LispObject env, LispObject a, LispObject b)
 
 LispObject Nlarge_modular_expt(LispObject a, int x)
 {   LispObject r, p, w;
-    p = Mod::op(a, large_modulus);
+    p = IBinary(Mod, a, large_modulus);
     errexit();
     while ((x & 1) == 0)
-    {   p = Times::op(p, p);
+    {   p = Binary(Times, p, p);
         errexit();
-        p = Mod::op(p, large_modulus);
+        p = IBinary(Mod, p, large_modulus);
         errexit();
         x = x/2;
     }
     r = p;
     while (x != 1)
-    {   w = Times::op(p, p);
+    {   w = Binary(Times, p, p);
         errexit();
-        p = Mod::op(w, large_modulus);
+        p = IBinary(Mod, w, large_modulus);
         errexit();
         x = x/2;
         if ((x & 1) != 0)
-        {   w = Times::op(r, p);
+        {   w = Binary(Times, r, p);
             errexit();
-            r = Mod::op(w, large_modulus);
+            r = IBinary(Mod, w, large_modulus);
             errexit();
         }
     }
@@ -685,7 +511,7 @@ LispObject Nset_small_modulus(LispObject env, LispObject a)
                      fixnum_of_int(current_modulus);
     if (a==nil) return old;
     else if (!is_fixnum(a))
-    {   if (!is_new_bignum(a) || Minusp::op(a))
+    {   if (!is_new_bignum(a) || BoolUnary(Minusp, a))
             return aerror1("set-small-modulus", a);
         modulus_is_large = true;
         current_modulus = 0;   // should not be referenced.

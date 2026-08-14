@@ -316,7 +316,7 @@ Highest order defined terms may yield some \texttt{letop}.
 \begin{verbatim}
 operator ev;
 
-for i:=1:17 do 
+for i:=1:17 do
     write ev(0,i):=ddt(ddx(0,i))-ddx(ddt(0,i));
 \end{verbatim}
 
@@ -487,7 +487,7 @@ $f=f_xdx+f_tdt$ on $F=0$ such that $\bar d f=0$ on $F=0$. ``Triviality'' of
 conservation laws is a delicate matter, for which we invite the reader to have
 a look in \cite{Krasilshchik:99}.
 
-The files for this example are \texttt{KdV\_loc-cl\_1.red} and 
+The files for this example are \texttt{KdV\_loc-cl\_1.red} and
   \texttt{KdV\_loc-cl\_2.red} and the corresponding results files.
 
 We make use of \texttt{ddx} and \texttt{ddt}, which in the even part are the
@@ -631,7 +631,7 @@ ddx(1,20):=letop$
 In the above definition the first index `1' says that we are dealing with odd
 variables, \texttt{ext} indicates anticommuting variables. Here, \texttt{ext 3}
 is $p_0$, \texttt{ext 4} is $p_x$, \texttt{ext 5} is $p_{xx}$, \dots so
-\texttt{ddx(1,3):=ext 4} indicates $p_x\pd{}{p}$, etc..
+\texttt{ddx(1,3):=ext 4} indicates $p_x\pd{}{p}$, etc.
 
 Now, remembering that the additional equation is again evolutionary, we can get
 rid of $p_t$ by letting it be equal to \texttt{ext 6 + u*ext 4}, as follows:

@@ -508,6 +508,27 @@ inline constexpr LispObject FIXNUM_OF_INT(intptr_t n)
 {   return (static_cast<uintptr_t>(n)<<4) + TAG_FIXNUM;
 }
 
+
+#if __cplusplus >= 202002L        // C++20 (and later) code
+
+// From C++20 onwards right shifts on signed integers behave as arithmetic
+// shifts.
+
+[[gnu::always_inline]]
+inline constexpr intptr_t int_of_fixnum(LispObject x)
+{   return static_cast<intptr_t>(x) >> 4;
+}
+
+// This version is here to return an unsigned integer. If the fixnum is
+// negative this will be a value with its top bit set.
+
+[[gnu::always_inline]]
+inline constexpr uintptr_t uint_of_fixnum(LispObject x)
+{   return static_cast<intptr_t>(x) >> 4;
+}
+
+#else // C++20
+
 // The code here manages to get compiled as a simple arithmetic right shift
 // on enough architectures that I will not worry about writing it as a
 // division. My intent here is (x>>4) with the shift being arithmetic in that
@@ -527,6 +548,8 @@ inline constexpr uintptr_t uint_of_fixnum(LispObject x)
 {   return (static_cast<intptr_t>(x) &
             ~static_cast<intptr_t>(15)) / 16;
 }
+
+#endif // C++20
 
 // The following test will see if an intptr_t value can be reduced to
 // a Lisp fixnum without loss. I think that the logic is pretty clearly
@@ -2488,31 +2511,18 @@ inline LispObject& imag_part(LispObject r)
 {   return ((Complex_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->imag;
 }
 
-typedef struct Single_Float_
-{   Header header;
-    union float_or_int
-    {   float f;
-        int32_t i;
-    } f;
-} Single_Float;
-
 inline float short_float_val(LispObject v)
-{   float_union x;
+{   int32_t x;
 #if SIXTY_FOUT_BIT
-    x.i = v >> 32;
+    x = v >> 32;
 #else // SIXTY_FOUR_BIT
-    x.i = v - XTAG_SFLOAT;
+    x = v - XTAG_SFLOAT;
 #endif // SIXTY_FOUR_BIT
-    std::memmove(&x.f, &x.i, sizeof(x.f));
-    return x.f;
+    return bit_cast<float>(x);
 }
 
 inline float& single_float_val(LispObject v)
-{   return ((Single_Float *)(reinterpret_cast<char*>(v)-TAG_BOXFLOAT))->f.f;
-}
-
-inline int32_t& intfloat32_t_val(LispObject v)
-{   return ((Single_Float *)(reinterpret_cast<char*>(v)-TAG_BOXFLOAT))->f.i;
+{   return *(float *)(reinterpret_cast<char*>(v)-TAG_BOXFLOAT+CELL);
 }
 
 // The structures here are not actually used - because I can not get

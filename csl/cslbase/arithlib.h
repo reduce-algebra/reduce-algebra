@@ -488,6 +488,7 @@ inline bool inChild = false;
 #include <algorithm>
 #include <filesystem>
 
+#include "externs.h"
 #include "bitmaps.h"
 #include "float128.h"
 #include "threadloc.h"
@@ -503,6 +504,7 @@ using namespace fftutils;
 
 inline uint64_t mulcounts[11][11];
 inline size_t biggestM = 0, biggestN = 0;
+inline size_t fix_stays_fix = 0, fix_becomes_big = 0;
 
 inline void initcounts()
 {   for (size_t i=0; i<11; i++)
@@ -510,16 +512,29 @@ inline void initcounts()
 }
 
 inline void showcounts()
-{   std::cout << "    fix     1      2      3      4-6    7-9   10-12";
-    std::cout << "  13-17  18-24  25-35   >35\n";
+{   if ((CSL_LISP::init_flags & CSL_LISP::INIT_VERBOSE) == 0) return;
+    std::cout << "\n    fix      1      2      3    4-6    7-9  10-12";
+    std::cout << "  13-17  18-24  25-35    >35\n";
     for (size_t i=0; i<11; i++)
     {   for (size_t j=0; j<11; j++)
-            std::cout << std::setw(7) << mulcounts[i][j];
+        {   std::cout << std::setw(7);
+            uint64_t N = mulcounts[i][j];
+            if (N >= 1000000)
+            {   std::stringstream tmp;
+                tmp << std::scientific << std::setprecision(2);
+                tmp << (double)N;
+                std::string sss = tmp.str();
+                sss.erase(5, 2);
+                std::cout << sss;
+            }
+            else std::cout << N;
+        }
         std::cout << "\n";
     }
     std::cout << "Biggest M, N = " << biggestM << ", " << biggestN << "\n";
+    std::cout << "Fixnum*Fixnum=>Fixnum: " << fix_stays_fix;
+    std::cout << "   Fixnum*Fixnum=>Bignum: " << fix_becomes_big << "\n";
 }
-
 
 inline size_t bucket(size_t n)
 {   switch (n)
@@ -1892,6 +1907,15 @@ public:
 };
 
 class Times
+{
+public:
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
+};
+
+class ClassicalTimes
 {
 public:
     static std::intptr_t op(SignedDigit, SignedDigit);
@@ -7788,13 +7812,23 @@ inline std::intptr_t Times::op(SignedDigit a, SignedDigit b)
     signedMultiply64(a, b, hi, lo);
     if ((hi==0 && positive(lo)) ||
         (hi==-1 && negative(lo)))
-    {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo)))
-            LIKELY
+    {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo))) LIKELY
+        {
+#ifdef DEBUG
+            fix_stays_fix++;
+#endif
             return intToHandle(static_cast<SignedDigit>(lo));
+        }
+#ifdef DEBUG
+        fix_becomes_big++;
+#endif
         std::uint64_t* r = reserve(1);
         r[0] = lo;
         return confirmSize(r, 1, 1);
     }
+#ifdef DEBUG
+    fix_becomes_big++;
+#endif
     std::uint64_t* r = reserve(2);
     r[0] = lo;
     r[1] = hi;
@@ -7824,6 +7858,63 @@ inline std::intptr_t Times::op(SignedDigit a, std::uint64_t* b)
 inline std::intptr_t Times::op(std::uint64_t* a, SignedDigit b)
 {   return Times::op(b, a);
 }
+
+inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, std::uint64_t* b)
+{   std::size_t lena = numberSize(a);
+    std::size_t lenb = numberSize(b);
+    std::size_t n = lena+lenb;
+    std::uint64_t* p = reserve(n);
+    std::size_t final_n;
+// bigmultiply already tries to detect and handle small cases specially,
+// but it could be that detecting some very small cases here - ie even
+// earlier - would be worthwhile.
+    classicalbigmultiply(a, lena, b, lenb, p, final_n);
+    return confirmSize(p, n, final_n);
+}
+
+inline std::intptr_t ClassicalTimes::op(SignedDigit a, SignedDigit b)
+{   SignedDigit hi;
+    Digit lo;
+    signedMultiply64(a, b, hi, lo);
+    if ((hi==0 && positive(lo)) ||
+        (hi==-1 && negative(lo)))
+    {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo)))
+            LIKELY
+            return intToHandle(static_cast<SignedDigit>(lo));
+        std::uint64_t* r = reserve(1);
+        r[0] = lo;
+        return confirmSize(r, 1, 1);
+    }
+    std::uint64_t* r = reserve(2);
+    r[0] = lo;
+    r[1] = hi;
+    return confirmSize(r, 2, 2);
+}
+
+inline std::intptr_t ClassicalTimes::op(SignedDigit a, std::uint64_t* b)
+{   std::size_t lenb = numberSize(b);
+    std::uint64_t* c = reserve(lenb+1);
+    Digit hi = 0;
+    for (std::size_t i=0; i<lenb; i++)
+        multiply64(a, b[i], hi, hi, c[i]);
+    c[lenb] = hi;
+    if (negative(a))
+    {   Digit carry = 1;
+        for (std::size_t i=0; i<lenb; i++)
+            carry = addWithCarry(c[i+1], ~b[i], carry, c[i+1]);
+    }
+    if (negative(b[lenb-1])) c[lenb] -= a;
+    std::size_t lenc = lenb+1;
+    truncatePositive(c, lenc);
+    truncateNegative(c, lenc);
+    return confirmSize(c, lenb+1, lenc);
+}
+
+inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, SignedDigit b)
+{   return ClassicalTimes::op(b, a);
+}
+
+
 
 // For big multi-digit numbers squaring can be done almost twice as fast
 // as general multiplication.
@@ -10191,6 +10282,7 @@ using arithlib_implementation::Plus;
 using arithlib_implementation::Difference;
 using arithlib_implementation::RevDifference;
 using arithlib_implementation::Times;
+using arithlib_implementation::ClassicalTimes;
 using arithlib_implementation::Quotient;
 using arithlib_implementation::Remainder;
 using arithlib_implementation::Mod;

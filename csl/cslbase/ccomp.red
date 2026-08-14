@@ -3608,7 +3608,7 @@ null (c!:c_entrypoint_list := '(
    (digit                  c!:c_entrypoint "Ldigitp")
    (eject                  c!:c_entrypoint "Leject")
    (endp                   c!:c_entrypoint "Lendp")
-   (eq                     c!:c_entrypoint "Leq")
+   (eq                     c!:c_entrypoint "xLeq")
    (eqcar                  c!:c_entrypoint "Leqcar")
    (eql                    c!:c_entrypoint "Leql")
 %  (error                  c!:c_entrypoint "Lerror")

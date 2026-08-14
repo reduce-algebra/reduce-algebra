@@ -52,20 +52,36 @@ printf "MFLAGS=<%s> MKFLAGS=<%s> MAKECMDGOALS=<%s> args=<%s>\n" \
 # 'foo.o' due to: target does not exist" when you build things for the
 # first time. However "make" on the macintosh does not support this
 # scheme (only a much more verbose "--debug" options that reports on
-# fine-grained activity and is dauntingly bulky). So I apply this everywhere
-# except on the Mac.
+# fine-grained activity and is dauntingly bulky). So I apply when I can.
+# The option was introduced in GNU Make 4.4.
 
-case `uname` in
-*Darwin*)
-  MFLAGS=""
+# I test for the version of "make" that is in use as follows:
+#   If "make -v" does not generate output where trhe first line
+#   starts with "GNU Make " I will think I can not use gnu-make specific
+#   options.
+#   If it does I remove that prefix and expect that what I have is the
+#   version number, such as 3.81
+#   I set up two lines of text, one being that version number and the
+#   other reading "4.4.0" and sort, keeping the first line. That should
+#   (I hope) be the earlier of the two versions. This relies on the "-v"
+#   option to sort to give a "version sort".
+#   If the earlier version is "4.4.1" then the make we are using is at
+#   least that new and I can use "--debug=w". 
+
+ver=`make -v 2>/dev/null | head -1`
+case "$ver" in
+"GNU Make "*)
+  ver=`echo $ver | sed "s/GNU Make //"`
+  w=`printf "4.4.1\n$ver\n" | sort -V | head -1`
+  if test "$w" = "4.4.1"
+  then
+    MFLAGS="--debug=w"
+  else
+    MFLAGS=""
+  fi
   ;;
 *)
-  if test "`uname -ms`" = "Linux i686"
-  then
-    MFLAGS=""
-  else
-    MFLAGS="--debug=w"
-  fi
+  MFLAGS=""
   ;;
 esac
 

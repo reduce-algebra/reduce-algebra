@@ -764,6 +764,12 @@ AC_ARG_ENABLE(debug,
   [enable_debug="no"])
 AC_MSG_RESULT([$enable_debug])
 
+if test "$enable_debug" = "yes"
+then
+# The extra time linking that with-lto brings is not welcome in a debug world.
+  with_lto="no"
+fi
+
 AC_ARG_ENABLE(extreme-debug,
   AS_HELP_STRING([--enable-extreme-debug],
                  [compile for extreme debugging]),
@@ -1327,8 +1333,8 @@ then
   then
     OLDCFLAGS="$CFLAGS"
     OLDLDFLAGS="$LDFLAGS"
-    CFLAGS="$CFLAGS -flto"
-    LDFLAGS="$LDFLAGS -flto"
+    CFLAGS="$CFLAGS -flto=auto"
+    LDFLAGS="$LDFLAGS -flto=auto"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
                                     [[std::printf("\n");]])],
       [CXXFLAGS="$CXXFLAGS -flto"
@@ -1336,7 +1342,7 @@ then
        AC_MSG_NOTICE(Will use link-time optimisation and -O3)],
       [CFLAGS="$OLDCFLAGS"
        LDFLAGS="$OLDLDFLAGS"
-       AC_MSG_NOTICE(-flto not available)])
+       AC_MSG_NOTICE(-flto=auto not available)])
   fi
 fi
 
