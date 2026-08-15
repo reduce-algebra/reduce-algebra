@@ -789,11 +789,11 @@ put('gamma,'fancy!-functionsymbol,71);  % big Gamma
 put('!~,'fancy!-functionsymbol,34);     % forall
 put('!~,'fancy!-symbol!-length,8);
 
- % arbint, arbcomplex.
-put('arbcomplex,'fancy!-functionsymbol,227);
-put('arbint,'fancy!-functionsymbol,226);
+% arbint, arbcomplex.
+%put('arbcomplex,'fancy!-functionsymbol,227);
+%put('arbint,'fancy!-functionsymbol,226);
 
-flag('(arbcomplex arbint),'print!-indexed);
+%flag('(arbcomplex arbint),'print!-indexed);
 
 % flag('(delta),'print!-indexed);         % Dirac delta symbol.
 % David Hartley voted against..

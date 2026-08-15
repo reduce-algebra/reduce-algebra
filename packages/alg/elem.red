@@ -1178,7 +1178,7 @@ let trig_imag_rules;
 % exp rule corrected and others generalised to work for negative n
 % by AB March 2015 (negative n used to give error)
 
-operator arbint;
+%operator arbint;   % now in simp.red
 
 let {
  cos(~n*pi*arbint(~i) + ~~x) => cos((if evenp n then 0 else 1)*pi*arbint(i) + x)

@@ -139,7 +139,7 @@ algebraic procedure solve_lin_rec(rec,ic);
 
      for i:=1:j do  if coeff(gsol,lisp list(c, i)) = list(gsol) then nil
         else gsol:=
-           sub(lisp list(c, i) = lisp caaar makearbcomplex(),gsol);
+           sub(lisp list(c, i) = lisp mvar makearbcomplex(),gsol);
      return gsol
    end;
 

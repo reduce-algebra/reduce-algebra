@@ -1737,6 +1737,19 @@ symbolic procedure simplambda u;
 
 put('lambda, 'simpfn, 'simplambda);
 
+symbolic procedure simp!-arbcomplex u;
+    simpiden u where dmode!*=nil;
+
+put('arbcomplex, 'simpfn, 'simp!-arbcomplex);
+
+put('arbint, 'simpfn, 'simp!-arbcomplex);
+
+put('arbrat, 'simpfn, 'simp!-arbcomplex); % Arbitrary rational operator
+
+put('arbreal, 'simpfn, 'simp!-arbcomplex);
+
+flag('(arbcomplex arbint arbrat arbreal), 'full);
+
 
 global '(domainlist!*);
 

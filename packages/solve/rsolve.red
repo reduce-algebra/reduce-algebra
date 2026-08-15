@@ -86,10 +86,10 @@ create!-package('(rsolve),'(solve));
 
 switch multiplicities;
 
-global '(!!arbint multiplicities!*);
+global '(multiplicities!*);
 share multiplicities!*;
 
-put('arbrat,'simpfn,'simpiden);         % Arbitrary rational operator
+%put('arbrat,'simpfn,'simpiden);         % Arbitrary rational operator
 
 fluid '(!*i_solve);
 
@@ -175,8 +175,8 @@ symbolic procedure r_solve!-eval1(f, var, mul, noeqs);
             else if null f then <<      % degenerate equation
                multiplicities!* := makelist nil;
                return makelist { makeqn!-maybe(var,
-                  {if !*i_solve then 'arbint else 'arbrat,
-                     !!arbint:=!!arbint+1}, noeqs) } >>;
+                  if !*i_solve then makearbint() else makearbrat(),
+ 		  noeqs) } >>;
       if atom f then return makelist nil;
       u := f;
       while not atom u do

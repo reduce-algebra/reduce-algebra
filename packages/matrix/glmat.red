@@ -31,9 +31,9 @@ module glmat; % Routines for inverting matrices and finding eigen-values
 
 fluid '(!*cramer !*factor !*gcd !*sqfree !*sub2 kord!*);
 
-global '(!!arbint);
+%global '(!!arbint);
 
-if null !!arbint then !!arbint := 0;
+%if null !!arbint then !!arbint := 0;
 
 switch cramer;
 
@@ -47,7 +47,7 @@ put('cramer,'simpfg,
 
 % Done this way since it's also defined in the solve1 module.
 
-deflist('((arbcomplex simpiden)),'simpfn);
+%-deflist('((arbcomplex simpiden)),'simpfn);
 
 symbolic procedure clnrsolve(u,v);
    % Interface to matrix package.

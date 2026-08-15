@@ -539,7 +539,7 @@ put('solve,'psopfn,'solveeval);
 switch allbranch=on,arbvars=on,fullroots,multiplicities,nonlnr,solvesingular=on;
 %      varopt;
 
-put('arbint,'simpfn,'simpiden);
+% put('arbint,'simpfn,'simpiden);
 
 % Since the following three switches are set on in the solve module,
 % they must first load that module if they are initially turned off.
@@ -550,9 +550,9 @@ put('allbranch,'simpfg,'((nil (load!-package 'solve))));
 
 put('solvesingular,'simpfg,'((nil (load!-package 'solve))));
 
-defautoload(simp!-arbcomplex,solve);
+%defautoload(simp!-arbcomplex,solve);
 
-deflist('((arbcomplex simp!-arbcomplex)),'simpfn);
+%deflist('((arbcomplex simp!-arbcomplex)),'simpfn);
 
 
 % Ineq package entry point
