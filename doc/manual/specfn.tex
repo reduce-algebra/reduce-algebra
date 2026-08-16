@@ -583,8 +583,9 @@ There are no rules for differentiation or integration of $\zeta$.
 \ttindex{dilog}
 The dilogarithm function $Li_2(z)$ is defined by
 \[\mathrm{Li}_2(z) \equiv \sum_{n=1}^\infty \frac{z^n}{n^2} =
--\int_0^z \frac{\log(1-t)}{t}\, \mathrm{d}t\]
-and represented by the unary function \f{dilog}.
+  -\int_0^z \frac{\log(1-t)}{t}\, \mathrm{d}t.\]
+For historical reasons the unary function \f{dilog} is defined as
+\[  \int_1^z \frac{\log(t)}{1-t}\, \mathrm{d}t = \mathrm{Li}_2(1-v).\] 
 
 \ttindex{Polylog}
 The polylogarithm function $Li_s(z)$ is defined by
