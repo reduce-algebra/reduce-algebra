@@ -292,12 +292,13 @@ chapter on \href{https://dlmf.nist.gov/8.2#i}{Incomplete Gamma functions}:
   \gamma(a, z) = \int_0^z e^{-t}t^{a-1}\, \mathrm{d}t, \\
   \Gamma(a, z) = \int_z^{\infty} e^{-t}t^{a-1}\, \mathrm{d}t.
 \end{align*}
-called (unnormalised) lower and upper incomplete gamma function, respectively.
+called (unnormalised or unregularized) lower and upper incomplete
+gamma function, respectively.
 $\gamma(a,z)$ is provided by the binary function \f{m\_gamma}, $\Gamma(a,z)$ by
 the two argument version of the function \f{Gamma}.
 
-The normalised incomplete gamma function $P(a,z)$ is provided by the binary
-function \f{iGamma} and is defined as
+The normalised (or regularized) incomplete gamma function $P(a,z)$ is
+provided by the binary function \f{iGamma} and is defined as
 \[P(a,z) = \frac{\gamma(a,z)}{\Gamma(a)}.\]
 
 \subsubsection{The Beta Functions}
@@ -313,7 +314,8 @@ function\cite{AbramowitzStegun:72} and is defined by
 It is represented by the binary function \f{Beta}.
 
 \index{Incomplete Beta functions}
-The unnormalised and nomalised incomplete Beta funtions are defined by
+The unnormalised (or unregularized) and nomalised (or regularized)
+incomplete Beta funtions are defined by
 \begin{align*}
 B_x(a,b) & = \int_0^x t^a (1-t)^b\, \mathrm{d}t,\\
 I_x(a,b) & = \frac{B_x(a,b)}{B(a,b)}
@@ -585,7 +587,7 @@ The dilogarithm function $Li_2(z)$ is defined by
 \[\mathrm{Li}_2(z) \equiv \sum_{n=1}^\infty \frac{z^n}{n^2} =
   -\int_0^z \frac{\log(1-t)}{t}\, \mathrm{d}t.\]
 For historical reasons the unary function \f{dilog} is defined as
-\[  \int_1^z \frac{\log(t)}{1-t}\, \mathrm{d}t = \mathrm{Li}_2(1-v).\] 
+\[  \int_1^z \frac{\log(t)}{1-t}\, \mathrm{d}t = \mathrm{Li}_2(1-v).\]
 
 \ttindex{Polylog}
 The polylogarithm function $Li_s(z)$ is defined by
