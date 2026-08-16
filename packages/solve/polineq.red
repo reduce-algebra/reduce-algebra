@@ -32,9 +32,9 @@ module polineq; % Solve univariate polynomial inequality systems;
 % Method: compute the real roots of all numerators and denominators
 % and check the intervals between them.
 
-global '(!!arbint);
+%global '(!!arbint);
 
-if not get('arbreal,'simpfn) then mkop 'arbreal;
+%if not get('arbreal,'simpfn) then mkop 'arbreal;
 
 symbolic procedure polineqeval u;
  begin scalar w,x;
@@ -70,7 +70,7 @@ symbolic procedure polineq0(ul,x);
    if ul then go to loop;
    for each y in append(n,d) do if not(y member b) then b:=y.b;
    if null b then return if polineqcheck(wl,{x . 0})
-         then {'list,{'equal,x,{'arbreal,!!arbint := !!arbint+1}}}
+         then {'list,{'equal,x,makearbreal()}}
                    else '(list);
     b:=sort(b,'evallessp);
       % Create the intervals;

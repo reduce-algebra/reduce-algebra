@@ -55,20 +55,20 @@ flag('(multiplicities!* assumptions requirements),
 %                       this.  With the decompose code, this should
 %                       only occur with expressions of form x^n + c.
 
+%put('arbint,'simpfn,'simpiden);
+
+%put('arbint,'cmpxsplitfn,'simp);
+
 algebraic operator one_of;
-
-put('arbint,'simpfn,'simpiden);
-
-put('arbint,'cmpxsplitfn,'simp);
 
 % algebraic operator arbreal;
 
 symbolic operator expand_cases;
 
-symbolic procedure simp!-arbcomplex u;
-    simpiden('arbcomplex . u) where dmode!*=nil;
-
-deflist('((arbcomplex simp!-arbcomplex)),'simpfn);
+%symbolic procedure simp!-arbcomplex u;
+%    simpiden('arbcomplex . u) where dmode!*=nil;
+%
+%deflist('((arbcomplex simp!-arbcomplex)),'simpfn);
 
 
 % ***** Utility Functions *****

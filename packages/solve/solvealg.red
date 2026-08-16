@@ -647,7 +647,8 @@ symbolic procedure solvealgtrig(k,x);
     m:={'!&alpha.(!&alpha:=cadr k),
               '!&beta.!&beta,
               '!&loc.solve!-gensym(),
-              '!&arb.{'arbint,!!arbint:=!!arbint+1},
+              '!&arb.makearbint(),
+%              '!&arb.{'arbint,!!arbint:=!!arbint+1},
               '!&x.x,
               '!&!&.s};
     nv:=sublis!-pat(m,nv);
@@ -699,7 +700,8 @@ symbolic procedure solvealghyp(k,x);
     m:=list('!&alpha.(!&alpha:=cadr k),
             '!&beta.!&beta,
             '!&loc.solve!-gensym(),
-            '!&arb.{'arbint,!!arbint:=!!arbint+1},
+            '!&arb.makearbint(),
+%            '!&arb.{'arbint,!!arbint:=!!arbint+1},
             '!&x.x,
             '!&!&.s);
     nv:=sublis!-pat(m,nv);

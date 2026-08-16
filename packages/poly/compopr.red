@@ -1067,6 +1067,10 @@ end;
 
 put('arbint,'cmpxsplitfn,'simp);
 
+put('arbrat,'cmpxsplitfn,'simp);
+
+put('arbreal,'cmpxsplitfn,'simp);
+
 
 endmodule;
 

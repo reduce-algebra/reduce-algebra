@@ -34,7 +34,7 @@ fluid '(!*allbranch !*arbvars !*exp !*ezgcd !*fullroots !*limitedfactors
 % NB: !*!*norootvarrenamep!*!* is internal to this module, and should
 %     *never* be changed by a user.
 
-global '(!!arbint multiplicities!* assumptions requirements);
+global '(multiplicities!* assumptions requirements);
 
 switch allbranch=on,arbvars=on,fullroots,multiplicities,solvesingular=on;
        % nonlnr.
@@ -518,9 +518,7 @@ symbolic procedure solveexpt u;
       return if freeof(car u,var)    % c**(...) = b.
     then if null numr lincoeff then nil else
         <<if !*allbranch
-                 then <<!!arbint:=!!arbint+1;
-            c:=list('times,2,'i,'pi,
-                list('arbint,!!arbint))>>
+                 then c:=list('times,2,'i,'pi,makearbint())
                 else c:=0;
                 solvesq(subtrsq(simp!* cadr u,
                      quotsq(addsq(solveexpt!-logterm lincoeff,
@@ -535,10 +533,11 @@ symbolic procedure solveexpt u;
            then solve!-fractional!-power(u,lincoeff,var,mu)
           else <<   %  (...)**c = b.
                  if !*allbranch
-                   then <<!!arbint:=!!arbint+1;
+                   then <<%!!arbint:=!!arbint+1;
                           c := mkexp list('quotient,
                                           list('times,2,'pi,
-                                               list('arbint,!!arbint)),
+					       makearbint()),
+                          %                     list('arbint,!!arbint)),
                                                cadr u)>>
 %                         c := mkexp list('times,
 %                                         list('arbreal,!!arbint))>>
@@ -579,7 +578,8 @@ symbolic procedure solveinvpat(u,op);
    begin scalar c,f;
       f:=get(op,'solveinvpat);
       if smemq('arbint,f) then f:=subst(
-         if !*allbranch then list('arbint,!!arbint:=!!arbint+1) else 0,
+         if !*allbranch then makearbint() else 0,
+%         if !*allbranch then list('arbint,!!arbint:=!!arbint+1) else 0,
           'arbint,f);
       if not !*allbranch then f:={car f};
       return
@@ -798,13 +798,15 @@ symbolic procedure nonlnr(ex,varlis);
 
 % ***** Support for one_of and root_of *****.
 
-symbolic procedure mkrootsoftag();
-   begin scalar name; integer n;
- loop: n:=n #+1;
-    name := intern compress append('(t a g _),explode n);
-    if flagp(name,'used!*) then go to loop;
-    return reval name;
-  end;
+%% Moved to rtools/general.red
+
+%symbolic procedure mkrootsoftag();
+%   begin scalar name; integer n;
+% loop: n:=n #+1;
+%    name := intern compress append('(t a g _),explode n);
+%    if flagp(name,'used!*) then go to loop;
+%    return reval name;
+%  end;
 
 symbolic procedure mkrootsof(e1,var,mu);
    begin scalar x,name;

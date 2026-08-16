@@ -2586,8 +2586,7 @@ $
             else <<
   s:=nil;
   for each w in wl do <<
-   !!arbint:=add1 !!arbint;
-   s:=cons({'EQUAL,w,{'ARBCOMPLEX,!!arbint}},s)
+   s:=cons({'EQUAL,w,mvar makearbcomplex()},s)
   >>$
   s:=cons('LIST,s)
  >>          else <<

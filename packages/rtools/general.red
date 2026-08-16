@@ -45,6 +45,27 @@ symbolic procedure makearbcomplex;
       return ans
    end;
 
+symbolic procedure makearbint;
+   begin scalar ans;
+      !!arbint := !!arbint+1;
+      ans := list('arbint, !!arbint);
+      return ans
+   end;
+
+symbolic procedure makearbrat;
+   begin scalar ans;
+      !!arbint := !!arbint+1;
+      ans := list('arbrat, !!arbint);
+      return ans
+   end;
+
+symbolic procedure makearbreal;
+   begin scalar ans;
+      !!arbint := !!arbint+1;
+      ans := list('arbreal, !!arbint);
+      return ans
+   end;
+
 symbolic inline procedure nth(u,n);
    car pnth(u,n);
 
@@ -459,6 +480,18 @@ symbolic inline procedure oddp n;
   not evenp n;
 
 #endif   % oddp
+
+% Support for tags in one_of, root_of, plus_or_minus, root_of_unity
+
+symbolic procedure mkrootsoftag;
+   begin scalar name; integer n;
+      repeat <<
+         n := n #+ 1;
+         name := intern compress append('(t a g _), explode n);
+      >> until not flagp(name, 'used!*);
+      return reval name
+   end;
+
 
 endmodule;
 
