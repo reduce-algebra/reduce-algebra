@@ -158,7 +158,8 @@ num_min(fktn, x1=-1.2, x2=1, iterations=200);
 \ttindextype[NUMERIC]{num\_solve}{operator}
 \hypertarget{operator:NUM_SOLVE}{}
 
-An adaptively damped Newton iteration is used to find
+In most cases,
+an adaptively damped Newton iteration is used to find
 an approximative zero of a function, a function vector or the solution
 of an equation or an equation system. Equations are
 internally converted to a difference of lhs and rhs such
@@ -167,8 +168,14 @@ must have continuous derivatives for all variables.
 A starting point for the iteration can be given. If not given,
 random values are taken instead. If the number of
 forms is not equal to the number of variables, the
-Newton method cannot be applied. Then the minimum
-of the sum of absolute squares is located instead.
+Newton method cannot be applied.
+
+%% Then the minimum of the sum of absolute squares is located instead.
+%% FJW: Currently, this code is commented out.  Not sure why!
+
+However, if only one variable is involved and the starting point is
+specified as an interval containing the required solution, then the
+secant method is used.
 
 With \texttt{on} \sw{complex} solutions with imaginary parts can be
 found, if either the expression(s) or the starting point
@@ -177,39 +184,39 @@ contain a nonzero imaginary part.
 Syntax:
 
 \begin{description}
-\item[\texttt{num\_solve}] \texttt{(}\meta{exp$_1$}\texttt{,}\meta{var$_1$}[=val$_1$][,accuracy=a][,iterations=i])
+\item[num\_solve]  $(exp_1, var_1[=val_1][,accuracy=a][,iterations=i])$
 
-or
+\item[num\_solve]  $(exp_1, var_1[=val_1~..~val_2][,accuracy=a][,iterations=i])$
 
 \item[num\_solve]  $(\{exp_1,\ldots,exp_n\},
    var_1[=val_1],\ldots,var_n[=val_n]$
 \item[\ \ \ \ \ \ \ \ ]$[,accuracy=a][,iterations=i])$
 
-or
-
 \item[num\_solve]  $(\{exp_1,\ldots,exp_n\},
    \{var_1[=val_1],\ldots,var_n[=val_n]\}$
 \item[\ \ \ \ \ \ \ \ ]$[,accuracy=a][,iterations=i])$
 
-where $exp_1, \ldots,exp_n$ are function expressions,
+where $exp_1, \ldots, exp_n$ are function expressions,
 
       $var_1, \ldots, var_n$ are the variables,
 
       $val_1, \ldots, val_n$ are optional start values.
-
-\texttt{num\_solve} tries to find a zero/solution of the expression(s).
-Result is a list of equations, where the variables are
-equated to the coordinates of the result point.
-
-\hypertarget{reserved:JACOBIAN}{}
-The Jacobian matrix is stored as a side effect in the shared
-variable \texttt{jacobian}\ttindextype[NUMERIC]{jacobian}{shared variable}.
-
 \end{description}
 
-Example:
+\texttt{num\_solve} tries to find a zero/solution of the
+expression(s).  The result is a list of equations, where the variables
+are equated to the coordinates of the result point.
+
+\hypertarget{reserved:JACOBIAN}{}
+The Jacobian matrix is stored as a side effect in the shared variable
+\texttt{jacobian}\ttindextype[NUMERIC]{jacobian}{shared variable}.
+This applies even to a univariate problem, which is treated as a
+special case of the multivariate problem (when the Newton method is
+used).
+
+Examples:
 \begin{verbatim}
-    num_solve({sin x=cos y, x + y = 1},{x=1,y=1});
+    num_solve({sin x = cos y, x + y = 1}, {x = 1, y = 1});
 
     {x= - 1.85619449019,y=2.85619449019}
 
@@ -218,6 +225,10 @@ Example:
     [cos(x)  sin(y)]
     [              ]
     [  1       1   ]
+
+    num_solve(tan x = 1, x = 0 .. 1);
+
+    {x=0.785398163397}
 \end{verbatim}
 
 \section{Integrals}
