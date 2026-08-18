@@ -584,15 +584,7 @@ algebraic procedure newplus_or_minus;
 
 algebraic procedure newroot_of_unity_tag;
    %% symbolic mkid('tag_, !!root_of_unity := add1 !!root_of_unity)$
-   % The following code is essentially the same as symbolic procedure
-   % mkrootsoftag() defined in module solve/solve1.
-   symbolic begin scalar name; integer n;
-      repeat <<
-         n := n #+ 1;
-         name := intern compress append('(t a g _), explode n);
-      >> until not flagp(name, 'used!*);
-      return reval name
-   end;
+   symbolic mkrootsoftag();
 
 define expand_plus_or_minus = expand_roots_of_unity$
 define expand_root_of_unity = expand_roots_of_unity$
