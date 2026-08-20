@@ -357,7 +357,7 @@ entry_point1 entries_tableio[] =
 static LispObject Lreclaim_trap(LispObject env, LispObject a)
 {   SingleValued fn;
     int64_t previous = reclaim_trap_count;
-    if (!is_fixnum(a)) return aerror1("reclaim-trap", a);
+    if (!is_fixnum(a)) return aerror("reclaim-trap", a);
     reclaim_trap_count = int_of_fixnum(a);
     term_printf("+++ Reclaim trap set at %d, previous = %d\n",
                 reclaim_trap_count, previous);
@@ -367,7 +367,7 @@ static LispObject Lreclaim_trap(LispObject env, LispObject a)
 static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
 {   SingleValued fn;
     intptr_t previous = reclaim_stack_limit;
-    if (!is_fixnum(a)) return aerror1("reclaim-stack-limit", a);
+    if (!is_fixnum(a)) return aerror("reclaim-stack-limit", a);
     reclaim_stack_limit = int_of_fixnum(a);
     term_printf("+++ Reclaim stack limit set at %d, previous = %d\n",
                 reclaim_stack_limit, previous);
@@ -439,7 +439,7 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
         !is_string_header(vechdr(name)) ||
         !is_fixnum(lc1) ||
         !is_fixnum(lc2) ||
-        !is_fixnum(lc3)) return aerror1("check-c-code", name);
+        !is_fixnum(lc3)) return aerror("check-c-code", name);
     c1 = int_of_fixnum(lc1);
     c2 = int_of_fixnum(lc2);
     c3 = int_of_fixnum(lc3);
@@ -451,17 +451,17 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
     {   if ((p = find_checksum(sname, len,
                                setup_tables[i])) != nullptr) break;
     }
-    if (p == nullptr) return aerror1("check-c-code", name);
+    if (p == nullptr) return aerror("check-c-code", name);
 
     if (std::sscanf(p, "%ld %ld %ld", &x1, &x2, &x3) != 3)
-        return aerror1("check-c-code", name);
+        return aerror("check-c-code", name);
     if (c1 == x1 && c2 == x2 && c3 == x3) return nil;
     err_printf("\n+++++ C code and environment files not compatible\n");
     err_printf("please check, re-compile and try again\n");
     err_printf("versions from %.*s.c %lx %lx %lx\n", len, sname, x1, x2,
                x3);
     err_printf("version passed here %lx %lx %lx\n", c1, c2, c3);
-    return aerror1("check-c-code", name);
+    return aerror("check-c-code", name);
 }
 
 LispObject Luse_version_time(LispObject env, LispObject a1)

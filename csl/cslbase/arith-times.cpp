@@ -792,7 +792,7 @@ LispObject match_type(LispObject in, int value)
                 case LONG_FLOAT_HEADER:
                     return make_boxfloat128((FLOAT_128)(int64_t)value);
                 default:
-                    return aerror1("Invalid component in complex number", in);
+                    return aerror("Invalid component in complex number", in);
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(in)))
@@ -802,7 +802,7 @@ LispObject match_type(LispObject in, int value)
                     return make_ratio(fixnum_of_int(value), fixnum_of_int(1));
                 case TYPE_COMPLEX_NUM:
                 default:
-                    return aerror1("Invalid component in complex number", in);
+                    return aerror("Invalid component in complex number", in);
             }
         default:
         case TAG_FIXNUM:
@@ -864,7 +864,7 @@ LispObject Expt::op(Fixnum a, std::uint64_t* b)
             return fixnum_of_int(1);
         default:
             if (arithlib_lowlevel::Minusp::op(b)) return fixnum_of_int(0);
-            return aerror1("bad argument for expt",
+            return aerror("bad argument for expt",
                 reinterpret_cast<LispObject>(
                     TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
     }
@@ -873,7 +873,7 @@ LispObject Expt::op(Fixnum a, std::uint64_t* b)
 // bignum ** bignum
 LispObject Expt::op(std::uint64_t* a, std::uint64_t* b)
 {   if (arithlib_lowlevel::Minusp::op(b)) return fixnum_of_int(0);
-    return aerror1("bad argument for expt",
+    return aerror("bad argument for expt",
         reinterpret_cast<LispObject>(
             TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
@@ -892,7 +892,7 @@ LispObject Expt::op(Cpx a, std::uint64_t* b)
     if (BoolUnary(Zerop, a.real_part()) &&
         BoolUnary(Zerop, a.imag_part()))
     {   if (Minusp::op(b))
-            return aerror1("bad argument for expt",
+            return aerror("bad argument for expt",
                 reinterpret_cast<LispObject>(
                     TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
         else return a.value();  // (0+0i)^N
@@ -927,35 +927,35 @@ LispObject Expt::op(Cpx a, std::uint64_t* b)
                                         Unary(Minus, a.imag_part()));
         }
     }
-    return aerror1("bad argument for expt",
+    return aerror("bad argument for expt",
         reinterpret_cast<LispObject>(
             TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
 
 // short float ** bignum
 LispObject Expt::op(SFlt a, std::uint64_t* b)
-{   return aerror1("bad argument for expt",
+{   return aerror("bad argument for expt",
         reinterpret_cast<LispObject>(
             TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
 
 // single float ** bignum
 LispObject Expt::op(Flt a, std::uint64_t* b)
-{   return aerror1("bad argument for expt",
+{   return aerror("bad argument for expt",
         reinterpret_cast<LispObject>(
             TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
 
 // double float ** bignum
 LispObject Expt::op(double a, std::uint64_t* b)
-{   return aerror1("bad argument for expt",
+{   return aerror("bad argument for expt",
         reinterpret_cast<LispObject>(
             TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
 
 // long float ** bignum
 LispObject Expt::op(FLOAT_128 a, std::uint64_t* b)
-{   return aerror1("bad argument for expt",
+{   return aerror("bad argument for expt",
         reinterpret_cast<LispObject>(
             TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
 }
@@ -3207,7 +3207,7 @@ LispObject Square::op( FLOAT_128 a)
 
 LispObject Reciprocal::op(Fixnum a)
 {   switch (int_of_fixnum(a))
-    {   case 0:  return aerror1("bad argument for reciprocal", a);
+    {   case 0:  return aerror("bad argument for reciprocal", a);
         case 1:  return fixnum_of_int(1);
         case -1: return fixnum_of_int(-1);
         default: return fixnum_of_int(0);
@@ -3220,7 +3220,7 @@ LispObject Reciprocal::op(std::uint64_t* a)
 
 LispObject Reciprocal::op(Rat a)
 {   LispObject p = a.numerator(), q = a.denominator();
-    if (Zerop::op(a)) return aerror1("bad argument for reciprocal", a.value());
+    if (Zerop::op(a)) return aerror("bad argument for reciprocal", a.value());
     else if (BoolUnary(Minusp, p))
     {   p = Unary(Minus, p);
         q = Unary(Minus, q);
@@ -3232,7 +3232,7 @@ LispObject Reciprocal::op(Cpx a)
 {   // 1/(x + iy) = (x - iy)/(x^2+y^2)
     LispObject x = a.real_part(), y = a.imag_part();
     LispObject d = Binary(Plus, Unary(Square, x), Unary(Square, y));
-    if (BoolUnary(Zerop, d)) return aerror1("bad argument for reciprocal", a.value());
+    if (BoolUnary(Zerop, d)) return aerror("bad argument for reciprocal", a.value());
 // If the complex value has both components integers I will upgrade
 // them to floating point.
     bool promote = false;
@@ -5781,7 +5781,7 @@ LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2)
         b = c;
     }
     if (a != r && !equal_fn(a, r))
-        aerror2("gcd failure", cons(a1, a2), cons(r, a));
+        aerror("gcd failure", cons(a1, a2), cons(r, a));
     return r;
 #else // CHECK_TIMES
     return IBinary(Gcdn, a1, a2);
@@ -5878,9 +5878,9 @@ LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
         LispObject xa1 = Binary(Plus, Binary(Times, a2, quo), rem);
         LispObject xa1a = Binary(Plus, Binary(ClassicalTimes, a2, quo), rem);
         if (xa1 != xa1a && !equal_fn(xa1, xa1a))
-            aerror2("multiplication failure", cons(a2, quo), cons(xa1, xa1a));
+            aerror("multiplication failure", cons(a2, quo), cons(xa1, xa1a));
         if (a1 != xa1 && !equal_fn(a1, xa1))
-            aerror2("quotient failure", cons(a1, a2), w);
+            aerror("quotient failure", cons(a1, a2), w);
         if (rem == fixnum_of_int(0)) return w; // zero remainder OK
         if (BoolUnary(Minusp, a1))
         {   if (BoolUnary(Minusp, a2))
@@ -5905,7 +5905,7 @@ LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
             if (BoolUnary(Plusp, rem) &&
                 BoolBinary(Lessp, rem, a2)) return w;
         }
-        aerror2("quotient failure", cons(a1, a2), w);
+        aerror("quotient failure", cons(a1, a2), w);
     }
 #endif // CHECK_TIMES
     return Binary(Divide, a1, a2);

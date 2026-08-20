@@ -118,7 +118,7 @@ static LispObject makenum(LispObject a, int32_t n)
                     return a;
                 }
             }
-            return aerror1("bad arg for makenumber",  a);
+            return aerror("bad arg for makenumber",  a);
         }
         case TAG_BOXFLOAT:
             restype = floatWant(flthdr(a));
@@ -127,7 +127,7 @@ static LispObject makenum(LispObject a, int32_t n)
                     float128_of_number(fixnum_of_int(n)));
             return make_boxfloat(static_cast<double>(n), restype);
         default:
-            return aerror1("bad arg for makenumber",  a);
+            return aerror("bad arg for makenumber",  a);
     }
 }
 
@@ -192,7 +192,7 @@ static LispObject CSLpowi(LispObject a, uint64_t n)
 
 LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!is_number(a) || !is_number(b)) return aerror2("expt", a, b);
+    if (!is_number(a) || !is_number(b)) return aerror("expt", a, b);
     double d, e;
     FloatType restype, n;
     int64_t nn;
@@ -210,7 +210,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         {   nn = int_of_fixnum(b);
             switch (int_of_fixnum(a))
             {   case 1:  return a;
-                case 0:  if (nn < 0) return aerror2("expt", a, b);
+                case 0:  if (nn < 0) return aerror("expt", a, b);
                     // In Common Lisp (expt 0 0) is defined to be 0
                     else if (nn == 0) return fixnum_of_int(1);
                     else return a;
@@ -222,7 +222,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         {   switch (int_of_fixnum(a))
             {   case 1:  return a;
                 case 0:  nn = bignum_digits(b)[(bignum_length(b)-CELL-4)/4];
-                    if (nn <= 0) return aerror2("expt", a, b);
+                    if (nn <= 0) return aerror("expt", a, b);
                     else return a;
                 case -1: nn = bignum_digits(b)[0];
                     if (nn & 1) return a;
@@ -307,7 +307,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
     e = float_of_number(b);
 // If I have a real number raised to a negative real power I will treat
 // it as an error.
-    if (d < 0.0) return aerror2("expt", a, b);
+    if (d < 0.0) return aerror("expt", a, b);
     d = CSLpow(d, e);
     a = make_boxfloat(d, restype);
     return a;
@@ -481,12 +481,12 @@ static LispObject Lisqrt(LispObject, LispObject a)
                     d = float_of_number(a);
                     break;
                 default:
-                    return aerror1("bad arg for isqrt",  a);
+                    return aerror("bad arg for isqrt",  a);
             }
             break;
         }
         default:
-            return aerror1("bad arg for isqrt",  a);
+            return aerror("bad arg for isqrt",  a);
     }
     d = std::sqrt(d);
 // /* This is not anything like good enough yet
@@ -529,14 +529,14 @@ LispObject Labsval(LispObject env, LispObject a)
                     return a;
                 }
                 default:
-                    return aerror1("bad arg for abs",  a);
+                    return aerror("bad arg for abs",  a);
             }
             break;
         }
         case TAG_BOXFLOAT:
             break;
         default:
-            return aerror1("bad arg for abs",  a);
+            return aerror("bad arg for abs",  a);
     }
     if (minusp(a)) a = negate(a);
     return a;
@@ -632,7 +632,7 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
                     return make_complex_float(c2, a);
                 }
                 default:
-                    return aerror1("bad arg for trig function",  a);
+                    return aerror("bad arg for trig function",  a);
             }
             break;
         }
@@ -648,7 +648,7 @@ static LispObject trigfn(unsigned int which_one, LispObject a)
             d = float_of_number(a);
             break;
         default:
-            return aerror1("bad arg for trig function",  a);
+            return aerror("bad arg for trig function",  a);
     }
     {   double (*rl)(double) = function_table[which_one].f64;
         double r = (*rl)(d);

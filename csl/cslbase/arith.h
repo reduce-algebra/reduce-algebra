@@ -704,7 +704,7 @@ stgclass type name(LispObject a1)                                   \
             return name##_c(a1);                                    \
         default:                                                    \
             return static_cast<type>(                               \
-                aerror1("bad arg for " #name, a1));                 \
+                aerror("bad arg for " #name, a1));                 \
         }                                                           \
     case TAG_BOXFLOAT:                                              \
         switch (flthdr(a1))                                         \
@@ -717,11 +717,11 @@ stgclass type name(LispObject a1)                                   \
             return name##_l(a1);                                    \
         default:                                                    \
             return static_cast<type>(                               \
-                aerror1("bad arg for " #name, a1));                 \
+                aerror("bad arg for " #name, a1));                 \
         }                                                           \
     default:                                                        \
         return static_cast<type>(                                   \
-            aerror1("bad arg for " #name, a1));                     \
+            aerror("bad arg for " #name, a1));                     \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
         if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0)            \
             return name##_f(a1);                                    \
@@ -747,7 +747,7 @@ stgclass type name(LispObject a1, LispObject a2)                    \
             return name##_c(a1, a2);                                \
         default:                                                    \
             return static_cast<type>(                               \
-                aerror2("bad arg for " #rawname, a1, a2));          \
+                aerror("bad arg for " #rawname, a1, a2));          \
         }                                                           \
     case TAG_BOXFLOAT:                                              \
         switch (flthdr(a2))                                         \
@@ -760,11 +760,11 @@ stgclass type name(LispObject a1, LispObject a2)                    \
             return name##_l(a1, a2);                                \
         default:                                                    \
             return static_cast<type>(                               \
-                aerror2("bad arg for " #rawname, a1, a2));          \
+                aerror("bad arg for " #rawname, a1, a2));          \
         }                                                           \
     default:                                                        \
         return static_cast<type>(                                   \
-            aerror2("bad arg for " #rawname, a1, a2));              \
+            aerror("bad arg for " #rawname, a1, a2));              \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
         if (SIXTY_FOUR_BIT && ((a2 & XTAG_FLOAT32) != 0))           \
             return name##_f(a1, a2);                                \
@@ -804,7 +804,7 @@ stgclass type name(LispObject a1, LispObject a2)                    \
             return name##_c(a1, a2);                                \
         default:                                                    \
             return static_cast<type>(                               \
-                aerror2("bad arg for " #name, a1, a2));             \
+                aerror("bad arg for " #name, a1, a2));             \
         }                                                           \
     case TAG_BOXFLOAT:                                              \
         switch (flthdr(a1))                                         \
@@ -817,11 +817,11 @@ stgclass type name(LispObject a1, LispObject a2)                    \
             return name##_l(a1, a2);                                \
         default:                                                    \
             return static_cast<type>(                               \
-                aerror2("bad arg for " #name, a1, a2));             \
+                aerror("bad arg for " #name, a1, a2));             \
         }                                                           \
     default:                                                        \
         return static_cast<type>(                                   \
-            aerror2("bad arg for " #name, a1, a2));                 \
+            aerror("bad arg for " #name, a1, a2));                 \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
         if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0))           \
             return name##_f(a1, a2);                                \

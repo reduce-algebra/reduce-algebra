@@ -166,12 +166,16 @@ extern LispObject toofew();
 extern LispObject toomany();
 
 extern LispObject aerror(const char *s);         // Called from C not Lisp
-extern LispObject aerror0(const char *s);
-extern LispObject aerror1(const char *s, LispObject a);
-extern LispObject aerror2(const char *s, LispObject a, LispObject b);
-extern LispObject aerror2(const char *s, const char *a, LispObject b);
-extern LispObject aerror3(const char *s,
-                          LispObject a, LispObject b, LispObject c);
+extern LispObject aerror(const char *s,
+                         LispObject a);
+extern LispObject aerror(const char *s,
+                         LispObject a, LispObject b);
+extern LispObject aerror(const char *s,
+                         LispObject a, LispObject b, LispObject c);
+extern LispObject aerror(const char *s1, const char *s2,
+                         LispObject b);
+extern LispObject aerror(const char *s1, const char *s2,
+                         LispObject a, LispObject b);
 
 [[noreturn]] extern void fatal_error(int code, ...);
 

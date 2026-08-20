@@ -131,7 +131,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // arithmetic this sets a limit on the largest representable integer such
 // that it will have between 19 and 20 million (decimal) digits.
     if (allocSize > vecDataSize)
-        return aerror1("request for basic vector too big",
+        return aerror("request for basic vector too big",
                        fixnum_of_int(allocSize/CELL-1));
 // Note that allocSize has been rounded up suitably.
     LispObject r = getNBytes(allocSize);
@@ -201,7 +201,7 @@ LispObject reduce_basic_vector_size(LispObject v, size_t len)
 LispObject borrow_basic_vector(int tag, int type, size_t size)
 {   size_t allocSize = (size_t)doubleword_align_up(size);
     if (allocSize > (CSL_PAGE_SIZE - 32))
-        return aerror1("request for basic vector too big",
+        return aerror("request for basic vector too big",
                        fixnum_of_int(allocSize/CELL-1));
     LispObject r = borrowNBytes(allocSize);
     *(reinterpret_cast<Header*>(r)) = type + (size << (Tw+5)) + TAG_HDR_IMMED;

@@ -9740,7 +9740,7 @@ inline std::intptr_t SetModulus::op(SignedDigit n)
 {   using namespace CSL_LISP;
     if (n < 1)
         UNLIKELY
-        return (std::intptr_t)aerror1("Invalid arg to set-modulus",
+        return (std::intptr_t)aerror("Invalid arg to set-modulus",
                                       intToHandle(n));
     std::intptr_t r = value_of_currentModulus();
     smallModulus = n;
@@ -9753,7 +9753,7 @@ inline std::intptr_t SetModulus::op(std::uint64_t* n)
 {   using namespace CSL_LISP;
     if (!Plusp::op(n))
         UNLIKELY
-        return (std::intptr_t)aerror1("Invalid arg to set-modulus",
+        return (std::intptr_t)aerror("Invalid arg to set-modulus",
                                       vectorToHandle(n));
     std::intptr_t r = value_of_currentModulus();
     std::size_t lenn = numberSize(n);
@@ -9815,7 +9815,7 @@ inline std::intptr_t ModularPlus::op(SignedDigit a, std::uint64_t* b)
     using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror("bad arg for modular-plus",
                                       vectorToHandle(b));
     std::intptr_t r = Plus::op(a, b);
     if (op_dispatch1<Geq,bool>(r, largeModulus()))
@@ -9836,7 +9836,7 @@ inline std::intptr_t ModularPlus::op(std::uint64_t* a,
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror("bad arg for modular-plus",
                                       vectorToHandle(a));
     std::intptr_t r = Plus::op(a, b);
     if (op_dispatch1<Geq, bool>(r, largeModulus()))
@@ -9858,7 +9858,7 @@ inline std::intptr_t ModularDifference::op(SignedDigit a, std::uint64_t* b)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror("bad arg for modular-plus",
                                       vectorToHandle(b));
     std::intptr_t r = Difference::op(b, a);
     std::intptr_t r1 =
@@ -9871,7 +9871,7 @@ inline std::intptr_t ModularDifference::op(std::uint64_t* a, SignedDigit b)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror("bad arg for modular-plus",
                                       vectorToHandle(a));
     return Difference::op(a, b);
 }
@@ -9880,7 +9880,7 @@ inline std::intptr_t ModularDifference::op(std::uint64_t* a, std::uint64_t* b)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror("bad arg for modular-plus",
                                       vectorToHandle(a));
     if (Geq::op(a, b)) return Difference::op(a, b);
     std::intptr_t r = Difference::op(b, a);
@@ -10010,7 +10010,7 @@ inline std::intptr_t ModularMinus::op(std::uint64_t* a)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad argument for modular-minus",
+        return (std::intptr_t)aerror("bad argument for modular-minus",
                                       vectorToHandle(a));
     return Difference::op(largeModulus(), a);
 }
@@ -10053,7 +10053,7 @@ inline std::intptr_t ModularReciprocal::op(SignedDigit aa)
 {   using namespace CSL_LISP;
     if (aa <= 0)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
+        return (std::intptr_t)aerror("bad argument to modular-reciprocal",
                                       intToHandle(aa));
     else if (modulusSize == modulus_big)
         return generalModularReciprocal(intToHandle(aa));
@@ -10065,7 +10065,7 @@ inline std::intptr_t ModularReciprocal::op(SignedDigit aa)
     {   Digit w, t;
         if (b == 0)
             UNLIKELY
-            return (std::intptr_t)aerror2(
+            return (std::intptr_t)aerror(
                     "non-prime modulus in modular-reciprocal",
                     intToHandle(smallModulus),
                     intToHandle(aa));
@@ -10089,7 +10089,7 @@ inline std::intptr_t SafeModularReciprocal::op(SignedDigit aa)
 {   using namespace CSL_LISP;
     if (aa <= 0)
         UNLIKELY
-        return (std::intptr_t)aerror1(
+        return (std::intptr_t)aerror(
             "bad argument to safe-modular-reciprocal",
             intToHandle(aa));
     else if (modulusSize == modulus_big)

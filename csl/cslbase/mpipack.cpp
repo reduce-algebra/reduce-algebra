@@ -87,7 +87,7 @@ static void default_check_buffer(int n)
         mpi_pack_buffer = reinterpret_cast<char*>(std)::realloc(
                               mpi_pack_buffer, mpi_pack_size);
         if (mpi_pack_buffer == 0)
-            return aerror0("Not enough memory for MPI buffer.");
+            return aerror("Not enough memory for MPI buffer.");
     }
 }
 static char* mpi_buffer_bottom;
@@ -101,7 +101,7 @@ static void scatter_check_buffer(int n)
         mpi_buffer_bottom = reinterpret_cast<char*>(std)::realloc(
                                 mpi_buffer_bottom, mpi_real_size);
         if (mpi_buffer_bottom == 0)
-            return aerror0("Not enough memory for MPI buffer.");
+            return aerror("Not enough memory for MPI buffer.");
         mpi_pack_buffer = mpi_buffer_bottom + mpi_pack_offset;
     }
 }

@@ -1398,9 +1398,9 @@ LispObject Lerror_0(LispObject env)
 
 LispObject Lmake_special(LispObject, LispObject a)
 {   SingleValued fn;
-    if (!symbolp(a)) return aerror1("make-special", a);
+    if (!symbolp(a)) return aerror("make-special", a);
     if ((qheader(a) & SYM_GLOBAL_VAR) != 0)
-        return aerror1(
+        return aerror(
             "Variable is global or keyword so can not become fluid", a);
     qheader(a) = qheader(a) | SYM_SPECIAL_VAR;
     return a;
@@ -1410,7 +1410,7 @@ LispObject Lmake_global(LispObject, LispObject a)
 {   SingleValued fn;
     if (!symbolp(a)) return aerror("make-global");
     if ((qheader(a) & SYM_SPECIAL_VAR) != 0)
-        return aerror1(
+        return aerror(
             "Variable is fluid or keyword so can not become global", a);
     qheader(a) = qheader(a) | SYM_GLOBAL_VAR;
     return a;
@@ -1420,7 +1420,7 @@ LispObject Lmake_keyword(LispObject, LispObject a)
 {   SingleValued fn;
     if (!symbolp(a)) return aerror("make-keyword");
     if ((qheader(a) & (SYM_GLOBAL_VAR | SYM_SPECIAL_VAR)) != 0)
-        return aerror1(
+        return aerror(
             "Variable is fluid or global so can not become keyword", a);
     qheader(a) = qheader(a) | (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
     qvalue(a) = a;   // value is itself.
@@ -1509,7 +1509,7 @@ LispObject Lsymbol_value(LispObject, LispObject a)
 LispObject Lset(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     if (!symbolp(a) || a == nil || a == lisp_true)
-        return aerror1("set", a);
+        return aerror("set", a);
     qvalue(a) = b;
     return b;
 }
@@ -2050,7 +2050,7 @@ static LispObject Ldatelessp(LispObject env, LispObject a,
     int wa, wb;
     if (!is_vector(a) || !is_vector(b) ||
         vechdr(a) != STR24HDR ||
-        vechdr(b) != STR24HDR) return aerror2("datelessp", a, b);
+        vechdr(b) != STR24HDR) return aerror("datelessp", a, b);
     aa = reinterpret_cast<char *>(a) + (CELL - TAG_VECTOR);
     bb = reinterpret_cast<char *>(b) + (CELL - TAG_VECTOR);
 // Layout is eg. "Wed May 12 15:50:23 1993"
@@ -2411,7 +2411,7 @@ static bool dumparg(int i, LispObject type, LispObject value)
         return false;
     }
     else
-    {   aerror2("call-foreign-function", type, value);
+    {   aerror("call-foreign-function", type, value);
         return true;
     }
 }
@@ -2419,7 +2419,7 @@ static bool dumparg(int i, LispObject type, LispObject value)
 LispObject callf_n(LispObject fun, LispObject args)
 {   SingleValued fn;
     if (Lencapsulatedp(nil, fun) == nil)
-        return aerror1("call-foreign-function", fun);
+        return aerror("call-foreign-function", fun);
     void_function *f = reinterpret_cast<void_function *>(
                            reinterpret_cast<uintptr_t>(extract_pointer(fun)));
     LispObject currenttype = nil;
@@ -2436,7 +2436,7 @@ LispObject callf_n(LispObject fun, LispObject args)
 // Perhaps the next argument is just a type name. I should never have two
 // type names in a row.
         else if (is_symbol(a))
-        {   if (currenttype != nil) return aerror1("call-foreign-function", a);
+        {   if (currenttype != nil) return aerror("call-foreign-function", a);
             currenttype = a;
         }
 // The next argument is a value, which will either use the type specified
@@ -2448,7 +2448,7 @@ LispObject callf_n(LispObject fun, LispObject args)
             currenttype = nil;
         }
 // Other cases are invalid.
-        else return aerror1("call-foreign-function", a);
+        else return aerror("call-foreign-function", a);
     }
 // The last item in the argument list may have been a type-name, in which
 // case it indicates a return type. If that was not provided then the
@@ -2499,7 +2499,7 @@ LispObject callf_n(LispObject fun, LispObject args)
         ffi_call(&cif, f, &strres, vargs);
         return make_string(reinterpret_cast<const char *>(strres));
     }
-    else return aerror1("call-foreign-function", currenttype);
+    else return aerror("call-foreign-function", currenttype);
 }
 
 LispObject Lcallf_4up(LispObject env, LispObject a1, LispObject a2,

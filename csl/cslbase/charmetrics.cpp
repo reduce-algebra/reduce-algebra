@@ -218,16 +218,16 @@ namespace CSL_LISP
 #define MAXMATHSYMS 200
 
 #else // CREATE
-#ifdef TEST
+#ifdef TEST_CHARMETRICS
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
 #include <cinttypes>
 #include "cuckoo.h"
-#else // TEST
+#else // TEST_CHARMETRICS
 #include "headers.h"
 #include "cuckoo.h"
-#endif // TEST
+#endif // TEST_CHARMETRICS
 
 #include "charmetrics.h"  // A file I must have created earlier
 #endif // CREATE
@@ -2596,8 +2596,9 @@ const uint32_t *character_extension(int code)
     return nullptr;
 }
 
-#ifdef TEST
-// If TEST is defined then this code will try some very minimal tests.
+#ifdef TEST_CHARMETRICS
+// If TEST_CHARMETRICS is defined then this code will try some very
+// minimal tests.
 // Expected output is
 //
 //    Hash table size was 10057
@@ -2727,7 +2728,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-#endif // TEST
+#endif // TEST_CHARMETRICS
 #endif // CREATE
 
 } // end namespace

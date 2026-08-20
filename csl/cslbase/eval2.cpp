@@ -169,7 +169,7 @@ LispObject apply(LispObject fn, LispObject args,
             std::snprintf(message, sizeof(message),
                           "Bad function called from %s: ",
                           name_of_caller);
-            return aerror1(message, fn);
+            return aerror(message, fn);
         }
 // apply_lambda() is the key part of calls to interpreted functions.
         if ((def = car(fn)) == lambda)
@@ -203,7 +203,7 @@ LispObject apply(LispObject fn, LispObject args,
     std::snprintf(message, sizeof(message),
                   "Bad function called from %s: ",
                   name_of_caller);
-    return aerror1(message, fn);
+    return aerror(message, fn);
 }
 
 
@@ -396,7 +396,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
                 errexit();
                 env1 = q; // Locally special
             }
-            else if (h & SYM_GLOBAL_VAR) return aerror1("Attempt to bind", q);
+            else if (h & SYM_GLOBAL_VAR) return aerror("Attempt to bind", q);
             else if (h & SYM_SPECIAL_VAR) specenv = cons(z, specenv);
             else
             {   LispObject w;
@@ -812,7 +812,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
                 if (z != nil)
                     z = eval(z, env);
                 if (h & SYM_GLOBAL_VAR)
-                    return aerror1("attempt to bind", q);
+                    return aerror("attempt to bind", q);
                 if (h & SYM_SPECIAL_VAR)
                 {   p = z;
                     z = acons(q, qvalue(q), specenv);

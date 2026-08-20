@@ -33,7 +33,7 @@
 
 // $Id$
 
-#include "arith-headers.h"
+#include "headers.h"
 
 namespace CSL_LISP
 {
@@ -412,7 +412,7 @@ LispObject Plus::op(FLOAT_128 a, FLOAT_128 b)
 // rational - fixnum
 LispObject Difference::op(Rat a, Fixnum b)
 {   return make_ratio(Binary(Difference, a.numerator(),
-                                     Binary(Times, a.denominator(), b)),
+                                         Binary(Times, a.denominator(), b)),
                       a.denominator());
 }
 
@@ -455,7 +455,7 @@ LispObject Difference::op(FLOAT_128 a, Fixnum b)
 // rational - bignum
 LispObject Difference::op(Rat a, uint64_t *b)
 {   return make_ratio(Binary(Difference, a.numerator(),
-                                     Binary(Times, a.denominator(), bignum_value(b))),
+                                         Binary(Times, a.denominator(), bignum_value(b))),
                       a.denominator());
 }
 
@@ -884,20 +884,20 @@ LispObject Nplus(LispObject env, LispObject a1)
 
 LispObject Nplus(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Binary(Plus, a1, a2);
+    return G<gPlus>(a1, a2);
 }
 
 LispObject Nplus(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
-    return Binary(Plus, Binary(Plus, a1, a2), a3);
+    return G<gPlus>(G<gPlus>(a1, a2), a3);
 }
 
 LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
                                  LispObject a3, LispObject a4plus)
 {   SingleValued fn;
-    LispObject w = Binary(Plus, Binary(Plus, a1, a2), a3);
+    LispObject w = G<gPlus>(G<gPlus>(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Binary(Plus, w, car(a4plus));
+    {   w = G<gPlus>(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
     return w;
@@ -905,7 +905,7 @@ LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Ndifference(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Binary(Difference, a1, a2);
+    return G<gDifference>(a1, a2);
 }
 
 LispObject Nadd1(LispObject env, LispObject a1)
@@ -947,20 +947,20 @@ LispObject Niplus(LispObject env, LispObject a1)
 
 LispObject Niplus(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Binary(Plus, a1, a2);
+    return G<gPlus>(a1, a2);
 }
 
 LispObject Niplus(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
-    return Binary(Plus, Binary(Plus, a1, a2), a3);
+    return G<gPlus>(G<gPlus>(a1, a2), a3);
 }
 
 LispObject Niplus(LispObject env, LispObject a1, LispObject a2,
                                   LispObject a3, LispObject a4plus)
 {   SingleValued fn;
-    LispObject w = Binary(Plus, Binary(Plus, a1, a2), a3);
+    LispObject w = G<gPlus>(G<gPlus>(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Binary(Plus, w, car(a4plus));
+    {   w = G<gPlus>(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
     return w;
@@ -968,7 +968,7 @@ LispObject Niplus(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Nidifference(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Binary(Difference, a1, a2);
+    return G<gDifference>(a1, a2);
 }
 
 LispObject Niadd1(LispObject env, LispObject a1)

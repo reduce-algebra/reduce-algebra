@@ -391,7 +391,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
     {   var = car(args);
         if (!is_symbol(var) || var == nil || var == lisp_true ||
             (qheader(var) & SYM_KEYWORD_VAR) == SYM_KEYWORD_VAR)
-        {   return aerror1("setq (bad variable)", var);
+        {   return aerror("setq (bad variable)", var);
         }
         args = cdr(args);
         if (consp(args))
@@ -1128,21 +1128,21 @@ static LispObject when_fn(LispObject args, LispObject env)
 }
 
 LispObject bad_specialfn_0(LispObject env)
-{   return aerror1("bad special function", env);
+{   return aerror("bad special function", env);
 }
 
 LispObject bad_specialfn_2(LispObject env, LispObject a, LispObject b)
-{   return aerror1("bad special function", env);
+{   return aerror("bad special function", env);
 }
 
 LispObject bad_specialfn_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
-{   return aerror1("bad special function", env);
+{   return aerror("bad special function", env);
 }
 
 LispObject bad_specialfn_4up(LispObject env, LispObject a, LispObject b,
                        LispObject c, LispObject d)
-{   return aerror1("bad special function", env);
+{   return aerror("bad special function", env);
 }
 
 setup_type const eval3_setup[] =

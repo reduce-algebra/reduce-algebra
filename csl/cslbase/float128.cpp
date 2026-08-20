@@ -33,7 +33,7 @@
  *************************************************************************/
 
 
-#ifdef TEST
+#ifdef STANDALONE_TEST_FLOAT128
 #include "float128.h"
 #else
 #include "headers.h"
@@ -1956,7 +1956,7 @@ COMPLEX160 COMPLEX160::conj() const
 #endif // NEED_FLOAT160
 
 
-#ifdef TEST
+#ifdef STANDALONE_TEST_FLOAT128
 
 // This test code is temporary and will vary depending on what I am checking!
 
@@ -2094,6 +2094,6 @@ int main()
     return 0;
 }
 
-#endif // TEST
+#endif // STANDALONE_TEST_FLOAT128
 
 // end of float128.cpp

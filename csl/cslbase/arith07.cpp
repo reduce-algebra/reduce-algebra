@@ -200,7 +200,7 @@ LispObject negate(LispObject a)
                     return make_complex(r, i);
                 }
                 default:
-                    return aerror1("bad arg for minus",  a);
+                    return aerror("bad arg for minus",  a);
             }
         }
         case TAG_BOXFLOAT:
@@ -217,7 +217,7 @@ LispObject negate(LispObject a)
                 }
             }
         default:
-            return aerror1("bad arg for minus",  a);
+            return aerror("bad arg for minus",  a);
     }
 }
 

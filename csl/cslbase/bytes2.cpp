@@ -184,7 +184,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // nice recovery actions, so I can use the procedure unwind_stack that
 // pops items one at a time looking for those to get back to the state I
 // need to be in.
-// If I call aerror or aerror1 (etc) inside this try block it merely jumps
+// If I call aerror or aerror (etc) inside this try block it merely jumps
 // to the end of it.
 
 #ifdef DEBUG
@@ -1581,7 +1581,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // Check if tag is one we will handle.
                 for (r2 = catch_tags; r2!=nil; r2=cdr(r2))
                     if (r1 == car(r2)) break;
-                if (r2==nil) return aerror1("throw: tag not found", r1);
+                if (r2==nil) return aerror("throw: tag not found", r1);
                 catch_tags = cdr(r2);
                 exit_tag = r2;       // cdr() will go back in catch_tags
                 exit_value = A_reg;

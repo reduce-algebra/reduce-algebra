@@ -354,7 +354,7 @@ arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
 		arith-elem.cpp arith-misc.cpp \
-		multiply.cpp fftmul.cpp
+		multiply.cpp fftmul.cpp generic.cpp
 ARITHDEP=arithlib.cpp
 else !arithlib
 arith_sources =

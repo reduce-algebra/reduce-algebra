@@ -6,7 +6,7 @@
 // Check if tag is one we will handle.
                 for (r2 = catch_tags; r2!=nil; r2=cdr(r2))
                     if (r1 == car(r2)) break;
-                if (r2==nil) return aerror1("throw: tag not found", r1);
+                if (r2==nil) return aerror("throw: tag not found", r1);
                 catch_tags = cdr(r2);
                 exit_tag = r2;       // cdr() will go back in catch_tags
                 exit_value = A_reg;

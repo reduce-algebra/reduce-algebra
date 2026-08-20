@@ -41,7 +41,7 @@
 //     for complex numbers with integer or rational components where
 //     division is not naturally even roughly exact.
 
-#include "arith-headers.h"
+#include "headers.h"
 
 namespace CSL_LISP
 {
@@ -313,7 +313,7 @@ LispObject Float::op(Rat a)
 }
 
 LispObject Float::op(Cpx a)
-{   return aerror1("bad argument for float", a.value());
+{   return aerror("bad argument for float", a.value());
 }
 
 LispObject Float::op(SFlt a)
@@ -729,7 +729,7 @@ float RawFloat32::op(Rat a)
 }
 
 float RawFloat32::op(Cpx a)
-{   aerror1("bad argument for float32", a.value());
+{   aerror("bad argument for float32", a.value());
     return 0.0;
 }
 
@@ -768,7 +768,7 @@ double RawFloat::op(Rat a)
 }
 
 double RawFloat::op(Cpx a)
-{   aerror1("bad argument for float", a.value());
+{   aerror("bad argument for float", a.value());
     return 0.0;
 }
 
@@ -806,7 +806,7 @@ FLOAT_128 Float128::op(Rat a)
 }
 
 FLOAT_128 Float128::op(Cpx a)
-{   aerror1("bad argument for float128", a.value());
+{   aerror("bad argument for float128", a.value());
     return LF_C(0.0);
 }
 
@@ -842,7 +842,7 @@ LispObject Fix::op(Rat a)
 }
 
 LispObject Fix::op(Cpx a)
-{   return aerror1("bad argument for fix", a.value());
+{   return aerror("bad argument for fix", a.value());
 }
 
 LispObject Fix::op(SFlt a)
@@ -875,7 +875,7 @@ LispObject Truncate::op(Rat a)
 }
 
 LispObject Truncate::op(Cpx a)
-{   return aerror1("bad argument for trunc", a.value());
+{   return aerror("bad argument for trunc", a.value());
 }
 
 LispObject Truncate::op(SFlt a)
@@ -909,7 +909,7 @@ LispObject Floor::op(Rat a)
 }
 
 LispObject Floor::op(Cpx a)
-{   return aerror1("bad argument for floor", a.value());
+{   return aerror("bad argument for floor", a.value());
 }
 
 LispObject Floor::op(SFlt a)
@@ -943,7 +943,7 @@ LispObject Ceiling::op(Rat a)
 }
 
 LispObject Ceiling::op(Cpx a)
-{   return aerror1("bad argument for ceiling", a.value());
+{   return aerror("bad argument for ceiling", a.value());
 }
 
 LispObject Ceiling::op(SFlt a)
@@ -976,7 +976,7 @@ LispObject Ftruncate::op(Rat a)
 }
 
 LispObject Ftruncate::op(Cpx a)
-{   return aerror1("bad argument for trunc", a.value());
+{   return aerror("bad argument for trunc", a.value());
 }
 
 LispObject Ftruncate::op(SFlt a)
@@ -1008,7 +1008,7 @@ LispObject Ffloor::op(Rat a)
 }
 
 LispObject Ffloor::op(Cpx a)
-{   return aerror1("bad argument for floor", a.value());
+{   return aerror("bad argument for floor", a.value());
 }
 
 LispObject Ffloor::op(SFlt a)
@@ -1040,7 +1040,7 @@ LispObject Fceiling::op(Rat a)
 }
 
 LispObject Fceiling::op(Cpx a)
-{   return aerror1("bad argument for ceiling", a.value());
+{   return aerror("bad argument for ceiling", a.value());
 }
 
 LispObject Fceiling::op(SFlt a)
@@ -1086,7 +1086,7 @@ LispObject Frexp::op(Rat a)
 }
 
 LispObject Frexp::op(Cpx a)
-{   return aerror1("bad argument for frexp", a.value());
+{   return aerror("bad argument for frexp", a.value());
 }
 
 LispObject Frexp::op(SFlt a)
@@ -1131,7 +1131,7 @@ double Frexp::op(Rat a, int64_t &xx)
 }
 
 double Frexp::op(Cpx a, int64_t &xx)
-{   aerror1("bad argument for frexp", a.value());
+{   aerror("bad argument for frexp", a.value());
     return 0.0;
 }
 
@@ -1176,7 +1176,7 @@ LispObject Frexp128::op(Rat a)
 }
 
 LispObject Frexp128::op(Cpx a)
-{   return aerror1("bad argument for frexp", a.value());
+{   return aerror("bad argument for frexp", a.value());
 }
 
 LispObject Frexp128::op(SFlt a)
@@ -1221,7 +1221,7 @@ FLOAT_128 Frexp128::op(Rat a, int64_t &xx)
 }
 
 FLOAT_128 Frexp128::op(Cpx a, int64_t &xx)
-{   aerror1("bad argument for frexp", a.value());
+{   aerror("bad argument for frexp", a.value());
     return LF_C(0.0);
 }
 
@@ -1265,7 +1265,7 @@ LispObject Sqrt::op(Rat a)
 }
 
 LispObject Sqrt::op(Cpx a)
-{   return aerror1("complex sqrt not coded yet", a.value());
+{   return aerror("complex sqrt not coded yet", a.value());
 }
 
 LispObject Sqrt::op(SFlt a)
@@ -1293,27 +1293,27 @@ LispObject Isqrt::op(uint64_t *a)
 }
 
 LispObject Isqrt::op(Rat a)
-{   return aerror1("bad argument for isqrt", a.value());
+{   return aerror("bad argument for isqrt", a.value());
 }
 
 LispObject Isqrt::op(Cpx a)
-{   return aerror1("bad argument for isqrt", a.value());
+{   return aerror("bad argument for isqrt", a.value());
 }
 
 LispObject Isqrt::op(SFlt a)
-{   return aerror1("bad argument for isqrt", a.value());
+{   return aerror("bad argument for isqrt", a.value());
 }
 
 LispObject Isqrt::op(Flt a)
-{   return aerror1("bad argument for isqrt", a.value());
+{   return aerror("bad argument for isqrt", a.value());
 }
 
 LispObject Isqrt::op(double a)
-{   return aerror1("bad argument for isqrt", make_boxfloat(a));
+{   return aerror("bad argument for isqrt", make_boxfloat(a));
 }
 
 LispObject Isqrt::op(FLOAT_128 a)
-{   return aerror1("bad argument for isqrt", make_boxfloat128(a));
+{   return aerror("bad argument for isqrt", make_boxfloat128(a));
 }
 
 LispObject Nfp_infinite(LispObject env, LispObject a)
@@ -1540,7 +1540,7 @@ LispObject Nfloat_sign2(LispObject env, LispObject a, LispObject b)
 // Worry a bit about -0.0 here
     if (float_of_number(a) < 0.0) d = -d;
     if (is_sfloat(b)) return pack_immediate_float(d, b);
-    else if (!is_bfloat(b)) return aerror1("bad arg for float-sign",  b);
+    else if (!is_bfloat(b)) return aerror("bad arg for float-sign",  b);
 // make_boxfloat may detect infinity or NaN.
     else return make_boxfloat(d, floatWant(flthdr(b)));
 }
@@ -1559,7 +1559,7 @@ LispObject Nfloat_sign1(LispObject env, LispObject a)
     if (d < 0.0) d = -1.0;
     else d = 1.0;
     if (is_sfloat(a)) return pack_immediate_float(d, a);
-    else if (!is_bfloat(a)) return aerror1("bad arg for float-sign",  a);
+    else if (!is_bfloat(a)) return aerror("bad arg for float-sign",  a);
     else return make_boxfloat(d, floatWant(flthdr(a)));
 }
 
@@ -1671,7 +1671,7 @@ LispObject Ntrap_floating_overflow(LispObject env, LispObject a)
 
 LispObject Nround(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!is_number(a) || !is_number(b)) return aerror1("round", a);
+    if (!is_number(a) || !is_number(b)) return aerror("round", a);
     return Nlisp_ifix(a, b, FIX_ROUND);
 }
 
@@ -1930,7 +1930,7 @@ LispObject Nlisp_ifix(LispObject a, LispObject b, int roundmode)
 
 LispObject Nround(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("round", a);
+    if (!is_number(a)) return aerror("round", a);
     if (is_numbers(a) && is_ratio(a)) return Nlisp_fix_ratio(a, FIX_ROUND);
     if (is_float(a)) return Nlisp_fix(a, FIX_ROUND);
     mv_2 = fixnum_of_int(0);
@@ -1966,7 +1966,7 @@ LispObject Nscale_float(LispObject env, LispObject a, LispObject b)
     d = std::ldexp(d, static_cast<int>(x));
 // Overflows etc handled by make_boxfloat.
     if (is_sfloat(a)) return pack_immediate_float(d, a);
-    else if (!is_bfloat(a)) return aerror1("bad arg for scale-float",  a);
+    else if (!is_bfloat(a)) return aerror("bad arg for scale-float",  a);
     else return make_boxfloat(d, floatWant(flthdr(a)));
 }
 
