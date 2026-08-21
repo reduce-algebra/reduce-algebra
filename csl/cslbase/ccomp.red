@@ -2208,9 +2208,9 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
         w := ", " >>;
       c!:printf(";\n");
       for each v in cdddr args do <<
-        c!:printf("    if (_a4up_ == nil)\n        aerror1(\qnot enough arguments provided\q, basic_elt(env, 0));\n");
+        c!:printf("    if (_a4up_ == nil)\n        aerror(\qnot enough arguments provided\q, basic_elt(env, 0));\n");
         c!:printf("    %s = car(_a4up_); _a4up_ = cdr(_a4up_);\n", v) >>;
-      c!:printf("    if (_a4up_ != nil)\n        aerror1(\qtoo many arguments provided\q, basic_elt(env, 0));\n") >>;
+      c!:printf("    if (_a4up_ != nil)\n        aerror(\qtoo many arguments provided\q, basic_elt(env, 0));\n") >>;
 % There is some silly code enclosed in #ifdef stuff that is useful
 % while debugging, maybe.
     c!:printf("#ifdef CHECK_STACK\n");
