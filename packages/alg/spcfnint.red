@@ -51,7 +51,7 @@ algebraic;
 
 operator Lerch_phi, polylog, zeta;
 
-let { 
+let {
    Lerch_phi(~z,~s,1) => polylog(s,z)/z,
    Lerch_phi(1,~s,1) => zeta(s),
    Lerch_phi(1,~s,1/2) => (2^s-1)*zeta(s),
@@ -205,7 +205,7 @@ gamma!*rules := {
    Gamma(~a,~x) => sqrt(pi)*(1-erf(sqrt(x))) when numberp(a) and a=1/2,
 
    Gamma(1,~x) => exp(-x),
-   
+
    df(Gamma(~a,~x),~x) => -x^(a-1)*exp(-x),
 
    m_gamma(~a,0) => 0 when numberp(a) and a>0,
@@ -215,7 +215,7 @@ gamma!*rules := {
    m_gamma(~a,~x) => sqrt(pi)*erf(sqrt(x)) when numberp(a) and a=1/2,
 
    m_gamma(1,~x) => exp(-x),
-  
+
    df(m_gamma(~a,~x),~x) => x^(a-1)*exp(-x)
 };
 
@@ -452,7 +452,7 @@ let {
   Ci(~x) => compute!:int!:functions(x,Ci)
      when numberp x and abs(x) <= 20 and lisp !*rounded,
   s_i(~x) => si(x) - pi/2,                               df(s_i(~x),~x) => sin(x)/x,
-  
+
 %  Shi(0) => 0,
 %  Shi(-~x) => (- Shi(x)),
   df(Shi(~x),x) => sinh(x)/x,
@@ -478,7 +478,7 @@ let {
    df(Fresnel_S(~x),~x) => sin(pi/2*x^2),
    Fresnel_S (~x) => compute!:int!:functions(x,Fresnel_S)
       when numberp x and abs(x) <= 10 and lisp !*rounded,
-   
+
 %   Fresnel_C(-~x) => (- Fresnel_C (x)),
    Fresnel_C(i* ~x) => (i*Fresnel_C (x)),
    df(Fresnel_C(~x),~x) => cos(pi/2*x^2),
@@ -698,8 +698,11 @@ let
 {
  iBeta(~a,~b,~x) => ibeta!:eval(a,b,x)
         when numberp(a) and numberp(b) and numberp(x) and lisp !*rounded
-             and repart(a)>0 and repart(b)>0 and x>=0 and x<=1,
+             and impart(a)=0 and impart(b)=0 and impart(x)=0
+             and a > 0 and b > 0 and 0 < x and x < 1,
 
+ iBeta(~a,~b,0) => 0,
+ iBeta(~a,~b,1) => 1,
  iBeta(~a,1,~x) => x^a,
  iBeta(1,~b,~x) => 1 - (1-x)^b,
 
@@ -717,7 +720,7 @@ let
 
 flag('(Gamma Beta iGamma iBeta m_gamma polygamma psi zeta
        Pochhammer dilog polylog Lerch_Phi), 'specfn);
-       
+
 deflist('((Gamma (1 2)) (Beta 2) (iGamma 2) (iBeta 3)
           (m_gamma 2) (polygamma 2) (psi 1)
 	  (zeta 1) (Pochhammer 2) (dilog 1)
