@@ -709,7 +709,7 @@ LispObject Lplist(LispObject env, LispObject a)
 {   SingleValued fn;
     LispObject r;
     int i;
-    if (!symbolp(a)) return aerror1("plist", a);
+    if (!symbolp(a)) return aerror("plist", a);
     r = qplist(a);
 #ifdef COMMON
     LispObject r1 = nil;

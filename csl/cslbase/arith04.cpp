@@ -601,7 +601,7 @@ LispObject rational(LispObject a)
                 case TYPE_RATNUM:
                     return a;
                 default:
-                    return aerror1("bad arg for rational", a);
+                    return aerror("bad arg for rational", a);
             }
         }
         case TAG_BOXFLOAT:
@@ -610,7 +610,7 @@ LispObject rational(LispObject a)
                 return rationalf128(long_float_val(a));
             else return rationalf(float_of_number(a));
         default:
-            return aerror1("bad arg for rational", a);
+            return aerror("bad arg for rational", a);
     }
 }
 
@@ -630,7 +630,7 @@ LispObject rationalize(LispObject a)
                 case TYPE_RATNUM:
                     return a;
                 default:
-                    return aerror1("bad arg for rationalize", a);
+                    return aerror("bad arg for rationalize", a);
             }
         }
         case TAG_BOXFLOAT:
@@ -644,7 +644,7 @@ LispObject rationalize(LispObject a)
                     return rationalizef128(long_float_val(a));
             }
         default:
-            return aerror1("bad arg for rationalize", a);
+            return aerror("bad arg for rationalize", a);
     }
 }
 
@@ -1072,77 +1072,77 @@ inline bool lessp_f_r(LispObject a, LispObject b)
 }
 
 inline bool lessp_c_i(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_c_b(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_c_r(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_c_c(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_c_s(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_c_f(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_c_d(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_c_l(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_i_c(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_b_c(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_r_c(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_s_c(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_f_c(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_d_c(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 
 inline bool lessp_l_c(LispObject a, LispObject b)
-{   aerror2("ordered comparison on complex values", a, b);
+{   aerror("ordered comparison on complex values", a, b);
     return false;
 }
 

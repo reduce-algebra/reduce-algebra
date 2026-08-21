@@ -79,7 +79,7 @@ LispObject Lfloat_2(LispObject env, LispObject a, LispObject b)
     {   double d = float_of_number(a);
         return pack_immediate_float(d, b);
     }
-    else if (!is_bfloat(b)) return aerror1("bad arg for float",  b);
+    else if (!is_bfloat(b)) return aerror("bad arg for float",  b);
     else if (flthdr(b) == LONG_FLOAT_HEADER)
     {   FLOAT_128 dd = float128_of_number(a);
         return make_boxfloat128(dd);
@@ -93,7 +93,7 @@ LispObject Lfloat_2(LispObject env, LispObject a, LispObject b)
 LispObject Lfloat(LispObject env, LispObject a)
 {   SingleValued fn;
     double d;
-    if (!is_number(a)) return aerror1("bad arg for float", a);
+    if (!is_number(a)) return aerror("bad arg for float", a);
     else if (is_bfloat(a) || is_sfloat(a)) return a;
     d = float_of_number(a);
 #ifdef COMMON
@@ -158,13 +158,13 @@ LispObject Lmsd(LispObject, LispObject a)
     if (is_fixnum(a)) top = int_of_fixnum(a);
     else if (is_numbers(a))
     {   Header h = numhdr(a);
-        if (!is_bignum_header(h)) return aerror1("bad arg for msd", a);
+        if (!is_bignum_header(h)) return aerror("bad arg for msd", a);
         r = (length_of_header(h)-CELL)/4 - 1;
         top = (int32_t)bignum_digits(a)[r];
         r = 31*r;
     }
-    else return aerror1("bad arg for msd", a);
-    if (top < 0) return aerror1("negative arg for msd", a);   // -ve arg
+    else return aerror("bad arg for msd", a);
+    if (top < 0) return aerror("negative arg for msd", a);   // -ve arg
 // Note that top may be zero here, but in that case the next word down of
 // the bignum involved MUST be fully normalised with its top bit set.
 // The effect of this code is that I return (msd 0) => 0.
@@ -215,12 +215,12 @@ LispObject Llsd(LispObject, LispObject a)
     }
     else if (is_numbers(a))
     {   Header h = numhdr(a);
-        if (!is_bignum_header(h)) return aerror1("bad arg for lsd", a);
+        if (!is_bignum_header(h)) return aerror("bad arg for lsd", a);
         while ((top = (int32_t)bignum_digits(a)[r]) == 0) r++;
         r = 31*r;
     }
-    else return aerror1("bad arg for lsd", a);
-    if (top < 0) return aerror1("negative arg for lsd", a);   // -ve arg
+    else return aerror("bad arg for lsd", a);
+    if (top < 0) return aerror("negative arg for lsd", a);   // -ve arg
 // top is non-zero here. See code in msd re the sixty four bit support.
     if (SIXTY_FOUR_BIT &&
         (top & (uintptr_t)UINT64_C(0xffffffff)) == 0)
@@ -249,18 +249,18 @@ LispObject Linorm(LispObject env, LispObject a, LispObject k)
     size_t rtop = 0, rbottom = 0;
     bool was_fixnum = false, was_negative = false, round_up;
     if (is_fixnum(k) && (intptr_t)k >= 0) kk = int_of_fixnum(k);
-    else return aerror1("bad args for inorm", k);
+    else return aerror("bad args for inorm", k);
     if (is_fixnum(a))
     {   top = int_of_fixnum(
                   a);   // Beware - can now have up to 60 bits in it
-        if (top == 0) return aerror1("zero arg for inorm", a);
+        if (top == 0) return aerror("zero arg for inorm", a);
         was_negative = (top < 0);
         bottom = top;
         was_fixnum = true;
     }
     else if (is_numbers(a))
     {   Header h = numhdr(a);
-        if (!is_bignum_header(h)) return aerror1("bad arg for inorm", a);
+        if (!is_bignum_header(h)) return aerror("bad arg for inorm", a);
         rtop = (length_of_header(h)-CELL)/4 - 1;
         top = (int32_t)bignum_digits(a)[rtop];
         was_negative = (top < 0);
@@ -268,7 +268,7 @@ LispObject Linorm(LispObject env, LispObject a, LispObject k)
         while ((bottom = bignum_digits(a)[rbottom]) == 0) rbottom++;
         rbottom = 31*rbottom;
     }
-    else return aerror1("bad arg for inorm", a);
+    else return aerror("bad arg for inorm", a);
     if (top < 0) top = ~top;  // Now top is guaranteed positive
 // In the 64-bit case with a fixnum input the value in top may be
 // over 2^32...
@@ -554,7 +554,7 @@ LispObject Ldivide_2(LispObject env, LispObject a, LispObject b)
     mv_2 = SPID_NIL;
     q = quotrem2(a, b);
     errexit();
-    if (is_spid(mv_2)) return aerror2("divide", a, b);
+    if (is_spid(mv_2)) return aerror("divide", a, b);
     q = cons(q, mv_2);
     return q;
 }
@@ -698,7 +698,7 @@ LispObject Levenp(LispObject env, LispObject a)
         return ((int32_t)a & 0x10) == 0 ? lisp_true : nil;
     else if (is_numbers(a) && is_bignum(a))
         return (bignum_digits(a)[0] & 1) == 0 ? lisp_true : nil;
-    return aerror1("bad arg for evenp", a);
+    return aerror("bad arg for evenp", a);
 }
 
 LispObject Loddp(LispObject env, LispObject a)
@@ -707,7 +707,7 @@ LispObject Loddp(LispObject env, LispObject a)
         return ((int32_t)a & 0x10) != 0 ? lisp_true : nil;
     else if (is_numbers(a) && is_bignum(a))
         return (bignum_digits(a)[0] & 1) != 0 ? lisp_true : nil;
-    return aerror1("bad arg for oddp", a);
+    return aerror("bad arg for oddp", a);
 }
 
 LispObject Lminusp(LispObject env, LispObject a)
@@ -1131,7 +1131,7 @@ static LispObject Lmanexp(LispObject env, LispObject a)
     int x;
     double f;
 // AT present I do not support 128-bit floats here @@@
-    if (!is_float(a))  return aerror1("arg is not a floating-point number", a);
+    if (!is_float(a))  return aerror("arg is not a floating-point number", a);
     f = float_of_number(a);
     f = std::frexp(f, &x);
     return cons(make_boxfloat(f, WANT_DOUBLE_FLOAT), fixnum_of_int(x));
@@ -1221,7 +1221,7 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
 #endif // COMMON
     if (is_fixnum(a))
     {   size_t v = int_of_fixnum(a), p, q;
-        if (v <= 0) return aerror1("random-number", a);
+        if (v <= 0) return aerror("random-number", a);
 // (random 1) always returns zero - a rather silly case!
         else if (v == 1) return fixnum_of_int(0);
 // I generate a value that is an exact multiple of my range (v) and
@@ -1248,7 +1248,7 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
     {   int32_t len, len1, msd;
         uint32_t w, w1;
         LispObject r;
-        if (!is_bignum(a)) return aerror1("random-number", a);
+        if (!is_bignum(a)) return aerror("random-number", a);
         len = bignum_length(a);
         {   r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
             errexit();
@@ -1320,14 +1320,14 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         d.f = v.f;
         return pack_immediate_float(v.f, a);
     }
-    return aerror1("random-number", a);
+    return aerror("random-number", a);
 }
 
 LispObject Lrandom_1(LispObject env, LispObject a)
 {   SingleValued fn;
     if (is_fixnum(a))
     {   intptr_t v = int_of_fixnum(a), p, q;
-        if (v <= 0) return aerror1("random-number -ve argument", a);
+        if (v <= 0) return aerror("random-number -ve argument", a);
 // (random 1) always returns zero - a rather silly case!
         else if (v == 1) return fixnum_of_int(0);
 // I generate a value that is an exact multiple of my range (v) and
@@ -1354,7 +1354,7 @@ LispObject Lrandom_1(LispObject env, LispObject a)
     {   int32_t len, len1, msd;
         uint32_t w, w1;
         LispObject r;
-        if (!is_bignum(a)) return aerror1("random-number", a);
+        if (!is_bignum(a)) return aerror("random-number", a);
         len = bignum_length(a);
         {   r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
             errexit();
@@ -1427,7 +1427,7 @@ LispObject Lrandom_1(LispObject env, LispObject a)
         d.f = v.f;
         return low32((d.i & ~0xf) + XTAG_SFLOAT);
     }
-    return aerror1("random-number", a);
+    return aerror("random-number", a);
 }
 
 LispObject Lnext_random(LispObject)

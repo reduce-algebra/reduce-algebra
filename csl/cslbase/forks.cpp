@@ -260,7 +260,7 @@ LispObject Lsend_fork_reply(LispObject env, LispObject value)
     LispObject handle = qvalue(fork_parent);
     if (!is_fork(handle))
     {   //pid_printf("Not a fork handle in send_fork_reply");
-        return aerror1("send-fork-reply needs to be in child fork", handle);
+        return aerror("send-fork-reply needs to be in child fork", handle);
     }
 #ifdef DEBUG
     //pid_printf("About to send reply at %d\n", (int)time(nullptr));
@@ -458,7 +458,7 @@ LispObject Lget_from_fork(LispObject env, LispObject handle)
 {   SingleValued fn;
     if (!is_fork(handle))
     {   //pid_printf("not a fork handle in get_from_fork");
-        return aerror1("get-from-fork", handle);
+        return aerror("get-from-fork", handle);
     }
 #ifdef DEBUG
     //pid_printf("About to try get_from_fork at %d\n", (int)time(nullptr));
@@ -493,7 +493,7 @@ LispObject Lclose_fork(LispObject env, LispObject handle)
 {   SingleValued fn;
     if (!is_fork(handle))
     {   //pid_printf("not a fork handle in close_fork");
-        return aerror1("close-fork", handle);
+        return aerror("close-fork", handle);
     }
     pid_t pid = stream_pid(handle);
     kill(pid, SIGKILL);
@@ -573,14 +573,14 @@ LispObject Lfirst_fork(LispObject env, LispObject handles, LispObject timeout)
         w = cdr(w);
         if (!is_fork(h))
         {   //pid_printf("not a fork handle in first_fork");
-            return aerror1("first-fork", handles);
+            return aerror("first-fork", handles);
         }
         fds[count].fd = stream_read_fd(h);
         fds[count].events = POLLIN;
         fds[count].revents = 0;
         count++;
     }
-    if (w!=nil || count==0) return aerror1("Bad arg to first-fork", handles);
+    if (w!=nil || count==0) return aerror("Bad arg to first-fork", handles);
     int r = poll(&fds[0], count, tt);  // Wait for first to respond.
     if (r <= 0) return nil;            // None. Must have timed out.
     for (size_t j=0; j<count; j++)

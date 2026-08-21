@@ -244,6 +244,9 @@ namespace FX
 
 using namespace FX;
 
+// Work towards a new scheme for dispatching the types of numbers.
+#include "generic.h"
+
 #endif // header_headers_h
 
 // end of headers.h

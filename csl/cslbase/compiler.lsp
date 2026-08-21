@@ -4326,10 +4326,10 @@ nil))) (prog (v) (setq v (car var1344)) (progn (c!:printf "%s%s" w v) (setq w
 ", "))) (setq var1344 (cdr var1344)) (go lab1343)) (c!:printf ";\n") (prog (
 var1346) (setq var1346 (cdddr args)) lab1345 (cond ((null var1346) (return 
 nil))) (prog (v) (setq v (car var1346)) (progn (c!:printf 
-"    if (_a4up_ == nil)\n        aerror1(\qnot enough arguments provided\q, basic_elt(env, 0));\n"
+"    if (_a4up_ == nil)\n        aerror(\qnot enough arguments provided\q, basic_elt(env, 0));\n"
 ) (c!:printf "    %s = car(_a4up_); _a4up_ = cdr(_a4up_);\n" v))) (setq 
 var1346 (cdr var1346)) (go lab1345)) (c!:printf 
-"    if (_a4up_ != nil)\n        aerror1(\qtoo many arguments provided\q, basic_elt(env, 0));\n"
+"    if (_a4up_ != nil)\n        aerror(\qtoo many arguments provided\q, basic_elt(env, 0));\n"
 )))) (c!:printf "#ifdef CHECK_STACK\n") (c!:printf "    if_check_stack;\n") (
 c!:printf "#endif\n") (cond (does_call (progn (c!:printf 
 "#ifdef CONSERVATIVE\n") (c!:printf "    poll();\n") (c!:printf 
@@ -5083,7 +5083,7 @@ c!:c_entrypoint "Lcdddr") (cddr c!:c_entrypoint "Lcddr") (cdr c!:c_entrypoint
 "Lclose") (codep c!:c_entrypoint "Lcodep") (constantp c!:c_entrypoint 
 "Lconstantp") (date c!:c_entrypoint "Ldate") (deleq c!:c_entrypoint "Ldeleq")
 (digit c!:c_entrypoint "Ldigitp") (eject c!:c_entrypoint "Leject") (endp 
-c!:c_entrypoint "Lendp") (eq c!:c_entrypoint "Leq") (eqcar c!:c_entrypoint 
+c!:c_entrypoint "Lendp") (eq c!:c_entrypoint "xLeq") (eqcar c!:c_entrypoint 
 "Leqcar") (eql c!:c_entrypoint "Leql") (error1 c!:c_entrypoint "Lerror_0") (
 evlis c!:c_entrypoint "Levlis") (explode c!:c_entrypoint "Lexplode") (
 explode2 c!:c_entrypoint "Lexplodec") (explodec c!:c_entrypoint "Lexplodec") 

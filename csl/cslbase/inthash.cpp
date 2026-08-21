@@ -31,7 +31,7 @@
 
 // $Id$
 
-#ifdef TEST
+#ifdef STANDALONE_TEST_INTHASH
 #include <cstdio>
 #include <cstdlib>
 #include "inthash.h"
@@ -590,9 +590,9 @@ done:
     return hx2+1;
 }
 
-#ifdef TEST
+#ifdef STANDALONE_TEST_INTHASH
 
-// If you predefine TEST when compiling this code you will get a
+// If you predefine STANDALONE_TEST_INTHASH when compiling this code you will get a
 // small test program
 
 #include <cstdio>
@@ -622,7 +622,9 @@ int main(int argc, char *argv[])
 #endif
     for (int i=0; i<TESTSIZE; i++)
     {   intptr_t n;
+#ifdef EXPENSIVE
     retry:
+#endif
         n = 1 + (std::rand() % 100);
 #ifdef EXPENSIVE
 // A painfully expensive extra loop to ensure that there are no
@@ -655,7 +657,7 @@ int main(int argc, char *argv[])
         if (h.keys[hx] != data[i])
         {   std::printf("Insert returned a bad value %d\n",
                         static_cast<int>(hx));
-            for (int i=0; i<h.size; i++)
+            for (size_t i=0; i<h.size; i++)
             {   std::printf("%d   %6lld  %6lld\n", i,
                             (long long int)h.keys[i], (long long int)h.values[i]);
             }
@@ -670,7 +672,7 @@ int main(int argc, char *argv[])
         std::printf("hash table says it now has %d items in it\n",
                     static_cast<int>(h.count));
     std::printf("h.size = %d\n", static_cast<int>(h.size));
-    for (int i=0; i<h.size; i++)
+    for (sized_t i=0; i<h.size; i++)
     {   std::printf("%d   %6lld  %6lld\n", i, (long long int)h.keys[i],
                     (long long int)h.values[i]);
     }
@@ -678,7 +680,7 @@ int main(int argc, char *argv[])
     for (int tries=0; tries<TESTCOUNT; tries++)
         for (int i=0; i<TESTSIZE; i++)
         {   size_t hx;
-            long long int r;
+            uintptr_t r;
             if ((hx = hash_lookup(&h, data[i])) == (size_t)(-1))
                 std::printf("Item number %d not found in table\n", i);
             if ((r = hash_get_value(&h, hx)) != data[i])
@@ -712,7 +714,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-#endif // TEST
+#endif // STANDALONE_TEST_INTHASH
 
 } // end namespace
 

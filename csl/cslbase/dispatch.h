@@ -256,7 +256,7 @@ inline R binaryL(V lhsVal, LispObject b)
         else if (ty == TYPE_COMPLEX_NUM)
             return T::op(lhsVal, Cpx(b));
         else UNLIKELY
-            return static_cast<R>(aerror2("Non-numeric argument", T::name, b));
+            return static_cast<R>(aerror("Non-numeric argument for", T::name, b));
     }
     else if (is_bfloat(b))
     {   Header h = flthdr(b);
@@ -268,12 +268,12 @@ inline R binaryL(V lhsVal, LispObject b)
             return T::op(lhsVal, long_float_val(b));
         else UNLIKELY
             return static_cast<R>(
-                aerror2("Non-numeric argument", T::name, b));
+                aerror("Non-numeric argument for", T::name, b));
     }
     else if (is_sfloat(b))
         return T::op(lhsVal, SFlt(b));
     else UNLIKELY
-        return static_cast<R>(aerror2("Non-numeric argument", T::name, b));
+        return static_cast<R>(aerror("Non-numeric argument for", T::name, b));
 }
 
 // binary is the dispatcher on the left operand of a binary operator.
@@ -296,7 +296,7 @@ inline R binary(LispObject a, LispObject b)
             return binaryL<R,T,Cpx>(Cpx(a), b);
         else UNLIKELY
             return static_cast<R>(
-                aerror2("Non-numeric argument", T::name, a));
+                aerror("Non-numeric argument for", T::name, a));
     }
     else if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -308,12 +308,12 @@ inline R binary(LispObject a, LispObject b)
             return binaryL<R,T,FLOAT_128>(long_float_val(a), b);
         else UNLIKELY
             return static_cast<R>(
-                aerror2("Non-numeric argument", T::name, a));
+                aerror("Non-numeric argument for", T::name, a));
     }
     else if (is_sfloat(a))
         return binaryL<R,T,SFlt>(SFlt(a), b);
     else UNLIKELY
-        return static_cast<R>(aerror2("Non-numeric argument", T::name, a));
+        return static_cast<R>(aerror("Non-numeric argument for", T::name, a));
 }
 
 // Now the same sort of things but for functions that will only accept
@@ -328,7 +328,7 @@ inline R ibinaryL(V lhsVal, LispObject b)
              type_of_header(numhdr(b)) == TYPE_NEW_BIGNUM) LIKELY
         return T::op(lhsVal, (uint64_t *)((char *)b + 8 - TAG_NUMBERS));
     else UNLIKELY
-        return static_cast<R>(aerror2("Non-integer argument", T::name, b));
+        return static_cast<R>(aerror("Non-integer argument for", T::name, b));
 }
 
 template <class R, class T>
@@ -340,7 +340,7 @@ inline R ibinary(LispObject a, LispObject b)
              type_of_header(numhdr(a)) == TYPE_NEW_BIGNUM) LIKELY
         return ibinaryL<R,T,uint64_t *>((uint64_t *)((char *)a + 8 - TAG_NUMBERS), b);
     else UNLIKELY
-        return static_cast<R>(aerror2("Non-integer argument", T::name, a));
+        return static_cast<R>(aerror("Non-integer argument for", T::name, a));
 }
 
 
@@ -361,7 +361,7 @@ inline R unary(LispObject a)
         else if (ty == TYPE_COMPLEX_NUM)
              return T::op(Cpx(a));
         else UNLIKELY
-             return static_cast<R>(aerror2("Non-numeric argument", T::name, a));
+             return static_cast<R>(aerror("Non-numeric argument for", T::name, a));
     }
     else if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -372,12 +372,12 @@ inline R unary(LispObject a)
         else if (h == LONG_FLOAT_HEADER)
             return T::op(long_float_val(a));
         else UNLIKELY
-            return static_cast<R>(aerror2("Non-numeric argument", T::name, a));
+            return static_cast<R>(aerror("Non-numeric argument for", T::name, a));
     }
     else if (is_sfloat(a))
         return T::op(SFlt(a));
     else UNLIKELY
-        return static_cast<R>(aerror2("Non-numeric argument", T::name, a));
+        return static_cast<R>(aerror("Non-numeric argument for", T::name, a));
 }
 
 
@@ -393,7 +393,7 @@ inline R iunary(LispObject a)
         LIKELY
         return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS));
     else UNLIKELY
-        return static_cast<R>(aerror2("Non-integer argument", T::name, a));
+        return static_cast<R>(aerror("Non-integer argument for", T::name, a));
 }
 
 template <class R, class T>
@@ -402,7 +402,7 @@ inline R unary(LispObject a, int64_t &xx)
 {   switch (a & XTAG_BITS)
     {   default:
             UNLIKELY
-            return static_cast<R>(aerror2("Non-numeric argument", T::name, a));
+            return static_cast<R>(aerror("Non-numeric argument for", T::name, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
             {   case SINGLE_FLOAT_HEADER:
@@ -413,7 +413,7 @@ inline R unary(LispObject a, int64_t &xx)
                     return T::op(long_float_val(a), xx);
                 default:
                     UNLIKELY
-                    return static_cast<R>(aerror2("Non-numeric argument", T::name, a));
+                    return static_cast<R>(aerror("Non-numeric argument for", T::name, a));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             LIKELY
@@ -427,7 +427,7 @@ inline R unary(LispObject a, int64_t &xx)
                     return T::op(Cpx(a), xx);
                 default:
                     UNLIKELY
-                    return static_cast<R>(aerror2("Non-numeric argument", T::name, a));
+                    return static_cast<R>(aerror("Non-numeric argument for", T::name, a));
             }
         case TAG_FIXNUM:
             LIKELY

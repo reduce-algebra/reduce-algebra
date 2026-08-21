@@ -461,69 +461,41 @@ LispObject interrupted()
     THROW(LispSimpleError);
 }
 
+LispObject aerror()
+{   LispObject w;
+    if ((w = qvalue(break_function)) != nil &&
+        symbolp(w) &&
+        qfn1(w) != undefined_1)
+    {   ignore_error((*qfn1(w))(qenv(w), nil));
+        errexit();
+    }
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
+                  UNWIND_UNWIND;
+    exit_value = exit_tag = nil;
+    exit_count = 0;
+    THROW(LispSimpleError);
+}
+
 LispObject aerror(const char* s)
 {   errorNest safe;
-    LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
-    if ((w = qvalue(break_function)) != nil &&
-        symbolp(w) &&
-        qfn1(w) != undefined_1)
-    {   ignore_error((*qfn1(w))(qenv(w), nil));
-        errexit();
-    }
-    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
-                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
-                  UNWIND_UNWIND;
-    exit_value = exit_tag = nil;
-    exit_count = 0;
-    THROW(LispSimpleError);
+    return aerror();
 }
 
-LispObject aerror0(const char* s)
+LispObject aerror(const char* s, LispObject a)
 {   errorNest safe;
-    LispObject w;
-    if (miscflags & HEADLINE_FLAG)
-        err_printf("+++ Error: %s\n", s);
-    if ((w = qvalue(break_function)) != nil &&
-        symbolp(w) &&
-        qfn1(w) != undefined_1)
-    {   ignore_error((*qfn1(w))(qenv(w), nil));
-        errexit();
-    }
-    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
-                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
-                  UNWIND_UNWIND;
-    exit_value = exit_tag = nil;
-    exit_count = 0;
-    THROW(LispSimpleError);
-}
-
-LispObject aerror1(const char* s, LispObject a)
-{   errorNest safe;
-    LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
         err_printf("\n");
     }
-    if ((w = qvalue(break_function)) != nil &&
-        symbolp(w) &&
-        qfn1(w) != undefined_1)
-    {   ignore_error((*qfn1(w))(qenv(w), nil));
-        errexit();
-    }
-    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
-                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
-                  UNWIND_UNWIND;
-    exit_value = exit_tag = nil;
-    exit_count = 0;
-    THROW(LispSimpleError);
+    return aerror();
 }
 
-LispObject aerror2(const char* s, LispObject a, LispObject b)
+LispObject aerror(const char* s, LispObject a, LispObject b)
 {   errorNest safe;
-    LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -531,46 +503,11 @@ LispObject aerror2(const char* s, LispObject a, LispObject b)
         loop_print_error(b);
         err_printf("\n");
     }
-    if ((w = qvalue(break_function)) != nil &&
-        symbolp(w) &&
-        qfn1(w) != undefined_1)
-    {   ignore_error((*qfn1(w))(qenv(w), nil));
-        errexit();
-    }
-    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
-                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
-                  UNWIND_UNWIND;
-    exit_value = exit_tag = nil;
-    exit_count = 0;
-    THROW(LispSimpleError);
+    return aerror();
 }
 
-LispObject aerror2(const char* s, const char* a, LispObject b)
+LispObject aerror(const char* s, LispObject a, LispObject b, LispObject c)
 {   errorNest safe;
-    LispObject w;
-    if (miscflags & HEADLINE_FLAG)
-    {   err_printf("+++ Error: %s %s ", s, a);
-        loop_print_error(b);
-        err_printf("\n");
-    }
-    if ((w = qvalue(break_function)) != nil &&
-        symbolp(w) &&
-        qfn1(w) != undefined_1)
-    {   ignore_error((*qfn1(w))(qenv(w), nil));
-        errexit();
-    }
-    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
-                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
-                  UNWIND_UNWIND;
-    exit_value = exit_tag = nil;
-    exit_count = 0;
-    THROW(LispSimpleError);
-}
-
-LispObject aerror3(const char* s, LispObject a, LispObject b,
-                   LispObject c)
-{   errorNest safe;
-    LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -580,18 +517,36 @@ LispObject aerror3(const char* s, LispObject a, LispObject b,
         loop_print_error(c);
         err_printf("\n");
     }
-    if ((w = qvalue(break_function)) != nil &&
-        symbolp(w) &&
-        qfn1(w) != undefined_1)
-    {   ignore_error((*qfn1(w))(qenv(w), nil));
-        errexit();
+    return aerror();
+}
+
+LispObject aerror(const char* s1, const char* s2)
+{   errorNest safe;
+    if (miscflags & HEADLINE_FLAG)
+        err_printf("+++ Error: %s %s\n", s1, s2);
+    return aerror();
+}
+
+LispObject aerror(const char* s1, const char* s2, LispObject a)
+{   errorNest safe;
+    if (miscflags & HEADLINE_FLAG)
+    {   err_printf("+++ Error: %s %s ", s1, s2);
+        loop_print_error(a);
+        err_printf("\n");
     }
-    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
-                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
-                  UNWIND_UNWIND;
-    exit_value = exit_tag = nil;
-    exit_count = 0;
-    THROW(LispSimpleError);
+    return aerror();
+}
+
+LispObject aerror(const char* s1, const char* s2, LispObject a, LispObject b)
+{   errorNest safe;
+    if (miscflags & HEADLINE_FLAG)
+    {   err_printf("+++ Error: %s %s ", s1, s2);
+        loop_print_error(a);
+        err_printf(" ");
+        loop_print_error(b);
+        err_printf("\n");
+    }
+    return aerror();
 }
 
 static LispObject wrong(int given, int wanted, LispObject env)

@@ -449,7 +449,7 @@ LispObject Lsilent_system(LispObject env, LispObject a)
         h = vechdr(a);
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-        return aerror1("system", a);
+        return aerror("system", a);
     ensure_screen();
     size_t len = length_of_byteheader(h) - CELL;
     std::memcpy(cmd, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),

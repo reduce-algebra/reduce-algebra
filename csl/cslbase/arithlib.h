@@ -42,26 +42,6 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// There are quite a lot of bignumber packages out there on the web,
-// but none of them seemed to be such that I could readily use them
-// for arithmetic within a Lisp at all easily, for instance because of
-// the storage management arangements used.
-//
-// This code is for use as a header-only library, so just "#include" it
-// to be able to use it. All the use of the word "inline" is so that if
-// you #include this from several source files there will not be trouble when
-// you link them together: you should still only end up with one copy of
-// each function in memory. Note that until a few years ago the expectation
-// was that tagging a function as "inline" was advice to the compiler to
-// merge its definition into the body of functions that called it. When
-// that is to be done one wants to put the function definition in a header
-// file so that all compilation units gain access to it. If it was made
-// "static" there would risk being a compiled copy included  along with
-// every compilation uint, while if it was "extern" it could seem to be
-// multiply defined. Use of "inline" resolves that, leaving just one
-// copy in the eventual linked binary. I will demand C++17 style support for
-// inline variables as well as functions.
-//
 // This code uses 64-bit digits and a 2s complement representation for
 // negative numbers. This means it will work best on 64-bit platforms
 // (which by now are by far the most important), and it provides bitwise
@@ -70,7 +50,7 @@
 // need that. It should work on 32-bit systems as well, although one should
 // expect performance there to be lower.
 //
-// The code here tries to arrange that any operations that might overflow are
+// The code here has to arrange that any operations that might overflow are
 // done using unsigned types, because in C++ overflow in signed arithmetic
 // yields undefined results - ie on some machines the values delivered could
 // be quite unrelated to the desired ones. This means that I do plenty of
@@ -82,18 +62,6 @@
 // leads to undefined behaviour if performed in signed values, and
 // optimising compilers can assume that and generate code that does not
 // perform the way a naive old-fashioned reading of it would suggest.
-//
-// I will provide two levels of access and abstraction. At the low level
-// a big number is represented as and array of uint64_t digits along with
-// a size_t value that indicates the number of digits in use. The most
-// significant digit in any number lives in memory with type uint64_t but
-// is treated as signed (ie int64_t) in the arithmetic. For the purposes
-// of the bitwise operations (and, or, xor and not) negative values are
-// processed as if they had an infinite number of 1 bits above their
-// most significant stored digit.
-// If a positive value has a top digit whose unsigned value has its top bit
-// set then an additional zero digit is used ahead of that, and equivalently
-// for negative values.
 //
 // Vectors to represent numbers are allocated using a function reserve()
 // which takes an argument indicating how long the number might be. It will
@@ -126,210 +94,6 @@
 // any header or termination markers - reserveString() will allow for the
 // needs of suchlike.
 //
-// A higher level packaging represents numbers using a class Bignum. This
-// has just one field which will hold a potentially encoded version of a
-// pointer to a vector that is the number (ie a handle). When the handle
-// identified a vector the first item in the vector will be a header word
-// containing length information. That is followed by the uint64_t digits
-// representing the numeric value. The representation of the header and the
-// encoding of handles can be configured in one of several ways, these being
-// intended to provide models of the implementation intended for different
-// use cases.
-//
-// Overall the code has conditional compilation providing for 3 prototype
-// arrangements. These are MALLOC, NEW and LISP. It is envisaged that some
-// users of this code will need to modify it to allow it to interface with the
-// rest of their software, and these three schemes give at least sketches of
-// various possibilites. The short explanation is that MALLOC uses malloc()
-// and free() for memory management and does not use fixnums, so that all
-// numbers (however small) are stored as vectors. This is perhaps the simplest
-// scheme, if not the highest performance. NEW exploits many more C++ features.
-// Storage management uses "new" and "delete" at the lowest level, but the
-// code keeps its own lists of previously used memory blocks in a manner that
-// greatly reduces the call on C++ memory management work. This version stores
-// handles that refer to vectors as even numbers and ones that are fixnums
-// with their bottom bit set, so fixnums are 63 bits wide. The C++ class
-// Bignum and a range of operator overloads lead to this being a simple
-// version to use for casual C++ code, and it is the default version built.
-// LISP is the version that originally motivated me to implement this. It has
-// a subsidiary configuration option that allows for systems where garbage
-// collection is or is not conservative. This could be a good starting point
-// for a bignum system to be used as part of the run-time system for any
-// language, not just Lisp. However the interface code here is liable to need
-// detailed review and revision since it mediates between the data structures
-// used here and whatever is present in the Lisp (or whatever!) that will
-// use it. I initially developed and tested this using a Lisp called "vsl"
-// and intend to migrate it for use in "csl". Both of these use low-bit
-// tagging of data and the precise values for tag bits and their layout
-// within header words has to be adhered to here, as has the Lisp's ideas
-// about the way that header words are stored.
-//
-// Here is some more information about each scheme:
-//
-// MALLOC:
-//   A bignum with n digits is held in a vector of length n+1, and the
-//   "encoded pointer" to it is a native pointer to the second element.
-//   If this pointer is p then the number of words (n) is kept at p[-1]
-//   and the least significant digit of the number is at p[0]. reserve()
-//   uses malloc() to obtain space. confirmSize() uses realloc() to trim
-//   the allocated space, and abandon() maps onto use of free(). This
-//   uses C rather than C++ memory management because it wants to use realloc
-//   which is not supported in the tidy C++ world. Performance of the code
-//   as a whole will be sensitive to the malloc/realloc/free implementation
-//   on the platform that is in use. To allow for a user who wished to
-//   customize allocation, all calls to the basic memory allocation primitives
-//   are made indirectly so that alternative equivalents can be plugged in.
-//   Strings and allocated using malloc() and returned as simple nul-terminated
-//   C strings. They must be released using free() after use.
-//
-// NEW:
-//   A bignum with n digits will be stored in a vector whose size is the
-//   next power of 2 strictly larger than n. As with the MALLOC case
-//   the numeric data starts one word into this block and the initial word
-//   of the block contains a header of length information. Here the header
-//   is split into two 32-bit parts. One contains the length of the number
-//   as before (but note that in general that will not fill up the entire
-//   memory block), the other contains log2(blockSize), ie it is a compact
-//   indication of the size of the block. There will be free-chains for
-//   blocks of size 2,4,8,... so that abandon() just pushes the released
-//   memory onto one and reserve() can often merely retrieve a previously
-//   used block. In most cases confirmSize just needs to write the actual
-//   length of a number into the header word. When two large numbers are
-//   subtracted the number of digits in the result may be much smaller than
-//   the size of block that had to have been reserved. To allow for that sort
-//   of situation confirmSize() reserves the right to notice cases where used
-//   size in a block is much smaller than the capacity, and in such cases
-//   allocate a fresh smaller block and copy information into it, allowing it
-//   to abandon the overlarge chunk of memory.
-//   The reference to the vector of digits is held using type intptr_t and
-//   can be cast to obtain the address of the least significant digit of the
-//   value. But so that this scheme as a whole provides better performance
-//   for general users, small integer values will be handled specially. If
-//   the "encoded pointer" has its bottom bit set than it represents a 63-bit
-//   signed value. The intent here is that the class Bignum, by containing
-//   just one integer-sized field, can be stored and passed around really
-//   efficiently, and if in its use most arithmetic remains on values that
-//   fit within 63 bits it will not do much storage allocation at all. If this
-//   works well it should represent a reasonably convenient and tolerably
-//   efficient C++ facility for general use.
-//   Strings live in store allocated using "new char[nnn]" and are returned
-//   as C style strings that must be disposed of using "delete". The use of
-//   C rather than C++ style strings because I hope that makes storage
-//   management interaction clearer.
-//
-// LISP:
-//   The arrangements here are based on the arrangements I have in my VSL
-//   and CSL Lisp implementations. I still hope that between the above options
-//   and this one the code can be adapted reasonably easily. As before the
-//   basic representation of a number with n digits is a vector of length
-//   n+1, with the initial word containing a header. In VSL/CSL a header word
-//   contains some tage bits identifying it as a header, then some type
-//   bite that here will indicate that it is a header of a big number. Finally
-//   it contains a length field. The exact bit-patterns and packing here will
-//   be specific to the particular Lisp (obviously!). A reference to a big
-//   number will be the address of the header word of this vector plus some
-//   tag bits in the bottom 3 bits. This "low tagging" relies on all block
-//   of memory being aligned to 8-byte boundaries (even on 32-bit platforms).
-//   On a 32-bit system the header will only occupy the first 32-bits of the
-//   initial 64-bit memory unit, and the second 32-bit region is spare and
-//   would be best set to zero.
-//   There are two expectations about memory management. The first is that
-//   garbage collection has left a large block of contiguous memory within
-//   which new material can be allocated linearly. Under this supposition the
-//   most recently allocated block of memory can be shrunk or discarded by
-//   simply resetting a heap-fringe pointer. The second is that it will
-//   at least occasionally be desirable to perform linear scans of all memory.
-//   To support that when a block that is not the most recently allocated one
-//   is shrunk or discarded a header word is placed in the released space
-//   leaving a valid but dummy Lisp item there.
-//   Those issue motivate the distinction between confirmSize and
-//   confirmSize_x. [Note that the implementation may not (yet) do all that
-//   I intended in that respect!]
-//   Usually calls to memory allocation primitives are made without any special
-//   concern for garbage collector safety of other pointers, and so in its
-//   current form this code insists on running in a context where the garbage
-//   collector is conservative, so that for instance the untagged pointers to
-//   raw vectors of digits are safe. 
-//   In Lisp mode it is anticipated that as well as a tagged representation
-//   of small integers that the generic arithemetic will need to support
-//   floating point numbers (and possibly multiple widths of floating point
-//   values, plus ratios and complex numbers) and so the dispatch on tagged
-//   numbers needs to live at a higher level within the Lisp then just thise
-//   code. Thus while the big-number functions here are set up so they can
-//   return fixnum results and while there are entrypoints for performing
-//   arithmetic between bignums and fixnums  (ie between uint64_t* and
-//   int64_t values) it is the responsibility of somebody else to decide which
-//   functions to call when.
-//   Strings are allocated using reserveString() and finalized using
-//   confirmSizeString. For Lisp purposes they will need to have a header
-//   word containing the string length.
-//
-// It might be helpful if I provide my own thoughts about when you might decide
-// to use this code and when you will probably not. Wikipedia lists rather
-// a large number of arbitrary precision arithmetic packages on the web page
-// en.wikipedia.org/wiki/List_of_arbitrary-precision_arithmetic_software.
-// As well as free-stanidng libraries a range of programming languages feature
-// big-number arithmetic as a standard feature. It may be fair to suggest
-// that for use from C++ the most visible option is GMP with some users liking
-// to use it via Boost. Given a view that GMP is the market leader I will
-// set out some points comparing arithlib with it.
-// First GMP is well established, it aims for top performance, it has fast
-// algorithms for huge arithmetic as well as for sane-sized numbers. In
-// contrast arithlib is new and neither well established nor truly heavily
-// tested. It does not even try to provide algorithms that will only become
-// useful for arithmetic on numbers that are many many thousands of digits
-// (eg FFT-style multiplication). It can thus be expected to be generally
-// slower than GMP.
-// However potential advantages of arithlib are
-// (1) It is subject to a permissive BSD license, while GMP is dual licensed
-//     under LGPL3 or GPL2. For some users or some projects this may matter!
-// (2) Rather than having assembly code versions for a wide but finite range
-//     of particular hosts, arithlib follows the "Trust your Compiler" policy
-//     and expects that a sufficiently modern C++ compiler will manage to
-//     generate code close to the performance of all the hand-optimised
-//     assembly code that GMP uses. This reduces the total size of the
-//     package substantially and makes building/installing/using it especially
-//     easy even when a packaged version is not instantly available for
-//     your machine. However the author of this code does not trust
-//     compilers unconditionally - testing has used g++-13 and up to date
-//     versions of clang.
-// (3) By being a header-only library, arithlib imposes a cost at program
-//     build time as it all has to be processed by the compiler - but these
-//     days compile-times are pretty short anyway. And by having all of
-//     its souce code available when code that uses it is built there are
-//     potential whole-program optimisations that can be made.
-// (4) arithlib is coded in C++ not C, and this allows it to leverage features
-//     of C++17. For instance it can rely on the random number generation
-//     facilities that C++ provides rather than needing to implement its
-//     own. There are places within it where template code leads to a neater
-//     implementation, and the operator overloading scheme that various other
-//     C++ arithmetic packages provide fits in especially naturally.
-// (5) My initial motivation for creating arithlib was a need for a big
-//     arithmetic package to form part of the run-time system of a language
-//     implementation. arithlib was built with a view to keeping much of the
-//     memory allocation and management somewhere else, probably supported
-//     by garbage collection. I found it much harder to see how to arrange
-//     that the garbage collector in the rest of my run-time system could
-//     track the memory usage within GMP.
-// (6) While arithlib is not a totally tiny body of code it is smaller and
-//     simpler than GMP. When its capabilities cover what is needed and when
-//     its speed is sufficient I would suggest that "small and tidy is good".
-//
-// A key use-case that arithlib is NOT set up to support is arithmetic on
-// long but fixed precision numbers - this is liable to mean that it will
-// not be the technlogy of choice for a range of cryptography applications!
-// The code here has been tested and runs on both 32 and 64-bit machines,
-// however its internal workings are almost all expressed in terms on the
-// type "uint64_t". This may result in there being significant scope for
-// better specialization for code to run on 32-bit targets.
-//
-// What about thread safety? Well the code should be thread-safe.
-// with the C++ "NEW" option I provide several options and you need to
-// configure one (at compile time, and by editing this file or adding
-// overriding predefined symbols), choosing the one you like or that
-// will run fastest on your platform. Search for "CONCURRENCY SUPPORT" to
-// find the commentary.
-//
 // I have run some VERY SIMPLISTIC benchmark comparisons between this code
 // and gmp. All that has been tested is the low-level code for multiplying
 // a pair on N word unsigned integers to get a 2N word result.
@@ -348,60 +112,7 @@
 // as costly on a 32-bit platform as on a 64-bit one, a result that is perhaps
 // no cause for great astonishment!
 
-// Those concerned with programming style may be minded to complain about the
-// fairly large numbers of casts in this code. So here is an attempt to
-// explain some major causes.
-// First, in C++ signed arithmetic overflow is undefined behaviour. However I
-// want to be able to tell when it would arise, and I want to be able to do
-// a great deal of my big-number implementation using all 64-bits of a wide
-// integer. Thus both overflow tests and a great deal of the inner arithmetic
-// are done using unsigned aritmeric, but both when dealing with negative
-// bignums and when interacting with the user I need to have signed integers.
-// I frequently cast between signed an unsigned 64-bit values in these
-// contexts. The code ASSUMES that arithmetic is twos complement. Note that
-// from C++20 onwards this ceases to be an assumption and is guaranteed by
-// the standard!
-// Secondly in many cases I will represent a big number as an object whose
-// sole data menber is of type std::uintptr_t. This will be interpreted as
-// a value with its low bit or few bits as tag information and upper bits
-// as either a pointer (to a vector of digits) or an immediate integer value.
-// I am ASSUMING that one or more low bits in the representation of a pointer
-// to an aligned item will be zero in the natural pointer, and that I can
-// force information into them for tagging. Even though this is not entirely
-// proper I feel that eg std::align() would not make sense if this was not
-// going to work! Whatever the risks, using this sort of representation leads
-// to many casts beween  std::uint64_t* and std::uintptr_t, and the
-// unpacking of a signed value from the immediate integer case leads to
-// further casts with signed integers, ie std::intptr_t.
-// Finally I need at times to generate a bit-fiels using code such as
-// (1<<n). If the literal "1" is not introduced using a wide enough type
-// this can overflow. I might try (1LLU<<n) but I have no absolute guarantee
-// that "LL" makes a 64-bit integer. I could use UINT64_C(1) and that is not
-// too bad, but in many places I will in fact write the rather wordy but very
-// explicit (1ULL<<n).
-
 #define ARITHLIB_VERSION 1002
-
-// The next comment is mainly prospective! At present one is expected
-// to go '#include "arithlib.h"' in any file that will use this. The
-// file will now compile independenly to create a ".o" file. but I do not
-// have a properly robust ".h" file. And the templates and inline functions
-// make that a messier issue. So the "isHeader" flag is really a bit of
-// a joke - but since it is set up at compile time it does not impact
-// runtime costs at all.
-//
-// This file can be used either as a header-only library, in which case the
-// user goes '#include "arithlib.h"', or it can have been build as
-// a separate object or library file, and in that case the ordinary user
-// goes 'include "arithlib.h"'. Slightly unhappily I need to distinguish
-// between these cases in a few places. The following sets up a compile-time
-// (ie constexpr) boolean variable that tells me which is in use. This
-// could be used with "if constexpr (isHeader) ..." to sort things out!
- 
-static constexpr bool isHeader = ([](){
-    const char* file = __FILE__;
-    while (*file != 0) file++;
-    return file[-2]=='.' && file[-1]=='h'; })();
 
 // If I am in a process created using fork() this variable must be set
 // and doing that will disable use of threads here!
@@ -419,13 +130,6 @@ inline bool inChild = false;
 // I provide a default configuration, but by predefining one of the
 // symbols allow other versions to be built.
 
-#if !defined MALLOC && !defined NEW && !defined LISP
-// If no explicit options have been set I will building using memory
-// allocation via C++ "new".
-
-#define NEW           1
-
-#endif // default the allocation scheme
 
 // A useful C++17 feature.... with a fallback to a GNU-specific
 // way of achieving the same through use of C++11 annotations. And a final
@@ -971,515 +675,6 @@ inline std::intptr_t uniformUpto(std::intptr_t a);
 inline std::intptr_t randomUptoBits(std::size_t bits);
 inline std::intptr_t fudgeDistribution(std::intptr_t, int);
 
-#if defined MALLOC
-
-//=========================================================================
-//=========================================================================
-// The MALLOC option is perhaps the simplest! It uses C style
-// malloc/realloc and free functions and the vector if turned into a
-// handle by just casting it to an intptr_t value.
-//=========================================================================
-//=========================================================================
-
-
-// The following are provided so that a user can update malloc_function,
-// realloc_function and free_function to refer to their own choice of
-// allocation technology. Well it is a bit uglier than that! If you compile
-// using C++17 then the function pointers here are per_thread across every
-// compilation unit and things behave "as you might expect". If you have an
-// earlier C++ standard in play than each compilation unit gets its own static
-// set of variables that can be used to divert memory allocation, and hence
-// each compilation unit that includes this header is liable to need to reset
-// them all.
-// I view the ability to replace the allocation functions as somewhat
-// specialist and to be used by people who will have the skill to modify this
-// code as necessary, so this slight oddity does not worry me.
-
-typedef void* malloc_t(size_t n);
-typedef void* realloc_t(void* , std::size_t);
-typedef void free_t(void* );
-
-inline malloc_t * malloc_function = std::malloc;
-inline realloc_t* realloc_function = std::realloc;
-inline free_t   * free_function   = std::free;
-
-inline std::uint64_t* reserve(std::size_t n)
-{   std::uint64_t* r = reinterpret_cast<std::uint64_t*>(
-        (*malloc_function)((n+1)*sizeof(Digit)));
-    return &r[1];
-}
-
-inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
-                                 std::size_t final)
-{   p = reinterpret_cast<std::uint64_t*>(
-        (*realloc_function)((void* )&p[-1],
-                            (final_n+1)*sizeof(Digit)));
-    p[0] = final_n;
-    return vectorToHandle(&p[1]);
-}
-
-// In this model confirmSize_x() is just the same as confirmSize().
-
-inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
-                                   std::size_t final)
-{   confirmSize(p, n, final);
-}
-
-inline void abandon(std::uint64_t* p)
-{   (*free_function)((void* )&p[-1]);
-}
-
-// Note that I allocate space for the string data plus a NUL terminating byte.
-
-inline char* reserveString(std::size_t n)
-{   char* r = reinterpret_cast<char*>((*malloc_function)(n+1));
-    return r;
-}
-
-// When I confirm the size of a string all I do is to write a NUL byte
-// to terminate it. I expect the code to have reserved an amount of memory
-// that is not much longer than the amount that I will need, so using
-// realloc to shrink things to the exact size that is filled would not
-// be a good bargain.
-
-inline char* confirmSizeString(char* p, std::size_t n, std::size_t final)
-{   r[final] = 0;
-    return r;
-}
-
-inline void abandonString(char* s)
-{   (*free_function)(s);
-}
-
-// In the C/malloc model I will represent a number by the intptr_t style
-// integer that is obtained from a pointer to the first digit of the bignum.
-// Note that converting to and fro between intptr_t and pointers risks
-// ending up with C++ undefined behaviour.
-
-inline std::intptr_t vectorToHandle(std::uint64_t* p)
-{   return reinterpret_cast<std::intptr_t>(p);
-}
-
-inline std::uint64_t* vectorOfHandle(std::intptr_t n)
-{   return reinterpret_cast<std::uint64_t*>(n);
-}
-
-inline std::size_t numberSize(std::uint64_t* p)
-{   return p[-1];
-}
-
-inline void setNumberSize(std::uint64_t* p, std::size_t n)
-{   p[-1] = n;
-}
-
-// When I use Bignums that are allocated using malloc() and operated on
-// via C++ overloaded operators I often need to copy the data. However when
-// memory management uses garbage collection I can allow multiple references
-// to the same object and so copying is not needed as much. I have two
-// copying functions. One only copies if the system is using MALLOC or
-// NEW (but leaves data sharable on systems with garbage collection) while
-// the other unconditionally copies.
-
-inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
-{   std::size_t n = numberSize(p);
-    std::uint64_t* r = reserve(n);
-    std::memcpy(r, p, n*sizeof(Digit));
-    return confirmSize(r, n, n);
-}
-
-inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
-{   std::size_t n = numberSize(p);
-    std::uint64_t* r = reserve(n);
-    std::memcpy(r, p, n*sizeof(Digit));
-    return confirmSize(r, n, n);
-}
-
-inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
-{   if (storedAsFixnum(pp)) return pp;
-    std::uint64_t* p = vectorOfHandle(pp);
-    std::size_t n = numberSize(p);
-    std::uint64_t* r = reserve(n);
-    std::memcpy(r, p, n*sizeof(Digit));
-    return confirmSize(r, n, n);
-}
-
-#elif defined NEW
-
-//=========================================================================
-//=========================================================================
-// The NEW code is intended to be a reasonably sensible implementation for
-// use of this code free-standing within C++. Memory is allocated in units
-// whose size is a power of 2, and I keep track of memory that I have used
-// and discarded so that I do not need to go back to the system-provided
-// allocator too often.
-//=========================================================================
-//=========================================================================
-
-
-inline unsigned int logNextPowerOf2(std::size_t n);
-
-// There is a serious issue here as regards thread safety.
-//
-// As things stand if you use C++ memory allocation the local allocation
-// and reallocation here is not thread safe. The result could be a disaster
-// if multiple threads used big-numbers via the C++ type Bignum. Note that
-// if you do not have "NEW" defined but instead use MALLOC or LISP you are
-// safe.
-
-// CONCURRENCY SUPPORT:
-// I provide three options, and the selection as to which is used
-// can be made by predefining a symbol.
-//
-// ARITHLIB_MUTEX. Use a mutex to protect memory allocation. One hope
-//                 is that in situations where there is low contention the
-//                 overhead will be small, and so this is the default.
-// ARITHLIB_THREAD_LOCAL. Have a separate memory pool for use by each thread.
-//                 This can use more memory than a scheme that uses shared
-//                 allocation.
-// ARITHLIB_NO_THREADS. Assume that no concurrent use of arithlib will
-//                 arise and so no extra complication or overhead is needed.
-//                 I do not make this the default because I can imagine
-//                 people extending a program to use threads and then not
-//                 looking here!
-// Note that even with ARITHLIB_NO_THREADS I will use threads to speed
-// up huge multiplication. The issue here is if the user calling functions
-// from here is multi-threaded...
-//
-// I looked into having an ARITHLIB_LOCK_FREE to use compare-and-swap
-// operations to maintain the freestore pool, but support via gcc on x86_64
-// is uncertain (in part because not all variants on x86_64 CPUs implement
-// the CMPXCHG16B instruction (though soon the ones that do not will count as
-// museum pieces), and also because reports on the performance impact
-// do not see quite clear-cut. I also see various unspecific comments about
-// patents, but I have not followed them up.
-// I could fairly happily imagine replacing the discard() code with a lock
-// free "push" operation, which is simple to implement and does not suffer
-// from the "ABA" issue. allocate() seems to be harder to implement and
-// especially harder to implement in a way that will give reliably high
-// performance across all platforms while avoiding machine depemdent
-// components and especially in-line assembly code.
-
-// If no options has been pre-defined I will default to ARITHLIB_MUTEX
-#if !defined ARITHLIB_MUTEX &&        \
-    !defined ARITHLIB_THREAD_LOCAL && \
-    !defined ARITHLIB_NO_THREADS
-#define ARITHLIB_MUTEX 1
-#endif // set default thread policy
-
-// Attempts to select more that one option at once get detected and moaned
-// about.
-
-#if (defined ARITHLIB_MUTEX && defined ARITHLIB_THREAD_LOCAL) ||      \
-    (defined ARITHLIB_THREAD_LOCAL && defined ARITHLIB_NO_THREADS) || \
-    (defined ARITHLIB_NO_THREADS && defined ARITHLIB_MUTEX)
-#error Only one thread-support policy can be selected.
-#endif // Some thread policy
-
-#ifdef ARITHLIB_MUTEX
-inline std::mutex& freechain_mutex()
-{   static std::mutex m;
-    return m;
-}
-#endif // ARITHLIB_MUTEX
-
-typedef std::uint64_t* FreehainTable_t[64];
-
-#ifdef ARITHLIB_THREAD_LOCAL
-inline thread_local FreehainTable_t freechainTable;
-#else // ARITHLIB_THREAD_LOCAL
-class freechainTable
-{   static inline FreehainTable_t freechainTableVar;
-public:
-    static FreehainTable_t& get()
-    {   return freechainTableVar;
-    }
-};
-#endif // ARITHLIB_THREAD_LOCAL
-
-// In this case the header word at r[-1] is treated as a pair of 32-bit
-// values. One indicates the size of the memory block as allocated, The
-// other the number of words actually in use.
-// In this model the use of a 32-bit number-length limits things so that
-// the largest valid number will take up around 32Gbytes. That is because
-// the size can be up to 4G (ie unsigned 32-bits) and that count is in
-// terms of 8 bit digits. That does not feel like a worrying restriction
-// to me!
-
-inline uint32_t& bitSize(uint64_t* p)
-{   return reinterpret_cast<std::uint32_t*>(&p[-1])[0];
-}
-
-inline std::size_t numberSize(std::uint64_t* p)
-{   return reinterpret_cast<std::uint32_t*>(&p[-1])[1];
-}
-
-inline void setNumberSize(std::uint64_t* p, size_t n)
-{   reinterpret_cast<std::uint32_t*>(&p[-1])[1] = static_cast<uint32_t>(n);
-}
-
-class Freechains
-{
-private:
-// The following obscure line ensures that when I make an instance
-// of Freechains it forces the standard streams into existence. Having
-// that initilization happening early helps a LITTLE bit to reassure me
-// that the standard streams should still be alive during the destructor
-// for this class.
-    std::ios_base::Init forceIOStreamsInitialization;
-
-public:
-    Freechains()
-    {   for (int i=0; i<64; i++) (freechainTable::get())[i] = nullptr;
-    }
-
-    ~Freechains()
-    {   for (std::size_t i=0; i<64; i++)
-        {   std::uint64_t* f = (freechainTable::get())[i];
-// Here I am assumung that uint64_t is at least as wide as uintptr_t.
-// I think that will in reality always be the case but that the C++ standard
-// will not guarantee it!
-            while (f != nullptr)
-            {   std::uint64_t w = f[1];
-                delete [] f;
-                f = reinterpret_cast<std::uint64_t*>(w);
-            }
-            (freechainTable::get())[i] = nullptr;
-        }
-    }
-
-    static std::uint64_t* allocate(std::size_t n)
-    {
-// Finding the number of bits in n is achieved by counting the leading
-// zeros in the representation of n, and on many platforms an intrinsic
-// function will compile this into a single machine code instruction.
-        int bits = logNextPowerOf2(n);
-        std::uint64_t* r;
-#if defined ARITHLIB_THREAD_LOCAL || ARITHLIB_NO_THREADS
-        r = (freechainTable::get())[bits];
-        if (r != nullptr)
-            (freechainTable::get())[bits] =
-                reinterpret_cast<std::uint64_t*>(r[1]);
-#elif defined ARITHLIB_MUTEX
-        {
-            std::lock_guard<std::mutex> lock(freechain_mutex());
-            r = (freechainTable::get())[bits];
-            if (r != nullptr)
-                (freechainTable::get())[bits] =
-                    reinterpret_cast<std::uint64_t*>(r[1]);
-        }
-#else // ARITHLIB_MUTEX
-#error Internal inconsistency in arithlib.h: memory allocation strategy.
-#endif // ARITHLIB_MUTEX
-// If no memory had been found on the freechain I need to allocate some
-// more.
-        if (r == nullptr)
-        {   r = new std::uint64_t[(static_cast<std::size_t>(1))<<bits];
-            if (r == nullptr) arithlib_abort("Run out of memory");
-        }
-// Just the first 32-bits of the header word record the block capacity.
-// The casts here look (and indeed are) ugly, but when I store data into
-// memory as a 32-bit value that is how I will read it later on, and the
-// messy notation here does not correspond to complicated computation.
-// The second 32-bit word in the header will be used to store the number
-// of words actually used in the bignum.
-        bitSize(r+1) = bits;
-        return r;
-    }
-
-// When I abandon a memory block I will push it onto a relevant free chain.
-
-    static void abandon(std::uint64_t* p)
-    {   int bits = bitSize(p+1);
-#ifdef ARITHLIB_ATOMIC
-        lockfreePush(p, freechainTable::get(), bits);
-#else // ARITHLIB_ATOMIC
-#ifdef ARITHLIB_MUTEX
-        std::lock_guard<std::mutex> lock(freechain_mutex());
-#endif // ARITHLIB_MUTEX
-        p[1] = reinterpret_cast<std::uint64_t>(freechainTable::get()[bits]);
-        (freechainTable::get())[bits] = p;
-#endif // ARITHLIB_ATOMIC
-    }
-
-};
-
-#ifdef ARITHLIB_THREAD_LOCAL
-inline thread_local Freechains freechain;
-#else // ARITHLIB_THREAD_LOCAL
-class freechains
-{   static inline Freechains freechainsVar;
-public:
-    static Freechains& get()
-    {   return freechainsVar;
-    }
-};
-#endif // ARITHLIB_THREAD_LOCAL
-
-inline std::uint64_t* reserve(std::size_t n)
-{   return &(freechains::get().allocate(n+1))[1];
-}
-
-inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
-                                 std::size_t final)
-{
-    if (final == 1 && fitsIntoFixnum(static_cast<SignedDigit>(p[0])))
-    {   std::intptr_t r = intToHandle(static_cast<SignedDigit>(p[0]));
-        freechains::get().abandon(&p[-1]);
-        return r;
-    }
-// I compare the final size with the capacity and if it is a LOT smaller
-// I allocate a new smaller block and copy the data across.
-// That situation can most plausibly arise when two similar-values big
-// numbers are subtracted.
-    int bits = bitSize(p);
-    std::size_t capacity = (static_cast<std::size_t>(1))<<bits;
-    if (capacity > 4*final)
-    {   std::uint64_t* w =
-            freechains::get().allocate(
-                (static_cast<std::size_t>(1))<<logNextPowerOf2(final+1));
-        std::memcpy(&w[1], p, final*sizeof(std::uint64_t));
-        freechains::get().abandon(&p[-1]);
-        p = &w[1];
-    }
-    setNumberSize(p, final);
-    return vectorToHandle(p);
-}
-
-inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
-                                   std::size_t final)
-{   return confirmSize(p, n, final);
-}
-
-inline std::intptr_t vectorToHandle(std::uint64_t* p)
-{   return reinterpret_cast<std::intptr_t>(p);
-}
-
-inline std::uint64_t* vectorOfHandle(std::intptr_t n)
-{   return reinterpret_cast<std::uint64_t*>(n);
-}
-
-inline bool storedAsFixnum(std::intptr_t a)
-{   return (a & 1) != 0;
-}
-
-constexpr inline SignedDigit intOfHandle(std::intptr_t a)
-{   return (static_cast<SignedDigit>(a) & ~1LL)/2;
-}
-
-// This function should only ever be called in situations where the
-// arithmetic indicated will not overflow.
-
-inline std::intptr_t intToHandle(SignedDigit n)
-{   return static_cast<std::intptr_t>(2*n + 1);
-}
-
-// The following two lines are slighly delicate in that INTPTR_MIN and _MAX
-// may not have the low tag bits to be proper fixnums. But if I implement
-// intOfHandle so that it ignores tag bits that will be OK.
-
-inline const SignedDigit MIN_FIXNUM = intOfHandle(INTPTR_MIN);
-inline const SignedDigit MAX_FIXNUM = intOfHandle(INTPTR_MAX);
-
-inline bool fitsIntoFixnum(SignedDigit a)
-{   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
-}
-
-inline void abandon(std::uint64_t* p)
-{   freechains::get().abandon(&p[-1]);
-}
-
-inline void abandon(std::intptr_t p)
-{   if (!storedAsFixnum(p) && p!=0)
-    {   std::uint64_t* pp = vectorOfHandle(p);
-        freechains::get().abandon(&pp[-1]);
-    }
-}
-
-inline char* reserveString(std::size_t n)
-{   return new char[n+1];
-}
-
-inline char* confirmSizeString(char* p, std::size_t n, std::size_t final)
-{   p[final] = 0;
-    return p;
-}
-
-inline void abandonString(char* s)
-{   delete [] s;
-}
-
-// In the NEW case I will want to make all operations cope with both
-// shorter integers (up to 63 bits) stored as the "handle", or genuine
-// big numbers where the handle yields a pointer to a vector of 64-bit
-// words. I do this by having a dispatch scheme that can activate code
-// for each of the mixtures of representations.
-//
-
-// Dispatch as between mixed bignum and fixnum representations using some
-// template stuff and classes.
-
-template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1)
-{   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1));
-    else return OP::op(vectorOfHandle(a1));
-}
-
-template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
-{   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
-    else return OP::op(vectorOfHandle(a1), n);
-}
-
-template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
-{   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
-    else return OP::op(vectorOfHandle(a1), n);
-}
-
-// I am going to arrange that if the C++ compiler optimised it at all
-// it will prefer operations on small numbers.
-
-template <class OP,class RES>
-inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
-{   if (storedAsFixnum(a1))
-    {   LIKELY
-        if (storedAsFixnum(a2))
-            LIKELY
-            return OP::op(intOfHandle(a1), intOfHandle(a2));
-        else return OP::op(intOfHandle(a1), vectorOfHandle(a2));
-    }
-    else
-    {   if (storedAsFixnum(a2))
-            LIKELY
-            return OP::op(vectorOfHandle(a1), intOfHandle(a2));
-        else return OP::op(vectorOfHandle(a1), vectorOfHandle(a2));
-    }
-}
-
-inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
-{   std::size_t n = numberSize(p);
-    std::uint64_t* r = reserve(n);
-    std::memcpy(r, p, n*sizeof(Digit));
-    return confirmSize(r, n, n);
-}
-
-inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
-{   std::size_t n = numberSize(p);
-    std::uint64_t* r = reserve(n);
-    std::memcpy(r, p, n*sizeof(Digit));
-    return confirmSize(r, n, n);
-}
-
-inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
-{   if (storedAsFixnum(pp)) return pp;
-    std::uint64_t* p = vectorOfHandle(pp);
-    std::size_t n = numberSize(p);
-    std::uint64_t* r = reserve(n);
-    std::memcpy(r, p, n*sizeof(Digit));
-    return confirmSize(r, n, n);
-}
-
-#elif defined LISP
 
 //=========================================================================
 //=========================================================================
@@ -1495,7 +690,6 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 // sort of model for anybody wanting to use this code in their own
 // project.
 
-#if defined CSL
 
 using namespace CSL_LISP;
 
@@ -1695,182 +889,7 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
     return confirmSize(r, n, n);
 }
 
-#else // CSL
 
-inline std::uint64_t* reserve(std::size_t n)
-{
-// I must allow for alignment padding on 32-bit platforms.
-    if (sizeof(LispObject)==4) n = n*sizeof(Digit) + 4;
-    else n = n*sizeof(Digit);
-    LispObject a = allocateatom(n);
-    return reinterpret_cast<std::uint64_t*>(a + 8 - tagATOM);
-}
-
-inline std::intptr_t confirmSize(Digit *p, std::size_t n,
-                                 std::size_t final)
-{   if (final == 1 && fitsIntoFixnum(static_cast<SignedDigit>(p[0])))
-    {   std::intptr_t r = intToHandle(static_cast<SignedDigit>(p[0]));
-        return r;
-    }
-    ((LispObject* )&p[-1])[0] =
-        tagHDR + typeBIGNUM + packlength(final*sizeof(Digit) +
-                                         (sizeof(LispObject)==4 ? 4 : 0));
-// If I am on a 32-bit system the data for a bignum is 8 bit aligned and
-// that leaves a 4-byte gap after the header. In such a case I will write
-// in a zero just to keep memory tidy.
-    if (sizeof(LispObject) == 4)
-        ((LispObject* )&p[-1])[1] = 0;
-// Here I should reset fringe down by (final-n) perhaps. Think about that
-// later!
-    return vectorToHandle(p);
-}
-
-inline std::intptr_t confirmSize_x(std::uint64_t* p,
-                                   std::size_t n, std::size_t final)
-{
-// Here I might need to write a nice dummy object into the gap left by
-// shrinking the object.
-    return confirmSize(p, n, final);
-}
-
-inline std::intptr_t vectorToHandle(std::uint64_t* p)
-{   return reinterpret_cast<std::intptr_t>(p) - 8 + tagATOM;
-}
-
-inline std::uint64_t* vectorOfHandle(std::intptr_t n)
-{   return reinterpret_cast<std::uint64_t*>(n + 8 - tagATOM);
-}
-
-inline std::size_t numberSize(std::uint64_t* p)
-{
-// The odd looking cast here is because in arithlib I am passing around
-// arrays of explicitly 64-bit values, however in the underlying Lisp
-// I expect to be modelling memory as made up of intptr-sized items
-// that I arrange to have aligned on 8-byte boundaries. So to show some
-// though about strict aliasing and the like I will access memory as
-// an array of LispObject things when I access the header of an item.
-    std::uintptr_t h = reinterpret_cast<std::uintptr_t>(*(LispObject*)&p[-1]);
-    std::size_t r = veclength(h);
-// On 32-bit systems a bignum will have a wasted 32-bit word after the
-// header and before the digits, so that the digits are properly aligned
-// in memory. The result will be that the bignum is laid out as follows
-//      |     hdr64     | digit64 | digit64 | ... |    (64-bit world)
-//      | hdr32 | gap32 | digit64 | digit64 | ... |    (32-bit world)
-// The length value packed into the header is the length of the vector
-// excluding its header.
-//  if (sizeof(LispObject) == 4) r -= 4; { the remaindering does all I need! }
-    r = r/sizeof(Digit);
-    return r;
-}
-
-inline bool storedAsFixnum(std::intptr_t a)
-{   return isFIXNUM(a);
-}
-
-constexpr inline SignedDigit intOfHandle(std::intptr_t a)
-{   return qfixnum(a);
-}
-
-inline std::intptr_t intToHandle(SignedDigit n)
-{   return packfixnum(n);
-}
-
-inline bool fitsIntoFixnum(SignedDigit a)
-{   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
-}
-
-inline void abandon(std::uint64_t* p)
-{   // No need to do anything! But MIGHT reset fringe pointer?
-}
-
-inline void abandon(std::intptr_t p)
-{   if (!storedAsFixnum(p) && p!=0)
-    {   std::uint64_t* pp = vectorOfHandle(p);
-        abandon(pp);
-    }
-}
-
-inline char* reserveString(std::size_t n)
-{   LispObject a = allocateatom(n);
-    return reinterpret_cast<char*>(a - tagATOM + sizeof(LispObject));
-}
-
-inline LispObject confirmSizeString(char* p, std::size_t n,
-                                    std::size_t final)
-{   LispObject* a = (LispObject* )(p - sizeof(LispObject));
-// On 32-bit platforms I do not have a padder word before string data
-// so things are simpler here than when confirming the size of a number.
-   * a = tagHDR + typeSTRING + packlength(final);
-    return (LispObject)a +tagATOM;
-}
-
-inline void abandonString(string_handle s)
-{   // Do nothing.
-}
-
-template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1)
-{   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1));
-    else return OP::op(vectorOfHandle(a1));
-}
-
-template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
-{   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
-    else return OP::op(vectorOfHandle(a1), n);
-}
-
-template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
-{   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
-    else return OP::op(vectorOfHandle(a1), n);
-}
-
-template <class OP,class RES>
-inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
-{   if (storedAsFixnum(a1))
-    {   LIKELY
-        if (storedAsFixnum(a2))
-            LIKELY
-            return OP::op(intOfHandle(a1), intOfHandle(a2));
-        else return OP::op(intOfHandle(a1), vectorOfHandle(a2));
-    }
-    else
-    {   if (storedAsFixnum(a2))
-            LIKELY
-            return OP::op(vectorOfHandle(a1), intOfHandle(a2));
-        else return OP::op(vectorOfHandle(a1), vectorOfHandle(a2));
-    }
-}
-
-inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
-{   std::size_t n = numberSize(p);
-    std::uint64_t* r = reserve(n);
-    std::memcpy(r, p, n*sizeof(Digit));
-    return confirmSize(r, n, n);
-}
-
-inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
-{   std::size_t n = numberSize(p);
-    std::uint64_t* r = reserve(n);
-    std::memcpy(r, p, n*sizeof(Digit));
-    return confirmSize(r, n, n);
-}
-
-inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
-{   if (storedAsFixnum(pp)) return pp;
-    std::uint64_t* p = vectorOfHandle(pp);
-    std::size_t n = numberSize(p);
-    std::uint64_t* r = reserve(n);
-    std::memcpy(r, p, n*sizeof(Digit));
-    return confirmSize(r, n, n);
-}
-
-#endif // !CSL
-
-#else // none if MALLOC, LISP or NEW specified.
-#error Unspecified memory model
-#endif // No memory model givem
 
 // The main arithmetic operations are supported by code that can work on
 // Bignums stored as vectors of digits or on Fixnums represented as (tagged)
@@ -2389,7 +1408,6 @@ public:
     static FLOAT_128 op(std::uint64_t* , SignedDigit& x);
 };
 
-#ifdef CSL
 
 class ModularPlus
 {
@@ -2471,27 +1489,22 @@ public:
     static std::intptr_t op(uint64_t* w);
 };
 
-#endif // CSL
 
 inline string_handle bignumToString(std::intptr_t aa);
 inline string_handle bignumToStringHex(std::intptr_t aa);
 inline string_handle bignumToStringOctal(std::intptr_t aa);
 inline string_handle bignumToStringBinary(std::intptr_t aa);
 
-class Bignum;
-
 inline int displayIndent = 0;
 inline void display(const char* label,
                     const std::uint64_t* a,
                     std::size_t lena);
 inline void display(const char* label, std::intptr_t a);
-inline void display(const char* label, const Bignum& a);
 
 inline void display(std::string label,
                     const std::uint64_t* a,
                     std::size_t lena);
 inline void display(std::string label, std::intptr_t a);
-inline void display(std::string label, const Bignum& a);
 
 inline void display(const char* label,
                     SignedDigit top,
@@ -2508,684 +1521,6 @@ inline void display1(const char* label, std::size_t a);
 inline void display2(std::string label, std::size_t a, std::size_t b);
 inline void display2(const char* label, std::size_t a, std::size_t b);
 
-
-//=========================================================================
-//=========================================================================
-// I have a class Bignum that wraps up the representation of a number
-// and then allows me to overload most operators so that big numbers can be
-// used in C++ code almost as if they were a natural proper type. The main
-// big oddity will be that to denote a Bignum literal it will be necessary
-// to use a constructor, with obvious constructors accepting integers of up
-// to 64-bits and a perhaps less obvious one taking a string that is the
-// decimal denotation of the integer concerned. Well actually I also support
-// input notation like 12345_Z for Bignum. I would have liked to make
-// the processing of this input syntax "constexpr" so that the work was done
-// at compile time, however a big number needs some storage allocated
-// and it is not obvious how I can arrange that in a constexpr context. So
-// this is not really totally delightful. One can of course write
-//       static Bignum vv = 12345_Z;
-// and then the initialisation is done once during program startup.
-//=========================================================================
-//=========================================================================
-
-class Bignum
-{
-public:
-// a Bignum only had one data field, and that is simple plain data.
-    std::intptr_t val;
-
-
-// A default constructor build a Bignum with no stored data.
-    Bignum()
-    {   val = 0;
-    }
-// In the next constructor the boolean argument is not used at run time but
-// serves to indicate which constructor is wanted.
-    Bignum(bool set_val, std::intptr_t v)
-    {   val = v;
-    }
-    ~Bignum()
-    {   abandon(val);
-        val = 0;
-    }
-    Bignum(std::uint64_t* p)
-    {   val = vectorToHandle(p);
-    }
-// The code here is more complicated than I would have liked. What I want is
-// that ANY sort of C++ integer can be converted to a Bignum. My first
-// attempts arranges that int32_t and int64_t could be, however there is
-// no guarantee that just coping with all the width-specified cases will
-// then cover mere "int" and "long". So what I now use is a template
-// definition filtered with magic that constrains it to only matching the
-// template parameter against some sort of integer. In some cases (such as
-// here) I provide one version to deal with all the signed integer cases
-// and another all the unsigned ones.
-// In general I will receive integers this way and cast them to 64-bit
-// values. This means that if the platform happens to provide intmax_t
-// that is wider than that then it will not be handled well!
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr,
-        typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
-    Bignum(T n)
-    {   val = intToBignum(static_cast<SignedDigit>(n));
-    }
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr,
-        typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
-    Bignum(T n)
-    {   val = unsignedIntToBignum(static_cast<Digit>(n));
-    }
-    Bignum(float d)
-    {   val = roundDoubleToInt(static_cast<double>(d));
-    }
-    Bignum(double d)
-    {   val = roundDoubleToInt(d);
-    }
-    Bignum(FLOAT_128 d)
-    {   val = roundFloat128ToInt(d);
-    }
-    Bignum(const char* s)
-    {   val = stringToBignum(s);
-    }
-    Bignum(const Bignum& a)
-    {   val = copyIfNoGarbageCollector(a.val);
-    }
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr,
-        typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
-    operator T()
-    {   return static_cast<T>(op_dispatch1<Int64_t, SignedDigit>(val));
-    }
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr,
-        typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
-    operator T()
-    {   return static_cast<T>(op_dispatch1<Uint64_t, Digit>(val));
-    }
-    operator double()
-    {   return op_dispatch1<Double, double>(val);
-    }
-    std::uint64_t* vec() const
-    {   return vectorOfHandle(val);
-    }
-
-// In a way that is BAD I make the result of an assignment void rather than
-// the value that is assigned. This is so I do not make gratuitous extra
-// copies of it in the common case where the value is not used, but it could
-// catch out the unwary.
-    inline void operator = (const Bignum& x)
-    {   if (this == &x) return; // assign to self - a silly case!
-        abandon(val);
-// See comment in the copy constructor.
-        val = copyIfNoGarbageCollector(x.val);
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr,
-        typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
-    inline void operator = (const T x)
-    {   abandon(val);
-        val = intToBignum(static_cast<SignedDigit>(x));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr,
-        typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
-    inline void operator = (const T x)
-    {   abandon(val);
-        val = unsignedIntToBignum(static_cast<Digit>(x));
-    }
-
-    inline void operator = (const char* x)
-    {   abandon(val);
-        val = stringToBignum(x);
-    }
-
-    inline Bignum operator +(const Bignum& x) const
-    {   return Bignum(true, op_dispatch2<Plus,std::intptr_t>(val, x.val));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline Bignum operator +(const T x) const
-    {   return Bignum(true,
-                      op_dispatch2<Plus,std::intptr_t>(val, Bignum(x).val));
-    }
-
-    inline Bignum operator -(const Bignum& x) const
-    {   return Bignum(true,
-                      op_dispatch2<Difference,std::intptr_t>(val, x.val));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline Bignum operator -(const T x) const
-    {   return Bignum(true, op_dispatch2<Difference,std::intptr_t>(val,
-                      Bignum(x).val));
-    }
-
-    inline Bignum operator *(const Bignum& x) const
-    {   return Bignum(true, op_dispatch2<Times,std::intptr_t>(val,
-                      x.val));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline Bignum operator *(const T x) const
-    {   return Bignum(true,
-            op_dispatch2<Times,std::intptr_t>(val, Bignum(x).val));
-    }
-
-    inline Bignum operator /(const Bignum& x) const
-    {   return Bignum(true, op_dispatch2<Quotient,std::intptr_t>(val, x.val));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline Bignum operator /(const T x) const
-    {   return Bignum(true,
-            op_dispatch2<Quotient,std::intptr_t>(val, Bignum(x).val));
-    }
-
-    inline Bignum operator %(const Bignum& x) const
-    {   return Bignum(true, op_dispatch2<Remainder,std::intptr_t>(val, x.val));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline Bignum operator %(const T x) const
-    {   return Bignum(true, op_dispatch2<Remainder,std::intptr_t>(val,
-                      Bignum(x).val));
-    }
-
-    inline Bignum operator -() const
-    {   return Bignum(true, op_dispatch1<Minus,std::intptr_t>(val));
-    }
-
-    inline Bignum operator &(const Bignum& x) const
-    {   return Bignum(true, op_dispatch2<Logand,std::intptr_t>(val, x.val));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline Bignum operator &(const T x) const
-    {   return Bignum(true, op_dispatch2<Logand,std::intptr_t>(val,
-                      Bignum(x).val));
-    }
-
-    inline Bignum operator |(const Bignum& x) const
-    {   return Bignum(true, op_dispatch2<Logor,std::intptr_t>(val, x.val));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline Bignum operator |(const T x) const
-    {   return Bignum(true, op_dispatch2<Logor,std::intptr_t>(val,
-                      Bignum(x).val));
-    }
-
-    inline Bignum operator ^(const Bignum& x) const
-    {   return Bignum(true, op_dispatch2<Logxor,std::intptr_t>(val,
-                      x.val));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline Bignum operator ^(const T x) const
-    {   return Bignum(true, op_dispatch2<Logxor,std::intptr_t>(val,
-                      Bignum(x).val));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline Bignum operator <<(T n) const
-    {   return Bignum(true, op_dispatch1<LeftShift,std::intptr_t>(val,
-                      static_cast<SignedDigit>(n)));
-    }
-
-    inline Bignum operator <<(Bignum n) const
-    {   return Bignum(true, op_dispatch1<LeftShift,std::intptr_t>(val,
-                      static_cast<SignedDigit>(n)));
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline Bignum operator >>(T n) const
-    {   return Bignum(true, op_dispatch1<RightShift,std::intptr_t>(val,
-                      static_cast<SignedDigit>(n)));
-    }
-
-    inline Bignum operator >>(Bignum n) const
-    {   return Bignum(true, op_dispatch1<RightShift,std::intptr_t>(val,
-                      static_cast<SignedDigit>(n)));
-    }
-
-    inline Bignum operator ~() const
-    {   return Bignum(true, op_dispatch1<Lognot,std::intptr_t>(val));
-    }
-
-    inline bool operator ==(const Bignum& x) const
-    {   return op_dispatch2<Eqn,bool>(val, x.val);
-    }
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline bool operator ==(const T x) const
-    {   return op_dispatch2<Eqn,bool>(val, Bignum(x).val);
-    }
-
-    inline bool operator !=(const Bignum& x) const
-    {   return !op_dispatch2<Eqn,bool>(val, x.val);
-    }
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline bool operator !=(const T x) const
-    {   return !op_dispatch2<Eqn,bool>(val, Bignum(x).val);
-    }
-
-    inline bool operator >(const Bignum& x) const
-    {   return op_dispatch2<Greaterp,bool>(val, x.val);
-    }
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline bool operator >(const T x) const
-    {   return op_dispatch2<Greaterp,bool>(val, Bignum(x).val);
-    }
-
-    inline bool operator >=(const Bignum& x) const
-    {   return op_dispatch2<Geq,bool>(val, x.val);
-    }
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline bool operator >=(const T x) const
-    {   return op_dispatch2<Geq,bool>(val, Bignum(x).val);
-    }
-
-    inline bool operator <(const Bignum& x) const
-    {   return op_dispatch2<Lessp,bool>(val, x.val);
-    }
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline bool operator <(const T x) const
-    {   return op_dispatch2<Lessp,bool>(val, Bignum(x).val);
-    }
-
-    inline bool operator <=(const Bignum& x) const
-    {   return op_dispatch2<Leq,bool>(val, x.val);
-    }
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline bool operator <=(const T x) const
-    {   return op_dispatch2<Leq,bool>(val, Bignum(x).val);
-    }
-
-    inline void operator +=(const Bignum& x)
-    {   std::intptr_t r = op_dispatch2<Plus,std::intptr_t>(val, x.val);
-        abandon(val);
-        val = r;
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline void operator +=(T x)
-    {   std::intptr_t r = op_dispatch2<Plus,std::intptr_t>(val, Bignum(x).val);
-        abandon(val);
-        val = r;
-    }
-
-    inline void operator -=(const Bignum& x)
-    {   std::intptr_t r = op_dispatch2<Difference,std::intptr_t>(val, x.val);
-        abandon(val);
-        val = r;
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline void operator -=(T x)
-    {   std::intptr_t r =
-            op_dispatch2<Difference,std::intptr_t>(val, Bignum(x).val);
-        abandon(val);
-        val = r;
-    }
-
-    inline void operator *=(const Bignum& x)
-    {   std::intptr_t r = op_dispatch2<Times,std::intptr_t>(val, x.val);
-        abandon(val);
-        val = r;
-    }
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline void operator *=(T x)
-    {   std::intptr_t r =
-            op_dispatch2<Times,std::intptr_t>(val, Bignum(x).val);
-        abandon(val);
-        val = r;
-    }
-
-    inline void operator /=(const Bignum& x)
-    {   std::intptr_t r = op_dispatch2<Quotient,std::intptr_t>(val, x.val);
-        abandon(val);
-        val = r;
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline void operator /=(T x)
-    {   std::intptr_t r =
-            op_dispatch2<Quotient,std::intptr_t>(val, Bignum(x).val);
-        abandon(val);
-        val = r;
-    }
-
-    inline void operator %=(const Bignum& x)
-    {   std::intptr_t r = op_dispatch2<Remainder,std::intptr_t>(val, x.val);
-        abandon(val);
-        val = r;
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline void operator %=(T x)
-    {   std::intptr_t r = op_dispatch2<Remainder,std::intptr_t>(val,
-                          Bignum(x).val);
-        abandon(val);
-        val = r;
-    }
-
-    inline void operator &=(const Bignum& x)
-    {   std::intptr_t r = op_dispatch2<Logand,std::intptr_t>(val, x.val);
-        abandon(val);
-        val = r;
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline void operator &=(T x)
-    {   std::intptr_t r =
-            op_dispatch2<Logand,std::intptr_t>(val, Bignum(x).val);
-        abandon(val);
-        val = r;
-    }
-
-    inline void operator |=(const Bignum& x)
-    {   std::intptr_t r = op_dispatch2<Logor,std::intptr_t>(val, x.val);
-        abandon(val);
-        val = r;
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline void operator |=(T x)
-    {   std::intptr_t r =
-            op_dispatch2<Logor,std::intptr_t>(val, Bignum(x).val);
-        abandon(val);
-        val = r;
-    }
-
-    inline void operator ^=(const Bignum& x)
-    {   std::intptr_t r = op_dispatch2<Logxor,std::intptr_t>(val, x.val);
-        abandon(val);
-        val = r;
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline void operator ^=(T x)
-    {   std::intptr_t r =
-            op_dispatch2<Logxor,std::intptr_t>(val, Bignum(x).val);
-        abandon(val);
-        val = r;
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline void operator <<=(T n)
-    {   std::intptr_t r =
-            op_dispatch1<LeftShift,std::intptr_t>(val,
-                static_cast<SignedDigit>(n));
-        abandon(val);
-        val = r;
-    }
-
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    inline void operator >>=(T n)
-    {   std::intptr_t r =
-            op_dispatch1<RightShift,std::intptr_t>(val,
-                static_cast<SignedDigit>(n));
-        abandon(val);
-        val = r;
-    }
-
-    inline Bignum operator ++()
-    {   std::intptr_t r = bigplus_small(val, 1);
-        abandon(val);
-        val = r;
-        return* this;
-    }
-
-    inline Bignum operator ++(int)
-    {   std::intptr_t r = bigplus_small(val, 1);
-// I assign explicitly to oldval.val because trying to use a constructor
-// of Bignum or assigning to one would so things more complicated than I want!
-        Bignum oldval;
-        oldval.val = val;
-        val = r;
-        return oldval;
-    }
-
-    inline Bignum operator --()
-    {   std::intptr_t r = bigplus_small(val, -1);
-        abandon(val);
-        val = r;
-        return* this;
-    }
-
-    inline Bignum operator --(int)
-    {   std::intptr_t r = bigplus_small(val, -1);
-        Bignum oldval;
-        oldval.val = val;
-        val = r;
-        return oldval;
-    }
-
-    inline Bignum lowbit() const
-    {   return Bignum(true, op_dispatch1<LowBit,std::size_t>(val));
-    }
-
-    inline Bignum highbit() const
-    {   return Bignum(true, op_dispatch1<IntegerLength,std::size_t>(val));
-    }
-
-    friend std::ostream & operator << (std::ostream &out, const Bignum& a)
-    {   std::ios_base::fmtflags fg = out.flags();
-#if defined LISP
-        LispObject s;
-#else // LISP
-        char* s;
-#endif // LISP
-        if ((static_cast<unsigned int>(fg) & std::ios_base::hex) != 0U)
-            s = bignumToStringHex(a.val);
-        else if ((static_cast<unsigned int>(fg) & std::ios_base::oct) != 0U)
-            s = bignumToStringOctal(a.val);
-        else if ((static_cast<unsigned int>(fg) & std::ios_base::dec) != 0U)
-            s = bignumToString(a.val);
-        else if (radix::is_binary_output(out))
-            s = bignumToStringBinary(a.val);
-        else s = bignumToString(a.val);
-#if defined LISP
-        std::string ss(s, length_of_byteheader(qheader(s)) -
-                          sizeof(std::uintptr_t));
-        out << ss;
-#else // lISP
-        out << s;
-#endif // LISP
-        abandonString(s);
-        return out;
-    }
-    friend std::istream & operator >> (std::istream &in, Bignum& a)
-    {   SignedDigit n;
-// What I really want to do is to read in a string of digits and then
-// use stringToBignum().
-        in >> n;
-        abandon(a.val);
-        a.val = intToBignum(n);
-        return in;
-    }
-};
-
-// I use a suffix "_Z" for bignums, with Z chosen to reminding me that this
-// gives me an Integer, the "Z" (typically written in a blackboard font)
-// standing for the ring of integers.
-inline Bignum operator ""_Z(const char* s)
-{   return Bignum(s);
-}
-
-inline const string_handle toString(Bignum x)
-{   return bignumToString(x.val);
-}
-
-inline Bignum uniformPositiveBignum(std::size_t n)
-{   return Bignum(true, uniformPositive(n));
-}
-
-inline Bignum uniformSignedBignum(std::size_t n)
-{   return Bignum(true, uniformSigned(n));
-}
-
-inline Bignum uniformUptoBignum(Bignum a)
-{   return Bignum(true, uniformUpto(a.val));
-}
-
-inline Bignum fudgeDistributionBignum(Bignum a, int n)
-{   return Bignum(true, fudgeDistribution(a.val, n));
-}
-
-inline Bignum randomUptoBitsBignum(std::size_t n)
-{   return Bignum(true, randomUptoBits(n));
-}
-
-inline Bignum square(const Bignum& x)
-{   return Bignum(true, op_dispatch1<Square,std::intptr_t>(x.val));
-}
-
-inline Bignum isqrt(const Bignum& x)
-{   return Bignum(true, op_dispatch1<Isqrt,std::intptr_t>(x.val));
-}
-
-inline Bignum abs(const Bignum& x)
-{   return Bignum(true, op_dispatch1<Abs,std::intptr_t>(x.val));
-}
-
-inline bool zerop(const Bignum& x)
-{   return op_dispatch1<Zerop,bool>(x.val);
-}
-
-inline bool onep(const Bignum& x)
-{   return op_dispatch1<Onep,bool>(x.val);
-}
-
-inline bool minusp(const Bignum& x)
-{   return op_dispatch1<Minusp,bool>(x.val);
-}
-
-inline bool plusp(const Bignum& x)
-{   return op_dispatch1<Plusp,bool>(x.val);
-}
-
-inline bool evenp(const Bignum& x)
-{   return op_dispatch1<Evenp,bool>(x.val);
-}
-
-inline bool oddp(const Bignum& x)
-{   return op_dispatch1<Oddp,bool>(x.val);
-}
-template <typename T,
-    typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-inline Bignum pow(const Bignum& x, T n)
-{   if (n == 0) return Bignum(true, intToBignum(1));
-    else if (n == 1) return Bignum(true, copyIfNoGarbageCollector(x.val));
-    else if (n == 2) return square(x);
-    else return Bignum(true,
-        op_dispatch1<Pow,std::intptr_t>(x.val, static_cast<SignedDigit>(n)));
-}
-
-inline double doubleBignum(const Bignum& x);
-
-inline double pow(const Bignum& x, double n)
-{   return std::pow(doubleBignum(x), n);
-}
-
-inline Bignum gcd(const Bignum& x, const Bignum& y)
-{   return Bignum(true, op_dispatch2<Gcd,std::intptr_t>(x.val, y.val));
-}
-
-inline Bignum lcm(const Bignum& x, const Bignum& y)
-{   return Bignum(true, op_dispatch2<Lcm,std::intptr_t>(x.val, y.val));
-}
-
-inline Bignum fixBignum(double d)
-{   return Bignum(true, truncDoubleToInt(d));
-}
-
-inline Bignum roundBignum(double d)
-{   return Bignum(true, roundDoubleToInt(d));
-}
-
-inline Bignum truncBignum(double d)
-{   return Bignum(true, truncDoubleToInt(d));
-}
-
-inline Bignum floorBignum(double d)
-{   return Bignum(true, floorDoubleToInt(d));
-}
-
-inline Bignum ceilBignum(double d)
-{   return Bignum(true, ceilingDoubleToInt(d));
-}
-
-inline Bignum fixBignum(float d)
-{   return fixBignum(static_cast<double>(d));
-}
-
-inline Bignum roundBignum(float d)
-{   return roundBignum(static_cast<double>(d));
-}
-
-inline Bignum truncBignum(float d)
-{   return truncBignum(static_cast<double>(d));
-}
-
-inline Bignum floorBignum(float d)
-{   return floorBignum(static_cast<double>(d));
-}
-
-inline Bignum ceilBignum(float d)
-{   return ceilBignum(static_cast<double>(d));
-}
-
-inline double floatBignum(const Bignum& x)
-{   return op_dispatch1<Float,float>(x.val);
-}
-
-inline double doubleBignum(const Bignum& x)
-{   return op_dispatch1<Double,double>(x.val);
-}
-
-// This will return a normalized double and an integer exponent.
-// It can be better than using frexp(doubleBignum(x), ..) because it
-// avoids overflow.
-
-inline double frexpBignum(const Bignum& x, SignedDigit &xx)
-{   return op_dispatch1<Frexp,double>(x.val, xx);
-}
-
-inline FLOAT_128 frexp128Bignum(const Bignum& x, SignedDigit &xx)
-{   return op_dispatch1<Frexp128,FLOAT_128>(x.val, xx);
-}
-
-inline FLOAT_128 longfloat6Bignum(const Bignum& x)
-{   return op_dispatch1<Float128,FLOAT_128>(x.val);
-}
 
 //=========================================================================
 // display() will show the internal representation of a bignum as a
@@ -3271,10 +1606,6 @@ inline void display(const char* label, std::intptr_t a)
     }
 }
 
-inline void display(const char* label, const Bignum& a)
-{   display(label, a.val);
-}
-
 inline void display(std::string label,
                     const std::uint64_t* a,
                     std::size_t lena)
@@ -3289,10 +1620,6 @@ inline void display(std::string label,
 }
 
 inline void display(std::string label, std::intptr_t a)
-{   display(label.c_str(), a);
-}
-
-inline void display(std::string label, const Bignum& a)
 {   display(label.c_str(), a);
 }
 
@@ -8030,21 +6357,14 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
     x[lenx-1] = 1ULL << bitstop;
     if (bitstop == 63) x[lenx-1]--; // ensure it is still positive!
 // I now have a first approximation to the square root as a number that is
-// a power of 2 with about half the bit-length of a. I will degenerate into
-// using generic arithmetic here even though that may have extra costs.
-//
+// a power of 2 with about half the bit-length of a.
 // I could perhaps reasonably use uint64_t arithmetic for a first few
 // iterations, only looking at the most significant digit of the input.
 // That would save time, however at present I do not expect this function
 // to be time critical in any plausible application, and so I will keep
-// things simple(er).
-    Bignum biga(true, vectorToHandle(a));
-    Bignum bigx(true, confirmSize(x, lenx, lenx));
-// I will do the first step outside the loop to guarantee that my
-// approximation is an over-estimate before I try the end-test.
-//         bigx = (bigx + biga/bigx) >> 1;
-// The push/pop mess here feels extreme and I should probably re-code this
-// using lower level interfaces.
+// things simple(er). The iteration I need to do is
+//     x = (x + a/x)/2
+#if 0
     Bignum w1 = biga/bigx;
     w1 = bigx + w1;
     bigx = w1 >> 1;
@@ -8062,6 +6382,9 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
     std::intptr_t r = bigx.val;
     bigx.val = 0;
     return r;
+#else
+    return fixnum_of_int(9999);
+#endif
 }
 
 inline std::intptr_t Isqrt::op(SignedDigit aa)
@@ -9083,7 +7406,6 @@ inline std::intptr_t Ceiling::op(SignedDigit a, SignedDigit b)
 }
 
 
-#ifdef LISP
 
 // In LISP mode I provide a function that returns both quotient and
 // remainder. In the other two modes I support the same idea but
@@ -9153,23 +7475,6 @@ inline std::intptr_t Divide::op(SignedDigit aa, SignedDigit bb)
     return cons(qq, rr);
 }
 
-#else // LISP
-
-inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b,
-                                std::intptr_t &rem)
-{   std::size_t lena = numberSize(a);
-    std::size_t lenb = numberSize(b);
-    std::uint64_t* q = nullptr;
-    std::uint64_t* r = nullptr;
-    std::size_t olenq, olenr, lenq, lenr;
-    division(a, lena, b, lenb,
-             true, q, olenq, lenq,
-             true, r, olenr, lenr);
-    rem = confirmSize(r, olenr, lenr);
-    return confirmSize_x(q, olenq, lenq);
-}
-
-#endif // LISP
 
 // a = a - b*q.
 
@@ -9779,7 +8084,7 @@ inline std::intptr_t Gcd::op(SignedDigit a, SignedDigit b)
         aa = bb;
         bb = cc;
     }
-// A messy case is gcd(-MIX_FIXNUM, MIN_FIXNUM) which yields -MIN_FIXNUM
+// A messy case is gcd(MIX_FIXNUM, MIN_FIXNUM) which yields -MIN_FIXNUM
 // which is liable to be MAX_FIXNUM+1 and so has to be returned as a bignum.
     return unsignedIntToBignum(aa);
 }
@@ -9819,7 +8124,6 @@ inline std::intptr_t Lcm::op(SignedDigit a, SignedDigit b)
     else return unsignedIntToBignum(-static_cast<Digit>(MIN_FIXNUM));
 }
 
-#ifdef CSL
 // Support for calculations modulo some integer value...
 
 // Some of these NEED to be inline, so that they are shared across all
@@ -9861,7 +8165,7 @@ inline std::intptr_t SetModulus::op(SignedDigit n)
 {   using namespace CSL_LISP;
     if (n < 1)
         UNLIKELY
-        return (std::intptr_t)aerror1("Invalid arg to set-modulus",
+        return (std::intptr_t)aerror("Invalid arg to set-modulus",
                                       intToHandle(n));
     std::intptr_t r = value_of_currentModulus();
     smallModulus = n;
@@ -9874,7 +8178,7 @@ inline std::intptr_t SetModulus::op(std::uint64_t* n)
 {   using namespace CSL_LISP;
     if (!Plusp::op(n))
         UNLIKELY
-        return (std::intptr_t)aerror1("Invalid arg to set-modulus",
+        return (std::intptr_t)aerror("Invalid arg to set-modulus",
                                       vectorToHandle(n));
     std::intptr_t r = value_of_currentModulus();
     std::size_t lenn = numberSize(n);
@@ -9936,7 +8240,7 @@ inline std::intptr_t ModularPlus::op(SignedDigit a, std::uint64_t* b)
     using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror("bad arg for modular-plus",
                                       vectorToHandle(b));
     std::intptr_t r = Plus::op(a, b);
     if (op_dispatch1<Geq,bool>(r, largeModulus()))
@@ -9957,7 +8261,7 @@ inline std::intptr_t ModularPlus::op(std::uint64_t* a,
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror("bad arg for modular-plus",
                                       vectorToHandle(a));
     std::intptr_t r = Plus::op(a, b);
     if (op_dispatch1<Geq, bool>(r, largeModulus()))
@@ -9979,7 +8283,7 @@ inline std::intptr_t ModularDifference::op(SignedDigit a, std::uint64_t* b)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror("bad arg for modular-plus",
                                       vectorToHandle(b));
     std::intptr_t r = Difference::op(b, a);
     std::intptr_t r1 =
@@ -9992,7 +8296,7 @@ inline std::intptr_t ModularDifference::op(std::uint64_t* a, SignedDigit b)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror("bad arg for modular-plus",
                                       vectorToHandle(a));
     return Difference::op(a, b);
 }
@@ -10001,7 +8305,7 @@ inline std::intptr_t ModularDifference::op(std::uint64_t* a, std::uint64_t* b)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad arg for modular-plus",
+        return (std::intptr_t)aerror("bad arg for modular-plus",
                                       vectorToHandle(a));
     if (Geq::op(a, b)) return Difference::op(a, b);
     std::intptr_t r = Difference::op(b, a);
@@ -10131,7 +8435,7 @@ inline std::intptr_t ModularMinus::op(std::uint64_t* a)
 {   using namespace CSL_LISP;
     if (modulusSize != modulus_big)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad argument for modular-minus",
+        return (std::intptr_t)aerror("bad argument for modular-minus",
                                       vectorToHandle(a));
     return Difference::op(largeModulus(), a);
 }
@@ -10174,7 +8478,7 @@ inline std::intptr_t ModularReciprocal::op(SignedDigit aa)
 {   using namespace CSL_LISP;
     if (aa <= 0)
         UNLIKELY
-        return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
+        return (std::intptr_t)aerror("bad argument to modular-reciprocal",
                                       intToHandle(aa));
     else if (modulusSize == modulus_big)
         return generalModularReciprocal(intToHandle(aa));
@@ -10186,7 +8490,7 @@ inline std::intptr_t ModularReciprocal::op(SignedDigit aa)
     {   Digit w, t;
         if (b == 0)
             UNLIKELY
-            return (std::intptr_t)aerror2(
+            return (std::intptr_t)aerror(
                     "non-prime modulus in modular-reciprocal",
                     intToHandle(smallModulus),
                     intToHandle(aa));
@@ -10210,7 +8514,7 @@ inline std::intptr_t SafeModularReciprocal::op(SignedDigit aa)
 {   using namespace CSL_LISP;
     if (aa <= 0)
         UNLIKELY
-        return (std::intptr_t)aerror1(
+        return (std::intptr_t)aerror(
             "bad argument to safe-modular-reciprocal",
             intToHandle(aa));
     else if (modulusSize == modulus_big)
@@ -10239,25 +8543,15 @@ inline std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
 {   return generalModularReciprocal(vectorToHandle(a), true);
 }
 
-#endif // CSL
 
 } // end namespace arithlib_implementation
 
-// I want a namespace that the user can activate via "using" that only
-// gives access to things that ought to be exported by this library. So
-// arithlib_implementation is to be thought of as somewhat low level and
-// private, while just plain arithlib may be enough for the typical C++
-// user who is just going to be using the "Bignum" type.
-//
 // [The issue of whether I have everything I need included in this list
 //  remains uncertain, however a user can either add to the section here
 //  or use the arithlib_implementation namespace directly in case of upset]
 
 namespace arithlib
 {
-using arithlib_implementation::operator""_Z;
-using arithlib_implementation::Bignum;
-
 using arithlib_implementation::version_string;
 using arithlib_implementation::version;
 
@@ -10266,12 +8560,8 @@ using arithlib_implementation::reseed;
 using arithlib_implementation::uniformUint64;
 using arithlib_implementation::uniformPositive;
 using arithlib_implementation::uniformSigned;
-using arithlib_implementation::uniformPositiveBignum;
-using arithlib_implementation::uniformSignedBignum;
-using arithlib_implementation::randomUptoBitsBignum;
 
 using arithlib_implementation::display;
-using arithlib_implementation::fixBignum;
 }
 
 // I am putting in names that CSL uses here...
@@ -10326,7 +8616,6 @@ using arithlib_implementation::Logcount;
 using arithlib_implementation::Float;    // returns 32-bit float
 using arithlib_implementation::Double;   // returns 64-bit float
 using arithlib_implementation::Frexp;
-#ifdef CSL
 using arithlib_implementation::ModularPlus;
 using arithlib_implementation::ModularDifference;
 using arithlib_implementation::ModularTimes;
@@ -10337,7 +8626,6 @@ using arithlib_implementation::ModularReciprocal;
 using arithlib_implementation::SafeModularReciprocal;
 using arithlib_implementation::ModularNumber;
 using arithlib_implementation::SetModulus;
-#endif // CSL
 
 using arithlib_implementation::intToBignum;
 using arithlib_implementation::unsignedIntToBignum;

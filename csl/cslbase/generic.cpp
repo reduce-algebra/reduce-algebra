@@ -1,7 +1,7 @@
-// arith-headers.h                              Copyright (C) 2026 Codemist
+// generic.cpp                                  Copyright (C) 2026 Codemist
 
-#ifndef header_arith_headers_h
-#define header_arith_headers_h 1
+// $Id$
+
 
 /**************************************************************************
  * Copyright (C) 2026, Codemist.                         A C Norman       *
@@ -32,27 +32,12 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id$
-
-//
-// The library "arithlib.h" is a bulky file and it does
-// not make sense to include it when compiling parts of CSL that do not
-// need it. So those files that do need it will #include "arith-headers.h"
-// rather than merely #include "headers.h".
-// The dispatch code that copes with selecting which version of an
-// arithmetic operation is needed based on operand types is also only
-// #included here.
-//
-
-#if defined DEBUG && !defined CHECK_TIMES
-/////  #define CHECK_TIMES 1
-#endif // DEBUG
+// This is for any extra out-of-line code I need as part of the scheme
+// that dispatches on and handles numbers of many sorts.
 
 #include "headers.h"
 
-#include "arithlib.h"
-#include "dispatch.h"
 
-#endif // header_arith_headers_h
 
-// end of arith-headers.h
+
+// end of generic.cpp

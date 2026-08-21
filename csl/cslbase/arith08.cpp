@@ -105,7 +105,7 @@ static LispObject Lboole_3(LispObject env, LispObject op,
         case boole_set:
             return fixnum_of_int(-1);
         default:
-            return aerror1("bad arg for boole",  op);
+            return aerror("bad arg for boole",  op);
     }
     return r;
 }
@@ -118,13 +118,13 @@ static LispObject Lbyte(LispObject env, LispObject a, LispObject b)
 
 static LispObject Lbyte_position(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!consp(a)) return aerror1("byte-position", a);
+    if (!consp(a)) return aerror("byte-position", a);
     else return cdr(a);
 }
 
 static LispObject Lbyte_size(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!consp(a)) return aerror1("byte-size", a);
+    if (!consp(a)) return aerror("byte-size", a);
     else return car(a);
 }
 
@@ -145,7 +145,7 @@ static LispObject Lcomplex_1(LispObject env, LispObject a)
 
 static LispObject Lconjugate(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("conjugate", a);
+    if (!is_number(a)) return aerror("conjugate", a);
     if (is_numbers(a) && is_complex(a))
     {   LispObject r = real_part(a),
                        i = imag_part(a);
@@ -159,7 +159,7 @@ static LispObject Lconjugate(LispObject env, LispObject a)
 
 static LispObject Ldenominator(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("denominator", a);
+    if (!is_number(a)) return aerror("denominator", a);
     if (is_numbers(a) && is_ratio(a))
         return denominator(a);
     else return fixnum_of_int(1);
@@ -245,7 +245,7 @@ LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
 
 static LispObject Limagpart(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("imagpart", a);
+    if (!is_number(a)) return aerror("imagpart", a);
     if (is_numbers(a) && is_complex(a))
         return imag_part(a);
 // /* the 0.0 returned here ought to be the same type as a has
@@ -292,7 +292,7 @@ LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
 
 static LispObject Lnumerator(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("numerator", a);
+    if (!is_number(a)) return aerror("numerator", a);
     if (is_numbers(a) && is_ratio(a))
         return numerator(a);
     else return a;
@@ -300,7 +300,7 @@ static LispObject Lnumerator(LispObject env, LispObject a)
 
 static LispObject Lrealpart(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("realpart", a);
+    if (!is_number(a)) return aerror("realpart", a);
     if (is_numbers(a) && is_complex(a))
         return real_part(a);
     else return a;
@@ -600,7 +600,7 @@ static LispObject Lfloat_sign2(LispObject env, LispObject a,
 // Worry a bit about -0.0 here
     if (float_of_number(a) < 0.0) d = -d;
     if (is_sfloat(b)) return pack_immediate_float(d, b);
-    else if (!is_bfloat(b)) return aerror1("bad arg for float-sign",  b);
+    else if (!is_bfloat(b)) return aerror("bad arg for float-sign",  b);
 // make_boxfloat may detect infinity or NaN.
     else return make_boxfloat(d, floatWant(flthdr(b)));
 }
@@ -619,7 +619,7 @@ static LispObject Lfloat_sign1(LispObject env, LispObject a)
     if (d < 0.0) d = -1.0;
     else d = 1.0;
     if (is_sfloat(a)) return pack_immediate_float(d, a);
-    else if (!is_bfloat(a)) return aerror1("bad arg for float-sign",  a);
+    else if (!is_bfloat(a)) return aerror("bad arg for float-sign",  a);
     else return make_boxfloat(d, floatWant(flthdr(a)));
 }
 
@@ -732,7 +732,7 @@ static LispObject Linteger_length(LispObject env, LispObject a)
         return fixnum_of_int(r + msd_table[n]);
 #endif
     }
-    if (!is_numbers(a) || !is_bignum(a)) return aerror1("integer-length", a);
+    if (!is_numbers(a) || !is_bignum(a)) return aerror("integer-length", a);
     if (minusp(a)) a = sub1(negate(a));
     return Lmsd(nil, a);
 }
@@ -741,7 +741,7 @@ static LispObject Llogbitp(LispObject env, LispObject a1,
                            LispObject a2)
 {   SingleValued fn;
     if (!is_fixnum(a1) || (intptr_t)a1 < 0)
-        return aerror1("logbitp", a1);
+        return aerror("logbitp", a1);
     uintptr_t n = int_of_fixnum(a1);
     if (is_fixnum(a2))
     {   intptr_t v = int_of_fixnum(a2);
@@ -756,7 +756,7 @@ static LispObject Llogbitp(LispObject env, LispObject a1,
         return Lispify_predicate((bignum_digits(a2)[word] & (1<<
                                   (n%31))) != 0);
     }
-    else return aerror1("logbitp", a2);
+    else return aerror("logbitp", a2);
 }
 
 static LispObject Llogcount(LispObject env, LispObject a)
@@ -779,7 +779,7 @@ static LispObject Llogcount(LispObject env, LispObject a)
         }
         return fixnum_of_int(n);
     }
-    else return aerror1("bad argument to logcount", a);
+    else return aerror("bad argument to logcount", a);
 }
 
 static LispObject Llogtest(LispObject env, LispObject a1,
@@ -802,7 +802,7 @@ static LispObject scale_float128(LispObject a, intptr_t x)
 
 static LispObject Lround_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!is_number(a) || !is_number(b)) return aerror1("round", a);
+    if (!is_number(a) || !is_number(b)) return aerror("round", a);
     return lisp_ifix(a, b, FIX_ROUND);
 }
 
@@ -819,7 +819,7 @@ static LispObject Lscale_float(LispObject env, LispObject a,
     d = std::ldexp(d, static_cast<int>(x));
 // Overflows etc handled by make_boxfloat.
     if (is_sfloat(a)) return pack_immediate_float(d, a);
-    else if (!is_bfloat(a)) return aerror1("bad arg for scale-float",  a);
+    else if (!is_bfloat(a)) return aerror("bad arg for scale-float",  a);
     else return make_boxfloat(d, floatWant(flthdr(a)));
 }
 
@@ -1099,7 +1099,7 @@ LispObject lisp_fix(LispObject a, int roundmode)
 
 static LispObject Lround(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("round", a);
+    if (!is_number(a)) return aerror("round", a);
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_ROUND);
     if (is_float(a)) return lisp_fix(a, FIX_ROUND);
     mv_2 = fixnum_of_int(0);
@@ -1165,25 +1165,25 @@ LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
 static LispObject Lceiling_2(LispObject env, LispObject a,
                              LispObject b)
 {   SingleValued fn;
-    if (!is_number(a) || !is_number(b)) return aerror1("ceiling", a);
+    if (!is_number(a) || !is_number(b)) return aerror("ceiling", a);
     return lisp_ifix(a, b, FIX_CEILING);
 }
 
 static LispObject Lfloor_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!is_number(a) || !is_number(b)) return aerror1("floor", a);
+    if (!is_number(a) || !is_number(b)) return aerror("floor", a);
     return lisp_ifix(a, b, FIX_FLOOR);
 }
 
 LispObject Ltruncate_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!is_number(a) || !is_number(b)) return aerror1("truncate", a);
+    if (!is_number(a) || !is_number(b)) return aerror("truncate", a);
     return lisp_ifix(a, b, FIX_TRUNCATE);
 }
 
 static LispObject Lceiling(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("ceiling", a);
+    if (!is_number(a)) return aerror("ceiling", a);
     if (is_numbers(a) &&
         is_ratio(a)) return lisp_fix_ratio(a, FIX_CEILING);
     if (is_float(a)) return lisp_fix(a, FIX_CEILING);
@@ -1193,7 +1193,7 @@ static LispObject Lceiling(LispObject env, LispObject a)
 
 static LispObject Lfloor(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("floor", a);
+    if (!is_number(a)) return aerror("floor", a);
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_FLOOR);
     if (is_float(a)) return lisp_fix(a, FIX_FLOOR);
     mv_2 = fixnum_of_int(0);
@@ -1202,7 +1202,7 @@ static LispObject Lfloor(LispObject env, LispObject a)
 
 LispObject Ltruncate(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("fix", a);
+    if (!is_number(a)) return aerror("fix", a);
     if (is_numbers(a) &&
         is_ratio(a)) return lisp_fix_ratio(a, FIX_TRUNCATE);
     if (is_float(a)) return lisp_fix(a, FIX_TRUNCATE);

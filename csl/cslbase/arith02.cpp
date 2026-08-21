@@ -1212,14 +1212,14 @@ LispObject times2(LispObject a, LispObject b)
                         case TYPE_COMPLEX_NUM:
                             return timesic(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            return aerror("bad arg for times",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                 case TAG_BOXFLOAT+TAG_XBIT:
                     return timesif(a, b);
                 default:
-                    return aerror1("bad arg for times",  b);
+                    return aerror("bad arg for times",  b);
             }
         case XTAG_SFLOAT:
             switch (b & XTAG_BITS)
@@ -1241,14 +1241,14 @@ LispObject times2(LispObject a, LispObject b)
                         case TYPE_COMPLEX_NUM:
                             return timessc(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            return aerror("bad arg for times",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                 case TAG_BOXFLOAT+TAG_XBIT:
                     return timessf(a, b);
                 default:
-                    return aerror1("bad arg for times",  b);
+                    return aerror("bad arg for times",  b);
             }
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
@@ -1271,14 +1271,14 @@ LispObject times2(LispObject a, LispObject b)
                                 case TYPE_COMPLEX_NUM:
                                     return timesbc(a, b);
                                 default:
-                                    return aerror1("bad arg for times",  b);
+                                    return aerror("bad arg for times",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                         case TAG_BOXFLOAT+TAG_XBIT:
                             return timesbf(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            return aerror("bad arg for times",  b);
                     }
                 case TYPE_RATNUM:
                     switch (b & XTAG_BITS)
@@ -1297,14 +1297,14 @@ LispObject times2(LispObject a, LispObject b)
                                 case TYPE_COMPLEX_NUM:
                                     return timesrc(a, b);
                                 default:
-                                    return aerror1("bad arg for times",  b);
+                                    return aerror("bad arg for times",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                         case TAG_BOXFLOAT+TAG_XBIT:
                             return timesrf(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            return aerror("bad arg for times",  b);
                     }
                 case TYPE_COMPLEX_NUM:
                     switch (b & XTAG_BITS)
@@ -1323,16 +1323,16 @@ LispObject times2(LispObject a, LispObject b)
                                 case TYPE_COMPLEX_NUM:
                                     return timescc(a, b);
                                 default:
-                                    return aerror1("bad arg for times",  b);
+                                    return aerror("bad arg for times",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                         case TAG_BOXFLOAT+TAG_XBIT:
                             return timescf(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            return aerror("bad arg for times",  b);
                     }
-                default:    return aerror1("bad arg for times",  a);
+                default:    return aerror("bad arg for times",  a);
             }
         }
         case TAG_BOXFLOAT:
@@ -1353,17 +1353,17 @@ LispObject times2(LispObject a, LispObject b)
                         case TYPE_COMPLEX_NUM:
                             return timesfc(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            return aerror("bad arg for times",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                 case TAG_BOXFLOAT+TAG_XBIT:
                     return timesff(a, b);
                 default:
-                    return aerror1("bad arg for times",  b);
+                    return aerror("bad arg for times",  b);
             }
         default:
-            return aerror1("bad arg for times",  a);
+            return aerror("bad arg for times",  a);
     }
 }
 

@@ -203,7 +203,7 @@ std::string passKeyCodeToReduce(std::string arguments)
 LispObject Lexec_JS_in_webv(LispObject env, LispObject s)
    {Header h;
     if (!is_vector(s) || !is_string_header(h = vechdr(s)))
-        return aerror1("exec_JS_in_webv", s);
+        return aerror("exec_JS_in_webv", s);
      size_t len = length_of_byteheader(h) - CELL;
      char webviewJSstring[len + 1];
      std::memcpy(webviewJSstring,

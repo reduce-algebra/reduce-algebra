@@ -42,7 +42,7 @@ namespace CSL_LISP
 
 LispObject Lget_bps(LispObject env, LispObject n)
 {   SingleValued fn;
-    if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("get-bps", n);
+    if (!is_fixnum(n) || (intptr_t)n<0) return aerror("get-bps", n);
     intptr_t n1 = int_of_fixnum(n);
 // Size limited
     n = get_basic_vector(TAG_VECTOR, TYPE_BPS_4, n1+CELL);
@@ -457,7 +457,7 @@ LispObject Lsymbol_env(LispObject env, LispObject a)
 
 LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!is_symbol(a)) return aerror1("symbol-set-env", a);
+    if (!is_symbol(a)) return aerror("symbol-set-env", a);
     if ((qheader(a) & SYM_CODEPTR) != 0) return nil;
     qenv(a) = b;
     return b;
@@ -531,7 +531,7 @@ LispObject Lsymbol_make_fastget(LispObject env, LispObject a,
     if (is_fixnum(n))
     {   n1 = int_of_fixnum(n);
         if (n1 < -1 || n1 >= fastget_size)
-            return aerror1("symbol-make-fastget", n);
+            return aerror("symbol-make-fastget", n);
 //      trace_printf("+++ Use fastget slot %d for ", n1);
 //      loop_print_trace(a);
 //      trace_printf("\n");
@@ -588,7 +588,7 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     size_t len;
     size_t i;
     LispObject pn;
-    if (!symbolp(a)) return aerror1("restore-c-code", a);
+    if (!symbolp(a)) return aerror("restore-c-code", a);
     pn = get_pname(a);
     name = reinterpret_cast<char *>(&celt(pn, 0));
     len = length_of_byteheader(vechdr(pn)) - CELL;
@@ -628,7 +628,7 @@ LispObject Lsymbol_set_definition(LispObject env,
 // Something flagged with the CODEPTR bit is a gensym manufactured to
 // stand for a compiled-code object. It should NOT be reset!
         (qheader(a) & (SYM_SPECIAL_FORM | SYM_CODEPTR)) != 0)
-        return aerror1("symbol-set-definition", a);
+        return aerror("symbol-set-definition", a);
     set_fns(a, undefined_0, undefined_1,
                undefined_2, undefined_3,
                undefined_4up); // Tidy up first
@@ -641,15 +641,15 @@ LispObject Lsymbol_set_definition(LispObject env,
 // of a function too.  However for the second arg to be a macro or a
 // special form would still be a calamity.
 //      if ((qheader(b) & SYM_CODEPTR) == 0)
-//          return aerror1("symbol-set-definition", b);
+//          return aerror("symbol-set-definition", b);
         if ((qheader(b) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0)
-            return aerror1("symbol-set-definition", b);
+            return aerror("symbol-set-definition", b);
         qheader(a) = qheader(a) & ~SYM_MACRO;
         {   set_fns(a, qfn0(b), qfn1(b), qfn2(b), qfn3(b), qfn4up(b));
             qenv(a) = qenv(b);
         }
     }
-    else if (!consp(b)) return aerror1("symbol-set-definition", b);
+    else if (!consp(b)) return aerror("symbol-set-definition", b);
     else if (is_fixnum(car(b)))
     {   int32_t nargs = (int32_t)int_of_fixnum(car(b)),
                 nopts, flagbits, ntail;
@@ -729,7 +729,7 @@ LispObject Lsymbol_set_definition(LispObject env,
                 funarged_4up);
         qenv(a) = cdr(b);
     }
-    else return aerror1("symbol-set-definition", b);
+    else return aerror("symbol-set-definition", b);
     return b;
 }
 
@@ -760,7 +760,7 @@ LispObject Lremd(LispObject env, LispObject a)
     LispObject res;
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
-        return aerror1("remd", a);
+        return aerror("remd", a);
     if ((qheader(a) & SYM_CODEPTR) != 0) return nil;
     res = Lgetd(nil, a);
     if (res == nil) return nil; // no definition to remove
@@ -793,11 +793,11 @@ LispObject Lremd(LispObject env, LispObject a)
 
 LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
 {   SingleValued fn;
-    if (!is_symbol(dest)) return aerror1("copyd", dest);
+    if (!is_symbol(dest)) return aerror("copyd", dest);
     LispObject x = Lgetd(nil, src);
     if (x == nil)
     {   if (qvalue(savedef_symbol) != savedef_symbol)
-            return aerror1("undefined function passed to copyd", src);
+            return aerror("undefined function passed to copyd", src);
     }
     qfn0(dest) = qfn0(src);
     qfn1(dest) = qfn1(src);
@@ -831,7 +831,7 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
     LispObject res;
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
-        return aerror1("set-autoload", a);
+        return aerror("set-autoload", a);
     if (!(qfn0(a) == undefined_0 && qfn1(a) == undefined_1 &&
           qfn2(a) == undefined_2 && qfn3(a) == undefined_3 &&
           qfn4up(a) == undefined_4up)) return nil;
@@ -1024,14 +1024,14 @@ LispObject get_pname(LispObject a)
 
 LispObject Lsymbol_name(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!symbolp(a)) return aerror1("symbol-name", a);
+    if (!symbolp(a)) return aerror("symbol-name", a);
     a = get_pname(a);
     return a;
 }
 
 LispObject Lsymbol_package(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!symbolp(a)) return aerror1("symbol-package", a);
+    if (!symbolp(a)) return aerror("symbol-package", a);
     a = qpackage(a);
     return a;
 }
@@ -2445,7 +2445,7 @@ static LispObject Lcontained(LispObject env, LispObject x, LispObject y)
 LispObject Llast(LispObject env, LispObject a)
 {   SingleValued fn;
     LispObject b;
-    if (!consp(a)) return aerror1("last", a);
+    if (!consp(a)) return aerror("last", a);
     while (b = cdr(a), consp(b)) a = b;
     return car(a);
 }
@@ -2453,7 +2453,7 @@ LispObject Llast(LispObject env, LispObject a)
 LispObject Llastpair(LispObject env, LispObject a)
 {   SingleValued fn;
     LispObject b;
-    if (!consp(a)) return a; // return aerror1("lastpair", a;
+    if (!consp(a)) return a; // return aerror("lastpair", a;
     while (b = cdr(a), consp(b)) a = b;
     return a;
 }
@@ -2505,7 +2505,7 @@ LispObject Llength(LispObject env, LispObject a)
         {   LispObject dims = elt(a, 1);
             LispObject fillp = elt(a, 5);
             if (consp(dims) && !consp(cdr(dims))) dims = car(dims);
-            else return aerror1("length", a);  // Not one-dimensional
+            else return aerror("length", a);  // Not one-dimensional
             if (is_fixnum(fillp)) dims = fillp;
             return dims;
         }

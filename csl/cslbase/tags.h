@@ -45,8 +45,8 @@ namespace CSL_LISP
 // General objects in Lisp are represented as pointer-sized integers
 // and the type LispObject reflects this representation and
 // not the elaborate tagged union that at some other level exists.
-// If I could use "void *" for this type that might give me a bit more
-// security since not much can be done with a "void *" object - in particular
+// If I could use "void*" for this type that might give me a bit more
+// security since not much can be done with a "void*" object - in particular
 // it can not participate in arithmetic.  But when I do that I run into
 // trouble in protected mode on a PC if I have items of type LispObject
 // that are not valid pointers. I suspect that the same used to be
@@ -187,13 +187,13 @@ typedef struct Symbol_Head_
     uint32_t countLow;   // for statistics
     uint32_t countHigh;  // for statistics
 //
-    no_args *function0;      // Executable code always (no arguments)
-    one_arg *function1;      // Executable code always (just 1 arg)
+    no_args* function0;      // Executable code always (no arguments)
+    one_arg* function1;      // Executable code always (just 1 arg)
 //
-    two_args *function2;     // Executable code always (just 2 args)
-    three_args *function3;   // Executable code always (just 3 args)
+    two_args* function2;     // Executable code always (just 2 args)
+    three_args* function3;   // Executable code always (just 3 args)
 //
-    fourup_args *function4up;// Executable code always (3 args + list of rest)
+    fourup_args* function4up;// Executable code always (3 args + list of rest)
 } Symbol_Head;
 
 // The above is 13 cells long on a 64-bit system or 14 on a 32-bit one,
@@ -669,10 +669,10 @@ typedef struct Cons_Cell_
 } Cons_Cell;
 
 
-extern bool valid_address(void *pointer);
+extern bool valid_address(void* pointer);
 extern char dependency_file[LONGEST_LEGAL_FILENAME];
 //[[noreturn]] extern void my_abort();
-//[[noreturn]] extern void my_abort(const char *msg);
+//[[noreturn]] extern void my_abort(const char* msg);
 
 // Going forward I may want to be able to control where I have memory
 // fences and what sort get used, so these access functions have (optional)
@@ -680,7 +680,7 @@ extern char dependency_file[LONGEST_LEGAL_FILENAME];
 // for performance if not for multi-thread consistency.
 
 inline LispObject &car(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid car");
+{   //if (!is_cons(p) || !valid_address((void*)p)) my_abort("invalid car");
 #ifdef DEBUG
     my_assert(((p-TAG_CONS) & 0x7) == 0, "unaligned car");
 #endif // DEBUG
@@ -688,7 +688,7 @@ inline LispObject &car(LispObject p)
 }
 
 inline LispObject &cdr(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid cdr");
+{   //if (!is_cons(p) || !valid_address((void*)p)) my_abort("invalid cdr");
 #ifdef DEBUG
     my_assert(((p-TAG_CONS) & 0x7) == 0, "unaligned cdr");
 #endif // DEBUG
@@ -1798,7 +1798,7 @@ inline intptr_t& basic_ielt(LispObject v, size_t n)
 #ifdef DEBUG
     my_assert(((v-TAG_VECTOR) & 0x7) == 0, "unaligned ielt");
 #endif // DEBUG
-    return  *reinterpret_cast<intptr_t *>(reinterpret_cast<char*>
+    return  *reinterpret_cast<intptr_t*>(reinterpret_cast<char*>
                                           (v) +
                                           (CELL-TAG_VECTOR) +
                                           n*sizeof(intptr_t));
@@ -1831,7 +1831,7 @@ inline double& basic_delt(LispObject v, size_t n)
 #ifdef DEBUG
     my_assert(((v-TAG_VECTOR) & 0x7) == 0, "unaligned delt");
 #endif // DEBUG
-    return *reinterpret_cast<double *>(reinterpret_cast<char*>(v) +
+    return *reinterpret_cast<double*>(reinterpret_cast<char*>(v) +
                                        (8-TAG_VECTOR) +
                                        n*sizeof(double));
 }
@@ -2107,7 +2107,7 @@ inline Header &qheader(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qheader");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->header;
 }
 
 inline LispObject &qvalue(LispObject p)
@@ -2115,7 +2115,7 @@ inline LispObject &qvalue(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qvalue");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->value;
 }
 
 inline LispObject &qenv(LispObject p)
@@ -2123,7 +2123,7 @@ inline LispObject &qenv(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qenv");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->env;
 }
 
 inline LispObject &qplist(LispObject p)
@@ -2131,7 +2131,7 @@ inline LispObject &qplist(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qplist");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->plist;
 }
 
 inline LispObject &qfastgets(LispObject p)
@@ -2139,7 +2139,7 @@ inline LispObject &qfastgets(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfastgets");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->fastgets;
 }
 
 inline LispObject &qpackage(LispObject p)
@@ -2147,7 +2147,7 @@ inline LispObject &qpackage(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qpackage");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->package;
 }
 
 inline LispObject &qpname(LispObject p)
@@ -2155,55 +2155,55 @@ inline LispObject &qpname(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qpname");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->pname;
 }
 
-inline LispObject *valueaddr(LispObject p)
+inline LispObject* valueaddr(LispObject p)
 {
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned valueaddr");
 #endif // DEBUG
-    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value);
+    return &(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->value);
 }
 
-inline LispObject *envaddr(LispObject p)
+inline LispObject* envaddr(LispObject p)
 {
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
 #endif // DEBUG
-    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env);
+    return &(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->env);
 }
 
-inline LispObject *plistaddr(LispObject p)
+inline LispObject* plistaddr(LispObject p)
 {
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
 #endif // DEBUG
-    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist);
+    return &(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->plist);
 }
 
-inline LispObject *fastgetsaddr(LispObject p)
+inline LispObject* fastgetsaddr(LispObject p)
 {
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
 #endif // DEBUG
-    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets);
+    return &(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->fastgets);
 }
 
-inline LispObject *packageaddr(LispObject p)
+inline LispObject*packageaddr(LispObject p)
 {
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
 #endif // DEBUG
-    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package);
+    return &(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->package);
 }
 
-inline LispObject *pnameaddr(LispObject p)
+inline LispObject*pnameaddr(LispObject p)
 {
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
 #endif // DEBUG
-    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname);
+    return &(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->pname);
 }
 
 inline no_args*& qfn0(LispObject p)
@@ -2211,7 +2211,7 @@ inline no_args*& qfn0(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfn0");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function0;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->function0;
 }
 
 inline one_arg*& qfn1(LispObject p)
@@ -2219,7 +2219,7 @@ inline one_arg*& qfn1(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfn1");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function1;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->function1;
 }
 
 inline two_args*& qfn2(LispObject p)
@@ -2227,7 +2227,7 @@ inline two_args*& qfn2(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfn2");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function2;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->function2;
 }
 
 inline three_args*& qfn3(LispObject p)
@@ -2235,7 +2235,7 @@ inline three_args*& qfn3(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfn3");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function3;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->function3;
 }
 
 inline fourup_args*& qfn4up(LispObject p)
@@ -2243,69 +2243,69 @@ inline fourup_args*& qfn4up(LispObject p)
 #ifdef DEBUG
     my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfn4up");
 #endif // DEBUG
-    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function4up;
+    return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->function4up;
 }
 
 inline Header old_qheader(LispObject p)
-{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header));
+{   return oldMem(&(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->header));
 }
 
 inline LispObject old_qvalue(LispObject p)
-{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value));
+{   return oldMem(&(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->value));
 }
 
 inline LispObject old_qenv(LispObject p)
-{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env));
+{   return oldMem(&(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->env));
 }
 
 inline LispObject old_qplist(LispObject p)
-{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist));
+{   return oldMem(&(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->plist));
 }
 
 inline LispObject old_qfastgets(LispObject p)
-{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets));
+{   return oldMem(&(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->fastgets));
 }
 
 inline LispObject old_qpackage(LispObject p)
-{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package));
+{   return oldMem(&(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->package));
 }
 
 inline LispObject old_qpname(LispObject p)
-{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname));
+{   return oldMem(&(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->pname));
 }
 
-extern LispObject aerror1(const char *s, LispObject a);
+extern LispObject aerror(const char* s, LispObject a);
+extern LispObject aerror(const char* s1, const char* s2, LispObject a);
 
 // When I have functions with 4 or more args I may need to
 // extract them..
 
-inline LispObject arg4(const char *name, LispObject a4up)
-{   if (cdr(a4up) != nil) return aerror1(name, a4up);
-                          // Too many args provided
+inline LispObject arg4(const char* name, LispObject a4up)
+{   if (cdr(a4up) != nil) return aerror("Too many args passed to", name, a4up);
     return car(a4up);
 }
 
-inline bool a4a5(const char *name, LispObject a4up,
+inline bool a4a5(const char* name, LispObject a4up,
                  LispObject& a4, LispObject& a5)
 {   a4 = car(a4up);
     a4up = cdr(a4up);
     if (a4up==nil ||
         cdr(a4up) != nil)
     {   a5 = nil;
-        aerror1(name, a4up);     // wrong number
+        aerror(name, a4up);     // wrong number
         return true;
     }
     a5 = car(a4up);
     return false;
 }
 
-inline bool a4a5a6(const char *name, LispObject a4up,
+inline bool a4a5a6(const char* name, LispObject a4up,
                    LispObject& a4, LispObject& a5, LispObject& a6)
 {   a4 = car(a4up);
     a4up = cdr(a4up);
     if (a4up == nil)
     {   a5 = a6 = nil;
-        aerror1(name, a4up); // not enough args
+        aerror(name, a4up); // not enough args
         return true;
     }
     a5 = car(a4up);
@@ -2313,7 +2313,7 @@ inline bool a4a5a6(const char *name, LispObject a4up,
     if (a4up==nil ||
         cdr(a4up) != nil)
     {   a6 = nil;
-        aerror1(name, a4up); // wrong number
+        aerror(name, a4up); // wrong number
         return true;
     }
     a6 = car(a4up);
@@ -2333,15 +2333,15 @@ inline bool a4a5a6(const char *name, LispObject a4up,
 // overflow on a calculation that lasted an hour or so!
 
 inline uint32_t& qcountLow(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->countLow;
+{   return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->countLow;
 }
 
 inline uint32_t& qcountHigh(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->countHigh;
+{   return reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->countHigh;
 }
 
 inline uint64_t qcount(LispObject p)
-{   Symbol_Head *pp = reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL);
+{   Symbol_Head* pp = reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL);
     return (static_cast<uint64_t>(pp->countHigh)<<32 | pp->countLow)>>(Tw+2);
 }
 
@@ -2349,7 +2349,7 @@ inline uint64_t qcount(LispObject p)
 // greater than 1023.
 
 inline void incCount(LispObject p, uint32_t m=1)
-{   Symbol_Head *pp = reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL);
+{   Symbol_Head* pp = reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL);
     m <<= 22;
     uint32_t low = pp->countLow += m;
     if (low < m) pp->countHigh++;
@@ -2490,11 +2490,11 @@ typedef struct Rational_Number_
 } Rational_Number;
 
 inline LispObject& numerator(LispObject r)
-{   return ((Rational_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->num;
+{   return ((Rational_Number*)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->num;
 }
 
 inline LispObject& denominator(LispObject r)
-{   return ((Rational_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->den;
+{   return ((Rational_Number*)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->den;
 }
 
 typedef struct Complex_Number_
@@ -2504,11 +2504,11 @@ typedef struct Complex_Number_
 } Complex_Number;
 
 inline LispObject& real_part(LispObject r)
-{   return ((Complex_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->real;
+{   return ((Complex_Number*)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->real;
 }
 
 inline LispObject& imag_part(LispObject r)
-{   return ((Complex_Number *)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->imag;
+{   return ((Complex_Number*)(reinterpret_cast<char*>(r)-TAG_NUMBERS))->imag;
 }
 
 inline float short_float_val(LispObject v)
@@ -2522,7 +2522,7 @@ inline float short_float_val(LispObject v)
 }
 
 inline float& single_float_val(LispObject v)
-{   return *(float *)(reinterpret_cast<char*>(v)-TAG_BOXFLOAT+CELL);
+{   return *(float*)(reinterpret_cast<char*>(v)-TAG_BOXFLOAT+CELL);
 }
 
 // The structures here are not actually used - because I can not get
@@ -2549,7 +2549,7 @@ typedef union _Double_union
 
 inline constexpr size_t SIZEOF_DOUBLE_FLOAT = 16;
 
-inline double *double_float_addr(LispObject v)
+inline double* double_float_addr(LispObject v)
 {   return reinterpret_cast<double*>(reinterpret_cast<char*>(v) +
                                       (8-TAG_BOXFLOAT));
 }
@@ -2623,7 +2623,7 @@ inline FLOAT_128& long_float_val(LispObject v)
 }
 
 inline int128_t& intfloat128_t_val(LispObject v)
-{   return *reinterpret_cast<int128_t *>(
+{   return *reinterpret_cast<int128_t*>(
         reinterpret_cast<char*>(v) + (8-TAG_BOXFLOAT));
 }
 

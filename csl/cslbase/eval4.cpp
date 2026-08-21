@@ -1227,7 +1227,7 @@ LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
 
 LispObject Lmake_jit(LispObject env, LispObject fname)
 {   SingleValued fn;
-    if (!is_symbol(fname)) return aerror1("make-jit", fname);
+    if (!is_symbol(fname)) return aerror("make-jit", fname);
     if (qfn0(fname) == bytecoded_0) qfn0(fname) = jitcoded_0;
     if (qfn1(fname) == bytecoded_1) qfn1(fname) = jitcoded_1;
     if (qfn2(fname) == bytecoded_2) qfn2(fname) = jitcoded_2;

@@ -171,12 +171,12 @@ LispObject Lcharacter(LispObject env, LispObject a)
         {   LispObject w = Lelt(nil, a, fixnum_of_int(0));
             return w;
         }
-        else return aerror1("character", a);
+        else return aerror("character", a);
     }
     else if (is_fixnum(a))
         return pack_char(0, int_of_fixnum(a) & 0x001fffff);
     else if (is_symbol(a)) return characterify_string(qpname(a));
-    else return aerror1("character", a);
+    else return aerror("character", a);
 }
 
 static LispObject Lcharacterp(LispObject env, LispObject a)
@@ -299,7 +299,7 @@ LispObject Ldigit_char_p_2(LispObject env, LispObject a,
     int cc;
     LispObject r = radix;
     if (!is_fixnum(r) || r < fixnum_of_int(2) ||
-        r >= fixnum_of_int(36)) return aerror1("digit-char-p", r);
+        r >= fixnum_of_int(36)) return aerror("digit-char-p", r);
     a = characterify(a);
     if (!is_char(a) || a == CHAR_EOF) return nil;
     cc = code_of_char(a);
@@ -407,7 +407,7 @@ LispObject Lspecial_char(LispObject, LispObject a)
 LispObject Lutf8_encode(LispObject env, LispObject a)
 {   SingleValued fn;
     int c;
-    if (!is_fixnum(a)) return aerror1("utf8-encode", a);
+    if (!is_fixnum(a)) return aerror("utf8-encode", a);
     c = int_of_fixnum(a) & 0x001fffff;
     if (c <= 0x7f) return ncons(fixnum_of_int(c));
     else if (c <= 0x7ff) return list2(fixnum_of_int(0xc0 | (c>>6)),
@@ -462,10 +462,10 @@ LispObject Lutf8_decode_4up(LispObject env, LispObject a,
 {   SingleValued fn;
     if (cdr(d) != nil) return aerror("utf8-decode");
     d = car(d);
-    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
-    if (!is_fixnum(b)) return aerror1("utf8-decode", b);
-    if (!is_fixnum(c)) return aerror1("utf8-decode", c);
-    if (!is_fixnum(d)) return aerror1("utf8-decode", d);
+    if (!is_fixnum(a)) return aerror("utf8-decode", a);
+    if (!is_fixnum(b)) return aerror("utf8-decode", b);
+    if (!is_fixnum(c)) return aerror("utf8-decode", c);
+    if (!is_fixnum(d)) return aerror("utf8-decode", d);
     return utf8_decode(int_of_fixnum(a) & 0xff,
                        int_of_fixnum(b) & 0xff,
                        int_of_fixnum(c) & 0xff,
@@ -475,17 +475,17 @@ LispObject Lutf8_decode_4up(LispObject env, LispObject a,
 LispObject Lutf8_decode_3(LispObject env, LispObject a, LispObject b,
                           LispObject c)
 {   SingleValued fn;
-    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
-    if (!is_fixnum(b)) return aerror1("utf8-decode", b);
-    if (!is_fixnum(c)) return aerror1("utf8-decode", c);
+    if (!is_fixnum(a)) return aerror("utf8-decode", a);
+    if (!is_fixnum(b)) return aerror("utf8-decode", b);
+    if (!is_fixnum(c)) return aerror("utf8-decode", c);
     return utf8_decode(int_of_fixnum(a) & 0xff, int_of_fixnum(b) & 0xff,
                        int_of_fixnum(c) & 0xff, -1);
 }
 
 LispObject Lutf8_decode_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
-    if (!is_fixnum(b)) return aerror1("utf8-decode", b);
+    if (!is_fixnum(a)) return aerror("utf8-decode", a);
+    if (!is_fixnum(b)) return aerror("utf8-decode", b);
     return utf8_decode(int_of_fixnum(a) & 0xff, int_of_fixnum(b) & 0xff,
                        -1, -1);
 }
@@ -503,7 +503,7 @@ LispObject Lutf8_decode_1(LispObject env, LispObject a)
                 c = car(c);
                 if (car_legal(d))
                 {   if (car_legal(cdr(d)))
-                        return aerror1("utf8-decode", cdr(d));
+                        return aerror("utf8-decode", cdr(d));
                     else return Lutf8_decode_4up(nil, a, b, c, d);
                 }
                 else return Lutf8_decode_3(nil, a, b, c);
@@ -512,7 +512,7 @@ LispObject Lutf8_decode_1(LispObject env, LispObject a)
         }
         else return Lutf8_decode_1(nil, a);
     }
-    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
+    if (!is_fixnum(a)) return aerror("utf8-decode", a);
     return utf8_decode(int_of_fixnum(a) & 0xff, -1, -1, -1);
 }
 
@@ -530,7 +530,7 @@ LispObject Lutf8_decode_1(LispObject env, LispObject a)
 
 LispObject Lid2int(LispObject, LispObject a)
 {   SingleValued fn;
-    if (!is_symbol(a)) return aerror1("id2int", a);
+    if (!is_symbol(a)) return aerror("id2int", a);
     uint32_t n = qcountLow(a) & 0x3fffffU;
 // If the symbol did not have a sequence number yet allocate it one. This
 // can happen if it was created as an uninterned value or a gensym. Well
@@ -628,7 +628,7 @@ static LispObject Lmake_char_1(LispObject, LispObject a)
 static bool chartest(LispObject c)
 {   SingleValued fn;
     if (!is_char(c))
-    {   aerror1("Character object expected", c);
+    {   aerror("Character object expected", c);
         return true;
     }
     else return nil;
@@ -1347,10 +1347,10 @@ static LispObject Lstring_greaterp_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string>", a);
+    if (w == nil) return aerror("string>", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string>", b);
+    if (w == nil) return aerror("string>", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1381,10 +1381,10 @@ static LispObject Lstring_not_equal_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string/=", a);
+    if (w == nil) return aerror("string/=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string/=", b);
+    if (w == nil) return aerror("string/=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1406,10 +1406,10 @@ static LispObject Lstring_equal_2(LispObject env, LispObject a,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string=", a);
+    if (w == nil) return aerror("string=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string=", b);
+    if (w == nil) return aerror("string=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1431,10 +1431,10 @@ static LispObject Lstring_not_greaterp_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string<=", a);
+    if (w == nil) return aerror("string<=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string<=", b);
+    if (w == nil) return aerror("string<=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == la) return fixnum_of_int(i);
@@ -1460,10 +1460,10 @@ static LispObject L_string_greaterp_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string>", a);
+    if (w == nil) return aerror("string>", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string>", b);
+    if (w == nil) return aerror("string>", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1492,10 +1492,10 @@ static LispObject L_string_not_equal_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string/=", a);
+    if (w == nil) return aerror("string/=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string/=", b);
+    if (w == nil) return aerror("string/=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1517,10 +1517,10 @@ static LispObject L_string_equal_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string=", a);
+    if (w == nil) return aerror("string=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string=", b);
+    if (w == nil) return aerror("string=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1542,10 +1542,10 @@ static LispObject L_string_not_greaterp_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string<=", a);
+    if (w == nil) return aerror("string<=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string<=", b);
+    if (w == nil) return aerror("string<=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == la) return fixnum_of_int(i);

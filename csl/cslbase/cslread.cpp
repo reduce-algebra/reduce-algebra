@@ -239,7 +239,7 @@ LispObject Lgetenv(LispObject env, LispObject a)
         h = vechdr(a);
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-    return aerror1("getenv", a);
+    return aerror("getenv", a);
     size_t len = length_of_byteheader(h) - CELL;
     std::memcpy(parmname, reinterpret_cast<char*>(a) + (CELL-TAG_VECTOR),
                 (size_t)len);
@@ -266,9 +266,9 @@ LispObject Lsystem(LispObject env, LispObject a)
         h = vechdr(a);
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-        return aerror1("system", a);
+        return aerror("system", a);
     size_t len = length_of_byteheader(h) - CELL;
-    if (len+1 > sizeof(parmname)) return aerror1("argument too long", a);
+    if (len+1 > sizeof(parmname)) return aerror("argument too long", a);
     std::memcpy(parmname, reinterpret_cast<char*>(a) + (CELL-TAG_VECTOR),
                 (size_t)len);
     parmname[len] = 0;
@@ -1229,9 +1229,9 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
 // Common Lisp wants a STRING passed here, but as a matter of generosity and
 // for the benefit of some of my system code I support symbols too.
     if (symbolp(str)) str = get_pname(str);
-    else if (!is_vector(str)) return aerror1("make-symbol", str);
+    else if (!is_vector(str)) return aerror("make-symbol", str);
     else if (complex_stringp(str)) str = simplify_string(str);
-    else if (!is_string_header(vechdr(str))) return aerror1("make-symbol", str);
+    else if (!is_string_header(vechdr(str))) return aerror("make-symbol", str);
     LispObject s;
     {   s = get_symbol(false);
         errexit();
@@ -1309,7 +1309,7 @@ LispObject Lgensym0(LispObject env, LispObject a, const char* suffix)
 #endif
     if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);  // copy gensym base
-    else return aerror1("gensym0", a);
+    else return aerror("gensym0", a);
     STACK_SANITY;
     stackcheck();
     errexit();
@@ -1359,7 +1359,7 @@ LispObject Lgensym(LispObject env, LispObject a)
 #endif
     if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);  // copy gensym base
-    else return aerror1("gensym1", a);
+    else return aerror("gensym1", a);
     STACK_SANITY;
     stackcheck();
     errexit();
@@ -1416,7 +1416,7 @@ LispObject Lgensym2(LispObject env, LispObject a)
 #endif
     if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);
-    else return aerror1("gensym2", a);
+    else return aerror("gensym2", a);
     STACK_SANITY;
     stackcheck();
     len = length_of_byteheader(vechdr(genbase)) - CELL;
@@ -1638,7 +1638,7 @@ LispObject Lintern(LispObject env, LispObject str)
         errexit();
     }
     if (!is_vector(str) || !is_string_header(h = vechdr(str)))
-        return aerror1("intern (not a string)", str);
+        return aerror("intern (not a string)", str);
     return iintern(str, length_of_byteheader(h) - CELL, p, 1);
 }
 
@@ -1663,7 +1663,7 @@ static LispObject Lfind_symbol(LispObject env, LispObject str,
         errexit();
     }
     if (!is_vector(str) || !is_string_header(h = vechdr(str)))
-    {   return aerror1("find-symbol (not a string)", str);
+    {   return aerror("find-symbol (not a string)", str);
     }
     return iintern(str, length_of_byteheader(h) - CELL, p, 3);
 }
@@ -1961,7 +1961,7 @@ LispObject Lrds(LispObject env, LispObject a)
     LispObject old = qvalue(standard_input);
     if (a == nil) a = qvalue(terminal_io);
     if (a == old) return old;
-    else if (!is_stream(a)) return aerror1("rds", a);
+    else if (!is_stream(a)) return aerror("rds", a);
     else if (stream_read_fn(a) == char_from_illegal)
         return aerror("rds"); // closed stream or output stream
     qvalue(standard_input) = a;
@@ -2223,7 +2223,7 @@ static LispObject read_hash(LispObject stream)
                 if (fixnum_of_int(w) == car(k)) return cdr(k);
                 p = cdr(p);
             }
-            return aerror1("Label not found with #n# syntax", fixnum_of_int(w));
+            return aerror("Label not found with #n# syntax", fixnum_of_int(w));
         case '=':
             curchar = NOT_CHAR;
 // Hmmm - is it necessary for #nn# to refer back to the label here from
@@ -2824,7 +2824,7 @@ static LispObject read_s(LispObject stream)
 
 int char_from_synonym(LispObject stream)
 {   stream = qvalue(stream_read_data(stream));
-    if (!is_stream(stream)) return aerror1("bad synonym stream", stream);
+    if (!is_stream(stream)) return aerror("bad synonym stream", stream);
     return getc_stream(stream);
 }
 
@@ -2858,7 +2858,7 @@ int char_from_concatenated(LispObject stream)
 int char_from_echo(LispObject stream)
 {   int c;
     LispObject stream1 = qvalue(stream_read_data(stream));
-    if (!is_stream(stream1)) return aerror1("bad synonym stream", stream1);
+    if (!is_stream(stream1)) return aerror("bad synonym stream", stream1);
     c = getc_stream(stream1);
     char_to_synonym(c, stream);
     return c;
@@ -2909,7 +2909,7 @@ int char_from_file(LispObject stream)
 
 int32_t read_action_illegal(int32_t op, LispObject f)
 {   if (op != READ_CLOSE && op != READ_IS_CONSOLE)
-        return aerror1("Illegal operation on stream",
+        return aerror("Illegal operation on stream",
                 cons_no_gc(fixnum_of_int(op), stream_type(f)));
     return 0;
 }
@@ -2982,7 +2982,7 @@ int32_t read_action_synonym(int32_t c, LispObject f)
 {   int32_t r;
     LispObject f1;
     f1 = qvalue(stream_read_data(f));
-//@@@    if (!is_stream(f1)) return aerror1("bad synonym stream", f1);
+//@@@    if (!is_stream(f1)) return aerror("bad synonym stream", f1);
     if (!is_stream(f1))
     {
 #if defined DEBUG
@@ -3145,7 +3145,7 @@ public:
 
 LispObject Lread(LispObject env, LispObject stream)
 {   SingleValued fn;
-    if (!is_stream(stream)) return aerror1("needed stream argument", stream);
+    if (!is_stream(stream)) return aerror("needed stream argument", stream);
 #ifdef COMMON
     save_reader_workspace RAII;
     reader_workspace = nil;
@@ -3340,7 +3340,7 @@ LispObject Lstring2list(LispObject env, LispObject a)
         h = vechdr(a);
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-        return aerror1("string2list", a);
+        return aerror("string2list", a);
     len = length_of_byteheader(h) - CELL;
     r = nil;
     for (i=0; i<len; i++)
@@ -3487,7 +3487,7 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
             h = vechdr(file);
         }
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
-            return aerror1("load", file);
+            return aerror("load", file);
         len = length_of_byteheader(h) - CELL;
         filestring = reinterpret_cast<char*>(file) + CELL-TAG_VECTOR;
         for (i=0; i<6; i++)
@@ -3680,7 +3680,7 @@ LispObject Lspool(LispObject env, LispObject file)
         h = vechdr(file);
     }
     if (!is_vector(file) || !is_string_header(h = vechdr(file)))
-        return aerror1(spool_name, file);
+        return aerror(spool_name, file);
     len = length_of_byteheader(h) - CELL;
     spool_file = open_file(filename,
                            reinterpret_cast<char*>(file) + (CELL-TAG_VECTOR),
@@ -3746,7 +3746,7 @@ static LispObject want_a_string(LispObject name)
     if (symbolp(name)) return get_pname(name);
     else if (is_vector(name) &&
              is_string_header(vechdr(name))) return name;
-    else return aerror1("name or string needed", name);
+    else return aerror("name or string needed", name);
 }
 
 static LispObject Lfind_package(LispObject env, LispObject name)
@@ -3886,17 +3886,17 @@ static LispObject Lmake_package(LispObject env, LispObject name,
     if (k1 == nicknames_symbol) nicknames = v1, has_nicknames = true;
     else if (k1 == use_symbol) uses = v1, has_uses = true;
 // I will not permit other keys as k1.
-    else return aerror1("make-package", k1);
+    else return aerror("make-package", k1);
 // I will moan if a keyword is repeated.
     if (k2 == nicknames_symbol)
     {   if (has_nicknames) return aerror("make-package", k2);
         else nicknames = v2, has_nicknames = true;
     }
     else if (k2 == use_symbol)
-    {   if (has_uses) return aerror1("make-package", k2);
+    {   if (has_uses) return aerror("make-package", k2);
         else uses = v2, has_uses = true;
     }
-    else return aerror1("make-package", k2);
+    else return aerror("make-package", k2);
 // Now name, nicknames and uses are set up. I will let uses default to the
 // LISP package.
     if (!has_use)
@@ -3985,7 +3985,7 @@ LispObject Lreadbyte(LispObject env, LispObject stream)
     bool force = force_echo;
     force_echo = nil;
     if (!is_stream(stream))
-        return aerror0("readb requires an appropriate stream");
+        return aerror("readb requires an appropriate stream");
     qvalue(echo_symbol) = nil;
     raw_input = 1;
     ch = getc_stream(stream);

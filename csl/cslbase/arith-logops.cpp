@@ -36,7 +36,7 @@
 
 // Logand, Logor etc. Also Shifts.
 
-#include "arith-headers.h"
+#include "headers.h"
 
 namespace CSL_LISP
 {
@@ -120,9 +120,9 @@ LispObject Lognot::op(uint64_t *a)
 LispObject Nlogbitp(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
     if (!is_fixnum(a1) || (intptr_t)a1 < 0)
-        return aerror1("logbitp", a1);
+        return aerror("logbitp", a1);
     if (!is_fixnum(a2) && !is_new_bignum(a2))
-        return aerror1("logbitp", a2);
+        return aerror("logbitp", a2);
     uintptr_t n = int_of_fixnum(a1);
     if (is_fixnum(a2)) return onebool(arithlib_lowlevel::Logbitp::op(
         arithlib_implementation::intOfHandle(a2), n));
@@ -159,7 +159,7 @@ LispObject LeftShift::op(Fixnum a, uint64_t *b)
         else return fixnum_of_int(0);
     }
     else if (Zerop::op(a)) return fixnum_of_int(0);
-    else return aerror1("left shift by value that is too large",
+    else return aerror("left shift by value that is too large",
                         bignum_value(b));
 }
 // bignum << bignum
@@ -168,7 +168,7 @@ LispObject LeftShift::op(uint64_t *a, uint64_t *b)
     {   if (Minusp::op(a)) return fixnum_of_int(-1);
         else return fixnum_of_int(0);
     }
-    else return aerror1("left shift by value that is too large",
+    else return aerror("left shift by value that is too large",
                         bignum_value(b));
 }
 
@@ -189,7 +189,7 @@ LispObject RightShift::op(uint64_t *a, Fixnum b)
 LispObject RightShift::op(Fixnum a, uint64_t *b)
 {   if (Minusp::op(b))
     {   if (Zerop::op(a)) return fixnum_of_int(0);
-        else return aerror1("right shift by value that is too negative",
+        else return aerror("right shift by value that is too negative",
                             bignum_value(b));
     }
     else if (Minusp::op(a)) return fixnum_of_int(-1);
@@ -198,7 +198,7 @@ LispObject RightShift::op(Fixnum a, uint64_t *b)
 // bignum >> bignum
 LispObject RightShift::op(uint64_t *a, uint64_t *b)
 {   if (Minusp::op(b))
-        return aerror1("right shift by value that is too negative", bignum_value(b));
+        return aerror("right shift by value that is too negative", bignum_value(b));
     else if (Minusp::op(a)) return fixnum_of_int(-1);
     else return fixnum_of_int(0);
 }
@@ -256,7 +256,7 @@ LispObject Ninorm(LispObject env, LispObject a, LispObject kk)
 // be positive.
 {   SingleValued fn;
     if (!is_fixnum(kk) || (intptr_t)kk < 0)
-        return aerror1("bad args for inorm", kk);
+        return aerror("bad args for inorm", kk);
     if (a == fixnum_of_int(0)) return aerror("zero is an illegal arg to inorm");
     int k = int_of_fixnum(kk);
 // If a is a fixnum all the computations can be done using direct integer
@@ -303,7 +303,7 @@ LispObject Ninorm(LispObject env, LispObject a, LispObject kk)
         if (negative) a = Unary(Minus, a);
         return cons(a, fixnum_of_int(lowBit));
     }
-    else return aerror1("bad arg for inorm", a);
+    else return aerror("bad arg for inorm", a);
 }
 
 LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
@@ -371,7 +371,7 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
         case boole_set:
             return fixnum_of_int(-1);
         default:
-            return aerror1("bad arg for boole",  op);
+            return aerror("bad arg for boole",  op);
     }
     return r;
 }
@@ -395,21 +395,21 @@ LispObject Nbyte(LispObject env, LispObject size, LispObject position)
     if (!is_fixnum(size) || !is_fixnum(position) ||
         size <= 0 || position < 0 ||
         size >= SIZE_LIMIT || position >= POSITION_LIMIT)
-        return aerror2("bytes", size, position);
+        return aerror("bytes", size, position);
     return fixnum_of_int(
         (int_of_fixnum(size)<<SIZE_SHIFT) | int_of_fixnum(position));
 }
 
 LispObject Nbyte_size(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_fixnum(a)) return aerror1("byte-size", a);
+    if (!is_fixnum(a)) return aerror("byte-size", a);
     else return
         fixnum_of_int((int_of_fixnum(a)>>SIZE_SHIFT) & (SIZE_LIMIT-1));
 }
 
 LispObject Nbyte_position(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_fixnum(a)) return aerror1("byte-position", a);
+    if (!is_fixnum(a)) return aerror("byte-position", a);
     else return
         fixnum_of_int(int_of_fixnum(a) & (POSITION_LIMIT-1));
 }
@@ -422,7 +422,7 @@ LispObject Nldb(LispObject env, LispObject bytespec, LispObject n)
 {   SingleValued fn;
     if (!is_fixnum(bytespec) ||
         (!is_fixnum(n) && !is_new_bignum(n)))
-        return aerror2("ldb", bytespec, n);
+        return aerror("ldb", bytespec, n);
     int size = (int_of_fixnum(bytespec)>>SIZE_SHIFT) & (SIZE_LIMIT-1);
     if (size == 0) return aerror("zero width field in ldb");
     int position = int_of_fixnum(bytespec) & (POSITION_LIMIT-1);
@@ -437,7 +437,7 @@ LispObject Nmask_field(LispObject env, LispObject bytespec, LispObject n)
 {   SingleValued fn;
     if (!is_fixnum(bytespec) ||
         (!is_fixnum(n) && !is_new_bignum(n)))
-        return aerror2("mask_field", bytespec, n);
+        return aerror("mask_field", bytespec, n);
     int size = (int_of_fixnum(bytespec)>>SIZE_SHIFT) & (SIZE_LIMIT-1);
     if (size == 0) return aerror("zero width field in ldb");
     int position = int_of_fixnum(bytespec) & (POSITION_LIMIT-1);
@@ -458,7 +458,7 @@ LispObject Ndpb(LispObject env, LispObject newData,
 {   SingleValued fn;
     if (!is_fixnum(bytespec) ||
         (!is_fixnum(old) && !is_new_bignum(old)))
-        return aerror2("mask_field", bytespec, old);
+        return aerror("mask_field", bytespec, old);
 // mask = (1<<width - 1)<<position
 // (old & ~mask) | ((new<<position) & mask)
     int size = (int_of_fixnum(bytespec)>>SIZE_SHIFT) & (SIZE_LIMIT-1);
@@ -478,7 +478,7 @@ LispObject Ndeposit_field(LispObject env, LispObject newData,
 {   SingleValued fn;
     if (!is_fixnum(bytespec) ||
         (!is_fixnum(old) && !is_new_bignum(old)))
-        return aerror2("mask_field", bytespec, old);
+        return aerror("mask_field", bytespec, old);
 // mask = (1<<width - 1)<<position
 // (old & ~mask) | ((new<<position) & mask)
     int size = (int_of_fixnum(bytespec)>>SIZE_SHIFT) & (SIZE_LIMIT-1);

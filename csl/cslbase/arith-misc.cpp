@@ -434,7 +434,7 @@ LispObject N_rational(LispObject a)
                 case TYPE_RATNUM:
                     return a;
                 default:
-                    return aerror1("bad arg for rational", a);
+                    return aerror("bad arg for rational", a);
             }
         }
         case TAG_BOXFLOAT:
@@ -445,7 +445,7 @@ LispObject N_rational(LispObject a)
             else
                 return N_rationalf(float_of_number(a));
         default:
-            return aerror1("bad arg for rational", a);
+            return aerror("bad arg for rational", a);
     }
 }
 
@@ -465,7 +465,7 @@ LispObject N_rationalize(LispObject a)
                 case TYPE_RATNUM:
                     return a;
                 default:
-                    return aerror1("bad arg for rationalize", a);
+                    return aerror("bad arg for rationalize", a);
             }
         }
         case TAG_BOXFLOAT:
@@ -480,7 +480,7 @@ LispObject N_rationalize(LispObject a)
                                                a)));
             }
         default:
-            return aerror1("bad arg for rationalize", a);
+            return aerror("bad arg for rationalize", a);
     }
 }
 
@@ -494,7 +494,7 @@ LispObject Nmanexp(LispObject env, LispObject a)
     int x;
     double f;
 // At present I do not support 128-bit floats here @@@
-    if (!is_float(a))  return aerror1("arg is not a floating-point number", a);
+    if (!is_float(a))  return aerror("arg is not a floating-point number", a);
     f = float_of_number(a);
     f = std::frexp(f, &x);
     return cons(make_boxfloat(f, WANT_DOUBLE_FLOAT),
@@ -520,7 +520,7 @@ LispObject Nrandom(LispObject env, LispObject a, LispObject bb)
     if (is_bfloat(a))
     {   Header h = flthdr(a);
         if (h == LONG_FLOAT_HEADER)
-        {   aerror1("random can not cope with long floats yet", a);
+        {   aerror("random can not cope with long floats yet", a);
         }
         double d = float_of_number(a), v;
 // The calculation here turns 62 bits of integer data into a floating
@@ -554,7 +554,7 @@ LispObject Nrandom(LispObject env, LispObject a, LispObject bb)
         while (v == d);
         return pack_immediate_float(v, a);
     }
-    return aerror1("random-number", a);
+    return aerror("random-number", a);
 }
 
 LispObject Nrandom(LispObject env, LispObject a)
@@ -758,7 +758,7 @@ LispObject Nmd60(LispObject env, LispObject a)
 
 LispObject Nrealpart(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("realpart", a);
+    if (!is_number(a)) return aerror("realpart", a);
     if (is_numbers(a) && is_complex(a))
         return real_part(a);
     else return a;
@@ -766,7 +766,7 @@ LispObject Nrealpart(LispObject env, LispObject a)
 
 LispObject Nimagpart(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("imagpart", a);
+    if (!is_number(a)) return aerror("imagpart", a);
     if (is_numbers(a) && is_complex(a))
         return imag_part(a);
 // /* the 0.0 returned here ought to be the same type as a has
@@ -775,7 +775,7 @@ LispObject Nimagpart(LispObject env, LispObject a)
 
 LispObject Nnumerator(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("numerator", a);
+    if (!is_number(a)) return aerror("numerator", a);
     if (is_numbers(a) && is_ratio(a))
         return numerator(a);
     else return a;
@@ -783,7 +783,7 @@ LispObject Nnumerator(LispObject env, LispObject a)
 
 LispObject Ndenominator(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("denominator", a);
+    if (!is_number(a)) return aerror("denominator", a);
     if (is_numbers(a) && is_ratio(a))
         return denominator(a);
     else return fixnum_of_int(1);
@@ -805,7 +805,7 @@ LispObject Ncomplex_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Nconjugate(LispObject env, LispObject a)
 {   SingleValued fn;
-    if (!is_number(a)) return aerror1("conjugate", a);
+    if (!is_number(a)) return aerror("conjugate", a);
     if (is_numbers(a) && is_complex(a))
     {   LispObject r = real_part(a),
                    i = imag_part(a);
