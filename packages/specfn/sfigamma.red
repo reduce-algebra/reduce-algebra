@@ -20,10 +20,6 @@ module igamma;                          % part of SFGAMMA package
 %
 %  The incomplete beta function.
 %
-%  ibeta!:cont!:frac(iter,a,b,x) - recursively computes
-%               the value of the continuous fraction used to
-%               approximate the incomplete beta function.
-%
 %  ibeta!:eval(a,b,x) - returns the approximate value of the
 %               incomplete beta function with parameters a and b at
 %               point x, computed using a continued fraction.
@@ -59,15 +55,16 @@ module igamma;                          % part of SFGAMMA package
 
 fluid '(!:sfiterations);
 
-%% operator igamma , igamma!:eval, ibeta;
+% See the definitions of iGamma and iBeta in "alg/spcfnint.red".
 
-% Set the maximum number of iterations for the continued fraction
-% used in ibeta to be 200.
+% Set the maximum number of iterations for the continued fraction used
+% in ibeta!:eval:
 
-algebraic (ibeta!:max!:iter := 200);
+share ibeta!:max!:iter;  ibeta!:max!:iter := 100;
 
-% See the let rules for iGamma and iBeta in "alg/spcfnint.red".
-
+% %%%%%%%%%%%%%%%%%%%%%%%%%
+% Incomplete gamma function
+% %%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Function igamma!:iter!:series:   --  cum_gamma_iter        x^i
 %                                  \                       -------------
@@ -150,68 +147,14 @@ begin
  return value;
 end;
 
-
-% Function ibeta!:cont!:frac: calculates  1   c(2)  c(3)
-%                                        ---  ----  ----  ...
-%                                        1 +  1  +  1  +
-% where
-%        c(2i) =  - (a + i - 1) (b - i)   *   x
-%                ---------------------------------
-%                (a + 2i - 2) (a + 2i - 1) (1 - x)
-% and
-%      c(2i+1) =  i (a + b + i - 1)   *   x
-%                -----------------------------
-%                (a + 2i - 1) (a + 2i) (1 - x)
-
-%expr procedure ibeta!:cont!:frac(iter,iter_max,a,b,x);
-%begin
-% scalar value,c_odd,c_even;
-%
-% if not (fixp(iter) and fixp(iter_max) and numberp(x)) then
-%  rederr("ibeta!:cont!:frac called illegally");
-%
-% if (iter>iter_max) then
-%  value := 0
-% else
-% <<
-%  c_even := -(a+iter-1)*(b-iter)*x / ((a+2*iter-2)*(a+2*iter-1)*(1-x));
-%  c_odd := iter*(a+b+iter-1)*x / ((a+2*iter-1)*(a+2*iter)*(1-x));
-%  value := c_even /
-%               (1 + (c_odd /
-%                       (1 + ibeta!:cont!:frac(iter+1,iter_max,a,b,x))))
-% >>;
-%
-% return value;
-%end;
-
-% The above version recurses to a depth of iter_max which may be reasonably
-% large. I now provide an alternative version that does the calculation
-% from the inside out and hence avoids that nesting.
-
-algebraic procedure ibeta!:cont!:frac(iter, a, b, x);
-   begin scalar value := 0;
-      % Note that iter is an integer; try to keep integer computations
-      % separate from real computations.
-      while iter >= 1 do
-      begin scalar iter1 := iter - 1, !2iter := 2*iter, !2iter1 := !2iter - 1,
-            x1 := 1.0 - x, c_even, c_odd;
-         c_even := -(a+iter1)*(b-iter)*x / ((a+(!2iter-2))*(a+!2iter1)*x1);
-         c_odd := iter*(a+b+iter1)*x / ((a+!2iter1)*(a+!2iter)*x1);
-         value := c_even /
-                    (1 + (c_odd /
-                            (1 + value)));
-         iter := iter - 1;
-      end;
-      return value;
-   end;
-
-% Function ibeta!:eval: returns the value of the incomplete beta
-% function with parameters a and b at point x. Method due to Muller (1931).
+% %%%%%%%%%%%%%%%%%%%%%%%%
+% Incomplete beta function
+% %%%%%%%%%%%%%%%%%%%%%%%%
 
 algebraic procedure ibeta!:eval(a, b, x);
    % Return a numerical approximation to I_x(a,b) = ibeta(a,b,x).
-   % Assume a, b, x real, a>0, b>0, and 0<x<1; ensured by let rules.
-   % See https://dlmf.nist.gov/8.17 and
+   % Assume a,b,x real, a>0, b>0, 0<x<1; ensured by let rules.
+   % Algorithm follows https://dlmf.nist.gov/8.17.  See also
    % https://en.wikipedia.org/wiki/Beta_function#Incomplete_beta_function.
    begin scalar ab2 := a + b + 2.0;
       return if x > (a+1.0)/ab2 or 1.0-x < (b+1.0)/ab2 then
@@ -220,24 +163,43 @@ algebraic procedure ibeta!:eval(a, b, x);
          ibeta!:eval1(a, b, x);
    end;
 
+% At the default precision of 12, the following procedure appears
+% always to require fewer than 10 iteration.
+
 algebraic procedure ibeta!:eval1(a, b, x);
-   begin scalar last_value, value, arg, iter,
-         epsilon := 10^-(precision(0)+3);
-      arg := gamma(a+b) * x^a * (1.0-x)^(b-1.0) / (a * gamma(a) * gamma(b));
-      % A starting point of 30 levels of continued fraction.
-      iter := 30;
-      % Starting value that will force calculation a second time at least.
-      value := -1;
-      repeat <<
-         last_value := value;
-         value := arg / (1.0 + ibeta!:cont!:frac(iter, a, b, x));
-         iter := iter + 10
-      >> until abs(value - last_value) < epsilon
-         or iter > ibeta!:max!:iter;
-      % Error condition should not occur, but in case it does...
-      if iter > ibeta!:max!:iter then symbolic lprim
-         "ibeta max iteration limit exceeded; result may not be accurate";
-      return value;
+   % Return I = ibeta(a,b,x) = x^a*(1-x)^b/a*B(a,b) * (1/(1+CF)),
+   % where B(a,b) = Gamma(a)*Gamma(b)/Gamma(a+b)
+   % and CF = d_1 / (1 + d_2 / (1 + d_3 / 1 + ... )).
+   % The convergents for even m are less than I, and the convergents
+   % for odd m are greater than I, so their difference provides a
+   % reliable error bound.  The absolute error in CF is approximately
+   % equal to the relative error in I.
+   begin scalar epsilon := 10^-precision(0), % absolute CF error
+         const := x^a * (1.0-x)^b * gamma(a+b) / (a * gamma(a) * gamma(b)),
+      CFold, CF := 0, dlist;        % dlist = {d_2iter, ..., d_2, d_1}
+      integer m;
+      % Compute coefficients d_m FORWARDS for m = 1, 2, ..., 2n-1, 2n
+      % and push them onto the list dlist.  Compute CF using
+      % coefficients d_m BACKWARDS for m = 2n, 2n-1, ..., 2, 1.
+      repeat
+      begin scalar am1, a2m, a2m1,
+            d2m, d2m1;               % d_{2m}, d_{2m-1}, m = 1,2,3,...
+            % NB: d2m1 = d_{2m-1} = d_{2(m-1)+1}, NOT d_{2m+1}.
+            m := m + 1;
+            am1 := a+(m-1);  a2m := a+2.0*m;  a2m1 := a2m-1.0;
+            d2m := m*(b-m)*x / a2m1 / a2m;
+            d2m1 := -am1*(am1+b)*x / (a2m-2.0) / a2m1;
+            symbolic (dlist := d2m . d2m1 . dlist);
+            CFold := CF;  CF := 0;
+            symbolic for each d_m in dlist do
+               algebraic (CF := d_m / (1.0 + CF));
+      end
+         until abs(CF - CFold) < epsilon or m >= ibeta!:max!:iter;
+      % write m_max := m, "  ", CF_abserr := abs(CF - CFold);
+      if m >= ibeta!:max!:iter then symbolic lprim
+         {"ibeta max iteration limit", ibeta!:max!:iter,
+            "exceeded; result may not be accurate"};
+      return const / (1.0 + CF);
    end;
 
 endmodule;
