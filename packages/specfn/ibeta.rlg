@@ -1,3 +1,15 @@
+
+Time: 0 ms
+
+Time: 0 ms
+% All results agree to 12 digits with Mathematica using
+% https://functions.wolfram.com/webMathematica/FunctionEvaluation.jsp?name=BetaRegularized
+% except that Mathematica gives
+% ibeta(0.5, 0.5, 0.99999999) = 0.999936338022
+% which differs by 1 in the last decimal place.
+
+% In Mathematica, the domain appears to be the whole complex plane!
+
 on rounded, time;
 
 
@@ -15,8 +27,6 @@ b := 0.5$
 Time: 0 ms
 
 
-% Next 11 results checked to 6 sf against Mathematica using
-% https://functions.wolfram.com/webMathematica/Evaluated.jsp?name=BetaRegularized
 for i := 0 : 10 do write ibeta(a, b, 0.1*i) := ibeta(a, b, 0.1*i);
 
 
@@ -42,7 +52,7 @@ ibeta(0.5,0.5,0.9) := 0.795167235301
 
 ibeta(0.5,0.5,1) := 1
 
-Time: 172 ms
+Time: 47 ms
 
 
 for i := 1 : 10 do
@@ -71,7 +81,7 @@ ibeta(0.5,0.5,0.999999999) := 0.999979868315
 
 ibeta(0.5,0.5,0.9999999999) := 0.999993633802
 
-Time: 93 ms
+Time: 16 ms
 
 
 a := 0.25$
@@ -85,8 +95,6 @@ b := 0.75$
 Time: 0 ms
 
 
-% Next 11 results checked to 6 sf against Mathematica using
-% https://functions.wolfram.com/webMathematica/Evaluated.jsp?name=BetaRegularized
 for i := 0 : 10 do write ibeta(a, b, 0.1*i) := ibeta(a, b, 0.1*i);
 
 
@@ -112,7 +120,7 @@ ibeta(0.25,0.75,0.9) := 0.944815044032
 
 ibeta(0.25,0.75,1) := 1
 
-Time: 78 ms
+Time: 31 ms
 
 
 for i := 1 : 10 do
@@ -141,7 +149,7 @@ ibeta(0.25,0.75,0.999999999) := 0.999999946633
 
 ibeta(0.25,0.75,0.9999999999) := 0.99999999051
 
-Time: 79 ms
+Time: 16 ms
 
 
 % The following values should all be 1:
@@ -151,7 +159,7 @@ for i := 0 : 10 collect
 
 {1,1,1,1,1,1,1,1,1,1,1}
 
-Time: 156 ms  plus GC time: 16 ms
+Time: 78 ms
 
 
 end;
