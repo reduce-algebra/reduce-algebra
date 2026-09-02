@@ -244,8 +244,10 @@ namespace FX
 
 using namespace FX;
 
+#ifdef ARITHLIB
 // Work towards a new scheme for dispatching the types of numbers.
 #include "generic.h"
+#endif
 
 #endif // header_headers_h
 
