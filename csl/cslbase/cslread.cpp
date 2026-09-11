@@ -2372,6 +2372,11 @@ public:
                 break;
             }
         }
+// For reasons that at present I do not understand if "redfront" is to
+// behave the control characters with codes 1, 2 and 6 (at least!) must be
+// handled as if they could be constituents. If this is not so rfcsl can
+// get stuck.
+        v[1] = v[2] = v[6] = true;
     }
 };
 
