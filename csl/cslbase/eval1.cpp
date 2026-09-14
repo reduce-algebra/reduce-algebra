@@ -147,7 +147,6 @@ restart:
 // be checked is if fn is lexically bound.
         LispObject fn, args;
         stackcheck();
-        errexit();
         fn = car(u);
         args = cdr(u);
 // Local function bindings must be looked for first. Well Standard Lisp
@@ -177,7 +176,6 @@ restart:
 // only happen AFTER an expansion and can not happen during one.
                         on_backtrace(
                             w = cons(lambda, w);
-                            errexit();
                             p = apply(qvalue(macroexpand_hook),
                                       list3(w, u, nil),
                                       nil,
@@ -278,7 +276,6 @@ restart:
                 return (*qfn3(fn))(fn, a1, a2, a3);
             }
             eargs = list3(a3, a2, a1);
-            errexit();
         }
 // I have evaluated the first 3 args if the function was a symbol, so
 // now I process the rest.
@@ -294,7 +291,6 @@ restart:
                         loop_print_error(car(args));
                     });
                 eargs = cons(w, eargs);
-                errexit();
                 args = cdr(args);
             }
             eargs = nreverse(eargs);
@@ -353,11 +349,8 @@ static LispObject keywordify(LispObject v)
 // name, and than tag it as a "keyword".
     if (basic_celt(name, 0) != ':')
     {   v = Lexplode(nil, v);
-        errexit();
         v = list2star(fixnum_of_int('!'), fixnum_of_int(':'), v);
-        errexit();
         v = Lcompress(nil, v);
-        errexit();
     }
     Lmake_keyword(nil, v);
     return v;
@@ -395,7 +388,6 @@ inline LispObject instate_binding(LispObject var, LispObject val,
         specenv = acons_no_gc(var, qvalue(var), specenv);
         qvalue(var) = val;
         cons_gc_test(nil);
-        errexit();
     }
     else
     {
@@ -406,11 +398,9 @@ inline LispObject instate_binding(LispObject var, LispObject val,
         {   if (car(w) == var)
             {   car(w) = fixnum_of_int(0); // decl is used up
                 env = acons(var, work_symbol, env);
-                errexit();
                 specenv = acons_no_gc(var, qvalue(var), specenv);
                 qvalue(var) = val;
                 cons_gc_test(nil);
-                errexit();
             }
         }
 // Finally simple lexical bindings use deep binding.
@@ -499,7 +489,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
         }
         if (car(p) != declare_symbol)
         {   body = cons(p, body);  // something other than a "declare".
-            errexit();
             break;
         }
 // I have found a body that was initially something like
@@ -513,7 +502,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
             // here v1 says (special ...)
             for (v1=cdr(v1); consp(v1); v1 = cdr(v1))
             {   local_decs = cons(car(v1), local_decs);
-                errexit();
             }
         }
 // I keep going so that several DECLARE expressions one after the other will
@@ -589,7 +577,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
                         if (val1 == nil)        // use the init form
                         {   arg = car(w);
                             arg = eval(arg, env);
-                            errexit();
                         }
                         w = cdr(w);
                         if (consp(w)) v1 = car(w); // suppliedp name
@@ -662,7 +649,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
                         {   if (!is_symbol(v) || v==nil || v==lisp_true)
                                 return error(1, err_bad_bvl, v);
                             keyname = keywordify(v);
-                            errexit();
                         }
                         else
                         {   w = cdr(v);
@@ -671,14 +657,12 @@ LispObject apply_lambda(LispObject def, LispObject args,
                             {   if (!is_symbol(v) || v==nil || v==lisp_true)
                                     return error(1, err_bad_bvl, v);
                                 keyname = keywordify(v);
-                                errexit();
                             }
                             else
                             {   keyname = car(v);
                                 if (!is_symbol(keyname) || v==nil || v ==lisp_true)
                                     return error(1, err_bad_bvl, v);
                                 keyname = keywordify(keyname);
-                                errexit();
                                 v = cdr(v);
                                 if (consp(v)) v = car(v);
                                 else return error(1, err_bad_bvl, v);
@@ -686,7 +670,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
                         }
                         ok_keys = cons(keyname, ok_keys);
                         arg = key_lookup(car(ok_keys), restarg);
-                        errexit();
                         if (arg == nil) val1 = nil;
                         else
                         {   arg = car(arg);
@@ -697,7 +680,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
                         if (val1 == nil)        // use the init form
                         {   arg = car(w);
                             arg = eval(arg, env);
-                            errexit();
                         }
                         w = cdr(w);
                         if (consp(w)) v1 = car(w); // suppliedp name
@@ -723,7 +705,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
                         if (consp(w))
                         {   arg = car(w);
                             arg = eval(arg, env);
-                            errexit();
                         }
                     }
                     else arg = nil;
@@ -731,10 +712,8 @@ LispObject apply_lambda(LispObject def, LispObject args,
                     break;
             }
             instate_binding(v, arg, local_decs, env, specenv, w);
-            errexit();
             if (v1 != nil)
             {   instate_binding(v1, val1, local_decs, env, specenv, w);
-                errexit();
             }
         }   // End of for loop that scans BVL
 
@@ -745,7 +724,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
             local_decs=cdr(local_decs);
             if (!is_symbol(q)) continue;
             env = acons(q, work_symbol, env);
-            errexit();
         }
 
         switch (opt_rest_state)
@@ -775,7 +753,6 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // process the body of the lambda-expression.
         {   exit_count = 1;
             def = progn_fn(body, env);
-            errexit();
             while (specenv != nil)
             {   LispObject bv = car(specenv);
                 qvalue(car(bv)) = cdr(bv);
@@ -809,16 +786,13 @@ LispObject Levlis(LispObject env, LispObject a)
     save_current_function saver(eval_symbol);
     LispObject r;
     stackcheck();
-    errexit();
     r = nil;
     while (consp(a))
     {   {   LispObject a1;
             {   a1 = car(a);
                 a1 = eval(a1, nil);
-                errexit();
             }
             r = cons(a1, r);
-            errexit();
         }
         a = cdr(a);
     }
@@ -842,11 +816,9 @@ LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
 //   (APPLY fn a1 a2 (a3 a4 a5up))
 // where a5up will be a list (a5 a6 ...).
     a3up = Lreverse(nil, a3up);
-    errexit();
     a3up = nreverse2(cdr(a3up), car(a3up));
 // I have just flattened out the final argument.
     a1 = list2star(a1, a2, a3up);
-    errexit();
     return apply(fn, a1, nil, apply_symbol);
 }
 
@@ -871,7 +843,6 @@ LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1,
                     LispObject a2)
 {   save_current_function saver(apply_symbol);
     a1 = cons(a1, a2);
-    errexit();
     return apply(fn, a1, nil, apply_symbol);
 }
 
@@ -888,7 +859,6 @@ LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn1(fn))(fn, a1);
     a1 = ncons(a1);
-    errexit();
     return Lapply_2(env, fn, a1);
 }
 
@@ -897,7 +867,6 @@ LispObject Lapply2(LispObject env, LispObject fn,
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
     a1 = list2(a1, a2);
-    errexit();
     return Lapply_2(env, fn, a1);
 }
 
@@ -909,7 +878,6 @@ LispObject Lapply3(LispObject env, LispObject fn,
     }
     LispObject a3 = arg4("apply3", a3up);
     a1 = list3(a1, a2, a3);
-    errexit();
     return Lapply_2(env, fn, a1);
 }
 
@@ -923,7 +891,6 @@ LispObject Lapply4(LispObject env, LispObject fn,
     LispObject a3, a4;
     if (a4a5("apply3", a3up, a3, a4)) return nil;
     a1 = list4(a1, a2, a3, a4);
-    errexit();
     return Lapply_2(env, fn, a1);
 }
 
@@ -941,7 +908,6 @@ LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn1(fn))(fn, a1);
     a1 = ncons(a1);
-    errexit();
     return Lapply_2(env, fn, a1);
 }
 
@@ -950,7 +916,6 @@ LispObject Lfuncall_3(LispObject env, LispObject fn,
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
     a1 = list2(a1, a2);
-    errexit();
     return Lapply_2(env, fn, a1);
 }
 
@@ -962,7 +927,6 @@ LispObject Lfuncall_4up(LispObject env, LispObject fn,
         else return (*qfn4up(fn))(fn, a1, a2, car(a3up), cdr(a3up));
     }
     a1 = list2star(a1, a2, a3up);
-    errexit();
     return Lapply_2(env, fn, a1);
 }
 
@@ -1031,7 +995,6 @@ LispObject mv_call_fn(LispObject args, LispObject env)
     stackcheck();
     LispObject fn;
     fn = eval(car(args), env);
-    errexit();
     args = cdr(args);
     LispObject xargs = nil;             // for list of eventual args
     while (consp(args))
@@ -1043,11 +1006,9 @@ LispObject mv_call_fn(LispObject args, LispObject env)
             r1 = car(args);
             exit_count = 1;
             r1  = eval(r1, env);
-            errexit();
             if (exit_count != 0) xargs1 = cons(r1, xargs1);
             for (unsigned int i=2; i<=exit_count; i++)
             {   xargs1 = cons((&work_0)[i], xargs1);
-                errexit();
             }
             save.restore(args, env, xargs);
         }
@@ -1060,7 +1021,6 @@ LispObject interpreted_0(LispObject def)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck();
-    errexit();
     return apply_lambda(qenv(def), nil, nil, def);
 }
 
@@ -1068,9 +1028,7 @@ LispObject interpreted_1(LispObject def, LispObject a1)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck();
-    errexit();
     a1 = ncons(a1);
-    errexit();
     return apply_lambda(qenv(def), a1, nil, def);
 }
 
@@ -1078,9 +1036,7 @@ LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck();
-    errexit();
     a1 = list2(a1, a2);
-    errexit();
     return apply_lambda(qenv(def), a1, nil, def);
 }
 
@@ -1089,9 +1045,7 @@ LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2,
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck();
-    errexit();
     a1 = list3(a1, a2, a3);
-    errexit();
     return apply_lambda(qenv(def), a1, nil, def);
 }
 
@@ -1101,9 +1055,7 @@ LispObject interpreted_4up(LispObject def, LispObject a1,
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck();
-    errexit();
     a1 = list3star(a1, a2, a3, a4up);
-    errexit();
     return apply_lambda(qenv(def), a1, nil, def);
 }
 
@@ -1111,7 +1063,6 @@ LispObject funarged_0(LispObject def)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck();
-    errexit();
     def = qenv(def);
     return apply_lambda(cdr(def), nil, car(def), cdr(def));
 }
@@ -1120,10 +1071,8 @@ LispObject funarged_1(LispObject def, LispObject a1)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck();
-    errexit();
     def = qenv(def);
     a1 = ncons(a1);
-    errexit();
     return apply_lambda(cdr(def), a1, car(def), cdr(def));
 }
 
@@ -1131,10 +1080,8 @@ LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck();
-    errexit();
     def = qenv(def);
     a1 = list2(a1, a2);
-    errexit();
     return apply_lambda(cdr(def), a1, car(def), cdr(def));
 }
 
@@ -1143,10 +1090,8 @@ LispObject funarged_3(LispObject def, LispObject a1, LispObject a2,
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck();
-    errexit();
     def = qenv(def);
     a1 = list3(a1, a2, a3);
-    errexit();
     return apply_lambda(cdr(def), a1, car(def), cdr(def));
 }
 
@@ -1156,9 +1101,7 @@ LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
     save_current_function saver(def);
     def = qenv(def);
     stackcheck();
-    errexit();
     a1 = list3star(a1, a2, a3, a4up);
-    errexit();
     return apply_lambda(cdr(def), a1, car(def), cdr(def));
 }
 
@@ -1168,7 +1111,6 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
     LispObject done;
     LispObject f;
     stackcheck();
-    errexit();
     done = nil;
     if (consp(form))
     {   f = car(form);
@@ -1185,11 +1127,9 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                     {   RealSave save(form, done);
                         {   RealSave save1(env);
                             w = cons(lambda, w);
-                            errexit();
                             w = list3(w, save.val(1), nil);
                             save1.restore(env);
                         }
-                        errexit();
                         on_backtrace(
                             p = apply(qvalue(macroexpand_hook),
                                       w,
@@ -1213,14 +1153,11 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
             if (done == unset_var)
                 return error(1, err_macroex_hook, macroexpand_hook);
             f = cons(lambda, qenv(f));
-            errexit();
             f = list3(f, form, env);
-            errexit();
             form = apply(done,
                          f,
                          env,
                          macroexpand_hook);
-            errexit();
             done = lisp_true;
         }
     }
@@ -1233,11 +1170,9 @@ LispObject macroexpand(LispObject form, LispObject env)
     STACK_SANITY;
     LispObject done;
     stackcheck();
-    errexit();
     done = nil;
     for (;;)
     {   form = macroexpand_1(form, env);
-        errexit();
         if (mv_2 == nil) break;
         done = lisp_true;
     }
@@ -1277,7 +1212,6 @@ LispObject autoload_0(LispObject fname)
         LispObject fname1 = cdr(fname);
         while (consp(fname1))
         {   Lload_module(nil, car(fname1));
-            errexit();
             fname1 = cdr(fname1);
         }
     }
@@ -1293,11 +1227,9 @@ LispObject autoload_1(LispObject fname, LispObject a1)
     LispObject fname1 = cdr(fname);
     while (consp(fname1))
     {   Lload_module(nil, car(fname1));
-        errexit();
         fname1 = cdr(fname1);
     }
     a1 = ncons(a1);
-    errexit();
     return apply(car(fname), a1, nil, autoload_symbol);
 }
 
@@ -1310,11 +1242,9 @@ LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
     LispObject fname1 = cdr(fname);
     while (consp(fname1))
     {   Lload_module(nil, car(fname1));
-        errexit();
         fname1 = cdr(fname1);
     }
     a1 = list2(a1, a2);
-    errexit();
     return apply(car(fname), a1, nil, autoload_symbol);
 }
 
@@ -1328,11 +1258,9 @@ LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
     LispObject fname1 = cdr(fname);
     while (consp(fname1))
     {   Lload_module(nil, car(fname1));
-        errexit();
         fname1 = cdr(fname1);
     }
     a1 = list3(a1, a2, a3);
-    errexit();
     return apply(car(fname), a1, nil, autoload_symbol);
 }
 
@@ -2214,7 +2142,6 @@ LispObject Lshow_stack_2(LispObject env, LispObject a1, LispObject a2)
     {   term_printf("%d: ", i);
         prin_to_terminal(stack[-i]);
         term_printf("\n");
-        errexit();
     }
     return nil;
 }

@@ -294,7 +294,6 @@ static LispObject unpack_atom()
             {   int i;
                 for (i=0; i<(size>>2)-1; ++i)
                 {   elt(v, i) = unpack_cell();
-                    errexit();
                 }
                 if (!(i&1)) elt(v, i) = nil;
             }
@@ -323,17 +322,14 @@ static LispObject unpack_cell()
 
 static LispObject unpack_list()
 {   LispObject r = unpack_cell();
-    errexit();
     switch (unpack_char())
     {   case ')': return cons(r, nil);
         case '.':
         {   LispObject tail = unpack_atom();
-            errexit();
             return cons(r, tail);
         }
         case ',':
         {   LispObject tail = unpack_list();
-            errexit();
             return cons(r, tail);
         }
         default :

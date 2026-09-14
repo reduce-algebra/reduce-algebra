@@ -3,7 +3,6 @@
 #if defined BYTECODE
             case OP_LIST2:                  // A_reg = cons(B_reg, cons(A_reg, nil));
                 A_reg = list2(B_reg, A_reg);
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

@@ -440,26 +440,19 @@ LispObject Nmodular_quotient(LispObject env, LispObject a, LispObject b)
 LispObject Nlarge_modular_expt(LispObject a, int x)
 {   LispObject r, p, w;
     p = IBinary(Mod, a, large_modulus);
-    errexit();
     while ((x & 1) == 0)
     {   p = Binary(Times, p, p);
-        errexit();
         p = IBinary(Mod, p, large_modulus);
-        errexit();
         x = x/2;
     }
     r = p;
     while (x != 1)
     {   w = Binary(Times, p, p);
-        errexit();
         p = IBinary(Mod, w, large_modulus);
-        errexit();
         x = x/2;
         if ((x & 1) != 0)
         {   w = Binary(Times, r, p);
-            errexit();
             r = IBinary(Mod, w, large_modulus);
-            errexit();
         }
     }
     return r;

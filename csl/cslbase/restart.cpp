@@ -1378,9 +1378,6 @@ LispObject set_up_variables(int restart_flag)
 #ifdef ENABLE_WEBGUI
         w = cons(make_keyword("WEBGUI"), w);
 #endif
-#ifdef NO_THROW
-        w = cons(make_keyword("NO-THROW"), w);
-#endif
         if (fwin_windowmode() & FWIN_WITH_TERMED)
             w = cons(make_keyword("TERMED"), w);
 #ifdef HAVE_LIBFOX
@@ -1473,9 +1470,6 @@ LispObject set_up_variables(int restart_flag)
 #endif
 #ifdef ENABLE_WEBGUI
         w = cons(make_keyword("webgui"), w);
-#endif
-#ifdef NO_THROW
-        w = cons(make_keyword("no-throw"), w);
 #endif
         if (fwin_windowmode() & FWIN_WITH_TERMED)
             w = cons(make_keyword("termed"), w);
@@ -1848,17 +1842,10 @@ LispObject set_up_variables(int restart_flag)
     {   const char* s = ss.c_str();
         TRY
             LispObject v = make_string(s);
-            errexit();
-            v = Lexplodec(nil, v);
-            errexit();
             v = Lcompress(nil, v);
-            errexit();
             Lprin(nil, v);
-            errexit();
             v = Leval(nil, v);
-            errexit();
             term_printf(" => ");
-            errexit();
             Lprint(nil, v);
 // A failure in an expression set to be evaluated here is fatal.
         CATCH(LispException)

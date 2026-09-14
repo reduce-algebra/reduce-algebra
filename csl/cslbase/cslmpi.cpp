@@ -153,8 +153,6 @@ static LispObject Lmpi_recv(LispObject, LispObject source,
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                     fixnum_of_int(status.MPI_TAG),
                     fixnum_of_int(status.MPI_ERROR));
-    errexit();
-    return list2(r, Lstatus);
 }
 
 // Standard blocking simultaneous send and receive
@@ -202,7 +200,6 @@ static LispObject Lmpi_sendrecv(LispObject, LispObject s_mess,
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                     fixnum_of_int(status.MPI_TAG),
                     fixnum_of_int(status.MPI_ERROR));
-    errexit();
     return list2(r, Lstatus);
 }
 
@@ -306,7 +303,6 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
             Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                             fixnum_of_int(status.MPI_TAG),
                             fixnum_of_int(status.MPI_ERROR));
-            errexit();
             return list2(r, Lstatus);
         }
     }
@@ -330,7 +326,6 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
         Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                         fixnum_of_int(status.MPI_TAG),
                         fixnum_of_int(status.MPI_ERROR));
-        errexit();
         return list2(r, Lstatus);
     }
 }
@@ -365,7 +360,6 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
             Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                             fixnum_of_int(status.MPI_TAG),
                             fixnum_of_int(status.MPI_ERROR));
-            errexit();
             return list2(r, Lstatus);
         }
     }
@@ -392,7 +386,6 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
         Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                         fixnum_of_int(status.MPI_TAG),
                         fixnum_of_int(status.MPI_ERROR));
-        errexit();
         return list2(r, Lstatus);
     }
 }

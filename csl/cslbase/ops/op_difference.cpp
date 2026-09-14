@@ -12,7 +12,6 @@
 #else // ARITHLIB
                 A_reg = difference2(B_reg, A_reg);
 #endif // ARITHLIB
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

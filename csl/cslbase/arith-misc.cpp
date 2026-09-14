@@ -810,7 +810,6 @@ LispObject Nconjugate(LispObject env, LispObject a)
     {   LispObject r = real_part(a),
                    i = imag_part(a);
         {   i = Unary(Minus, i);
-            errexit();
         }
         a = make_complex(r, i);
         return a;

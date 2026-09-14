@@ -536,8 +536,6 @@ LispObject Lis_console(LispObject env, LispObject a)
 
 LispObject make_stream_handle()
 {   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_STREAM, STREAM_SIZE);
-    errexit();
-    stream_type(w) = nil;
     stream_write_data(w) = nil;
     stream_read_data(w) = nil;
     stream_file(w) = nullptr;
@@ -557,13 +555,9 @@ LispObject Lmake_broadcast_stream_4up(LispObject env,
     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
     if (a3 != SPID_NOARG) a4up = cons(a3, a4up);
-    errexit();
     if (a2 != SPID_NOARG) a4up = cons(a2, a4up);
-    errexit();
     if (a1 != SPID_NOARG) a4up = cons(a1, a4up);
-    errexit();
     LispObject w = make_stream_handle();
-    errexit();
     stream_write_fn(w) = char_to_broadcast;
     stream_write_other(w) = write_action_broadcast;
     stream_write_data(w) = a4up;
@@ -596,13 +590,9 @@ LispObject Lmake_concatenated_stream_4up(LispObject env,
     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
     if (a3 != SPID_NOARG) a4up = cons(a3, a4up);
-    errexit();
     if (a2 != SPID_NOARG) a4up = cons(a2, a4up);
-    errexit();
     if (a1 != SPID_NOARG) a4up = cons(a1, a4up);
-    errexit();
     LispObject w = make_stream_handle();
-    errexit();
     stream_read_fn(w) = char_from_concatenated;
     stream_read_other(w) = read_action_concatenated;
     stream_read_data(w) = a4up;
@@ -636,7 +626,6 @@ LispObject Lmake_synonym_stream(LispObject env, LispObject a)
     LispObject w;
     if (!is_symbol(a)) return aerror("make-synonym-stream", a);
     w = make_stream_handle();
-    errexit();
     stream_write_fn(w) = char_to_synonym;
     stream_write_other(w) = write_action_synonym;
     stream_write_data(w) = a;
@@ -652,7 +641,6 @@ LispObject Lmake_two_way_stream(LispObject env, LispObject a, LispObject b)
     if (!is_symbol(a)) return aerror("make-two-way-stream", a);
     if (!is_symbol(b)) return aerror("make-two-way-stream", b);
     w = make_stream_handle();
-    errexit();
     stream_write_fn(w) = char_to_synonym;
     stream_write_other(w) = write_action_synonym;
     stream_write_data(w) = b;
@@ -668,7 +656,6 @@ LispObject Lmake_echo_stream(LispObject env, LispObject a, LispObject b)
     if (!is_symbol(a)) return aerror("make-echo-stream", a);
     if (!is_symbol(b)) return aerror("make-echo-stream", b);
     w = make_stream_handle();
-    errexit();
     stream_write_fn(w) = char_to_synonym;
     stream_write_other(w) = write_action_synonym;
     stream_write_data(w) = b;
@@ -716,7 +703,6 @@ LispObject Lmake_string_output_stream(LispObject env)
 {   SingleValued fn;
     LispObject w;
     w = make_stream_handle();
-    errexit();
     stream_write_fn(w) = code_to_list;
     stream_write_other(w) = write_action_list;
     return w;
@@ -732,7 +718,6 @@ LispObject Lget_output_stream_string(LispObject env, LispObject a)
     stream_write_data(a) = nil;
     stream_char_pos(a) = stream_byte_pos(a) = 0;
     a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-    errexit();
     k = (n + 3) & ~(int32_t)7;
     *(int32_t *)(reinterpret_cast<char *>(a) + k + 4 - TAG_VECTOR) = 0;
     if (k != 0) *(int32_t *)(reinterpret_cast<char *>(a) + k - TAG_VECTOR) = 0;
@@ -754,7 +739,6 @@ LispObject Lmake_function_stream(LispObject env, LispObject a)
     LispObject w;
     if (!is_symbol(a)) return aerror("make-function-stream", a);
     w = make_stream_handle();
-    errexit();
     stream_write_fn(w) = char_to_function;
     stream_write_other(w) = write_action_list;
     stream_write_data(w) = a;
@@ -1323,7 +1307,6 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
     }
 
     r = make_stream_handle();
-    errexit();
     stream_type(r) = name;
     stream_file(r) = file;
     switch (d & (DIRECTION_MASK | OPEN_PIPE))
@@ -2909,7 +2892,6 @@ restart:
                         if (pkgid != 0)
                         {   LispObject ww = w;
                             w = Lfind_symbol_1(env, w);
-                            errexit();
                             if (mv_2 != nil && w == u)
                             {   pkgid = 0;
 // Here I update the cache it that keeps telling me that the symbol is
@@ -4605,7 +4587,6 @@ static LispObject Lbinary_open_input(LispObject env, LispObject name)
     LispObject r;
     FILE *fh = binary_open(env, name, "rb", "binary_open_input");
     r = make_stream_handle();
-    errexit();
     stream_read_fn(r) = char_from_file;
     stream_read_other(r) = read_action_file;
     stream_file(r) = fh;
@@ -5088,7 +5069,6 @@ start_again:
                                     nullptr);
         if (file == nullptr) return nil;
         r = make_stream_handle();
-        errexit();
         stream_type(r) = url;
         stream_file(r) = file;
         stream_read_fn(r) = char_from_file;
@@ -5167,11 +5147,9 @@ start_again:
     }
 
     r = make_stream_handle();
-    errexit();
     stream_type(r) = url;
     url = get_basic_vector(TAG_VECTOR, TYPE_STRING_4,
                            CELL+4+SOCKET_BUFFER_SIZE);
-    errexit();
     ielt32(url, 0) = 0;
     stream_read_data(r) = url;
     stream_file(r) = (FILE *)(intptr_t)s;

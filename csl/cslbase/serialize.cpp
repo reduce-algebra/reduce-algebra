@@ -3269,15 +3269,9 @@ LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
 #ifdef DEBUG_FASL
     trace_printf("FASLOUT: ");
-    errexit();
-    loop_print_trace(a);
-    errexit();
     trace_printf("\n");
-    errexit();
     loop_print_trace(b);
-    errexit();
     trace_printf("\n");
-    errexit();
 #endif // DEBUG_FASL
 #ifndef ARITHLIB
     garbage_collection_permitted = false;
@@ -3548,9 +3542,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                 {
 // The md60 function is called on something like (fname (args...) body...)
                     LispObject def1 = cons(name, cdr(def));
-                    errexit();
                     LispObject w1 = Lmd60(nil, def1);
-                    errexit();
 #ifdef ARITHLIB
                     if (!BoolBinary(Eqn, w, w1)) getsavedef = false;
 #else // ARITHLIB
@@ -3568,7 +3560,6 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                     }
                     else
                     {   putprop(name, savedef_symbol, def);
-                        errexit();
                         check_no_gensyms(def);
                         LispObject n = Lmd60(nil, def);
 // If RECORD_GET is defined than get() can call puthash to note its use, and
@@ -3579,26 +3570,21 @@ static LispObject load_module(LispObject env, LispObject file, int option)
 // Only insert it on the property if it is not already present.
                         if (Lassoc(nil, n, old) == nil)
                         {   def = acons(n, def, old);
-                            errexit();
                             putprop(name, savedefs_symbol, def);
-                            errexit();
                         }
                     }
                 }
 // Build up a list of the names of all functions whose !*savedef information
 // has been established.
                 file = cons(name, file);
-                errexit();
             }
 // Now set up the load_source property on the function name to indicate the
 // module it was found in.
             LispObject w;
             w = get(name, load_source_symbol, nil);
             {   w = cons(current_module, w);
-                errexit();
             }
             putprop(name, load_source_symbol, w);
-            errexit();
         }
     }
     if (option == F_LOAD_MODULE) return nil;
@@ -3624,14 +3610,12 @@ LispObject load_source0(int option)
     for (LispObject l = qvalue(input_libraries); is_cons(l); l = cdr(l))
     {   LispObject m;
         {   m = Llibrary_members(nil, car(l));
-            errexit();
         }
         while (is_cons(m))
         {   LispObject m1 = car(m);
             m = cdr(m);
             if (Lmemq(nil, m1, mods) != nil) continue;
             mods = cons(m1, mods);
-            errexit();
         }
     }
 // Now I will do load-source or load-selected-source on each module, and
@@ -3642,7 +3626,6 @@ LispObject load_source0(int option)
     {   LispObject m = car(mods), w;
         mods = cdr(mods);
         {   w = load_module(nil, m, option);
-            errexit();
         }
 // The special version of UNION here always works in linear time, and that
 // is MUCH better than the more general version. Well with bootstrapreduce
@@ -3651,7 +3634,6 @@ LispObject load_source0(int option)
 // proportional to 400 million - which does complete but which noticably
 // slows things down.
         r = Lunion_symlist(nil, r, w);
-        errexit();
     }
     return r;
 }
@@ -4413,12 +4395,9 @@ LispObject Lmapstore(LispObject env, LispObject a)
                     {   LispObject w1;
 // Result is a list of items ((name size bytes-executed) ...).
                         w1 = make_lisp_unsigned64(n);
-                        errexit();
                         x = basic_elt(cdr(qenv(x)), 0);
                         w1 = list3(x, fixnum_of_int(clen), w1);
-                        errexit();
                         r = cons(w1, r);
-                        errexit();
                     }
                 }
             }

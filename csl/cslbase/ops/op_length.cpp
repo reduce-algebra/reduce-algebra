@@ -3,7 +3,6 @@
 #if defined BYTECODE
             case OP_LENGTH:
                 A_reg = Llength(nil, A_reg);
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

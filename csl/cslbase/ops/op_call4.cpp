@@ -15,13 +15,11 @@
             case OP_CALL4:
                 r2 = *stack--; r1 = *stack--;
                 B_reg = list3star(r1, r2, B_reg, A_reg);
-                errexit();
 // Here the post-byte indicates the function to be called.
                 A_reg = basic_elt(litvec,
                                   (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
                 ppc++;
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

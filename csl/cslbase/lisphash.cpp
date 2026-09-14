@@ -350,9 +350,7 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
     LispObject v, v2;
     {   v2 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
-        errexit();
         v = get_basic_vector_init(6*CELL, nil);
-        errexit();
     }
     basic_elt(v, HASH_FLAVOUR) = flavour;
 // I am being tricky here - when I write a fixnum into the vector I
@@ -397,7 +395,6 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
     LispObject v;
     {   v = get_basic_vector_init(6*CELL, nil);
-        errexit();
     }
     basic_elt(v, HASH_FLAVOUR) = flavour;
     basic_elt(v, HASH_COUNT) =
@@ -1140,12 +1137,10 @@ LispObject Lmap_hash(LispObject env, LispObject fn, LispObject tab)
             key == SPID_HASHTOMB) continue;
         if (v1 == nil)
         {   Lapply1(nil, fn, key);
-            errexit();
         }
         else
         {   LispObject val = elt(v1, i);
             Lapply2(nil, fn, key, val);
-            errexit();
         }
     }
     return nil;
@@ -1174,7 +1169,6 @@ LispObject Lhash_contents(LispObject env, LispObject tab)
             key == SPID_HASHTOMB) continue;
         if (v1 == nil) r = cons(key, r);
         else r = acons(key, elt(v1, i), r);
-        errexit();
     }
 // The ordering of items in the result a-list is unpredictable.
 // That is probably quite reasonable.
@@ -1191,10 +1185,8 @@ LispObject Lget_hash_1(LispObject env, LispObject key)
     SingleValued fn;
     LispObject r;
     r = Lget_hash(nil, key, sys_hash_table, nil);
-    errexit();
     if (mv_2 != nil)
     {   r = cons(key, r);
-        errexit();
     }
     return r;
 #endif
@@ -1255,10 +1247,8 @@ LispObject Lput_hash(LispObject env,
             {   h_shift--;
                 newkeys =
                     get_vector_init(CELL*(2*h_table_size+1), SPID_HASHEMPTY);
-                errexit();
                 newvals = (v_table == nil) ? nil :
                     get_vector_init(CELL*(2*h_table_size+1), SPID_HASHEMPTY);
-                errexit();
             }
 // Allocating the new table might trigger garbage collection, and that
 // could mark the table as in need of rehashing. Well I am about to

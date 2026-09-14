@@ -6,12 +6,10 @@
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else
                 {   A_reg = carerror(A_reg);
-                    errexit();
                 }
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else
                 {   A_reg = carerror(A_reg);
-                    errexit();
                 }
                 continue;
 

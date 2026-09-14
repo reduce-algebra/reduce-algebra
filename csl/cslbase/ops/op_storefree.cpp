@@ -4,7 +4,6 @@
             case OP_STOREFREE:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   print_traceset(current_byte, A_reg, litvec);
-                    errexit();
                 }
                 qvalue(basic_elt(litvec, next_byte)) =
                          A_reg;  // store into special var

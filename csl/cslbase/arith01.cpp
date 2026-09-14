@@ -82,7 +82,6 @@ LispObject make_complex(LispObject r, LispObject i)
         return r;
     stackcheck();
     v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM, sizeof(Complex_Number));
-    errexit();
     real_part(v) = r;
     imag_part(v) = i;
     return v;
@@ -95,7 +94,6 @@ LispObject make_ratio(LispObject p, LispObject q)
     if (q == fixnum_of_int(1)) return p;
     stackcheck();
     v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
-    errexit();
     numerator(v) = p;
     denominator(v) = q;
     return v;
@@ -205,7 +203,6 @@ bool floating_edge_case(FLOAT_128 x)
 LispObject make_boxfloat128(FLOAT_128 a)
 {   LispObject r;
     r = get_aligned_basic_vector(TAG_BOXFLOAT, TYPE_FLOAT, SIZEOF_LONG_FLOAT);
-    errexit();
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
     long_float_val(r) = a;
     if (trap_floating_overflow &&
@@ -398,7 +395,6 @@ LispObject make_one_word_bignum(int32_t n)
 // inside the range 0xc0000000 to 0x3fffffff on a 32-bit machine. It
 // should never be needed on a 64-bit system!
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4);
-    errexit();
     bignum_digits(w)[0] = n;
     return w;
 }
@@ -408,7 +404,6 @@ LispObject make_two_word_bignum(int32_t a1, uint32_t a0)
 // must have been arranged already that a1 and a0 are correctly
 // normalized to put in the two words as indicated.
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8);
-    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     return w;
@@ -419,7 +414,6 @@ LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
 // must have been arranged already that the values are correctly
 // normalized.
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+12);
-    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -432,7 +426,6 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
 // must have been arranged already that the values are correctly
 // normalized.
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+16);
-    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -446,7 +439,6 @@ LispObject make_five_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
 // must have been arranged already that the values are correctly
 // normalized.
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+20);
-    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -458,7 +450,6 @@ LispObject make_five_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
 LispObject make_boxfloat128(FLOAT_128 a)
 {   LispObject r;
     r = get_aligned_basic_vector(TAG_BOXFLOAT, TYPE_FLOAT, SIZEOF_LONG_FLOAT);
-    errexit();
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
     long_float_val(r) = a;
     if (trap_floating_overflow &&
@@ -908,7 +899,6 @@ LispObject make_complex(LispObject r, LispObject i)
     stackcheck();
     {   v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM,
                          sizeof(Complex_Number));
-        errexit();
 // The vector r has uninitialized contents here - dodgy.  If the call
 // to get_basic_vector succeeded then I fill it in, otherwise I will not
 // refer to it again, and I think that unreferenced vectors containing junk
@@ -927,7 +917,6 @@ LispObject make_ratio(LispObject p, LispObject q)
     stackcheck();
     {   v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM,
                              sizeof(Rational_Number));
-        errexit();
     }
     numerator(v) = p;
     denominator(v) = q;
@@ -1164,7 +1153,6 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // where I do not need to optimise edge cases so carefully, and where the
 // length (as a bignum) of the result is rather likely to match that of a2.
     LispObject c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
-    errexit();
 // Add in the lowest digit by hand because at this stage s1 can have
 // more than 31 bits and so intrudes beyond there.
     uint32_t d0 = bignum_digits(a2)[0] + (uint32_t)clear_top_bit(s1);
@@ -1234,7 +1222,6 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
         return c;
     }
     a2 = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
-    errexit();
     for (size_t i=0; i<len-1; i++)
         bignum_digits(a2)[i] = vbignum_digits(c)[i];
 // I move the top digit across by hand since if the number is negative
@@ -1257,9 +1244,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 
 inline LispObject plus_i_r(LispObject a1, LispObject a2)
 {   a1 = times2(a1, denominator(a2));
-    errexit();
     a1 = plus2(a1, numerator(a2));
-    errexit();
     return make_ratio(a1, denominator(a2));
 }
 
@@ -1268,7 +1253,6 @@ inline LispObject plus_i_r(LispObject a1, LispObject a2)
 
 inline LispObject plus_i_c(LispObject a1, LispObject a2)
 {   a1 = plus2(a1, real_part(a2));
-    errexit();
 // make_complex() takes responsibility for mapping #C(n 0) onto n
     return make_complex(a1, imag_part(a2));
 }
@@ -1314,7 +1298,6 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
     {   LispObject b;
         int32_t i;
         b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len+4);
-        errexit();
         len = (len-CELL)/4;
         for (i=0; i<len; i++)
             bignum_digits(b)[i] = clear_top_bit(bignum_digits(a)[i]);
@@ -1359,7 +1342,6 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
 // Now at least one operand uses 3 words... I will do a general bignum add
 // which may sometimes be overkill, but ought to be safe.
     LispObject c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, 4*la+CELL);
-    errexit();
     uint32_t carry = 0;
 // Add all but the top digit of b
     la--;
@@ -1536,23 +1518,14 @@ inline LispObject plus_r_r(LispObject a1, LispObject a2)
 // All the calls to quot2() in this procedure are expected - nay required -
 // to give exact integer quotients.
     db = quot2(db, g);
-    errexit();
     g = quot2(da, g);
-    errexit();
     na = times2(na, db);
-    errexit();
     nb = times2(nb, g);
-    errexit();
     na = plus2(na, nb);
-    errexit();
     da = times2(da, db);
-    errexit();
     g = gcd(na, da);
-    errexit();
     na = quot2(na, g);
-    errexit();
     da = quot2(da, g);
-    errexit();
     return make_ratio(na, da);
 }
 
@@ -1599,9 +1572,7 @@ inline LispObject plus_c_r(LispObject a1, LispObject a2)
 
 inline LispObject plus_c_c(LispObject a1, LispObject a2)
 {   LispObject c = plus2(imag_part(a1), imag_part(a2));
-    errexit();
     a1 = plus2(real_part(a1), real_part(a2));
-    errexit();
     return make_complex(a1, c);
 }
 
@@ -1778,99 +1749,82 @@ inline LispObject difference_i_i(LispObject a1, LispObject a2)
 
 inline LispObject difference_i_b(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_i(a1, a2);
 }
 
 inline LispObject difference_i_r(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_i_r(a1, a2);
 }
 
 inline LispObject difference_i_c(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_i_c(a1, a2);
 }
 
 inline LispObject difference_i_s(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_i_s(a1, a2);
 }
 
 inline LispObject difference_i_f(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_i_f(a1, a2);
 }
 
 inline LispObject difference_i_d(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_i_d(a1, a2);
 }
 
 inline LispObject difference_i_l(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_i_l(a1, a2);
 }
 
 inline LispObject difference_b_i(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_b(a1, a2);
 }
 
 inline LispObject difference_b_b(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_b(a1, a2);
 }
 
 inline LispObject difference_b_r(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_b_r(a1, a2);
 }
 
 inline LispObject difference_b_c(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_b_c(a1, a2);
 }
 
 inline LispObject difference_b_s(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_b_s(a1, a2);
 }
 
 inline LispObject difference_b_f(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_b_f(a1, a2);
 }
 
 inline LispObject difference_b_d(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_b_d(a1, a2);
 }
 
 inline LispObject difference_b_l(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_b_l(a1, a2);
 }
 
 inline LispObject difference_r_i(LispObject a1, LispObject a2)
 {   a2 = times2(a2, denominator(a1));
-    errexit();
     a2 = difference2(numerator(a1), a2);
-    errexit();
     return make_ratio(a2, denominator(a1));
 }
 
@@ -1880,85 +1834,71 @@ inline LispObject difference_r_b(LispObject a1, LispObject a2)
 
 inline LispObject difference_r_r(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_r_r(a1, a2);
 }
 
 inline LispObject difference_r_c(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_r_c(a1, a2);
 }
 
 inline LispObject difference_r_s(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_r_s(a1, a2);
 }
 
 inline LispObject difference_r_f(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_r_f(a1, a2);
 }
 
 inline LispObject difference_r_d(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_r_d(a1, a2);
 }
 
 inline LispObject difference_r_l(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_r_l(a1, a2);
 }
 
 inline LispObject difference_c_i(LispObject a1, LispObject a2)
 {   a2 = make_lisp_integer64(-int_of_fixnum(a2));
-    errexit();
     return plus_c_i(a1, a2);
 }
 
 inline LispObject difference_c_b(LispObject a1, LispObject a2)
 {   a2 = negateb(a2);
-    errexit();
     return plus_c_b(a1, a2);
 }
 
 inline LispObject difference_c_r(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_c_r(a1, a2);
 }
 
 inline LispObject difference_c_c(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_c_c(a1, a2);
 }
 
 inline LispObject difference_c_s(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_c_s(a1, a2);
 }
 
 inline LispObject difference_c_f(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_c_f(a1, a2);
 }
 
 inline LispObject difference_c_d(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_c_d(a1, a2);
 }
 
 inline LispObject difference_c_l(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_c_l(a1, a2);
 }
 
@@ -1977,37 +1917,31 @@ inline LispObject difference_s_b(LispObject a1, LispObject a2)
 
 inline LispObject difference_s_r(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_s_r(a1, a2);
 }
 
 inline LispObject difference_s_c(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_s_c(a1, a2);
 }
 
 inline LispObject difference_s_s(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_s_s(a1, a2);
 }
 
 inline LispObject difference_s_f(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_s_f(a1, a2);
 }
 
 inline LispObject difference_s_d(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_s_d(a1, a2);
 }
 
 inline LispObject difference_s_l(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_s_l(a1, a2);
 }
 
@@ -2026,13 +1960,11 @@ inline LispObject difference_f_b(LispObject a1, LispObject a2)
 
 inline LispObject difference_f_r(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_f_r(a1, a2);
 }
 
 inline LispObject difference_f_c(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_f_c(a1, a2);
 }
 
@@ -2053,7 +1985,6 @@ inline LispObject difference_f_d(LispObject a1, LispObject a2)
 
 inline LispObject difference_f_l(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_f_l(a1, a2);
 }
 
@@ -2072,13 +2003,11 @@ inline LispObject difference_d_b(LispObject a1, LispObject a2)
 
 inline LispObject difference_d_r(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_d_r(a1, a2);
 }
 
 inline LispObject difference_d_c(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_d_c(a1, a2);
 }
 
@@ -2099,7 +2028,6 @@ inline LispObject difference_d_d(LispObject a1, LispObject a2)
 
 inline LispObject difference_d_l(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_d_l(a1, a2);
 }
 
@@ -2119,37 +2047,31 @@ inline LispObject difference_l_b(LispObject a1, LispObject a2)
 
 inline LispObject difference_l_r(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_l_r(a1, a2);
 }
 
 inline LispObject difference_l_c(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_l_c(a1, a2);
 }
 
 inline LispObject difference_l_s(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_l_s(a1, a2);
 }
 
 inline LispObject difference_l_f(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_l_f(a1, a2);
 }
 
 inline LispObject difference_l_d(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_l_d(a1, a2);
 }
 
 inline LispObject difference_l_l(LispObject a1, LispObject a2)
 {   a2 = negate(a2);
-    errexit();
     return plus_l_l(a1, a2);
 }
 

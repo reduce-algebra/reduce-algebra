@@ -55,14 +55,12 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             break;
         case boole_andc2:
             a2 = lognot(a2);
-            errexit();
             r = logand2(a1, a2);
             break;
         case boole_1:
             return a1;
         case boole_andc1:
             a1 = lognot(a1);
-            errexit();
             r = logand2(a1, a2);
             break;
         case boole_2:
@@ -75,7 +73,6 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             break;
         case boole_nor:
             a1 = logior2(a1, a2);
-            errexit();
             r = lognot(a1);
             break;
         case boole_eqv:
@@ -86,7 +83,6 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             break;
         case boole_orc2:
             a2 = lognot(a2);
-            errexit();
             r = logior2(a1, a2);
             break;
         case boole_c1:
@@ -94,12 +90,10 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             break;
         case boole_orc1:
             a1 = lognot(a1);
-            errexit();
             r = logior2(a1, a2);
             break;
         case boole_nand:
             a1 = logand2(a1, a2);
-            errexit();
             r = lognot(a1);
             break;
         case boole_set:
@@ -150,7 +144,6 @@ static LispObject Lconjugate(LispObject env, LispObject a)
     {   LispObject r = real_part(a),
                        i = imag_part(a);
         i = negate(i);
-        errexit();
         a = make_complex(r, i);
         return a;
     }
@@ -224,7 +217,6 @@ LispObject Lgcd_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
     a1 = gcd(a1, a2);
-    errexit();
     return gcd(a1, a3);
 }
 
@@ -232,12 +224,9 @@ LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
 {   SingleValued fn;
     a1 = gcd(a1, a2);
-    errexit();
     a1 = gcd(a1, a3);
-    errexit();
     while (a4up != nil)
     {   a1 = gcd(a1, car(a4up));
-        errexit();
         a4up = cdr(a4up);
     }
     return a1;
@@ -271,7 +260,6 @@ LispObject Llcm_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
     a1 = lcm(a1, a2);
-    errexit();
     return lcm(a1, a3);
 }
 
@@ -279,12 +267,9 @@ LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
 {   SingleValued fn;
     a1 = lcm(a1, a2);
-    errexit();
     a1 = lcm(a1, a3);
-    errexit();
     while (a4up != nil)
     {   a1 = lcm(a1, car(a4up));
-        errexit();
         a4up = cdr(a4up);
     }
     return a1;
@@ -328,7 +313,6 @@ LispObject decode_long_float(LispObject a)
     LispObject sign = make_boxfloat128(LF_C(1.0));
     if (neg) sign = make_boxfloat128(-long_float_val(sign));
     a = make_boxfloat128(d);
-    errexit();
 #ifdef COMMON
 // Until and unless Standard Lisp supports multiple values this has to
 // return a list in standard lisp mode.
@@ -360,7 +344,6 @@ LispObject Ldecode_float(LispObject env, LispObject a)
     else sign = make_boxfloat(neg, floatWant(flthdr(a)));
     if (is_sfloat(a)) a = pack_immediate_float(d, a);
     else a = make_boxfloat(d, floatWant(flthdr(a)));
-    errexit();
 #ifdef COMMON
 // Until and unless Standard Lisp supports multiple values this has to
 // return a list in standard lisp mode.
@@ -1031,9 +1014,7 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
     LispObject p = numerator(a);
     LispObject q = denominator(a); // note that q will always be positive!
     LispObject r = quot2(p, q);
-    errexit();
     p = Cremainder(p, q);
-    errexit();
 // The quotient is now in r and the remainder in p. The original divisor
 // is still in q.
     switch (roundmode)
@@ -1044,39 +1025,29 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 // then q/2 I will need to adjust things. And if it is equal in either of
 // those edge cases I need to think even harder!
             w = times2(p, fixnum_of_int(2));
-            errexit();
             {   w1 = negate(w);
-                errexit();
             }
             if (greaterp2(w, q) ||
                 (numeq2(w, q) && Loddp(nil, r)!=nil))
             {   p = difference2(p, q);
-                errexit();
                 r = add1(r);
-                errexit();
             }
             else if (greaterp2(w1, q) ||
                      (numeq2(w1, q) && Loddp(nil, r)!=nil))
             {   p = plus2(p, q);
-                errexit();
                 r = sub1(r);
-                errexit();
             }
             break;
         case FIX_FLOOR:
             if (minusp(p))
             {   p = plus2(p, q);
-                errexit();
                 r = sub1(r);
-                errexit();
             }
             break;
         case FIX_CEILING:
             if (plusp(p))
             {   p = difference2(p, q);
-                errexit();
                 r = add1(r);
-                errexit();
             }
             break;
     }
@@ -1090,9 +1061,7 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 LispObject lisp_fix(LispObject a, int roundmode)
 {   LispObject r;
     r = lisp_fix_sub(a, roundmode);
-    errexit();
     a = difference2(a, r);
-    errexit();
     mv_2 = a;
     return nvalues(r, 2);
 }
@@ -1114,17 +1083,13 @@ LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
 {   LispObject r2, negb;
     if (is_float(a) || is_float(b))
     {   a = quot2(a, b);
-        errexit();
 // If either argument was floating point then the quotient will be.
         LispObject r = lisp_fix(a, roundmode);
         mv_2 = times2(mv_2, b);
-        errexit();
         return nvalues(r, 2);
     }
     LispObject q = quot2(a, b);
-    errexit();
     LispObject r = Cremainder(a, b);
-    errexit();
     switch (roundmode)
     {   case FIX_TRUNCATE:
             break;
@@ -1132,7 +1097,6 @@ LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
 // I will apply a round-to-nearest, with round-to-even to break ties.
             negb = negate(b);
             r2 = times2(r, fixnum_of_int(2));
-            errexit();
             if (lessp2(b, r2) ||
                 (numeq2(b, r2) && Loddp(nil, q)!=nil)) goto increase_q;
             if (lessp2(r2, negb) ||
@@ -1142,17 +1106,13 @@ LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
             if (!minusp(r)) break;
         decrease_q:
             r = plus2(r, b);
-            errexit();
             q = sub1(q);
-            errexit();
             break;
         case FIX_CEILING:
             if (!plusp(r)) break;
         increase_q:
             r = difference2(r, b);
-            errexit();
             q = add1(q);
-            errexit();
             break;
     }
     mv_2 = r;

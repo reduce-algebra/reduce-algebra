@@ -265,33 +265,25 @@ LispObject Lmodular_quotient(LispObject env, LispObject a,
                              LispObject b)
 {   SingleValued fn;
     b = Lmodular_reciprocal(nil, b);
-    errexit();
     return Lmodular_times(nil, a, b);
 }
 
 LispObject large_modular_expt(LispObject a, int x)
 {   LispObject r, p, w;
     p = modulus(a, large_modulus);
-    errexit();
     while ((x & 1) == 0)
     {   p = times2(p, p);
-        errexit();
         p = modulus(p, large_modulus);
-        errexit();
         x = x/2;
     }
     r = p;
     while (x != 1)
     {   w = times2(p, p);
-        errexit();
         p = modulus(w, large_modulus);
-        errexit();
         x = x/2;
         if ((x & 1) != 0)
         {   w = times2(r, p);
-            errexit();
             r = modulus(w, large_modulus);
-            errexit();
         }
     }
     return r;

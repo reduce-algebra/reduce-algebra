@@ -48,12 +48,6 @@ libedit_la_SOURCES = chared.c common.c el.c emacs.c hist.c keymacro.c map.c char
 							search.h sig.h sys.h terminal.h tty.h vis.h filecomplete.h \
 							editline/readline.h
 
-if !HAVE_STRLCPY
-libedit_la_SOURCES += strlcpy.c
-endif
-if !HAVE_STRLCAT
-libedit_la_SOURCES += strlcat.c
-endif
 if !HAVE_VIS
 libedit_la_SOURCES += vis.c
 endif

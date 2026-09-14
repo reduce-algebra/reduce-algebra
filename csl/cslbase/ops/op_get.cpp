@@ -3,7 +3,6 @@
 #if defined BYTECODE
             case OP_GET:                                    // A = get(B, A)
                 A_reg = get(B_reg, A_reg, nil);
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

@@ -375,7 +375,6 @@ inline LispObject make_boxfloat(double a, FloatType type)
             else r = getNBytes(16);
             indirect(r) = DOUBLE_FLOAT_HEADER;
             r += TAG_BOXFLOAT;
-            errexit();
             if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
             double_float_val(r) = a;
 // I hope that trap_floating_overflow will almost always be false and

@@ -369,7 +369,6 @@ static void setbits24(char *v, int32_t r)
     *v   = static_cast<char>(r >> 16);
 }
 
-static directory *current_input_directory;   // not used!
 static int nativedir = 0;
 static directory_entry *current_output_entry;
 static directory *current_output_directory = nullptr;
@@ -677,7 +676,6 @@ static int unpending(directory *d)
 void Iinit()
 {   size_t i;
     Istatus = I_INACTIVE;
-    current_input_directory = nullptr;
     current_output_entry = nullptr;
     current_output_directory = nullptr;
 #ifdef BUILTIN_IMAGE
@@ -1226,7 +1224,6 @@ static void collect_modules(string Cname, string Cleafname,
     }
     if (std::strcmp(name, ".fasl") != 0) return;
     v = iintern(boffo, k, lisp_package, 0);
-    if (exceptionPending()) return;
     *stack = cons(v, *stack);  // Keyed to the RealSave mods(nil).
 }
 
@@ -1277,7 +1274,6 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
         while (k>0 && p[-1] == ' ') k--, p--;
         *p = 0;
         v = iintern(boffo, k, lisp_package, 0);
-        errexit();
         r = cons(v, r);
     }
     return r;

@@ -39,8 +39,6 @@
 namespace CSL_LISP
 {
 
-// If NO_THROW is defined this uses a flag rather than genuine C++ exceptions!
-
 //extern LispObject *stack;
 extern uintptr_t stackBase;
 extern uintptr_t stackFringe;
@@ -157,24 +155,12 @@ public:
     {   ssave = stack;
         stack = ssave + 1;
         ssave[1] = a1;
-#ifdef DEBUG
-// In general after a function call that might return via an "exception"
-// I should write "errexit()" so that if I build CSL in the mode where
-// exceptions are simulated the simulation works. To help trap cases where
-// I have failed to do this I have the concept of exception values" which
-// are (mostly) delivered when a function exits "exceptionally". Such values
-// ought never to end up being used. If I do see one I will abort!
-        if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
     }
     [[gnu::always_inline]]
     RealSave(LispObject a1, PushCount count)
     {   ssave = stack;
         stack = ssave + count.n + 1;
         ssave[1] = a1;
-#ifdef DEBUG
-        if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
         for (int i=2; i<=count.n+1; i++)
             ssave[i] = nil;
     }
@@ -675,126 +661,6 @@ public:
 // I am assuming that from 2025 onwards C++ compilers will support
 // inline variables fully.
 
-#ifdef NO_THROW
-
-enum LispExceptionTag
-{
-// LispNormal is for circumstances when no throw-like situation is in play. 
-    LispNormal      = 0x00,
-
-// The next two are varieties of error state.
-    LispSimpleError = 0x01,
-    LispResource    = 0x02,
-
-// Now thee that are used to implement Lisp control structures within
-// the interpreter.
-    LispGo          = 0x04,
-    LispReturnFrom  = 0x08,
-    LispThrow       = 0x10,
-
-// The final cases exit from everything and then sometimes restarts.
-    LispRestart     = 0x20,
-    LispStop        = 0x40,
-
-// Any sort of the above.
-    LispException   = 0x7f
-};
-
-// There were two ways I could have implemented software catch and thow.
-// One sets a separate flag that can be checked anywhere that an exception
-// might be pending, the other expands my domain of values with a special
-// exception value and checks for that. I am going to do both here at least
-// for the moment. The separate flag disrupts the transition less (I think)
-// but returning a value SPID_ERROR as the dummy return value when an
-// exception is raised os maybe a bit like having NaN for floating point:
-// it can tends to persist and help me spot any cases where I failed to
-// check for it.
-
-
-#define SPID_LispException    (SPID_ERROR+(static_cast<int>(LispException)<<20))
-#define SPID_SimpleError      (SPID_ERROR+(static_cast<int>(LispSimpleError)<<20))
-#define SPID_Resource         (SPID_ERROR+(static_cast<int>(LispResource)<<20))
-#define SPID_Go               (SPID_ERROR+(static_cast<int>(LispGo)<<20))
-#define SPID_ReturnFrom       (SPID_ERROR+(static_cast<int>(LispReturnFrom)<<20))
-#define SPID_Throw            (SPID_ERROR+(static_cast<int>(LispThrow)<<20))
-#define SPID_Restart          (SPID_ERROR+(static_cast<int>(LispRestart)<<20))
-#define SPID_Stop             (SPID_ERROR+(static_cast<int>(LispStop)<<20))
-
-
-inline LispExceptionTag exceptionFlag = LispNormal;
-
-inline bool exceptionPending()
-{   return exceptionFlag != LispNormal;
-}
-#define errexit() \
-    if (exceptionPending()) UNLIKELY return SPID_ERROR+(exceptionFlag<<20)
-#define errexitint() \
-    if (exceptionPending()) UNLIKELY return SPID_ERROR+(exceptionFlag<<20)
-#define errexitvoid() \
-    if (exceptionPending()) UNLIKELY return
-
-#define TRY ([&]()->LispObject \
-    { SaveStack save_stack_Object ## __LINE__;
-
-// The next two variables are for debugging!
-inline const char *exceptionFile = "none";
-inline int exceptionLine = -1;
-
-#ifdef DEBUG
-#define THROW(flavour) do {     \
-   JITerrflag = 1;              \
-   exceptionFile = __FILE__;    \
-   exceptionLine = __LINE__;    \
-   exceptionFlag = flavour;     \
-   return SPID_Throw; } while(false)
-#define THROWVOID(flavour) do { \
-   JITerrflag = 1;              \
-   exceptionFile = __FILE__;    \
-   exceptionLine = __LINE__;    \
-   exceptionFlag = flavour;     \
-   return; } while(false)
-#else
-#define THROW(flavour)          \
-    do {                        \
-       JITerrflag = 1;          \
-       exceptionFlag = flavour; \
-       return SPID_Throw; } while(false)
-#define THROWVOID(flavour)      \
-    do {                        \
-       JITerrflag = 1;          \
-       exceptionFlag = flavour; \
-       return; } while(false)
-#endif
-
-#define CATCH(flavour)                                                  \
-   return nil;})(); if ((exceptionFlag & flavour) != 0) UNLIKELY        \
-   {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; \
-       JITerrflag = 0;                                                 \
-       exceptionFlag = LispNormal;
-
-#define ANOTHER_CATCH(flavour)                                          \
-   } else if ((exceptionFlag & flavour) != 0) UNLIKELY                  \
-   {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; \
-       JITerrflag = 0;                                                  \
-       exceptionFlag = LispNormal;
-
-#define CATCH_ANY()                                                     \
-   return nil;})(); if (exceptionFlag != 0) UNLIKELY                    \
-   {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; \
-       JITerrflag = 0;                                                  \
-       exceptionFlag = LispNormal;
-
-#define RETHROW do                                                      \
-    { exceptionFlag = saveException;                                    \
-      JITerrflag = 1;                                                   \
-      return SPID_ERROR+(saveException<<20); } while(false)
-
-#define END_CATCH } \
-    else if (exceptionPending()) \
-        UNLIKELY return SPID_ERROR+(exceptionFlag<<20);
-
-#else // NO_THROW
-
 struct LispStop : public std::exception
 {   virtual const char *what() const noexcept
     {   return "Used to exit the system";
@@ -861,15 +727,11 @@ struct LispRestart : public LispException
     }
 };
 
-// The following dynamic tests for exception conditions are not used in the
-// version of the code that uses "catch" and "throw".
-
-inline bool exceptionPending()
-{   return false;
-}
-#define errexit()
-#define errexitint()
-#define errexitvoid()
+// Even when in general I can use catch and throw I wrap their use up in
+// these macros. They do two special things. One is to arrange that the
+// stack gets reset on unwinding, and the other is support for the JIT
+// where excaption handlin in just-in-time generated code is done in a
+// different and rather simplistic manner.
 
 #define TRY try { ([&]()->LispObject \
     { SaveStack save_stack_Object ## __LINE__;
@@ -888,7 +750,6 @@ inline bool exceptionPending()
 
 #define END_CATCH }
 
-#endif // NO_THROW
 
 
 // There are "jolly issues" about JIT-generated code and exception handling.
@@ -911,9 +772,7 @@ inline bool exceptionPending()
 // play I will sometimes put a value on JITerr_ptr to record
 // the precise exception that is current so that it can be rethrown.
 
-#ifndef NO_THROW
 inline std::exception_ptr JITerr_ptr;
-#endif // NO
 
 // I will only implement variants of "JITshim" that I think the JIT
 // compiler will really want.
@@ -949,9 +808,7 @@ inline LispObject JITshim1(func1 FF,
 // to make it easy to tell what sort of exception was involved, so
 // surrport for that can be added at a later stage!
         JITerrflag = 1;
-#ifndef NO_THROW
         JITerr_ptr = std::current_exception();
-#endif // NO_THROW
         return nil;
     END_CATCH;
 // If the call FF(env) did not raise an exception make sure that the flag
@@ -972,9 +829,7 @@ inline LispObject jitthrow()
         else stack--;
     }
     JITarg1 = nil;
-#ifndef NO_THROW
     std::rethrow_exception(JITerr_ptr);
-#endif // NO_THROW
     return nil;
 }
 
@@ -1004,9 +859,7 @@ inline LispObject JITshim0(func0 FF)
         r = (*FF)();
     CATCH_ANY()
         JITerrflag = 1;
-#ifndef NO_THROW
         JITerr_ptr = std::current_exception();
-#endif // NO_THROW
         return nil;
     END_CATCH;
     JITerrflag = 0;
@@ -1020,9 +873,7 @@ inline LispObject JITshim2(func2 FF,
         r = (*FF)(env, a1);
     CATCH_ANY()
         JITerrflag = 1;
-#ifndef NO_THROW
         JITerr_ptr = std::current_exception();
-#endif // NO_THROW
         return nil;
     END_CATCH;
     JITerrflag = 0;
@@ -1036,9 +887,7 @@ inline LispObject JITshim1B(func1b FF,
         r = (*FF)(a1);
     CATCH_ANY()
         JITerrflag = 1;
-#ifndef NO_THROW
         JITerr_ptr = std::current_exception();
-#endif // NO_THROW
         return nil;
     END_CATCH;
     JITerrflag = 0;
@@ -1053,9 +902,7 @@ inline LispObject JITshim2B(func2b FF,
         r = (*FF)(a1, a2);
     CATCH_ANY()
         JITerrflag = 1;
-#ifndef NO_THROW
         JITerr_ptr = std::current_exception();
-#endif // NO_THROW
         return nil;
     END_CATCH;
     JITerrflag = 0;
@@ -1069,9 +916,7 @@ inline LispObject JITshim3(func3 FF,
         r = (*FF)(env, a1, a2);
     CATCH_ANY()
         JITerrflag = 1;
-#ifndef NO_THROW
         JITerr_ptr = std::current_exception();
-#endif // NO_THROW
         return nil;
     END_CATCH;
     JITerrflag = 0;
@@ -1086,9 +931,7 @@ inline LispObject JITshim4(func4 FF,
         r = (*FF)(env, a1, a2, a3);
     CATCH_ANY()
         JITerrflag = 1;
-#ifndef NO_THROW
         JITerr_ptr = std::current_exception();
-#endif // NO_THROW
         return nil;
     END_CATCH;
     JITerrflag = 0;
@@ -1103,9 +946,7 @@ inline LispObject JITshim5(func5 FF,
         r = (*FF)(env, a1, a2, a3, a4up);
     CATCH_ANY()
         JITerrflag = 1;
-#ifndef NO_THROW
         JITerr_ptr = std::current_exception();
-#endif // NO_THROW
         return nil;
     END_CATCH;
     JITerrflag = 0;
@@ -1163,15 +1004,11 @@ public:
 // that it must end up correct. Hence get-out of exceptionFxlag is set.
     ~RAIIstack_sanity()
     {
-#ifdef NO_THROW
-        if (saveStack != stack && exceptionFlag == LispNormal) UNLIKELY
-#else // NO_THROW
 #ifdef __cpp_lib_uncaught_exceptions
         if (saveStack != stack && std::uncaught_exceptions() == 0) UNLIKELY
 #else // __cpp_lib_uncaught_exceptions
         if (saveStack != stack && !std::uncaught_exception()) UNLIKELY
 #endif // __cpp_lib_uncaught_exceptions
-#endif // NO_THROW
         {   err_printf("[Stack Consistency fails] %p => %p in %s : %s:%d\n",
                        saveStack, stack, fname, file, line);
             err_printf("Data: ");
@@ -1183,7 +1020,7 @@ public:
         }
 // This was used at a stage of heavy debugging - I leave it in as comment
 // in case I ever need to reinstate it.
-#if defined DEBUG && !defined NO_THROW && 0
+#if defined DEBUG && 0
 #ifdef __cpp_lib_uncaught_exceptions
         if (std::uncaught_exceptions() == 0) UNLIKELY
 #else // __cpp_lib_uncaught_exceptions

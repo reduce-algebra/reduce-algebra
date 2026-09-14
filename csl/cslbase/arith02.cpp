@@ -126,7 +126,6 @@ static LispObject timesib(LispObject a, LispObject b)
     else if (aa == -1) return negateb(b);
     lenb = bignum_length(b);
     {   c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, lenb);
-        errexit();
     }
     lenb = (lenb-CELL)/4;
     if (aa < 0)
@@ -201,7 +200,6 @@ extend_by_one_word:
     }
 // Need to allocate more space to grow into. I need to grow by just 4 bytes.
     {   a = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*lenb);
-        errexit();
     }
     for (i=0; i<lenb; i++)
         bignum_digits(a)[i] = vbignum_digits(c)[i];
@@ -215,13 +213,9 @@ static LispObject timesir(LispObject a, LispObject b)
 {   if (a == fixnum_of_int(0)) return a;
     else if (a == fixnum_of_int(1)) return b;
     LispObject g = gcd(a, denominator(b));
-    errexit();
     a = quot2(a, g);
-    errexit();
     g = quot2(denominator(b), g);
-    errexit();
     a = times2(a, numerator(b));
-    errexit();
 // make_ratio tidies things up if the denominator was exactly 1
     return make_ratio(a, g);
 }
@@ -231,9 +225,7 @@ static LispObject timesic(LispObject a, LispObject b)
 {   LispObject r = real_part(b);
     LispObject i = imag_part(b);
     i = times2(a, i);
-    errexit();
     r = times2(a, r);
-    errexit();
     return make_complex(r, i);
 }
 
@@ -865,14 +857,12 @@ static LispObject timesbb(LispObject a, LispObject b)
 // OK to assume that a is a bignum. The manner in which the call to
 // negate allocates more memory is ugly here.
         a = negateb(a);
-        errexit();
         lena = (bignum_length(a) - CELL)/4;
     }
     if (((int32_t)bignum_digits(b)[lenb-1]) < 0)
     {   sign = -sign;
         // see above comments about negateb
         b = negateb(b);
-        errexit();
         lenb = (bignum_length(b) - CELL)/4;
     }
     if (lenb < lena)    // Commute so that b is at least as long as a
@@ -905,7 +895,6 @@ static LispObject timesbb(LispObject a, LispObject b)
             }
             lenc = 2*lenc;
             c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
-            errexit();
 // If I run using threads then each of the three threads can need some
 // workspace, so I will allocate (rather a lot) more.
             lend = (7*lenc)/2;
@@ -918,7 +907,6 @@ static LispObject timesbb(LispObject a, LispObject b)
                 (4*lend+CELL) > length_of_header(numhdr(multiplication_buffer)))
             {   multiplication_buffer =
                     get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
-                errexit();
             }
             lenc = 2*lenc;
         }
@@ -928,11 +916,9 @@ static LispObject timesbb(LispObject a, LispObject b)
 // need to waste space with extra padding or with the workspace vector d.
             lenc = lena + lenb;
             c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
-            errexit();
             if (multiplication_buffer == nil)
             {   multiplication_buffer =
                     get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
-                errexit();
             }
         }
     }
@@ -1059,21 +1045,13 @@ static LispObject timesrr(LispObject a, LispObject b)
     LispObject nb = numerator(b);
     LispObject db = denominator(b);
     LispObject g  = gcd(na, db);
-    errexit();
     na = quot2(na, g);
-    errexit();
     db = quot2(db, g);
-    errexit();
     g = gcd(nb, da);
-    errexit();
     nb = quot2(nb, g);
-    errexit();
     da = quot2(da, g);
-    errexit();
     na = times2(na, nb);
-    errexit();
     da = times2(da, db);
-    errexit();
     return make_ratio(na, da);
 }
 
@@ -1096,19 +1074,12 @@ static LispObject timescc(LispObject a, LispObject b)
     LispObject rb = real_part(b);
     LispObject ib = imag_part(b);
     LispObject u = times2(ra, rb);
-    errexit();
     LispObject v = times2(ia, ib);
-    errexit();
     v = negate(v);
-    errexit();
     u = plus2(u, v);                    // real part of result
-    errexit();
     v = times2(ra, ib);
-    errexit();
     ib = times2(rb, ia);
-    errexit();
     v = plus2(v, ib);                   // imaginary part
-    errexit();
     return make_complex(u, v);
 }
 
@@ -1162,21 +1133,13 @@ LispObject times2(LispObject ax, LispObject bx)
     LispObject &aa  = save.val(4);
     LispObject &bb  = save.val(5);
     ab1 = plus2(a, b);               // a + b
-    errexit();
     ab1 = genuine_times2(ab1, ab1);  // a^2 + 2*a*b + b^2
-    errexit();
     aa = genuine_times2(a, a);       // a^2
-    errexit();
     bb = genuine_times2(b, b);       // b^2
-    errexit();
     ab1 = difference2(ab1, bb);      // now a^2 + 2*a*b
-    errexit();
     ab1 = difference2(ab1, aa);      // 2*a*b
-    errexit();
     ab1 = quot2(ab1, fixnum_of_int(2));
-    errexit();
     aa = genuine_times2(a, b);
-    errexit();
     if (!numeq2(aa, ab1))
     {   err_printf("multiply messed up\n");
         err_printf("a = "); prin_to_error(a);

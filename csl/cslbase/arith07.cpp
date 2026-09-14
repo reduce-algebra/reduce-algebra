@@ -103,9 +103,7 @@ LispObject negateb(LispObject a)
         else if (d0 == 0x40000000) return make_two_word_bignum(0, d0);
         else return make_one_word_bignum(d0);
     }
-    {   b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
-        errexit();
-    }
+    b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
     len = (len-CELL-4)/4;
     carry = -1;
     for (i=0; i<len; i++)

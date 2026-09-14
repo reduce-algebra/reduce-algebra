@@ -12,7 +12,6 @@
                         A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                     else A_reg = f1(r1, A_reg);
                 }
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

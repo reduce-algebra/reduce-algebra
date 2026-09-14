@@ -718,9 +718,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         if (qvalue(comp_symbol) != nil &&
             qfn1(compiler_symbol) != undefined_1)
         {   LispObject a1 = ncons(a);
-            errexit();
             (*qfn1(compiler_symbol))(compiler_symbol, a1);
-            errexit();
         }
     }
     else if (car(b) == funarg)
@@ -743,7 +741,6 @@ LispObject Lgetd(LispObject env, LispObject a)
     if ((h & SYM_SPECIAL_FORM) != 0) type = fexpr_symbol;
     else if ((h & SYM_MACRO) != 0)
     {   a = cons(lambda, qenv(a));
-        errexit();
         type = macro_symbol;
     }
     else
@@ -838,7 +835,6 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
     if ((qheader(a) & SYM_CODEPTR) != 0) return nil;
     {   if (consp(b)) res = cons(a, b);
         else res = list2(a, b);
-        errexit();
     }
 // I will not support autoloadable macros.
     qheader(a) = qheader(a) & ~SYM_MACRO;
@@ -871,7 +867,6 @@ LispObject Ltrace(LispObject env, LispObject a)
     LispObject w = a;
     if (symbolp(a) && a!=nil)
     {   a = ncons(a);
-        errexit();
         w = a;
     }
     while (consp(w))
@@ -904,7 +899,6 @@ LispObject Luntrace(LispObject env, LispObject a)
     LispObject w = a;
     if (symbolp(a) && a!=nil)
     {   a = ncons(a);
-        errexit();
         w = a;
     }
     while (consp(w))
@@ -925,7 +919,6 @@ LispObject Ltraceset(LispObject env, LispObject a)
     LispObject w = a;
     if (symbolp(a) && a!=nil)
     {   a = ncons(a);
-        errexit();
         w = a;
     }
     while (consp(w))
@@ -942,7 +935,6 @@ LispObject Luntraceset(LispObject env, LispObject a)
     LispObject w = a;
     if (symbolp(a) && a!=nil)
     {   a = ncons(a);
-        errexit();
         w = a;
     }
     while (consp(w))
@@ -1014,7 +1006,6 @@ LispObject get_pname(LispObject a)
                          static_cast<int>(gensym_ser%1000));
         gensym_ser++;
         name = make_string(genname);
-        errexit();
         qpname(a) = name;
         qheader(a) = qheader(a) & ~SYM_UNPRINTED_GENSYM;
     }
@@ -1079,7 +1070,6 @@ static LispObject Lrestart_lisp2(LispObject env,
 // I will need to pack the data into a character vector using utf-8
 // encoding... exploden can hand back character codes up to 0x0010ffff.
         b1 = b = Lexploden(nil, b);
-        errexit();
         while (b1 != nil)
         {   int ch = int_of_fixnum(car(b1));
             n++;            // number of chars of arg
@@ -2157,7 +2147,6 @@ LispObject Lnreverse2(LispObject env, LispObject a, LispObject b)
 LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
 {   SingleValued fn;
     b = ncons(b);
-    errexit();
     while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
@@ -2171,7 +2160,6 @@ LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b,
                        LispObject c)
 {   SingleValued fn;
     b = list2(b, c);
-    errexit();
     while (consp(a))
     {   LispObject d = a;
         a = cdr(a);
@@ -2207,7 +2195,6 @@ LispObject Lreverse(LispObject env, LispObject a)
     r = nil;
     while (consp(a))
     {   r = cons(car(a), r);
-        errexit();
         a = cdr(a);
     }
     return r;
@@ -2588,12 +2575,9 @@ LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
     {   LispObject w = car(a4up);
         a4up = cdr(a4up);
         r = Lappend_2(nil, w, r);
-        errexit();
     }
     r = Lappend_2(nil, a3, r);
-    errexit();
     r = Lappend_2(nil, a2, r);
-    errexit();
     return Lappend_2(nil, a1, r);
 }
 
@@ -2612,7 +2596,6 @@ LispObject Ldelete(LispObject env, LispObject aa, LispObject bb)
                 break;
             }
             r = cons(car(b), r);
-            errexit();
             b = cdr(b);
         }
     }
@@ -2628,7 +2611,6 @@ LispObject Ldelete(LispObject env, LispObject aa, LispObject bb)
                 break;
             }
             r = cons(car(b), r);
-            errexit();
             b = cdr(b);
         }
     }
@@ -2657,7 +2639,6 @@ LispObject Ldeleq(LispObject env, LispObject aa, LispObject bb)
             break;
         }
         r = cons(car(b), r);
-        errexit();
         b = cdr(b);
     }
     bb = b;
@@ -2833,7 +2814,6 @@ static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   w = cons(car(r), rx);
-                    errexit();
                     rx = w;
                     r = cdr(r);
                 }
@@ -2875,12 +2855,10 @@ static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
                     ww = cons(u, v);
-                    errexit();
                     rx = ww;
                     r = cdr(r);
                 }
                 w = cons(w, rx);
-                errexit();
                 rx = w;
                 c = cdr(c);
                 r = TAG_FIXNUM;
@@ -2938,7 +2916,6 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   w = cons(car(r), rx);
-                    errexit();
                     rx = w;
                     r = cdr(r);
                 }
@@ -2983,12 +2960,10 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
                     ww = cons(u, v);
-                    errexit();
                     rx = ww;
                     r = cdr(r);
                 }
                 w = cons(w, rx);
-                errexit();
                 rx = w;
                 c = cdr(c);
                 r = TAG_FIXNUM;
@@ -3050,7 +3025,6 @@ LispObject subla(LispObject a1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   w = cons(car(r), rx);
-                    errexit();
                     rx = w;
                     r = cdr(r);
                 }
@@ -3092,12 +3066,10 @@ LispObject subla(LispObject a1, LispObject c1)
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
                     ww = cons(u, v);
-                    errexit();
                     rx = ww;
                     r = cdr(r);
                 }
                 w = cons(w, rx);
-                errexit();
                 rx = w;
                 c = cdr(c);
                 r = TAG_FIXNUM;
@@ -3165,7 +3137,6 @@ LispObject sublis(LispObject a1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   w = cons(car(r), rx);
-                    errexit();
                     rx = w;
                     r = cdr(r);
                 }
@@ -3210,12 +3181,10 @@ LispObject sublis(LispObject a1, LispObject c1)
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
                     ww = cons(u, v);
-                    errexit();
                     rx = ww;
                     r = cdr(r);
                 }
                 w = cons(w, rx);
-                errexit();
                 rx = w;
                 c = cdr(c);
                 r = TAG_FIXNUM;

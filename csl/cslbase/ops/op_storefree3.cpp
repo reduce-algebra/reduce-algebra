@@ -4,7 +4,6 @@
             case OP_STOREFREE3:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   print_traceset(3, A_reg, litvec);
-                    errexit();
                 }
                 qvalue(basic_elt(litvec, 3)) = A_reg;
                 continue;

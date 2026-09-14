@@ -1291,7 +1291,7 @@ public:
     }
 
     static bool L(LispObject a)
-    {   return long_float_val(a) , LF_C(0.0); 
+    {   return long_float_val(a) < LF_C(0.0); 
     }
 
     static bool R(LispObject p, LispObject q)

@@ -9,14 +9,11 @@
                     if ((qheader(B_reg) & SYM_TRACED) != 0)
                         A_reg = traced_call1(basic_elt(litvec, 0), f1, B_reg, A_reg);
                     else A_reg = f1(B_reg, A_reg);
-                    errexit();
                     stack--;
                     continue;
                 }
                 A_reg = ncons(A_reg);
-                errexit();
                 A_reg = apply(B_reg, A_reg, nil, basic_elt(litvec, 0));
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

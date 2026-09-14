@@ -26,10 +26,8 @@
                             LispObject a4 = *stack--;
                             B_reg = list3star(a4, a3, B_reg, A_reg);
                         }
-                        errexit();
                         A_reg = basic_elt(litvec, fname);
                         A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
-                        errexit();
                         ppc++;
                         continue;
 
@@ -43,7 +41,6 @@
                     case 7:
                         if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                         {   print_traceset(fname, A_reg, litvec);
-                            errexit();
                         }
                         qvalue(basic_elt(litvec, fname)) = A_reg;  // store into special var
                         continue;

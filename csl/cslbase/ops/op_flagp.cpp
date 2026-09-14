@@ -6,11 +6,9 @@
                 A_reg = get(B_reg, A_reg, unset_var);
                 if (A_reg == unset_var) A_reg = nil;
                 else A_reg = lisp_true;
-                errexit();
                 continue;
 #else
                 A_reg = Lflagp(nil, B_reg, A_reg);
-                errexit();
                 continue;
 #endif
 

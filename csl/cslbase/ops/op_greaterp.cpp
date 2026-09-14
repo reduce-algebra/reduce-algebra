@@ -8,7 +8,6 @@
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg > A_reg;
                 else
                 {   w = lessp2(A_reg, B_reg);
-                    errexit();
                 }
 #endif // ARITHLIB
                 A_reg = Lispify_predicate(w);
