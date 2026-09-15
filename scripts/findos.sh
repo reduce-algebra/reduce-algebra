@@ -250,6 +250,9 @@ else
         *ProductVersion*\<string\>26.*)
           os="mac_26_tahoe"
           ;;
+        *ProductVersion*\<string\>27.*)
+          os="mac_27_golden_gate"
+          ;;
         *)
           os="mac_unknown_version"
           ;;
