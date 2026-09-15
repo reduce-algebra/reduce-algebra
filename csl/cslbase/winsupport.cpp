@@ -95,6 +95,8 @@ namespace CSL_LISP
 using namespace FX;
 
 extern struct NilBlock myNilBlock;
+inline const LispObject nil =
+    reinterpret_cast<LispObject>(&myNilBlock.Inil_symbol) + TAG_SYMBOL;
 inline LispObject& lisp_true = myNilBlock.Ilisp_true;
 
 void win32_stacklimit(uintptr_t &stacklimit)
@@ -757,8 +759,6 @@ start_again:
                                     nullptr);
         if (file == nullptr) return nil;
         r = make_stream_handle();
-        errexit();
-        stream_type(r) = url;
         stream_file(r) = file;
         stream_read_fn(r) = char_from_file;
         stream_read_other(r) = read_action_file;
@@ -836,11 +836,9 @@ start_again:
     }
 
     r = make_stream_handle();
-    errexit();
     stream_type(r) = url;
     url = get_basic_vector(TAG_VECTOR, TYPE_STRING_4,
                            CELL+4+SOCKET_BUFFER_SIZE);
-    errexit();
     ielt32(url, 0) = 0;
     stream_read_data(r) = url;
     stream_file(r) = (FILE *)(intptr_t)s;

@@ -62,7 +62,6 @@ void record_get(LispObject tag, bool found)
 {
 #ifdef RECORD_GET
     w = Lget_hash_2(nil, tag, get_counts);
-    errexit();
     if (w == nil)
     {   w = cons_no_gc(fixnum_of_int(0), fixnum_of_int(0));
         Lput_hash(nil, 3, tag, get_counts, w);
@@ -112,7 +111,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return c;
     }
@@ -121,7 +119,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return c;
         }
@@ -129,7 +126,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         if (w == SPID_NOPROP) w = c;
 #ifdef RECORD_GET
         record_get(b, w != nil);
-        errexit();
 #endif
         return w;
     }
@@ -138,7 +134,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return c;
     }
@@ -147,7 +142,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     {
 #ifdef RECORD_GET
         record_get(b, true);
-        errexit();
 #endif
         return cdr(w);
     }
@@ -156,7 +150,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return c;
     }
@@ -165,7 +158,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     {
 #ifdef RECORD_GET
         record_get(b, true);
-        errexit();
 #endif
         return cdr(w);
     }
@@ -176,7 +168,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return c;
     }
@@ -190,7 +181,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
             qplist(a) = pl;
 #ifdef RECORD_GET
             record_get(b, true);
-            errexit();
 #endif
             return cdr(w);
         }
@@ -201,7 +191,6 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return c;
         }
@@ -216,7 +205,6 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     {   pl = qfastgets(a);
         if (pl == nil)
         {   pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
-            errexit();
             qfastgets(a) = pl;
         }
         basic_elt(pl, n-1) = c;
@@ -233,7 +221,6 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     }
     stackcheck();
     b = acons(b, c, qplist(a));
-    errexit();
     qplist(a) = b;
     return c;
 }
@@ -289,7 +276,6 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -298,7 +284,6 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return nil;
         }
@@ -306,7 +291,6 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         if (w == SPID_NOPROP) w = nil;
 #ifdef RECORD_GET
         record_get(b, w != nil);
-        errexit();
 #endif
         return w;
     }
@@ -315,7 +299,6 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -324,7 +307,6 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
-        errexit();
 #endif
         return cdr(w);
     }
@@ -333,7 +315,6 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -342,7 +323,6 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
-        errexit();
 #endif
         return cdr(w);
     }
@@ -353,7 +333,6 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -367,7 +346,6 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
             qplist(a) = pl;
 #ifdef RECORD_GET
             record_get(b, true);
-            errexit();
 #endif
             return cdr(w);
         }
@@ -378,7 +356,6 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return nil;
         }
@@ -403,7 +380,6 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -412,7 +388,6 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return nil;
         }
@@ -421,13 +396,11 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return nil;
         }
 #ifdef RECORD_GET
         record_get(b, true);
-        errexit();
 #endif
         return lisp_true;
     }
@@ -436,7 +409,6 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -445,7 +417,6 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
-        errexit();
 #endif
         return lisp_true;
     }
@@ -454,7 +425,6 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -463,7 +433,6 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
-        errexit();
 #endif
         return lisp_true;
     }
@@ -474,7 +443,6 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -488,7 +456,6 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
             qplist(a) = pl;
 #ifdef RECORD_GET
             record_get(b, true);
-            errexit();
 #endif
             return lisp_true;
         }
@@ -499,7 +466,6 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return nil;
         }
@@ -516,7 +482,6 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return nil;
         }
@@ -525,7 +490,6 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return nil;
         }
@@ -535,7 +499,6 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return nil;
         }
@@ -544,13 +507,11 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return nil;
         }
 #ifdef RECORD_GET
         record_get(b, true);
-        errexit();
 #endif
         return lisp_true;
     }
@@ -559,7 +520,6 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -568,7 +528,6 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
-        errexit();
 #endif
         return lisp_true;
     }
@@ -577,7 +536,6 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -586,7 +544,6 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
-        errexit();
 #endif
         return lisp_true;
     }
@@ -597,7 +554,6 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         record_get(b, false);
-        errexit();
 #endif
         return nil;
     }
@@ -611,7 +567,6 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
             qplist(a) = pl;
 #ifdef RECORD_GET
             record_get(b, true);
-            errexit();
 #endif
             return lisp_true;
         }
@@ -622,7 +577,6 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         {
 #ifdef RECORD_GET
             record_get(b, false);
-            errexit();
 #endif
             return nil;
         }
@@ -644,7 +598,6 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
         {   pl = qfastgets(v);
             if (pl == nil)
             {   pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
-                errexit();
                 qfastgets(v) = pl;
             }
             basic_elt(pl, n-1) = lisp_true;
@@ -660,7 +613,6 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
             else pl = cdr(pl);
         }
         {   LispObject b1 = acons(b, lisp_true, qplist(v));
-            errexit();
             qplist(v) = b1;
         }
     already_flagged:    ;
@@ -715,7 +667,6 @@ LispObject Lplist(LispObject env, LispObject a)
     LispObject r1 = nil;
     while (r != nil)
     {   r1 = list2star(car(car(r)), cdr(car(r)), r1);
-        errexit();
         r = cdr(r);
     }
     r = r1;
@@ -733,7 +684,6 @@ LispObject Lplist(LispObject env, LispObject a)
 #else
             r = acons(elt(fastget_names, i), w, r);
 #endif
-            errexit();
         }
     }
     return r;
@@ -855,7 +805,6 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
     stdout_printf("\n)\n");
 
     v = Lmkhash_2(nil, 3, fixnum_of_int(5), fixnum_of_int(0));
-    errexit();
     get_counts = v;
 #endif
 
@@ -946,7 +895,6 @@ static inline LispObject do_pvbind(LispObject vals, LispObject vars)
             if (!symbolp(var) || var == nil) continue;
             {   RealSave save2(vars);
                 var = acons(var, qvalue(var), binding_list);
-                errexit();
                 save2.restore(vars);
             }
             binding_list = var;
@@ -981,7 +929,6 @@ inline void do_pvrestore()
 inline LispObject encapsulate_sp(LispObject *sp)
 // Creates a boxed up representation of a pointer into the stack.
 {   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_SP, 2*CELL);
-    errexit();
     basic_elt(w, 0) = reinterpret_cast<LispObject>(sp);
     return w;
 }
@@ -1010,14 +957,11 @@ inline LispObject encapsulate_sp(LispObject *sp)
 static LispObject show_result(LispObject name, LispObject r, int64_t count)
 {   freshline_trace();
     loop_print_trace(name);
-    errexit();
     if (count > 0)
     {   trace_printf(" [%" PRId64 "]", count);
-        errexit();
     }
     trace_printf(" => ");
     loop_print_trace(r);
-    errexit();
     trace_printf("\n");
     return r;
 }
@@ -1025,19 +969,15 @@ LispObject traced_call0(LispObject from, no_args *f0, LispObject name)
 {   freshline_trace();
     trace_printf("Calling ");
     loop_print_trace(name);
-    errexit();
     int64_t count = trace_count;
     if (count > 0)
     {   trace_count++;
         trace_printf(" [%" PRId64 "]", count);
-        errexit();
     }
     trace_printf(" from ");
     loop_print_trace(from);
-    errexit();
     trace_printf("\n");
     LispObject r = f0(name);
-    errexit();
     return show_result(name, r, count);
 }
 
@@ -1050,18 +990,14 @@ LispObject traced_call1(LispObject from, one_arg *f1,
     if (count > 0)
     {   trace_count++;
         trace_printf(" [%" PRId64 "]", count);
-        errexit();
     }
     trace_printf(" from ");
     loop_print_trace(from);
-    errexit();
     trace_printf("\n");
     trace_printf("Arg1: ");
     loop_print_trace(a1);
-    errexit();
     trace_printf("\n");
     LispObject r = f1(name, a1);
-    errexit();
     return show_result(name, r, count);
 }
 
@@ -1070,27 +1006,21 @@ LispObject traced_call2(LispObject from, two_args *f2,
 {   freshline_trace();
     trace_printf("Calling ");
     loop_print_trace(name);
-    errexit();
     int64_t count = trace_count;
     if (count > 0)
     {   trace_count++;
         trace_printf(" [%" PRId64 "]", count);
-        errexit();
     }
     trace_printf(" from ");
     loop_print_trace(from);
-    errexit();
     trace_printf("\n");
     trace_printf("Arg1: ");
     loop_print_trace(a1);
-    errexit();
     trace_printf("\n");
     trace_printf("Arg2: ");
     loop_print_trace(a2);
-    errexit();
     trace_printf("\n");
     LispObject r = f2(name, a1, a2);
-    errexit();
     return show_result(name, r, count);
 }
 
@@ -1100,31 +1030,24 @@ LispObject traced_call3(LispObject from, three_args *f3,
 {   freshline_trace();
     trace_printf("Calling ");
     loop_print_trace(name);
-    errexit();
     int64_t count = trace_count;
     if (count > 0)
     {   trace_count++;
         trace_printf(" [%" PRId64 "]", count);
-        errexit();
     }
     trace_printf(" from ");
     loop_print_trace(from);
-    errexit();
     trace_printf("\n");
     trace_printf("Arg1: ");
     loop_print_trace(a1);
-    errexit();
     trace_printf("\n");
     trace_printf("Arg2: ");
     loop_print_trace(a2);
-    errexit();
     trace_printf("\n");
     trace_printf("Arg3: ");
     loop_print_trace(a3);
-    errexit();
     trace_printf("\n");
     LispObject r = f3(name, a1, a2, a3);
-    errexit();
     return show_result(name, r, count);
 }
 
@@ -1135,52 +1058,41 @@ LispObject traced_call4up(LispObject from, fourup_args *f4up,
 {   freshline_trace();
     trace_printf("Calling ");
     loop_print_trace(name);
-    errexit();
     int64_t count = trace_count;
     if (count > 0)
     {   trace_count++;
         trace_printf(" [%" PRId64 "]", count);
-        errexit();
     }
     trace_printf(" from ");
     loop_print_trace(from);
-    errexit();
     trace_printf("\n");
     trace_printf("Arg1: ");
     loop_print_trace(a1);
-    errexit();
     trace_printf("\n");
     trace_printf("Arg2: ");
     loop_print_trace(a2);
-    errexit();
     trace_printf("\n");
     trace_printf("Arg3: ");
     loop_print_trace(a3);
-    errexit();
     trace_printf("\n");
     LispObject p = a4up;
     for (int i=4; p!=nil; i++)
     {   trace_printf("Arg%d: ", i);
         loop_print_trace(car(p));
-        errexit();
         trace_printf("\n");
         p = cdr(p);
     }
     LispObject r = f4up(name, a1, a2, a3, a4up);
-    errexit();
     return show_result(name, r, count);
 }
 
 LispObject print_traceset(int varname, LispObject val, LispObject litvec)
 {   freshline_trace();
     loop_print_trace(elt(litvec, 0)); // Function this is within
-    errexit();
     trace_printf(":  ");
     loop_print_trace(elt(litvec, varname));
-    errexit();
     trace_printf(" := ");
     loop_print_trace(val);
-    errexit();
     trace_printf("\n");
     return nil;
 }

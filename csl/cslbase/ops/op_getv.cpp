@@ -3,7 +3,6 @@
 #if defined BYTECODE
             case OP_GETV:                           // A_reg = getv(B_reg, A_reg)
                 A_reg = Lgetv(nil, B_reg, A_reg);
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

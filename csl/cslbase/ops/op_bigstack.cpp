@@ -27,10 +27,8 @@
                         *++stack = B_reg; *++stack = A_reg;
                         w = ((w & 0x3f) << 8) + next_byte;
                         A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
-                        errexit();
                         B_reg = *stack--;
                         A_reg = list2star(cfunarg, B_reg, A_reg);
-                        errexit();
                         B_reg = *stack--;
                         continue;
                     case 0xc0:                  // LOADLEX, STORELEX extended

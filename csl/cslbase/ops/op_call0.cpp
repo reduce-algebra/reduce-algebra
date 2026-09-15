@@ -18,7 +18,6 @@
                         A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                     else A_reg = f0(r1);
                 }
-                errexit();
                 continue;
 
 

@@ -16,14 +16,11 @@
                         A_reg = traced_call3(basic_elt(litvec, 0), f3, r2, r1, B_reg, A_reg);
                     else A_reg = f3(r2, r1, B_reg, A_reg);
                     stack--;
-                    errexit();
                     continue;
                 }
                 A_reg = list3(stack[-1], B_reg, A_reg);
                 r2 = *stack--;
-                errexit();
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

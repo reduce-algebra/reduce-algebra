@@ -3,7 +3,6 @@
 #if defined BYTECODE
             case OP_XCONS:                   // A_reg = cons(A_reg, B_reg);
                 A_reg = cons(A_reg, B_reg);
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

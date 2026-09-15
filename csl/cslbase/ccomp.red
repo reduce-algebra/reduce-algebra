@@ -1662,8 +1662,6 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
        else c!:printf("        %v = (*qfn4up(fn))(fn", r1);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n    }\n") end;
-    if not flagp(car r3, 'c!:no_errors) then
-       c!:printf("    errexit();\n");
     if boolfn then c!:printf("    %v = %v ? lisp_true : nil;\n", r1, r1);
   end;
 
@@ -2239,7 +2237,6 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
                 if not null w then c!:printf(", _a4up_") >> >> >>;
        c!:printf(");\n");
        c!:printf "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n";
-       c!:printf "        errexit();\n";
        c!:printf "        saveArgs.restore(env";
        if not null args then <<
           c!:printf(", %s", car args);

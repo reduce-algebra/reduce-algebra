@@ -335,11 +335,9 @@ LispObject error(int nargs, int code, ...)
     if ((w1 = qvalue(break_function)) != nil &&
         symbolp(w1) &&
         qfn1(w1) != undefined_1)
-    {   ignore_error((*qfn1(w1))(qenv(w1), nil));
+        ignore_error((*qfn1(w1))(qenv(w1), nil));
 // If the break function does a (stop) or (restart) etc then that
 // must be activated.
-        errexit();
-    }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
@@ -373,7 +371,6 @@ LispObject cerror(int nargs, int code1, int code2, ...)
         symbolp(w1) &&
         qfn1(w1) != undefined_1)
     {   ignore_error((*qfn1(w1))(qenv(w1), nil));
-        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -451,7 +448,6 @@ LispObject interrupted()
         symbolp(w) &&
         qfn1(w) != undefined_1)
     {   ignore_error((*qfn1(w))(qenv(w), nil));
-        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -467,7 +463,6 @@ LispObject aerror()
         symbolp(w) &&
         qfn1(w) != undefined_1)
     {   ignore_error((*qfn1(w))(qenv(w), nil));
-        errexit();
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -965,7 +960,7 @@ static LispObject lisp_main()
 // a NaN for 0.0/0.0 rather than raising an exception.
     trap_floating_overflow = false;
     tty_count = 0;
-#ifdef DEBUG
+#if defined ARITHLIB && defined DEBUG
     arithlib_implementation::initcounts();
     atexit(arithlib_implementation::showcounts);
 #endif // DEBUG
@@ -1323,7 +1318,6 @@ void setupArgs(argSpec *v, int argc, const char* argv[])
         }
 // Now invoke the action that this calls for.
         (aspec->action)(a, hasVal, val);
-        errexitvoid();
     }
 //  if (simpleArgs.empty()) terminalUsed = true;
     enable_keyboard();
@@ -2705,7 +2699,6 @@ void cslstart(int argc, const char* argv[], character_writer *wout)
         argTableP = &argTable[0];
 
         setupArgs(argTable, argc, argv);
-        errexitvoid();
         for (auto msg : badArgs)
             cout << "+++ " << msg << " not accepted" << endl;
     }
@@ -3634,7 +3627,6 @@ int PROC_set_switch(const char* name, int val)
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if_error(w1 = make_undefined_symbol("onoff");
-             errexit();
              w = make_undefined_symbol(name);
              Lapply2(nil, w1, w, val == 0 ? nil : lisp_true),
              // Error handler
@@ -3664,7 +3656,6 @@ int PROC_push_symbol(const char* name)
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if_error(w = make_undefined_symbol(name);
-             errexit();
              w = cons(w, procstack),
              return 1);
     procstack = w;
@@ -3679,7 +3670,6 @@ int PROC_push_string(const char* data)
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if_error(w = make_string(data);
-             errexit();
              w = cons(w, procstack),
              return 2);  // Failed to push onto stack
     procstack = w;
@@ -3698,7 +3688,6 @@ int PROC_push_small_integer(int32_t n)
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if_error(w = make_lisp_integer32(n);
-             errexit();
              w = cons(w, procstack),
              return 1);
     procstack = w;
@@ -3718,7 +3707,6 @@ int PROC_push_big_integer(const char* n)
             len++;
         }
         w = intern(len, 0);
-        errexit();
         w = cons(w, procstack),
         return 1);
     procstack = w;
@@ -3731,7 +3719,6 @@ int PROC_push_floating(double n)
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
 // Here I have to construct a Lisp (boxed) float
     if_error(w = make_boxfloat(n, WANT_DOUBLE_FLOAT);
-             errexit();
              w = cons(w, procstack),
              return 1);
     procstack = w;
@@ -3754,14 +3741,11 @@ int PROC_make_function_call(const char* name, int n)
         while (n > 0)
         {   if (procstack == nil) return 1; // Not enough args available
             w = cons(car(procstack), w);
-            errexit();
             procstack = cdr(procstack);
             n--;
         }
         w1 = make_undefined_symbol(name);
-        errexit();
         w = cons(w1, w);
-        errexit();
         w = cons(w, procstack),
             return 1);
     procstack = w;
@@ -3825,13 +3809,9 @@ int PROC_simplify()
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = make_undefined_symbol("simp");
-        errexit();
         w = Lapply1(nil, w, car(procstack));
-        errexit();
         w1 = make_undefined_symbol("mk*sq");
-        errexit();
         w = Lapply1(nil, w1, w);
-        errexit();
         car(procstack) = w,
         // error exit case
         return 1);
@@ -3846,9 +3826,6 @@ int PROC_simplify()
 static void PROC_standardise_gensyms(LispObject w)
 {   if (consp(w))
     {   PROC_standardise_gensyms(car(w));
-#ifdef NO_THROW
-        if (exceptionPending()) return;
-#endif // NO_THROW
         PROC_standardise_gensyms(cdr(w));
         return;
     }
@@ -3864,7 +3841,6 @@ int PROC_lisp_eval()
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = eval(car(procstack), nil);
-        errexit();
         PROC_standardise_gensyms(w),
         return 1);
     car(procstack) = w;
@@ -3875,11 +3851,8 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 {   if (consp(w))
     {   LispObject w1;
         w1 = PROC_standardise_printed_form(car(w));
-        errexit();
         w =  PROC_standardise_printed_form(cdr(w));
-        errexit();
         w = cons(w1, w);
-        errexit();
         return w;
     }
 // Now w is atomic. There are two interesting cases - an unprinted gensym
@@ -3890,7 +3863,6 @@ static LispObject PROC_standardise_printed_form(LispObject w)
     }
     else if (is_numbers(w) && is_bignum(w))
     {   w = Lexplode(nil, w);        // Bignum to list of digits
-        errexit();
         w = Llist_to_string(nil, w); // list to string
         return w;
     }
@@ -3909,13 +3881,9 @@ int PROC_make_printable()
 // I want to use "simp" again so that I can then use prepsq!
     if_error(
         w = make_undefined_symbol("simp");
-        errexit();
         w = Lapply1(nil, w, car(procstack));
-        errexit();
         w1 = make_undefined_symbol("prepsq");
-        errexit();
         w = Lapply1(nil, w1, w);
-        errexit();
 // There are going to be two things I do next. One is to ensure that
 // all gensyms have print-names, the other is to convert bignums into
 // strings. Both of these could be viewed as mildly obscure!

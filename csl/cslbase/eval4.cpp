@@ -104,17 +104,7 @@ LispObject bytecoded_0(LispObject def)
 }
 
 LispObject bytecoded_1(LispObject def, LispObject a)
-{
-#ifdef DEBUG
-// In the NO_THROW case I arrange that (most) functions that exit via
-// a simulated throw return a value that denotes an exception value. This
-// ought to be intercepted promptly! But if it is not and it gets passed on
-// as an argument here that indicated that some interception tests had been
-// omitted. If I abort() here then exceptionFile and exceptionLine can be
-// checked using a debugger and they will show where the exception originated.
-    if (is_exception(a)) my_abort("exception value not trapped");
-#endif
-    RealSave save(def, a);
+{   RealSave save(def, a);
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-1);
@@ -297,7 +287,6 @@ static LispObject byteopt(LispObject def, LispObject a1,
             a4up = list3star(a1, a2, a3, a4up);
             break;
     }
-    errexit();
 // I know there are enough arguments for the ones that are mandatory. I will
 // now pad the list of arguments so that there is something for every
 // &OPTIONAL one too. In the easy case I will just default to NIL and the
@@ -308,7 +297,6 @@ static LispObject byteopt(LispObject def, LispObject a1,
     {   a4up = nreverse(a4up);
         while (nargs < wantargs+wantopts)
         {   a4up = cons(defaultval, a4up);
-            errexit();
             nargs++;
         }
         if (restp)
@@ -317,7 +305,6 @@ static LispObject byteopt(LispObject def, LispObject a1,
 // &OPTIONAL args, and so the &RESR value will definitely be nil. So stick
 // a NIL on the end.
             a1 = ncons(nil);
-            errexit();
             a4up = nreverse2(a4up, a1);
             nargs++; // allow for the &REST arg.
         }
@@ -334,11 +321,9 @@ static LispObject byteopt(LispObject def, LispObject a1,
         while (nargs > wantargs+wantopts)
         {   ra = cons(car(a4up), ra);
             a4up = cdr(a4up);
-            errexit();
         }
 // Here I have (eg) a4up = (a3 a2 a1) and ra = (a4 a5 ...).
         {   a4up = ncons(ra);
-            errexit();
         }
 // Make a final extra argument out of the list, and then reverse the rest
 // of the arguments back, to get (eg again) (a1 a2 a3 (a4 a5 ...)).
@@ -520,7 +505,6 @@ LispObject Lmv_list(LispObject env, LispObject a)
     for (i=0; i<x; i++)
     {   LispObject w= *stack--;
         r = cons(w, r);
-        errexit();
     }
     return r;
 }

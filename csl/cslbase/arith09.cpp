@@ -513,11 +513,9 @@ LispObject gcd(LispObject a, LispObject b)
 #endif
             {   if (bignum_minusp(a)) a = negateb(a);
                 else a = copyb(a);
-                errexit();
             }
             if (bignum_minusp(b)) b = negateb(b);
             else b = copyb(b);
-            errexit();
 #ifdef DEBUG_GCD_CODE
             trace_printf("GCD of 2 positive bignums %x %x\n", topdigit(a),
                          topdigit(b));
@@ -704,16 +702,11 @@ LispObject lcm(LispObject a, LispObject b)
     if (a == fixnum_of_int(0) ||
         b == fixnum_of_int(0)) return fixnum_of_int(0);
     stackcheck();
-    errexit();
     g = gcd(a, b);
-    errexit();
     b = quot2(b, g);
-    errexit();
     if (minusp(b)) b = negate(b);
-    errexit();
     if (minusp(a))
     {   a = negate(a);
-        errexit();
     }
     return times2(a, b);
 }
@@ -816,7 +809,6 @@ LispObject ash(LispObject a, LispObject b)
 // When I am shifting (left) I can work out exactly how long the resulting
 // bignum will be right at the start.
         c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
-        errexit();
 // Before I do anything else I will fill the result-vector with zero, so that
 // the parts that do not get A copied in will end up in a proper state.  This
 // should include the word that pads the vector out to an even number of
@@ -865,7 +857,6 @@ LispObject ash(LispObject a, LispObject b)
 // fixnum value.  This is slightly wasteful, but I do not (at present)
 // view right-shifting a bignum to get a fixnum as super speed-critical.
         c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
-        errexit();
         if ((SIXTY_FOUR_BIT && ((lenc & 1) != 0)) ||
             (!SIXTY_FOUR_BIT && ((lenc & 1) == 0))) bignum_digits(c)[lenc] = 0;// The spare word
         d0 = bignum_digits(a)[words];
@@ -954,12 +945,10 @@ static LispObject logiorbb(LispObject a, LispObject b)
     msd = bignum_digits(a)[lena];
     if (msd < 0)
     {   a = copyb(a);
-        errexit();
         for (i=0; i<=lena; i++) bignum_digits(a)[i] |= bignum_digits(b)[i];
     }
     else
     {   b = copyb(b);
-        errexit();
         for (i=0; i<=lena; i++) bignum_digits(b)[i] |= bignum_digits(a)[i];
         if (lena != lenb) return shrink_bignum(b, lenb);
         a = b;
@@ -1008,7 +997,6 @@ static LispObject logxorbb(LispObject a, LispObject b)
     }
     // Now b is at least as long as a
     b = copyb(b);
-    errexit();
     for (i=0; i<lena; i++) bignum_digits(b)[i] ^= bignum_digits(a)[i];
     w = bignum_digits(a)[i];
     if (lena == lenb) bignum_digits(b)[i] ^= w;
@@ -1057,7 +1045,6 @@ LispObject logeqv2(LispObject a, LispObject b)
             return logxorbb(make_fake_bignum(~int_of_fixnum(b)), a);
         else if (is_numbers(b) && is_bignum(b))
         {   b = lognot(b);
-            errexit();
             return logxorbb(a, b);
         }
         else return aerror("bad arg for logeqv", a, b);
@@ -1080,12 +1067,10 @@ static LispObject logandbb(LispObject a, LispObject b)
     msd = bignum_digits(a)[lena];
     if (msd >= 0)
     {   a = copyb(a);
-        errexit();
         for (i=0; i<=lena; i++) bignum_digits(a)[i] &= bignum_digits(b)[i];
     }
     else
     {   b = copyb(b);
-        errexit();
         for (i=0; i<=lena; i++) bignum_digits(b)[i] &= bignum_digits(a)[i];
         if (lena != lenb) return shrink_bignum(b, lenb);
         a = b;

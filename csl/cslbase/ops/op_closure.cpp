@@ -8,10 +8,8 @@
 // variables.
                 w = next_byte;
                 A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
-                errexit();
                 B_reg = *stack--;
                 A_reg = list2star(cfunarg, B_reg, A_reg);
-                errexit();
                 B_reg = *stack--;
                 continue;
 

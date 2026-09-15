@@ -23,7 +23,6 @@
                         respond_to_stack_event();
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
                                                  stack-1);
-                    errexit();
                 }
                 continue;
 

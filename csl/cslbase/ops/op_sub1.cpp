@@ -11,7 +11,6 @@
 #else // ARITHLIB
                 A_reg = plus2(A_reg, fixnum_of_int(-1));
 #endif // ARITHLIB
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

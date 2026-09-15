@@ -408,18 +408,12 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
         is_fixnum(a2) &&
         intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(a2)))
         a1 = fixnum_of_int(c);
-    else
-    {   a1 = plus2(a1, a2);
-        errexit();
-    }
+    else a1 = plus2(a1, a2);
     if (is_fixnum(a1) &&
         is_fixnum(a3) &&
         intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(a3)))
         a1 = fixnum_of_int(c);
-    else
-    {   a1 = plus2(a1, a3);
-        errexit();
-    }
+    else a1 = plus2(a1, a3);
     while (a4up != nil)
     {   LispObject an = car(a4up);
         a4up = cdr(a4up);
@@ -429,7 +423,6 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
             a1 = fixnum_of_int(c);
         else
         {   a1 = plus2(a1, an);
-            errexit();
         }
     }
     return a1;
@@ -440,14 +433,11 @@ static LispObject Ldifference_4up(LispObject env, LispObject a1,
                                   LispObject a3, LispObject a4up)
 {   SingleValued fn;
     a1 = difference2(a1, a2);
-    errexit();
     a1 = difference2(a1, a3);
-    errexit();
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
         a1 = difference2(a1, a2);
-        errexit();
     }
     return a1;
 }
@@ -457,14 +447,11 @@ static LispObject Ltimes_4up(LispObject env, LispObject a1,
                              LispObject a3, LispObject a4up)
 {   SingleValued fn;
     a1 = times2(a1, a2);
-    errexit();
     a1 = times2(a1, a3);
-    errexit();
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
         a1 = times2(a1, a2);
-        errexit();
     }
     return a1;
 }
@@ -488,7 +475,6 @@ LispObject LCLquotient_3(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   SingleValued fn;
     a1 = CLquot2(a1, a2);
-    errexit();
     return CLquot2(a1, a3);
 }
 
@@ -496,14 +482,11 @@ LispObject LCLquotient_4up(LispObject env,
                            LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
     a1 = CLquot2(a1, a2);
-    errexit();
     a1 = CLquot2(a1, a3);
-    errexit();
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
         a1 = CLquot2(a1, a2);
-        errexit();
     }
     return a1;
 }
@@ -527,7 +510,6 @@ LispObject Lquotient_3(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
 {   SingleValued fn;
     a1 = quot2(a1, a2);
-    errexit();
     return quot2(a1, a3);
 }
 
@@ -535,14 +517,11 @@ LispObject Lquotient_4up(LispObject env,
                          LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
     a1 = quot2(a1, a2);
-    errexit();
     a1 = quot2(a1, a3);
-    errexit();
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
         a1 = quot2(a1, a2);
-        errexit();
     }
     return a1;
 }
@@ -553,7 +532,6 @@ LispObject Ldivide_2(LispObject env, LispObject a, LispObject b)
     stackcheck();
     mv_2 = SPID_NIL;
     q = quotrem2(a, b);
-    errexit();
     if (is_spid(mv_2)) return aerror("divide", a, b);
     q = cons(q, mv_2);
     return q;
@@ -602,7 +580,6 @@ LispObject Lplus_3(LispObject env, LispObject a1, LispObject a2,
         a1 = fixnum_of_int(c);
     else
     {   a1 = plus2(a1, a2);
-        errexit();
     }
     if (is_fixnum(a1) &&
         is_fixnum(a3) &&
@@ -643,7 +620,6 @@ LispObject Ldifference_3(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   SingleValued fn;
     a1 = difference2(a1, a2);
-    errexit();
     return difference2(a1, a3);
 }
 
@@ -668,14 +644,11 @@ static LispObject Lbool_4up(LispObject env, LispObject a1,
 {   SingleValued fn;
     int what = int_of_fixnum(qenv(env));
     a1 = (*boolop_array[what])(a1, a2);
-    errexit();
     a1 = (*boolop_array[what])(a1, a3);
-    errexit();
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
         a1 = (*boolop_array[what])(a1, a2);
-        errexit();
     }
     return a1;
 }
@@ -734,14 +707,11 @@ LispObject Leqn_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
     {   if (!SL_numeq2(a1, a2)) return nil;
-        errexit();
         if (!SL_numeq2(a2, a3)) return nil;
-        errexit();
     }
     while (a4up != nil)
     {   LispObject w = car(a4up);
         {   if (!SL_numeq2(a3, w)) return false;
-            errexit();
         }
         a4up = cdr(a4up);
     }
@@ -763,7 +733,6 @@ LispObject Leqn_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
     if (!SL_numeq2(a1, a2)) return nil;
-    errexit();
     return SL_numeq2(a2, a3) ? lisp_true : nil;
 }
 
@@ -776,15 +745,12 @@ LispObject Lcl_equals_sign_4up(LispObject env,
                                LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
     {   if (!numeq2(a1, a2)) return nil;
-        errexit();
         if (!numeq2(a2, a3)) return nil;
-        errexit();
     }
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
         if (!numeq2(p, q)) return nil;
-        errexit();
         p = q;
         a4up = cdr(a4up);
     }
@@ -806,7 +772,6 @@ LispObject Lcl_equals_sign_3(LispObject env, LispObject a1,
                              LispObject a2, LispObject a3)
 {   SingleValued fn;
     if (!numeq2(a1, a2)) return nil;
-    errexit();
     return numeq2(a2, a3) ? lisp_true : nil;
 }
 
@@ -820,15 +785,12 @@ LispObject Llessp_4up(LispObject env,
                       LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
     {   if (!lessp2(a1, a2)) return nil;
-        errexit();
         if (!lessp2(a2, a3)) return nil;
-        errexit();
     }
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
         if (!lessp2(p, q)) return nil;
-        errexit();
         p = q;
         a4up = cdr(a4up);
     }
@@ -839,7 +801,6 @@ LispObject Llessp_3(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3)
 {   SingleValued fn;
     if (!lessp2(a1, a2)) return nil;
-    errexit();
     return lessp2(a2, a3) ? lisp_true : nil;
 }
 
@@ -862,15 +823,12 @@ LispObject Lgreaterp_4up(LispObject env,
                          LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
     {   if (!lessp2(a2, a1)) return nil;
-        errexit();
         if (!lessp2(a3, a2)) return nil;
-        errexit();
     }
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
         {   if (!lessp2(q, p)) return nil;
-            errexit();
         }
         p = q;
         a4up = cdr(a4up);
@@ -882,7 +840,6 @@ LispObject Lgreaterp_3(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
 {   SingleValued fn;
     if (!lessp2(a2, a1)) return nil;
-    errexit();
     return lessp2(a3, a2) ? lisp_true : nil;
 }
 
@@ -907,19 +864,13 @@ static LispObject Lnum_neq_4up(LispObject env, LispObject a1,
 // "/=" is supposed to check that no pair of args match.
 {   SingleValued fn;
     {   if (numeq2(a1, a2)) return nil;
-        errexit();
         if (numeq2(a1, a3)) return nil;
-        errexit();
         if (numeq2(a2, a3)) return nil;
-        errexit();
     }
     while (a4up != nil)
     {   if (numeq2(a1, car(a4up))) return nil;
-        errexit();
         if (numeq2(a2, car(a4up))) return nil;
-        errexit();
         if (numeq2(a3, car(a4up))) return nil;
-        errexit();
         a4up = cdr(a4up);
     }
     return lisp_true;
@@ -929,11 +880,8 @@ LispObject Lnum_neq_3(LispObject env, LispObject a1, LispObject a2,
                       LispObject a3)
 {   SingleValued fn;
     if (!numeq2(a1, a2)) return nil;
-    errexit();
     if (!numeq2(a1, a3)) return nil;
-    errexit();
     if (!numeq2(a2, a3)) return nil;
-    errexit();
     return lisp_true;
 }
 
@@ -956,15 +904,12 @@ LispObject Lgeq_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
     {   if (!lesseq2(a2, a1)) return nil;
-        errexit();
         if (!lesseq2(a3, a2)) return nil;
-        errexit();
     }
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
         {   if (!lesseq2(q, p)) return nil;
-            errexit();
         }
         p = q;
         a4up = cdr(a4up);
@@ -976,7 +921,6 @@ LispObject Lgeq_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
     if (!lesseq2(a2, a1)) return nil;
-    errexit();
     return lesseq2(a3, a2) ? lisp_true : nil;
 }
 
@@ -1000,15 +944,12 @@ LispObject Lleq_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
     {   if (!lesseq2(a1, a2)) return nil;
-        errexit();
         if (!lesseq2(a2, a3)) return nil;
-        errexit();
     }
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
         if (!lesseq2(p, q)) return nil;
-        errexit();
         p = q;
         a4up = cdr(a4up);
     }
@@ -1019,7 +960,6 @@ LispObject Lleq_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
     if (!lesseq2(a1, a2)) return nil;
-    errexit();
     return lesseq2(a2, a3) ? lisp_true : nil;
 }
 
@@ -1043,7 +983,6 @@ LispObject Lmax_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     bool w;
     w = lessp2(a, b);
-    errexit();
     if (w) return b;
     else return a;
 }
@@ -1052,7 +991,6 @@ LispObject Lmin_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     bool w;
     w = lessp2(b, a);
-    errexit();
     if (w) return b;
     else return a;
 }
@@ -1061,13 +999,11 @@ LispObject Lmax_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
     if (lessp2(a1, a2))
-    {   errexit();
-        if (lessp2(a2, a3)) return a3;
+    {   if (lessp2(a2, a3)) return a3;
         else return a2;
     }
     else
-    {   errexit();
-        if (lessp2(a1, a3)) return a3;
+    {   if (lessp2(a1, a3)) return a3;
         else return a1;
     }
 }
@@ -1076,13 +1012,11 @@ LispObject Lmin_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
     if (greaterp2(a1, a2))
-    {   errexit();
-        if (greaterp2(a2, a3)) return a3;
+    {   if (greaterp2(a2, a3)) return a3;
         else return a2;
     }
     else
-    {   errexit();
-        if (greaterp2(a1, a3)) return a3;
+    {   if (greaterp2(a1, a3)) return a3;
         else return a1;
     }
 }
@@ -1092,11 +1026,9 @@ LispObject Lmax_4up(LispObject env, LispObject a1, LispObject a2,
 {   SingleValued fn;
     LispObject r;
     r = Lmax_3(nil, a1, a2, a3);
-    errexit();
     while (a4up != nil)
     {   bool better = false;
         {   better = lessp2(r, car(a4up));    
-            errexit();
         }
         if (better) r = car(a4up);
         a4up = cdr(a4up);
@@ -1109,11 +1041,9 @@ LispObject Lmin_4up(LispObject env, LispObject a1, LispObject a2,
 {   SingleValued fn;
     LispObject r;
     r = Lmin_3(nil, a1, a2, a3);
-    errexit();
     while (a4up != nil)
     {   bool better = false;
         {   better = greaterp2(r, car(a4up));    
-            errexit();
         }
         if (better) r = car(a4up);
         a4up = cdr(a4up);
@@ -1130,7 +1060,7 @@ static LispObject Lmanexp(LispObject env, LispObject a)
 {   SingleValued fn;
     int x;
     double f;
-// AT present I do not support 128-bit floats here @@@
+// At present I do not support 128-bit floats here @@@
     if (!is_float(a))  return aerror("arg is not a floating-point number", a);
     f = float_of_number(a);
     f = std::frexp(f, &x);
@@ -1251,7 +1181,6 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         if (!is_bignum(a)) return aerror("random-number", a);
         len = bignum_length(a);
         {   r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
-            errexit();
         }
         len1 = (len-CELL)/4-1;
     restart:
@@ -1357,7 +1286,6 @@ LispObject Lrandom_1(LispObject env, LispObject a)
         if (!is_bignum(a)) return aerror("random-number", a);
         len = bignum_length(a);
         {   r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
-            errexit();
         }
         len1 = (len-CELL)/4-1;
     restart:

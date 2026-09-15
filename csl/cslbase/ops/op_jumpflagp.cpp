@@ -9,13 +9,11 @@
                 else
 #ifdef COMMON
                 {   r1 = get(A_reg, basic_elt(litvec, w), unset_var);
-                    errexit();
                     if (r1 != unset_var) short_jump(ppc, xppc, codevec);
                     continue;
                 }
 #else
                 {   r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
-                    errexit();
                 }
                 if (r1 != nil) short_jump(ppc, xppc, codevec);
                 continue;

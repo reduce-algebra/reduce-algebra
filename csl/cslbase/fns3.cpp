@@ -86,7 +86,6 @@ LispObject Lmkevect(LispObject env, LispObject n)
     n1 = (1+int_of_fixnum(n))*CELL;
 // For now I will restrict the size here.
     n = get_basic_vector_init(n1+CELL, nil);
-    errexit();
     vechdr(n) ^= TYPE_SIMPLE_VEC ^ TYPE_STRUCTURE;
     return n;
 }
@@ -107,7 +106,6 @@ LispObject Lmkxvect(LispObject env, LispObject n)
     if (n1 < 3*CELL) return aerror("mkxvect", n);
 // size-limited.
     n = get_basic_vector_init(n1+CELL, nil);
-    errexit();
     vechdr(n) ^= TYPE_SIMPLE_VEC ^ TYPE_MIXED1;
     return n;
 }
@@ -115,7 +113,6 @@ LispObject Lmkxvect(LispObject env, LispObject n)
 LispObject encapsulate_pointer(void *data)
 // Creates a boxed up representation of a pointer.
 {   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_ENCAPSULATE, 2*CELL);
-    errexit();
     *(void **)&basic_elt(w, 0) = data;
     return w;
 }
@@ -203,11 +200,9 @@ LispObject Lmaple_integer(LispObject env, LispObject a)
     LispObject t = fixnum_of_int(1);
     int len = static_cast<int>(*p & 0x03ffffff);
             d = Ltimes2(nil, d, t);
-            errexit();
             save.restore(r, t);
         }
         r = Lplus2(nil, r, d);
-        errexit();
         t = Ltimes2(nil, t, fixnum_of_int(10000));
     }
     return r;
@@ -293,7 +288,6 @@ LispObject Lsmkvect(LispObject env, LispObject n)
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror("make-simple-string", n);
     nn = int_of_fixnum(n);
     w = get_vector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
-    errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL) - CELL;
     while (nn != 0)
     {   nn--;
@@ -313,7 +307,6 @@ LispObject Lmkvect8(LispObject env, LispObject n)
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror("mkvect8", n);
     nn = 1 + int_of_fixnum(n);  // Note that in Standard Lisp style the +1
     w = get_vector(TAG_VECTOR, TYPE_VEC8_4, nn+CELL);
-    errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL) - CELL;
     while (nn != 0)
     {   nn--;
@@ -334,7 +327,6 @@ LispObject Lmkvect16(LispObject env, LispObject n)
     nn = sizeof(std::int16_t)*(1 + int_of_fixnum(
                                    n)); // Note 1+ for Standard Lisp style
     w = get_vector(TAG_VECTOR, TYPE_VEC16_2, nn+CELL);
-    errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL)-CELL;
     nn = nn/sizeof(std::int16_t);
     while (nn != 0)
@@ -356,7 +348,6 @@ LispObject Lmkvect32(LispObject env, LispObject n)
     nn = sizeof(int32_t)*(1 + int_of_fixnum(n));
 // Size limited
     w = get_basic_vector(TAG_VECTOR, TYPE_VEC32, nn+CELL);
-    errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL) - CELL;
     nn = nn/sizeof(int32_t);
     while (nn != 0)
@@ -378,7 +369,6 @@ LispObject Lmkfvect32(LispObject env, LispObject n)
     nn = sizeof(float)*(1 + int_of_fixnum(n));
 // Size limited
     w = get_basic_vector(TAG_VECTOR, TYPE_VECFLOAT32, nn+CELL);
-    errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL) - CELL;
     nn = nn/sizeof(float);
     while (nn != 0)
@@ -401,7 +391,6 @@ LispObject Lmkfvect64(LispObject env, LispObject n)
     if (!SIXTY_FOUR_BIT) nn += 4; // get the doubles aligned
 // Size limited
     w = get_basic_vector(TAG_VECTOR, TYPE_VECFLOAT64, nn+CELL);
-    errexit();
     if (!SIXTY_FOUR_BIT) basic_elt(w, 0) = 0;
     nn = (intptr_t)nn;
     nn = nn/sizeof(double);
@@ -439,8 +428,6 @@ LispObject simplify_string(LispObject s)
     stackcheck();
 // Size limited
     w = get_vector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
-    errexit();
-    errexit();
     i = (intptr_t)doubleword_align_up(n+CELL) - CELL;
     while (i != 0) // pre-fill target vector with zero
     {   i--;
@@ -856,7 +843,6 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
 //
     for (v=a; consp(v); v = cdr(v)) n += CELL;
     v = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
-    errexit();
     for(n=0; consp(a); a = cdr(a), n++)
         elt(v, n) = static_cast<LispObject>(car(a));
     if (!SIXTY_FOUR_BIT && n%2==0) elt(v, n) = TAG_FIXNUM;
@@ -1558,7 +1544,6 @@ UNUSED_NAME static LispObject Lmake_string_3(LispObject env, LispObject n,
     nn = int_of_fixnum(n);
 // Size limited
     w = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
-    errexit();
     z = (size_t)doubleword_align_up(nn+CELL);
     if (is_char(init)) blanks = code_of_char(init);
     else blanks = int_of_fixnum(init);
@@ -1585,7 +1570,6 @@ UNUSED_NAME static LispObject Lmake_string_1(LispObject env, LispObject n)
     nn = int_of_fixnum(n);
 // Size limited
     w = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
-    errexit();
     z = (size_t)doubleword_align_up(nn+CELL);
     blanks = (' ' << 24) | (' ' << 16) | (' ' << 8) | ' ';
     while (z > CELL)
@@ -1668,7 +1652,6 @@ LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
     size_t n = 3;
     for (LispObject x=a4up; x!=nil; x=cdr(x)) n++;
     r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(n+1));
-    errexit();
     elt(r, 0) = a1;
     elt(r, 1) = a2;
     elt(r, 2) = a3;
@@ -1690,7 +1673,6 @@ LispObject Lvector_0(LispObject env)
 LispObject Lvector_1(LispObject env, LispObject a)
 {   SingleValued fn;
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 2*CELL);
-    errexit();
     elt(r, 0) = a;
     return r;
 }
@@ -1698,7 +1680,6 @@ LispObject Lvector_1(LispObject env, LispObject a)
 LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 3*CELL);
-    errexit();
     elt(r, 0) = a;
     elt(r, 1) = b;
     if (!SIXTY_FOUR_BIT) elt(r, 2) = TAG_FIXNUM;
@@ -1709,7 +1690,6 @@ LispObject Lvector_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
 {   SingleValued fn;
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 4*CELL);
-    errexit();
     elt(r, 0) = a;
     elt(r, 1) = b;
     elt(r, 2) = c;
@@ -1746,7 +1726,6 @@ static LispObject Lmake_simple_bitvector(LispObject env, LispObject n)
     bytes = CELL+(n1+7)/8;
 // Size limited
     w = get_basic_vector(TAG_VECTOR, bitvechdr_(n1), bytes);
-    errexit();
     n1 = doubleword_align_up(bytes);
     while (n1 > CELL)
     {   n1 -= 4;
@@ -1916,7 +1895,6 @@ LispObject list_subseq(LispObject sequence, size_t start, size_t end)
 // Store the values
     while (consp(seq) && pntr < seq_length)
     {   newv = Lcons(nil,car(seq),nil);
-        errexit();
         if (pntr == 0) copy = newv;
         else cdr(last) = newv;
         last = newv;
@@ -1951,7 +1929,6 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         // guarenteed to work.  The extra CELL bytes are for the header.
         //
         copy = get_vector_init(CELL+seq_length*CELL,nil);
-        errexit();
         for (i=start; i < end; ++i)
             elt(copy,i-start) = static_cast<LispObject>(elt(sequence,i));
         return copy;
@@ -1966,8 +1943,6 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         // Get a new string of the right size
 // Size limited
         copy = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+seq_length+3);
-        errexit();
-        errexit();
 
         // This code plagiarised from copy_string ...
         s = reinterpret_cast<char *>(copy) - TAG_VECTOR;
@@ -1987,7 +1962,6 @@ LispObject vector_subseq(LispObject sequence, size_t start,
 
         // Grab a bit-vector of the right size
         copy = Lmake_simple_bitvector(nil,fixnum_of_int(seq_length));
-        errexit();
 
         //
         // This is not terribly efficient since the calls to Lbputv and Lbgetv
@@ -1996,7 +1970,6 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         //
         for (i=start; i<end; ++i)
         {   LispObject v = Lbgetv(nil,sequence,fixnum_of_int(i));
-            errexit();
             Lbputv(nil,copy,fixnum_of_int(i-start), v);
         }
 
@@ -2020,7 +1993,6 @@ LispObject Llist_subseq1(LispObject env, LispObject seq, LispObject start)
 
     first = int_of_fixnum(start);
     len = Llength(nil,seq);
-    errexit();
     last = int_of_fixnum(len);
     if (first > last) return aerror("list-subseq* out of range",seq);
     return list_subseq(seq, first, last);
@@ -2044,7 +2016,6 @@ LispObject Lvector_subseq1(LispObject env, LispObject seq, LispObject start)
 
     first = int_of_fixnum(start);
     len = Llength(nil,seq);
-    errexit();
     last = int_of_fixnum(len);
 
     if (first > last) return aerror("vector-subseq* out of range",seq);

@@ -83,30 +83,20 @@ LispObject apply(LispObject fn, LispObject args,
             bool tracing = (qheader(fn) & SYM_TRACED) != 0;
             if (tracing)
             {   freshline_trace();
-                errexit();
                 trace_printf("Calling ");
-                errexit();
                 loop_print_trace(fn); // Function being called
-                errexit();
                 if (count > 0)
                 {   trace_count = trace_count+1;
                     trace_printf(" [%" PRId64 "]", count);
-                    errexit();
                 }
                 trace_printf(" from ");
-                errexit();
                 loop_print_trace(from);  // caller
-                errexit();
                 trace_printf("\n");
-                errexit();
                 LispObject p = args;
                 for (int i=1; p!=nil; i++)
                 {   trace_printf("Arg%d: ", i);
-                    errexit();
                     loop_print_trace(car(p));
-                    errexit();
                     trace_printf("\n");
-                    errexit();
                     p = cdr(p);
                 }
             }
@@ -134,24 +124,17 @@ LispObject apply(LispObject fn, LispObject args,
                     }
                 }
             }
-            errexit();
             if (tracing)
             {
 // In due course I will need to worry about multiple values here
                 freshline_trace();
-                errexit();
                 loop_print_trace(fn);
-                errexit();
                 if (count > 0)
                 {   trace_printf(" [%" PRId64 "]", count);
-                    errexit();
                 }
                 trace_printf(" => ");
-                errexit();
                 loop_print_trace(def);
-                errexit();
                 trace_printf("\n");
-                errexit();
             }
             return def;
         }
@@ -270,9 +253,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
     if (!consp(args)) return nil;
     stackcheck();
     tag = eval(car(args), env);
-    errexit();
     tag = catch_tags = cons(tag, catch_tags);
-    errexit();
     TRY
         v = progn_fn(cdr(args), env);
     CATCH(LispThrow)
@@ -328,7 +309,6 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 // the Compiler, but in the interpreter in non-Common mode every variable
 // is SPECIAL.
 {   stackcheck();
-    errexit();
     RealSave save(bvlx, bodyx, envx,
                   nil, nil, envx, nil, nil);
     LispObject &bvl        = save.val(1);
@@ -344,17 +324,14 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
     for (;;)
     {   if (!consp(body)) break;
         p = macroexpand(car(body), env);
-        errexit();
         body = cdr(body);
         if (!consp(p))
         {   if (stringp(p) && consp(body)) continue;
             body = cons(p, body);
-            errexit();
             break;
         }
         if (car(p) != declare_symbol)
         {   body = cons(p, body);
-            errexit();
             break;
         }
         for (p = cdr(p); consp(p); p = cdr(p))
@@ -363,7 +340,6 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
             // here q says (special ...)
             for (q=cdr(q); consp(q); q = cdr(q))
             {   local_decs = cons(car(q), local_decs);
-                errexit();
             }
         }
     }
@@ -381,19 +357,14 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
         if (!is_symbol(q) || q==nil || q==lisp_true)
         {   LispObject qq = q;
             error(1, err_bad_bvl, qq);
-            errexit();
         }
         else
         {   Header h = qheader(q);
             if (z != nil) z = eval(z, env);
-            errexit();
             z = cons(q, z);
-            errexit();
             if (compilerp == BODY_COMPILER_LET)
             {   specenv = cons(z, specenv);
-                errexit();
                 q = acons(q, work_symbol, env1);
-                errexit();
                 env1 = q; // Locally special
             }
             else if (h & SYM_GLOBAL_VAR) return aerror("Attempt to bind", q);
@@ -406,15 +377,12 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 // The next few calls to cons() maybe lose w, but that is OK!
                     specenv = cons(z, specenv);
                     q = acons(q, work_symbol, env1);
-                    errexit();
                     env1 = q;
                     goto bound;
                 }
                 env1 = cons(z, env1);
-                errexit();
             bound:  ;
             }
-            errexit();
         }
     }
 
@@ -423,7 +391,6 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
         local_decs=cdr(local_decs);
         if (!is_symbol(q1)) continue;
         q1 = acons(q1, work_symbol, env1);
-        errexit();
         env1 = q1;
     }
 // I treat the case where there are no new (special) bindings specially
@@ -454,7 +421,6 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
             body = (tagbody_fn(body, env1));
         else body = (progn_fn(body, env1));
     }
-    errexit();
     return body;
 }
 
@@ -471,7 +437,6 @@ LispObject cond_fn(LispObject args, LispObject env)
     {   LispObject p = car(args);
         if (consp(p))
         {   LispObject p1 = eval(car(p), env);
-            errexit();
             if (p1 != nil)
             {   args = cdr(car(args));
 // Here I support the case "(cond (predicate) ...)" with no consequents
@@ -598,7 +563,6 @@ static LispObject defmacro_fn(LispObject args, LispObject)
                            equal(t1, t2))))
                     {   fname = save.val(1);
                         args = ncons(fname);
-                        errexit();
                         (*qfn1(compiler_symbol))(compiler_symbol, args);
                     }
                     save.restore(fname);
@@ -637,9 +601,7 @@ static LispObject flet_fn(LispObject args, LispObject env)
         if (consp(w) && consp(cdr(w)))
         {   LispObject w1;
             w1 = list2star(funarg, my_env, cdr(w));
-            errexit();
             w1 = cons(w1, car(w));
-            errexit();
             env = cons(w1, env);
         }
         d = cdr(d);
@@ -693,11 +655,9 @@ static LispObject if_fn(LispObject args, LispObject env)
 {   LispObject p=nil, tr=nil, fs=nil;
     STACK_SANITY;
     if (!consp(args)) return aerror("if");
-    errexit();
     p = car(args);
     args = cdr(args);
     if (!consp(args)) return aerror("if");
-    errexit();
     tr = car(args);
     args = cdr(args);
     if (!consp(args)) fs = nil;
@@ -705,12 +665,9 @@ static LispObject if_fn(LispObject args, LispObject env)
     {   fs = car(args);
         args = cdr(args);
         if (args != nil) return aerror("if");
-        errexit();
     }
     stackcheck();
-    errexit();
     p = eval(p, env);
-    errexit();
     if (p == nil) return eval(fs, env);      // tail call on result
     else return eval(tr, env);               // ... passing back values
 }
@@ -720,7 +677,6 @@ static LispObject labels_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return nil;
     stackcheck();
-    errexit();
     my_env = env;
     d = car(args);     // The bunch of definitions
     while (consp(d))
@@ -728,9 +684,7 @@ static LispObject labels_fn(LispObject args, LispObject env)
         if (consp(w) && consp(cdr(w)))
         {   LispObject w1;
             w1 = list2star(funarg, nil, cdr(w));
-            errexit();
             w1 = cons(w1, car(w));
-            errexit();
             env = cons(w1, env);
         }
         d = cdr(d);
@@ -756,7 +710,6 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
 {   if (!consp(args)) return nil;
     STACK_SANITY;
     stackcheck();
-    errexit();
     RealSave save1(car(args), cdr(args), ienv); // bvl, body, env
     RealSave save2(PushCount(4));
     LispObject &bvl        = save1.val(1);
@@ -769,17 +722,14 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
     for (;;)
     {   if (!consp(body)) break;
         p = macroexpand(car(body), env);
-        errexit();
         body = cdr(body);
         if (!consp(p))
         {   if (stringp(p) && consp(body)) continue;
             body = cons(p, body);
-            errexit();
             break;
         }
         if (car(p) != declare_symbol)
         {   body = cons(p, body);
-            errexit();
             break;
         }
         for (p = cdr(p); consp(p); p = cdr(p))
@@ -788,7 +738,6 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
             // here q says (special ...)
             for (q=cdr(q); consp(q); q = cdr(q))
             {   local_decs = cons(car(q), local_decs);
-                errexit();
             }
         }
     }
@@ -816,7 +765,6 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
                 if (h & SYM_SPECIAL_VAR)
                 {   p = z;
                     z = acons(q, qvalue(q), specenv);
-                    errexit();
                     specenv = z;
                     qvalue(q) = p;
                 }
@@ -826,16 +774,13 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
                         if (q != car(p)) continue;
                         car(p) = fixnum_of_int(0);
                         w = acons(q, qvalue(q), specenv);
-                        errexit();
                         specenv = w;
                         w = acons(q, work_symbol, env);
-                        errexit();
                         env = w;
                         qvalue(q) = z;
                         goto bound;
                     }
                     q = acons(q, z, env);
-                    errexit();
                     env = q;
                 bound:  ;
                 }
@@ -846,11 +791,9 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
             local_decs=cdr(local_decs);
             if (!is_symbol(q)) continue;
             q = acons(q, work_symbol, env);
-            errexit();
             env = q;
         }
         body = progn_fn(body, env);
-        errexit();
         for (bvl = specenv; bvl != nil; bvl = cdr(bvl))
         {   LispObject w = car(bvl), v = car(w), z = cdr(w);
             qvalue(v) = z;
@@ -866,7 +809,6 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
         }
         RETHROW;
     END_CATCH;
-    errexit();
 // Note that body goes out of scope as the destructor for save1 runs,
 // so it is important that C++ picks up its value before performing the
 // destructor action!

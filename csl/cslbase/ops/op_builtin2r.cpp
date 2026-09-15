@@ -10,7 +10,6 @@
                                          make_undefined_symbol(two_arg_names[previous_byte]),
                                          A_reg, B_reg);
                 else A_reg = f2(nil, A_reg, B_reg);
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

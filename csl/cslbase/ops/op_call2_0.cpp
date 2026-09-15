@@ -15,7 +15,6 @@
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
                                                  stack-2);
                 }
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

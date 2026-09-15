@@ -1809,9 +1809,7 @@ static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
 LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
 {   LispObject p = numerator(a), q = denominator(a), q1, r1, w;
     q1 = Binary(Quotient, p, q);
-    errexit();
     r1 = Binary(Remainder, p, q);
-    errexit();
 // The quotient is now in q1 and the remainder in r1. The original fraction
 // is still (p/q).
     switch (roundmode)
@@ -1822,38 +1820,29 @@ LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
 // then q/2 I will need to adjust things. And if it is equal in either of
 // those edge cases I need to think even harder!
             w = Binary(Times, r1, fixnum_of_int(2));
-            errexit();
             if (BoolUnary(Minusp, w)) w = Unary(Minus, w);
-            errexit();
             if (BoolBinary(Greaterp, w, q) ||
                 (BoolBinary(Eqn, w, q) && IBoolUnary(Oddp, q1)))
             {   if (BoolUnary(Minusp, r1))
                 {   r1 = Binary(Plus, r1, q);
-                    errexit();
                     q1 = Unary(Sub1, q1);
                 }
                 else
                 {   r1 = Binary(Difference, r1, q);
-                    errexit();
                     q1 = Unary(Add1, q1);
                 }
-                errexit();
             }
             break;
         case FIX_FLOOR:
             if (BoolUnary(Minusp, r1))
             {   r1 = Binary(Plus, r1, q);
-                errexit();
                 q1 = Unary(Sub1, q1);
-                errexit();
             }
             break;
         case FIX_CEILING:
             if (BoolUnary(Plusp, r1))
             {   r1 = Binary(Difference, r1, q);
-                errexit();
                 q1 = Unary(Add1, q1);
-                errexit();
             }
             break;
     }
@@ -1866,9 +1855,7 @@ LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
 
 LispObject Nlisp_fix(LispObject a, int roundmode)
 {   LispObject r = Nlisp_fix_sub(a, roundmode);
-    errexit();
     a = Binary(Difference, a, r);
-    errexit();
     mv_2 = a;
     return nvalues(r, 2);
 }
@@ -1882,17 +1869,13 @@ LispObject Nlisp_ifix(LispObject a, LispObject b, int roundmode)
     LispObject r2, negb;
     if (is_float(a) || is_float(b))
     {   a = Binary(Quotient, a, b);
-        errexit();
 // If either argument was floating point then the quotient will be.
         LispObject r = Nlisp_fix(a, roundmode);
         mv_2 = Binary(Times, mv_2, b);
-        errexit();
         return nvalues(r, 2);
     }
     LispObject q = Binary(Quotient, a, b);
-    errexit();
     LispObject r = Binary(Remainder, a, b);
-    errexit();
     switch (roundmode)
     {   case FIX_TRUNCATE:
             break;
@@ -1900,7 +1883,6 @@ LispObject Nlisp_ifix(LispObject a, LispObject b, int roundmode)
 // I will apply a round-to-nearest, with round-to-even to break ties.
             negb = BoolUnary(Minus, b);
             {   r2 = Binary(Times, r, fixnum_of_int(2));
-                errexit();
             }
             if (BoolBinary(Lessp, b, r2) ||
                 (BoolBinary(Eqn, b, r2) && IBoolUnary(Oddp, q))) goto increase_q;
@@ -1911,17 +1893,13 @@ LispObject Nlisp_ifix(LispObject a, LispObject b, int roundmode)
             if (!BoolUnary(Minusp, r)) break;
         decrease_q:
             r = Binary(Plus, r, b);
-            errexit();
             q = Unary(Sub1, q);
-            errexit();
             break;
         case FIX_CEILING:
             if (!BoolUnary(Plusp, r)) break;
         increase_q:
             r = Binary(Difference, r, b);
-            errexit();
             q = Unary(Add1, q);
-            errexit();
             break;
     }
     mv_2 = r;
@@ -2144,7 +2122,6 @@ LispObject Ndecode_float(LispObject env, LispObject a)
     else sign = make_boxfloat(neg, floatWant(flthdr(a)));
     {   if (is_sfloat(a)) a = pack_immediate_float(d, a);
         else a = make_boxfloat(d, floatWant(flthdr(a)));
-        errexit();
     }
 #ifdef COMMON
 // Until and unless Standard Lisp supports multiple values this has to

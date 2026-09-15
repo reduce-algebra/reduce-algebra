@@ -107,7 +107,7 @@ LIBEDIT =	$(L)/chared.o $(L)/chartype.o $(L)/common.o $(L)/eln.o \
                 $(L)/filecomplete.o $(L)/help.o $(L)/hist.o $(L)/historyn.o \
                 $(L)/history.o $(L)/keymacro.o $(L)/map.o $(L)/parse.o \
                 $(L)/prompt.o $(L)/readline.o $(L)/read.o $(L)/refresh.o \
-                $(L)/search.o $(L)/sig.o $(L)/strlcat.o $(L)/strlcpy.o \
+                $(L)/search.o $(L)/sig.o \
                 $(L)/terminal.o $(L)/tokenizern.o $(L)/tokenizer.o $(L)/tty.o \
                 $(L)/unvis.o $(L)/vi.o $(L)/vis.o $(L)/wcsdup.o
 

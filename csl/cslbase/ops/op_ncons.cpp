@@ -3,7 +3,6 @@
 #if defined BYTECODE
             case OP_NCONS:                   // A_reg = cons(A_reg, nil);
                 {   A_reg = ncons(A_reg);
-                    errexit();
                 }
                 continue;
 

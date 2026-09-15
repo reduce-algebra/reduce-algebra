@@ -303,7 +303,6 @@ void print_info(LispObject w)
 LispObject Lopen_fork(LispObject env)
 {   SingleValued fn;
     LispObject r = make_stream_handle();
-    errexit();
     stream_type(r) = make_string("fork handle");
     int fork_pipes_to[2] = {0, 0};
     int fork_pipes_from[2] = {0, 0};

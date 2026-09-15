@@ -61,7 +61,6 @@ LispObject bytestream_interpret1(size_t ppc, LispObject lit,
     int32_t n, k;
     size_t xppc;
 
-next_ode:
     try
     {   for (;;)
         {   switch (next_byte)
@@ -161,9 +160,7 @@ size_t xppc;
 #ifdef CHECK_STACK
     if (reinterpret_cast<char *>(ufringe) <=
         reinterpret_cast<char *>(uheaplimit))
-    {   A_reg = cons_gc_test(A_reg);
-        errexit();
-    }
+        A_reg = cons_gc_test(A_reg);
 #ifdef DEBUG
     if (check_stack(reinterpret_cast<char *>(&ffname[0]), __LINE__))
     {   err_printf("\n+++ stack overflow\n");
@@ -196,11 +193,7 @@ next_ode:   // This label is so that I can restart what I am doing
 // reaching the end of it would discard stacked arguments and cause trouble?
 // Anyway, although I make the default behaviour one when a try block
 // preseved the stack I customise this one not to!
-#ifdef NO_THROW
-    ([&]()->LispObject {
-#else
     try { ([&]()->LispObject {
-#endif // NO_THROW
 // The try block will neeed to c with
 // .  Various errors raised by functions called from here: a fragment of
 //    backtrace may be called for, and variable bindings undone.

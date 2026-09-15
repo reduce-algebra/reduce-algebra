@@ -14,7 +14,6 @@
                                              make_undefined_symbol(no_arg_names[previous_byte]));
                     else A_reg = f0(nil);
                 }
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

@@ -7,7 +7,6 @@
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else 
                 {   A_reg = cdrerror(A_reg);
-                    errexit();
                 }
                 continue;
 

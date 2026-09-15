@@ -77,6 +77,7 @@ AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" == "yes"])
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_SYS_WAIT
+AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([fcntl.h limits.h malloc.h stdlib.h string.h sys/ioctl.h sys/param.h unistd.h curses.h ncurses.h sys/cdefs.h termcap.h])
 
 AC_CHECK_HEADER([termios.h], [], [AC_MSG_ERROR([termios.h is required!])],[])
@@ -110,21 +111,17 @@ AC_CHECK_TYPES([u_int32_t])
 # Checks for library functions.
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_FORK
-AC_PROG_GCC_TRADITIONAL
 ## _AIX is offended by rpl_malloc and rpl_realloc
 #AC_FUNC_MALLOC
 #AC_FUNC_REALLOC
 AC_FUNC_STAT
-AC_CHECK_FUNCS([endpwent isascii memchr memset re_comp regcomp strcasecmp strchr strcspn strdup strerror strrchr strstr strtol issetugid wcsdup strlcpy strlcat fgetln vis strvis strunvis __secure_getenv secure_getenv])
+AC_CHECK_FUNCS([endpwent isascii memchr memset re_comp regcomp strcasecmp strchr strcspn strdup strerror strrchr strstr strtol issetugid wcsdup strlcpy fgetln vis strvis strunvis __secure_getenv secure_getenv])
 
 # strlcpy
 #AC_CHECK_FUNC(strlcpy, found_strlcpy=yes, found_strlcpy=no)
 AM_CONDITIONAL(HAVE_STRLCPY, [test "x$found_strlcpy" = xyes])
 
-# strlcat
-#AC_CHECK_FUNC(strlcat, found_strlcat=yes, found_strlcat=no)
-AM_CONDITIONAL(HAVE_STRLCAT, [test "x$found_strlcat" = xyes])
-
+# vis
 # vis
 AC_CHECK_FUNC(vis, found_vis=yes, found_vis=no)
 AM_CONDITIONAL(HAVE_VIS, [test "x$found_vis" = xyes])

@@ -5,7 +5,6 @@
                 xppc = ppc;
                 ppc++;
                 if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg, codevec);
-                errexit();
                 continue;
 
 #elif defined __x86_64__ || defined __aarch64__

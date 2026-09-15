@@ -994,7 +994,6 @@ LispObject Lpair(LispObject env, LispObject a, LispObject b)
     STACK_SANITY;
     while (consp(a) && consp(b))
     {   r = acons(car(a), car(b), r);
-        errexit();
         a = cdr(a);
         b = cdr(b);
     }
@@ -1022,7 +1021,6 @@ static size_t membercount(LispObject a, LispObject b)
     while (consp(b))
     {   LispObject cb = car(b);
         if (equal(a, cb)) r++;
-        if (exceptionPending()) break;
         b = cdr(b);
     }
     return r;
@@ -1040,11 +1038,9 @@ LispObject Lintersect(LispObject env, LispObject a, LispObject b)
     LispObject r = nil;
     while (consp(a))
     {   w = Lmember(nil, car(a), b);
-        errexit();
 // Here I ignore any item in a that is not also in b
         if (w != nil)
         {   size_t n1 = membercount(car(a), r);
-            errexit();
 // Here I want to arrange that items only appear in the result list multiple
 // times if they occur multiple times in BOTH the input lists.
             if (n1 != 0)
@@ -1053,7 +1049,6 @@ LispObject Lintersect(LispObject env, LispObject a, LispObject b)
             }
             if (n1 == 0)
             {   r = cons(car(a), r);
-                errexit();
             }
         }
         a = cdr(a);
@@ -1129,11 +1124,9 @@ LispObject Lunion(LispObject env, LispObject a, LispObject b)
     while (consp(a))
     {   LispObject c;
         {   c = Lmember(nil, car(a), b);
-            errexit();
         }
         if (c == nil)
         {   b = cons(car(a), b);
-            errexit();
         }
         a = cdr(a);
     }
@@ -1185,7 +1178,6 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
         {   LispObject x = car(a);
             if (is_symbol(x) && (qheader(x) & SYM_TAGGED) == 0)
             {   r = cons(x, r);
-                errexit();
             }
             a = cdr(a);
         }
@@ -1292,7 +1284,6 @@ LispObject Lunwind(LispObject env)
 
 LispObject error_N(LispObject args)
 {   LispObject w;
-    errexit();     // because constructing argument may have failed
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
         return resource_exceeded();
@@ -1313,18 +1304,13 @@ LispObject error_N(LispObject args)
     if (miscflags & HEADLINE_FLAG)
     {   LispObject cdrargs = cdr(args);
         err_printf("\n+++ error: ");
-        errexit();
         loop_print_error(car(args));
-        errexit();
         while (is_cons(cdrargs))
         {   err_printf(" ");
-            errexit();
             loop_print_error(car(cdrargs));
-            errexit();
             cdrargs = cdr(cdrargs);
         }
         err_printf("\n");
-        errexit();
     }
 // So if you go (error n A B C) the output should be
 //     +++ error n A B C
@@ -1574,13 +1560,11 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
 // from the name 'apply of the base function, while in Standard Lisp a name
 // like apply775 is needed to make the distinction (easily) visible.
             get_pname(a);  // to do with unprinted gensyms.
-            errexit();
 #ifdef COMMON
             b = Lgensym2(nil, a);
 #else
             b = Lgensym0(nil, a, "#code");
 #endif
-            errexit();
         }
         qfn0(b) = qfn0(a);
         qfn1(b) = qfn1(a);
@@ -1620,7 +1604,6 @@ LispObject Lcodep(LispObject env, LispObject a)
 LispObject get_basic_vector_init(size_t n, LispObject k)
 {   STACK_SANITY;
     LispObject p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
-    errexit();
     n = n/CELL - 1;
     if (!SIXTY_FOUR_BIT && n%2==0) elt(p, n) = TAG_FIXNUM;
     for (size_t i=0; i<n; i++)
@@ -1711,7 +1694,6 @@ LispObject get_vector(int tag, int type, size_t n)
         size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
         if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
         v = gvector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
-        errexit();
 // Note that this index vector will be around while the various sub
 // vectors are allocated, so I need to make it GC safe...
         for (i=0; i<chunks; i++)
@@ -1720,7 +1702,6 @@ LispObject get_vector(int tag, int type, size_t n)
         {   LispObject v1;
             int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
             {   v1 = gvector(tag, type, k+CELL);
-                errexit();
             }
 // The vector here will be active as later chunks are allocated, so it needs
 // to be GC safe.
@@ -1765,7 +1746,6 @@ LispObject get_vector_init(size_t n, LispObject val)
 {   LispObject p;
     STACK_SANITY;
     p = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
-    errexit();
     n = n/CELL - 1;
     if (!SIXTY_FOUR_BIT && n%2==0) elt(p, n) = TAG_FIXNUM;
     while (n != 0)
@@ -1988,7 +1968,6 @@ LispObject Ltimeofday(LispObject env)
 #endif
 #endif
     w = make_lisp_unsigned64(n);
-    errexit();
     return cons(w, fixnum_of_int(un));
 }
 

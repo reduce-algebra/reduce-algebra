@@ -22,7 +22,6 @@
             jcall0: r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f0 = qfn0(r1);
-                errexit();
 // The issue here is cases such as
 //    (de f1 (x) (f2 x))
 //    (de f2 (x) (f1 x))
@@ -69,7 +68,6 @@
                         A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                     else A_reg = f0(r1);
                 }
-                errexit();
 //              return A_reg;
                 return nil;
 #else

@@ -4002,8 +4002,7 @@ r3)) (car r3)) (cond ((equal nargs 0) (c!:printf
 "        %v = (*qfn4up(fn))(fn" r1))))))))) (prog (var1275) (setq var1275 r2)
 lab1274 (cond ((null var1275) (return nil))) (prog (a) (setq a (car var1275)
 ) (c!:printf ", %v" a)) (setq var1275 (cdr var1275)) (go lab1274)) (c!:printf
-");\n    }\n")))))))) (cond ((not (flagp (car r3) (quote c!:no_errors))) (
-c!:printf "    errexit();\n"))) (cond (boolfn (c!:printf 
+");\n    }\n")))))))) (cond (boolfn (c!:printf 
 "    %v = %v ? lisp_true : nil;\n" r1 r1)))))
 
 (put (quote call) (quote c!:opcode_printer) (function c!:pcall))
@@ -4342,17 +4341,17 @@ c!:printf ", %s" (car w)) (setq w (cdr w)) (cond ((not (null w)) (progn (
 c!:printf ", %s" (car w)) (setq w (cdr w)) (cond ((not (null w)) (c!:printf 
 ", _a4up_")))))))))))) (c!:printf ");\n") (c!:printf 
 "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n") (c!:printf 
-"        errexit();\n") (c!:printf "        saveArgs.restore(env") (cond ((
-not (null args)) (progn (c!:printf ", %s" (car args)) (setq w (cdr args)) (
-cond ((not (null w)) (progn (c!:printf ", %s" (car w)) (setq w (cdr w)) (cond
-((not (null w)) (progn (c!:printf ", %s" (car w)) (setq w (cdr w)) (cond ((
-not (null w)) (c!:printf ", _a4up_")))))))))))) (c!:printf ");\n    }\n") (
-c!:printf "#endif // CONSERVATIVE\n")))) (setq n 0) (cond (stacks (progn (
-c!:printf "%<// space for vars preserved across procedure calls\n") (prog (
-var1348) (setq var1348 stacks) lab1347 (cond ((null var1348) (return nil))) (
-prog (v) (setq v (car var1348)) (progn (put v (quote c!:location) n) (setq n 
-(plus n 1)))) (setq var1348 (cdr var1348)) (go lab1347))))) (cond (reloadenv 
-(progn (setq reloadenv n) (cond ((equal n 0) (c!:printf 
+"        saveArgs.restore(env") (cond ((not (null args)) (progn (c!:printf 
+", %s" (car args)) (setq w (cdr args)) (cond ((not (null w)) (progn (
+c!:printf ", %s" (car w)) (setq w (cdr w)) (cond ((not (null w)) (progn (
+c!:printf ", %s" (car w)) (setq w (cdr w)) (cond ((not (null w)) (c!:printf 
+", _a4up_")))))))))))) (c!:printf ");\n    }\n") (c!:printf 
+"#endif // CONSERVATIVE\n")))) (setq n 0) (cond (stacks (progn (c!:printf 
+"%<// space for vars preserved across procedure calls\n") (prog (var1348) (
+setq var1348 stacks) lab1347 (cond ((null var1348) (return nil))) (prog (v) (
+setq v (car var1348)) (progn (put v (quote c!:location) n) (setq n (plus n 1)
+))) (setq var1348 (cdr var1348)) (go lab1347))))) (cond (reloadenv (progn (
+setq reloadenv n) (cond ((equal n 0) (c!:printf 
 "    RealSave saveEnv(env);\n")) (t (c!:printf 
 "    RealSave saveEnv(env, PushCount(%a));\n" n))))) (t (cond ((neq n 0) (
 c!:printf "    RealSave Workspace(PushCount(%a));\n" n))))) (cond (env (

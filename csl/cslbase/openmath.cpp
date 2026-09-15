@@ -445,10 +445,7 @@ LispObject om_openStringDev(LispObject env, LispObject lstr,
     OMdev dev;
 
     pstr = om_toCString(lstr);
-    errexit();
-
     enc = om_toEncodingType(lenc);
-    errexit();
 
     dev = OMmakeDevice(enc, OMmakeIOString(pstr));
     return om_fromDev(dev);
@@ -459,7 +456,6 @@ LispObject om_closeDev(LispObject env, LispObject ldev)
 {   OMdev dev;
 
     dev = om_toDev(ldev);
-    errexit();
     OMcloseDevice(dev);
 
     return lisp_true;
@@ -472,7 +468,6 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev,
     OMencodingType enc;
 
     dev = om_toDev(ldev);
-    errexit();
     if (!dev)
         return aerror("om_setDevEncoding: invalid device");
 
@@ -529,7 +524,6 @@ LispObject om_getConnInDev(LispObject env, LispObject lconn)
     OMdev dev;
 
     conn = om_toConn(lconn);
-    errexit();
     if (!conn)
         return aerror("om_toConn");
 
@@ -544,7 +538,6 @@ LispObject om_getConnOutDev(LispObject env, LispObject lconn)
     OMdev dev;
 
     conn = om_toConn(lconn);
-    errexit();
     if (!conn)
         return aerror("om_toConn");
 
@@ -573,7 +566,6 @@ LispObject om_connectTCP(LispObject env, LispObject lconn,
 
     // Convert the parameters into their C equivalents.
         conn = om_toConn(lconn);
-        errexit();
         if (!conn)
             return aerror("om_toConn");
     }
@@ -581,7 +573,6 @@ LispObject om_connectTCP(LispObject env, LispObject lconn,
         return aerror("om_connectTCP: host name must be a string");
 
     host = get_string_data(lhost, "om_putString", hostlen);
-    errexit();
     if (host != nullptr)
         host[hostlen] = '\0';
     port = int_of_fixnum(lport);
@@ -1035,7 +1026,6 @@ LispObject om_putSymbol2(LispObject env,
 
     // Convert the parameters into their C equivalents.
     {   dev = om_toDev(ldev);
-        errexit();
         if (!dev)
             return aerror("om_toDev");
     }
@@ -1043,7 +1033,6 @@ LispObject om_putSymbol2(LispObject env,
     if (!is_vector(lcd) || !(type_of_header(vechdr(lcd)) == TYPE_STRING))
         return aerror("om_putSymbol2");
     cd = get_string_data(lcd, "om_putSymbol2", cdLen);
-    errexit();
     if (cd == nullptr)
     {   status = OMinternalError;
         return om_error(status);
@@ -1479,9 +1468,7 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
         obj = om_error(status);
     else
     {   cdstr = make_string(cd);
-        errexit();
         namestr = make_string(name);
-        errexit();
         obj = list2(cdstr, namestr);
     }
 

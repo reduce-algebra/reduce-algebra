@@ -316,17 +316,13 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
             r = IBinary(Logand, a1, a2);
             break;
         case boole_andc2:
-            {   a2 = IUnary(Lognot, a2);
-                errexit();
-            }
+            a2 = IUnary(Lognot, a2);
             r = IBinary(Logand, a1, a2);
             break;
         case boole_1:
             return a1;
         case boole_andc1:
-            {   a1 = IUnary(Lognot, a1);
-                errexit();
-            }
+            a1 = IUnary(Lognot, a1);
             r = IBinary(Logand, a1, a2);
             break;
         case boole_2:
@@ -339,7 +335,6 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
             break;
         case boole_nor:
             a1 = IBinary(Logor, a1, a2);
-            errexit();
             r = IUnary(Lognot, a1);
             break;
         case boole_eqv:
@@ -349,23 +344,18 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
             r = IUnary(Lognot, a2);
             break;
         case boole_orc2:
-            {   a2 = IUnary(Lognot, a2);
-                errexit();
-            }
+            a2 = IUnary(Lognot, a2);
             r = IBinary(Logor, a1, a2);
             break;
         case boole_c1:
             r = IUnary(Lognot, a1);
             break;
         case boole_orc1:
-            {   a1 = IUnary(Lognot, a1);
-                errexit();
-            }
+            a1 = IUnary(Lognot, a1);
             r = IBinary(Logor, a1, a2);
             break;
         case boole_nand:
             a1 = IBinary(Logand, a1, a2);
-            errexit();
             r = IUnary(Lognot, a1);
             break;
         case boole_set:
