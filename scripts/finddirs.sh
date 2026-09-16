@@ -209,6 +209,12 @@ findos() {
         *ProductVersion*\<string\>15.*)
           os="mac_15_sequoia"
           ;;
+        *ProductVersion*\<string\>26.*)
+          os="mac_26_tahoe"
+          ;;
+        *ProductVersion*\<string\>17.*)
+          os="mac_27_golden_gate"
+          ;;
         *)
           os="mac_unknown_version"
           ;;
