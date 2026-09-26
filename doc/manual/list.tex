@@ -28,14 +28,14 @@ To facilitate the use of
 lists, a number of operators are also available for manipulating
 them.\ttindextype{part}{operator!use on lists}
 \texttt{part(\meta{list},n)} for example will return the
-$n^{th}$ element of a list. 
+$n^{th}$ element of a list.
 \ttindextype{length}{operator!use on lists}
 \texttt{length}\ttindextype{length}{operator} will return the
 length of a list.  Several operators are also defined uniquely for lists.
 For those familiar with them, these operators in fact mirror the
 operations defined for Lisp lists.  These operators are as follows:
 
-\subsection{list}
+\subsection{LIST}
 \hypertarget{operator:LIST}{}
 
 The operator \texttt{list} is an alternative to the usage of curly brackets. \texttt{list}
@@ -43,7 +43,7 @@ accepts an arbitrary number of arguments and returns a list
 of its arguments. This operator is useful in cases where operators
 have to be passed as arguments. E.g.,
 \begin{verbatim}
-list(a,list(list(b,c),d),e);       ->  {{a},{{b,c},d},e}
+list(a,list(list(b,c),d),e);     ->  {{a},{{b,c},d},e}
 \end{verbatim}
 
 \subsection{FIRST}
@@ -70,14 +70,14 @@ occurs if the argument is not a list or has no third element.
 \texttt{rest}\ttindextype{rest}{operator} returns its argument with the first element
 removed.  An error occurs if the argument is not a list, or is empty.
 
-\subsection{\textbf{.} (Cons) Operator}
+\subsection{\textbf{.} (CONS)}
 \hypertarget{operator:CONS}{}
 \hypertarget{reserved:consop}{}
 
 This operator\ttindextype{. (cons)}{operator} adds (``conses'') an expression to the
 front of a list.  For example:
 \begin{verbatim}
-        a . {b,c}     ->   {a,b,c}.
+        a . {b,c}     ->   {a,b,c}
 \end{verbatim}
 
 \subsection{APPEND}
@@ -88,7 +88,7 @@ form a new list.
 \textit{Examples:}
 \begin{verbatim}
         append({a,b},{c,d})     ->     {a,b,c,d}
-        append({{a,b}},{c,d})   ->     {{a,b},c,d}.
+        append({{a,b}},{c,d})   ->     {{a,b},c,d}
 \end{verbatim}
 
 \subsection{REVERSE}
@@ -99,7 +99,33 @@ elements in the reverse order.  It only applies to the top level list, not
 any lower level lists that may occur.  Examples are:\index{List operation}
 \begin{verbatim}
         reverse({a,b,c})        ->     {c,b,a}
-        reverse({{a,b,c},d})    ->     {d,{a,b,c}}.
+        reverse({{a,b,c},d})    ->     {d,{a,b,c}}
+\end{verbatim}
+
+\subsection{SORT}
+\hypertarget{operator:SORT}{}
+
+The operator \texttt{sort}\ttindextype{sort}{operator} returns its
+first argument, a list, with its elements sorted so as to satisfy the
+second argument, which should be the name of a predicate.  The
+simplest use is to sort a list of numbers, e.g.\ into ascending order:
+\begin{verbatim}
+sort({1, 1/2, 3/4}, <);
+
+  1   3
+{---,---,1}
+  2   4
+\end{verbatim}
+If necessary, you can provide your own predicate as an algebraic
+procedure that returns 1 for true and 0 for false, e.g.\ sort a list
+of complex numbers into ascending order by absolute value:
+\begin{verbatim}
+procedure abslessp(x,y);
+   if abs x < abs y then 1 else 0$
+on complex, rounded;
+sort({1, 2i, 1+i}, abslessp);
+
+{1,1 + i,2*i}
 \end{verbatim}
 
 \subsection{List Arguments of Other Operators}
@@ -159,7 +185,7 @@ example:
 polynomial with respect to a list of variables:
 
 \begin{verbatim}
-procedure allcoeffs(q,lis); 
+procedure allcoeffs(q,lis);
    % q : polynomial, lis: list of vars
    allcoeffs1 (list q,lis);
 
@@ -168,4 +194,3 @@ procedure allcoeffs1(q,lis);
     allcoeffs1(foreach qq in q join coeff(qq,first lis),
                rest lis);
 \end{verbatim}
-
