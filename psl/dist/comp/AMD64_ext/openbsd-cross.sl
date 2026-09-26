@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:         PXC:openbsd-cross.sl
-% Description:  Aarch64 patches for 64bit cross compiler
+% Description:  openbsd patches for 64bit compiler
 % Author:       R. Schöpf
 % Created:      January 2021
 % Modified:
@@ -33,7 +33,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% $Id: aarch64-cross.sl 6018 2021-09-10 09:52:15Z schoepf $
+% $Id: openbsd-cross.sl 6018 2021-09-10 09:52:15Z schoepf $
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -939,16 +939,16 @@
 
       (progn (prin2 '! )
              % Space
-             (printopcode (car x))
+             (PrintOpcode (car x))
              (setq x (cdr x))
              (unless (null x)
                      (prin2 '! )
                      % SPACE
-                     (printoperand (car x))
+                     (PrintOperand (car x))
                      (foreach u in (cdr x) do
                               (progn (prin2 '!,)
                                      % COMMA
-                                     (printoperand u))))
+                                     (PrintOperand u))))
 	     (when *comment
 	       (tab 35) (prin2 "# ") (prin2 *comment)
 	       (setq *comment nil))
@@ -966,12 +966,12 @@
 
 (de asmprintcall (x)
   (prin2 '! )
-  (printopcode (car x))
+  (PrintOpcode (car x))
   (prin2 '! )
   (if (eqcar (cadr x) 'reg) (prin2 '!*))
   (cond ((stringp (cadr x)) (prin2 (cadr x)))
         ((idp (cadr x)) (prin2 (findlabel (cadr x))))
-        (t (printoperand (cadr x))))
+        (t (PrintOperand (cadr x))))
   (when *comment
     (tab 35) (prin2 "# ") (prin2 *comment)
     (setq *comment nil))
