@@ -7,7 +7,7 @@
 The package \textsc{ASSIST} contains
 an appreciable number of additional general purpose operators which allow
 one to better adapt \REDUCE to various calculational strategies,
-to make the programming task more straightforward and, sometimes, 
+to make the programming task more straightforward and, sometimes,
 more efficient.
 
 In contrast with all other packages, \textsc{ASSIST} does not aim to provide either a
@@ -35,17 +35,17 @@ help facility of \REDUCE itself. It includes two operators:
 \ttindextype[ASSIST]{assisthelp}{operator}
 \hypertarget{operator:ASSIST}{}
 \hypertarget{operator:ASSISTHELP}{}
-\f{assist} is a operator which takes no argument. If entered, it returns 
-the informations required for a proper use  of \f{assisthelp}.\\   
+\f{assist} is a operator which takes no argument. If entered, it returns
+the informations required for a proper use  of \f{assisthelp}.\\
 \f{assisthelp} takes one argument.
 \begin{itemize}
-\item[i.] If the argument is the identifier \f{assist}, the operator 
+\item[i.] If the argument is the identifier \f{assist}, the operator
 returns the information necessary to retrieve the names of all the available
 operators.
 \item[ii.] If the argument is an integer equal to one of the section numbers
 of the present documentation. The names of the operators described
 in that section are obtained.\\
-There is, presently, no possibility to retrieve the number and the type of 
+There is, presently, no possibility to retrieve the number and the type of
 the arguments of a given operator.
 \end{itemize}
 The package contains several modules. Their content reflects closely
@@ -55,82 +55,82 @@ of applicability is \emph{extended}.
 
 \begin{itemize}
 \item{Control of Switches:}
-\begin{quote}
-\f{switches} \f{switchorg}
+\begin{quote}\sloppy\raggedright
+\f{switches}, \f{switchorg}
 \end{quote}
 \item{Operations on Lists and Bags:}
-\begin{quote}
-\f{mklist} \f{kernlist} \f{algnlist} \f{length} \\
-\f{position} \f{frequency} \f{sequences} \f{split} \\
-\f{insert} \f{insert\_keep\_order} \f{merge\_list} \\
-\f{first} \f{second} \f{third} \f{rest} \f{reverse} \f{last} \\
-\f{belast} \f{cons} \f{(} \f{.} \f{)} \f{append} \f{appendn} \\
-\f{remove} \f{delete} \f{delete\_all} \f{delpair} \\
-\f{member} \f{elmult} \f{pair} \f{depth} \f{mkdepth\_one} \\
-\f{repfirst} \f{represt} \f{asfirst} \f{aslast} \f{asrest} \\
-\f{asflist} \f{asslist} \f{restaslist} \f{substitute} \\
-\f{bagprop} \f{putbag} \f{clearbag} \f{bagp} \f{baglistp} \\
-\f{alistp} \f{abaglistp} \f{listbag}
+\begin{quote}\sloppy\raggedright
+\f{mklist}, \f{kernlist}, \f{algnlist}, \f{length},
+\f{position}, \f{frequency}, \f{sequences}, \f{split},
+\f{insert}, \f{insert\_keep\_order}, \f{merge\_list},
+\f{first}, \f{second}, \f{third}, \f{rest}, \f{reverse}, \f{last},
+\f{belast}, \f{cons} ( \f{.} ), \f{append}, \f{appendn},
+\f{remove}, \f{delete}, \f{delete\_all}, \f{delpair},
+\f{member}, \f{elmult}, \f{pair}, \f{depth}, \f{mkdepth\_one},
+\f{repfirst}, \f{represt}, \f{asfirst}, \f{aslast}, \f{asrest},
+\f{asflist}, \f{asslist}, \f{restaslist}, \f{substitute},
+\f{bagprop}, \f{putbag}, \f{clearbag}, \f{bagp}, \f{baglistp},
+\f{alistp}, \f{abaglistp}, \f{listbag}
 \end{quote}
 \item{Operations on Sets:}
-\begin{quote}
-\f{mkset} \f{setp} \f{union} \f{intersect} \f{diffset} \f{symdiff}
+\begin{quote}\sloppy\raggedright
+\f{mkset}, \f{setp}, \f{union}, \f{intersect}, \f{diffset}, \f{symdiff}
 \end{quote}
 %\newpage
 \item{General Purpose Utility Functions:}
-\begin{quote}
-\f{list\_to\_ids} \f{mkidn} \f{mkidnew} \f{dellastdigit} \f{detidnum} \\
-\f{oddp} \f{followline} \f{} \f{==} \f{randomlist} \f{mkrandtabl} \\
-\f{permutations} \f{cyclicpermlist} \f{perm\_to\_num} \\
-\f{num\_to\_perm} \f{combnum} \f{combinations} \f{symmetrize} \\
-\f{remsym} \f{sortnumlist} \f{sortlist} \f{algsort} \f{extremum} \f{gcdnl} \\
-\f{depatom} \f{funcvar} \f{implicit} \f{explicit} \f{remnoncom} \\
-\f{korderlist} \f{simplify} \f{checkproplist} \f{extractlist} 
+\begin{quote}\sloppy\raggedright
+\f{list\_to\_ids}, \f{mkidn}, \f{mkidnew}, \f{dellastdigit}, \f{detidnum},
+\f{oddp}, \f{followline}, \f{==}, \f{randomlist}, \f{mkrandtabl},
+\f{permutations}, \f{cyclicpermlist}, \f{perm\_to\_num},
+\f{num\_to\_perm}, \f{combnum}, \f{combinations}, \f{symmetrize},
+\f{remsym}, \f{sortnumlist}, \f{sortlist}, \f{algsort}, \f{extremum}, \f{gcdnl},
+\f{depatom}, \f{funcvar}, \f{implicit}, \f{explicit}, \f{remnoncom},
+\f{korderlist}, \f{simplify}, \f{checkproplist}, \f{extractlist}
 \end{quote}
 \item{Properties and Flags:}
-\begin{quote}
-\f{putflag} \f{putprop} \f{displayprop} \f{displayflag} \\
-\f{clearflag} \f{clearprop} 
+\begin{quote}\sloppy\raggedright
+\f{putflag}, \f{putprop}, \f{displayprop}, \f{displayflag},
+\f{clearflag}, \f{clearprop}
 \end{quote}
 \item{Control Statements, Control of Environment:}
-\begin{quote}
-\f{nordp} \f{depvarp} \f{alatomp} \f{alkernp} \f{precp} \\
-\f{show} \f{suppress} \f{clearop} \f{clearfunctions}
+\begin{quote}\sloppy\raggedright
+\f{nordp}, \f{depvarp}, \f{alatomp}, \f{alkernp}, \f{precp},
+\f{show}, \f{suppress}, \f{clearop}, \f{clearfunctions}
 \end{quote}
 \item{Handling of Polynomials:}
-\begin{quote}
-\f{alg\_to\_symb} \f{symb\_to\_alg} \\
-\f{distribute} \f{leadterm} \f{redexpr} \f{monom} \\
-\f{lowestdeg} \f{divpol} \f{splitterms} \f{splitplusminus}
+\begin{quote}\sloppy\raggedright
+\f{alg\_to\_symb}, \f{symb\_to\_alg},
+\f{distribute}, \f{leadterm}, \f{redexpr}, \f{monom},
+\f{lowestdeg}, \f{divpol}, \f{splitterms}, \f{splitplusminus}
 \end{quote}
 % \vfill\pagebreak
 \item{Handling of Transcendental Functions:}
-\begin{quote}
-\f{trigexpand} \f{hypexpand} \f{trigreduce} \f{hypreduce}
+\begin{quote}\sloppy\raggedright
+\f{trigexpand}, \f{hypexpand}, \f{trigreduce}, \f{hypreduce}
 \end{quote}
 \item{Coercion from Lists to Arrays and converse:}
-\begin{quote}
-\f{list\_to\_array} \f{array\_to\_list}
+\begin{quote}\sloppy\raggedright
+\f{list\_to\_array}, \f{array\_to\_list}
 \end{quote}
-\item{Handling of n-dimensional Vectors:}
-\begin{quote}
-\f{sumvect} \f{minvect scalvect} \f{crossvect} \f{mpvect}
+\item{Handling of $n$-dimensional Vectors:}
+\begin{quote}\sloppy\raggedright
+\f{sumvect}, \f{minvect scalvect}, \f{crossvect}, \f{mpvect}
 \end{quote}
 {\item Handling of Grassmann Operators:}
-\begin{quote}
-  \f{putgrass} \f{remgrass} \f{grassp} \f{grassparity}\\
+\begin{quote}\sloppy\raggedright
+  \f{putgrass}, \f{remgrass}, \f{grassp}, \f{grassparity},
   \f{ghostfactor}
 \end{quote}
 \item{Handling of Matrices:}
-\begin{quote}
-\f{unitmat} \f{mkidm} \f{baglmat} \f{coercemat} \\
-\f{submat} \f{matsubr} \f{matsubc} \f{rmatextr} \f{rmatextc} \\
-\f{hconcmat} \f{vconcmat} \f{tpmat} \f{hermat} \\
-\f{seteltmat} \f{geteltmat}
+\begin{quote}\sloppy\raggedright
+\f{unitmat}, \f{mkidm}, \f{baglmat}, \f{coercemat},
+\f{submat}, \f{matsubr}, \f{matsubc}, \f{rmatextr}, \f{rmatextc},
+\f{hconcmat}, \f{vconcmat}, \f{tpmat}, \f{hermat},
+\f{seteltmat}, \f{geteltmat}
 \end{quote}
 \item{Control of the HEPHYS package:}
-\begin{quote}
-\f{remvector} \f{remindex} \f{mkgam}
+\begin{quote}\sloppy\raggedright
+\f{remvector}, \f{remindex}, \f{mkgam}
 \end{quote}
 \end{itemize}
 In the following all these operators are described.
@@ -144,9 +144,9 @@ no argument and are called as if they were mere identifiers.
 
 \f{switches} displays the actual status of the most frequently used switches
 when manipulating rational operators. The chosen switches are
-\begin{quote}
-  \sw{exp}, \sw{allfac}, \sw{ezgcd}, \sw{gcd}, \sw{mcd}, \sw{lcm}, \sw{div}, \sw{rat}, \\
-  \sw{intstr}, \sw{rational}, \sw{precise}, \sw{reduced}, \sw{rationalize}, \\
+\begin{quote}\sloppy\raggedright
+  \sw{exp}, \sw{allfac}, \sw{ezgcd}, \sw{gcd}, \sw{mcd}, \sw{lcm}, \sw{div}, \sw{rat},
+  \sw{intstr}, \sw{rational}, \sw{precise}, \sw{reduced}, \sw{rationalize},
   \sw{combineexpt}, \sw{complex}, \sw{revpri}, \sw{distribute}.
 \end{quote}
 
@@ -184,9 +184,9 @@ Generation of a list of length n with all its elements initialized to 0
 and possibility to append to a list $l$ a certain number of
 zero's to make it of length $n$:
 \begin{verbatim}
-    mklist n ;    n is an integer
+  mklist n;    n is an integer
 
-    mklist(l,n);    l is List-like, n is an integer
+  mklist(l,n);    l is list-like, n is an integer
 \end{verbatim}
 
 \item[ii.]
@@ -197,28 +197,28 @@ equal to 0 and q elements equal to 1 such that  \[p+q=n .\]
 The operator \f{sequences} works both in algebraic and
 symbolic modes.  Here is an example in the algebraic mode:
 \begin{verbatim}
-    sequences 2 ; ==> {{0,0},{0,1},{1,0},{1,1}}
+   sequences 2 ; ==> {{0,0},{0,1},{1,0},{1,1}}
 \end{verbatim}
 \ttindextype[ASSIST]{split}{operator}
 \hypertarget{operator:SPLIT}{}%
-An arbitrary splitting of a list can be done. The operator \f{split} 
+An arbitrary splitting of a list can be done. The operator \f{split}
 generates a list which contains the splitted parts of the original list.
 \begin{verbatim}
-    split({a,b,c,d},{1,1,2}) ==> {{a},{b},{c,d}}
+  split({a,b,c,d},{1,1,2}) ==> {{a},{b},{c,d}}
 \end{verbatim}
 \ttindextype[ASSIST]{algnlist}{operator}
 \hypertarget{operator:ALGNLIST}{}%
-The operator \f{algnlist} constructs a list which contains n copies  
+The operator \f{algnlist} constructs a list which contains n copies
 of a list bound to its first argument.
 \begin{verbatim}
-    algnlist({a,b,c,d},2); ==> {{a,b,c,d},{a,b,c,d}}
+  algnlist({a,b,c,d},2); ==> {{a,b,c,d},{a,b,c,d}}
 \end{verbatim}
 \ttindextype[ASSIST]{kernlist}{operator}
 \hypertarget{operator:KERNLIST}{}%
 The operator \f{kernlist} transforms any prefix of a kernel into the
 \texttt{list} prefix. The output list is a copy:
 \begin{verbatim}
-    kernlist (<kernel>); ==> {<kernel arguments>}
+  kernlist (<kernel>); ==> {<kernel arguments>}
 \end{verbatim}
 \item[iii.]
   \ttindextype[ASSIST]{delete}{operator}
@@ -236,13 +236,13 @@ elements equal to its first argument. The fourth acts on a list of pairs
 and eliminates from it the \emph{first} pair whose first element is equal to
 its first argument :
 \begin{verbatim}
-    delete(x,{a,b,x,f,x}); ==> {a,b,f,x}
+  delete(x,{a,b,x,f,x}); ==> {a,b,f,x}
 
-    remove({a,b,x,f,x},3); ==> {a,b,f,x}
+  remove({a,b,x,f,x},3); ==> {a,b,f,x}
 
-    delete_all(x,{a,b,x,f,x}); ==> {a,b,f}
+  delete_all(x,{a,b,x,f,x}); ==> {a,b,f}
 
-    delpair(a,{{a,1},{b,2},{c,3}}; ==> {{b,2},{c,3}}
+  delpair(a,{{a,1},{b,2},{c,3}}; ==> {{b,2},{c,3}}
 \end{verbatim}
 \item[iv.]
   \ttindextype[ASSIST]{elmult}{operator}
@@ -256,9 +256,9 @@ The operator \f{frequency} gives a list of pairs
 whose second element indicates the number of times the first element
 appears inside the original list:
 \begin{verbatim}
-    elmult(x,{a,b,x,f,x}) ==> 2
+  elmult(x,{a,b,x,f,x}) ==> 2
 
-    frequency({a,b,c,a}); ==> {{a,2},{b,1},{c,1}}
+  frequency({a,b,c,a}); ==> {{a,2},{b,1},{c,1}}
 \end{verbatim}
 \item[v.]
   \ttindextype[ASSIST]{insert}{operator}
@@ -283,22 +283,22 @@ the name of a binary boolean ordering function:
 
     merge_list(ll,ll,lessp); ==> {1,1,2,2,3,3}
 \end{verbatim}
-Notice that \f{merge\_list} will act correctly only if the two lists 
-are well ordered themselves. 
+Notice that \f{merge\_list} will act correctly only if the two lists
+are well ordered themselves.
 \item[vi.]
 Algebraic lists can be read from right to left or left to right.
 They \emph{look} symmetrical. One would like to dispose of manipulation
 functions which reflect this.
-\ttindextype{first}{operator}
-\ttindextype{rest}{operator}
-\ttindextype[ASSIST]{last}{operator}
-\ttindextype[ASSIST]{belast}{operator}
-\hypertarget{operator:LAST}{}
-\hypertarget{operator:BELAST}{}
+\ttindextype{first}{operator}%
+\ttindextype{rest}{operator}%
+\ttindextype[ASSIST]{last}{operator}%
+\ttindextype[ASSIST]{belast}{operator}%
+\hypertarget{operator:LAST}{}%
+\hypertarget{operator:BELAST}{}%
 So, to the already defined functions  \f{first} and \f{rest} are
 added the functions \f{last}  and \f{belast}. \f{last} gives the last
 element of the list while \f{belast} gives the list \emph{without} its
-last element. \\
+last element.
 Various additional functions are provided. They are:
 \ttindextype[ASSIST]{position}{operator}
 \ttindextype[ASSIST]{depth}{operator}
@@ -314,8 +314,8 @@ Various additional functions are provided. They are:
 \hypertarget{operator:APPENDN}{}
 \hypertarget{operator:REPFIRST}{}
 \hypertarget{operator:REPREST}{}
-\begin{quote}
-\texttt{.} (``\texttt{dot}''), \f{position}, \f{depth}, \f{mkdepth\_one}, \\
+\begin{quote}\sloppy\raggedright
+\texttt{.} (``\texttt{dot}''), \f{position}, \f{depth}, \f{mkdepth\_one},
 \f{pair}, \f{appendn}, \f{repfirst}, \f{represt}
 \end{quote}
 The token ``dot'' needs a special comment. It corresponds to
@@ -349,16 +349,19 @@ The $n^{th}$ sublist contains the $n^{th}$ element of the first list
 and the $n^{th}$ element of the second list. These types of lists are called
 \emph{association lists} or short \emph{alists} in the following.
 To test for these type of lists a boolean function \f{abaglistp}
-is provided. It will be discussed below.\\
+is provided. It will be discussed below.
+
 \f{appendn} has \emph{any} fixed number of lists as arguments. It
 generalizes the already existing function \f{append} which accepts
-only two lists as arguments. It may also be used for arbitrary kernels 
-but, in that case, it is important to notice that \emph{the concatenated 
-object is always a list}.\\
+only two lists as arguments. It may also be used for arbitrary kernels
+but, in that case, it is important to notice that \emph{the concatenated
+object is always a list}.
+
 \f{repfirst} has two arguments. The first one is any object, the second one
 is a list. It replaces the first element of the list by the object. It
 works like the symbolic mode (lisp) function \f{rplaca} except that the
-original list is not destroyed.\ttindextype{rplaca}{lisp function}\\
+original list is not destroyed.\ttindextype{rplaca}{lisp function}
+
 \f{represt} has also two arguments. It replaces the rest of the list by
 its first argument and returns the new list \emph{without destroying} the
 original list. It is analogous to the symbolic mode (lisp) function \f{rplacd}.
@@ -399,21 +402,29 @@ The functions \f{asfirst}, \f{aslast}, \f{asrest}, \f{asflist}, \f{asslist}, and
 act on alists or on lists of lists of well defined depths
 and have two arguments. The first is the key object
 which one seeks to associate in some way with an element of the association
-list which is the second argument.\\
+list which is the second argument.
+
 \f{asfirst} returns the pair whose first element is equal to the
-first argument.\\
+first argument.
+
 \f{aslast} returns the pair whose last element is equal to the first
-argument.\\
+argument.
+
 \f{asrest} needs a \emph{list} as its first argument. The function
 seeks the first sublist of a list of lists (which is its second argument)
-equal to its first argument and returns it.\\
+equal to its first argument and returns it.
+
 \f{restaslist} has a \emph{list of keys} as its first argument. It
-returns the collection of pairs which meet the criterium of \f{asrest}.\\
+returns the collection of pairs which meet the criterium
+of \f{asrest}.
+
 \f{asflist} returns a list containing \emph{all pairs} which
 satisfy the criteria of the function \f{asfirst}. So the output
-is also an association list.\\
+is also an association list.
+
 \f{asslist} returns a list which contains \emph{all pairs} which have
-their second element equal to the first argument.\\
+their second element equal to the first argument.
+
 Here are a few examples:
 \begin{verbatim}
     lp:={{a,1},{b,2},{c,3}}$
@@ -437,7 +448,7 @@ Here are a few examples:
 \hypertarget{operator:SUBSTITUTE}{}
 The function \f{substitute} has three arguments. The first
 is the object to be substituted, the second is the object which must be
-replaced by the first, and the third is the list in which the substitution 
+replaced by the first, and the third is the list in which the substitution
 must be made. Substitution is made to
 all levels. It is a more elementary function than \f{sub} but its
 capabilities are less. When dealing with algebraic quantities, it is
@@ -454,7 +465,8 @@ if \texttt{op} is an operator one gets, by default,
     op({x,y}); ==> {op(x),op(y)}
 \end{verbatim}
 It is not permitted to submit lists to the operations valid on rings
-so that, for example, lists cannot be indeterminates of polynomials.\\
+so that, for example, lists cannot be indeterminates of polynomials.
+
 Very frequently too, procedure arguments cannot be lists.
 At the other extreme, so to say, one has the kernel\index{Kernel!\package{ASSIST} package}
 structure associated
@@ -463,7 +475,8 @@ an ``unbreakable'' one and, for that reason, behaves
 like an ordinary identifier.
 It may generally be bound to all non-numeric procedure parameters
 and it may appear
-as an ordinary indeterminate inside polynomials. \\
+as an ordinary indeterminate inside polynomials.
+
 The \texttt{BAG} structure is intermediate between a list and an operator.
 From the operator it borrows the property of being a kernel and,
 therefore, may be an indeterminate of a polynomial. From the list structure
@@ -477,7 +490,7 @@ A bag is an object endowed with the following properties:
 envelope) and
 its content (miscellaneous objects).
 \item Its content may be handled in an analogous way as the content of a
-list. The important difference is that during these manipulations 
+list. The important difference is that during these manipulations
 the name of the bag is \emph{kept}.
 \item Properties may be given to the envelope. For instance, one may
 declare it \texttt{noncom} or \texttt{symmetric}, etc.
@@ -486,15 +499,15 @@ declare it \texttt{noncom} or \texttt{symmetric}, etc.
 \underline{\textbf{Available Functions}:}
 
 \begin{itemize}
-\item[i.] A default bag envelope \\texttt{bag} is defined.\ttindextype[ASSIST]{bag}{reserved identifier}
+\item[i.] A default bag envelope \\texttt{bag} is defined.\ttindextype[ASSIST]{bag}{reserved identifier}%
 \hypertarget{reserved:BAG}{}
 It is a reserved identifier.
-\ttindextype[ASSIST]{putbag}{operator}
-\ttindextype[ASSIST]{clearbag}{operator}
-\ttindextype[ASSIST]{bagp}{boolean operator}
-\hypertarget{operator:PUTBAG}{}
-\hypertarget{operator:CLEARBAG}{}
-\hypertarget{operator:BAGP}{}
+\ttindextype[ASSIST]{putbag}{operator}%
+\ttindextype[ASSIST]{clearbag}{operator}%
+\ttindextype[ASSIST]{bagp}{boolean operator}%
+\hypertarget{operator:PUTBAG}{}%
+\hypertarget{operator:CLEARBAG}{}%
+\hypertarget{operator:BAGP}{}%
 An identifier other than \texttt{list} or one which is already associated
 with a boolean function may be defined as a bag envelope through the
 command \f{putbag}. In particular, any operator may also be declared
@@ -518,17 +531,17 @@ Here is an example:
     if bagp aa then "ok"; ==> ok
 \end{verbatim}
 \item[iii.] The functions listed below may act both on lists or bags.
-Moreover, functions subsequently  defined for  \emph{sets}SETS also work for a bag
+Moreover, functions subsequently defined for \emph{sets} also work for a bag
 when its content is a set.
 Here is a list of the main ones:
 
-\begin{quote}
-\f{FIRST}, \f{second}, \f{last}, \f{rest}, \f{belast}, \f{depth}, \f{length}, \f{reverse},\\
-\f{member}, \f{append}, \texttt{.} (``\texttt{dot}''), \f{repfirst}, \f{represt}, \ldots
+\begin{quote}\sloppy\raggedright
+\f{first}, \f{second}, \f{last}, \f{rest}, \f{belast}, \f{depth}, \f{length}, \f{reverse},
+\f{member}, \f{append}, \texttt{.} (``\texttt{dot}''), \f{repfirst}, \f{represt}
 \end{quote}
 
 However, since they keep track of the envelope, they act
-somewhat differently. Remember that   
+somewhat differently. Remember that
 \vspace{5pt}
 \begin{center}
 the \emph{name} of the \emph{envelope} is \emph{kept} by the operators \\[3pt]
@@ -558,27 +571,29 @@ given inside the test file):
     member(y,aa); ==> op(y,z)
 \end{verbatim}
 When ``appending'' two bags with \emph{different} envelopes, the resulting bag
-gets the name of the one bound to the first parameter of \f{append}. When  
-\f{appendn} is used, the output is always a list.\\
-The function \f{length} gives the number of objects contained in the 
+gets the name of the one bound to the first parameter of \f{append}. When
+\f{appendn} is used, the output is always a list.
+
+The function \f{length} gives the number of objects contained in the
 bag.
 \item[iv.]
   \ttindextype[ASSIST]{listbag}{operator}
 \hypertarget{operator:LISTBAG}{}
 The connection between the list and the bag structures is made easy
 thanks to \f{kernlist} which transforms a bag into a list and thanks to
-the coercion function \f{listbag} which transforms a list into a bag. 
+the coercion function \f{listbag} which transforms a list into a bag.
 This function has 2 arguments
 and is used as follows:
 \begin{syntax}
         \f{listbag}(\meta{list},\meta{id}); ==> \meta{id}(\meta{arg\_list})
 \end{syntax}
 The identifier \meta{id}, if allowed, is automatically declared as a bag
-envelope or an error message is generated. \\[3pt]
- \ttindextype[ASSIST]{baglistp}{operator}
- \ttindextype[ASSIST]{abaglistp}{operator}
-\hypertarget{operator:BAGLISTP}{}
-\hypertarget{operator:ABAGLISTP}{}
+envelope or an error message is generated.
+
+\ttindextype[ASSIST]{baglistp}{operator}%
+\ttindextype[ASSIST]{abaglistp}{operator}%
+\hypertarget{operator:BAGLISTP}{}%
+\hypertarget{operator:ABAGLISTP}{}%
 Finally, two boolean functions which work both for bags and lists are
 provided. They are \f{baglistp} and \f{abaglistp}.
 They return t or nil (in a conditional statement) if their argument
@@ -639,9 +654,9 @@ to them in this package is adjusted to maximize their range of applications.
 \hypertarget{operator:DETIDNUM}{}
 \hypertarget{operator:LIST_TO_IDS}{}
 The operators \f{mkidnew}, \f{dellastdigit}, \f{detidnum}, \f{list\_to\_ids}
-handle identifiers. 
+handle identifiers.
 
-\f{mkidnew} has either 0 or 1 argument. 
+\f{mkidnew} has either 0 or 1 argument.
 It generates an identifier which has not yet been used before.
 \begin{verbatim}
         mkidnew(); ==> g0001
@@ -694,7 +709,7 @@ deal also with kernels:
     op(x) == x; ==> x
 
     op(x); ==> x
-        
+
     abs(x); ==> x
 \end{verbatim}
 \ttindextype[ASSIST]{randomlist}{operator}
@@ -702,7 +717,7 @@ deal also with kernels:
 The function \f{randomlist} generates a list of random numbers. It takes
 two arguments which are both integers. The first one indicates the range
 inside which the random numbers are chosen. The second one indicates how
-many numbers are to be generated. Its output is the list of 
+many numbers are to be generated. Its output is the list of
 generated numbers.
 \begin{verbatim}
     randomlist(10,5); ==> {2,1,3,9,6}
@@ -745,11 +760,11 @@ also be a {\tt bag}.
 \ttindextype[ASSIST]{num\_to\_perm}{operator}
 \hypertarget{operator:PERM_TO_NUM}{}
 \hypertarget{operator:NUM_TO_PERM}{}
-\f{perm\_to\_num} and \f{num\_to\_perm} allow to associate to a given 
-permutation of n numbers or identifiers a number between $0$ and 
-$n! - 1$. The first function has the two permutated lists  
-as its arguments and it returns an integer. The second one has an integer  
-as its first argument and a list as its second argument. It returns the 
+\f{perm\_to\_num} and \f{num\_to\_perm} allow to associate to a given
+permutation of n numbers or identifiers a number between $0$ and
+$n! - 1$. The first function has the two permutated lists
+as its arguments and it returns an integer. The second one has an integer
+as its first argument and a list as its second argument. It returns the
 list of permutated objects.
 \begin{verbatim}
     perm_to_num({4,3,2,1},{1,2,3,4}) ==> 23
@@ -787,17 +802,17 @@ Examples:
 
     symmetrize(ll,op,cyclicpermlist); ==>
 
-            op(a,b,c) + op(b,c,a) + op(c,a,b)
+        op(a,b,c) + op(b,c,a) + op(c,a,b)
 
     symmetrize(list ll,op,cyclicpermlist); ==>
 
-            op({a,b,c}) + op({b,c,a}) + op({c,a,b})
+        op({a,b,c}) + op({b,c,a}) + op({c,a,b})
 \end{verbatim}
 Notice that, taking for the first argument a list of lists gives rise to
 an expression where  each kernel has a \emph{list as argument}. Another
 peculiarity of this function is the fact that, unless a pattern matching is
 made on the operator \texttt{op}, it needs to be reevaluated. This peculiarity
-is convenient when \texttt{op} is an abstract operator if one wants to 
+is convenient when \texttt{op} is an abstract operator if one wants to
 control the subsequent simplification process. Here is an illustration:
 \begin{verbatim}
     op(a,b,c):=a*b*c$
@@ -807,7 +822,7 @@ control the subsequent simplification process. Here is an illustration:
              op(a,b,c) + op(b,c,a) + op(c,a,b)
 
     reval ws; ==>
-                 
+
              op(b,c,a) + op(c,a,b) + a*b*c
 
     for all x let op(x,a,b)=sin(x*a*b);
@@ -823,18 +838,19 @@ control the subsequent simplification process. Here is an illustration:
 The functions \f{sortnumlist} and \f{sortlist} are functions which sort
 lists. They use the \emph{bubblesort} and the \emph{quicksort} algorithms.
 
-\f{sortnumlist} takes as argument a list of numbers. It sorts it in
+\f{sortnumlist} takes as argument a list of \emph{integers}. It sorts it in
 increasing order.
 
 \f{sortlist} is a generalization of the above function.
 It sorts the list according
-to any well defined ordering. Its first argument is the list and its
+to any well-defined ordering. Its first argument is the list and its
 second argument is the ordering function. The content of the list
 need not necessarily be numbers but must be such that the ordering function
 has a meaning.
-\ttindextype[ASSIST]{algsort}{operator}
-\ttindextype{sort}{lisp function}
-\hypertarget{operator:ALGSORT}{}
+
+\ttindextype[ASSIST]{algsort}{operator}%
+\ttindextype{sort}{lisp function}%
+\hypertarget{operator:ALGSORT}{}%
 \f{algsort} exploits the PSL \f{sort} function. It is intended to replace
 the two functions above.
 \begin{verbatim}
@@ -860,10 +876,10 @@ With the list \texttt{ll} defined in the last example, one gets
 
 \ttindextype[ASSIST]{gcdnl}{operator}
 \hypertarget{operator:GCDNL}{}
-\f{GCDNL} takes a list of integers as argument and returns their gcd.  
+\f{GCDNL} takes a list of integers as argument and returns their gcd.
 \item[iii.] There are four functions to identify dependencies.
-  \ttindextype[ASSIST]{funcvar}{operator}
-\hypertarget{operator:FUNCVAR}{}
+\ttindextype[ASSIST]{funcvar}{operator}%
+\hypertarget{operator:FUNCVAR}{}%
 \f{funcvar} takes any expression as argument and returns the set of
 variables on which it depends. Constants are  eliminated.
 \begin{verbatim}
@@ -893,7 +909,7 @@ implicit the dependencies. This example shows how they work:
 
     implicit ws; ==> a
 \end{verbatim}
-These are useful when one wants to trace the names of the independent 
+These are useful when one wants to trace the names of the independent
 variables
 and (or) the nature of the dependencies.
 
@@ -911,8 +927,8 @@ ordering.
   \ttindextype[ASSIST]{remnoncom}{command}
   \hypertarget{command:REMNONCOM}{}
   \ttindextype{NONCOM}{command}
-  A command \f{remnoncom} to remove the non-commutativity of 
-operators previously declared non-commutative is available. Its use is like 
+  A command \f{remnoncom} to remove the non-commutativity of
+operators previously declared non-commutative is available. Its use is like
 the one of the command \f{noncom}.
 
 \item[v.] Filtering functions for lists.
@@ -944,45 +960,45 @@ argument. For example:
 \ttindextype[ASSIST]{list\_to\_array}{operator}
 \hypertarget{operator:ARRAY_TO_LIST}{}
 \hypertarget{operator:LIST_TO_ARRAY}{}
-Since lists and arrays have quite distinct behaviour and storage properties,  
-it is interesting to coerce lists into arrays and vice-versa in order to 
-fully exploit the advantages of both datatypes. The functions  
+Since lists and arrays have quite distinct behaviour and storage properties,
+it is interesting to coerce lists into arrays and vice-versa in order to
+fully exploit the advantages of both datatypes. The functions
 \f{array\_to\_list} and \f{list\_to\_array} are provided to do that easily.
-The first function has the array identifier as its unique argument. 
+The first function has the array identifier as its unique argument.
 The second
-function has three arguments. The first is the list, the second is the 
-dimension of the array and the third is the identifier which defines it.  
+function has three arguments. The first is the list, the second is the
+dimension of the array and the third is the identifier which defines it.
 If the chosen dimension is not compatible with the
-the list depth, an error message is issued.  
-As an illustration suppose that $ar$ is an array whose components are  
+the list depth, an error message is issued.
+As an illustration suppose that $ar$ is an array whose components are
 1,2,3,4. then
 \begin{verbatim}
     array_to_list ar; ==> {1,2,3,4}
 
-    list_to_array({1,2,3,4},1,arr}; ==> 
+    list_to_array({1,2,3,4},1,arr}; ==>
 \end{verbatim}
 generates the array $arr$ with the components 1,2,3,4.
-\item[vii.] Control of the \textsc{HEPHYS} package.  
+\item[vii.] Control of the \textsc{HEPHYS} package.
 
 \ttindextype[ASSIST]{remvector}{command}
 \ttindextype[ASSIST]{remindex}{command}
 \hypertarget{command:REMVECTOR}{}
 \hypertarget{command:REMINDEX}{}
-The commands \f{remvector} and \f{remindex} remove the property of 
-being a 4-vector or a 4-index respectively. 
+The commands \f{remvector} and \f{remindex} remove the property of
+being a 4-vector or a 4-index respectively.
 
 \ttindextype[ASSIST]{mkgam}{operator}
 \hypertarget{operator:MKGAM}{}
-The function \f{mkgam} allows to assign to any identifier the property 
-of a Dirac gamma matrix and, eventually, to suppress it. Its interest lies 
-in the fact that, during a calculation, it is often useful to transform 
-a gamma matrix into an abstract operator and vice-versa. Moreover, in many 
-applications in basic physics, it is interesting to use the identifier $g$ 
-for other purposes.  
-It takes two arguments. The first is the identifier. The second must be 
+The function \f{mkgam} allows to assign to any identifier the property
+of a Dirac gamma matrix and, eventually, to suppress it. Its interest lies
+in the fact that, during a calculation, it is often useful to transform
+a gamma matrix into an abstract operator and vice-versa. Moreover, in many
+applications in basic physics, it is interesting to use the identifier $g$
+for other purposes.
+It takes two arguments. The first is the identifier. The second must be
 chosen equal to \texttt{t} if one wants to transform it into a gamma matrix. Any
-other binding for this second argument suppresses the property of being 
-a gamma matrix the identifier is supposed to have. 
+other binding for this second argument suppresses the property of being
+a gamma matrix the identifier is supposed to have.
 \end{itemize}
 \subsection{Properties and Flags}
 In spite of the fact that many facets of the handling of
@@ -996,13 +1012,13 @@ issues using them. They offer him
 the  possibility to work on property lists so
 that he can design a programming style of the ``conceptual'' type.
 \begin{itemize}
-\item[i.] We first consider ``flags''. \\
-  \ttindextype[ASSIST]{putflag}{operator}
-  \ttindextype[ASSIST]{displayflag}{operator}
-  \ttindextype[ASSIST]{clearflag}{operator}
-\hypertarget{operator:PUTFLAG}{}
-\hypertarget{operator:DISPLAYFLAG}{}
-\hypertarget{operator:CLEARFLAG}{}
+\item[i.] We first consider ``flags''.
+\ttindextype[ASSIST]{putflag}{operator}%
+\ttindextype[ASSIST]{displayflag}{operator}%
+\ttindextype[ASSIST]{clearflag}{operator}%
+\hypertarget{operator:PUTFLAG}{}%
+\hypertarget{operator:DISPLAYFLAG}{}%
+\hypertarget{operator:CLEARFLAG}{}%
 To a given identifier, one may
 associate another one linked to it ``in the background''. The  three
 functions \f{putflag}, \f{displayflag} and \f{clearflag} handle them.
@@ -1011,7 +1027,7 @@ functions \f{putflag}, \f{displayflag} and \f{clearflag} handle them.
 of identifiers, the second one is the name of the flag,
 and the third one is \var{t} (true) or 0 (zero).
 When the third argument is \var{t}, it creates the flag, when it is 0 it
-destroys it. In this last case, the function does return nil (not seen 
+destroys it. In this last case, the function does return nil (not seen
 inside the algebraic mode).
 \begin{verbatim}
     putflag(z1,flag_name,t); ==> flag_name
@@ -1029,8 +1045,8 @@ inside the algebraic mode).
 \f{clearflag} is a command which clears \emph{all} flags associated with
 the identifiers $id_1, \ldots , id_n .$
 \item[ii.] Properties are handled by similar operators.
-  \ttindextype[ASSIST]{putprop}{operator}
-\hypertarget{operator:PUTPROP}{}
+\ttindextype[ASSIST]{putprop}{operator}%
+\hypertarget{operator:PUTPROP}{}%
 \f{putprop} has four arguments. The second argument is, here, the
 \emph{indicator} of the property. The third argument may be \emph{any
 valid expression}. The fourth one is also t or 0.
@@ -1096,13 +1112,13 @@ their value.
 The next functions allow one to \emph{analyze} and to
 \emph{clean} the environment
 of \REDUCE created by the user while working
-\textbf{interactively}. Two functions are provided:\\
-\ttindextype[ASSIST]{show}{operator}
-\ttindextype[ASSIST]{suppress}{operator}
-\hypertarget{operator:SHOW}{}
-\hypertarget{operator:SUPPRESS}{}
+\textbf{interactively}. Two functions are provided:
+\ttindextype[ASSIST]{show}{operator}%
+\ttindextype[ASSIST]{suppress}{operator}%
+\hypertarget{operator:SHOW}{}%
+\hypertarget{operator:SUPPRESS}{}%
 \f{show} allows the user to get the various identifiers already
-assigned and to see their type. \f{suppress} selectively clears the
+assigned and to see their type; \f{suppress} selectively clears the
 used identifiers or clears them all. It is to be stressed that identifiers
 assigned from the input of files are \emph{ignored}.
 Both functions have one argument and the same options for this
@@ -1151,13 +1167,13 @@ complete cleaning and, also, automatically takes into account the
 \emph{user} flag and properties that the functions
 \f{putflag} and \f{putprop} may have introduced.
 
-\ttindextype[ASSIST]{clearop}{operator}
-\ttindextype[ASSIST]{clearfunctions}{operator}
-\hypertarget{operator:CLEAROP}{}
-\hypertarget{operator:CLEARFUNCTIONS}{}
+\ttindextype[ASSIST]{clearop}{operator}%
+\ttindextype[ASSIST]{clearfunctions}{operator}%
+\hypertarget{operator:CLEAROP}{}%
+\hypertarget{operator:CLEARFUNCTIONS}{}%
 Their names are \f{clearop} and \f{clearfunctions}.
-\f{clearop} takes one operator as its argument.\\
-\f{clearfunctions} is a nary command. If one issues
+\f{clearop} takes one operator as its argument.
+\f{clearfunctions} is an nary command. If one issues
 \begin{verbatim}
     clearfunctions a1,a2, ... , an $
 \end{verbatim}
@@ -1235,9 +1251,9 @@ multiplied by a polynomial in the other indeterminates. However, very often,
  one needs to handle true monoms separately. In that case, one needs a
 polynomial in \emph{distributive} form. Such a form is provided by the
 package \textsc{GROEBNER} (H. Melenk et al.). The facility there is, however,
-much too involved in many applications and the necessity to load the package 
+much too involved in many applications and the necessity to load the package
 makes it interesting
-to construct an elementary facility to handle the distributive representation 
+to construct an elementary facility to handle the distributive representation
 of polynomials. A new switch has been created for that purpose.
 It is called \sw{distribute} and a new function \f{distribute} puts a
 polynomial in distributive form. With that switch set to on,
@@ -1327,26 +1343,26 @@ but more symmetric expressions:
 %second is an integer which indicates the array dimension required. The
 %third is the name of an identifier which will play the role of the array
 %name generated by it. If the chosen dimension is not compatible with the
-% the list depth, an error message is issued.  
+% the list depth, an error message is issued.
 %\f{ARRAY\_TO\_LIST} does the opposite coercion. It takes the array
 %name as its unique argument.
-\subsection{Handling of n-dimensional Vectors}
+\subsection{Handling of $n$-dimensional Vectors}
 Explicit vectors in  euclidean space may be represented by
 list-like or bag-like objects of depth 1.
 The components may be bags but may \emph{not} be lists.
 Functions are provided to do the sum, the difference and the
 scalar product. When the space-dimension is three there are also functions
 for the cross and mixed products.
-\ttindextype[ASSIST]{sumvect} {operator}
-\ttindextype[ASSIST]{minvect} {operator}
-\ttindextype[ASSIST]{scalvect} {operator}
-\ttindextype[ASSIST]{crossvect} {operator}
-\ttindextype[ASSIST]{mpvect} {operator}
-\hypertarget{operator:SUMVECT}{}
-\hypertarget{operator:MINVECT}{}
-\hypertarget{operator:SCALVECT}{}
-\hypertarget{operator:CROSSVECT}{}
-\hypertarget{operator:MPVECT}{}
+\ttindextype[ASSIST]{sumvect}{operator}%
+\ttindextype[ASSIST]{minvect}{operator}%
+\ttindextype[ASSIST]{scalvect}{operator}%
+\ttindextype[ASSIST]{crossvect}{operator}%
+\ttindextype[ASSIST]{mpvect}{operator}%
+\hypertarget{operator:SUMVECT}{}%
+\hypertarget{operator:MINVECT}{}%
+\hypertarget{operator:SCALVECT}{}%
+\hypertarget{operator:CROSSVECT}{}%
+\hypertarget{operator:MPVECT}{}%
 \f{sumvect}, \f{minvect}, \f{scalvect}, and \f{crossvect} have two arguments.
 \f{mpvect} has three arguments. The following example
 is sufficient to explain how they work:
@@ -1422,7 +1438,7 @@ Here is an illustration to show how the above functions work:
     ghostfactor(eta(1),eta(2)); ==> -1
 
     grasskernel:=
-      {eta(~x)*eta(~y) 
+      {eta(~x)*eta(~y)
            => -eta y * eta x when nordp(x,y),
       (~x)*(~x) => 0 when grassp x};
 
