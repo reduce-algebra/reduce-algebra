@@ -762,7 +762,7 @@ do
     csltest "$here/cslbuild/${pp#csl=}/csl/reduce" "$logdir"
     ;;
   bootstrapreduce=*)
-    csltest "$here/cslbuild/${pp#csl=}/csl/bootstrapreduce" "$logdir"
+    csltest "$here/cslbuild/${pp#bootstrapreduce=}/csl/bootstrapreduce" "$logdir"
     ;;
   psl)
     psltest "$here/bin/redpsl" "$logdir"
