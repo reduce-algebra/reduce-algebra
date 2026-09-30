@@ -699,18 +699,21 @@ let
  iBeta(~a,~b,~x) => ibeta!:eval(a,b,x)
         when numberp(a) and numberp(b) and numberp(x) and lisp !*rounded
              and impart(a)=0 and impart(b)=0 and impart(x)=0
-             and a > 0 and b > 0 and 0 < x and x < 1,
+             and a > 0 and b > 0,
 
- iBeta(~a,~b,0) => 0,
- iBeta(~a,~b,1) => 1,
+ iBeta(~a,~b,0) => 0 when numberp(a) and repart(a) > 0,
+ iBeta(~a,~b,0) => infinity when numberp(a) and repart(a) < 0,
+ iBeta(~a,~b,1) => 1 when numberp(b) and repart(b) > 0,
  iBeta(~a,1,~x) => x^a,
  iBeta(1,~b,~x) => 1 - (1-x)^b,
+ iBeta(~a,~b,~x) => 1
+    when fixp(a) and a <= 0 and numberp(b)
+       and not (fixp(b) and b > 0 and b <= -a),
 
  df(iBeta(~a,~b,~x),~x) => (1-x)^(b-1)*x^(a-1) / beta(a,b),
 
  iBeta(~a,~b,~x) => int(t^(a-1)*(1-t)^(b-1),t,0,x) / beta(a,b)
-        when numberp a and fixp a and a>0 and a<6 and
-             numberp b and fixp b and b>0 and b<6
+    when fixp a and a>0 and a<6 and fixp b and b>0 and b<6
 
 };
 
