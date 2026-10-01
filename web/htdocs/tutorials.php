@@ -106,6 +106,23 @@ include './include/begin-body.php';
     <li><a href="tutorials/ode-tutorial.php">ordinary differential equations</a></li>
 </ul>
 
+<h2><em>Statistics with REDUCE</em> by Wolfgang Lindner</h2>
+<p><a href="https://lindnerdrwg.github.io/Statistics-with-Reduce.pdf">
+        This is a free 179-page book available online as a single PDF file</a>.</p>
+<p>ABSTRACT</p>
+<p>
+    Fundamental statistical concepts are programed using the CAS Web
+    REDUCE, always accompanied by short theoretical descriptions,
+    mental images and 50 prototypical examples. We treat descriptive
+    statistics from variance to kurtosis, discrete and continuous
+    distributions from binomial to Weibull and statistical tests
+    ranging from One sample GAUSS to the FISHER and McNEMAR test. We
+    handle correlation, one way analysis of variance, confidence
+    intervals etc. as well as bootstrap and jackknife methods. The
+    book contains 269 exercises, mostly with complete solutions as
+    REDUCE scripts.
+</p>
+
 <h2 id="egger">Example scripts by Dieter (Olli) Egger</h2>
 <p>
     Dieter Egger is the author of <em>Symbolic</em>, a REDUCE app for Android
