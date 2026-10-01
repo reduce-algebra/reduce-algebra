@@ -99,7 +99,7 @@ fluid '(!*rounded);
 symbolic procedure switch!-mode!-rd u;
   begin scalar oldmode,prec,ne;
   if null u then
-    <<if not memq(dmode!*,'(!:rd!: !:cr))then
+    <<if not memq(dmode!*,'(!:rd!: !:cr!:))then
        <<oldmode:=t; setdmode('rounded,!*rounded:=t)>>;
      ne := !*noequiv;
      !*noequiv:=t; prec:=precision 0;

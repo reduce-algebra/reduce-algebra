@@ -20,9 +20,9 @@ module igamma;                          % part of SFGAMMA package
 %
 %  The incomplete beta function.
 %
-%  ibeta!:eval(a,b,x) - returns the approximate value of the
+%  ibeta!:eval(a,b,x) - returns the approximate numerical value of the
 %               incomplete beta function with parameters a and b at
-%               point x, computed using a continued fraction.
+%               point x.
 %
 %--------------------------------------------------------------------------
 
@@ -153,21 +153,29 @@ end;
 
 algebraic procedure ibeta!:eval(a, b, x);
    % Return a numerical approximation to I_x(a,b) = ibeta(a,b,x).
-   % Assume a,b,x real, a>0, b>0, 0<x<1; ensured by let rules.
-   % Algorithm follows https://dlmf.nist.gov/8.17.  See also
+   % Assume a,b,x real, a>0, b>0; ensured by let rules in "alg/spcfnint.red".
+   % For 0 <= x <= 1, algorithm follows https://dlmf.nist.gov/8.17.
+   % See also
    % https://en.wikipedia.org/wiki/Beta_function#Incomplete_beta_function.
+   if x < 0 then
+      1.0 - ibeta!:eval1!+(b, a, 1.0-x)
+   else if x > 1.0 then
+      ibeta!:eval1!+(a, b, x)
+   else                                 % 0 <= x <= 1
    begin scalar ab2 := a + b + 2.0;
-      return if x > (a+1.0)/ab2 or 1.0-x < (b+1.0)/ab2 then
-         1.0 - ibeta!:eval1(b, a, 1.0-x)
-      else
-         ibeta!:eval1(a, b, x);
+      return
+         if x > (a+1.0)/ab2 or 1.0-x < (b+1.0)/ab2 then
+            1.0 - ibeta!:eval01(b, a, 1.0-x)
+         else
+            ibeta!:eval01(a, b, x)
    end;
 
 % At the default precision of 12, the following procedure appears
 % always to require fewer than 10 iteration.
 
-algebraic procedure ibeta!:eval1(a, b, x);
-   % Return I = ibeta(a,b,x) = x^a*(1-x)^b/a*B(a,b) * (1/(1+CF)),
+algebraic procedure ibeta!:eval01(a, b, x);
+   % Return ibeta(a,b,x) = I = x^a*(1-x)^b/a*B(a,b) * (1/(1+CF))
+   % assuming a,b,x numerical and real, a>0, b>0, 0<=x<=1,
    % where B(a,b) = Gamma(a)*Gamma(b)/Gamma(a+b)
    % and CF = d_1 / (1 + d_2 / (1 + d_3 / 1 + ... )).
    % The convergents for even m are less than I, and the convergents
@@ -175,7 +183,7 @@ algebraic procedure ibeta!:eval1(a, b, x);
    % reliable error bound.  The absolute error in CF is approximately
    % equal to the relative error in I.
    begin scalar epsilon := 10^-precision(0), % absolute CF error
-         const := x^a * (1.0-x)^b * gamma(a+b) / (a * gamma(a) * gamma(b)),
+         const := x^a * (1.0-x)^b * Gamma(a+b) / (a * Gamma(a) * Gamma(b)),
       CFold, CF := 0, dlist;        % dlist = {d_2iter, ..., d_2, d_1}
       integer m;
       % Compute coefficients d_m FORWARDS for m = 1, 2, ..., 2n-1, 2n
@@ -201,6 +209,13 @@ algebraic procedure ibeta!:eval1(a, b, x);
             "exceeded; result may not be accurate"};
       return const / (1.0 + CF);
    end;
+
+algebraic procedure ibeta!:eval1!+(a, b, x);
+   % Return ibeta(a,b,x) assuming a,b,x numerical and real, a>0, b>0,
+   % x>1, using numerical integration in which the (principal branch
+   % of the) integrand is guaranteed to be real and positive.
+   1.0 + (-1)^(b-1) * Gamma(a+b) / (Gamma(a) * Gamma(b)) *
+      num_int(tt^(a-1)*(tt-1)^(b-1), tt = 1 .. x);
 
 endmodule;
 
