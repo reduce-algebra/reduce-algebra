@@ -710,12 +710,27 @@ let
     when fixp(a) and a <= 0 and numberp(b)
        and not (fixp(b) and b > 0 and b <= -a),
 
- df(iBeta(~a,~b,~x),~x) => (1-x)^(b-1)*x^(a-1) / beta(a,b),
+ iBeta(~a,~b,~x) => ibeta!-poly(a,b,x)
+    when fixp a and a>0 and fixp b and b>0,
 
- iBeta(~a,~b,~x) => int(t^(a-1)*(1-t)^(b-1),t,0,x) / beta(a,b)
-    when fixp a and a>0 and a<6 and fixp b and b>0 and b<6
-
+ df(iBeta(~a,~b,~x),~x) => (1-x)^(b-1)*x^(a-1) / beta(a,b)
 };
+
+algebraic procedure ibeta!-poly(a,b,x);
+   % Return iBeta(a,b,x) assuming a,b are positive integers.
+   % For a,b positive integers, the integrand of B_x(a,b) is
+   % polynomial.  Using the binomial theorem and integrating
+   % term-by-term gives the following sum, which is faster than
+   % explicit exact integration or http://dlmf.nist.gov/8.17.E5 in
+   % tests using
+   %    for a := 1:50 do for b := 1:50 do ibeta(a,b,x);
+   begin scalar binom := 1, poly;
+      % _nC_j = _nC_{j-1} * (n-j+1)/j
+      poly := x^a/a + for j:=1:b-1 sum
+         (binom:=-binom*(b-j)/j) * x^(j+a)/(j+a);
+      % Return poly/Beta(a,b) for a,b positive integers.
+      return poly*nfactorial(a+b-1)/(nfactorial(a-1)*nfactorial(b-1))
+   end;
 
 % The next 2 declarations enable better checking of number of arguments
 % by simpiden
