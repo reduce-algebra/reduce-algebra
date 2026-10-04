@@ -678,6 +678,8 @@ extern const char* csl_headers[];
 
 extern LispObject encapsulate_pointer(void*);
 extern void* extract_pointer(LispObject a);
+extern LispObject Lenable_errorset(LispObject env,
+                                   LispObject a, LispObject b);
 extern LispObject Lencapsulatedp(LispObject, LispObject a);
 //typedef void initfn(LispObject*, LispObject**, LispObject*volatile*);
 

@@ -528,8 +528,8 @@ LispObject intern(size_t len, bool escaped, int startAddr)
                     else if (d1 == 10000000 || i == boffop-1)
                     {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
 #ifdef ARITHLIB
-                        v = Binary(Times, v, fixnum_of_int(d1));
-                        v = Binary(Plus, v, fixnum_of_int(d));
+                        v = G<gTimes>(v, fixnum_of_int(d1));
+                        v = G<gPlus>(v, fixnum_of_int(d));
 #else // ARITHLIB
                         v = times2(v, fixnum_of_int(d1));
                         v = plus2(v, fixnum_of_int(d));
@@ -543,7 +543,7 @@ LispObject intern(size_t len, bool escaped, int startAddr)
                     }
                 }
 #ifdef ARITHLIB
-                if (sign) v = Unary(Minus, v);
+                if (sign) v = G<gMinus>(v);
 #else // ARITHLIB
                 if (sign) v = negate(v);
 #endif // ARITHLIB
@@ -676,8 +676,8 @@ LispObject intern_new(size_t len)
     for (; i<boffop; i++)
     {   if (d1 == 10000000 || i == boffop-1)
         {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
-            v = Binary(Times, v, fixnum_of_int(d1));
-            v = Binary(Plus, v, fixnum_of_int(d));
+            v = G<gTimes>(v, fixnum_of_int(d1));
+            v = G<gPlus>(v, fixnum_of_int(d));
             d = 0;
             d1 = 10;
         }
@@ -686,7 +686,7 @@ LispObject intern_new(size_t len)
             d1 = 10*d1;
         }
     }
-    if (sign) v = Unary(Minus, v);
+    if (sign) v = G<gMinus>(v);
     return v;
 }
 
@@ -697,8 +697,8 @@ LispObject intern_hex_new(size_t len)
     for (i=2; i<boffop; i++)
     {   if (d1 == 0x1000000 || i == boffop-1)
         {   d = 16*d + (int32_t)value_in_radix(boffo_char(i), 16);
-            v = Binary(Times, v, fixnum_of_int(d1));
-            v = Binary(Plus, v, fixnum_of_int(d));
+            v = G<gTimes>(v, fixnum_of_int(d1));
+            v = G<gPlus>(v, fixnum_of_int(d));
             d = 0;
             d1 = 16;
         }
@@ -1119,8 +1119,8 @@ static int orderp(LispObject u, LispObject v)
                 }
 #ifdef ARITHLIB
                 else if (is_number(u))
-                {   if (is_number(v)) return BoolBinary(Lessp, u, v) ? 1 :
-                                                           eql(u, v) ? 0 : -1;
+                {   if (is_number(v)) return G<gLessp>(u, v) ? 1 :
+                                                    eql(u, v) ? 0 : -1;
                     else return 1;
                 }
 #else // ARITHLIB

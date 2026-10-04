@@ -275,7 +275,7 @@ inline LispObject pack_short_float(double d)
     aa.f = d;
     if (trap_floating_overflow &&
         floating_edge_case(aa.f))
-        return aerror("exception with short float");
+        aerror("exception with short float");
     std::memmove(&aa.i, &aa.f, sizeof(aa.f)); // defeat strict aliasing!
     if ((aa.i & 0x1f) != 0x08) aa.i += 8;
     aa.i &= ~0xf;
@@ -294,7 +294,7 @@ inline LispObject pack_single_float(double d)
         aa = d;
         if (trap_floating_overflow &&
             floating_edge_case(aa))
-            return aerror("exception with single float");
+            aerror("exception with single float");
         uint64_t i = bit_cast<uint32_t>(aa);
         return static_cast<LispObject>((i << 32) + XTAG_SFLOAT + XTAG_FLOAT32);
     }
@@ -305,7 +305,7 @@ inline LispObject pack_single_float(double d)
         single_float_val(r) = static_cast<float>(d);
         if (trap_floating_overflow &&
             floating_edge_case(single_float_val(r)))
-            return aerror("exception with single float");
+            aerror("exception with single float");
         return r;
     }
 }
@@ -324,8 +324,8 @@ inline LispObject pack_immediate_float(double d, LispObject l1,
     if (trap_floating_overflow &&
         floating_edge_case(aa.f))
     {   if (((l1 | l2) & XTAG_FLOAT32) != 0)
-            return aerror("exception with single float");
-        else return aerror("exception with short float");
+            aerror("exception with single float");
+        else aerror("exception with short float");
     }
 // Note the amazing fact that in IEEE floating point formats adding
 // a small integer value to the representation of a float increments that
@@ -381,7 +381,7 @@ inline LispObject make_boxfloat(double a, FloatType type)
 // so the extra mess here will hardly add any overhead.
             if (trap_floating_overflow &&
                 floating_edge_case(double_float_val(r)))
-                return aerror("exception with double float");
+                aerror("exception with double float");
             return r;
         default:
             my_abort("coding error in support of 128-bit floats");

@@ -245,7 +245,7 @@ namespace FX
 using namespace FX;
 
 #ifdef ARITHLIB
-// Work towards a new scheme for dispatching the types of numbers.
+// A new (3Q 2026) scheme for dispatching the types of numbers.
 #include "generic.h"
 #endif
 

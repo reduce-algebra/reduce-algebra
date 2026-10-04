@@ -449,7 +449,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     continue;
                 }
 #ifdef ARITHLIB
-                A_reg = Unary(Add1, A_reg);
+                A_reg = G<Add1>(A_reg);
 #else // ARITHLIB
                 A_reg = plus2(A_reg, fixnum_of_int(1));
 #endif
@@ -462,7 +462,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     continue;
                 }
 #ifdef ARITHLIB
-                A_reg = Binary(Plus, B_reg, A_reg);
+                A_reg = G<Plus>(B_reg, A_reg);
 #else // ARITHLIB
                 A_reg = plus2(B_reg, A_reg);
 #endif // ARITHLIB
@@ -474,7 +474,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     continue;
                 }
 #ifdef ARITHLIB
-                A_reg = Unary(Sub1, A_reg);
+                A_reg = G<Sub1>(A_reg);
 #else // ARITHLIB
                 A_reg = plus2(A_reg, fixnum_of_int(-1));
 #endif // ARITHLIB
@@ -487,7 +487,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     continue;
                 }
 #ifdef ARITHLIB
-                A_reg = Binary(Difference, B_reg, A_reg);
+                A_reg = G<Difference>(B_reg, A_reg);
 #else // ARITHLIB
                 A_reg = difference2(B_reg, A_reg);
 #endif // ARITHLIB
@@ -497,7 +497,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // I do not in-line even the integer case here, since overflow checking
 // is a slight mess.
 #ifdef ARITHLIB
-                A_reg = Binary(Times, B_reg, A_reg);
+                A_reg = G<Times>(B_reg, A_reg);
 #else // ARITHLIB
                 A_reg = times2(B_reg, A_reg);
 #endif // ARITHLIB
@@ -505,7 +505,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_LESSP:
 #ifdef ARITHLIB
-                w = BoolBinary(Lessp, B_reg, A_reg);
+                w = G<Lessp>(B_reg, A_reg);
 #else // ARITHLIB
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg < A_reg;
                 else
@@ -517,7 +517,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_GREATERP:
 #ifdef ARITHLIB
-                w = BoolBinary(Lessp, A_reg, B_reg);
+                w = G<Lessp>(A_reg, B_reg);
 #else // ARITHLIB
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg > A_reg;
                 else

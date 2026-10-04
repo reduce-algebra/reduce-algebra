@@ -2215,6 +2215,39 @@ LispObject Ninteger_decode_float(LispObject env, LispObject a)
 #endif
 }
 
+// Arrange p and q to be integer such that gcd(p,q)==1 and d == p/q exactly.
+
+void float_to_rational(double d, LispObject& p, LispObject& q)
+{   if (isnan(d)) p = q = fixnum_of_int(0);    // 0/0 for a NaN
+    else if (isinf(d))
+    {   p = fixnum_of_int(d > 0 ? 1 : -1);     // 1/0 or -1/0 for infinities
+        q = fixnum_of_int(0);
+    }
+    else if (d == 0.0)
+    {   p = fixnum_of_int(0);
+        q = fixnum_of_int(1);
+    }
+    else
+    {   bool sign = d < 0.0;
+        double absd = sign ? -d : d;
+        if (absd >= 0x1.0p53)
+        {   p = roundDoubleToInt(d); // conversion will be exact.. but can..
+            q = fixnum_of_int(1);    // ..be a bignum.
+            return;
+        }
+        int x;
+        d = std::frexp(d, &x);
+        d = std::ldexp(d, 53);
+        x = x - 53;
+        int64_t i = (int64_t)d;     // exact and in range
+        int n = ntz(i);
+        i = i >> n;
+        x = x + n;
+        p = fixnum_of_int(i);
+        q = LeftShift::op((intptr_t)1, (intptr_t)(-x));
+    }
+}
+
 #endif // ARITHLIB
 
 } // end of namespace

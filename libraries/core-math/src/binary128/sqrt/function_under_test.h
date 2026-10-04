@@ -1,2 +1,0 @@
-#define cr_function_under_test cr_sqrtq
-#define ref_function_under_test ref_sqrtq

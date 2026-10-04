@@ -41,76 +41,76 @@
 namespace CSL_LISP
 {
 
-extern LispObject interrupted(bool noisy);
+extern LispObject interrupted [[noreturn]] (bool noisy);
 
-extern LispObject error(int nargs, int code, ...);
-extern LispObject cerror(int nargs, int code1, int code2, ...);
+extern LispObject error [[noreturn]] (int nargs, int code, ...);
+extern LispObject cerror [[noreturn]] (int nargs, int code1, int code2, ...);
 
-extern LispObject got_0_wanted_1(LispObject env);
-extern LispObject got_0_wanted_2(LispObject env);
-extern LispObject got_0_wanted_3(LispObject env);
-extern LispObject got_0_wanted_4up(LispObject env);
+extern LispObject got_0_wanted_1 [[noreturn]] (LispObject env);
+extern LispObject got_0_wanted_2 [[noreturn]] (LispObject env);
+extern LispObject got_0_wanted_3 [[noreturn]] (LispObject env);
+extern LispObject got_0_wanted_4up [[noreturn]] (LispObject env);
 // "other" is for use if the function could take a variable number of
 // arguments, but the number actually provided is not acceptable. A case
 // where this arises is with functions that have a signatire of the
 // style (de foo (a !&rest r) ...) where not being passed any arguments at
 // all would be an error.
-extern LispObject got_0_wanted_other(LispObject env);
+extern LispObject got_0_wanted_other [[noreturn]] (LispObject env);
 
-extern LispObject got_1_wanted_0(LispObject env,
+extern LispObject got_1_wanted_0 [[noreturn]] (LispObject env,
                                         LispObject a1);
-extern LispObject got_1_wanted_2(LispObject env,
+extern LispObject got_1_wanted_2 [[noreturn]] (LispObject env,
                                         LispObject a1);
-extern LispObject got_1_wanted_3(LispObject env,
+extern LispObject got_1_wanted_3 [[noreturn]] (LispObject env,
                                         LispObject a1);
-extern LispObject got_1_wanted_4up(LispObject env,
+extern LispObject got_1_wanted_4up [[noreturn]] (LispObject env,
         LispObject a1);
-extern LispObject got_1_wanted_other(LispObject env,
+extern LispObject got_1_wanted_other [[noreturn]] (LispObject env,
         LispObject a1);
 
-extern LispObject got_2_wanted_0(LispObject env, LispObject a1,
+extern LispObject got_2_wanted_0 [[noreturn]] (LispObject env, LispObject a1,
                                         LispObject a2);
-extern LispObject got_2_wanted_1(LispObject env, LispObject a1,
+extern LispObject got_2_wanted_1 [[noreturn]] (LispObject env, LispObject a1,
                                         LispObject a2);
-extern LispObject got_2_wanted_3(LispObject env, LispObject a1,
+extern LispObject got_2_wanted_3 [[noreturn]] (LispObject env, LispObject a1,
                                         LispObject a2);
-extern LispObject got_2_wanted_4up(LispObject env,
+extern LispObject got_2_wanted_4up [[noreturn]] (LispObject env,
         LispObject a1,
         LispObject a2);
-extern LispObject got_2_wanted_other(LispObject env,
+extern LispObject got_2_wanted_other [[noreturn]] (LispObject env,
         LispObject a1,
         LispObject a2);
 
-extern LispObject got_3_wanted_0(LispObject env, LispObject a1,
+extern LispObject got_3_wanted_0 [[noreturn]] (LispObject env, LispObject a1,
                                         LispObject a2, LispObject a3);
-extern LispObject got_3_wanted_1(LispObject env, LispObject a1,
+extern LispObject got_3_wanted_1 [[noreturn]] (LispObject env, LispObject a1,
                                         LispObject a2, LispObject a3);
-extern LispObject got_3_wanted_2(LispObject env, LispObject a1,
+extern LispObject got_3_wanted_2 [[noreturn]] (LispObject env, LispObject a1,
                                         LispObject a2, LispObject a3);
-extern LispObject got_3_wanted_4up(LispObject env,
+extern LispObject got_3_wanted_4up [[noreturn]] (LispObject env,
         LispObject a1,
         LispObject a2, LispObject a3);
-extern LispObject got_3_wanted_other(LispObject env,
+extern LispObject got_3_wanted_other [[noreturn]] (LispObject env,
         LispObject a1,
         LispObject a2, LispObject a3);
 
-extern LispObject got_4up_wanted_0(LispObject env,
+extern LispObject got_4up_wanted_0 [[noreturn]] (LispObject env,
         LispObject a1,
         LispObject a2, LispObject a3,
         LispObject a4up);
-extern LispObject got_4up_wanted_1(LispObject env,
+extern LispObject got_4up_wanted_1 [[noreturn]] (LispObject env,
         LispObject a1,
         LispObject a2, LispObject a3,
         LispObject a4up);
-extern LispObject got_4up_wanted_2(LispObject env,
+extern LispObject got_4up_wanted_2 [[noreturn]] (LispObject env,
         LispObject a1,
         LispObject a2, LispObject a3,
         LispObject a4up);
-extern LispObject got_4up_wanted_3(LispObject env,
+extern LispObject got_4up_wanted_3 [[noreturn]] (LispObject env,
         LispObject a1,
         LispObject a2, LispObject a3,
         LispObject a4up);
-extern LispObject got_4up_wanted_other(LispObject env,
+extern LispObject got_4up_wanted_other [[noreturn]] (LispObject env,
         LispObject a1,
         LispObject a2, LispObject a3,
         LispObject a4up);
@@ -120,12 +120,12 @@ extern LispObject got_4up_wanted_other(LispObject env,
 // forms so that if by some mischance somebody calls one of them one gets
 // a tolerable diagnostic.
 
-extern LispObject bad_specialfn_0(LispObject env);
-extern LispObject bad_specialfn_2(LispObject env, LispObject,
+extern LispObject bad_specialfn_0 [[noreturn]] (LispObject env);
+extern LispObject bad_specialfn_2 [[noreturn]] (LispObject env, LispObject,
         LispObject);
-extern LispObject bad_specialfn_3(LispObject env, LispObject,
+extern LispObject bad_specialfn_3 [[noreturn]] (LispObject env, LispObject,
         LispObject, LispObject);
-extern LispObject bad_specialfn_4up(LispObject env, LispObject,
+extern LispObject bad_specialfn_4up [[noreturn]] (LispObject env, LispObject,
         LispObject, LispObject, LispObject);
 
 
@@ -162,38 +162,38 @@ extern LispObject bad_specialfn_4up(LispObject env, LispObject,
 #define G4W3           got_4up_wanted_3
 #define G4Wother       got_4up_wanted_other
 
-extern LispObject toofew();
-extern LispObject toomany();
+extern LispObject toofew [[noreturn]] ();
+extern LispObject toomany [[noreturn]] ();
 
-extern LispObject aerror(const char *s);         // Called from C not Lisp
-extern LispObject aerror(const char *s,
+extern LispObject aerror [[noreturn]] (const char *s);         // Called from C not Lisp
+extern LispObject aerror [[noreturn]] (const char *s,
                          LispObject a);
-extern LispObject aerror(const char *s,
+extern LispObject aerror [[noreturn]] (const char *s,
                          LispObject a, LispObject b);
-extern LispObject aerror(const char *s,
+extern LispObject aerror [[noreturn]] (const char *s,
                          LispObject a, LispObject b, LispObject c);
-extern LispObject aerror(const char *s1, const char *s2,
+extern LispObject aerror [[noreturn]] (const char *s1, const char *s2,
                          LispObject b);
-extern LispObject aerror(const char *s1, const char *s2,
+extern LispObject aerror [[noreturn]] (const char *s1, const char *s2,
                          LispObject a, LispObject b);
 
-[[noreturn]] extern void fatal_error(int code, ...);
+extern void fatal_error [[noreturn]] (int code, ...);
 
 // For the sake of Common Lisp style treatment of (car nil) and (cdr nil)
 // I have these. In the CL case they can return nil if the arg is nil or
 // raise an exception otherwise.
-extern LispObject carerror(LispObject a);
-extern LispObject cdrerror(LispObject a);
+extern LispObject carerror [[noreturn]] (LispObject a);
+extern LispObject cdrerror [[noreturn]] (LispObject a);
 
-extern LispObject car_fails(LispObject a);
-extern LispObject cdr_fails(LispObject a);
-extern LispObject rplaca_fails(LispObject a);
-extern LispObject rplacd_fails(LispObject a);
+extern LispObject car_fails [[noreturn]] (LispObject a);
+extern LispObject cdr_fails [[noreturn]] (LispObject a);
+extern LispObject rplaca_fails [[noreturn]] (LispObject a);
+extern LispObject rplacd_fails [[noreturn]] (LispObject a);
 
-extern LispObject car_fails();
-extern LispObject cdr_fails();
-extern LispObject rplaca_fails();
-extern LispObject rplacd_fails();
+extern LispObject car_fails [[noreturn]] ();
+extern LispObject cdr_fails [[noreturn]] ();
+extern LispObject rplaca_fails [[noreturn]] ();
+extern LispObject rplacd_fails [[noreturn]] ();
 
 //
 // Since miscflags is treated as a set of bits the issue of whether it
