@@ -1,3 +1,0 @@
-#define cr_function_under_test cr_log10
-#define ref_function_under_test ref_log10
-#define mpfr_function_under_test mpfr_log10

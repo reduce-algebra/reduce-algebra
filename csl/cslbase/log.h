@@ -226,12 +226,16 @@ inline void my_assert1(unsigned int line, const char* file,
 
 inline char whereMsg[128];
 
-inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
+inline const char* whereFn(const char* fname,
+                           const char* file,
+                           int line,
+                           const char* msg=nullptr)
 {
 // This version is to explain the intent, but would not be constexpr
     const char* p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
-    std::snprintf(whereMsg, sizeof(whereMsg), "%.40s:%d", file, line);
+    std::snprintf(whereMsg, sizeof(whereMsg),
+                  "%.32s::%.40s:%d", fname, file, line);
     if (msg != nullptr)
     {   std::strcat(whereMsg, " ");
         std::strcat(whereMsg, msg);
@@ -242,8 +246,8 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
 // whereFn is used via one of these nacros so that the location of its
 // call is captured.
 
-#define __WHERE__ CSL_LISP::whereFn(__FILE__, __LINE__)
-#define where(msg) CSL_LISP::whereFn(__FILE__, __LINE__, msg)
+#define __WHERE__ CSL_LISP::whereFn(__func__, __FILE__, __LINE__)
+#define where(msg) CSL_LISP::whereFn(__func__, __FILE__, __LINE__, msg)
 
 // This simpler version is available as just a string without needing any
 // computation. However the file-name is liable to be rather bulky! In case
@@ -1472,3 +1476,4 @@ void zprintf(formatString<my_type_identity_t<Args> ...> format,
 #endif // header_log_h
 
 // end of "log.h"
+

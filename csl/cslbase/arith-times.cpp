@@ -69,16 +69,16 @@ namespace CSL_LISP
 LispObject Times::op(Rat a, Fixnum b)
 {   if (b == fixnum_of_int(0)) return b;
     else if (b == fixnum_of_int(1)) return a.value();
-    return make_ratio(Binary(Times,
+    return make_ratio(G<gTimes>(
                              a.numerator(),
-                             Binary(Times, a.denominator(), b)),
+                             G<gTimes>(a.denominator(), b)),
                       a.denominator());
 }
 
 // complex * fixnum
 LispObject Times::op(Cpx a, Fixnum b)
-{   return make_complex(Binary(Times, a.real_part(), b),
-                        Binary(Times, a.imag_part(), b));
+{   return make_complex(G<gTimes>(a.real_part(), b),
+                        G<gTimes>(a.imag_part(), b));
 }
 
 // short float * fixnum
@@ -115,16 +115,16 @@ LispObject Times::op(FLOAT_128 a, Fixnum b)
 
 // rational * bignum
 LispObject Times::op(Rat a, std::uint64_t* b)
-{   LispObject g = IBinary(Gcdn, a.denominator(), bignum_value(b));
-    LispObject cofactor = Binary(Quotient, bignum_value(b), g);
-    return make_ratio(Binary(Times, a.numerator(), cofactor),
-                      Binary(Quotient,a.denominator(), g));
+{   LispObject g = G<gGcdn>(a.denominator(), bignum_value(b));
+    LispObject cofactor = G<gQuotient>(bignum_value(b), g);
+    return make_ratio(G<gTimes>(a.numerator(), cofactor),
+                      G<gQuotient>(a.denominator(), g));
 }
 
 // complex * bignum
 LispObject Times::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Binary(Times, a.real_part(), bignum_value(b)),
-                        Binary(Times, a.imag_part(), bignum_value(b)));
+{   return make_complex(G<gTimes>(a.real_part(), bignum_value(b)),
+                        G<gTimes>(a.imag_part(), bignum_value(b)));
 }
 
 // short float * bignum
@@ -159,19 +159,19 @@ LispObject Times::op(std::uint64_t* a, Rat b)
 
 // rational * rational
 LispObject Times::op(Rat a, Rat b)
-{   LispObject g1 = IBinary(Gcdn, a.numerator(), b.denominator());
-    LispObject g2 = IBinary(Gcdn, a.denominator(), b.numerator());
-    LispObject na = Binary(Quotient,a.numerator(), g1);
-    LispObject nb = Binary(Quotient,b.numerator(), g2);
-    LispObject da = Binary(Quotient,a.denominator(), g2);
-    LispObject db = Binary(Quotient,b.denominator(), g1);
-    return make_ratio(Binary(Times, na, nb), Binary(Times, da, db));
+{   LispObject g1 = G<gGcdn>(a.numerator(), b.denominator());
+    LispObject g2 = G<gGcdn>(a.denominator(), b.numerator());
+    LispObject na = G<gQuotient>(a.numerator(), g1);
+    LispObject nb = G<gQuotient>(b.numerator(), g2);
+    LispObject da = G<gQuotient>(a.denominator(), g2);
+    LispObject db = G<gQuotient>(b.denominator(), g1);
+    return make_ratio(G<gTimes>(na, nb), G<gTimes>(da, db));
 }
 
 // complex * rational
 LispObject Times::op(Cpx a, Rat b)
-{   return make_complex(Binary(Times, a.real_part(), b.value()),
-                        Binary(Times, a.imag_part(), b.value()));
+{   return make_complex(G<gTimes>(a.real_part(), b.value()),
+                        G<gTimes>(a.imag_part(), b.value()));
 }
 
 // short float * rational
@@ -240,34 +240,34 @@ LispObject Times::op(Rat a, Cpx b)
 // complex * complex
 LispObject Times::op(Cpx a, Cpx b)
 {   return make_complex(
-               Binary(Difference, Binary(Times, a.real_part(), b.real_part()),
-                              Binary(Times, a.imag_part(), b.imag_part())),
-               Binary(Plus, Binary(Times, a.real_part(), b.imag_part()),
-                            Binary(Times, a.imag_part(), b.real_part())));
+               G<gDifference>(G<gTimes>(a.real_part(), b.real_part()),
+                              G<gTimes>(a.imag_part(), b.imag_part())),
+               G<gPlus>(G<gTimes>(a.real_part(), b.imag_part()),
+                        G<gTimes>(a.imag_part(), b.real_part())));
 }
 
 // short float * complex
 LispObject Times::op(SFlt a, Cpx b)
-{   return make_complex(Binary(Times, b.real_part(), a.value()),
-                        Binary(Times, b.imag_part(), a.value()));
+{   return make_complex(G<gTimes>(b.real_part(), a.value()),
+                        G<gTimes>(b.imag_part(), a.value()));
 }
 
 // single float * complex
 LispObject Times::op(Flt a, Cpx b)
-{   return make_complex(Binary(Times, b.real_part(), a.value()),
-                        Binary(Times, b.imag_part(), a.value()));
+{   return make_complex(G<gTimes>(b.real_part(), a.value()),
+                        G<gTimes>(b.imag_part(), a.value()));
 }
 
 // double float * complex
 LispObject Times::op(double a, Cpx b)
-{   return make_complex(Binary(Times, b.real_part(), make_boxfloat(a)),
-                        Binary(Times, b.imag_part(), make_boxfloat(a)));
+{   return make_complex(G<gTimes>(b.real_part(), make_boxfloat(a)),
+                        G<gTimes>(b.imag_part(), make_boxfloat(a)));
 }
 
 // long float * complex
 LispObject Times::op(FLOAT_128 a, Cpx b)
-{   return make_complex(Binary(Times, b.real_part(), make_boxfloat128(a)),
-                        Binary(Times, b.imag_part(), make_boxfloat128(a)));
+{   return make_complex(G<gTimes>(b.real_part(), make_boxfloat128(a)),
+                        G<gTimes>(b.imag_part(), make_boxfloat128(a)));
 }
 
 // fixnum * short float
@@ -768,7 +768,7 @@ LispObject generic_expt(LispObject a, std::int64_t n)
     else
     {   LispObject aa = generic_expt(a, n/2);
         aa = Unary(Square, aa);
-        if ((n & 1) != 0) aa = Binary(Times, aa, a);
+        if ((n & 1) != 0) aa = G<gTimes>(aa, a);
         return aa;
     }
 }
@@ -880,8 +880,8 @@ LispObject Expt::op(std::uint64_t* a, std::uint64_t* b)
 
 // rational ** bignum
 LispObject Expt::op(Rat a, std::uint64_t* b)
-{   return make_ratio(Binary(Expt, a.numerator(), bignum_value(b)),
-                      Binary(Expt, a.denominator(), bignum_value(b)));
+{   return make_ratio(G<gExpt>(a.numerator(), bignum_value(b)),
+                      G<gExpt>(a.denominator(), bignum_value(b)));
 }
 
 // complex ** bignum
@@ -889,42 +889,42 @@ LispObject Expt::op(Cpx a, std::uint64_t* b)
 {
 // I suppose that huge powers of (0+0i), (1+0i), (0+1i), (-1+0i), (0+-1i)
 // can give sane results!
-    if (BoolUnary(Zerop, a.real_part()) &&
-        BoolUnary(Zerop, a.imag_part()))
+    if (G<gZerop>(a.real_part()) &&
+        G<gZerop>(a.imag_part()))
     {   if (Minusp::op(b))
             return aerror("bad argument for expt",
                 reinterpret_cast<LispObject>(
                     TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
         else return a.value();  // (0+0i)^N
     }
-    if (BoolUnary(Onep, a.real_part()) &&
-        BoolUnary(Zerop, a.imag_part())) return a.value();
-    if (BoolUnary(Zerop, a.real_part()) &&
-        BoolUnary(Onep, a.imag_part()))
+    if (G<gOnep>(a.real_part()) &&
+        G<gZerop>(a.imag_part())) return a.value();
+    if (G<gZerop>(a.real_part()) &&
+        G<gOnep>(a.imag_part()))
     {   switch (b[0] & 3)
         {   case 0: return make_complex(a.imag_part(), a.real_part());
             case 1: return make_complex(a.real_part(), a.imag_part());
-            case 2: return make_complex(Unary(Minus, a.imag_part()),
+            case 2: return make_complex(G<gMinus>(a.imag_part()),
                                         a.real_part());
             case 3: return make_complex(a.real_part(),
-                                        Unary(Minus, a.imag_part()));
+                                        G<gMinus>(a.imag_part()));
         }
     }
-    if (BoolUnary(MinusOnep, a.real_part()) &&
-        BoolUnary(Zerop, a.imag_part()))
-    {   if (Evenp::op(b)) return make_complex(Unary(Minus, a.real_part()),
+    if (G<gMinusonep>(a.real_part()) &&
+        G<gZerop>(a.imag_part()))
+    {   if (Evenp::op(b)) return make_complex(G<gMinus>(a.real_part()),
                                               a.imag_part());
         else return a.value();
     }
-    if (BoolUnary(Zerop, a.real_part()) &&
-        BoolUnary(MinusOnep, a.imag_part()))
+    if (G<gZerop>(a.real_part()) &&
+        G<gMinusonep>(a.imag_part()))
     {   switch (b[0] & 3)
-        {   case 0: return make_complex(Unary(Minus, a.imag_part()),
+        {   case 0: return make_complex(G<gMinus>(a.imag_part()),
                                         a.real_part());
             case 1: return make_complex(a.real_part(), a.imag_part());
             case 2: return make_complex(a.imag_part(), a.real_part());
             case 3: return make_complex(a.real_part(),
-                                        Unary(Minus, a.imag_part()));
+                                        G<gMinus>(a.imag_part()));
         }
     }
     return aerror("bad argument for expt",
@@ -1376,7 +1376,7 @@ LispObject Quotient::op(std::uint64_t* a, Fixnum b)
 // rational / fixnum
 LispObject Quotient::op(Rat a, Fixnum b)
 {   if (b == 1) return a.value();
-    return make_ratio(Binary(Quotient,
+    return make_ratio(G<gQuotient>(
                              a.numerator(),
                              b),
                       a.denominator());
@@ -1385,8 +1385,8 @@ LispObject Quotient::op(Rat a, Fixnum b)
 // complex / fixnum
 LispObject Quotient::op(Cpx a, Fixnum b)
 {   if (b == 1) return a.v;
-    return make_complex(Binary(Quotient, a.real_part(), b),
-                        Binary(Quotient, a.imag_part(), b));
+    return make_complex(G<gQuotient>(a.real_part(), b),
+                        G<gQuotient>(a.imag_part(), b));
 }
 
 // short float / fixnum
@@ -1431,16 +1431,16 @@ LispObject Quotient::op(std::uint64_t* a, std::uint64_t* b)
 
 // rational / bignum
 LispObject Quotient::op(Rat a, std::uint64_t* b)
-{   LispObject g = IBinary(Gcdn, a.denominator(), bignum_value(b));
-    return make_ratio(Binary(Times, a.numerator(),
-                             Binary(Quotient, bignum_value(b), g)),
-                     Binary(Quotient, a.denominator(), g));
+{   LispObject g = G<gGcdn>(a.denominator(), bignum_value(b));
+    return make_ratio(G<gTimes>(a.numerator(),
+                             G<gQuotient>(bignum_value(b), g)),
+                     G<gQuotient>(a.denominator(), g));
 }
 
 // complex / bignum
 LispObject Quotient::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Binary(Quotient, a.real_part(), bignum_value(b)),
-                        Binary(Quotient, a.imag_part(), bignum_value(b)));
+{   return make_complex(G<gQuotient>(a.real_part(), bignum_value(b)),
+                        G<gQuotient>(a.imag_part(), bignum_value(b)));
 }
 
 // short float / bignum
@@ -1481,49 +1481,49 @@ LispObject Quotient::op(FLOAT_128 a, std::uint64_t* b)
 
 // fixnum / rational
 LispObject Quotient::op(Fixnum a, Rat b)
-{   LispObject g = IBinary(Gcdn, a, b.numerator());
-    LispObject p = Binary(Times, Binary(Quotient, a, g), b.denominator());
+{   LispObject g = G<gGcdn>(a, b.numerator());
+    LispObject p = G<gTimes>(G<gQuotient>(a, g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // bignum / rational
 LispObject Quotient::op(std::uint64_t* a, Rat b)
-{   LispObject g = IBinary(Gcdn, bignum_value(a), b.numerator());
-    LispObject p = Binary(Times, Binary(Quotient, bignum_value(a), g), b.denominator());
+{   LispObject g = G<gGcdn>(bignum_value(a), b.numerator());
+    LispObject p = G<gTimes>(G<gQuotient>(bignum_value(a), g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // rational / rational
 LispObject Quotient::op(Rat a, Rat b)
-{   LispObject g1 = IBinary(Gcdn, a.numerator(), b.numerator());
-    LispObject g2 = IBinary(Gcdn, a.denominator(), b.denominator());
-    LispObject na = Binary(Quotient,a.numerator(), g1);
-    LispObject nb = Binary(Quotient,b.denominator(), g2);
-    LispObject da = Binary(Quotient,a.denominator(), g2);
-    LispObject db = Binary(Quotient,b.numerator(), g1);
-    LispObject p = Binary(Times, na, nb);
-    LispObject q = Binary(Times, da, db);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+{   LispObject g1 = G<gGcdn>(a.numerator(), b.numerator());
+    LispObject g2 = G<gGcdn>(a.denominator(), b.denominator());
+    LispObject na = G<gQuotient>(a.numerator(), g1);
+    LispObject nb = G<gQuotient>(b.denominator(), g2);
+    LispObject da = G<gQuotient>(a.denominator(), g2);
+    LispObject db = G<gQuotient>(b.numerator(), g1);
+    LispObject p = G<gTimes>(na, nb);
+    LispObject q = G<gTimes>(da, db);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // complex / rational
 LispObject Quotient::op(Cpx a, Rat b)
-{   return make_complex(Binary(Quotient,a.real_part(), b.value()),
-                        Binary(Quotient,a.imag_part(), b.value()));
+{   return make_complex(G<gQuotient>(a.real_part(), b.value()),
+                        G<gQuotient>(a.imag_part(), b.value()));
 }
 
 // short float / rational
@@ -1564,74 +1564,74 @@ LispObject Quotient::op(FLOAT_128 a, Rat b)
 
 // fixnum / complex
 LispObject Quotient::op(Fixnum a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a, conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a, conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Quotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gQuotient>(num, den);
 }
 
 // bignum / complex
 LispObject Quotient::op(std::uint64_t* a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, bignum_value(a), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(bignum_value(a), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Quotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gQuotient>(num, den);
 }
 
 // rational / complex
 LispObject Quotient::op(Rat a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Quotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gQuotient>(num, den);
 }
 
 // complex / complex
 LispObject Quotient::op(Cpx a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Quotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gQuotient>(num, den);
 }
 
 // short float / complex
 LispObject Quotient::op(SFlt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Quotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gQuotient>(num, den);
 }
 
 // single float / complex
 LispObject Quotient::op(Flt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Quotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gQuotient>(num, den);
 }
 
 // double float / complex
 LispObject Quotient::op(double a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, make_boxfloat(a), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(make_boxfloat(a), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Quotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gQuotient>(num, den);
 }
 
 // long float / complex
 LispObject Quotient::op(FLOAT_128 a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, make_boxfloat128(a), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(make_boxfloat128(a), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Quotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gQuotient>(num, den);
 }
 
 // fixnum / short float
@@ -1660,8 +1660,8 @@ LispObject Quotient::op(Rat a, SFlt b)
 // complex / short float
 LispObject Quotient::op(Cpx a, SFlt b)
 {   return make_complex(
-        Binary(Quotient,a.real_part(), b.value()),
-        Binary(Quotient,a.imag_part(), b.value()));
+        G<gQuotient>(a.real_part(), b.value()),
+        G<gQuotient>(a.imag_part(), b.value()));
 }
 
 // short float / short float
@@ -1711,8 +1711,8 @@ LispObject Quotient::op(Rat a, Flt b)
 // complex / single float
 LispObject Quotient::op(Cpx a, Flt b)
 {   return make_complex(
-        Binary(Quotient,a.real_part(), b.value()),
-        Binary(Quotient,a.imag_part(), b.value()));
+        G<gQuotient>(a.real_part(), b.value()),
+        G<gQuotient>(a.imag_part(), b.value()));
 }
 
 // short float / single float
@@ -1757,8 +1757,8 @@ LispObject Quotient::op(Rat a, double b)
 // complex / double float
 LispObject Quotient::op(Cpx a, double b)
 {   return make_complex(
-        Binary(Quotient,a.real_part(), b),
-        Binary(Quotient,a.imag_part(), b));
+        G<gQuotient>(a.real_part(), b),
+        G<gQuotient>(a.imag_part(), b));
 }
 
 // short float / double float
@@ -1800,8 +1800,8 @@ LispObject Quotient::op(Rat a, FLOAT_128 b)
 // complex / long float
 LispObject Quotient::op(Cpx a, FLOAT_128 b)
 {   return make_complex(
-        Binary(Quotient,a.real_part(), b),
-        Binary(Quotient,a.imag_part(), b));
+        G<gQuotient>(a.real_part(), b),
+        G<gQuotient>(a.imag_part(), b));
 }
 
 // short float / long float
@@ -1854,11 +1854,11 @@ LispObject CLQuotient::op(Fixnum a, Fixnum b)
 // bignum CL/ fixnum
 LispObject CLQuotient::op(std::uint64_t* a, Fixnum b)
 {   LispObject g = Gcdn::op(a, b);
-    LispObject p = Binary(Quotient, bignum_value(a), g);
-    LispObject q = Binary(Quotient, b, g);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    LispObject p = G<gQuotient>(bignum_value(a), g);
+    LispObject q = G<gQuotient>(b, g);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
@@ -1872,8 +1872,8 @@ LispObject CLQuotient::op(Rat a, Fixnum b)
 // complex CL/ fixnum
 LispObject CLQuotient::op(Cpx a, Fixnum b)
 {   if (b == fixnum_of_int(1)) return a.v;
-    return make_complex(Binary(CLQuotient, a.real_part(), b),
-                        Binary(CLQuotient, a.imag_part(), b));
+    return make_complex(G<gCLQuotient>(a.real_part(), b),
+                        G<gCLQuotient>(a.imag_part(), b));
 }
 
 // short float CL/ fixnum
@@ -1901,11 +1901,11 @@ LispObject CLQuotient::op(FLOAT_128 a, Fixnum b)
 // fixnum CL/ bignum
 LispObject CLQuotient::op(Fixnum a, std::uint64_t* b)
 {   LispObject g = Gcdn::op(a, b);
-    LispObject p = Binary(Quotient, a, g);
-    LispObject q = Binary(Quotient, bignum_value(b), g);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    LispObject p = G<gQuotient>(a, g);
+    LispObject q = G<gQuotient>(bignum_value(b), g);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
@@ -1913,27 +1913,27 @@ LispObject CLQuotient::op(Fixnum a, std::uint64_t* b)
 // bignum CL/ bignum
 LispObject CLQuotient::op(std::uint64_t* a, std::uint64_t* b)
 {   LispObject g = Gcdn::op(a, b);
-    LispObject p = Binary(Quotient, bignum_value(a), g);
-    LispObject q = Binary(Quotient, bignum_value(b), g);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    LispObject p = G<gQuotient>(bignum_value(a), g);
+    LispObject q = G<gQuotient>(bignum_value(b), g);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // rational CL/ bignum
 LispObject CLQuotient::op(Rat a, std::uint64_t* b)
-{   LispObject g = IBinary(Gcdn, a.denominator(), bignum_value(b));
-    return make_ratio(Binary(Times, a.numerator(),
-                                    Binary(CLQuotient, bignum_value(b), g)),
-                      Binary(CLQuotient, a.denominator(), g));
+{   LispObject g = G<gGcdn>(a.denominator(), bignum_value(b));
+    return make_ratio(G<gTimes>(a.numerator(),
+                                    G<gCLQuotient>(bignum_value(b), g)),
+                      G<gCLQuotient>(a.denominator(), g));
 }
 
 // complex CL/ bignum
 LispObject CLQuotient::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Binary(CLQuotient, a.real_part(), bignum_value(b)),
-                        Binary(CLQuotient, a.imag_part(), bignum_value(b)));
+{   return make_complex(G<gCLQuotient>(a.real_part(), bignum_value(b)),
+                        G<gCLQuotient>(a.imag_part(), bignum_value(b)));
 }
 
 // short float CL/ bignum
@@ -1974,51 +1974,51 @@ LispObject CLQuotient::op(FLOAT_128 a, std::uint64_t* b)
 
 // fixnum CL/ rational
 LispObject CLQuotient::op(Fixnum a, Rat b)
-{   LispObject g = IBinary(Gcdn, a, b.numerator());
-    LispObject p = Binary(Times, Binary(CLQuotient, a, g),
+{   LispObject g = G<gGcdn>(a, b.numerator());
+    LispObject p = G<gTimes>(G<gCLQuotient>(a, g),
                                  b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // bignum CL/ rational
 LispObject CLQuotient::op(std::uint64_t* a, Rat b)
-{   LispObject g = IBinary(Gcdn, bignum_value(a), b.numerator());
-    LispObject p = Binary(Times, Binary(CLQuotient, bignum_value(a), g),
+{   LispObject g = G<gGcdn>(bignum_value(a), b.numerator());
+    LispObject p = G<gTimes>(G<gCLQuotient>(bignum_value(a), g),
                                  b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // rational CL/ rational
 LispObject CLQuotient::op(Rat a, Rat b)
-{   LispObject g1 = IBinary(Gcdn, a.numerator(), b.numerator());
-    LispObject g2 = IBinary(Gcdn, a.denominator(), b.denominator());
-    LispObject na = Binary(CLQuotient,a.numerator(), g1);
-    LispObject nb = Binary(CLQuotient,b.denominator(), g2);
-    LispObject da = Binary(CLQuotient,a.denominator(), g2);
-    LispObject db = Binary(CLQuotient,b.numerator(), g1);
-    LispObject p = Binary(Times, na, nb);
-    LispObject q = Binary(Times, da, db);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+{   LispObject g1 = G<gGcdn>(a.numerator(), b.numerator());
+    LispObject g2 = G<gGcdn>(a.denominator(), b.denominator());
+    LispObject na = G<gCLQuotient>(a.numerator(), g1);
+    LispObject nb = G<gCLQuotient>(b.denominator(), g2);
+    LispObject da = G<gCLQuotient>(a.denominator(), g2);
+    LispObject db = G<gCLQuotient>(b.numerator(), g1);
+    LispObject p = G<gTimes>(na, nb);
+    LispObject q = G<gTimes>(da, db);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // complex CL/ rational
 LispObject CLQuotient::op(Cpx a, Rat b)
-{   return make_complex(Binary(CLQuotient, a.real_part(), b.value()),
-                        Binary(CLQuotient, a.imag_part(), b.value()));
+{   return make_complex(G<gCLQuotient>(a.real_part(), b.value()),
+                        G<gCLQuotient>(a.imag_part(), b.value()));
 }
 
 // short float CL/ rational
@@ -2059,74 +2059,74 @@ LispObject CLQuotient::op(FLOAT_128 a, Rat b)
 
 // fixnum CL/ complex
 LispObject CLQuotient::op(Fixnum a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a, conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a, conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(CLQuotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCLQuotient>(num, den);
 }
 
 // bignum CL/ complex
 LispObject CLQuotient::op(std::uint64_t* a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, bignum_value(a), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(bignum_value(a), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(CLQuotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCLQuotient>(num, den);
 }
 
 // rational CL/ complex
 LispObject CLQuotient::op(Rat a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(CLQuotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCLQuotient>(num, den);
 }
 
 // complex CL/ complex
 LispObject CLQuotient::op(Cpx a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(CLQuotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCLQuotient>(num, den);
 }
 
 // short float CL/ complex
 LispObject CLQuotient::op(SFlt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(CLQuotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCLQuotient>(num, den);
 }
 
 // single float CL/ complex
 LispObject CLQuotient::op(Flt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(CLQuotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCLQuotient>(num, den);
 }
 
 // double float CL/ complex
 LispObject CLQuotient::op(double a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a, conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a, conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(CLQuotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCLQuotient>(num, den);
 }
 
 // long float CL/ complex
 LispObject CLQuotient::op(FLOAT_128 a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, make_boxfloat128(a), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(make_boxfloat128(a), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(CLQuotient, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCLQuotient>(num, den);
 }
 
 // fixnum CL/ short float
@@ -2154,8 +2154,8 @@ LispObject CLQuotient::op(Rat a, SFlt b)
 }
 // complex CL/ short float
 LispObject CLQuotient::op(Cpx a, SFlt b)
-{   return make_complex(Binary(CLQuotient,a.real_part(), b.value()),
-                        Binary(CLQuotient,a.imag_part(), b.value()));
+{   return make_complex(G<gCLQuotient>(a.real_part(), b.value()),
+                        G<gCLQuotient>(a.imag_part(), b.value()));
 }
 
 // short float CL/ short float
@@ -2196,8 +2196,8 @@ LispObject CLQuotient::op(Rat a, Flt b)
 // complex CL/ single float
 LispObject CLQuotient::op(Cpx a, Flt b)
 {   return make_complex(
-        Binary(CLQuotient,a.real_part(), b.value()),
-        Binary(CLQuotient,a.imag_part(), b.value()));
+        G<gCLQuotient>(a.real_part(), b.value()),
+        G<gCLQuotient>(a.imag_part(), b.value()));
 }
 
 // short float CL/ single float
@@ -2238,8 +2238,8 @@ LispObject CLQuotient::op(Rat a, double b)
 // complex CL/ double float
 LispObject CLQuotient::op(Cpx a, double b)
 {   return make_complex(
-        Binary(CLQuotient, a.real_part(), make_boxfloat(b)),
-        Binary(CLQuotient, a.imag_part(), make_boxfloat(b)));
+        G<gCLQuotient>(a.real_part(), make_boxfloat(b)),
+        G<gCLQuotient>(a.imag_part(), make_boxfloat(b)));
 }
 
 // short float CL/ double float
@@ -2280,8 +2280,8 @@ LispObject CLQuotient::op(Rat a, FLOAT_128 b)
 // complex CL/ long float
 LispObject CLQuotient::op(Cpx a, FLOAT_128 b)
 {   return make_complex(
-        Binary(CLQuotient,a.real_part(), b),
-        Binary(CLQuotient,a.imag_part(), b));
+        G<gCLQuotient>(a.real_part(), b),
+        G<gCLQuotient>(a.imag_part(), b));
 }
 
 // short float CL/ long float
@@ -2317,38 +2317,38 @@ LispObject Remainder::op(std::uint64_t* a, Fixnum b)
 // rational remainder fixnum
 LispObject Remainder::op(Rat a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b));
+    return G<gDifference>(a.value(), G<gTimes>(q, b));
 }
 
 // complex % fixnum
 LispObject Remainder::op(Cpx a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b));
+    return G<gDifference>(a.value(), G<gTimes>(q, b));
 }
 
 // short float % fixnum
 LispObject Remainder::op(SFlt a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b));
+    return G<gDifference>(a.value(), G<gTimes>(q, b));
 }
 
 // single float % fixnum
 LispObject Remainder::op(Flt a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(),
-                              Binary(Times, q, b));
+    return G<gDifference>(a.value(),
+                              G<gTimes>(q, b));
 }
 
 // double float % fixnum
 LispObject Remainder::op(double a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat(a), Binary(Times, q, b));
+    return G<gDifference>(make_boxfloat(a), G<gTimes>(q, b));
 }
 
 // long float % fixnum
 LispObject Remainder::op(FLOAT_128 a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat128(a), Binary(Times, q, b));
+    return G<gDifference>(make_boxfloat128(a), G<gTimes>(q, b));
 }
 
 // fixnum % bignum
@@ -2372,35 +2372,35 @@ LispObject Remainder::op(Rat a, std::uint64_t* b)
 // complex % bignum
 LispObject Remainder::op(Cpx a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, bignum_value(b)));
+    return G<gDifference>(a.value(), G<gTimes>(q, bignum_value(b)));
 }
 
 // short float % bignum
 LispObject Remainder::op(SFlt a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(),
-                              Binary(Times, q, bignum_value(b)));
+    return G<gDifference>(a.value(),
+                              G<gTimes>(q, bignum_value(b)));
 }
 
 // single float % bignum
 LispObject Remainder::op(Flt a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(),
-                  Binary(Times, q, bignum_value(b)));
+    return G<gDifference>(a.value(),
+                  G<gTimes>(q, bignum_value(b)));
 }
 
 // double float % bignum
 LispObject Remainder::op(double a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat(a),
-                              Binary(Times, q, bignum_value(b)));
+    return G<gDifference>(make_boxfloat(a),
+                              G<gTimes>(q, bignum_value(b)));
 }
 
 // long float % bignum
 LispObject Remainder::op(FLOAT_128 a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat128(a),
-                              Binary(Times, q, bignum_value(b)));
+    return G<gDifference>(make_boxfloat128(a),
+                              G<gTimes>(q, bignum_value(b)));
 }
 
 // fixnum % rational
@@ -2421,272 +2421,272 @@ LispObject Remainder::op(Rat a, Rat b)
 // complex % rational
 LispObject Remainder::op(Cpx a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // short float % rational
 LispObject Remainder::op(SFlt a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // single float % rational
 LispObject Remainder::op(Flt a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // double float % rational
 LispObject Remainder::op(double a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat(a), Binary(Times, q, b.value()));
+    return G<gDifference>(make_boxfloat(a), G<gTimes>(q, b.value()));
 }
 
 // long float % rational
 LispObject Remainder::op(FLOAT_128 a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat128(a), Binary(Times, q, b.value()));
+    return G<gDifference>(make_boxfloat128(a), G<gTimes>(q, b.value()));
 }
 
 // fixnum % complex
 LispObject Remainder::op(Fixnum a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a, Binary(Times, q, b.value()));
+    return G<gDifference>(a, G<gTimes>(q, b.value()));
 }
 
 // bignum % complex
 LispObject Remainder::op(std::uint64_t* a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, bignum_value(a), Binary(Times, q, b.value()));
+    return G<gDifference>(bignum_value(a), G<gTimes>(q, b.value()));
 }
 
 // rational % complex
 LispObject Remainder::op(Rat a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // complex % complex
 LispObject Remainder::op(Cpx a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // short float % complex
 LispObject Remainder::op(SFlt a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // single float % complex
 LispObject Remainder::op(Flt a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // double float % complex
 LispObject Remainder::op(double a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat(a), Binary(Times, q, b.value()));
+    return G<gDifference>(make_boxfloat(a), G<gTimes>(q, b.value()));
 }
 
 // long float % complex
 LispObject Remainder::op(FLOAT_128 a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat128(a), Binary(Times, q, b.value()));
+    return G<gDifference>(make_boxfloat128(a), G<gTimes>(q, b.value()));
 }
 
 // fixnum % short float
 LispObject Remainder::op(Fixnum a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a, Binary(Times, q, b.value()));
+    return G<gDifference>(a, G<gTimes>(q, b.value()));
 }
 
 // bignum % short float
 LispObject Remainder::op(std::uint64_t* a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, bignum_value(a), Binary(Times, q, b.value()));
+    return G<gDifference>(bignum_value(a), G<gTimes>(q, b.value()));
 }
 
 // rational % short float
 LispObject Remainder::op(Rat a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // complex % short float
 LispObject Remainder::op(Cpx a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(),
-                              Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(),
+                              G<gTimes>(q, b.value()));
 }
 
 // short float % short float
 LispObject Remainder::op(SFlt a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // single float % short float
 LispObject Remainder::op(Flt a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // double float % short float
 LispObject Remainder::op(double a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat(a), Binary(Times, q, b.value()));
+    return G<gDifference>(make_boxfloat(a), G<gTimes>(q, b.value()));
 }
 
 // long float % short float
 LispObject Remainder::op(FLOAT_128 a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat128(a), Binary(Times, q, b.value()));
+    return G<gDifference>(make_boxfloat128(a), G<gTimes>(q, b.value()));
 }
 
 // fixnum % single float
 LispObject Remainder::op(Fixnum a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a, Binary(Times, q, b.value()));
+    return G<gDifference>(a, G<gTimes>(q, b.value()));
 }
 
 // bignum % single float
 LispObject Remainder::op(std::uint64_t* a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, bignum_value(a), Binary(Times, q, b.value()));
+    return G<gDifference>(bignum_value(a), G<gTimes>(q, b.value()));
 }
 
 // rational % single float
 LispObject Remainder::op(Rat a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // complex % single float
 LispObject Remainder::op(Cpx a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // short float % single float
 LispObject Remainder::op(SFlt a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // single float % single float
 LispObject Remainder::op(Flt a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, b.value()));
+    return G<gDifference>(a.value(), G<gTimes>(q, b.value()));
 }
 
 // double float % single float
 LispObject Remainder::op(double a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat(a), Binary(Times, q, b.value()));
+    return G<gDifference>(make_boxfloat(a), G<gTimes>(q, b.value()));
 }
 
 // long float % single float
 LispObject Remainder::op(FLOAT_128 a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat128(a), Binary(Times, q, b.value()));
+    return G<gDifference>(make_boxfloat128(a), G<gTimes>(q, b.value()));
 }
 
 // fixnum % double float
 LispObject Remainder::op(Fixnum a, double b)
 {   LispObject q = Quotient::op(a, b);
-    return Binary(Difference, a, Binary(Times, q, make_boxfloat(b)));
+    return G<gDifference>(a, G<gTimes>(q, make_boxfloat(b)));
 }
 
 // bignum % double float
 LispObject Remainder::op(std::uint64_t* a, double b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, bignum_value(a), Binary(Times, q, make_boxfloat(b)));
+    return G<gDifference>(bignum_value(a), G<gTimes>(q, make_boxfloat(b)));
 }
 
 // rational % double float
 LispObject Remainder::op(Rat a, double b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, make_boxfloat(b)));
+    return G<gDifference>(a.value(), G<gTimes>(q, make_boxfloat(b)));
 }
 
 // complex % double float
 LispObject Remainder::op(Cpx a, double b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, make_boxfloat(b)));
+    return G<gDifference>(a.value(), G<gTimes>(q, make_boxfloat(b)));
 }
 
 // short float % double float
 LispObject Remainder::op(SFlt a, double b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, make_boxfloat(b)));
+    return G<gDifference>(a.value(), G<gTimes>(q, make_boxfloat(b)));
 }
 
 // single float % double float
 LispObject Remainder::op(Flt a, double b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, make_boxfloat(b)));
+    return G<gDifference>(a.value(), G<gTimes>(q, make_boxfloat(b)));
 }
 
 // double float % double float
 LispObject Remainder::op(double a, double b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat(a), Binary(Times, q, make_boxfloat(b)));
+    return G<gDifference>(make_boxfloat(a), G<gTimes>(q, make_boxfloat(b)));
 }
 
 // long float % double float
 LispObject Remainder::op(FLOAT_128 a, double b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a, Binary(Times, q, b));
+    return G<gDifference>(a, G<gTimes>(q, b));
 }
 
 // fixnum % long float
 LispObject Remainder::op(Fixnum a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a, Binary(Times, q, make_boxfloat128(b)));
+    return G<gDifference>(a, G<gTimes>(q, make_boxfloat128(b)));
 }
 
 // bignum % long float
 LispObject Remainder::op(std::uint64_t* a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, bignum_value(a), Binary(Times, q, make_boxfloat128(b)));
+    return G<gDifference>(bignum_value(a), G<gTimes>(q, make_boxfloat128(b)));
 }
 
 // rational % long float
 LispObject Remainder::op(Rat a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, make_boxfloat128(b)));
+    return G<gDifference>(a.value(), G<gTimes>(q, make_boxfloat128(b)));
 }
 
 // complex % long float
 LispObject Remainder::op(Cpx a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, make_boxfloat128(b)));
+    return G<gDifference>(a.value(), G<gTimes>(q, make_boxfloat128(b)));
 }
 
 // short float % long float
 LispObject Remainder::op(SFlt a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, make_boxfloat128(b)));
+    return G<gDifference>(a.value(), G<gTimes>(q, make_boxfloat128(b)));
 }
 
 // single float % long float
 LispObject Remainder::op(Flt a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, a.value(), Binary(Times, q, make_boxfloat128(b)));
+    return G<gDifference>(a.value(), G<gTimes>(q, make_boxfloat128(b)));
 }
 
 // double float % long float
 LispObject Remainder::op(double a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat(a), Binary(Times, q, make_boxfloat128(b)));
+    return G<gDifference>(make_boxfloat(a), G<gTimes>(q, make_boxfloat128(b)));
 }
 
 // long float % long float
 LispObject Remainder::op(FLOAT_128 a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    return Binary(Difference, make_boxfloat128(a), Binary(Times, q, make_boxfloat128(b)));
+    return G<gDifference>(make_boxfloat128(a), G<gTimes>(q, make_boxfloat128(b)));
 }
 
 // fixnum mod fixnum
@@ -2712,7 +2712,7 @@ LispObject Mod::op(Fixnum a, std::uint64_t* b)
     bool a_neg = aa<0;
     bool b_neg = static_cast<int64_t>(b[len-1])<0;
     if (a_neg == b_neg) return a;
-    else return Binary(Plus, a, bignum_value(b));
+    else return G<gPlus>(a, bignum_value(b));
 }
 
 // bignum % bignum
@@ -2733,43 +2733,43 @@ LispObject Divide::op(std::uint64_t* a, Fixnum b)
 // rational divide fixnum
 LispObject Divide::op(Rat a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b, q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b, q));
     return cons(q, r);
 }
 
 // complex divide fixnum
 LispObject Divide::op(Cpx a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, q, b));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(q, b));
     return cons(q, r);
 }
 
 // short float divide fixnum
 LispObject Divide::op(SFlt a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b, q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b, q));
     return cons(q, r);
 }
 
 // single float divide fixnum
 LispObject Divide::op(Flt a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b, q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b, q));
     return cons(q, r);
 }
 
 // double float divide fixnum
 LispObject Divide::op(double a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat(a), Binary(Times, b, q));
+    LispObject r = G<gDifference>(make_boxfloat(a), G<gTimes>(b, q));
     return cons(q, r);
 }
 
 // long float divide fixnum
 LispObject Divide::op(FLOAT_128 a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat128(a),
-                                      Binary(Times, b, q));
+    LispObject r = G<gDifference>(make_boxfloat128(a),
+                                      G<gTimes>(b, q));
     return cons(q, r);
 }
 
@@ -2789,382 +2789,382 @@ LispObject Divide::op(std::uint64_t* a, std::uint64_t* b)
 // rational divide bignum
 LispObject Divide::op(Rat a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, bignum_value(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(bignum_value(b), q));
     return cons(q, r);
 }
 
 // complex divide bignum
 LispObject Divide::op(Cpx a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, bignum_value(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(bignum_value(b), q));
     return cons(q, r);
 }
 
 // short float divide bignum
 LispObject Divide::op(SFlt a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, bignum_value(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(bignum_value(b), q));
     return cons(q, r);
 }
 
 // single float divide bignum
 LispObject Divide::op(Flt a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, bignum_value(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(bignum_value(b), q));
     return cons(q, r);
 }
 
 // double float divide bignum
 LispObject Divide::op(double a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat(a), Binary(Times, bignum_value(b), q));
+    LispObject r = G<gDifference>(make_boxfloat(a), G<gTimes>(bignum_value(b), q));
     return cons(q, r);
 }
 
 // long float divide bignum
 LispObject Divide::op(FLOAT_128 a, std::uint64_t* b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat128(a), Binary(Times, bignum_value(b), q));
+    LispObject r = G<gDifference>(make_boxfloat128(a), G<gTimes>(bignum_value(b), q));
     return cons(q, r);
 }
 
 // fixnum divide rational
 LispObject Divide::op(Fixnum a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a,
-                                      Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a,
+                                      G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // bignum divide rational
 LispObject Divide::op(std::uint64_t* a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, bignum_value(a), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(bignum_value(a), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // rational divide rational
 LispObject Divide::op(Rat a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // complex divide rational
 LispObject Divide::op(Cpx a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // short float divide rational
 LispObject Divide::op(SFlt a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // single float divide rational
 LispObject Divide::op(Flt a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // double float divide rational
 LispObject Divide::op(double a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat(a), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(make_boxfloat(a), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // long float divide rational
 LispObject Divide::op(FLOAT_128 a, Rat b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat128(a), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(make_boxfloat128(a), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // fixnum divide complex
 LispObject Divide::op(Fixnum a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a, Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a, G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // bignum divide complex
 LispObject Divide::op(std::uint64_t* a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, bignum_value(a), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(bignum_value(a), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // rational divide complex
 LispObject Divide::op(Rat a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // complex divide complex
 LispObject Divide::op(Cpx a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // short float divide complex
 LispObject Divide::op(SFlt a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // single float divide complex
 LispObject Divide::op(Flt a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // double float divide complex
 LispObject Divide::op(double a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat(a), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(make_boxfloat(a), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // long float divide complex
 LispObject Divide::op(FLOAT_128 a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat128(a), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(make_boxfloat128(a), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // fixnum divide short float
 LispObject Divide::op(Fixnum a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a, Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a, G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // bignum divide short float
 LispObject Divide::op(std::uint64_t* a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, bignum_value(a),
-                                      Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(bignum_value(a),
+                                      G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // rational divide short float
 LispObject Divide::op(Rat a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // complex divide short float
 LispObject Divide::op(Cpx a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // short float divide short float
 LispObject Divide::op(SFlt a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // single float divide short float
 LispObject Divide::op(Flt a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // double float divide short float
 LispObject Divide::op(double a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat(a),
-                                      Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(make_boxfloat(a),
+                                      G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // long float divide short float
 LispObject Divide::op(FLOAT_128 a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat128(a), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(make_boxfloat128(a), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // fixnum divide single float
 LispObject Divide::op(Fixnum a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a, Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a, G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // bignum divide single float
 LispObject Divide::op(std::uint64_t* a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, bignum_value(a),
-                                      Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(bignum_value(a),
+                                      G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // rational divide single float
 LispObject Divide::op(Rat a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // complex divide single float
 LispObject Divide::op(Cpx a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // short float divide single float
 LispObject Divide::op(SFlt a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // single float divide single float
 LispObject Divide::op(Flt a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // double float divide single float
 LispObject Divide::op(double a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat(a), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(make_boxfloat(a), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // long float divide single float
 LispObject Divide::op(FLOAT_128 a, Flt b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat128(a), Binary(Times, b.value(), q));
+    LispObject r = G<gDifference>(make_boxfloat128(a), G<gTimes>(b.value(), q));
     return cons(q, r);
 }
 
 // fixnum divide double float
 LispObject Divide::op(Fixnum a, double b)
 {   LispObject q = Quotient::op(a, b);
-    LispObject r = Binary(Difference, a, Binary(Times, make_boxfloat(b), q));
+    LispObject r = G<gDifference>(a, G<gTimes>(make_boxfloat(b), q));
     return cons(q, r);
 }
 
 // bignum divide double float
 LispObject Divide::op(std::uint64_t* a, double b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, bignum_value(a), Binary(Times, make_boxfloat(b), q));
+    LispObject r = G<gDifference>(bignum_value(a), G<gTimes>(make_boxfloat(b), q));
     return cons(q, r);
 }
 
 // rational divide double float
 LispObject Divide::op(Rat a, double b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, make_boxfloat(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(make_boxfloat(b), q));
     return cons(q, r);
 }
 
 // complex divide double float
 LispObject Divide::op(Cpx a, double b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, make_boxfloat(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(make_boxfloat(b), q));
     return cons(q, r);
 }
 
 // short float divide double float
 LispObject Divide::op(SFlt a, double b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, make_boxfloat(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(make_boxfloat(b), q));
     return cons(q, r);
 }
 
 // single float divide double float
 LispObject Divide::op(Flt a, double b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, make_boxfloat(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(make_boxfloat(b), q));
     return cons(q, r);
 }
 
 // double float divide double float
 LispObject Divide::op(double a, double b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat(a), Binary(Times, make_boxfloat(b), q));
+    LispObject r = G<gDifference>(make_boxfloat(a), G<gTimes>(make_boxfloat(b), q));
     return cons(q, r);
 }
 
 // long float divide double float
 LispObject Divide::op(FLOAT_128 a, double b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat128(a), Binary(Times, make_boxfloat(b), q));
+    LispObject r = G<gDifference>(make_boxfloat128(a), G<gTimes>(make_boxfloat(b), q));
     return cons(q, r);
 }
 
 // fixnum divide long float
 LispObject Divide::op(Fixnum a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a, Binary(Times, make_boxfloat128(b), q));
+    LispObject r = G<gDifference>(a, G<gTimes>(make_boxfloat128(b), q));
     return cons(q, r);
 }
 
 // bignum divide long float
 LispObject Divide::op(std::uint64_t* a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, bignum_value(a), Binary(Times, make_boxfloat128(b), q));
+    LispObject r = G<gDifference>(bignum_value(a), G<gTimes>(make_boxfloat128(b), q));
     return cons(q, r);
 }
 
 // rational divide long float
 LispObject Divide::op(Rat a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, make_boxfloat128(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(make_boxfloat128(b), q));
     return cons(q, r);
 }
 
 // complex divide long float
 LispObject Divide::op(Cpx a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, make_boxfloat128(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(make_boxfloat128(b), q));
     return cons(q, r);
 }
 
 // short float divide long float
 LispObject Divide::op(SFlt a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, make_boxfloat128(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(make_boxfloat128(b), q));
     return cons(q, r);
 }
 
 // single float divide long float
 LispObject Divide::op(Flt a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, a.value(), Binary(Times, make_boxfloat128(b), q));
+    LispObject r = G<gDifference>(a.value(), G<gTimes>(make_boxfloat128(b), q));
     return cons(q, r);
 }
 
 // double float divide long float
 LispObject Divide::op(double a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat(a), Binary(Times, make_boxfloat128(b), q));
+    LispObject r = G<gDifference>(make_boxfloat(a), G<gTimes>(make_boxfloat128(b), q));
     return cons(q, r);
 }
 
 // long float divide long float
 LispObject Divide::op(FLOAT_128 a, FLOAT_128 b)
 {   LispObject q = Truncate::op(a, b);
-    LispObject r = Binary(Difference, make_boxfloat128(a), Binary(Times, make_boxfloat128(b), q));
+    LispObject r = G<gDifference>(make_boxfloat128(a), G<gTimes>(make_boxfloat128(b), q));
     return cons(q, r);
 }
 
@@ -3172,36 +3172,36 @@ LispObject Square::op(Fixnum a)
 {   return arithlib_lowlevel::Square::op(int_of_fixnum(a));
 }
 
-LispObject Square::op( std::uint64_t* a)
-{   return arithlib_lowlevel::Square::op( a);
+LispObject Square::op(std::uint64_t* a)
+{   return arithlib_lowlevel::Square::op(a);
 }
 
-LispObject Square::op( Rat a)
+LispObject Square::op(Rat a)
 {   LispObject p = a.numerator(), q = a.denominator();
     return make_ratio(Unary(Square, p), Unary(Square, q));
 }
 
-LispObject Square::op( Cpx a)
+LispObject Square::op(Cpx a)
 {   // (x + iy)^2 = x^2 - y^2 + 2*i*x*y
     LispObject x = a.real_part(), y = a.imag_part();
-    LispObject vx = Binary(Difference, Unary(Square, x), Unary(Square, y));
-    LispObject vy = Binary(Times, fixnum_of_int(2), Binary(Times, x, y));
+    LispObject vx = G<gDifference>(Unary(Square, x), Unary(Square, y));
+    LispObject vy = G<gTimes>(fixnum_of_int(2), G<gTimes>(x, y));
     return make_complex(vx, vy);
 }
 
-LispObject Square::op( SFlt a)
+LispObject Square::op(SFlt a)
 {   return pack_short_float(a.floatval()*a.floatval());
 }
 
-LispObject Square::op( Flt a)
+LispObject Square::op(Flt a)
 {   return pack_single_float(a.floatval()*a.floatval());
 }
 
-LispObject Square::op( double a)
+LispObject Square::op(double a)
 {   return make_boxfloat(a*a);
 }
 
-LispObject Square::op( FLOAT_128 a)
+LispObject Square::op(FLOAT_128 a)
 {   return make_boxfloat128(a * a);
 }
 
@@ -3221,9 +3221,9 @@ LispObject Reciprocal::op(std::uint64_t* a)
 LispObject Reciprocal::op(Rat a)
 {   LispObject p = a.numerator(), q = a.denominator();
     if (Zerop::op(a)) return aerror("bad argument for reciprocal", a.value());
-    else if (BoolUnary(Minusp, p))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    else if (G<gMinusp>(p))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(q, p);
 }
@@ -3231,8 +3231,8 @@ LispObject Reciprocal::op(Rat a)
 LispObject Reciprocal::op(Cpx a)
 {   // 1/(x + iy) = (x - iy)/(x^2+y^2)
     LispObject x = a.real_part(), y = a.imag_part();
-    LispObject d = Binary(Plus, Unary(Square, x), Unary(Square, y));
-    if (BoolUnary(Zerop, d)) return aerror("bad argument for reciprocal", a.value());
+    LispObject d = G<gPlus>(Unary(Square, x), Unary(Square, y));
+    if (G<gZerop>(d)) return aerror("bad argument for reciprocal", a.value());
 // If the complex value has both components integers I will upgrade
 // them to floating point.
     bool promote = false;
@@ -3257,7 +3257,7 @@ LispObject Reciprocal::op(Cpx a)
         y = Unary(Float, y);
         d = Unary(Float, d);
     }
-    return make_complex(Binary(Quotient,x, d), Binary(Quotient,y, d));
+    return make_complex(G<gQuotient>(x, d), G<gQuotient>(y, d));
 }
 
 LispObject Reciprocal::op(SFlt a)
@@ -3294,15 +3294,15 @@ LispObject Truncate::op(std::uint64_t* a, Fixnum b)
 // rational truncate fixnum
 LispObject Truncate::op(Rat a, Fixnum b)
 {   if (b == int_of_fixnum(0)) return a.value();
-    return make_ratio(Binary(Truncate, a.numerator(),
-                             Binary(Truncate, a.denominator(), b)),
+    return make_ratio(G<gTruncate>(a.numerator(),
+                             G<gTruncate>(a.denominator(), b)),
                       a.denominator());
 }
 
 // complex truncate fixnum
 LispObject Truncate::op(Cpx a, Fixnum b)
 {   if (b == fixnum_of_int(0)) return a.v;
-    return make_complex(Binary(Truncate, a.real_part(), b), a.imag_part());
+    return make_complex(G<gTruncate>(a.real_part(), b), a.imag_part());
 }
 
 // short float truncate fixnum
@@ -3342,15 +3342,15 @@ LispObject Truncate::op(std::uint64_t* a, std::uint64_t* b)
 
 // rational truncate bignum
 LispObject Truncate::op(Rat a, std::uint64_t* b)
-{   LispObject g = IBinary(Gcdn, a.denominator(), bignum_value(b));
-    return make_ratio(Binary(Times, a.numerator(), Binary(Truncate, bignum_value(b), g)),
-                      Binary(Truncate, a.denominator(), g));
+{   LispObject g = G<gGcdn>(a.denominator(), bignum_value(b));
+    return make_ratio(G<gTimes>(a.numerator(), G<gTruncate>(bignum_value(b), g)),
+                      G<gTruncate>(a.denominator(), g));
 }
 
 // complex truncate bignum
 LispObject Truncate::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Binary(Truncate, a.real_part(), bignum_value(b)),
-                        Binary(Truncate, a.imag_part(), bignum_value(b)));
+{   return make_complex(G<gTruncate>(a.real_part(), bignum_value(b)),
+                        G<gTruncate>(a.imag_part(), bignum_value(b)));
 }
 
 // short float truncate bignum
@@ -3391,49 +3391,49 @@ LispObject Truncate::op(FLOAT_128 a, std::uint64_t* b)
 
 // fixnum truncate rational
 LispObject Truncate::op(Fixnum a, Rat b)
-{   LispObject g = IBinary(Gcdn, a, b.numerator());
-    LispObject p = Binary(Times, Binary(Truncate, a, g), b.denominator());
+{   LispObject g = G<gGcdn>(a, b.numerator());
+    LispObject p = G<gTimes>(G<gTruncate>(a, g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // bignum truncate rational
 LispObject Truncate::op(std::uint64_t* a, Rat b)
-{   LispObject g = IBinary(Gcdn, bignum_value(a), b.numerator());
-    LispObject p = Binary(Times, Binary(Truncate, bignum_value(a), g), b.denominator());
+{   LispObject g = G<gGcdn>(bignum_value(a), b.numerator());
+    LispObject p = G<gTimes>(G<gTruncate>(bignum_value(a), g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // rational truncate rational
 LispObject Truncate::op(Rat a, Rat b)
-{   LispObject g1 = IBinary(Gcdn, a.numerator(), b.numerator());
-    LispObject g2 = IBinary(Gcdn, a.denominator(), b.denominator());
-    LispObject na = Binary(Truncate, a.numerator(), g1);
-    LispObject nb = Binary(Truncate, b.denominator(), g2);
-    LispObject da = Binary(Truncate, a.denominator(), g2);
-    LispObject db = Binary(Truncate, b.numerator(), g1);
-    LispObject p = Binary(Times, na, nb);
-    LispObject q = Binary(Times, da, db);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+{   LispObject g1 = G<gGcdn>(a.numerator(), b.numerator());
+    LispObject g2 = G<gGcdn>(a.denominator(), b.denominator());
+    LispObject na = G<gTruncate>(a.numerator(), g1);
+    LispObject nb = G<gTruncate>(b.denominator(), g2);
+    LispObject da = G<gTruncate>(a.denominator(), g2);
+    LispObject db = G<gTruncate>(b.numerator(), g1);
+    LispObject p = G<gTimes>(na, nb);
+    LispObject q = G<gTimes>(da, db);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // complex truncate rational
 LispObject Truncate::op(Cpx a, Rat b)
-{   return make_complex(Binary(Truncate, a.real_part(), b.value()),
-                        Binary(Truncate, a.imag_part(), b.value()));
+{   return make_complex(G<gTruncate>(a.real_part(), b.value()),
+                        G<gTruncate>(a.imag_part(), b.value()));
 }
 
 // short float truncate rational
@@ -3474,74 +3474,74 @@ LispObject Truncate::op(FLOAT_128 a, Rat b)
 
 // fixnum truncate complex
 LispObject Truncate::op(Fixnum a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a, conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a, conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Truncate, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gTruncate>(num, den);
 }
 
 // bignum truncate complex
 LispObject Truncate::op(std::uint64_t* a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, bignum_value(a), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(bignum_value(a), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Truncate, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gTruncate>(num, den);
 }
 
 // rational truncate complex
 LispObject Truncate::op(Rat a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Truncate, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gTruncate>(num, den);
 }
 
 // complex truncate complex
 LispObject Truncate::op(Cpx a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Truncate, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gTruncate>(num, den);
 }
 
 // short float truncate complex
 LispObject Truncate::op(SFlt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Truncate, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gTruncate>(num, den);
 }
 
 // single float truncate complex
 LispObject Truncate::op(Flt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Truncate, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gTruncate>(num, den);
 }
 
 // double float truncate complex
 LispObject Truncate::op(double a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a, conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a, conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Truncate, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gTruncate>(num, den);
 }
 
 // long float truncate complex
 LispObject Truncate::op(FLOAT_128 a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, make_boxfloat128(a), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(make_boxfloat128(a), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Truncate, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gTruncate>(num, den);
 }
 
 // fixnum truncate short float
@@ -3724,15 +3724,15 @@ LispObject Ceiling::op(std::uint64_t* a, Fixnum b)
 // rational ceiling fixnum
 LispObject Ceiling::op(Rat a, Fixnum b)
 {   if (b == 0) return a.value();
-    return make_ratio(Binary(Ceiling, a.numerator(),
-                                  Binary(Ceiling, a.denominator(), b)),
+    return make_ratio(G<gCeiling>(a.numerator(),
+                                  G<gCeiling>(a.denominator(), b)),
                       a.denominator());
 }
 
 // complex ceiling fixnum
 LispObject Ceiling::op(Cpx a, Fixnum b)
 {   if (b == 0) return a.v;
-    return make_complex(Binary(Ceiling, a.real_part(), b), a.imag_part());
+    return make_complex(G<gCeiling>(a.real_part(), b), a.imag_part());
 }
 
 // short float ceiling fixnum
@@ -3770,15 +3770,15 @@ LispObject Ceiling::op(std::uint64_t* a, std::uint64_t* b)
 
 // rational ceiling bignum
 LispObject Ceiling::op(Rat a, std::uint64_t* b)
-{   LispObject g = IBinary(Gcdn, a.denominator(), bignum_value(b));
-    return make_ratio(Binary(Times, a.numerator(), Binary(Ceiling, bignum_value(b), g)),
-                      Binary(Ceiling, a.denominator(), g));
+{   LispObject g = G<gGcdn>(a.denominator(), bignum_value(b));
+    return make_ratio(G<gTimes>(a.numerator(), G<gCeiling>(bignum_value(b), g)),
+                      G<gCeiling>(a.denominator(), g));
 }
 
 // complex ceiling bignum
 LispObject Ceiling::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Binary(Ceiling, a.real_part(), bignum_value(b)),
-                        Binary(Ceiling, a.imag_part(), bignum_value(b)));
+{   return make_complex(G<gCeiling>(a.real_part(), bignum_value(b)),
+                        G<gCeiling>(a.imag_part(), bignum_value(b)));
 }
 
 // short float ceiling bignum
@@ -3819,49 +3819,49 @@ LispObject Ceiling::op(FLOAT_128 a, std::uint64_t* b)
 
 // fixnum ceiling rational
 LispObject Ceiling::op(Fixnum a, Rat b)
-{   LispObject g = IBinary(Gcdn, a, b.numerator());
-    LispObject p = Binary(Times, Binary(Ceiling, a, g), b.denominator());
+{   LispObject g = G<gGcdn>(a, b.numerator());
+    LispObject p = G<gTimes>(G<gCeiling>(a, g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // bignum ceiling rational
 LispObject Ceiling::op(std::uint64_t* a, Rat b)
-{   LispObject g = IBinary(Gcdn, bignum_value(a), b.numerator());
-    LispObject p = Binary(Times, Binary(Ceiling, bignum_value(a), g), b.denominator());
+{   LispObject g = G<gGcdn>(bignum_value(a), b.numerator());
+    LispObject p = G<gTimes>(G<gCeiling>(bignum_value(a), g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // rational ceiling rational
 LispObject Ceiling::op(Rat a, Rat b)
-{   LispObject g1 = IBinary(Gcdn, a.numerator(), b.numerator());
-    LispObject g2 = IBinary(Gcdn, a.denominator(), b.denominator());
-    LispObject na = Binary(Ceiling, a.numerator(), g1);
-    LispObject nb = Binary(Ceiling, b.denominator(), g2);
-    LispObject da = Binary(Ceiling, a.denominator(), g2);
-    LispObject db = Binary(Ceiling, b.numerator(), g1);
-    LispObject p = Binary(Times, na, nb);
-    LispObject q = Binary(Times, da, db);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+{   LispObject g1 = G<gGcdn>(a.numerator(), b.numerator());
+    LispObject g2 = G<gGcdn>(a.denominator(), b.denominator());
+    LispObject na = G<gCeiling>(a.numerator(), g1);
+    LispObject nb = G<gCeiling>(b.denominator(), g2);
+    LispObject da = G<gCeiling>(a.denominator(), g2);
+    LispObject db = G<gCeiling>(b.numerator(), g1);
+    LispObject p = G<gTimes>(na, nb);
+    LispObject q = G<gTimes>(da, db);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // complex ceiling rational
 LispObject Ceiling::op(Cpx a, Rat b)
-{   return make_complex(Binary(Ceiling, a.real_part(), b.value()),
-                        Binary(Ceiling, a.imag_part(), b.value()));
+{   return make_complex(G<gCeiling>(a.real_part(), b.value()),
+                        G<gCeiling>(a.imag_part(), b.value()));
 }
 
 // short float ceiling rational
@@ -3902,74 +3902,74 @@ LispObject Ceiling::op(FLOAT_128 a, Rat b)
 
 // fixnum ceiling complex
 LispObject Ceiling::op(Fixnum a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a, conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a, conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Ceiling, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCeiling>(num, den);
 }
 
 // bignum ceiling complex
 LispObject Ceiling::op(std::uint64_t* a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, bignum_value(a), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(bignum_value(a), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Ceiling, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCeiling>(num, den);
 }
 
 // rational ceiling complex
 LispObject Ceiling::op(Rat a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Ceiling, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCeiling>(num, den);
 }
 
 // complex ceiling complex
 LispObject Ceiling::op(Cpx a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Ceiling, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCeiling>(num, den);
 }
 
 // short float ceiling complex
 LispObject Ceiling::op(SFlt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Ceiling, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCeiling>(num, den);
 }
 
 // single float ceiling complex
 LispObject Ceiling::op(Flt a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a.value(), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a.value(), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Ceiling, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCeiling>(num, den);
 }
 
 // double float ceiling complex
 LispObject Ceiling::op(double a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, a, conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(a, conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Ceiling, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCeiling>(num, den);
 }
 
 // long float ceiling complex
 LispObject Ceiling::op(FLOAT_128 a, Cpx b)
-{   LispObject conj = make_complex(b.real_part(), Unary(Minus, b.imag_part()));
-    LispObject num = Binary(Times, make_boxfloat128(a), conj);
+{   LispObject conj = make_complex(b.real_part(), G<gMinus>(b.imag_part()));
+    LispObject num = G<gTimes>(make_boxfloat128(a), conj);
     LispObject den =
-        Binary(Plus, Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
-    return Binary(Ceiling, num, den);
+        G<gPlus>(Unary(Square, b.real_part()), Unary(Square, b.imag_part()));
+    return G<gCeiling>(num, den);
 }
 
 // fixnum ceiling short float
@@ -4152,15 +4152,15 @@ LispObject Floor::op(std::uint64_t* a, Fixnum b)
 // rational floor fixnum
 LispObject Floor::op(Rat a, Fixnum b)
 {   if (b == 0) return a.value();
-    return make_ratio(Binary(Floor, a.numerator(),
-                                    Binary(Floor, a.denominator(), b)),
+    return make_ratio(G<gFloor>(a.numerator(),
+                                    G<gFloor>(a.denominator(), b)),
                       a.denominator());
 }
 
 // complex floor fixnum
 LispObject Floor::op(Cpx a, Fixnum b)
 {   if (b == fixnum_of_int(0)) return a.v;
-    return make_complex(Binary(Floor, a.real_part(), b), a.imag_part());
+    return make_complex(G<gFloor>(a.real_part(), b), a.imag_part());
 }
 
 // short float floor fixnum
@@ -4198,15 +4198,15 @@ LispObject Floor::op(std::uint64_t* a, std::uint64_t* b)
 
 // rational floor bignum
 LispObject Floor::op(Rat a, std::uint64_t* b)
-{   LispObject g = IBinary(Gcdn, a.denominator(), bignum_value(b));
-    return make_ratio(Binary(Times, a.numerator(), Binary(Floor, bignum_value(b), g)),
-                      Binary(Floor, a.denominator(), g));
+{   LispObject g = G<gGcdn>(a.denominator(), bignum_value(b));
+    return make_ratio(G<gTimes>(a.numerator(), G<gFloor>(bignum_value(b), g)),
+                      G<gFloor>(a.denominator(), g));
 }
 
 // complex floor bignum
 LispObject Floor::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Binary(Floor, a.real_part(), bignum_value(b)),
-                        Binary(Floor, a.imag_part(), bignum_value(b)));
+{   return make_complex(G<gFloor>(a.real_part(), bignum_value(b)),
+                        G<gFloor>(a.imag_part(), bignum_value(b)));
 }
 
 // short float floor bignum
@@ -4247,49 +4247,49 @@ LispObject Floor::op(FLOAT_128 a, std::uint64_t* b)
 
 // fixnum floor rational
 LispObject Floor::op(Fixnum a, Rat b)
-{   LispObject g = IBinary(Gcdn, a, b.numerator());
-    LispObject p = Binary(Times, Binary(Floor, a, g), b.denominator());
+{   LispObject g = G<gGcdn>(a, b.numerator());
+    LispObject p = G<gTimes>(G<gFloor>(a, g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // bignum floor rational
 LispObject Floor::op(std::uint64_t* a, Rat b)
-{   LispObject g = IBinary(Gcdn, bignum_value(a), b.numerator());
-    LispObject p = Binary(Times, Binary(Floor, bignum_value(a), g), b.denominator());
+{   LispObject g = G<gGcdn>(bignum_value(a), b.numerator());
+    LispObject p = G<gTimes>(G<gFloor>(bignum_value(a), g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // rational floor rational
 LispObject Floor::op(Rat a, Rat b)
-{   LispObject g1 = IBinary(Gcdn, a.numerator(), b.numerator());
-    LispObject g2 = IBinary(Gcdn, a.denominator(), b.denominator());
-    LispObject na = Binary(Floor, a.numerator(), g1);
-    LispObject nb = Binary(Floor, b.denominator(), g2);
-    LispObject da = Binary(Floor, a.denominator(), g2);
-    LispObject db = Binary(Floor, b.numerator(), g1);
-    LispObject p = Binary(Times, na, nb);
-    LispObject q = Binary(Times, da, db);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+{   LispObject g1 = G<gGcdn>(a.numerator(), b.numerator());
+    LispObject g2 = G<gGcdn>(a.denominator(), b.denominator());
+    LispObject na = G<gFloor>(a.numerator(), g1);
+    LispObject nb = G<gFloor>(b.denominator(), g2);
+    LispObject da = G<gFloor>(a.denominator(), g2);
+    LispObject db = G<gFloor>(b.numerator(), g1);
+    LispObject p = G<gTimes>(na, nb);
+    LispObject q = G<gTimes>(da, db);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // complex floor rational
 LispObject Floor::op(Cpx a, Rat b)
-{   return make_complex(Binary(Floor, a.real_part(), b.value()),
-                        Binary(Floor, a.imag_part(), b.value()));
+{   return make_complex(G<gFloor>(a.real_part(), b.value()),
+                        G<gFloor>(a.imag_part(), b.value()));
 }
 
 // short float floor rational
@@ -4548,15 +4548,15 @@ LispObject Ftruncate::op(std::uint64_t* a, Fixnum b)
 // rational ftruncate fixnum
 LispObject Ftruncate::op(Rat a, Fixnum b)
 {   if (b == 0) return a.value();
-    return make_ratio(Binary(Quotient,a.numerator(),
-                                      Binary(Ftruncate, a.denominator(), b)),
+    return make_ratio(G<gQuotient>(a.numerator(),
+                                      G<gFtruncate>(a.denominator(), b)),
                       a.denominator());
 }
 
 // complex ftruncate fixnum
 LispObject Ftruncate::op(Cpx a, Fixnum b)
 {   if (b == 0) return a.v;
-    return make_complex(Binary(Ftruncate, a.real_part(), b),
+    return make_complex(G<gFtruncate>(a.real_part(), b),
                         a.imag_part());
 }
 
@@ -4592,15 +4592,15 @@ LispObject Ftruncate::op(std::uint64_t* a, std::uint64_t* b)
 
 // rational ftruncate bignum
 LispObject Ftruncate::op(Rat a, std::uint64_t* b)
-{   LispObject g = IBinary(Gcdn, a.denominator(), bignum_value(b));
-    return make_ratio(Binary(Times, a.numerator(), Binary(Ftruncate, bignum_value(b), g)),
-                      Binary(Ftruncate, a.denominator(), g));
+{   LispObject g = G<gGcdn>(a.denominator(), bignum_value(b));
+    return make_ratio(G<gTimes>(a.numerator(), G<gFtruncate>(bignum_value(b), g)),
+                      G<gFtruncate>(a.denominator(), g));
 }
 
 // complex ftruncate bignum
 LispObject Ftruncate::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Binary(Ftruncate, a.real_part(), bignum_value(b)),
-                        Binary(Ftruncate, a.imag_part(), bignum_value(b)));
+{   return make_complex(G<gFtruncate>(a.real_part(), bignum_value(b)),
+                        G<gFtruncate>(a.imag_part(), bignum_value(b)));
 }
 
 // short float ftruncate bignum
@@ -4641,49 +4641,49 @@ LispObject Ftruncate::op(FLOAT_128 a, std::uint64_t* b)
 
 // fixnum ftruncate rational
 LispObject Ftruncate::op(Fixnum a, Rat b)
-{   LispObject g = IBinary(Gcdn, a, b.numerator());
-    LispObject p = Binary(Times, Binary(Ftruncate, a, g), b.denominator());
+{   LispObject g = G<gGcdn>(a, b.numerator());
+    LispObject p = G<gTimes>(G<gFtruncate>(a, g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // bignum ftruncate rational
 LispObject Ftruncate::op(std::uint64_t* a, Rat b)
-{   LispObject g = IBinary(Gcdn, bignum_value(a), b.numerator());
-    LispObject p = Binary(Times, Binary(Ftruncate, bignum_value(a), g), b.denominator());
+{   LispObject g = G<gGcdn>(bignum_value(a), b.numerator());
+    LispObject p = G<gTimes>(G<gFtruncate>(bignum_value(a), g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // rational ftruncate rational
 LispObject Ftruncate::op(Rat a, Rat b)
-{   LispObject g1 = IBinary(Gcdn, a.numerator(), b.numerator());
-    LispObject g2 = IBinary(Gcdn, a.denominator(), b.denominator());
-    LispObject na = Binary(Ftruncate, a.numerator(), g1);
-    LispObject nb = Binary(Ftruncate, b.denominator(), g2);
-    LispObject da = Binary(Ftruncate, a.denominator(), g2);
-    LispObject db = Binary(Ftruncate, b.numerator(), g1);
-    LispObject p = Binary(Times, na, nb);
-    LispObject q = Binary(Times, da, db);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+{   LispObject g1 = G<gGcdn>(a.numerator(), b.numerator());
+    LispObject g2 = G<gGcdn>(a.denominator(), b.denominator());
+    LispObject na = G<gFtruncate>(a.numerator(), g1);
+    LispObject nb = G<gFtruncate>(b.denominator(), g2);
+    LispObject da = G<gFtruncate>(a.denominator(), g2);
+    LispObject db = G<gFtruncate>(b.numerator(), g1);
+    LispObject p = G<gTimes>(na, nb);
+    LispObject q = G<gTimes>(da, db);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // complex ftruncate rational
 LispObject Ftruncate::op(Cpx a, Rat b)
-{   return make_complex(Binary(Ftruncate, a.real_part(), b.value()),
-                        Binary(Ftruncate, a.imag_part(), b.value()));
+{   return make_complex(G<gFtruncate>(a.real_part(), b.value()),
+                        G<gFtruncate>(a.imag_part(), b.value()));
 }
 
 // short float ftruncate rational
@@ -4942,15 +4942,15 @@ LispObject Fceiling::op(std::uint64_t* a, Fixnum b)
 // rational fceiling fixnum
 LispObject Fceiling::op(Rat a, Fixnum b)
 {   if (b == 0) return a.value();
-    return make_ratio(Binary(Fceiling, a.numerator(),
-                                   Binary(Fceiling, a.denominator(), b)),
+    return make_ratio(G<gFceiling>(a.numerator(),
+                                   G<gFceiling>(a.denominator(), b)),
                       a.denominator());
 }
 
 // complex fceiling fixnum
 LispObject Fceiling::op(Cpx a, Fixnum b)
 {   if (b == 0) return a.v;
-    return make_complex(Binary(Fceiling, a.real_part(), b),
+    return make_complex(G<gFceiling>(a.real_part(), b),
                         a.imag_part());
 }
 
@@ -4986,15 +4986,15 @@ LispObject Fceiling::op(std::uint64_t* a, std::uint64_t* b)
 
 // rational fceiling bignum
 LispObject Fceiling::op(Rat a, std::uint64_t* b)
-{   LispObject g = IBinary(Gcdn, a.denominator(), bignum_value(b));
-    return make_ratio(Binary(Times, a.numerator(), Binary(Fceiling, bignum_value(b), g)),
-                      Binary(Fceiling, a.denominator(), g));
+{   LispObject g = G<gGcdn>(a.denominator(), bignum_value(b));
+    return make_ratio(G<gTimes>(a.numerator(), G<gFceiling>(bignum_value(b), g)),
+                      G<gFceiling>(a.denominator(), g));
 }
 
 // complex ceiling bignum
 LispObject Fceiling::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Binary(Fceiling, a.real_part(), bignum_value(b)),
-                        Binary(Fceiling, a.imag_part(), bignum_value(b)));
+{   return make_complex(G<gFceiling>(a.real_part(), bignum_value(b)),
+                        G<gFceiling>(a.imag_part(), bignum_value(b)));
 }
 
 // short float / bignum
@@ -5035,49 +5035,49 @@ LispObject Fceiling::op(FLOAT_128 a, std::uint64_t* b)
 
 // fixnum / rational
 LispObject Fceiling::op(Fixnum a, Rat b)
-{   LispObject g = IBinary(Gcdn, a, b.numerator());
-    LispObject p = Binary(Times, Binary(Fceiling, a, g), b.denominator());
+{   LispObject g = G<gGcdn>(a, b.numerator());
+    LispObject p = G<gTimes>(G<gFceiling>(a, g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // bignum / rational
 LispObject Fceiling::op(std::uint64_t* a, Rat b)
-{   LispObject g = IBinary(Gcdn, bignum_value(a), b.numerator());
-    LispObject p = Binary(Times, Binary(Fceiling, bignum_value(a), g), b.denominator());
+{   LispObject g = G<gGcdn>(bignum_value(a), b.numerator());
+    LispObject p = G<gTimes>(G<gFceiling>(bignum_value(a), g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // rational / rational
 LispObject Fceiling::op(Rat a, Rat b)
-{   LispObject g1 = IBinary(Gcdn, a.numerator(), b.numerator());
-    LispObject g2 = IBinary(Gcdn, a.denominator(), b.denominator());
-    LispObject na = Binary(Fceiling, a.numerator(), g1);
-    LispObject nb = Binary(Fceiling, b.denominator(), g2);
-    LispObject da = Binary(Fceiling, a.denominator(), g2);
-    LispObject db = Binary(Fceiling, b.numerator(), g1);
-    LispObject p = Binary(Times, na, nb);
-    LispObject q = Binary(Times, da, db);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+{   LispObject g1 = G<gGcdn>(a.numerator(), b.numerator());
+    LispObject g2 = G<gGcdn>(a.denominator(), b.denominator());
+    LispObject na = G<gFceiling>(a.numerator(), g1);
+    LispObject nb = G<gFceiling>(b.denominator(), g2);
+    LispObject da = G<gFceiling>(a.denominator(), g2);
+    LispObject db = G<gFceiling>(b.numerator(), g1);
+    LispObject p = G<gTimes>(na, nb);
+    LispObject q = G<gTimes>(da, db);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // complex / rational
 LispObject Fceiling::op(Cpx a, Rat b)
-{   return make_complex(Binary(Fceiling, a.real_part(), b.value()),
-                        Binary(Fceiling, a.imag_part(), b.value()));
+{   return make_complex(G<gFceiling>(a.real_part(), b.value()),
+                        G<gFceiling>(a.imag_part(), b.value()));
 }
 
 // short float / rational
@@ -5336,15 +5336,15 @@ LispObject Ffloor::op(std::uint64_t* a, Fixnum b)
 // rational ffloor fixnum
 LispObject Ffloor::op(Rat a, Fixnum b)
 {   if (b == 0) return a.value();
-    return make_ratio(Binary(Ffloor, a.numerator(),
-                                 Binary(Ffloor, a.denominator(), b)),
+    return make_ratio(G<gFfloor>(a.numerator(),
+                                 G<gFfloor>(a.denominator(), b)),
                       a.denominator());
 }
 
 // complex ffloor fixnum
 LispObject Ffloor::op(Cpx a, Fixnum b)
 {   if (b == 0) return a.v;
-    return make_complex(Binary(Ffloor, a.real_part(), b), a.imag_part());
+    return make_complex(G<gFfloor>(a.real_part(), b), a.imag_part());
 }
 
 // short float ffloor fixnum
@@ -5379,16 +5379,16 @@ LispObject Ffloor::op(std::uint64_t* a, std::uint64_t* b)
 
 // rational ffloor bignum
 LispObject Ffloor::op(Rat a, std::uint64_t* b)
-{   LispObject g = IBinary(Gcdn, a.denominator(), bignum_value(b));
-    return make_ratio(Binary(Times, a.numerator(),
-                                    Binary(Ffloor, bignum_value(b), g)),
-                      Binary(Ffloor, a.denominator(), g));
+{   LispObject g = G<gGcdn>(a.denominator(), bignum_value(b));
+    return make_ratio(G<gTimes>(a.numerator(),
+                                    G<gFfloor>(bignum_value(b), g)),
+                      G<gFfloor>(a.denominator(), g));
 }
 
 // complex ffloor bignum
 LispObject Ffloor::op(Cpx a, std::uint64_t* b)
-{   return make_complex(Binary(Ffloor, a.real_part(), bignum_value(b)),
-                        Binary(Ffloor, a.imag_part(), bignum_value(b)));
+{   return make_complex(G<gFfloor>(a.real_part(), bignum_value(b)),
+                        G<gFfloor>(a.imag_part(), bignum_value(b)));
 }
 
 // short float ffloor bignum
@@ -5429,49 +5429,49 @@ LispObject Ffloor::op(FLOAT_128 a, std::uint64_t* b)
 
 // fixnum ffloor rational
 LispObject Ffloor::op(Fixnum a, Rat b)
-{   LispObject g = IBinary(Gcdn, a, b.numerator());
-    LispObject p = Binary(Times, Binary(Ffloor, a, g), b.denominator());
+{   LispObject g = G<gGcdn>(a, b.numerator());
+    LispObject p = G<gTimes>(G<gFfloor>(a, g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // bignum ffloor rational
 LispObject Ffloor::op(std::uint64_t* a, Rat b)
-{   LispObject g = IBinary(Gcdn, bignum_value(a), b.numerator());
-    LispObject p = Binary(Times, Binary(Ffloor, bignum_value(a), g), b.denominator());
+{   LispObject g = G<gGcdn>(bignum_value(a), b.numerator());
+    LispObject p = G<gTimes>(G<gFfloor>(bignum_value(a), g), b.denominator());
     LispObject q = b.numerator();
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // rational ffloor rational
 LispObject Ffloor::op(Rat a, Rat b)
-{   LispObject g1 = IBinary(Gcdn, a.numerator(), b.numerator());
-    LispObject g2 = IBinary(Gcdn, a.denominator(), b.denominator());
-    LispObject na = Binary(Ffloor, a.numerator(), g1);
-    LispObject nb = Binary(Ffloor, b.denominator(), g2);
-    LispObject da = Binary(Ffloor, a.denominator(), g2);
-    LispObject db = Binary(Ffloor, b.numerator(), g1);
-    LispObject p = Binary(Times, na, nb);
-    LispObject q = Binary(Times, da, db);
-    if (BoolUnary(Minusp, q))
-    {   p = Unary(Minus, p);
-        q = Unary(Minus, q);
+{   LispObject g1 = G<gGcdn>(a.numerator(), b.numerator());
+    LispObject g2 = G<gGcdn>(a.denominator(), b.denominator());
+    LispObject na = G<gFfloor>(a.numerator(), g1);
+    LispObject nb = G<gFfloor>(b.denominator(), g2);
+    LispObject da = G<gFfloor>(a.denominator(), g2);
+    LispObject db = G<gFfloor>(b.numerator(), g1);
+    LispObject p = G<gTimes>(na, nb);
+    LispObject q = G<gTimes>(da, db);
+    if (G<gMinusp>(q))
+    {   p = G<gMinus>(p);
+        q = G<gMinus>(q);
     }
     return make_ratio(p, q);
 }
 
 // complex ffloor rational
 LispObject Ffloor::op(Cpx a, Rat b)
-{   return make_complex(Binary(Ffloor, a.real_part(), b.value()),
-                        Binary(Ffloor, a.imag_part(), b.value()));
+{   return make_complex(G<gFfloor>(a.real_part(), b.value()),
+                        G<gFfloor>(a.imag_part(), b.value()));
 }
 
 // short float ffloor rational
@@ -5730,21 +5730,21 @@ LispObject Ntimes(LispObject env, LispObject a1)
 
 LispObject Ntimes(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Binary(Times, a1, a2);
+    return G<gTimes>(a1, a2);
 }
 
 LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   SingleValued fn;
-    return Binary(Times, Binary(Times, a1, a2), a3);
+    return G<gTimes>(G<gTimes>(a1, a2), a3);
 }
 
 LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
 {   SingleValued fn;
-    LispObject w = Binary(Times, Binary(Times, a1, a2), a3);
+    LispObject w = G<gTimes>(G<gTimes>(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Binary(Times, w, car(a4plus));
+    {   w = G<gTimes>(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
     return w;
@@ -5752,7 +5752,7 @@ LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
 
 //LispObject Nexpt(LispObject env, LispObject a1, LispObject a2)
 //{   SingleValued fn;
-//    return Binary(Expt, a1, a2);
+//    return G<gExpt>(a1, a2);
 //}
 
 LispObject Ngcdn(LispObject env)
@@ -5765,18 +5765,16 @@ LispObject Ngcdn(LispObject env, LispObject a1)
     return a1;
 }
 
-#define CHECK_TIMES 1
-
 LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
 #ifdef CHECK_TIMES
-    LispObject r = IBinary(Gcdn, a1, a2);
+    LispObject r = G<gGcdn>(a1, a2);
     LispObject a = a1;
     LispObject b = a2;
-    if (BoolUnary(Minusp, a)) a = Unary(Minus, a);
-    if (BoolUnary(Minusp, b)) b = Unary(Minus, b);
+    if (G<gMinusp>(a)) a = G<gMinus>(a);
+    if (G<gMinusp>(b)) b = G<gMinus>(b);
     while (b != fixnum_of_int(0))
-    {   LispObject c = Binary(Remainder, a, b);
+    {   LispObject c = G<gRemainder>(a, b);
         a = b;
         b = c;
     }
@@ -5784,21 +5782,21 @@ LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2)
         aerror("gcd failure", cons(a1, a2), cons(r, a));
     return r;
 #else // CHECK_TIMES
-    return IBinary(Gcdn, a1, a2);
+    return G<gGcdn>(a1, a2);
 #endif // CHECK_TIMES
 }
 
 LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
-    return IBinary(Gcdn, IBinary(Gcdn, a1, a2), a3);
+    return G<gGcdn>(G<gGcdn>(a1, a2), a3);
 }
 
 LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
 {   SingleValued fn;
-    LispObject w = IBinary(Gcdn, IBinary(Gcdn, a1, a2), a3);
+    LispObject w = G<gGcdn>(G<gGcdn>(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = IBinary(Gcdn, w, car(a4plus));
+    {   w = G<gGcdn>(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
     return w;
@@ -5816,20 +5814,20 @@ LispObject Nlcmn(LispObject env, LispObject a1)
 
 LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return IBinary(Lcmn, a1, a2);
+    return G<gLcmn>(a1, a2);
 }
 
 LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
-    return IBinary(Lcmn, IBinary(Lcmn, a1, a2), a3);
+    return G<gLcmn>(G<gLcmn>(a1, a2), a3);
 }
 
 LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
                                  LispObject a3, LispObject a4plus)
 {   SingleValued fn;
-    LispObject w = IBinary(Lcmn, IBinary(Lcmn, a1, a2), a3);
+    LispObject w = G<gLcmn>(G<gLcmn>(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = IBinary(Lcmn, w, car(a4plus));
+    {   w = G<gLcmn>(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
     return w;
@@ -5842,13 +5840,13 @@ LispObject Nquotient(LispObject env, LispObject a1, LispObject a2)
 // testing there.
     return car(Ndivide(env, a1, a2));
 #else // CHECK_TIMES
-    return Binary(Quotient, a1, a2);
+    return G<gQuotient>(a1, a2);
 #endif // CHECK_TIMES
 }
 
 LispObject NCLQuotient(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Binary(CLQuotient, a1, a2);
+    return G<gCLQuotient>(a1, a2);
 }
 
 LispObject Nremainder(LispObject env, LispObject a1, LispObject a2)
@@ -5856,13 +5854,13 @@ LispObject Nremainder(LispObject env, LispObject a1, LispObject a2)
 #ifdef CHECK_TIMES
     return cdr(Ndivide(env, a1, a2));
 #else // CHECK_TIMES
-    return Binary(Remainder, a1, a2);
+    return G<gRemainder>(a1, a2);
 #endif // CHECK_TIMES
 }
 
 LispObject Nmod(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return IBinary(Mod, a1, a2);
+    return G<gMod>(a1, a2);
 }
 
 LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
@@ -5870,45 +5868,46 @@ LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
 #ifdef CHECK_TIMES
     if ((is_fixnum(a1) || is_new_bignum(a1)) &&
         (is_fixnum(a2) || is_new_bignum(a2)))
-    {   LispObject w = Binary(Divide, a1, a2);
+    {   LispObject w = G<gDivide>(a1, a2);
         LispObject quo = car(w);
         LispObject rem = cdr(w);
 // quotient & remainder will be correct if a1 = a2*quo + rem and
 // also rem is between 0 and sign(a1)*|a2|
-        LispObject xa1 = Binary(Plus, Binary(Times, a2, quo), rem);
-        LispObject xa1a = Binary(Plus, Binary(ClassicalTimes, a2, quo), rem);
+        LispObject xa1 = G<gPlus>(G<gTimes>(a2, quo), rem);
+        LispObject xa1a = G<gPlus>(G<gClassicalTimes>(a2, quo), rem);
         if (xa1 != xa1a && !equal_fn(xa1, xa1a))
             aerror("multiplication failure", cons(a2, quo), cons(xa1, xa1a));
         if (a1 != xa1 && !equal_fn(a1, xa1))
             aerror("quotient failure", cons(a1, a2), w);
         if (rem == fixnum_of_int(0)) return w; // zero remainder OK
-        if (BoolUnary(Minusp, a1))
-        {   if (BoolUnary(Minusp, a2))
+        if (G<gMinusp>(a1))
+        {   if (G<gMinusp>(a2))
             {   // a1 and a2 must both negative. remainder must satisfy
                 // a2 < remainder < 0
-                if (BoolBinary(Lessp, a2, rem) &&
-                    BoolUnary(Minusp, rem)) return w;
+                if (G<gLessp>(a2, rem) &&
+                    G<gMinusp>(rem)) return w;
             }
             else
             {   // a1 negative, a2 positive. Want -a2 < remainder < 0
-                if (BoolBinary(Lessp, Unary(Minus, a2), rem) &&
-                    BoolUnary(Minusp, rem)) return w;
+                if (G<gLessp>(G<gMinus>(a2), rem) &&
+                    G<gMinusp>(rem)) return w;
             }
         }
-        else if (BoolUnary(Minusp, a2))
+        else if (G<gMinusp>(a2))
         {   // a1 positive, a2 negative. 0 <= remainder < -a2
-            if (BoolUnary(Plusp, rem) &&
-                BoolBinary(Lessp, rem, Unary(Minus, a2))) return w;
+            if (!G<gMinusp>(rem) &&
+                G<gLessp>(rem, G<gMinus>(a2))) return w;
         }
         else
-        {   // both a1 and a2 positive. 0 <= remainder < a2
-            if (BoolUnary(Plusp, rem) &&
-                BoolBinary(Lessp, rem, a2)) return w;
+        {
+               // both a1 and a2 positive. 0 <= remainder < a2
+            if (G<gPlusp>(rem) &&
+                G<gLessp>(rem, a2)) return w;
         }
         aerror("quotient failure", cons(a1, a2), w);
     }
 #endif // CHECK_TIMES
-    return Binary(Divide, a1, a2);
+    return G<gDivide>(a1, a2);
 }
 
 LispObject Nreciprocal(LispObject env, LispObject a1)
@@ -5936,20 +5935,20 @@ LispObject Nitimes(LispObject env, LispObject a1)
 
 LispObject Nitimes(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Binary(Times, a1, a2);
+    return G<gTimes>(a1, a2);
 }
 
 LispObject Nitimes(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
-    return Binary(Times, Binary(Times, a1, a2), a3);
+    return G<gTimes>(G<gTimes>(a1, a2), a3);
 }
 
 LispObject Nitimes(LispObject env, LispObject a1, LispObject a2,
                    LispObject a3, LispObject a4plus)
 {   SingleValued fn;
-    LispObject w = Binary(Times, Binary(Times, a1, a2), a3);
+    LispObject w = G<gTimes>(G<gTimes>(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Binary(Times, w, car(a4plus));
+    {   w = G<gTimes>(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
     return w;
@@ -5972,20 +5971,20 @@ LispObject Nigcdn(LispObject env, LispObject a1)
 
 LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return IBinary(Gcdn, a1, a2);
+    return G<gGcdn>(a1, a2);
 }
 
 LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
-    return IBinary(Gcdn, IBinary(Gcdn, a1, a2), a3);
+    return G<gGcdn>(G<gGcdn>(a1, a2), a3);
 }
 
 LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
                                   LispObject a3, LispObject a4plus)
 {   SingleValued fn;
-    LispObject w = IBinary(Gcdn, IBinary(Gcdn, a1, a2), a3);
+    LispObject w = G<gGcdn>(G<gGcdn>(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = IBinary(Gcdn, w, car(a4plus));
+    {   w = G<gGcdn>(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
     return w;
@@ -6003,20 +6002,20 @@ LispObject Nilcmn(LispObject env, LispObject a1)
 
 LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return IBinary(Lcmn, a1, a2);
+    return G<gLcmn>(a1, a2);
 }
 
 LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
-    return IBinary(Lcmn, IBinary(Lcmn, a1, a2), a3);
+    return G<gLcmn>(G<gLcmn>(a1, a2), a3);
 }
 
 LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
                                   LispObject a3, LispObject a4plus)
 {   SingleValued fn;
-    LispObject w = IBinary(Lcmn, IBinary(Lcmn, a1, a2), a3);
+    LispObject w = G<gLcmn>(G<gLcmn>(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = IBinary(Lcmn, w, car(a4plus));
+    {   w = G<gLcmn>(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
     return w;
@@ -6024,17 +6023,17 @@ LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Niquotient(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Binary(Quotient, a1, a2);
+    return G<gQuotient>(a1, a2);
 }
 
 LispObject Nimod(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return IBinary(Mod, a1, a2);
+    return G<gMod>(a1, a2);
 }
 
 LispObject Nidivide(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-    return Binary(Divide, a1, a2);
+    return G<gDivide>(a1, a2);
 }
 
 LispObject Nireciprocal(LispObject env, LispObject a1)

@@ -1,12 +1,19 @@
-% All results agree to 12 digits with Mathematica using
-% https://functions.wolfram.com/GammaBetaErf/BetaRegularized/
-% except that Mathematica gives
-% ibeta(0.5, 0.5, 0.99999999) = 0.999936338022
+on time;
+
+% Exact polynomial values for a,b positive integers:
+
+for a := 1:5 do for b := 1:5 do write ibeta(a,b,x) := ibeta(a,b,x);
+
+
+
+% All numerical results agree to 12 digits with Mathematica using
+% https://functions.wolfram.com/GammaBetaErf/BetaRegularized/ except
+% that Mathematica gives ibeta(0.5, 0.5, 0.99999999) = 0.999936338022
 % which differs by 1 in the last decimal place.
 
 % In Mathematica, the domain appears to be the whole complex plane!
 
-on rounded, time;
+on rounded;
 
 a := 0.5$
 b := 0.5$

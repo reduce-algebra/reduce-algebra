@@ -457,7 +457,7 @@ LispObject interrupted()
     THROW(LispSimpleError);
 }
 
-LispObject aerror()
+LispObject aerror [[noreturn]] ()
 {   LispObject w;
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
@@ -472,11 +472,11 @@ LispObject aerror()
     THROW(LispSimpleError);
 }
 
-LispObject aerror(const char* s)
+LispObject aerror [[noreturn]] (const char* s)
 {   errorNest safe;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
-    return aerror();
+    aerror();
 }
 
 LispObject aerror(const char* s, LispObject a)
@@ -486,7 +486,7 @@ LispObject aerror(const char* s, LispObject a)
         loop_print_error(a);
         err_printf("\n");
     }
-    return aerror();
+    aerror();
 }
 
 LispObject aerror(const char* s, LispObject a, LispObject b)
@@ -498,7 +498,7 @@ LispObject aerror(const char* s, LispObject a, LispObject b)
         loop_print_error(b);
         err_printf("\n");
     }
-    return aerror();
+    aerror();
 }
 
 LispObject aerror(const char* s, LispObject a, LispObject b, LispObject c)
@@ -512,14 +512,14 @@ LispObject aerror(const char* s, LispObject a, LispObject b, LispObject c)
         loop_print_error(c);
         err_printf("\n");
     }
-    return aerror();
+    aerror();
 }
 
 LispObject aerror(const char* s1, const char* s2)
 {   errorNest safe;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error: %s %s\n", s1, s2);
-    return aerror();
+    aerror();
 }
 
 LispObject aerror(const char* s1, const char* s2, LispObject a)
@@ -529,7 +529,7 @@ LispObject aerror(const char* s1, const char* s2, LispObject a)
         loop_print_error(a);
         err_printf("\n");
     }
-    return aerror();
+    aerror();
 }
 
 LispObject aerror(const char* s1, const char* s2, LispObject a, LispObject b)
@@ -541,10 +541,10 @@ LispObject aerror(const char* s1, const char* s2, LispObject a, LispObject b)
         loop_print_error(b);
         err_printf("\n");
     }
-    return aerror();
+    aerror();
 }
 
-static LispObject wrong(int given, int wanted, LispObject env)
+static LispObject wrong [[noreturn]] (int given, int wanted, LispObject env)
 {   errorNest safe;
     char msg[128];
     const char* fname = "function";
@@ -568,10 +568,10 @@ static LispObject wrong(int given, int wanted, LispObject env)
     else std::snprintf(msg, sizeof(msg),
                        "%.*s called with %d args where %d wanted",
                        namelen, fname, given, wanted);
-    return aerror(msg);
+    aerror(msg);
 }
 
-static LispObject wrong(int given, LispObject env)
+static LispObject wrong [[noreturn]] (int given, LispObject env)
 {   errorNest safe;
     char msg[128];
     const char* fname = "function";
@@ -591,133 +591,133 @@ static LispObject wrong(int given, LispObject env)
     else std::snprintf(msg, sizeof(msg),
                        "%.*s called incorrectly with %d args",
                        namelen, fname, given);
-    return aerror(msg);
+    aerror(msg);
 }
 
 LispObject toofew()
-{   return aerror("function called with too few arguments");
+{   aerror("function called with too few arguments");
 }
 
 LispObject toomany()
-{   return aerror("function called with too many arguments");   
+{   aerror("function called with too many arguments");   
 }
 
 LispObject got_0_wanted_1(LispObject env)
-{   return wrong(0, 1, env);
+{   wrong(0, 1, env);
 }
 
 LispObject got_0_wanted_2(LispObject env)
-{   return wrong(0, 2, env);
+{   wrong(0, 2, env);
 }
 
 LispObject got_0_wanted_3(LispObject env)
-{   return wrong(0, 3, env);
+{   wrong(0, 3, env);
 }
 
 LispObject got_0_wanted_4up(LispObject env)
-{   return wrong(0, 4, env);
+{   wrong(0, 4, env);
 }
 
 LispObject got_0_wanted_other(LispObject env)
-{   return wrong(0, env);
+{   wrong(0, env);
 }
 
 
 LispObject got_1_wanted_0(LispObject env, LispObject a1)
-{   return wrong(1, 0, env);
+{   wrong(1, 0, env);
 }
 
 LispObject got_1_wanted_2(LispObject env, LispObject a1)
-{   return wrong(1, 2, env);
+{   wrong(1, 2, env);
 }
 
 LispObject got_1_wanted_3(LispObject env, LispObject a1)
-{   return wrong(1, 3, env);
+{   wrong(1, 3, env);
 }
 
 LispObject got_1_wanted_4up(LispObject env, LispObject a1)
-{   return wrong(1, 4, env);
+{   wrong(1, 4, env);
 }
 
 LispObject got_1_wanted_other(LispObject env, LispObject a1)
-{   return wrong(1, env);
+{   wrong(1, env);
 }
 
 
 LispObject got_2_wanted_0(LispObject env, LispObject a1, LispObject a2)
-{   return wrong(2, 0, env);
+{   wrong(2, 0, env);
 }
 
 LispObject got_2_wanted_1(LispObject env, LispObject a1, LispObject a2)
-{   return wrong(2, 1, env);
+{   wrong(2, 1, env);
 }
 
 LispObject got_2_wanted_3(LispObject env, LispObject a1, LispObject a2)
-{   return wrong(2, 3, env);
+{   wrong(2, 3, env);
 }
 
 LispObject got_2_wanted_4up(LispObject env, LispObject a1, LispObject a2)
-{   return wrong(2, 4, env);
+{   wrong(2, 4, env);
 }
 
 LispObject got_2_wanted_other(LispObject env, LispObject a1, LispObject a2)
-{   return wrong(2, env);
+{   wrong(2, env);
 }
 
 
 LispObject got_3_wanted_0(LispObject env, LispObject a1,
                           LispObject a2, LispObject a3)
-{   return wrong(3, 0,env);
+{   wrong(3, 0,env);
 }
 
 LispObject got_3_wanted_1(LispObject env, LispObject a1,
                           LispObject a2, LispObject a3)
-{   return wrong(3, 1, env);
+{   wrong(3, 1, env);
 }
 
 LispObject got_3_wanted_2(LispObject env, LispObject a1,
                           LispObject a2, LispObject a3)
-{   return wrong(3, 2, env);
+{   wrong(3, 2, env);
 }
 
 LispObject got_3_wanted_4up(LispObject env, LispObject a1,
                             LispObject a2, LispObject a3)
-{   return wrong(3, 4, env);
+{   wrong(3, 4, env);
 }
 
 LispObject got_3_wanted_other(LispObject env, LispObject a1,
                               LispObject a2, LispObject a3)
-{   return wrong(3, env);
+{   wrong(3, env);
 }
 
 
 LispObject got_4up_wanted_0(LispObject env, LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4up)
-{   return wrong(4, 0, env);
+{   wrong(4, 0, env);
 }
 
 LispObject got_4up_wanted_1(LispObject env, LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4up)
-{   return wrong(4, 1, env);
+{   wrong(4, 1, env);
 }
 
 LispObject got_4up_wanted_2(LispObject env, LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4up)
-{   return wrong(4, 2, env);
+{   wrong(4, 2, env);
 }
 
 LispObject got_4up_wanted_3(LispObject env, LispObject a1, LispObject a2,
                             LispObject a3, LispObject a4up)
-{   return wrong(4, 3, env);
+{   wrong(4, 3, env);
 }
 
 LispObject got_4up_wanted_other(LispObject env, LispObject a1, LispObject a2,
                                 LispObject a3, LispObject a4up)
-{   return wrong(4, env);
+{   wrong(4, env);
 }
 
 LispObject bad_specialn(LispObject, int, ...)
-{   return aerror("call to special form");
+{   aerror("call to special form");
 }
 
 [[noreturn]] void fatal_error(int code, ...)
@@ -3025,7 +3025,7 @@ int async_interrupt(int type)
 
 LispObject respond_to_stack_event()
 {   uintptr_t f = event_flag.fetch_and(0);
-    if (f == 0) return aerror("stack overflow");
+    if (f == 0) aerror("stack overflow");
 // Each of the messages that I might be sent comes in a separate bit, so
 // here I have to test each bit. I will test the bits in some sort of
 // order because I will only perform one major operation!

@@ -2274,14 +2274,15 @@ inline LispObject old_qpname(LispObject p)
 {   return oldMem(&(reinterpret_cast<Symbol_Head*>(p-TAG_SYMBOL)->pname));
 }
 
-extern LispObject aerror(const char* s, LispObject a);
-extern LispObject aerror(const char* s1, const char* s2, LispObject a);
+extern LispObject aerror [[noreturn]] (const char* s, LispObject a);
+extern LispObject aerror [[noreturn]] (const char* s1, const char* s2,
+                                       LispObject a);
 
 // When I have functions with 4 or more args I may need to
 // extract them..
 
 inline LispObject arg4(const char* name, LispObject a4up)
-{   if (cdr(a4up) != nil) return aerror("Too many args passed to", name, a4up);
+{   if (cdr(a4up) != nil) aerror("Too many args passed to", name, a4up);
     return car(a4up);
 }
 
@@ -2293,7 +2294,6 @@ inline bool a4a5(const char* name, LispObject a4up,
         cdr(a4up) != nil)
     {   a5 = nil;
         aerror(name, a4up);     // wrong number
-        return true;
     }
     a5 = car(a4up);
     return false;
@@ -2306,7 +2306,6 @@ inline bool a4a5a6(const char* name, LispObject a4up,
     if (a4up == nil)
     {   a5 = a6 = nil;
         aerror(name, a4up); // not enough args
-        return true;
     }
     a5 = car(a4up);
     a4up = cdr(a4up);
@@ -2314,7 +2313,6 @@ inline bool a4a5a6(const char* name, LispObject a4up,
         cdr(a4up) != nil)
     {   a6 = nil;
         aerror(name, a4up); // wrong number
-        return true;
     }
     a6 = car(a4up);
     return false;

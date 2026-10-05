@@ -1,3 +1,0 @@
-#! /bin/sh
-
-poly --eval "PolyML.SaveState.loadState(\"smltex.dump\");"

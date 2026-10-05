@@ -92,7 +92,7 @@ using namespace arithlib_implementation;
 //                             and NaNs into (0/0).
 //                             The non-commuting comparisons will not accept
 //                             complex values (ie >, >=, < and <). These can
-//                             be indentified using a combinationm of the
+//                             be indentified using a combination of the
 //                             commutes and compare bits.
 //
 // The next two are constraints probably better hanndles using ad hoc code.
@@ -121,7 +121,7 @@ using namespace arithlib_implementation;
 //      Bitnot
 //      Bitor
 //      CLeqn
-//      CLquotient
+//      CLQuotient
 //      Ceiling
 //      ClassicalTimes
 //      Difference
@@ -134,7 +134,7 @@ using namespace arithlib_implementation;
 //      Float
 //      Floor
 //      Fround
-//      Ftrunc
+//      Ftruncuncate
 //      Gcdn
 //      Geq
 //      Greaterp
@@ -163,6 +163,7 @@ using namespace arithlib_implementation;
 //      Neq
 //      Onep
 //      Plus
+//      Plusp
 //      Quotient
 //      Reciprocal
 //      Remainder
@@ -176,14 +177,15 @@ using namespace arithlib_implementation;
 //      Square
 //      Sub1
 //      Times
-//      Trunc
+//      Truncate
+
 //      Zerop
 
 // Here I am going to use a mnemonic in function names:
 //    I integer
 //    B bignum
 //    S short float   (28 bits)
-//    G single float  (32 bits)
+//    F single float  (32 bits)
 //    D double float  (64 bits)
 //    L long float    (128 bits)
 //    C complex
@@ -199,22 +201,20 @@ enum
 // There is a dispatch scheme for unary operators.
 // Well here I will view the dispatch code as compact enough that I
 // will not split it into inline and regular parts. But I still put the
-// cases I care about most first.
+// cases I care about the most first.
 
 template <typename op>
 [[gnu::always_inline]]
 inline auto G(LispObject a)
 {   if (is_fixnum(a)) LIKELY return op::I(a);
     else if constexpr (op::flags & op_fixnum)
-        return aerror(op::name, "given non-fixnum argument", a);
+        aerror(op::name, "given non-fixnum argument", a);
     else
-    {   if (is_bignum(a)) LIKELY return op::B(a);
+    {   if (is_new_bignum(a)) LIKELY return op::B(a);
         else if constexpr (op::flags & op_int)
-        {   (void)aerror(op::name, "given non-integer argument", a);
-            return op::I(fixnum_of_int(0));
-        }
+            aerror(op::name, "given non-integer argument", a);
         else
-        {   if (is_double_float(a)) LIKELY return op::L(double_float_val(a));
+        {   if (is_double_float(a)) LIKELY return op::D(double_float_val(a));
             else if (is_ratio(a)) LIKELY return op::R(numerator(a), denominator(a));
             else if (is_long_float(a)) LIKELY return op::L(long_float_val(a));
             else if (is_single_float(a)) LIKELY return op::S(single_float_val(a));
@@ -222,11 +222,7 @@ inline auto G(LispObject a)
             if constexpr ((op::flags & op_compare) == 0)
             {   if (is_complex(a)) return op::C(real_part(a), imag_part(a));
             }
-            (void)aerror(op::name, a);
-// I need to appear to return a result of the correct type eben though
-// aerror() should not return. Every operation should support fixnums, so
-// I can use the "I" method to get things in a satisfactory state.
-            return op::I(fixnum_of_int(0));
+            aerror(op::name, a);
         }
     }
 }
@@ -238,39 +234,42 @@ inline auto G(LispObject a)
 extern void float_to_rational(double f, LispObject& p, LispObject& q);
 extern void float128_to_rational(FLOAT_128 f, LispObject& p, LispObject& q);
 
+#define pending() { Lenable_errorset(nil,                \
+                                     fixnum_of_int(3),   \
+                                     fixnum_of_int(3));  \
+                    aerror(where(name)); }
+
 class Long_float_val
 {
 public:
     static constexpr const char* name = "long-float-val";
     static constexpr const unsigned int flags = 0;
     static FLOAT_128 error(LispObject a)
-    {   (void) aerror(name, " given non-number", a);
-        return NAN128();
+    {   aerror(name, " given non-number", a);
     }
-
     static FLOAT_128 I(LispObject a)
     {   return (FLOAT_128)int_of_fixnum(a);
     }
     static FLOAT_128 B(LispObject a)
-    {   return LF_C(999.999);
+    {   pending();
     }
-    static FLOAT_128 S(LispObject a)
-    {   return (FLOAT_128)short_float_val(a);
+    static FLOAT_128 S(double a)
+    {   return (FLOAT_128)a;
     }
-    static FLOAT_128 F(LispObject a)
-    {   return (FLOAT_128)single_float_val(a);
+    static FLOAT_128 F(double a)
+    {   return (FLOAT_128)a;
     }
-    static FLOAT_128 D(LispObject a)
-    {   return (FLOAT_128)double_float_val(a);
+    static FLOAT_128 D(double a)
+    {   return (FLOAT_128)a;
     }
-    static FLOAT_128 L(LispObject a)
-    {   return long_float_val(a);
+    static FLOAT_128 L(FLOAT_128 a)
+    {   return a;
     }
     static FLOAT_128 R(LispObject p, LispObject q)
-    {   return LF_C(888.999);
+    {   pending();
     }
     static FLOAT_128 C(LispObject r, LispObject i)
-    {   return LF_C(888.999);
+    {   pending();
     }
 };
 
@@ -280,29 +279,14 @@ public:
     static constexpr const char* name = "float-val";
     static constexpr const unsigned int flags = 0;
     static double error(LispObject a)
-    {   (void) aerror(name, " given non-number", a);
-        return 0.0/0.0;
+    {   aerror(name, " given non-number", a);
     }
-
     static double I(LispObject a)
     {   return (double)int_of_fixnum(a);
     }
     static double B(LispObject a)
     {   return 999.999;
     }
-    static double S(LispObject a)
-    {   return (double)short_float_val(a);
-    }
-    static double F(LispObject a)
-    {   return (double)single_float_val(a);
-    }
-    static double D(LispObject a)
-    {   return double_float_val(a);
-    }
-    static double L(LispObject a)
-    {   return (double)long_float_val(a);
-    }
-
     static double S(double a)
     {   return (double)a;
     }
@@ -315,22 +299,25 @@ public:
     static double L(FLOAT_128 a)
     {   return (double)a;
     }
-
-
     static double R(LispObject p, LispObject q)
-    {   return LF_C(888.999);
+    {   pending();
     }
     static double C(LispObject r, LispObject i)
-    {   return 999.999;
+    {   pending();
     }
 };
 
 
 template <typename op>
 auto GX(LispObject a, LispObject b)
-{   if (is_complex(a))
+{
+// If one arg is complex and the other not I widen the simpler one to
+// give it an explicit zero imaginary part, then I have two complex value
+// to handle. The code that handles that may sometimes detect the case
+// of a zero imaginary part and do something special...
+    if (is_complex(a))
     {   if constexpr ((op::flags & (op_compare|op_commutes)) == op_compare)
-             return aerror(op::name, "given complex argument", a, b);
+             aerror(op::name, "given complex argument", a, b);
         else
         {   if (is_complex(b))
                 return op::CC(real_part(a), imag_part(a),
@@ -341,7 +328,7 @@ auto GX(LispObject a, LispObject b)
     }
     else if (is_complex(b))
     {   if constexpr ((op::flags & (op_compare|op_commutes)) == op_compare)
-             return aerror(op::name, "given complex argument", a, b);
+             aerror(op::name, "given complex argument", a, b);
         else return op::CC(a, fixnum_of_int(0),
                            real_part(b), imag_part(b));
     }
@@ -362,7 +349,26 @@ auto GX(LispObject a, LispObject b)
         }
     }
 // Now that floating point comparisons have been sorted I can apply contagion
-// to the longest floating point type present.
+// to the longest floating point type present. Well sorry, there is one more
+// special case. If I do a comparison between any sort of float and an
+// integer (big or smnall) I need to deal with that specially because
+// promoting the integer to a float might lose accuuracy. So I will use
+// methods called DI and DB. Note that the cases where th4e integer is the
+// first argument had been handled earlier.
+    if constexpr (op::flags & op_compare)
+    {   if (is_fixnum(b))
+        {   if (is_double_float(a)) return op::DI(double_float_val(a), b);
+            else if (is_single_float(a)) return op::DI(single_float_val(a), b);
+            else if (is_short_float(a)) return op::DI(short_float_val(a), b);
+            else if (is_long_float(a)) return op::LI(long_float_val(a), b);
+        }
+        else if (is_new_bignum(b))
+        {   if (is_double_float(a)) return op::DB(double_float_val(a), b);
+            else if (is_single_float(a)) return op::DB(single_float_val(a), b);
+            else if (is_short_float(a)) return op::DB(short_float_val(a), b);
+            else if (is_long_float(a)) return op::LB(long_float_val(a), b);
+        }
+    }
     if (is_long_float(a))
     {   if (is_long_float(b)) return op::LL(long_float_val(a), long_float_val(b));
         else return op::LL(long_float_val(a), G<Long_float_val>(b));
@@ -397,7 +403,7 @@ auto GX(LispObject a, LispObject b)
     }
     else if (is_ratio(b))
         return op::RR(a, fixnum_of_int(1), numerator(a), denominator(a));
-    else return aerror(op::name, "given non-integer argument", a, b);
+    else aerror(op::name, "given non-integer argument", a, b);
 }
 
 // This function - G<op> - is always expanded in-line and tests for and
@@ -428,32 +434,48 @@ inline auto G(LispObject a, LispObject b)
 // be the most heavily used path. 
         if (is_fixnum(b)) LIKELY  return op::II(a, b);
         else if (is_new_bignum(b)) return op::IB(a, b);
-        else if (is_double_float(b))
-        {   if constexpr (op::flags & op_int)
-                return aerror(op::name, "given non-integer argument", a, b);
-            else
-            {
 // If I have a comparison operation between a small integer and a
 // float I will use the ID method. If the integer value is small
 // enough it can be cmverted to a float without loss, but if it is
 // big I will need to work towards converting to float to and integer.
-                if constexpr (op::flags & op_compare)
-                    return op::ID(int_of_fixnum(a), double_float_val(b));
+        if constexpr (op::flags & op_compare)
+        {   if (is_double_float(b))
+                return op::ID(a, double_float_val(b));
+            if (is_single_float(b))
+                return op::ID(a, single_float_val(b));
+            if (is_short_float(b))
+                return op::ID(a, short_float_val(b));
+            if (is_long_float(b))
+                return op::IL(a, long_float_val(b));
+        }
+        else if (is_double_float(b))
+        {   if constexpr (op::flags & op_int)
+                aerror(op::name, "given non-integer argument", a, b);
 // For non-comparison floating point operations I pass two unboxed
 // double precision values to DD.
-                else return op::DD(
-                    (double)int_of_fixnum(a), double_float_val(b));
-            }
+            else return op::DD(
+                (double)int_of_fixnum(a), double_float_val(b));
         }
     }
     else if (is_new_bignum(a)) LIKELY
     {   if (is_fixnum(b)) LIKELY
-            if constexpr (op::flags & op_commutes) return op::IB(b, a);
+        {   if constexpr (op::flags & op_commutes) return op::IB(b, a);
             else return op::BI(a, b);
-        else if (is_new_bignum(b)) return op::BB(a, b);
+        }
+        if (is_new_bignum(b)) return op::BB(a, b);
+        if constexpr (op::flags & op_compare)
+        {   if (is_double_float(b))
+                return op::BD(a, double_float_val(b));
+            if (is_single_float(b))
+                return op::BD(a, single_float_val(b));
+            if (is_short_float(b))
+                return op::BD(a, short_float_val(b));
+            if (is_long_float(b))
+                return op::BL(a, long_float_val(b));
+        }
         else if (is_double_float(b))
         {   if constexpr (op::flags & op_int)
-                return aerror(op::name, "given non-integer argument", a, b);
+                aerror(op::name, "given non-integer argument", a, b);
             else
             {
 // When I bignum is compared against a float I will use BD.
@@ -471,9 +493,7 @@ inline auto G(LispObject a, LispObject b)
         }
     }
     if constexpr (op::flags & op_int)
-    {   (void)aerror(op::name, "given non-integer argument", a, b);
-        return op::II(fixnum_of_int(0), fixnum_of_int(0));
-    }
+        aerror(op::name, "given non-integer argument", a, b);
     else
     {   if (is_double_float(a)) LIKELY
         {   if (is_double_float(b)) LIKELY
@@ -502,8 +522,6 @@ inline LispObject csl_bignum(uint64_t* a)
 inline uint64_t* arithlib_bignum(LispObject a)
 {   return (uint64_t*)(a - TAG_NUMBERS + 8);
 }
-
-
 
 // Now the cases that are in general top-level use.
 
@@ -634,12 +652,29 @@ public:
     [[gnu::always_inline]]
     static LispObject II(LispObject a, LispObject b)
     {   intptr_t c;
-        if (!__builtin_add_overflow((intptr_t)(a-TAG_FIXNUM), b, &c))
+        if (!__builtin_mul_overflow((intptr_t)(a-TAG_FIXNUM),
+                                    int_of_fixnum(b),
+                                    &c))
             LIKELY
-            return c;
-        uint64_t* r = reserve(1);
-        r[0] = int_of_fixnum(a) + int_of_fixnum(b);
-        return confirmSize(r, 1, 1);
+            return c + TAG_FIXNUM;
+// Here the prodict is at least 2^59 and occasionally it will fit into
+// a 1-word bignum, but probably more often into a 2-word one.
+        SignedDigit hi;
+        Digit lo;
+        signedMultiply64(int_of_fixnum(a), int_of_fixnum(b), hi, lo);
+        if ((hi==0 && positive(lo)) ||
+            (hi==-1 && negative(lo))) UNLIKELY
+        {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo)))
+                LIKELY
+                return intToHandle(static_cast<SignedDigit>(lo));
+            std::uint64_t* r = reserve(1);
+            r[0] = lo;
+            return confirmSize(r, 1, 1);
+        }
+        std::uint64_t* r = reserve(2);
+        r[0] = lo;
+        r[1] = hi;
+        return confirmSize(r, 2, 2);
     }
 
     static LispObject IB(LispObject a, LispObject b)
@@ -699,16 +734,32 @@ public:
 // Divide two Fixnums - this is the case that I expect to be most common,
 // and the path where there is no overflow so that the result is also
 // a fixnum is the one to be most careful about.
+// Well the most negative fixnum divided by -1 has to turn into a bignum.
+// Yuk!
 
     [[gnu::always_inline]]
     static LispObject II(LispObject a, LispObject b)
-    {   return fixnum_of_int(
-            int_of_fixnum(a) / int_of_fixnum(b));
+    {   if (a == MOST_NEGATIVE_FIXNUM &&
+            b == fixnum_of_int(-1))
+        {   return make_lisp_integer64(-(int64_t)int_of_fixnum(a));
+        }
+        intptr_t aa = int_of_fixnum(a);
+        intptr_t bb = int_of_fixnum(b);
+        if (bb == 0) aerror("Attempt to divide by zero");
+        return fixnum_of_int(aa / bb);
     }
 
+// If you divide -N by N where -N is the most negative fixnum and hence N
+// is a bignum you get the result -1. Otherwise dividing an integer by
+// a bignum will yield zero;
+
     static LispObject IB(LispObject a, LispObject b)
-    {   return arithlib_lowlevel::Quotient::op(int_of_fixnum(a),
-                                               arithlib_bignum(b));
+    {   uint64_t* bb = arithlib_bignum(b);
+        if (a == MOST_NEGATIVE_FIXNUM &&
+            numberSize(bb) == 1 &&
+            bb[0] == (uint64_t)(-int_of_fixnum(a)))
+            return fixnum_of_int(-1);
+        else return fixnum_of_int(0);
     }
 
     static LispObject BI(LispObject a, LispObject b)
@@ -718,7 +769,7 @@ public:
 
     static LispObject BB(LispObject a, LispObject b)
     {   return arithlib_lowlevel::Quotient::op(arithlib_bignum(a),
-                                             arithlib_bignum(b));
+                                               arithlib_bignum(b));
     }   
 
     static LispObject SS(double a, double b)
@@ -749,6 +800,64 @@ class gRemainder
 public:
     static constexpr const char* name = "remainder";
     static constexpr const unsigned int flags = 0;
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   return fixnum_of_int(
+            int_of_fixnum(a) % int_of_fixnum(b));
+    }
+
+// In general when you divide a fixnum a by a bignum b you get a quotient
+// that is zero, so the remainder will be just a. There is one special case
+// where a is the most negative fixnum and b is its absolute value (which
+// oveflows to become a bignum). Then the quotient is -1 and the remainder
+// is 0.3
+    static LispObject IB(LispObject a, LispObject b)
+    {   uint64_t* bb = arithlib_bignum(b);
+        if (a == MOST_NEGATIVE_FIXNUM &&
+            numberSize(bb) == 1 &&
+            bb[0] == (uint64_t)(-int_of_fixnum(a)))
+            return fixnum_of_int(0);
+        else return a;
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Remainder::op(arithlib_bignum(a),
+                                               int_of_fixnum(b));
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Remainder::op(arithlib_bignum(a),
+                                               arithlib_bignum(b));
+    }   
+
+    static LispObject SS(double a, double b)
+    {   double q = round_to_short(a/b);
+        return make_boxfloat(std::fma(b, -q, a), WANT_SHORT_FLOAT);
+    }
+
+    static LispObject FF(double a, double b)
+    {   double q = (double)(float)(a/b);
+        return make_boxfloat(std::fma(b, -q, a), WANT_SINGLE_FLOAT);
+    }
+
+    static LispObject DD(double a, double b)
+    {   return make_boxfloat(std::fma(b, -a/b, a));
+    }
+
+    static FLOAT_128 remainder(FLOAT_128 p, FLOAT_128 q)
+    {   FLOAT_128 r = p/q;
+        return fma(q, -r, p);
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   return make_boxfloat128(remainder(a, b));
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gExpt
@@ -756,20 +865,139 @@ class gExpt
 public:
     static constexpr const char* name = "expt";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
-class gCLquotient
+class gCLQuotient
 {
 public:
-    static constexpr const char* name = "CLquotient";
+    static constexpr const char* name = "CLQuotient";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
+
+// This is for testing and comparison - it multiplies (just) integers
+// and it uses simple classical algorithms for big arithmetic.
 
 class gClassicalTimes
 {
 public:
     static constexpr const char* name = "classicaltimes";
-    static constexpr const unsigned int flags = 0;
+    static constexpr const unsigned int flags = op_commutes | op_int;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   intptr_t c;
+        if (!__builtin_mul_overflow((intptr_t)(a-TAG_FIXNUM),
+                                    int_of_fixnum(b),
+                                    &c))
+            LIKELY
+            return c + TAG_FIXNUM;
+// Here the prodict is at least 2^59 and occasionally it will fit into
+// a 1-word bignum, but probably more often into a 2-word one.
+        SignedDigit hi;
+        Digit lo;
+        signedMultiply64(int_of_fixnum(a), int_of_fixnum(b), hi, lo);
+        if ((hi==0 && positive(lo)) ||
+            (hi==-1 && negative(lo))) UNLIKELY
+        {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo)))
+                LIKELY
+                return intToHandle(static_cast<SignedDigit>(lo));
+            std::uint64_t* r = reserve(1);
+            r[0] = lo;
+            return confirmSize(r, 1, 1);
+        }
+        std::uint64_t* r = reserve(2);
+        r[0] = lo;
+        r[1] = hi;
+        return confirmSize(r, 2, 2);
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::ClassicalTimes::op(int_of_fixnum(a),
+                                                     arithlib_bignum(b));
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::ClassicalTimes::op(arithlib_bignum(a),
+                                                     arithlib_bignum(b));
+    }
 };
 
 class gDivide
@@ -777,13 +1005,142 @@ class gDivide
 public:
     static constexpr const char* name = "divide";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   if (a == MOST_NEGATIVE_FIXNUM &&
+            b == fixnum_of_int(-1))
+        {   return cons(make_lisp_integer64(-(int64_t)int_of_fixnum(a)),
+                        fixnum_of_int(0));
+        }
+        intptr_t aa = int_of_fixnum(a);
+        intptr_t bb = int_of_fixnum(b);
+        if (bb == 0) aerror("Attempt to divide by zero");
+        intptr_t q = aa/bb;
+        intptr_t r = aa%bb;
+        return cons(fixnum_of_int(q), fixnum_of_int(r));
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {      uint64_t* bb = arithlib_bignum(b);
+        if (a == MOST_NEGATIVE_FIXNUM &&
+            numberSize(bb) == 1 &&
+            bb[0] == (uint64_t)(-int_of_fixnum(a)))
+            return cons(fixnum_of_int(-1), fixnum_of_int(0));
+        else return cons(fixnum_of_int(0), a);
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   return cons(arithlib_lowlevel::Quotient::op(arithlib_bignum(a),
+                                                    int_of_fixnum(b)),
+                    arithlib_lowlevel::Remainder::op(arithlib_bignum(a),
+                                                     int_of_fixnum(b)));
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   return cons(arithlib_lowlevel::Quotient::op(arithlib_bignum(a),
+                                                    arithlib_bignum(b)),
+                    arithlib_lowlevel::Remainder::op(arithlib_bignum(a),
+                                                    arithlib_bignum(b)));
+    }   
+
+    static double quotrem28(double p, double q, double& quotient)
+    {   double r = round_to_short(p/q);
+        return std::fma(q, -r, p);
+    }
+
+    static double quotrem32(double p, double q, double& quotient)
+    {   quotient = (double)(float)(p/q);
+        return std::fma(q, -quotient, p);
+    }
+
+    static double quotrem(double p, double q, double& quotient)
+    {   quotient = p/q;
+        return std::fma(q, -quotient, p);
+    }
+
+    static LispObject SS(double a, double b)
+    {   double q, r;
+        r = quotrem28(a, b, q);
+        return cons(make_boxfloat(q, WANT_SHORT_FLOAT),
+                    make_boxfloat(r, WANT_SHORT_FLOAT));
+    }
+
+    static LispObject FF(double a, double b)
+    {   double q, r;
+        r = quotrem32(a, b, q);
+        return cons(make_boxfloat(q, WANT_SINGLE_FLOAT),
+                    make_boxfloat(r, WANT_SINGLE_FLOAT));
+    }
+
+    static LispObject DD(double a, double b)
+    {   double q, r;
+        r = quotrem(a, b, q);
+        return cons(make_boxfloat(q), make_boxfloat(r));
+    }
+
+    static FLOAT_128 quotrem(FLOAT_128 p, FLOAT_128 q, FLOAT_128& quotient)
+    {   FLOAT_128 r = p/q;
+        return fma(q, -r, p);
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   FLOAT_128 q, r;
+        r = quotrem(a, b, q);
+        return cons(make_boxfloat128(q), make_boxfloat128(r));
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gMod
 {
 public:
     static constexpr const char* name = "mod";
-    static constexpr const unsigned int flags = 0;
+    static constexpr const unsigned int flags = op_int;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gGcdn
@@ -833,7 +1190,52 @@ class gLcmn
 {
 public:
     static constexpr const char* name = "lcmn";
-    static constexpr const unsigned int flags = 0;
+    static constexpr const unsigned int flags = op_int | op_commutes;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   if (a == fixnum_of_int(0)) return b;
+        if (b == fixnum_of_int(0)) return a;
+        intptr_t aa = int_of_fixnum(a);
+        intptr_t bb = int_of_fixnum(b);
+        if (aa < 0) aa = -aa;
+        if (bb < 0) bb = -bb;
+        if (bb > aa) std::swap(aa, bb);
+        while (bb != 0)
+        {   intptr_t c = aa%bb;
+            aa = bb;
+            bb = c;
+        }
+        if ((a < 0) != (b<0)) aa = -aa;   // so sign of result is +ve.
+// return a*(b/gcd(a,b))
+        return gTimes::II(a, fixnum_of_int(int_of_fixnum(b)/aa));
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Plus::op(int_of_fixnum(a),
+                                           arithlib_bignum(b));
+    }
+
+    static LispObject BI(LispObject a, LispObject b);
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Lcm::op(arithlib_bignum(a),
+                                          arithlib_bignum(b));
+    }   
+
+    static LispObject SS(double a, double b);
+
+    static LispObject FF(double a, double b);
+
+    static LispObject DD(double a, double b);
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b);
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gBitand
@@ -841,6 +1243,45 @@ class gBitand
 public:
     static constexpr const char* name = "bitand";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gBitor
@@ -848,6 +1289,45 @@ class gBitor
 public:
     static constexpr const char* name = "bitor";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gBiteqv
@@ -855,6 +1335,45 @@ class gBiteqv
 public:
     static constexpr const char* name = "biteqv";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gBitneqv
@@ -862,6 +1381,45 @@ class gBitneqv
 public:
     static constexpr const char* name = "bitneqv";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gLogbitp
@@ -875,14 +1433,230 @@ class gLessp
 {
 public:
     static constexpr const char* name = "lessp";
-    static constexpr const unsigned int flags = 0;
+    static constexpr const unsigned int flags = op_compare;
+
+    [[gnu::always_inline]]
+    static bool II(LispObject a, LispObject b)
+    {   return a < b;
+    }
+
+    static bool IB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Lessp::op(int_of_fixnum(a),
+                                            arithlib_bignum(b));
+    }
+
+    static bool BI(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Lessp::op(arithlib_bignum(a),
+                                            int_of_fixnum(b));
+    }
+
+    static bool BB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Lessp::op(arithlib_bignum(a),
+                                            arithlib_bignum(b));
+    }   
+
+    static bool ID(LispObject a, double b)
+    {   int64_t aa = int_of_fixnum(a);
+// I will provide a commentary here, but in later comparisons where I
+// use similar code I will not even put a reference back to here. COmparing
+// a 64-bit integer and a 64-bit float is not totally trivial. Start my
+// mapping the integer to a float. It is value is greater than 2^53 this
+// can lead to rounding. If the floating point value is not exactly equal
+// to the true integer value it will be one of the pair of adjacent floating
+// values one below and one above the true value.
+        double da = (double)aa;
+// ... thus if this value is strictly less than the floating point number b
+// the integer will be. Here is a picture. If I is the integer and the two
+// X symbols mark adjacent floating point numbers then any value strictly
+// greater than the lower X must be at least the larget X and hence greater
+// than I.
+//               ...,,X.....I..X........X........X
+//                    ?b       ?b       ?b       ?b
+        if (da < b) return true;
+// Conversely if da > b then a > b. But given that I know it is not < I will
+// use a != test since that makes the case of b being a NaN work out correctly.
+        if (da != b) return false;
+// Now we know that da == b, with da being either a rounded up or down a bit.
+// So b is very close to a. And we cal ALMOST go ib = (int64_t)b and then do
+// an integer comparison. Howevert there is just one bad case, which is when
+// b = 2^63 in which case turning it into an intewger would overflow. Note
+// that b = -2^63 would be safe! SO I have to hanbdle the case b == 2^63
+// specially!
+        if (b == 0x1.0p+63) return true;
+        else return aa < (int64_t)b;
+    }
+
+// Every fixnum can be converted to a FLOAT_128 without any loss, so this
+// case is easy.
+
+    static bool IL(LispObject a, FLOAT_128 b)
+    {   return (FLOAT_128)a < b;
+    }
+
+    static bool BD(LispObject a, double b)
+    {   return arithlib_lowlevel::Lessp::op(arithlib_bignum(a), b);
+    }   
+
+    static bool BL(LispObject a, FLOAT_128 b)
+    {   aerror("not done yet");
+    }
+
+    static bool DI(double a, LispObject b)
+    {   int64_t bb = int_of_fixnum(b);
+        double db = (double)bb;
+        if (a < db) return true;
+        if (a != db) return false;
+        if (a == 0x1.0p+63) return false;
+        else return (int64_t)a < bb;
+    }
+
+    static bool LI(FLOAT_128 a, LispObject b)
+    {   return a < (FLOAT_128)int_of_fixnum(b);
+    }
+
+    static bool DB(double a, LispObject b)
+    {   return arithlib_lowlevel::Lessp::op(a, arithlib_bignum(b));
+    }   
+
+    static bool LB(FLOAT_128 a, LispObject b)
+    {   pending();
+    }
+
+    static bool SS(double a, double b)
+    {   return a < b;
+    }
+
+    static bool FF(double a, double b)
+    {   return a < b;
+    }
+
+    static bool DD(double a, double b)
+    {   return a < b;
+    }
+
+    static bool LL(FLOAT_128 a, FLOAT_128 b)
+    {   return a < b;
+    }
+ 
+    static bool RR(LispObject p1, LispObject q1,
+                   LispObject p2, LispObject q2)
+    {   return G<gLessp>(
+            G<gTimes>(p1, q2),
+            G<gTimes>(p2, q1));
+    }
+
+    static bool CC(LispObject p1, LispObject q1,
+                   LispObject p2, LispObject q2);   // Unused
 };
 
 class gLeq
 {
 public:
     static constexpr const char* name = "leq";
-    static constexpr const unsigned int flags = 0;
+    static constexpr const unsigned int flags = op_compare;
+
+    [[gnu::always_inline]]
+    static bool II(LispObject a, LispObject b)
+    {   return a <= b;
+    }
+
+    static bool IB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Leq::op(int_of_fixnum(a),
+                                          arithlib_bignum(b));
+    }
+
+    static bool BI(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Leq::op(arithlib_bignum(a),
+                                          int_of_fixnum(b));
+    }
+
+    static bool BB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Leq::op(arithlib_bignum(a),
+                                          arithlib_bignum(b));
+    }   
+
+    static bool ID(LispObject a, double b)
+    {   int64_t aa = int_of_fixnum(a);
+// I will talk this case through line at a time.
+        double da = (double)aa;
+// da may either have a value exactly equal to aa, or it can be one of
+// a pair of adjacent floating point numbers one below and one above the
+// exact not not representable (as a float) value of aa. If da<b than
+// it is certain that aa<b. Consider three cases. (1) da did not
+// need rounding, then the test is clearly safe. (2) if da was rounded up
+// then aa < da < b hence aa < b. And finally (3) if da was rounded down
+// and da < b then b is at least as big as the next floating point number
+// above da. If and that is not equal to aa (otherwise case (1) applied)
+// so this value is greater than aa. And we are home.
+        if (da < b) return true;
+// Similarly if da > b we can return a clear result. Well if aa == b then
+// (double)aa will be equal to be because the equality can only happen
+// when aa is a number that maps without rounding onto floating point. And
+// making this test used  "!=" deals with the NaN case.
+        if (da != b) return false;
+// b can still be JUST too large to convery to an integer...
+        if (b == 0x1.0p+63) return true;
+// .. but now b can turn into an integer without loss...
+        else return aa <= (int64_t)b;
+    }
+
+    static bool IL(LispObject a, FLOAT_128 b)
+    {   return (FLOAT_128)a <= b;
+    }
+
+    static bool BD(LispObject a, double b)
+    {   return arithlib_lowlevel::Leq::op(arithlib_bignum(a), b);
+    }   
+
+    static bool BL(LispObject a, FLOAT_128 b)
+    {   pending();
+    }
+
+    static bool DI(double a, LispObject b)
+    {   int64_t bb = int_of_fixnum(b);
+        double db = (double)bb;
+        if (a < db) return true;
+        if (a != db) return false;
+        if (a == 0x1.0p+63) return false;
+        else return (int64_t)a <= bb;
+    }
+
+    static bool LI(FLOAT_128 a, LispObject b)
+    {   return a <= (FLOAT_128)int_of_fixnum(b);
+    }
+
+    static bool DB(double a, LispObject b)
+    {   return arithlib_lowlevel::Leq::op(a, arithlib_bignum(b));
+    }   
+
+    static bool LB(FLOAT_128 a, LispObject b)
+    {   aerror("not done yet");
+    }
+
+    static bool SS(double a, double b)
+    {   return a <= b;
+    }
+
+    static bool FF(double a, double b)
+    {   return a <= b;
+    }
+
+    static bool DD(double a, double b)
+    {   return a <= b;
+    }
+
+    static bool LL(FLOAT_128 a, FLOAT_128 b)
+    {   return a <= b;
+    }
+ 
+    static bool RR(LispObject p1, LispObject q1,
+                   LispObject p2, LispObject q2)
+    {   return G<gLeq>(
+            G<gTimes>(p1, q2),
+            G<gTimes>(p2, q1));
+    }
+    static bool CC(LispObject p1, LispObject q1,
+                   LispObject p2, LispObject q2);
 };
 
 class gEqn
@@ -890,6 +1664,45 @@ class gEqn
 public:
     static constexpr const char* name = "eqn";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gCLeqn
@@ -897,6 +1710,45 @@ class gCLeqn
 public:
     static constexpr const char* name = "CLeqn";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gNeq
@@ -904,20 +1756,209 @@ class gNeq
 public:
     static constexpr const char* name = "neqn";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gGeq
 {
 public:
     static constexpr const char* name = "geq";
-    static constexpr const unsigned int flags = 0;
+    static constexpr const unsigned int flags = op_compare;
+
+    [[gnu::always_inline]]
+    static bool II(LispObject a, LispObject b)
+    {   return a >= b;
+    }
+
+    static bool IB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Geq::op(int_of_fixnum(a),
+                                          arithlib_bignum(b));
+    }
+
+    static bool BI(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Geq::op(arithlib_bignum(a),
+                                          int_of_fixnum(b));
+    }
+
+    static bool BB(LispObject a, LispObject b)
+    {   return arithlib_lowlevel::Geq::op(arithlib_bignum(a),
+                                          arithlib_bignum(b));
+    }   
+
+    static bool ID(LispObject a, double b)
+    {   return gLeq::DI(b, a);
+    }
+
+    static bool IL(LispObject a, FLOAT_128 b)
+    {   return (FLOAT_128)a >= b;
+    }
+
+    static bool BD(LispObject a, double b)
+    {   return arithlib_lowlevel::Geq::op(arithlib_bignum(a), b);
+    }   
+
+    static bool BL(LispObject a, FLOAT_128 b)
+    {   aerror("not done yet");
+    }
+
+    static bool DI(double a, LispObject b)
+    {   return gLeq::ID(b, a);
+    }
+
+    static bool LI(FLOAT_128 a, LispObject b)
+    {   return a >= (FLOAT_128)int_of_fixnum(b);
+    }
+
+    static bool DB(double a, LispObject b)
+    {   return arithlib_lowlevel::Geq::op(a, arithlib_bignum(b));
+    }   
+
+    static bool LB(FLOAT_128 a, LispObject b)
+    {   aerror("not done yet");
+    }
+
+    static bool SS(double a, double b)
+    {   return a >= b;
+    }
+
+    static bool FF(double a, double b)
+    {   return a >= b;
+    }
+
+    static bool DD(double a, double b)
+    {   return a >= b;
+    }
+
+    static bool LL(FLOAT_128 a, FLOAT_128 b)
+    {   return a >= b;
+    }
+ 
+    static bool RR(LispObject p1, LispObject q1,
+                   LispObject p2, LispObject q2)
+    {   return gLeq::RR(p2, q2, p1, q1);
+    }
+
+    static bool CC(LispObject p1, LispObject q1,
+                   LispObject p2, LispObject q2);
 };
 
 class gGreaterp
 {
 public:
     static constexpr const char* name = "greaterp";
-    static constexpr const unsigned int flags = 0;
+    static constexpr const unsigned int flags = op_compare;
+
+
+    [[gnu::always_inline]]
+    static bool II(LispObject a, LispObject b)
+    {   return a > b;
+    }
+
+    static bool IB(LispObject a, LispObject b)
+    {   return gLessp::BI(b, a);
+    }
+
+    static bool BI(LispObject a, LispObject b)
+    {   return gLessp::IB(b, a);
+    }
+
+    static bool BB(LispObject a, LispObject b)
+    {   return gLessp::BB(b, a);
+    }   
+
+    static bool ID(LispObject a, double b)
+    {   return gLessp::DI(b, a);
+    }
+
+    static bool IL(LispObject a, FLOAT_128 b)
+    {   return (FLOAT_128)a > b;
+    }
+
+    static bool BD(LispObject a, double b)
+    {   return gLessp::DB(b, a);
+    }   
+
+    static bool BL(LispObject a, FLOAT_128 b)
+    {   return gLessp::LB(b, a);
+    }
+
+    static bool DI(double a, LispObject b)
+    {   return gLessp::ID(b, a);
+    }
+
+    static bool LI(FLOAT_128 a, LispObject b)
+    {   return a > (FLOAT_128)int_of_fixnum(b);
+    }
+
+    static bool DB(double a, LispObject b)
+    {   return gLessp::BD(b, a);
+    }   
+
+    static bool LB(FLOAT_128 a, LispObject b)
+    {   return gLessp::BL(b, a);
+    }
+
+    static bool SS(double a, double b)
+    {   return a > b;
+    }
+
+    static bool FF(double a, double b)
+    {   return a > b;
+    }
+
+    static bool DD(double a, double b)
+    {   return a > b;
+    }
+
+    static bool LL(FLOAT_128 a, FLOAT_128 b)
+    {   return a > b;
+    }
+ 
+    static bool RR(LispObject p1, LispObject q1,
+                   LispObject p2, LispObject q2)
+    {   return gLessp::RR(p2, q2, p1, q1);
+    }
+
+    static bool CC(LispObject p1, LispObject q1,
+                   LispObject p2, LispObject q2);
 };
 
 class gLeftshift
@@ -925,6 +1966,45 @@ class gLeftshift
 public:
     static constexpr const char* name = "leftshift";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gRightshift
@@ -932,6 +2012,45 @@ class gRightshift
 public:
     static constexpr const char* name = "rightshift";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gIplus
@@ -939,6 +2058,45 @@ class gIplus
 public:
     static constexpr const char* name = "iplus";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gIdifference
@@ -946,6 +2104,45 @@ class gIdifference
 public:
     static constexpr const char* name = "idifference";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gItimes
@@ -953,6 +2150,45 @@ class gItimes
 public:
     static constexpr const char* name = "itimes";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gIquotient
@@ -960,6 +2196,45 @@ class gIquotient
 public:
     static constexpr const char* name = "iquotient";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gIlessp
@@ -967,6 +2242,45 @@ class gIlessp
 public:
     static constexpr const char* name = "ilessp";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gIleq
@@ -974,6 +2288,45 @@ class gIleq
 public:
     static constexpr const char* name = "ileq";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gIgreaterp
@@ -981,6 +2334,45 @@ class gIgreaterp
 public:
     static constexpr const char* name = "igreaterp";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gIgeq
@@ -988,6 +2380,45 @@ class gIgeq
 public:
     static constexpr const char* name = "igeq";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gModular_plus
@@ -995,6 +2426,45 @@ class gModular_plus
 public:
     static constexpr const char* name = "modular-plus";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gModular_difference
@@ -1002,6 +2472,45 @@ class gModular_difference
 public:
     static constexpr const char* name = "modular-difference";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gModular_times
@@ -1009,6 +2518,45 @@ class gModular_times
 public:
     static constexpr const char* name = "modular-times";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gModular_quotient
@@ -1016,6 +2564,45 @@ class gModular_quotient
 public:
     static constexpr const char* name = "modular-quotient";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gModular_expt
@@ -1023,6 +2610,45 @@ class gModular_expt
 public:
     static constexpr const char* name = "modular-expt";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gFloor
@@ -1030,6 +2656,45 @@ class gFloor
 public:
     static constexpr const char* name = "floor";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gCeiling
@@ -1037,13 +2702,91 @@ class gCeiling
 public:
     static constexpr const char* name = "ceiling";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
-class gTrunc
+class gTruncate
 {
 public:
     static constexpr const char* name = "trunc";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gRound
@@ -1051,6 +2794,45 @@ class gRound
 public:
     static constexpr const char* name = "round";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gFfloor
@@ -1058,6 +2840,45 @@ class gFfloor
 public:
     static constexpr const char* name = "ffloor";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gFceiling
@@ -1065,13 +2886,91 @@ class gFceiling
 public:
     static constexpr const char* name = "fceiling";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
-class gFtrunc
+class gFtruncate
 {
 public:
     static constexpr const char* name = "ftrunc";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gFround
@@ -1079,6 +2978,45 @@ class gFround
 public:
     static constexpr const char* name = "fround";
     static constexpr const unsigned int flags = 0;
+
+    [[gnu::always_inline]]
+    static LispObject II(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject IB(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BI(LispObject a, LispObject b)
+    {   pending();
+    }
+
+    static LispObject BB(LispObject a, LispObject b)
+    {   pending();
+    }   
+
+    static LispObject SS(double a, double b)
+    {   pending();
+    }
+
+    static LispObject FF(double a, double b)
+    {   pending();
+    }
+
+    static LispObject DD(double a, double b)
+    {   pending();
+    }
+
+    static LispObject LL(FLOAT_128 a, FLOAT_128 b)
+    {   pending();
+    }
+ 
+    static LispObject RR(LispObject p1, LispObject q1,
+                         LispObject p2, LispObject q2);
+
+    static LispObject CC(LispObject r1, LispObject i1,
+                         LispObject r2, LispObject i2);
 };
 
 class gAdd1
@@ -1086,6 +3024,37 @@ class gAdd1
 public:
     static constexpr const char* name = "add1";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gSub1
@@ -1093,6 +3062,37 @@ class gSub1
 public:
     static constexpr const char* name = "sub1";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gZerop
@@ -1109,20 +3109,20 @@ public:
     {   return false;
     }
 
-    static bool S(LispObject a)
-    {   return short_float_val(a) == 0.0;
+    static bool S(double a)
+    {   return a == 0.0;
     }
 
-    static bool F(LispObject a)
-    {   return single_float_val(a) == 0.0;
+    static bool F(double a)
+    {   return a == 0.0;
     }
 
-    static bool D(LispObject a)
-    {   return double_float_val(a) == 0.0;
+    static bool D(double a)
+    {   return a == 0.0;
     }
 
-    static bool L(LispObject a)
-    {   return long_float_val(a) == LF_C(0.0); 
+    static bool L(FLOAT_128 a)
+    {   return a == LF_C(0.0); 
     }
 
     static bool R(LispObject p, LispObject q)
@@ -1149,20 +3149,20 @@ public:
     {   return false;
     }
 
-    static bool S(LispObject a)
-    {   return short_float_val(a) == 1.0;
+    static bool S(double a)
+    {   return a == 1.0;
     }
 
-    static bool F(LispObject a)
-    {   return single_float_val(a) == 1.0;
+    static bool F(double a)
+    {   return a == 1.0;
     }
 
-    static bool D(LispObject a)
-    {   return double_float_val(a) == 1.0;
+    static bool D(double a)
+    {   return a == 1.0;
     }
 
-    static bool L(LispObject a)
-    {   return long_float_val(a) == LF_C(1.0); 
+    static bool L(FLOAT_128 a)
+    {   return a == LF_C(1.0); 
     }
 
     static bool R(LispObject p, LispObject q)
@@ -1189,20 +3189,20 @@ public:
     {   return false;
     }
 
-    static bool S(LispObject a)
-    {   return short_float_val(a) == -1.0;
+    static bool S(double a)
+    {   return a == -1.0;
     }
 
-    static bool F(LispObject a)
-    {   return single_float_val(a) == -1.0;
+    static bool F(double a)
+    {   return a == -1.0;
     }
 
-    static bool D(LispObject a)
-    {   return double_float_val(a) == -1.0;
+    static bool D(double a)
+    {   return a == -1.0;
     }
 
-    static bool L(LispObject a)
-    {   return long_float_val(a) == -LF_C(1.0); 
+    static bool L(FLOAT_128 a)
+    {   return a == -LF_C(1.0); 
     }
 
     static bool R(LispObject p, LispObject q)
@@ -1237,20 +3237,20 @@ public:
     {   return arithlib_implementation::Minus::op(arithlib_bignum(a));
     }
 
-    static LispObject S(LispObject a)
-    {   return pack_short_float(-short_float_val(a));
+    static LispObject S(double a)
+    {   return pack_short_float(-a);
     }
 
-    static LispObject F(LispObject a)
-    {   return pack_single_float(-single_float_val(a));
+    static LispObject F(double a)
+    {   return pack_single_float(-a);
     }
 
-    static LispObject D(LispObject a)
-    {   return make_boxfloat(-double_float_val(a));
+    static LispObject D(double a)
+    {   return make_boxfloat(-a);
     }
 
-    static LispObject L(LispObject a)
-    {   return make_boxfloat128(-long_float_val(a)); 
+    static LispObject L(FLOAT_128 a)
+    {   return make_boxfloat128(-a); 
     }
 
     static LispObject R(LispObject p, LispObject q)
@@ -1260,7 +3260,6 @@ public:
     static LispObject C(LispObject r, LispObject i)
     {   return make_complex(G<gMinus>(r), G<gMinus>(i));
     }
-
 };
 
 class gMinusp
@@ -1275,28 +3274,71 @@ public:
 
     static bool B(LispObject a)
     {   uint64_t* p = arithlib_bignum(a);
-        return (SignedDigit)p[numberSize(p)-1] < 0;;
+        return (SignedDigit)p[numberSize(p)-1] < 0;
     }
 
-    static bool S(LispObject a)
-    {   return short_float_val(a) < 0.0;
+    static bool S(double a)
+    {   return a < 0.0;
     }
 
-    static bool F(LispObject a)
-    {   return single_float_val(a) < 0.0;
+    static bool F(double a)
+    {   return a < 0.0;
     }
 
-    static bool D(LispObject a)
-    {   return double_float_val(a) < 0.0;
+    static bool D(double a)
+    {   return a < 0.0;
     }
 
-    static bool L(LispObject a)
-    {   return long_float_val(a) < LF_C(0.0); 
+    static bool L(FLOAT_128 a)
+    {   return a < LF_C(0.0); 
     }
 
     static bool R(LispObject p, LispObject q)
     {   return G<gMinusp>(p);
     }
+
+    static bool C(LispObject R, LispObject i);
+};
+
+class gPlusp
+{
+public:
+    static constexpr const char* name = "minusp";
+    static constexpr const unsigned int flags = op_compare;
+
+    static bool I(LispObject a)
+    {   return (int64_t)a > 0;
+    }
+
+    static bool B(LispObject a)
+    {   uint64_t* p = arithlib_bignum(a);
+// Note this is ">=" because a bignum can not be zero, but if its top
+// digit was about to have its top bit set even though the number is
+// positive it has a padding zero as an extra top digit.
+        return (SignedDigit)p[numberSize(p)-1] >= 0;
+    }
+
+    static bool S(double a)
+    {   return a > 0.0;
+    }
+
+    static bool F(double a)
+    {   return a > 0.0;
+    }
+
+    static bool D(double a)
+    {   return a > 0.0;
+    }
+
+    static bool L(FLOAT_128 a)
+    {   return a > LF_C(0.0); 
+    }
+
+    static bool R(LispObject p, LispObject q)
+    {   return G<gPlusp>(p);
+    }
+
+    static bool C(LispObject R, LispObject i);
 };
 
 class gAbs
@@ -1304,6 +3346,37 @@ class gAbs
 public:
     static constexpr const char* name = "abs";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gSquare
@@ -1311,6 +3384,37 @@ class gSquare
 public:
     static constexpr const char* name = "square";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gBitnot
@@ -1318,6 +3422,37 @@ class gBitnot
 public:
     static constexpr const char* name = "bitnot";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gReciprocal
@@ -1325,6 +3460,37 @@ class gReciprocal
 public:
     static constexpr const char* name = "reciprocal";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gModular_minus
@@ -1332,6 +3498,37 @@ class gModular_minus
 public:
     static constexpr const char* name = "modular-minus";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gModular_reciprocal
@@ -1339,6 +3536,37 @@ class gModular_reciprocal
 public:
     static constexpr const char* name = "modular-reciprocal";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gSafe_modular_reciprocal
@@ -1346,6 +3574,37 @@ class gSafe_modular_reciprocal
 public:
     static constexpr const char* name = "safe-modular6-reciprocal";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gSetmodulus
@@ -1353,6 +3612,37 @@ class gSetmodulus
 public:
     static constexpr const char* name = "setmodulua";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gModularnumber
@@ -1360,6 +3650,37 @@ class gModularnumber
 public:
     static constexpr const char* name = "modular-number";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gFix
@@ -1367,6 +3688,37 @@ class gFix
 public:
     static constexpr const char* name = "fix";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gFloat
@@ -1374,6 +3726,37 @@ class gFloat
 public:
     static constexpr const char* name = "float";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gShort_float
@@ -1381,6 +3764,37 @@ class gShort_float
 public:
     static constexpr const char* name = "short-float";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gSingle_float
@@ -1388,6 +3802,37 @@ class gSingle_float
 public:
     static constexpr const char* name = "single-float";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gLong_float
@@ -1395,6 +3840,37 @@ class gLong_float
 public:
     static constexpr const char* name = "long-float";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gSqrt
@@ -1402,6 +3878,37 @@ class gSqrt
 public:
     static constexpr const char* name = "sqrt";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
 class gIsqrt
@@ -1409,87 +3916,42 @@ class gIsqrt
 public:
     static constexpr const char* name = "isqrt";
     static constexpr const unsigned int flags = 0;
+    static LispObject I(LispObject a)
+    {   pending();
+    }
+
+    static LispObject B(LispObject a)
+    {   pending();
+    }
+
+    static LispObject S(double a)
+    {   pending();
+    }
+
+    static LispObject F(double a)
+    {   pending();
+    }
+
+    static LispObject D(double a)
+    {   pending();
+    }
+
+    static LispObject L(FLOAT_128 a)
+    {   pending();
+    }
+
+    static LispObject R(LispObject p, LispObject q)
+    {   pending();
+    }
+
+    static LispObject C(LispObject r, LispObject i)
+    {   pending();
+    }
 };
 
-// Now some more implementation. Where it seems to make sense I have put
-// method definitions within the classes, however to cope with what
-// might be forward references I need to put some down here.
-
-
-inline LispObject gPlus::RR(LispObject p1, LispObject q1,
-                            LispObject p2, LispObject q2)
-{
-// p1/q1 + p2/q2 will have denominator (q1*q2)/g where g = gcd(q1,q2) and
-// numerator (p1*(q2/g) - p2*(q1/g) but reduced to lowest terms.
-    LispObject g = G<gGcdn>(q1, q2);
-    LispObject q1a = G<gQuotient>(q1, g);
-    LispObject q2a = G<gQuotient>(q2, g);
-    LispObject p = G<gDifference>(G<gTimes>(p1, q2a), G<gTimes>(p2, q1a));
-    LispObject q = G<gTimes>(q1, q2a);
-    g = G<gGcdn>(p, q);
-    return make_ratio(G<gQuotient>(p, g), G<gQuotient>(q, g));
-}
-
-inline LispObject gDifference::RR(LispObject p1, LispObject q1,
-                                  LispObject p2, LispObject q2)
-{
-// p1/q1 + p2/q2 will have denominator (q1*q2)/g where g = gcd(q1,q2) and
-// numerator (p1*(q2/g) + p2*(q1/g) but reduced to lowest terms.
-    LispObject g = G<gGcdn>(q1, q2);
-    LispObject q1a = G<gQuotient>(q1, g);
-    LispObject q2a = G<gQuotient>(q2, g);
-    LispObject p = G<gPlus>(G<gTimes>(p1, q2a), G<gTimes>(p2, q1a));
-    LispObject q = G<gTimes>(q1, q2a);
-    g = G<gGcdn>(p, q);
-    return make_ratio(G<gQuotient>(p, g), G<gQuotient>(q, g));
-}
-
-
-inline LispObject gTimes::RR(LispObject p1, LispObject q1,
-                             LispObject p2, LispObject q2)
-{
-// (p1/q1) * (p2/q2) => ((p1/g1)*(p2/g2)) / ((q1/g2)*(q2/g1))
-// where g1=gcd(p1,q2) and g2=gcd(p2,q1)
-    LispObject g1 = G<gGcdn>(p1, q2);
-    LispObject g2 = G<gGcdn>(p2, q1);
-    LispObject p = G<gTimes>(G<gQuotient>(p1, g1),
-                             G<gQuotient>(p2, g2));
-    LispObject q = G<gTimes>(G<gQuotient>(q1, g2),
-                             G<gQuotient>(q2, g1));
-    return make_ratio(p, q);
-}
-
-inline LispObject gQuotient::RR(LispObject p1, LispObject q1,
-                                LispObject p2, LispObject q2)
-{   if (G<gMinusp>(p2))
-        return gTimes::RR(p1, q1, G<gMinus>(q2), G<gMinus>(p2));
-    else return gTimes::RR(p1, q1, q2, p2);
-}
-
-inline LispObject gQuotient::CC(LispObject r1, LispObject i1,
-                                LispObject r2, LispObject i2)
-{
-// (a+ib)/(c+id) can be calculated by multiplying numerator and
-// denominator by (c-id) to get
-//    ((a+ib)*(c-id)) / (c^2+d^2)
-// Note that as for complex multiplication the numerator should be
-// calculated using fused-multiply-add in floating point cases. Also
-// if c or d are rather extreme values c^2+d^2 or the numerator may
-// underfow or overflow prematurely, so a proper implementation
-// will scale values early on.
-// Also the code that dispatches will tend to pass values with
-// zero imaginary part, so I deal with that specially here.
-    if (G<gZerop>(i2))
-        return make_complex(G<gQuotient>(r1, r2), G<gQuotient>(i1, r2));
-    LispObject p = gTimes::CC(r1, i1, r2, G<gMinus>(i2));
-    LispObject q = G<gPlus>(G<gTimes>(r1, r2), G<gTimes>(i1, i2));
-    return make_complex(G<gQuotient>(real_part(p), q),
-                        G<gQuotient>(imag_part(p), q));
-}
 
 } // end of namespace
 
 #endif // __header_generic_h
 
 // end of generic.h
-

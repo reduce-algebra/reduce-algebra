@@ -1194,8 +1194,7 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
 }
 
 
-LispObject Lenable_errorset(LispObject env, LispObject a,
-                            LispObject b)
+LispObject Lenable_errorset(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     LispObject r = cons(fixnum_of_int(errorset_min),
                         fixnum_of_int(errorset_max));

@@ -288,7 +288,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
 
 LispObject quote_fn(LispObject args, LispObject)
 {   if (consp(args) && cdr(args) == nil) return car(args);
-    return aerror("quote");
+    aerror("quote");
 }
 
 static LispObject return_fn(LispObject args, LispObject env)
@@ -360,7 +360,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
     {   var = car(args);
         if (!is_symbol(var) || var == nil || var == lisp_true ||
             (qheader(var) & SYM_KEYWORD_VAR) == SYM_KEYWORD_VAR)
-        {   return aerror("setq (bad variable)", var);
+        {   aerror("setq (bad variable)", var);
         }
         args = cdr(args);
         if (consp(args))
@@ -524,7 +524,7 @@ static LispObject the_fn(LispObject args, LispObject env)
 static LispObject throw_fn(LispObject args, LispObject env)
 {   LispObject tag, p;
     STACK_SANITY;
-    if (!consp(args)) return aerror("throw");
+    if (!consp(args)) aerror("throw");
     stackcheck();
     tag = car(args);
     args = cdr(args);
@@ -532,7 +532,7 @@ static LispObject throw_fn(LispObject args, LispObject env)
     }
     for (p = catch_tags; p!=nil; p=cdr(p))
         if (tag == car(p)) goto tag_found;
-    return aerror("throw: tag not found");
+    aerror("throw: tag not found");
 tag_found:
     if (consp(args))
     {   tag = car(args);
@@ -554,7 +554,7 @@ LispObject Lthrow_one_value(LispObject env, LispObject tag, LispObject val)
     STACK_SANITY;
     for (p = catch_tags; p!=nil; p=cdr(p))
         if (tag == car(p)) goto tag_found;
-    return aerror("throw: tag not found");
+    aerror("throw: tag not found");
 tag_found:
     exit_value = val;
     exit_count = 1;
@@ -1069,21 +1069,21 @@ static LispObject when_fn(LispObject args, LispObject env)
 }
 
 LispObject bad_specialfn_0(LispObject env)
-{   return aerror("bad special function", env);
+{   aerror("bad special function", env);
 }
 
 LispObject bad_specialfn_2(LispObject env, LispObject a, LispObject b)
-{   return aerror("bad special function", env);
+{   aerror("bad special function", env);
 }
 
 LispObject bad_specialfn_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
-{   return aerror("bad special function", env);
+{   aerror("bad special function", env);
 }
 
 LispObject bad_specialfn_4up(LispObject env, LispObject a, LispObject b,
                        LispObject c, LispObject d)
-{   return aerror("bad special function", env);
+{   aerror("bad special function", env);
 }
 
 setup_type const eval3_setup[] =

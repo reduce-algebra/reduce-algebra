@@ -245,6 +245,8 @@ bool Eqn::op(Flt a, SFlt b)
 {   return false;
 }
 
+//(1) #define GOOD 1
+
 // double float == short float
 bool Eqn::op(double a, SFlt b)
 {   return false;
@@ -494,6 +496,8 @@ bool CLEqn::op(Rat a, Rat b)
     LispObject p2 = b.numerator(), q2 = b.denominator();
     return BoolBinary(Eqn, p1, p2) && BoolBinary(Eqn, q1, q2);
 }
+
+// (2) #define GOOD 1
 
 // complex CL== rational
 bool CLEqn::op(Cpx a, Rat b)
@@ -993,6 +997,8 @@ bool Neqn::op(Fixnum a, double b)
 {   return true;
 }
 
+// (3) #define GOOD 1
+
 // bignum != double float
 bool Neqn::op(uint64_t *a, double b)
 {   return true;
@@ -1086,7 +1092,11 @@ bool Greaterp::op(uint64_t *a, Fixnum b)
 // rational > fixnum
 bool Greaterp::op(Rat a, Fixnum b)
 {   // p/q > b if p > q*b
+#ifndef GOOD
+    return G<gGreaterp>( a.numerator(), G<gTimes>(a.denominator(), b));
+#else /* GOOD */
     return BoolBinary(Greaterp, a.numerator(), Binary(Times, a.denominator(), b));
+#endif /* GOOD */
 }
 
 // complex > fixnum
@@ -1138,7 +1148,11 @@ bool Greaterp::op(uint64_t *a, uint64_t *b)
 
 // rational > bignum
 bool Greaterp::op(Rat a, uint64_t *b)
+#ifndef GOOD
+{   return G<gGreaterp>( a.numerator(), G<gTimes>(a.denominator(), bignum_value(b)));
+#else /* GOOD */
 {   return BoolBinary(Greaterp, a.numerator(), Binary(Times, a.denominator(), bignum_value(b)));
+#endif /* GOOD */
 
 }
 
@@ -1171,19 +1185,31 @@ bool Greaterp::op(FLOAT_128 a, uint64_t *b)
 
 // fixnum > rational
 bool Greaterp::op(Fixnum a, Rat b)
+#ifndef GOOD
+{   return G<gGreaterp>( G<gTimes>(a, b.denominator()), b.numerator());
+#else /* GOOD */
 {   return BoolBinary(Greaterp, Binary(Times, a, b.denominator()), b.numerator());
+#endif /* GOOD */
 }
 
 // bignum > rational
 bool Greaterp::op(uint64_t *a, Rat b)
+#ifndef GOOD
+{   return G<gGreaterp>( G<gTimes>(bignum_value(a), b.denominator()), b.numerator());
+#else /* GOOD */
 {   return BoolBinary(Greaterp, Binary(Times, bignum_value(a), b.denominator()), b.numerator());
+#endif /* GOOD */
 }
 
 // rational > rational
 bool Greaterp::op(Rat a, Rat b)
 {   LispObject p1 = a.numerator(), q1 = a.denominator();
     LispObject p2 = b.numerator(), q2 = b.denominator();
+#ifndef GOOD
+    return G<gGreaterp>( G<gTimes>(p1, q2), G<gTimes>(p2, q1));
+#else /* GOOD */
     return BoolBinary(Greaterp, Binary(Times, p1, q2), Binary(Times, p2, q1));
+#endif /* GOOD */
 }
 
 // complex > rational
@@ -1202,7 +1228,11 @@ bool Greaterp::op(SFlt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return d > 0.0;
     LispObject aa = N_rationalf(d);
+#ifndef GOOD
+    return G<gGreaterp>( aa, b.value());
+#else /* GOOD */
     return BoolBinary(Greaterp, aa, b.value());
+#endif /* GOOD */
 }
 
 // single float > rational
@@ -1211,7 +1241,11 @@ bool Greaterp::op(Flt a, Rat b)
     if (std::isnan(d)) return false;
     if (std::isinf(d)) return d > 0.0;
     LispObject aa = N_rationalf(d);
+#ifndef GOOD
+    return G<gGreaterp>( aa, b.value());
+#else /* GOOD */
     return BoolBinary(Greaterp, aa, b.value());
+#endif /* GOOD */
 }
 
 // double float > rational
@@ -1219,7 +1253,11 @@ bool Greaterp::op(double a, Rat b)
 {   if (std::isnan(a)) return false;
     if (std::isinf(a)) return a > 0.0;
     LispObject aa = N_rationalf(a);
+#ifndef GOOD
+    return G<gGreaterp>( aa, b. value());
+#else /* GOOD */
     return BoolBinary(Greaterp, aa, b. value());
+#endif /* GOOD */
 }
 
 // long float > rational
@@ -1228,7 +1266,11 @@ bool Greaterp::op(FLOAT_128 a, Rat b)
     if (isnan(d)) return false;         // a is a NaN
     if (isinf(d)) return !signbit(d);   // a is infinite
     LispObject aa = N_rationalf128(d);
+#ifndef GOOD
+    return G<gGreaterp>( aa, b. value());
+#else /* GOOD */
     return BoolBinary(Greaterp, aa, b. value());
+#endif /* GOOD */
 }
 
 // fixnum > complex
@@ -1448,7 +1490,11 @@ bool Geq::op(uint64_t *a, Fixnum b)
 // rational >= fixnum
 bool Geq::op(Rat a, Fixnum b)
 {   // p/q >= b if p >= q*b
+#ifndef GOOD
+    return G<gGeq>(a.numerator(), G<gTimes>(a.denominator(), b));
+#else /* GOOD */
     return BoolBinary(Geq, a.numerator(), Binary(Times, a.denominator(), b));
+#endif /* GOOD */
 }
 
 // complex >= fixnum
@@ -1490,7 +1536,11 @@ bool Geq::op(uint64_t *a, uint64_t *b)
 
 // rational >= bignum
 bool Geq::op(Rat a, uint64_t *b)
+#ifndef GOOD
+{   return G<gGeq>(a.numerator(), G<gTimes>(a.denominator(), bignum_value(b)));
+#else /* GOOD */
 {   return BoolBinary(Geq, a.numerator(), Binary(Times, a.denominator(), bignum_value(b)));
+#endif /* GOOD */
 
 }
 
@@ -1521,19 +1571,31 @@ bool Geq::op(FLOAT_128 a, uint64_t *b)
 
 // fixnum >= rational
 bool Geq::op(Fixnum a, Rat b)
+#ifndef GOOD
+{   return G<gGeq>(G<gTimes>(a, b.denominator()), b.numerator());
+#else /* GOOD */
 {   return BoolBinary(Geq, Binary(Times, a, b.denominator()), b.numerator());
+#endif /* GOOD */
 }
 
 // bignum >= rational
 bool Geq::op(uint64_t *a, Rat b)
+#ifndef GOOD
+{   return G<gGeq>(G<gTimes>(bignum_value(a), b.denominator()), b.numerator());
+#else /* GOOD */
 {   return BoolBinary(Geq, Binary(Times, bignum_value(a), b.denominator()), b.numerator());
+#endif /* GOOD */
 }
 
 // rational >= rational
 bool Geq::op(Rat a, Rat b)
 {   LispObject p1 = a.numerator(), q1 = a.denominator();
     LispObject p2 = b.numerator(), q2 = b.denominator();
+#ifndef GOOD
+    return G<gGeq>(G<gTimes>(p1, q2), G<gTimes>(p2, q1));
+#else /* GOOD */
     return BoolBinary(Geq, Binary(Times, p1, q2), Binary(Times, p2, q1));
+#endif /* GOOD */
 }
 
 // complex >= rational
@@ -1691,6 +1753,8 @@ bool Geq::op(double a, Flt b)
 {   return (a >= b.floatval());
 }
 
+// (4) #define GOOD 1
+
 // long float >= single float
 bool Geq::op(FLOAT_128 a, Flt b)
 {   return Float128::op(b) <= a;
@@ -1791,7 +1855,11 @@ bool Lessp::op(uint64_t *a, Fixnum b)
 // rational < fixnum
 bool Lessp::op(Rat a, Fixnum b)
 {   // p/q < b if p < q*b
+#ifndef GOOD
+    return G<gLessp>(a.numerator(), G<gTimes>(a.denominator(), int_of_fixnum(b)));
+#else /* GOOD */
     return BoolBinary(Lessp, a.numerator(), Binary(Times, a.denominator(), int_of_fixnum(b)));
+#endif /* GOOD */
 }
 
 // complex < fixnum
@@ -1833,7 +1901,11 @@ bool Lessp::op(uint64_t *a, uint64_t *b)
 
 // rational < bignum
 bool Lessp::op(Rat a, uint64_t *b)
+#ifndef GOOD
+{   return G<gLessp>(a.numerator(), G<gTimes>(a.denominator(), bignum_value(b)));
+#else /* GOOD */
 {   return BoolBinary(Lessp, a.numerator(), Binary(Times, a.denominator(), bignum_value(b)));
+#endif /* GOOD */
 
 }
 
@@ -1864,12 +1936,20 @@ bool Lessp::op(FLOAT_128 a, uint64_t *b)
 
 // fixnum < rational
 bool Lessp::op(Fixnum a, Rat b)
+#ifndef GOOD
+{   return G<gLessp>(G<gTimes>(a, b.denominator()), b.numerator());
+#else /* GOOD */
 {   return BoolBinary(Lessp, Binary(Times, a, b.denominator()), b.numerator());
+#endif /* GOOD */
 }
 
 // bignum < rational
 bool Lessp::op(uint64_t *a, Rat b)
+#ifndef GOOD
+{   return G<gLessp>(G<gTimes>(bignum_value(a), b.denominator()),
+#else /* GOOD */
 {   return BoolBinary(Lessp, Binary(Times, bignum_value(a), b.denominator()),
+#endif /* GOOD */
                              b.numerator());
 }
 
@@ -1877,7 +1957,11 @@ bool Lessp::op(uint64_t *a, Rat b)
 bool Lessp::op(Rat a, Rat b)
 {   LispObject p1 = a.numerator(), q1 = a.denominator();
     LispObject p2 = b.numerator(), q2 = b.denominator();
+#ifndef GOOD
+    return G<gLessp>(G<gTimes>(p1, q2), G<gTimes>(p2, q1));
+#else /* GOOD */
     return BoolBinary(Lessp, Binary(Times, p1, q2), Binary(Times, p2, q1));
+#endif /* GOOD */
 }
 
 // complex < rational
@@ -2135,7 +2219,11 @@ bool Leq::op(uint64_t *a, Fixnum b)
 // rational <= fixnum
 bool Leq::op(Rat a, Fixnum b)
 {   // p/q <= b if p <= q*b
+#ifndef GOOD
+    return G<gLeq>(a.numerator(), G<gTimes>(a.denominator(), int_of_fixnum(b)));
+#else /* GOOD */
     return BoolBinary(Leq, a.numerator(), Binary(Times, a.denominator(), int_of_fixnum(b)));
+#endif /* GOOD */
 }
 
 // complex <= fixnum
@@ -2177,8 +2265,11 @@ bool Leq::op(uint64_t *a, uint64_t *b)
 
 // rational <= bignum
 bool Leq::op(Rat a, uint64_t *b)
+#ifndef GOOD
+{   return G<gLeq>(a.numerator(), G<gTimes>(a.denominator(), bignum_value(b)));
+#else /* GOOD */
 {   return BoolBinary(Leq, a.numerator(), Binary(Times, a.denominator(), bignum_value(b)));
-
+#endif /* GOOD */
 }
 
 // complex <= bignum
@@ -2210,19 +2301,31 @@ bool Leq::op(FLOAT_128 a, uint64_t *b)
 
 // fixnum <= rational
 bool Leq::op(Fixnum a, Rat b)
+#ifndef GOOD
+{   return G<gLeq>(G<gTimes>(a, b.denominator()), b.numerator());
+#else /* GOOD */
 {   return BoolBinary(Leq, Binary(Times, a, b.denominator()), b.numerator());
+#endif /* GOOD */
 }
 
 // bignum <= rational
 bool Leq::op(uint64_t *a, Rat b)
+#ifndef GOOD
+{   return G<gLeq>(G<gTimes>(bignum_value(a), b.denominator()), b.numerator());
+#else /* GOOD */
 {   return BoolBinary(Leq, Binary(Times, bignum_value(a), b.denominator()), b.numerator());
+#endif /* GOOD */
 }
 
 // rational <= rational
 bool Leq::op(Rat a, Rat b)
 {   LispObject p1 = a.numerator(), q1 = a.denominator();
     LispObject p2 = b.numerator(), q2 = b.denominator();
+#ifndef GOOD
+    return G<gLeq>(G<gTimes>(p1, q2), G<gTimes>(p2, q1));
+#else /* GOOD */
     return BoolBinary(Leq, Binary(Times, p1, q2), Binary(Times, p2, q1));
+#endif /* GOOD */
 }
 
 // complex <= rational
@@ -2474,11 +2577,19 @@ bool Onep::op(uint64_t *a)
 }
 
 bool Onep::op(Rat a)
+#ifndef GOOD
+{   return G<gOnep>(a.numerator()) && G<gOnep>(a.denominator());
+#else /* GOOD */
 {   return BoolUnary(Onep, a.numerator()) && BoolUnary(Onep, a.denominator());
+#endif /* GOOD */
 }
 
 bool Onep::op(Cpx a)
+#ifndef GOOD
+{   return G<gOnep>(a.real_part()) && G<gZerop>(a.imag_part());
+#else /* GOOD */
 {   return BoolUnary(Onep, a.real_part()) && BoolUnary(Zerop, a.imag_part());
+#endif /* GOOD */
 }
 
 bool Onep::op(SFlt a)
@@ -2506,13 +2617,23 @@ bool MinusOnep::op(uint64_t *a)
 }
 
 bool MinusOnep::op(Rat a)
+#ifndef GOOD
+{   return G<gMinusonep>(a.numerator()) &&
+           G<gOnep>(a.denominator());
+#else /* GOOD */
 {   return BoolUnary(MinusOnep, a.numerator()) &&
            BoolUnary(Onep, a.denominator());
+#endif /* GOOD */
 }
 
 bool MinusOnep::op(Cpx a)
+#ifndef GOOD
+{   return G<gMinusonep>(a.real_part()) &&
+           G<gZerop>(a.imag_part());
+#else /* GOOD */
 {   return BoolUnary(MinusOnep, a.real_part()) &&
            BoolUnary(Zerop, a.imag_part());
+#endif /* GOOD */
 }
 
 bool MinusOnep::op(SFlt a)
@@ -2540,12 +2661,21 @@ bool Zerop::op(uint64_t *a)
 }
 
 bool Zerop::op(Rat a)
+#ifndef GOOD
+{   return G<gZerop>(a.numerator());
+#else /* GOOD */
 {   return BoolUnary(Zerop, a.numerator());
+#endif /* GOOD */
 }
 
 bool Zerop::op(Cpx a)
+#ifndef GOOD
+{   return G<gZerop>(a.real_part()) &&
+           G<gZerop>(a.imag_part());
+#else /* GOOD */
 {   return BoolUnary(Zerop, a.real_part()) &&
            BoolUnary(Zerop, a.imag_part());
+#endif /* GOOD */
 }
 
 bool Zerop::op(SFlt a)
@@ -2589,7 +2719,11 @@ bool Minusp::op(uint64_t *a)
 }
 
 bool Minusp::op(Rat a )
+#ifndef GOOD
+{   return G<gMinusp>(a.numerator());
+#else /* GOOD */
 {   return BoolUnary(Minusp, a.numerator());
+#endif /* GOOD */
 }
 
 bool Minusp::op(Cpx a)
@@ -2661,7 +2795,11 @@ LispObject Abs::op(Rat a)
 }
 
 LispObject Abs::op(Cpx a)
+#ifndef GOOD
+{   return Unary(Sqrt, G<gPlus>( Unary(Square, a.real_part()),
+#else /* GOOD */
 {   return Unary(Sqrt, Binary(Plus, Unary(Square, a.real_part()),
+#endif /* GOOD */
                                     Unary(Square, a.imag_part())));
 }
 
@@ -2686,7 +2824,11 @@ LispObject Abs::op(FLOAT_128 a)
 }
 
 LispObject Nonep(LispObject env, LispObject a1)
+#ifndef GOOD
+{   return onebool(is_number(a1) && G<gOnep>(a1));
+#else /* GOOD */
 {   return onebool(is_number(a1) && BoolUnary(Onep, a1));
+#endif /* GOOD */
 }
 
 LispObject Nevenp(LispObject env, LispObject a1)
@@ -2698,35 +2840,65 @@ LispObject Noddp(LispObject env, LispObject a1)
 }
 
 LispObject Nzerop(LispObject env, LispObject a1)
+#ifndef GOOD
+{   return onebool(is_number(a1) && G<gZerop>(a1));
+#else /* GOOD */
 {   return onebool(is_number(a1) && BoolUnary(Zerop, a1));
+#endif /* GOOD */
 }
 
 LispObject Nminusp(LispObject env, LispObject a1)
+#ifndef GOOD
+{   return onebool(is_number(a1) && G<gMinusp>(a1));
+#else /* GOOD */
 {   return onebool(is_number(a1) && BoolUnary(Minusp, a1));
+#endif /* GOOD */
 }
 
 LispObject Nplusp(LispObject env, LispObject a1)
+#ifndef GOOD
+{   return onebool(is_number(a1) && G<gPlusp>(a1));
+#else /* GOOD */
 {   return onebool(is_number(a1) && BoolUnary(Plusp, a1));
+#endif /* GOOD */
 }
 
 LispObject Ngreaterp(LispObject env, LispObject a1, LispObject a2)
+#ifndef GOOD
+{   return onebool(G<gGreaterp>( a1, a2));
+#else /* GOOD */
 {   return onebool(BoolBinary(Greaterp, a1, a2));
+#endif /* GOOD */
 }
 
 LispObject Ngreaterp(LispObject env, LispObject a1, LispObject a2,
                                      LispObject a3)
+#ifndef GOOD
+{   return onebool(G<gGreaterp>( a1, a2) &&
+                   G<gGreaterp>( a2, a3));
+#else /* GOOD */
 {   return onebool(BoolBinary(Greaterp, a1, a2) &&
                    BoolBinary(Greaterp, a2, a3));
+#endif /* GOOD */
 }
 
 LispObject Ngreaterp(LispObject env, LispObject a1, LispObject a2,
                                      LispObject a3, LispObject a4plus)
 {   SingleValued fn;
+#ifndef GOOD
+    if (!G<gGreaterp>( a1, a2)) return nil;
+    if (!G<gGreaterp>( a2, a3)) return nil;
+#else /* GOOD */
     if (!BoolBinary(Greaterp, a1, a2)) return nil;
     if (!BoolBinary(Greaterp, a2, a3)) return nil;
+#endif /* GOOD */
     a2 = a3;
     while (is_cons(a4plus))
+#ifndef GOOD
+    {   if (G<gGreaterp>( a2, a3 = car(a4plus))) return nil;
+#else /* GOOD */
     {   if (BoolBinary(Greaterp, a2, a3 = car(a4plus))) return nil;
+#endif /* GOOD */
         a2 = a3;
         a4plus = cdr(a4plus);
     }
@@ -2735,22 +2907,39 @@ LispObject Ngreaterp(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Ngeq(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gGeq>(a1, a2));
+#else /* GOOD */
     return onebool(BoolBinary(Geq, a1, a2));
+#endif /* GOOD */
 }
 
 LispObject Ngeq(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gGeq>(a1, a2) && G<gGeq>(a2, a3));
+#else /* GOOD */
     return onebool(BoolBinary(Geq, a1, a2) && BoolBinary(Geq, a2, a3));
+#endif /* GOOD */
 }
 
 LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
                                 LispObject a3, LispObject a4plus)
 {   SingleValued fn;
+#ifndef GOOD
+    if (!G<gGeq>(a1, a2)) return nil;
+    if (!G<gGeq>(a2, a3)) return nil;
+#else /* GOOD */
     if (!BoolBinary(Geq, a1, a2)) return nil;
     if (!BoolBinary(Geq, a2, a3)) return nil;
+#endif /* GOOD */
     a2 = a3;
     while (is_cons(a4plus))
+#ifndef GOOD
+    {   if (G<gGeq>(a2, a3 = car(a4plus))) return nil;
+#else /* GOOD */
     {   if (BoolBinary(Geq, a2, a3 = car(a4plus))) return nil;
+#endif /* GOOD */
         a2 = a3;
         a4plus = cdr(a4plus);
     }
@@ -2759,22 +2948,39 @@ LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Nlessp(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gLessp>(a1, a2));
+#else /* GOOD */
     return onebool(BoolBinary(Lessp, a1, a2));
+#endif /* GOOD */
 }
 
 LispObject Nlessp(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gLessp>(a1, a2) && G<gLessp>(a2, a3));
+#else /* GOOD */
     return onebool(BoolBinary(Lessp, a1, a2) && BoolBinary(Lessp, a2, a3));
+#endif /* GOOD */
 }
 
 LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
                                   LispObject a3, LispObject a4plus)
 {   SingleValued fn;
+#ifndef GOOD
+    if (!G<gLessp>(a1, a2)) return nil;
+    if (!G<gLessp>(a2, a3)) return nil;
+#else /* GOOD */
     if (!BoolBinary(Lessp, a1, a2)) return nil;
     if (!BoolBinary(Lessp, a2, a3)) return nil;
+#endif /* GOOD */
     a2 = a3;
     while (is_cons(a4plus))
+#ifndef GOOD
+    {   if (G<gLessp>(a2, a3 = car(a4plus))) return nil;
+#else /* GOOD */
     {   if (BoolBinary(Lessp, a2, a3 = car(a4plus))) return nil;
+#endif /* GOOD */
         a2 = a3;
         a4plus = cdr(a4plus);
     }
@@ -2783,23 +2989,41 @@ LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Nleq(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gLeq>(a1, a2));
+#else /* GOOD */
     return onebool(BoolBinary(Leq, a1, a2));
+#endif /* GOOD */
 }
 
 LispObject Nleq(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gLeq>(a1, a2) &&
+                   G<gLeq>(a2, a3));
+#else /* GOOD */
     return onebool(BoolBinary(Leq, a1, a2) &&
                    BoolBinary(Leq, a2, a3));
+#endif /* GOOD */
 }
 
 LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
                                 LispObject a3, LispObject a4plus)
 {   SingleValued fn;
+#ifndef GOOD
+    if (!G<gLeq>(a1, a2)) return nil;
+    if (!G<gLeq>(a2, a3)) return nil;
+#else /* GOOD */
     if (!BoolBinary(Leq, a1, a2)) return nil;
     if (!BoolBinary(Leq, a2, a3)) return nil;
+#endif /* GOOD */
     a2 = a3;
     while (is_cons(a4plus))
+#ifndef GOOD
+    {   if (G<gLeq>(a2, a3 = car(a4plus))) return nil;
+#else /* GOOD */
     {   if (BoolBinary(Leq, a2, a3 = car(a4plus))) return nil;
+#endif /* GOOD */
         a2 = a3;
         a4plus = cdr(a4plus);
     }
@@ -2911,25 +3135,43 @@ LispObject Nmax(LispObject env, LispObject a1)
 
 LispObject Nmax(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifndef GOOD
+    if (G<gLessp>(a1, a2)) return a2;
+#else /* GOOD */
     if (BoolBinary(Lessp, a1, a2)) return a2;
+#endif /* GOOD */
     return a1;
 }
 
 LispObject Nmax(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
+#ifndef GOOD
+    if (G<gLessp>(a1, a2)) a1 = a2;
+    if (G<gLessp>(a1, a3)) a1 = a3;
+#else /* GOOD */
     if (BoolBinary(Lessp, a1, a2)) a1 = a2;
     if (BoolBinary(Lessp, a1, a3)) a1 = a3;
+#endif /* GOOD */
     return a1;
 }
 
 LispObject Nmax(LispObject env, LispObject a1, LispObject a2,
                                 LispObject a3, LispObject a4plus)
 {   SingleValued fn;
+#ifndef GOOD
+    if (G<gLessp>(a1, a2)) a1 = a2;
+    if (G<gLessp>(a1, a3)) a1 = a3;
+#else /* GOOD */
     if (BoolBinary(Lessp, a1, a2)) a1 = a2;
     if (BoolBinary(Lessp, a1, a3)) a1 = a3;
+#endif /* GOOD */
     while (is_cons(a4plus))
     {   LispObject w = car(a4plus);
+#ifndef GOOD
+        if (G<gLessp>(a1, w)) a1 = w;
+#else /* GOOD */
         if (BoolBinary(Lessp, a1, w)) a1 = w;
+#endif /* GOOD */
         a4plus = cdr(a4plus);
     }
     return a1;
@@ -2947,25 +3189,43 @@ LispObject Nmin(LispObject env, LispObject a1)
 
 LispObject Nmin(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifndef GOOD
+    if (G<gGreaterp>( a1, a2)) return a2;
+#else /* GOOD */
     if (BoolBinary(Greaterp, a1, a2)) return a2;
+#endif /* GOOD */
     return a1;
 }
 
 LispObject Nmin(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
+#ifndef GOOD
+    if (G<gGreaterp>( a1, a2)) a1 = a2;
+    if (G<gGreaterp>( a1, a3)) a1 = a3;
+#else /* GOOD */
     if (BoolBinary(Greaterp, a1, a2)) a1 = a2;
     if (BoolBinary(Greaterp, a1, a3)) a1 = a3;
+#endif /* GOOD */
     return a1;
 }
 
 LispObject Nmin(LispObject env, LispObject a1, LispObject a2,
                                 LispObject a3, LispObject a4plus)
 {   SingleValued fn;
+#ifndef GOOD
+    if (G<gGreaterp>( a1, a2)) a1 = a2;
+    if (G<gGreaterp>( a1, a3)) a1 = a3;
+#else /* GOOD */
     if (BoolBinary(Greaterp, a1, a2)) a1 = a2;
     if (BoolBinary(Greaterp, a1, a3)) a1 = a3;
+#endif /* GOOD */
     while (is_cons(a4plus))
     {   LispObject w = car(a4plus);
+#ifndef GOOD
+        if (G<gGreaterp>( a1, w)) a1 = w;
+#else /* GOOD */
         if (BoolBinary(Greaterp, a1, w)) a1 = w;
+#endif /* GOOD */
         a4plus = cdr(a4plus);
     }
     return a1;
@@ -2973,7 +3233,11 @@ LispObject Nmin(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Nionep(LispObject env, LispObject a1)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gOnep>(a1));
+#else /* GOOD */
     return onebool(BoolUnary(Onep, a1));
+#endif /* GOOD */
 }
 
 LispObject Nievenp(LispObject env, LispObject a1)
@@ -2988,12 +3252,20 @@ LispObject Nioddp(LispObject env, LispObject a1)
 
 LispObject Nizerop(LispObject env, LispObject a1)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gZerop>(a1));
+#else /* GOOD */
     return onebool(BoolUnary(Zerop, a1));
+#endif /* GOOD */
 }
 
 LispObject Niminusp(LispObject env, LispObject a1)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gMinusp>(a1));
+#else /* GOOD */
     return onebool(BoolUnary(Minusp, a1));
+#endif /* GOOD */
 }
 
 LispObject Niminus(LispObject env, LispObject a1)
@@ -3008,22 +3280,39 @@ LispObject Niabs(LispObject env, LispObject a1)
 
 LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gGreaterp>( a1, a2));
+#else /* GOOD */
     return onebool(BoolBinary(Greaterp, a1, a2));
+#endif /* GOOD */
 }
 
 LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gGreaterp>( a1, a2) && G<gGreaterp>( a2, a3));
+#else /* GOOD */
     return onebool(BoolBinary(Greaterp, a1, a2) && BoolBinary(Greaterp, a2, a3));
+#endif /* GOOD */
 }
 
 LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2,
                                       LispObject a3, LispObject a4plus)
 {   SingleValued fn;
+#ifndef GOOD
+    if (!G<gGreaterp>( a1, a2)) return nil;
+    if (!G<gGreaterp>( a2, a3)) return nil;
+#else /* GOOD */
     if (!BoolBinary(Greaterp, a1, a2)) return nil;
     if (!BoolBinary(Greaterp, a2, a3)) return nil;
+#endif /* GOOD */
     a2 = a3;
     while (is_cons(a4plus))
+#ifndef GOOD
+    {   if (G<gGreaterp>( a2, a3 = car(a4plus))) return nil;
+#else /* GOOD */
     {   if (BoolBinary(Greaterp, a2, a3 = car(a4plus))) return nil;
+#endif /* GOOD */
         a2 = a3;
         a4plus = cdr(a4plus);
     }
@@ -3032,22 +3321,39 @@ LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Nigeq(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gGeq>(a1, a2));
+#else /* GOOD */
     return onebool(BoolBinary(Geq, a1, a2));
+#endif /* GOOD */
 }
 
 LispObject Nigeq(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gGeq>(a1, a2) && G<gGeq>(a2, a3));
+#else /* GOOD */
     return onebool(BoolBinary(Geq, a1, a2) && BoolBinary(Geq, a2, a3));
+#endif /* GOOD */
 }
 
 LispObject Nigeq(LispObject env, LispObject a1, LispObject a2,
                                  LispObject a3, LispObject a4plus)
 {   SingleValued fn;
+#ifndef GOOD
+    if (!G<gGeq>(a1, a2)) return nil;
+    if (!G<gGeq>(a2, a3)) return nil;
+#else /* GOOD */
     if (!BoolBinary(Geq, a1, a2)) return nil;
     if (!BoolBinary(Geq, a2, a3)) return nil;
+#endif /* GOOD */
     a2 = a3;
     while (is_cons(a4plus))
+#ifndef GOOD
+    {   if (G<gGeq>(a2, a3 = car(a4plus))) return nil;
+#else /* GOOD */
     {   if (BoolBinary(Geq, a2, a3 = car(a4plus))) return nil;
+#endif /* GOOD */
         a2 = a3;
         a4plus = cdr(a4plus);
     }
@@ -3056,22 +3362,39 @@ LispObject Nigeq(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Nilessp(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gLessp>(a1, a2));
+#else /* GOOD */
     return onebool(BoolBinary(Lessp, a1, a2));
+#endif /* GOOD */
 }
 
 LispObject Nilessp(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gLessp>(a1, a2) && G<gLessp>(a2, a3));
+#else /* GOOD */
     return onebool(BoolBinary(Lessp, a1, a2) && BoolBinary(Lessp, a2, a3));
+#endif /* GOOD */
 }
 
 LispObject Nilessp(LispObject env, LispObject a1, LispObject a2,
                                    LispObject a3, LispObject a4plus)
 {   SingleValued fn;
+#ifndef GOOD
+    if (!G<gLessp>(a1, a2)) return nil;
+    if (!G<gLessp>(a2, a3)) return nil;
+#else /* GOOD */
     if (!BoolBinary(Lessp, a1, a2)) return nil;
     if (!BoolBinary(Lessp, a2, a3)) return nil;
+#endif /* GOOD */
     a2 = a3;
     while (is_cons(a4plus))
+#ifndef GOOD
+    {   if (G<gLessp>(a2, a3 = car(a4plus))) return nil;
+#else /* GOOD */
     {   if (BoolBinary(Lessp, a2, a3 = car(a4plus))) return nil;
+#endif /* GOOD */
         a2 = a3;
         a4plus = cdr(a4plus);
     }
@@ -3080,22 +3403,39 @@ LispObject Nilessp(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Nileq(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gLeq>(a1, a2));
+#else /* GOOD */
     return onebool(BoolBinary(Leq, a1, a2));
+#endif /* GOOD */
 }
 
 LispObject Nileq(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
+#ifndef GOOD
+    return onebool(G<gLeq>(a1, a2) && G<gLeq>(a2, a3));
+#else /* GOOD */
     return onebool(BoolBinary(Leq, a1, a2) && BoolBinary(Leq, a2, a3));
+#endif /* GOOD */
 }
 
 LispObject Nileq(LispObject env, LispObject a1, LispObject a2,
                                  LispObject a3, LispObject a4plus)
 {   SingleValued fn;
+#ifndef GOOD
+    if (!G<gLeq>(a1, a2)) return nil;
+    if (!G<gLeq>(a2, a3)) return nil;
+#else /* GOOD */
     if (!BoolBinary(Leq, a1, a2)) return nil;
     if (!BoolBinary(Leq, a2, a3)) return nil;
+#endif /* GOOD */
     a2 = a3;
     while (is_cons(a4plus))
+#ifndef GOOD
+    {   if (G<gLeq>(a2, a3 = car(a4plus))) return nil;
+#else /* GOOD */
     {   if (BoolBinary(Leq, a2, a3 = car(a4plus))) return nil;
+#endif /* GOOD */
         a2 = a3;
         a4plus = cdr(a4plus);
     }

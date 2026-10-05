@@ -793,6 +793,8 @@ symbolic procedure nfactorial n;
        return m;
      end;
 
+symbolic operator nfactorial;
+
 symbolic procedure fac!-part (m,n);
     if m=n then m
      else if m=n - 1 then m*n
