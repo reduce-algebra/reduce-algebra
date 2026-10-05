@@ -36,6 +36,10 @@ module ghyper;   % Generalized Hypergeometric Functions.
 % The next 2 declarations enable better checking of number of arguments
 % by simpiden
 
+% Minor modifications by Alan Barnes October 2026:
+% to prevent a crash when hypergeometric is called when the switch ROUNDED is
+% on and for better diagnostics when incorrect parameters are used.
+
 flag('(hypergeometic), 'specfn);
 put('hypergeomtric, 'number!-of!-args, 3);
 
@@ -485,52 +489,76 @@ ghfexit(a,b,z)$
             else ghfexit(a,b,z)$
 
 symbolic inline procedure ghyper_fehlerf();
-        rerror('specialf,139,"Wrong arguments to hypergeometric");
+   rerror('specialf,139,
+      "First two arguments to hypergeometric must be lists");
 
 symbolic procedure hypergeom(u);
+   begin scalar list1,list2, res, res1, offrounded;
 
-begin scalar list1,list2,res,res1;
+      if not (length(u) = 3) then
+ 	   rerror('specialf,140,"Wrong number of arguments to hypergeometric");
+      if pairp u then list1 :=car u
+      else ghyper_fehlerf();
 
-if not (length(u) = 3) then ghyper_fehlerf();
-if pairp u then list1 :=car u else ghyper_fehlerf();
-if pairp cdr u then list2 := cadr u else ghyper_fehlerf();
-if not pairp cddr u then  ghyper_fehlerf();
+      if pairp cdr u then list2 := cadr u
+      else ghyper_fehlerf();
 
-if not eqcar(list1,'list) then ghyper_fehlerf();
-if not eqcar(list2,'list) then ghyper_fehlerf();
+      if not pairp cddr u then 
+	   rerror('specialf,141,"Incorrect 3rd argument to hypergeometric");
+      
+      if not eqcar(list1,'list) or not eqcar(list2,'list) then
+	 ghyper_fehlerf();
 
-list1 := for each x in cdr list1 collect simp reval x;
-list2 := for each x in cdr list2 collect simp reval x;
-res := ghfsq(list (length list1,length list2),
-                        list1,list2,simp caddr u);
-res1 := prepsq res;
-return if eqcar(res1,'hypergeometric) then res else simp res1;
-                        end;
+      if not !*rounded then 
+      	 offrounded := t
+      else
+      	 off1 'rounded;
+
+      u := caddr u; 
+      res := errorset!*({'ghfsq1, mkquote(list1), mkquote(list2),
+	                  mkquote(u)}, nil);
+      if not offrounded then on1 'rounded;
+      if errorp res then
+	 error(res, emsg!*)
+      else
+          res := car res;
+      res1 := prepsq res;
+  
+      return if eqcar(res1,'hypergeometric) then res else simp res1;
+   end;
+
+   
+symbolic procedure ghfsq1(list1, list2, u);
+<<    list1 := for each x in cdr list1 collect simp reval x;	 
+      list2 := for each x in cdr list2 collect simp reval x;
+      ghfsq(list (length list1,length list2),list1,list2,simp u)
+>>;
 
 remflag('(hypergeometric),'full);
 put('hypergeometric,'simpfn,'hypergeom);
 
+
 % differentiation of hypergeometric function
 
 symbolic procedure dfform_hypergeometric(ghfform,dfvar,n);
-  begin scalar a,b,var,fct,result;
-    a:= cdr cadr ghfform;
-    b:= cdr caddr ghfform;
-    var := cadddr ghfform;
-    % diff. w.r.t. one of indizes --> return unchanged
-    if depends(a,dfvar) or depends(b,dfvar)
+   begin scalar a,b,var,fct,result;
+      a:= cdr cadr ghfform;
+      b:= cdr caddr ghfform;
+      var := cadddr ghfform;
+      % diff. w.r.t. one of indizes --> return unchanged
+      if depends(a,dfvar) or depends(b,dfvar)
       then result := !*kk2q {'df,ghfform,dfvar}
-     else << fct := simp!* {'quotient,retimes a,retimes b};
-             result := simp!* {'hypergeometric,
-		         'list . for each el in a collect {'plus, el, 1},
-		         'list . for each el in b collect {'plus, el, 1},
-                         var};
-             result := multsq(fct,result);
-	     if dfvar neq var then result := multsq(result,simp!*{'df,var,dfvar}) >>;
-    if n neq 1
+      else << fct := simp!* {'quotient,retimes a,retimes b};
+	 result := simp!* {'hypergeometric,
+	    'list . for each el in a collect {'plus, el, 1},
+	    'list . for each el in b collect {'plus, el, 1},
+	    var};
+	 result := multsq(fct,result);
+	 if dfvar neq var then result := multsq(result,simp!*{'df,var,dfvar}) >>;
+      if n neq 1
       then result := multsq(!*t2q((ghfform .** (n-1)) .* n),result);
-    return result;
-  end;
+      return result;
+   end;
 
 put('hypergeometric,'dfform,'dfform_hypergeometric);
 

@@ -29,6 +29,8 @@ module MeijerG;  % Meijer's G-function.
 
 % Major modifications by: Winfried Neun, ZIB Berlin.
 
+% Minor modification by Alan Barnes  Oct. 2026:
+% Number codes used in rerror updated due to changes in ghyper.red
 
 % The next 2 declarations enable better checking of number of arguments
 % by simpiden
@@ -37,7 +39,7 @@ flag('(meijerg), 'specfn);
 put('meijerg, 'number!-of!-args, 3);
 
 symbolic inline procedure meijerg_fehler();
-        rerror('specialf,140,"Wrong arguments to operator MeijerG");
+        rerror('specialf,142,"Wrong arguments to operator MeijerG");
 
 symbolic procedure simpmeijerg(u);
 
@@ -89,7 +91,7 @@ symbolic procedure gfmsq(a,b,z);
                        "|bb=",bb);
         terpri()>>;
   if p=0 and q=0 then return
-        << rerror('specialf,141,"DIVERGENT INTEGRAL");
+        << rerror('specialf,143,"DIVERGENT INTEGRAL");
           'fail
         >>;
   if greaterp(p,q) then return gfminvers(aa,bb,z) else
@@ -128,13 +130,13 @@ q1:if p=0 and n=0 and m=1 then return
       multsq(gamsq(subtrsq('(1 . 1),subtrsq(car a,car b))),
              multsq(expdeg(z,car b),expdeg(addsq('(1 . 1),z),
                       subtrsq(car a,addsq('(1 . 1),car b)))))
-            else return  rerror('specialf,142,
+   else return  rerror('specialf,144,
                         "***** parameter error in G-function");
 q2:  if p=2 then  return  simpgtoh(aa,bb,z) else
      if p=1 then go to q2p1 else
      if p=0 and m=1 then return f6(car b,cadr b,z) else
      if p=0 and m=2 then return f8(car b,cadr b,z) else
-               return  rerror('specialf,143,
+               return  rerror('specialf,145,
                         "***** parameter error in G-function");
 
 q2p1: if m=1 and n=0 then return q2p1m1n0(a,b,z) else
