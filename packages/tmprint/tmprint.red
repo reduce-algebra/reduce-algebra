@@ -2626,6 +2626,8 @@ put('polylog,'fancy!-functionsymbol,'!L!i);
 
 put('hypergeometric,'fancy!-prifn,'fancy!-hypergeometric);
 
+% Modification by Alan Barnes October 2026 to produce output
+% more consistent with DLMF usage.
 symbolic procedure fancy!-hypergeometric u;
  fancy!-level
   begin scalar w,a1,a2,a3;
@@ -2642,9 +2644,11 @@ symbolic procedure fancy!-hypergeometric u;
    fancy!-prin2!*("{}",0);
    if null a1 then a1 := list '!-;
    if null a2 then a2 := list '!-;
-   w := w eq 'failed or fancy!-print!-indexlist1(a1,'!^,'!*comma!*);
-   w := w eq 'failed or fancy!-print!-indexlist1(a2,'!_,'!*comma!*);
-   fancy!-prin2!*("\,",1);
+   w := w eq 'failed or fancy!-listpri('list . a1);
+   fancy!-prin2!*(";",nil);
+   fancy!-prin2!*(" ",0); 
+   w := w eq 'failed or fancy!-listpri( 'list . a2);
+
    %w := w eq 'failed or fancy!-special!-symbol(124,1);    % vertical bar
    fancy!-prin2!*("\right|\,",1);
    w := w eq 'failed or fancy!-prinfit(a3,0,nil);
