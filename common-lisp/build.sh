@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Time-stamp: <2026-07-16 18:25:35 franc>
+# Time-stamp: <2026-10-06 17:20:31 franc>
 
 # Build REDUCE on supported implementations of Common Lisp (CL) that
 # can save a memory image, namely SBCL, CLISP and CCL.
@@ -122,7 +122,9 @@ for lisp in $lisps; do
     lisp=${lisp,,}              # ensure lower case
 
     # The following commands to run Lisp all suppress the user
-    # initialisation file.
+    # initialisation file.  The commands to run REDUCE also suppress
+    # the REDUCE user initialisation file.  (Bootstrap REDUCE does not
+    # read the user initialisation file.)
 
     case $lisp in
         'sbcl')
@@ -132,7 +134,7 @@ for lisp in $lisps; do
             runlisp='sbcl --no-userinit --disable-debugger'
             runlispfile='sbcl --no-userinit --disable-debugger --load'
             runbootstrap='sbcl --core fasl.sbcl/bootstrap.img --noinform --no-userinit --disable-debugger'
-            runreduce='sbcl --core fasl.sbcl/reduce.img --noinform --no-userinit --disable-debugger'
+            runreduce='sbcl --core fasl.sbcl/reduce.img --noinform --no-userinit --disable-debugger --no-rcfile'
             saveext='img'
             faslext='fasl'
             ;;
@@ -143,7 +145,7 @@ for lisp in $lisps; do
             runlisp='clisp -ansi -norc -E utf-8'
             runlispfile="$runlisp"
             runbootstrap="$runlisp -q -M fasl.clisp/bootstrap.mem"
-            runreduce="$runlisp -q -M fasl.clisp/reduce.mem"
+            runreduce="$runlisp -q -M fasl.clisp/reduce.mem -- --no-rcfile"
             saveext='mem'
             faslext='fas'
             ;;
@@ -155,7 +157,7 @@ for lisp in $lisps; do
             runlisp="$CCL -n"
             runlispfile="$CCL -n -l"
 	    runbootstrap="$CCL -n -I fasl.ccl/bootstrap.image"
-            runreduce="$CCL -n -I fasl.ccl/reduce.image"
+            runreduce="$CCL -n -I fasl.ccl/reduce.image -- --no-rcfile"
             saveext='image'
             case $(uname -s) in     # see CCL64 shell script in Clozure distribution
                 Darwin)             # macOS

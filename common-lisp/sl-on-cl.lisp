@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018-2026 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-;; Time-stamp: <2026-06-24 12:09:54 franc>
+;; Time-stamp: <2026-07-22 11:30:04 franc>
 ;; Created: 4 November 2018
 
 ;; Currently supported implementations of Common Lisp:
@@ -860,7 +860,7 @@ Returns the removed property or NIL if there was no such indicator."
     (when *defn (%save-plist u))
     (cl:remprop u ind)))
 
-(flag '(sl::safe-car sl::safe-cdr) 'lose)
+(flag '(sl::safe-car sl::safe-cdr) 'sl::lose)
 (flag '(first second third rest) 'sl::lose)
 (flag '(sl::lastpair sl::lastcar sl::nth sl::pnth) 'sl::lose)
 (flag '(eqcar) 'sl::lose)
