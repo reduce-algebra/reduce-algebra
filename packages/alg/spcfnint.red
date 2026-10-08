@@ -173,8 +173,8 @@ symbolic (operator do!*gamma);
 
 gamma!*rules := {
 
-   Gamma(~x)  =>  1 when numberp x and x = 1,
-   Gamma(~x)  =>  sqrt(pi) when numberp x and x = (1/2),
+   Gamma(~x)  =>  1 when x = 1,
+   Gamma(~x)  =>  sqrt(pi) when x = (1/2),
 
    Gamma(~x)  =>  factorial (x-1)
       when numberp x and impart x = 0
@@ -676,10 +676,10 @@ let
  iGamma(~a,~x) => igamma!:eval(a,x)
         when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded,
 
- m_gamma(~a,~x) => Gamma(a)*iGamma(a,x)
+ m_gamma(~a,~x) => do!*Gamma(a)*iGamma(a,x)
         when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded,
 
- Gamma(~a,~x) => Gamma(a)-m_gamma(a,x)
+ Gamma(~a,~x) => do!*Gamma(a)-m_gamma(a,x)
         when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded,
 
  % The following is only true for a>0

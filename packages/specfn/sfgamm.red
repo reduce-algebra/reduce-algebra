@@ -276,7 +276,7 @@ algebraic procedure do!*gamma(z);
 
 
 algebraic procedure gamma!*calc!*s(z);
-   begin scalar scale, result, alglist!*;
+   begin scalar scale, result, alglist!*, op;
       integer p, precom;
       precom := complex!*off!*switch();
       p := precision(0);
@@ -555,4 +555,3 @@ algebraic
 endmodule;
 
 end;
-

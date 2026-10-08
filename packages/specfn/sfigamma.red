@@ -147,14 +147,14 @@ begin
  return value;
 end;
 
-% %%%%%%%%%%%%%%%%%%%%%%%%
-% Incomplete beta function
-% %%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Normalised/regularized incomplete beta function
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 algebraic procedure ibeta!:eval(a, b, x);
    % Return a numerical approximation to I_x(a,b) = ibeta(a,b,x).
    % Assume a,b,x real, a>0, b>0; ensured by let rules in "alg/spcfnint.red".
-   % For 0 <= x <= 1, algorithm follows https://dlmf.nist.gov/8.17.
+   % For 0 <= x <= 1, the algorithm follows https://dlmf.nist.gov/8.17.
    % See also
    % https://en.wikipedia.org/wiki/Beta_function#Incomplete_beta_function.
    if x < 0 then
@@ -170,6 +170,9 @@ algebraic procedure ibeta!:eval(a, b, x);
             ibeta!:eval01(a, b, x)
    end;
 
+% With ON ROUNDED, Gamma(a) => do!*Gamma(a) for real a > 0 (see
+% "alg/spcfnint.red"), so use do!*Gamma directly below.
+
 % At the default precision of 12, the following procedure appears
 % always to require fewer than 10 iteration.
 
@@ -183,7 +186,8 @@ algebraic procedure ibeta!:eval01(a, b, x);
    % reliable error bound.  The absolute error in CF is approximately
    % equal to the relative error in I.
    begin scalar epsilon := 10^-precision(0), % absolute CF error
-         const := x^a * (1.0-x)^b * Gamma(a+b) / (a * Gamma(a) * Gamma(b)),
+         const := x^a * (1.0-x)^b * do!*Gamma(a+b) /
+         (a * do!*Gamma(a) * do!*Gamma(b)),
       CFold, CF := 0, dlist;        % dlist = {d_2iter, ..., d_2, d_1}
       integer m;
       % Compute coefficients d_m FORWARDS for m = 1, 2, ..., 2n-1, 2n
@@ -210,12 +214,21 @@ algebraic procedure ibeta!:eval01(a, b, x);
       return const / (1.0 + CF);
    end;
 
+load_package numeric;            % for intrd1a in "numeric/numint.red"
+
 algebraic procedure ibeta!:eval1!+(a, b, x);
    % Return ibeta(a,b,x) assuming a,b,x numerical and real, a>0, b>0,
-   % x>1, using numerical integration in which the (principal branch
-   % of the) integrand is guaranteed to be real and positive.
-   1.0 + (-1)^(b-1) * Gamma(a+b) / (Gamma(a) * Gamma(b)) *
-      num_int(tt^(a-1)*(tt-1)^(b-1), tt = 1 .. x);
+   % x>1, using (numerical) integration in which the (principal branch
+   % of the) integrand is guaranteed to be real and positive (but
+   % possibly singular at t=1).
+   1.0 - (-1)^b * do!*Gamma(a+b) / (do!*Gamma(a) * do!*Gamma(b)) *
+      % num_int(t^(a-1)*(t-1)^(b-1), t = 1 .. x);
+      symbolic <<
+         a := reval {'difference, a, 1};
+         b := reval {'difference, b, 1};
+         intrd1a({'times, {'expt, 't, a}, {'expt, {'difference, 't, 1}, b}},
+            't, 1, x, {'t . 1 . x})
+      >>;
 
 endmodule;
 
