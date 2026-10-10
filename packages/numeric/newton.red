@@ -106,6 +106,15 @@ symbolic procedure rdnewton2(f,jac,vars,acc,x,mode,low,high);
     mode:=nil;
     if !*trnumeric then lprim "evaluate function at the initial point";
     e0:=list!-evaluate(f,vars,x);
+    % Check whether starting point is a zero of the function, and if
+    % so return early to avoid convergence failure:
+    e1:=e0;
+    while e1 do <<
+       if not !:zerop car e1 then goto loop;
+       e1:=cdr e1
+    >>;
+    % Try to match numeric format of main return value:
+    return for each el in x collect if !:zerop el then 0 else el;
   loop:
     count:=add1 count;
     if count>iterations!* then

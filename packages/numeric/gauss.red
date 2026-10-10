@@ -54,7 +54,7 @@ symbolic procedure rdsolvelin (u,b);
     for i:=1:n-1 do if not err then
     << % pivot search
       x:=dm!: abs s(i,i); k:=i;
-      for j:=i+1:n do dm!:
+      for j:=i+1:n do
       dm!: if (y:=abs s(j,i))>x then <<x:=y; k:=j>>;
       if i neq k then
       <<y:=igetv(m,i); iputv(m,i,igetv(m,k)); iputv(m,k,y)>>;
