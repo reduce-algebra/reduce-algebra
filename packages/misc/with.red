@@ -89,14 +89,14 @@ symbolic procedure formwith(u,vars,mode);
 
 put('withexp, 'psopfn, 'evalwithexp);
 
-fluid '(semic!*);
+fluid '(semic!*);  global '(emsg!*);
 
 symbolic procedure evalwithexp u;
    % Input: a with on b, c, d, off e, f, g;
    % u = (a (list (b c d) (e f g)))
    % Suppress display of null values and messages about changes of
    % domain mode.
-   begin scalar onlist, offlist, i, !*msg;
+   begin scalar onlist, offlist, i, !*msg, errno;
       onlist := cadr cadr u;
       offlist := caddr cadr u;
       if i := intersection(onlist, offlist) then
@@ -106,7 +106,8 @@ symbolic procedure evalwithexp u;
       onlist := with!-set!-switches(onlist, t);
       offlist := with!-set!-switches(offlist, nil);
       %%write "Applied onlist = ", onlist, ", offlist = ", offlist;  terpri();
-      u := aeval car u;
+      u := errorset!*({'aeval, mkquote car u}, nil);
+      if errorp u then << errno := u; u := nil >> else u := car u;
 
       % Some switches affect only output display, so ensure output
       % happens here only:
@@ -115,6 +116,7 @@ symbolic procedure evalwithexp u;
 
       % Reset switches.  On and off are "rlistats", so use apply:
       apply1('off, onlist);  apply1('on, offlist);
+      if errno then error(errno, emsg!*);
       return u
    end;
 

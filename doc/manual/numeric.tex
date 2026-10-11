@@ -203,6 +203,10 @@ where $exp_1, \ldots, exp_n$ are function expressions,
       $val_1, \ldots, val_n$ are optional start values.
 \end{description}
 
+If the variables are not specified then they are extracted from the
+first argument, exactly as for
+\hyperlink{operator:SOLVE}{\texttt{solve}}.
+
 \texttt{num\_solve} tries to find a zero/solution of the
 expression(s).  The result is a list of equations, where the variables
 are equated to the coordinates of the result point.

@@ -31,6 +31,8 @@ module numsolve;  % root finding.
 
 % $Id$
 
+load_package solve;                     % for procedure solvevars
+
 fluid '(!*noequiv accuracy!* !*exptexpand);
 global '(iterations!* !*trnumeric erfg!*);
 
@@ -49,15 +51,28 @@ symbolic procedure rdsolveeval u;
      if eqexpr (f:=reval f) then !*eqn2a f else f;
     n := length e;
       % starting point & variables.
-    if eqcar(car u,'list) then
-      u := for each x in cdar u collect reval x;
-    for each x in u do
-     <<if eqcar(x,'equal) then
-       <<z:=cadr x; y:=caddr x;
-         if eqcar(y,'!*interval!*) then mode:='i;
-       >> else <<z:=x; y:=random 100>>;
-       vars:=z . vars; p := y . p>>;
-    vars := reversip vars; p := reversip p;
+    if u then <<
+       if eqcar(car u,'list) then
+          u := for each x in cdar u collect reval x;
+       for each x in u do <<
+          if eqcar(x,'equal) then
+          <<z:=cadr x; y:=caddr x;
+             if eqcar(y,'!*interval!*) then mode:='i;
+          >> else <<z:=x; y:=random 100>>;
+          vars:=z . vars; p := y . p>>;
+       vars := reversip vars; p := reversip p
+    >> else <<
+       % Extract all the kernels from the function vector using code
+       % from procedure solve0 in "solve/solve1.red":
+       vars := solvevars for each el in e collect simp el;
+       terpri();
+       if vars then
+          if cdr vars
+          then <<prin2!* "Unknowns: "; maprin('list . vars)>>
+          else <<prin2!* "Unknown: "; maprin car vars>>;
+       terpri!* nil;
+       p := for each el in vars collect random 100
+    >>;
     if not(n=length vars) then
     <<
    %  lprim "numbers of variables and functions don't match;";
