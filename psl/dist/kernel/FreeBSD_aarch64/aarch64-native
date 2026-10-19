@@ -1,0 +1,33 @@
+# /bin/csh
+echo "cross"
+bl=`dirname $pl`/aarch64-cross ; export bl
+$psys/pslcomp <<EOF
+(off redefmsg verboseload)
+(load debug)
+(load addr2id)
+
+%(setq loaddirectories!* (cons "$bl/" loaddirectories!*))
+(reload sys-consts)
+(setq addressingunitsperitem 8)
+(off usermode)
+%%(load psl_case)
+(load if-system)
+%(load aarch64-lap)
+(load aarch64-lap-to-asm)
+(on plap pgwd)
+(on pcmac)
+(load aarch64-asm)
+%(load aarch64-cmac)
+%(load aarch64-comp)
+%(load aarch64-spec)
+%(load aarch64-cross)
+(setq nil-t-diff* 140)
+
+(remd 'foreignlink)
+%(copyd 'bitma 'bitmask)
+%(de bitmask (x y) (cond ((and (eq x 2) (eq y 30))  1073741823)
+%			((and (eq x 2) (eq y 14))  1073676288)
+%                        (t (bitma x y))))
+(dskin "tmp.sl")
+EOF
+
