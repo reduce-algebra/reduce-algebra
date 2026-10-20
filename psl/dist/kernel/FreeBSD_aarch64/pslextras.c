@@ -1,0 +1,271 @@
+/*
+ * File:         PXK:PSLEXTRAS.C
+ * Description:  Miscellaneous support routines.
+ * Author:       RAM, HP/FSD
+ * Created:      9-Mar-84
+ * Modified:     21-Mar-85 11:25:52
+ * Mode:         Text
+ * Package:
+ * Status:       Open Source: BSD License
+ *
+ * (c) Copyright 1983, Hewlett-Packard Company, see the file
+ *            HP_disclaimer at the root of the PSL file tree
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *    * Redistributions of source code must retain the relevant copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+ * CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ********************************************************************************
+ *
+ * Revisions:
+ *
+ * 05-Apr-88 (Julian Padget)
+ *  Reinstated alarm and ualarm (again)
+ * 29-May-87 (Leigh Stoller & Harold Carr)
+ *  Added external_setenv and friends.
+ * 21-Mar-85 11:09:00 (Scott Marovich)
+ *  Rewrite "timc()" to return time since 1st call, and never cream LISP tag.
+ * 21-Feb-85 09:02:49 (Vicki O'Day)
+ *  Fixed bug in uxwritefloat - it was setting the length field of the printable
+ *  string incorrectly.
+ * 18-Jul-84 11:14:24 (RAM)
+ *  Added external_time.  Put call to expand_file_name in external_stat,
+ *  external_link, and external_unlink.
+ * 10-Jul-84 (Vicki O'Day)
+ *  Added external_stat, external_link and external_unlink.
+ * 29-Jun-84 14:15:53 (RAM)
+ *  Removed hp_quit (obsolete).
+ * 27-Jun-84 (Vicki O'Day)
+ *  Added external_strlen and external_getenv.
+ *
+ ******************************************************************************
+ *
+ * Revisions:
+ *
+ ******************************************************************************
+ *
+ * $Id: pslextras.c 7274 2026-01-23 12:26:10Z schoepf $
+ *
+ */
+ 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/times.h>
+#include <sys/resource.h>
+
+char *expand_file_name(char *);    /* from unix-io.c */
+
+unsigned long long external_alarm(unsigned long sec)
+{
+  return alarm(sec);
+}
+ 
+long long external_ualarm(unsigned long usec,unsigned long repeat)
+{
+  return (ualarm(usec,repeat));
+}
+ 
+/* Tag( external_time )
+ */
+long external_time(time_t *tloc)
+{
+  return (long)(time(tloc));
+}
+
+/* Tag( external_timc )
+ */
+int
+external_timc()
+{
+  struct rusage buffer;
+  getrusage(RUSAGE_SELF, &buffer);
+  return (buffer.ru_utime.tv_sec*1000 + buffer.ru_utime.tv_usec/1000);
+}
+ 
+/* Tag( external_stat )
+ */
+int external_stat (char *path, struct stat *buf)
+{
+  return stat (expand_file_name (path), buf);
+}
+
+
+int external_mkdir (char *path, mode_t mode)
+{ 
+  return mkdir (expand_file_name(path), mode); 
+}
+
+int external_rmdir (char *path)
+{ 
+  return rmdir (expand_file_name(path));
+}
+
+/* Tag( external_link )
+ */
+int external_link (char *path1, char *path2)
+{
+  return link(expand_file_name(path1), expand_file_name(path2));
+}
+
+/* Tag( external_unlink )
+ */
+int external_unlink (char *path)
+{
+  return unlink(expand_file_name(path));
+}
+
+/* Tag( external_strlen )
+ */
+int external_strlen (char *s)
+{
+  return strlen(s);
+}
+ 
+/* Tag( external_getenv )
+ */
+char *external_getenv (char *name)
+{
+  return getenv(name);
+}
+
+int external_setenv (char *var, char *val)
+{
+  return setenv(var,val,1);
+}
+
+int
+external_mkfifo(char *x,int y)
+{
+  return mkfifo(x,y);
+}
+
+long int
+external_flock(int fd, int op)
+{
+  return flock(fd,op);
+}
+
+long int
+external_fcntl(int fd, int op, void *arg)
+{
+  return fcntl(fd, op, arg);
+}
+
+long int
+external_read(int fd, char *buff, size_t count)
+{
+  return read(fd, buff, count);
+}
+
+long int
+external_write(int fd, char *buff, size_t count)
+{
+  return write(fd, buff, count);
+}
+
+long int
+external_lseek(int fd, int offset, int whence)
+{
+  return lseek(fd, offset, whence);
+}
+
+long int
+external_open(char* path, int flags, int mode)
+{
+  return open(expand_file_name(path), flags, mode);
+}
+
+long int
+external_close(int fd)
+{
+  return close (fd);
+}
+
+
+#if 0
+void
+block_copy (char *b1, char *b2, int length)
+{
+  while (length-- > 0)
+    *b2++ = *b1++;
+}
+
+#define LISPEOF  4      /* Lisp uses ctrl-D for end of file */
+ 
+/* Tag( unixreadrecord )
+ */
+int unixreadrecord(FILE *fp, char *buf)
+{
+  int i;
+  char c;
+  for (i=0, c=' '; ((c != LISPEOF) && (c != '\n')); i++)
+    {
+      c = fgetc(fp);
+      if (c == EOF )
+    c = LISPEOF;
+      *buf++ = c;
+    }
+  return i;
+}
+ 
+/* Tag( unixwriterecord )
+ */
+void unixwriterecord(FILE *fp, char *buf, int count)
+{
+  int i;
+  for (i=0; i<count; i++, buf++)
+    fputc(*buf, fp);
+}
+ 
+#endif
+
+int wquotient(long long x, long long y)
+{
+	return (x / y);
+}
+
+int wremainder(long long x, long long y)
+{
+	return (x % y);
+}
+
+int wxdivide(long long x, long long y, long long * rem)
+{
+        int q = x / y;
+        *rem = x - y * q;
+	return q;
+}
+
+unsigned int wxquotientdouble(unsigned __int128 dividend,unsigned long long divisor,unsigned long long *rem)
+{
+        unsigned long long int q = dividend / divisor;
+        *rem = dividend - divisor * q;
+        return q;
+}
+
+
+ 

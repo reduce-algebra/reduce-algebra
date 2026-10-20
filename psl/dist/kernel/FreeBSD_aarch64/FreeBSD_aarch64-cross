@@ -1,0 +1,35 @@
+# /bin/csh
+echo "cross"
+bl=`dirname $pl`/FreeBSD_aarch64-cross ; export bl
+$psys/pslcomp <<EOF
+(off redefmsg verboseload)
+(load debug)
+(load addr2id)
+
+(setq loaddirectories!* (cons "$bl/" loaddirectories!*))
+(reload sys-consts)
+(setq addressingunitsperitem 8)
+(setq maxrealregs 8)
+(off usermode)
+%%(load psl_case)
+(load if-system)
+(load aarch64-lap)
+(load aarch64-lap-to-asm)
+%(on plap pgwd)
+%(on pcmac)
+(load aarch64-asm)
+(load aarch64-cmac)
+(load aarch64-comp)
+(load aarch64-spec)
+(load "FreeBSD-cross")
+
+(de InstructionLength (X)
+   (prog (Y) 
+       (when (setq Y (get (car x) 'INSTRUCTIONLENGTH))
+         (return (if (numberp y) y (apply y (list x)))))
+       (return 4)))
+
+(remd 'foreignlink)
+(dskin "tmp.sl")
+EOF
+

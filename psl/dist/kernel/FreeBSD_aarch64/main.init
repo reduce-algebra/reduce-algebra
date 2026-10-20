@@ -1,0 +1,7 @@
+(global (quote (nextsymbol show-new-ids)))
+(fluid (quote (code-base-hack symfnc symval kernel-maxsymbols tokenbuffer 
+argumentblock)))
+(fluid (quote (bpsbaserw bpsbaserx lastbps nextbps laststaticlisp nextstaticlisp
+heaplast heaptrapbound heapupperbound heaptrapped nextsymbol 
+using-other-bps-spaces*)))
+(fluid (quote (bpslowerbound nextbps)))
