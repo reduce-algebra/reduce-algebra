@@ -163,8 +163,9 @@ scalar and vector arguments.
 
 These operators may be used in any orthogonal curvilinear coordinate
 system. The user may alter the names of the coordinates and the values
-of the scale factors. Initially the coordinates are \texttt{x}, \texttt{y}
-and \texttt{z} and the scale factors are all unity.
+of the scale factors. Initially the coordinate system is cartesian,
+the names of the coordinates are \texttt{x}, \texttt{y}
+and \texttt{z}, and the scale factors are all unity.
 
 \ttindextype[AVECTOR]{coords}{vector} \ttindextype[AVECTOR]{hfactors}{scale factors}
 \hypertarget{reserved:COORDS}{}
@@ -301,10 +302,10 @@ function whose syntax is as follows:
 
 \example\index{Avector package!example}
 
-\noindent In spherical polar coordinates we may calculate the volume of a
-sphere of radius $\mathit{rr}$ by integrating unity over the range
-$r=0$ to $\mathit{rr}$, $\theta=0$ to $\pi$, $\phi=0$ to $2\pi$ as
-follows:
+In spherical polar coordinates $(r,\theta,\phi)$ we may calculate the
+volume of a sphere of radius $\mathit{rr}$ by integrating unity over
+the range $r=0$ to $\mathit{rr}$, $\theta=0$ to $\pi$, $\phi=0$ to
+$2\pi$ as follows:
 
 \begin{tabular}{l|l}
 \texttt{getcsystem 'spherical;} \\
@@ -330,7 +331,11 @@ the third integration variable.
 
 Suppose we wish to calculate the volume of a right circular cone. This
 is equivalent to integrating unity over a conical region with the
-bounds:
+bounds, using cylindrical polar coordinates $(r,z,\phi)$:%
+\footnote{Beware that this package uses the cylindrical polar
+coordinate ordering $(r,z,\phi)$ rather than the more conventional
+$(r,\phi,z)$, which affects the appropriate value
+for \texttt{volintorder}!}
 
 \begin{tabular}{l l}
 $z = 0$ to $h$  & ($h$ = the height of the cone) \\
@@ -343,6 +348,7 @@ circular disks of constant $z$-value. The integration is thus
 performed in the order: $\phi$ from 0 to $2\pi$, $r$ from 0 to $pz$,
 $z$ from 0 to $h$.  The order of the indices is thus 2, 0, 1.
 \begin{verbatim}
+   getcsystem 'cylindrical;
    volintorder := avec(2,0,1);
    vlb := avec(0,0,0);
    vub := avec(p*z,h,2pi);
@@ -374,14 +380,19 @@ integration in terms of the independent variable.
 
 \example\index{Avector package!example}
 
-In spherical polar coordinates, we may integrate round a line of
-constant $\theta$ (`latitude') to find the length of such a line. The
-vector function is thus the tangent to the `line of latitude',
-$(0,0,1)$ and the path is $(0,\mathit{lat},\phi)$ where $\phi$ is the
-independent variable. We show how to obtain the definite integral,
+In spherical polar coordinates $(r,\theta,\phi)$ we may integrate
+round a line of constant $\theta$ (`latitude') on a sphere of radius
+$\mathit{rr}$ to find the length of such a line. The vector function
+is thus the tangent to the `line of latitude' $(0,0,1)$ and the path
+is $(\mathit{rr},\mathit{lat},\phi)$ where $\mathit{lat}$ is
+the \emph{complement} of the latitude\footnote{Note that the spherical
+polar coordinate $\theta$ is measured down from the `North Pole',
+whereas latitude is measured up from the `Equator'.} and $\phi$ is the
+independent variable.  We show how to obtain the definite integral,
 i.e.\ from $\phi=0$ to $2\pi$:
 \begin{verbatim}
-deflineint(avec(0,0,1), avec(0,lat,phi), phi, 0, 2*pi);
+getcsystem 'spherical;
+deflineint(avec(0,0,1), avec(rr,lat,phi), phi, 0, 2pi);
 \end{verbatim}
 
 \subsection{Defining new functions and procedures}
