@@ -88,6 +88,7 @@
          CodeBase*
 	 GlobalStaticLispList*
 	 CurrentStaticOffset*
+	 Pass1SLIndexList
          ForwardInternalReferences*
          ))
 
@@ -220,15 +221,18 @@
 	 Pass1ConstantList
 	 Pass1ConstantContentsList
 	 Pass1StaticLispList
+	 Pass1SLIndexList
 	 EntryPoints!*
 	 Pass1AddedCode)
     (setq Pass1CodeList (cons NIL NIL))	% Init a TCONC pointer.
     (setq Pass1ConstantContentsList (cons NIL NIL))
     (setq Pass1StaticLispList (cons NIL NIL))
+    (setq Pass1SLIndexList (cons NIL NIL))
     (Pass1Code InstructionList)         % Expand macros.
     (Pass1Code Pass1AddedCode)
     (AppendConstants)			% Tack the constants on the end.
     (AppendStaticLisp)
+    (AppendSLIndexes) 
     (return (car Pass1CodeList))))
 
 (de SaveConstant (Expression)
@@ -236,20 +240,37 @@
 	(return (cond ((setq TableEntry
 			     (Ass (function equal_wo_zeroequal)
 		% dont intermix 0 and 0.0
-				 Expression Pass1ConstantList))
-		       (cdr TableEntry))
+				  Expression Pass1ConstantList))
+		       (cond ((and !*NewMemoryModel (not (InumP Expression)))
+			      (get-SL-index (cdr TableEntry) (car TableEntry)))
+			     (t (cdr TableEntry))))
 		      (t (progn (setq TableEntry (GenerateLabel))
 				(setq Pass1ConstantList
 				      (cons (cons Expression
 						  TableEntry)
 					    Pass1ConstantList))
-				(cond (!*NewMemoryModel (list 'SLLoc TableEntry))
-				      (t TableEntry))
-				))))))
+				(cond ((and !*NewMemoryModel (not (InumP Expression)))
+				       (get-SL-index TableEntry Expression))
+				      (t TableEntry))))
+		      ))))
+
+(de get-SL-index (TableEntry Expression)
+  (prog (IndexEntry)
+     (return (cond ((setq IndexEntry (assoc TableEntry Pass1SLIndexList))
+%		    (list 'SLLoc (cdr IndexEntry)))
+		    (cdr IndexEntry))
+		   (t (progn
+			(setq IndexEntry (GenerateLabel))
+			(TConc Pass1SLIndexList (cons TableEntry IndexEntry))
+%			(list 'SLLoc IndexEntry)))))
+			IndexEntry))))
+     ))
 
 (de ExpandItem (Expression)
   (prog (LabelOfContents)
 	(return (cond ((InumP Expression) Expression)
+                      ((eqcar Expression 'saveidloc)
+		       (list 'idloc (cadr Expression)))
 		      ((IDP Expression)
 		       (MakeMkItem (TagNumber Expression)
 				   (list 'IDLoc Expression)))
@@ -273,17 +294,21 @@
 		      (t (progn (setq TableEntry (GenerateLabel))
 				(TConc Pass1ConstantContentsList
 				       (cons Expression TableEntry))
-				(cond (!*NewMemoryModel (list 'SLLoc TableEntry))
+				(cond% (!*NewMemoryModel (list 'SLLoc TableEntry))
 				      (t TableEntry))))))))
 
-(de asmslloc (x) (prin2 (cadr x)))
+(de asmslloc (x) (prin2 (cadr x)))    
 
 (put 'SLLoc 'asmexpressionfunction 'asmslloc)
 
 
 (de AppendOneConstant (ExpressionLabelPair)
-  (AddStaticLispLabel (cdr ExpressionLabelPair))
-  (AppendStaticItem (car ExpressionLabelPair)))
+  (cond ((and !*NewMemoryModel (not (Inump (car ExpressionLabelPair))))
+	 (AddStaticLispLabel (cdr ExpressionLabelPair))
+	 (AppendStaticItem (car ExpressionLabelPair)))
+	(t
+	 (AddCodeLabel (cdr ExpressionLabelPair))
+         (AppendItem (car ExpressionLabelPair)))))
 
 (de AppendStaticItem (Expression)
   (AddFullStaticWord (ExpandItem Expression)))
@@ -311,7 +336,7 @@
 	    (iplus2 staticlispcount* 
 		    (cond ((null countfn) 1)	   % default -- one fullword
 			  ((fixp countfn) countfn) % fixed size
-			  (t (apply countfn (cdr itm)))) % variable size
+			  (t (apply countfn (list (cdr itm))))) % variable size
 		    ))
       offset)))
 
@@ -396,21 +421,32 @@
 	       (progn (AddFullStaticWord 1)	% Header of float.
 		      (AddStaticLisp (list 'FLOAT Expression)))))
 	(return (list 'staticlisp offset))
-	))
+     ))
+
+(de AppendSLIndexes ()
+    (print (list 'Pass1CodeList (car Pass1CodeList)))
+    (print (list 'Pass1SLIndexList (car Pass1SLIndexList)))
+    (print (list 'GlobalStaticLispList* GlobalStaticLispList*))
+  (foreach sl-index in (car Pass1SLIndexList) do
+	   (AddCodeLabel (cdr sl-index))
+	   (AddFullWord (SLLabelOffset (car sl-index)))))
 
 (de get-sl-offset nil
     (cond ((or *WritingFaslFile *WritingAsmFile) staticlispcount*)
 	  (t (plus2 CurrentStaticOffset* staticlispcount*))))
 
 (de SLLabelOffset (label)
-    (let ((l (assoc label GlobalStaticLispList*)))
-      (cond ((null l) (StdError (Bldmsg "Static Label %w not found" label)))
-	    (t (times2 addressingunitsperitem (cdr l))))))
+    (let ((l (assoc label (car GlobalStaticLispList*))))
+      (cond ((null l)
+	     (StdError (Bldmsg "Static Label %p not found%nGlobalStaticLispList*=%p"
+			       label GlobalStaticLispList*)))
+	    (t (cdr l)))))
 
 %(fluid '(nextstaticlispNumber*))
 
 (de initialize-StaticLisp ()
   (dataprintgloballabel (findgloballabel 'staticlisp))
+  (print (list 'GlobalStaticLispList* (car GlobalStaticLispList*)))  
   (foreach x in (car GlobalStaticLispList*) do (init-staticlisp-item (car x) (cdr x)))
   (dataprintgloballabel (findgloballabel 'endinitstaticlisp)))
 
@@ -545,3 +581,61 @@
 	       (tab 35) (prin2 "# ") (prin2 *comment)
 	       (setq *comment nil))
              (prin2 !$eol!$)))))))
+
+(DefCMacro *Move
+       (Equal)
+       ((regp regp)              (MOV ArgTwo ArgOne))
+       ((quotedstringp regp)     (*LoadString ArgTwo ArgOne))
+       ((quotep regp)            (*LoadSLIndex (reg t3) ArgOne)
+	                         (LDR ArgTwo (indexed (reg staticlisp) (regshifted t3 LSL 3))))
+       ((InumP regp)             (*LoadConstant ArgTwo ArgOne))
+       ((fixp regp)              (*LoadConstant ArgTwo ArgOne))
+       ((idlocp regp)            (*LoadIDLoc ArgTwo ArgOne))
+       ((sllocp regp)            (*LoadSLLoc ArgTwo ArgOne))
+       ((fluid-arg-p regp)       (*LoadIdNumber LDR ArgTwo ArgOne))
+       ((indirectp regp)         (LDR ArgTwo ArgOne))
+       ((immediatep regp)        (*LoadImmediate ArgTwo ArgOne))
+       ((regp fluid-arg-p)       (*LoadIdNumber STR ArgOne ArgTwo))
+       ((regp indirectp)         (STR ArgOne ArgTwo))
+       ((regp extraregp)         (!*StoreIntoExtraReg ArgOne ArgTwo))
+       ((regp anyp)              (STR ArgOne ArgTwo))
+       ((extraregp regp)         (!*LoadExtraReg ArgOne ArgTwo))
+       ((anyp regp)              (LDR ArgTwo ArgOne))
+       (                         (*Move ArgOne (reg t1))
+                                 (*Move (reg t1) ArgTwo)))
+
+(de *LoadSLLoc (dest src)
+  (let ((offset (SLLabelOffset src))
+        (comment (if *writingasmfile `((comment ,@src)))))
+    (append comment
+      (cond ((and (fixp offset) (wlessp offset 257))
+             (*LoadConstant dest (id2int (cadr src))))
+            ((and *writingasmfile (fixp offset))
+             `( (ldr ,dest (quote ,offset))))
+            (t
+             `( (ldr ,dest ,(SaveConstant `(saveidloc ,(cadr src))))))
+    ))))
+
+
+(DefCMacro *LoadSLLoc)
+
+(de *LoadString (dest string)
+%    `( (LDR (reg t3) (slloc ,(SaveContents (cadr string))))
+    `( (LDR (reg t3) (slloc ,(cadr string)))
+       (LDR ,dest (indexed (reg staticlisp) (regshifted t3 LSL 3)))
+       (*MkItem ,dest (quote 4)))
+)
+
+(de *LoadSLIndex (dest expr)
+%    `( (LDR (reg t3) (slloc ,(SaveStaticContents (cadr expr)))))
+    `( (LDR (reg t3) (slloc ,(cadr expr))))
+)
+
+(DefCMacro *LoadSLIndex)
+
+(de ExpandSLLoc (Expression)
+%    (list 'SLIndex (ExpandQuote1 (cadr Expression))))
+    (ExpandQuote1 (cadr Expression)))
+
+(put 'slloc 'Pass1PseudoOp 'ExpandSLLoc)
+
