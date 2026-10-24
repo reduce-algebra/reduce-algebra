@@ -343,7 +343,7 @@
 (put 'FULLWORD 'SLSizeFn 'length)
 
 (de count-sl-stringwords (str)
-  (iquotient (iplus2 (size str) 9) 8))
+  (iquotient (iplus2 (size (car str)) 9) 8))
 
 (put 'string 'SLSizeFn 'count-sl-stringwords)
 
