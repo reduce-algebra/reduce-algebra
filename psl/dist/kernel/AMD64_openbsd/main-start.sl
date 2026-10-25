@@ -303,7 +303,7 @@
        %  Do OS specific initializations (uses argc and argv)
        (*link os_startup_hook expr 2)
 
-       (*MOVE ($global staticlisp) (reg R12))
+       (*MOVE ($global staticlisp) (reg R9))
        (*MOVE ($fluid heaplast) (reg R10))
        (*MOVE ($fluid heaptrapbound) (reg R11))
 

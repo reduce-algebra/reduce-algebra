@@ -134,7 +134,7 @@
              (progn (cond 
                      ((LabelP InfPart)      % RELOC_CODE_OFFSET = 0
                       (putword (wPlus2 CodeBase* CurrentOffset*) 0 
-                            (mkitem tagpart (LabelOffset InfPart))))
+                            (MkItem tagpart (LabelOffset InfPart))))
                      ((equal (first InfPart) 'IDLoc) 
                       (putword (wPlus2 CodeBase* CurrentOffset*) 0 
                         (MkItem TagPart 
@@ -176,6 +176,7 @@
     
     (when (not *WritingFaslFile)       
           (setq CodeBase* (GTBPS (Quotient (Plus2 CodeSize* 3) 4))))
+
 
 % Print the machine specific assembly code
 % if the object is an atom then it is a LABEL
@@ -591,7 +592,7 @@
        ((InumP regp)             (*LoadConstant ArgTwo ArgOne))
        ((fixp regp)              (*LoadConstant ArgTwo ArgOne))
        ((idlocp regp)            (*LoadIDLoc ArgTwo ArgOne))
-       ((sllocp regp)            (*LoadSLLoc ArgTwo ArgOne))
+%       ((sllocp regp)            (*LoadSLLoc ArgTwo ArgOne))
        ((fluid-arg-p regp)       (*LoadIdNumber LDR ArgTwo ArgOne))
        ((indirectp regp)         (LDR ArgTwo ArgOne))
        ((immediatep regp)        (*LoadImmediate ArgTwo ArgOne))
@@ -628,7 +629,7 @@
 
 (de *LoadSLIndex (dest expr)
 %    `( (LDR (reg t3) (slloc ,(SaveStaticContents (cadr expr)))))
-    `( (LDR (reg t3) (slloc ,(cadr expr))))
+    `( (LDR ,dest (slloc ,(cadr expr))))
 )
 
 (DefCMacro *LoadSLIndex)

@@ -87,10 +87,20 @@
          CodeBase*
 	 GlobalStaticLispList*
 	 CurrentStaticOffset*
+	 Pass1SLIndexList
          ForwardInternalReferences*
          ))
 
 (setq *NewMemoryModel t)
+
+(de RegP (RegName)
+    (AND (eqcar Regname 'reg)
+         (MemQ (cadr RegName)
+          '( 1  2  3  4  5 st t1 t2 rax rcx rdx rbx rsp rbp rsi rdi
+             eax ebx ecx edx esi edi r8 r9 r10 r11 r12 r13 r14 r15
+             nil heaplast heaptrapbound
+             bndstkptr symval symfnc staticlisp t3
+             al cl ax cx es cs ss ds fs gs))))
 
 %% (de codefiletrailer ()
 %%   (prog (s)
@@ -215,7 +225,7 @@
              (progn (cond 
                      ((LabelP InfPart)      % RELOC_CODE_OFFSET = 0
                       (putword (wPlus2 CodeBase* CurrentOffset*) 0 
-                            (mkitem tagpart (LabelOffset InfPart))))
+                            (MkItem tagpart (LabelOffset InfPart))))
                      ((equal (first InfPart) 'IDLoc) 
                       (putword (wPlus2 CodeBase* CurrentOffset*) 0 
                         (MkItem TagPart 
@@ -337,7 +347,7 @@
           (while (not (eq (wshift (wshift currentOffset* -3) 3) currentOffset*))
                  (depositbyte 0) ))
  
-    (SETQ U (ReformBranches U))         % process conditional branches
+    (setq U (ReformBranches U))         % process conditional branches
     (setq U (OptimizeBranches U))       % optimize branches and
                                         % calculate offsets and total length
     
@@ -361,7 +371,7 @@
 
     (DefineEntries)                     % define entries to whom?
 
-% If you are depositing it into memory the tell the user how much space the
+% If you are depositing into memory tell the user how much space the
 % code took and where it was loaded.
 % ??? Why is this using the error channel ???
 
@@ -383,15 +393,18 @@
 	 Pass1ConstantList
 	 Pass1ConstantContentsList
 	 Pass1StaticLispList
+	 Pass1SLIndexList
 	 EntryPoints!*
 	 Pass1AddedCode)
     (setq Pass1CodeList (cons NIL NIL))	% Init a TCONC pointer.
     (setq Pass1ConstantContentsList (cons NIL NIL))
     (setq Pass1StaticLispList (cons NIL NIL))
+    (setq Pass1SLIndexList (cons NIL NIL))
     (Pass1Code InstructionList)         % Expand macros.
     (Pass1Code Pass1AddedCode)
     (AppendConstants)			% Tack the constants on the end.
     (AppendStaticLisp)
+    (AppendSLIndexes) 
     (return (car Pass1CodeList))))
 
 (de SaveConstant (Expression)
@@ -399,16 +412,31 @@
 	(return (cond ((setq TableEntry
 			     (Ass (function equal_wo_zeroequal)
 		% dont intermix 0 and 0.0
-				 Expression Pass1ConstantList))
-		       (cdr TableEntry))
+				  Expression Pass1ConstantList))
+		       (cond ((and !*NewMemoryModel (not (InumP Expression)))
+			      (get-SL-index (cdr TableEntry) (car TableEntry)))
+			     (t (cdr TableEntry))))
 		      (t (progn (setq TableEntry (GenerateLabel))
 				(setq Pass1ConstantList
 				      (cons (cons Expression
 						  TableEntry)
 					    Pass1ConstantList))
-				(cond (!*NewMemoryModel (list 'SLLoc TableEntry))
-				      (t TableEntry))
-				))))))
+				(cond ((and !*NewMemoryModel (not (InumP Expression)))
+				       (get-SL-index TableEntry Expression))
+				      (t TableEntry))))
+		      ))))
+
+(de get-SL-index (TableEntry Expression)
+  (prog (IndexEntry)
+     (return (cond ((setq IndexEntry (assoc TableEntry Pass1SLIndexList))
+%		    (list 'SLLoc (cdr IndexEntry)))
+		    (cdr IndexEntry))
+		   (t (progn
+			(setq IndexEntry (GenerateLabel))
+			(TConc Pass1SLIndexList (cons TableEntry IndexEntry))
+%			(list 'SLLoc IndexEntry)))))
+			IndexEntry))))
+     ))
 
 (de ExpandItem (Expression)
   (prog (LabelOfContents)
@@ -436,17 +464,21 @@
 		      (t (progn (setq TableEntry (GenerateLabel))
 				(TConc Pass1ConstantContentsList
 				       (cons Expression TableEntry))
-				(cond (!*NewMemoryModel (list 'SLLoc TableEntry))
+				(cond% (!*NewMemoryModel (list 'SLLoc TableEntry))
 				      (t TableEntry))))))))
 
-(de asmslloc (x) (prin2 (cadr x)))
+(de asmslloc (x) (prin2 (cadr x)))    
 
 (put 'SLLoc 'asmexpressionfunction 'asmslloc)
 
 
 (de AppendOneConstant (ExpressionLabelPair)
-  (AddStaticLispLabel (cdr ExpressionLabelPair))
-  (AppendStaticItem (car ExpressionLabelPair)))
+  (cond ((and !*NewMemoryModel (not (Inump (car ExpressionLabelPair))))
+	 (AddStaticLispLabel (cdr ExpressionLabelPair))
+	 (AppendStaticItem (car ExpressionLabelPair)))
+	(t
+	 (AddCodeLabel (cdr ExpressionLabelPair))
+         (AppendItem (car ExpressionLabelPair)))))
 
 (de AppendStaticItem (Expression)
   (AddFullStaticWord (ExpandItem Expression)))
@@ -474,14 +506,14 @@
 	    (iplus2 staticlispcount* 
 		    (cond ((null countfn) 1)	   % default -- one fullword
 			  ((fixp countfn) countfn) % fixed size
-			  (t (apply countfn (cdr itm)))) % variable size
+			  (t (apply countfn (list (cdr itm))))) % variable size
 		    ))
       offset)))
 
 (put 'FULLWORD 'SLSizeFn 'length)
 
 (de count-sl-stringwords (str)
-  (iquotient (iplus2 (size str) 9) 8))
+  (iquotient (iplus2 (size (car str)) 9) 8))
 
 (put 'string 'SLSizeFn 'count-sl-stringwords)
 
@@ -559,16 +591,26 @@
 	       (progn (AddFullStaticWord 1)	% Header of float.
 		      (AddStaticLisp (list 'FLOAT Expression)))))
 	(return (list 'staticlisp offset))
-	))
+     ))
+
+(de AppendSLIndexes ()
+    (print (list 'Pass1CodeList (car Pass1CodeList)))
+    (print (list 'Pass1SLIndexList (car Pass1SLIndexList)))
+    (print (list 'GlobalStaticLispList* GlobalStaticLispList*))
+  (foreach sl-index in (car Pass1SLIndexList) do
+	   (AddCodeLabel (cdr sl-index))
+	   (AddFullWord (SLLabelOffset (car sl-index)))))
 
 (de get-sl-offset nil
     (cond ((or *WritingFaslFile *WritingAsmFile) staticlispcount*)
 	  (t (plus2 CurrentStaticOffset* staticlispcount*))))
 
 (de SLLabelOffset (label)
-    (let ((l (assoc label GlobalStaticLispList*)))
-      (cond ((null l) (StdError (Bldmsg "Static Label %w not found" label)))
-	    (t (times2 addressingunitsperitem (cdr l))))))
+    (let ((l (assoc label (car GlobalStaticLispList*))))
+      (cond ((null l)
+	     (StdError (Bldmsg "Static Label %p not found%nGlobalStaticLispList*=%p"
+			       label GlobalStaticLispList*)))
+	    (t (cdr l)))))
 
 %(fluid '(nextstaticlispNumber*))
 
@@ -672,15 +714,6 @@
 (put 'nil 'RegisterName "%r13")
 (put 'symval 'RegisterName "%r14")
 (put 'symfnc 'RegisterName "%r15")
-
-(de RegP (RegName)
-    (AND (eqcar Regname 'reg)
-         (MemQ (cadr RegName)
-          '( 1  2  3  4  5 st t1 t2 rax rcx rdx rbx rsp rbp rsi rdi
-             eax ebx ecx edx esi edi r8 r9 r10 r11 r12 r13 r14 r15
-             nil heaplast heaptrapbound
-             bndstkptr symval symfnc staticlisp t3
-             al cl ax cx es cs ss ds fs gs))))
 
 (setq !64bitregs '((reg 1) (reg 2) (reg 3) (reg 4) (reg 5) (reg st)
                   (reg rax) (reg rbx) (reg rcx) (reg rdx)
@@ -990,3 +1023,29 @@
 (remprop 'nil-t-diff* 'constant?)
 (setq nil-t-diff* 140)
 (put 'nil-t-diff* 'constant? t)
+
+(DefCMacro *Move                          %  (*Move Source Destination)
+   ( Equal              )                  % if source=dest then do nothing
+   ((fixzerop   regp) (xor ArgTwo ArgTwo))
+   ((InumP      regp) (mov Argone Argtwo))
+   ((quotep     regp) (*LoadSLIndex ArgTwo ArgOne)
+                      (mov (indexed (times ArgTwo 8) (displacement (reg staticlisp) 0)) ArgTwo))
+   ((AnyP       regP) (mov ARGONE ARGTWO))
+   ((regp       anyp) (mov argone argtwo))
+%   ((quotep     anyp) (movq argone argtwo))
+   ((inump      anyp) (movq argone argtwo)) 
+   (                  (*Move argone (reg t1))
+		      (*Move (reg t1) argtwo))
+   )
+ 
+(de *LoadSLIndex (dest expr)
+    `( (mov (slloc ,(cadr expr)) ,dest))
+)
+
+(DefCMacro *LoadSLIndex)
+
+(de ExpandSLLoc (Expression)
+%    (list 'SLIndex (ExpandQuote1 (cadr Expression))))
+    (ExpandQuote1 (cadr Expression)))
+
+(put 'slloc 'Pass1PseudoOp 'ExpandSLLoc)
