@@ -1,18 +1,18 @@
         .text
  .quad 1
-/ (*entry firstkernel expr 1)
+# (*entry firstkernel expr 1)
  .globl firstkernel
 firstkernel:
  ret
  .quad 0
-/ (*entry move-regs-to-mem expr 0)
+# (*entry move-regs-to-mem expr 0)
  .globl l0001
 l0001:
  mov %r10,2144(%r14)               # heaplast
  mov %r11,2152(%r14)               # heaptrapbound
  ret
  .quad 0
-/ (*entry init-pointers expr 0)
+# (*entry init-pointers expr 0)
  .globl l0002
 l0002:
  mov 2088(%r14),%rdi               # catchstack
@@ -28,7 +28,7 @@ l0002:
  mov %rax,2208(%r14)               # heap
  ret
  .quad 0
-/ (*entry init-fluids expr 0)
+# (*entry init-fluids expr 0)
  .globl l0003
 l0003:
  mov %r13,%rax
@@ -64,7 +64,7 @@ l0003:
  mov %rax,2440(%r14)               # *fastcar
  ret
  .quad 0
-/ (*entry psl_main expr 0)
+# (*entry psl_main expr 0)
 psl_main:
  .globl psl_main
  sub $24,%rsp
@@ -77,7 +77,7 @@ psl_main:
  mov %r14,2456(%r14)               # symval
  mov 2464(%r14),%r15               # symfnc
  call *2472(%r15)                  # os_startup_hook
- mov 2328(%r14),%r12               # staticlisp
+ mov 2328(%r14),%r9                # staticlisp
  mov 2144(%r14),%r10               # heaplast
  mov 2152(%r14),%r11               # heaptrapbound
  mov $256,%r13
@@ -101,7 +101,7 @@ l0004:
  xor %rax,%rax
  add $24,%rsp
  jmp *2520(%r15)                   # exit-with-status
-/ (*entry exit-with-status expr 1)
+# (*entry exit-with-status expr 1)
  .globl l0005
 l0005:
  push %rax
@@ -110,48 +110,51 @@ l0005:
  call *2536(%r15)                  # external_exit
  ret
  .quad 0
-/ (*entry init-gcarray expr 0)
+# (*entry init-gcarray expr 0)
  .globl l0006
 l0006:
  mov %r13,%rax
  ret
  .quad 0
-/ (*entry pre-main expr 0)
- .globl l0011
-l0011:
+# (*entry pre-main expr 0)
+ .globl l0013
+l0013:
  call *2552(%r15)                  # unixcleario
  call *2560(%r15)                  # initialize-symbol-table
  call *2568(%r15)                  # initcode
- mov l0007,%rax
+ mov $1,%rax
+ mov 0(%r9,%rax,8),%rax
  call *2576(%r15)                  # console-print-string
  call *2584(%r15)                  # console-newline
- mov l0008,%rax
+ mov $0,%rax
+ mov 0(%r9,%rax,8),%rax
  call *2592(%r15)                  # faslin
  jmp *2600(%r15)                   # loader-main
  .quad 1
-/ (*entry console-print-string expr 1)
- .globl l0012
-l0012:
+# (*entry console-print-string expr 1)
+ .globl l0014
+l0014:
  shl $8,%rax
  shr $8,%rax
  add $8,%rax
  jmp *2608(%r15)                   # unixputs
  .quad 1
-/ (*entry console-print-number expr 1)
- .globl l0013
-l0013:
+# (*entry console-print-number expr 1)
+ .globl l0015
+l0015:
  jmp *2624(%r15)                   # unixputn
  .quad 0
-/ (*entry console-newline expr 0)
- .globl l0014
-l0014:
+# (*entry console-newline expr 0)
+ .globl l0016
+l0016:
  mov $10,%rax
  jmp *2632(%r15)                   # unixputc
  .quad 1
-/ (*entry binaryopenread expr 1)
+# (*entry binaryopenread expr 1)
  .globl binaryopenread
 binaryopenread:
- mov l0015,%rbx
+ mov $10,%rbx
+ mov 0(%r9,%rbx,8),%rbx
  shl $8,%rbx
  shr $8,%rbx
  add $8,%rbx
@@ -159,19 +162,20 @@ binaryopenread:
  shr $8,%rax
  add $8,%rax
  call *2648(%r15)                  # unixopen
- cmp $0,%rax
- jne l0019
- mov l0016,%rax
+ cmpq $0,%rax
+ jne l0023
+ mov $9,%rax
+ mov 0(%r9,%rax,8),%rax
  jmp *2656(%r15)                   # kernel-fatal-error
-l0019:
+l0023:
  ret
  .quad 1
-/ (*entry binaryread expr 1)
+# (*entry binaryread expr 1)
  .globl binaryread
 binaryread:
  jmp *2672(%r15)                   # xgetw
  .quad 3
-/ (*entry binaryreadblock expr 3)
+# (*entry binaryreadblock expr 3)
  .globl binaryreadblock
 binaryreadblock:
  mov %rbx,%rbp
@@ -180,14 +184,14 @@ binaryreadblock:
  mov %rbp,%rax
  jmp *2688(%r15)                   # fread
  .quad 1
-/ (*entry binaryclose expr 1)
+# (*entry binaryclose expr 1)
  .globl binaryclose
 binaryclose:
  jmp *2704(%r15)                   # fclose
  .quad 0
-/ (*entry initialize-symbol-table expr 0)
- .globl l0020
-l0020:
+# (*entry initialize-symbol-table expr 0)
+ .globl l0024
+l0024:
  sub $16,%rsp
  mov %r13,8(%rsp)
  mov %r13,(%rsp)
@@ -195,9 +199,9 @@ l0020:
  mov 2712(%r14),%rax               # nextsymbol
  mov %rax,%rdx
  mov %rbx,%rcx
-l0021:
+l0025:
  cmp %rcx,%rdx
- jg l0022
+ jg l0026
  mov %rdx,%rax
  shl $3,%rax
  add 2720(%r14),%rax               # symnam
@@ -205,26 +209,26 @@ l0021:
  add %rdx,%rbx
  mov %rbx,(%rax)
  add $1,%rdx
- jmp l0021
-l0022:
+ jmp l0025
+l0026:
  mov 2720(%r14),%rsi               # symnam
  movq $0,2400000(%rsi)
  mov $393241,%rbx
  xor %rax,%rax
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
-l0023:
+l0027:
  mov (%rsp),%rdi
  cmp 8(%rsp),%rdi
- jg l0024
+ jg l0028
  xor %rcx,%rcx
  mov (%rsp),%rbx
  mov 2096(%r14),%rax               # hashtable
  shl $2,%rbx
  movl %ecx,0(%rbx,%rax,1)
  addq $1,(%rsp)
- jmp l0023
-l0024:
+ jmp l0027
+l0028:
  mov 2720(%r14),%rdi               # symnam
  mov 2048(%rdi),%rax
  call *2728(%r15)                  # hash-into-table
@@ -238,10 +242,10 @@ l0024:
  mov $256,%rax
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
-l0025:
+l0029:
  mov (%rsp),%rdi
  cmp 8(%rsp),%rdi
- jg l0026
+ jg l0030
  mov (%rsp),%rax
  shl $3,%rax
  add 2720(%r14),%rax               # symnam
@@ -253,16 +257,16 @@ l0025:
  shl $2,%rbx
  movl %ecx,0(%rbx,%rax,1)
  addq $1,(%rsp)
- jmp l0025
-l0026:
+ jmp l0029
+l0030:
  mov %r13,%rax
  mov %rax,2736(%r14)               # show-new-ids
  add $16,%rsp
  ret
  .quad 1
-/ (*entry faslin-intern expr 1)
- .globl l0027
-l0027:
+# (*entry faslin-intern expr 1)
+ .globl l0031
+l0031:
  sub $24,%rsp
  mov %r13,16(%rsp)
  mov %r13,8(%rsp)
@@ -272,11 +276,11 @@ l0027:
  call *2752(%r15)                  # search-string-for-character
  mov %rax,8(%rsp)
  cmp %r13,%rax
- jne l0028
+ jne l0032
  mov (%rsp),%rax
  add $24,%rsp
  jmp *2760(%r15)                   # intern
-l0028:
+l0032:
  mov (%rsp),%rax
  shl $8,%rax
  shr $8,%rax
@@ -285,7 +289,7 @@ l0028:
  sar $8,%rax
  mov %rax,16(%rsp)
  cmp 8(%rsp),%rax
- jle l0029
+ jle l0033
  mov $1,%rbx
  add 8(%rsp),%rbx
  mov (%rsp),%rax
@@ -296,16 +300,16 @@ l0028:
  cbtw
  cwtl
  cdqe
- cmp $0,%rax
- jne l0029
+ cmpq $0,%rax
+ jne l0033
  addq $1,8(%rsp)
-l0029:
+l0033:
  mov 8(%rsp),%rdi
  cmp 16(%rsp),%rdi
- jl l0030
+ jl l0034
  mov (%rsp),%rax
- jmp l0031
-l0030:
+ jmp l0035
+l0034:
  mov (%rsp),%rcx
  shl $8,%rcx
  shr $8,%rcx
@@ -317,18 +321,18 @@ l0030:
  add 8(%rsp),%rbx
  mov (%rsp),%rax
  call *2768(%r15)                  # subseq
-l0031:
+l0035:
  add $24,%rsp
  jmp *2760(%r15)                   # intern
  .quad 1
-/ (*entry intern expr 1)
+# (*entry intern expr 1)
  .globl intern
 intern:
  jmp *2776(%r15)                   # unchecked-string-intern
  .quad 1
-/ (*entry unchecked-string-intern expr 1)
- .globl l0036
-l0036:
+# (*entry unchecked-string-intern expr 1)
+ .globl l0041
+l0041:
  sub $48,%rsp
  mov %rax,(%rsp)
  mov %r13,%rbp
@@ -347,8 +351,8 @@ l0036:
  mov %rcx,24(%rsp)
  mov %rdx,32(%rsp)
  mov %rbp,40(%rsp)
- cmp $0,%rbx
- jne l0037
+ cmpq $0,%rbx
+ jne l0042
  add $8,%rax
  movb 0(%rax,%rbx,1),%al
  cbtw
@@ -360,8 +364,8 @@ l0036:
  mov $254,%rdi
  shl $56,%rdi
  or %rdi,%rax
- jmp l0038
-l0037:
+ jmp l0043
+l0042:
  mov (%rsp),%rax
  call *2728(%r15)                  # hash-into-table
  mov %rax,%rbx
@@ -372,22 +376,25 @@ l0037:
  shl $32,%rax
  shr $32,%rax
  mov %rax,%rbx
- cmp l0032,%rax
- jl l0039
+ movq $4294967295,%rdi
+ cmpq %rdi,%rax
+ jl l0044
  mov %r13,%rax
- jmp l0040
-l0039:
- mov l0033,%rax
-l0040:
+ jmp l0045
+l0044:
+ mov $20,%rax
+ mov 0(%r9,%rax,8),%rax
+l0045:
  cmp %r13,%rax
- je l0041
- mov l0033(%rip),%rax
- cmp $0,%rbx
- jg l0041
+ je l0046
+ mov $20,%rax
+ mov 0(%r9,%rax,8),%rax
+ cmpq $0,%rbx
+ jg l0046
  add $140,%rax
-l0041:
+l0046:
  cmp %r13,%rax
- je l0042
+ je l0047
  mov 24(%rsp),%rbx
  mov 2096(%r14),%rax               # hashtable
  shl $2,%rbx
@@ -399,16 +406,17 @@ l0041:
  mov $254,%rdi
  shl $56,%rdi
  or %rdi,%rax
- jmp l0038
-l0042:
+ jmp l0043
+l0047:
  cmp 2736(%r14),%rax               # show-new-ids
- je l0043
- mov l0034,%rax
+ je l0048
+ mov $19,%rax
+ mov 0(%r9,%rax,8),%rax
  call *2576(%r15)                  # console-print-string
  mov (%rsp),%rax
  call *2576(%r15)                  # console-print-string
  call *2584(%r15)                  # console-newline
-l0043:
+l0048:
  call *2784(%r15)                  # gtid
  mov %rax,40(%rsp)
  mov %rax,%rcx
@@ -430,13 +438,13 @@ l0043:
  mov 40(%rsp),%rax
  add $48,%rsp
  jmp *2808(%r15)                   # initialize-new-id
-l0038:
+l0043:
  add $48,%rsp
  ret
  .quad 1
-/ (*entry hash-into-table expr 1)
- .globl l0047
-l0047:
+# (*entry hash-into-table expr 1)
+ .globl l0052
+l0052:
  sub $32,%rsp
  mov %r13,24(%rsp)
  mov %r13,16(%rsp)
@@ -446,24 +454,25 @@ l0047:
  mov %rax,8(%rsp)
  mov %rax,16(%rsp)
  movq $-1,24(%rsp)
-l0048:
+l0053:
  mov 16(%rsp),%rbx
  mov 2096(%r14),%rax               # hashtable
  shl $2,%rbx
  movl 0(%rbx,%rax,1),%eax
  shl $32,%rax
  shr $32,%rax
- cmp $0,%rax
- jne l0049
- cmpq $-1,24(%rsp)
- je l0050
+ cmpq $0,%rax
+ jne l0054
+ movabsq $-1,%rdi
+ cmpq %rdi,24(%rsp)
+ je l0055
  mov 24(%rsp),%rax
- jmp l0051
-l0050:
+ jmp l0056
+l0055:
  mov 16(%rsp),%rax
-l0051:
- jmp l0052
-l0049:
+l0056:
+ jmp l0057
+l0054:
  mov 16(%rsp),%rbx
  mov 2096(%r14),%rax               # hashtable
  shl $2,%rbx
@@ -471,14 +480,16 @@ l0049:
  mov %rax,%rbx
  shl $32,%rbx
  shr $32,%rbx
- cmp l0044,%rbx
- jne l0053
- cmpq $-1,24(%rsp)
- jne l0054
+ movq $4294967295,%rdi
+ cmpq %rdi,%rbx
+ jne l0058
+ movabsq $-1,%rdi
+ cmpq %rdi,24(%rsp)
+ jne l0059
  mov 16(%rsp),%rdi
  mov %rdi,24(%rsp)
- jmp l0054
-l0053:
+ jmp l0059
+l0058:
  mov 16(%rsp),%rbx
  mov 2096(%r14),%rax               # hashtable
  shl $2,%rbx
@@ -491,31 +502,32 @@ l0053:
  mov (%rax),%rax
  call *2824(%r15)                  # unchecked-string-equal
  cmp %r13,%rax
- je l0054
+ je l0059
  mov 16(%rsp),%rax
- jmp l0052
-l0054:
+ jmp l0057
+l0059:
  cmpq $393241,16(%rsp)
- jne l0055
+ jne l0060
  xor %rax,%rax
- jmp l0056
-l0055:
+ jmp l0061
+l0060:
  mov $1,%rax
  add 16(%rsp),%rax
-l0056:
+l0061:
  mov %rax,16(%rsp)
  cmp 8(%rsp),%rax
- jne l0048
- mov l0045,%rax
+ jne l0053
+ mov $24,%rax
+ mov 0(%r9,%rax,8),%rax
  call *2656(%r15)                  # kernel-fatal-error
- jmp l0048
-l0052:
+ jmp l0053
+l0057:
  add $32,%rsp
  ret
  .quad 2
-/ (*entry initialize-new-id expr 2)
- .globl l0057
-l0057:
+# (*entry initialize-new-id expr 2)
+ .globl l0062
+l0062:
  sub $16,%rsp
  mov %rax,(%rsp)
  shl $8,%rax
@@ -553,9 +565,9 @@ l0057:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry hash-function expr 1)
- .globl l0060
-l0060:
+# (*entry hash-function expr 1)
+ .globl l0065
+l0065:
  sub $40,%rsp
  mov %r13,24(%rsp)
  mov %r13,8(%rsp)
@@ -569,17 +581,17 @@ l0060:
  xor %rax,%rax
  mov %rax,32(%rsp)
  cmpq $20,(%rsp)
- jle l0061
+ jle l0066
  movq $20,(%rsp)
-l0061:
+l0066:
  mov (%rsp),%rbx
  xor %rax,%rax
  mov %rax,24(%rsp)
  mov %rbx,8(%rsp)
-l0062:
+l0067:
  mov 24(%rsp),%rdi
  cmp 8(%rsp),%rdi
- jg l0063
+ jg l0068
  mov 24(%rsp),%rbx
  mov $8,%rax
  add 16(%rsp),%rax
@@ -590,22 +602,22 @@ l0062:
  mov $56,%rbx
  sub 24(%rsp),%rbx
  cmp $0,%rbx
- jge l0058
+ jge l0063
  neg %rbx
  xchg %rbx,%rcx
  shr %cl,%rax
- jmp l0059
-l0058:
+ jmp l0064
+l0063:
  xchg %rbx,%rcx
  shl %cl,%rax
-l0059:
+l0064:
  xchg %rbx,%rcx
  mov 32(%rsp),%rdi
  xor %rdi,%rax
  mov %rax,32(%rsp)
  addq $1,24(%rsp)
- jmp l0062
-l0063:
+ jmp l0067
+l0068:
  mov $393241,%rbx
  mov 32(%rsp),%rax
  add $40,%rsp
@@ -614,7 +626,7 @@ l0063:
  mov %rdx,%rax
  ret
  .quad 1
-/ (*entry faslin expr 1)
+# (*entry faslin expr 1)
  .globl faslin
 faslin:
  sub $96,%rsp
@@ -637,13 +649,13 @@ faslin:
  mov $65535,%rbx
  and %rax,%rbx
  cmpq $399,%rbx
- je l0064
+ je l0069
  mov 24(%rsp),%rax
  call *2696(%r15)                  # binaryclose
  mov (%rsp),%rax
  call *2872(%r15)                  # faslin-bad-file
- jmp l0065
-l0064:
+ jmp l0070
+l0069:
  mov 32(%rsp),%rax
  shr $16,%rax
  mov %rax,32(%rsp)
@@ -703,20 +715,20 @@ l0064:
  mov $1,%rax
  and 32(%rsp),%rax
  cmpq $1,%rax
- jne l0066
+ jne l0071
  mov 40(%rsp),%rdx
  mov 48(%rsp),%rcx
  mov 56(%rsp),%rbx
  mov 64(%rsp),%rax
  call *2904(%r15)                  # do-relocation-new
- jmp l0067
-l0066:
+ jmp l0072
+l0071:
  mov 40(%rsp),%rdx
  mov 48(%rsp),%rcx
  mov 56(%rsp),%rbx
  mov 64(%rsp),%rax
  call *2912(%r15)                  # do-relocation
-l0067:
+l0072:
  mov 2920(%r14),%rax               # code-base-hack
  mov %rax,72(%rsp)
  mov 64(%rsp),%rdi
@@ -728,20 +740,20 @@ l0067:
  mov 80(%rsp),%rbx
  mov 88(%rsp),%rax
  call *2936(%r15)                  # delbps
-l0065:
+l0070:
  mov %r13,%rax
  add $96,%rsp
  ret
  .quad 2
-/ (*entry delbps expr 2)
+# (*entry delbps expr 2)
  .globl delbps
 delbps:
  mov %r13,%rax
  ret
  .quad 4
-/ (*entry do-relocation expr 4)
- .globl l0068
-l0068:
+# (*entry do-relocation expr 4)
+ .globl l0073
+l0073:
  sub $48,%rsp
  mov %r13,32(%rsp)
  mov %rax,24(%rsp)
@@ -754,13 +766,13 @@ l0068:
  xor %rax,%rax
  mov %rax,40(%rsp)
  mov %rbx,(%rsp)
-l0069:
+l0074:
  mov 40(%rsp),%rdi
  cmp (%rsp),%rdi
- jle l0070
+ jle l0075
  mov %r13,%rax
- jmp l0071
-l0070:
+ jmp l0076
+l0075:
  mov 40(%rsp),%rbx
  mov 8(%rsp),%rax
  shl $8,%rax
@@ -772,40 +784,40 @@ l0070:
  add 40(%rsp),%rbx
  mov %rbx,32(%rsp)
  cmpq $1,%rax
- je l0072
+ je l0077
  cmpq $2,%rax
- je l0073
+ je l0078
  cmpq $3,%rax
- je l0074
- jmp l0075
-l0072:
+ je l0079
+ jmp l0080
+l0077:
  mov 16(%rsp),%rcx
  mov 24(%rsp),%rbx
  mov 32(%rsp),%rax
  call *2960(%r15)                  # relocate-word
- jmp l0075
-l0074:
+ jmp l0080
+l0079:
  mov 16(%rsp),%rcx
  mov 24(%rsp),%rbx
  mov 32(%rsp),%rax
  call *2968(%r15)                  # relocate-inf
- jmp l0075
-l0073:
+ jmp l0080
+l0078:
  mov 16(%rsp),%rcx
  mov 24(%rsp),%rbx
  mov 32(%rsp),%rax
  mov $369,%rdi
  call *2952(%r15)                  # relocate-right-half
-l0075:
+l0080:
  addq $1,40(%rsp)
- jmp l0069
-l0071:
+ jmp l0074
+l0076:
  add $48,%rsp
  ret
  .quad 4
-/ (*entry do-relocation-new expr 4)
- .globl l0076
-l0076:
+# (*entry do-relocation-new expr 4)
+ .globl l0081
+l0081:
  sub $48,%rsp
  mov %r13,16(%rsp)
  mov %rax,32(%rsp)
@@ -821,7 +833,7 @@ l0076:
  shr $8,%rbp
  add $8,%rbp
  mov %rbp,(%rsp)
-l0077:
+l0082:
  mov 8(%rsp),%rbx
  mov (%rsp),%rax
  movb 0(%rax,%rbx,1),%al
@@ -830,11 +842,11 @@ l0077:
  cdqe
  and $255,%rax
  mov %rax,16(%rsp)
- cmp $0,%rax
- jne l0078
+ cmpq $0,%rax
+ jne l0083
  mov %r13,%rax
- jmp l0079
-l0078:
+ jmp l0084
+l0083:
  addq $1,8(%rsp)
  mov $63,%rax
  and 16(%rsp),%rax
@@ -845,38 +857,38 @@ l0078:
  mov %rbx,16(%rsp)
  mov %rbx,%rax
  cmpq $1,%rax
- je l0080
+ je l0085
  cmpq $2,%rax
- je l0081
+ je l0086
  cmpq $3,%rax
- je l0082
- jmp l0077
-l0080:
+ je l0087
+ jmp l0082
+l0085:
  mov 24(%rsp),%rcx
  mov 32(%rsp),%rbx
  mov 40(%rsp),%rax
  call *2960(%r15)                  # relocate-word
- jmp l0077
-l0082:
+ jmp l0082
+l0087:
  mov 24(%rsp),%rcx
  mov 32(%rsp),%rbx
  mov 40(%rsp),%rax
  call *2968(%r15)                  # relocate-inf
- jmp l0077
-l0081:
+ jmp l0082
+l0086:
  mov 24(%rsp),%rcx
  mov 32(%rsp),%rbx
  mov 40(%rsp),%rax
  mov $369,%rdi
  call *2952(%r15)                  # relocate-right-half
- jmp l0077
-l0079:
+ jmp l0082
+l0084:
  add $48,%rsp
  ret
  .quad 3
-/ (*entry relocate-word expr 3)
- .globl l0083
-l0083:
+# (*entry relocate-word expr 3)
+ .globl l0088
+l0088:
  sub $48,%rsp
  mov %r13,40(%rsp)
  mov %r13,32(%rsp)
@@ -911,9 +923,9 @@ l0083:
  mov %ebx,0(%rax)
  ret
  .quad 3
-/ (*entry relocate-inf expr 3)
- .globl l0084
-l0084:
+# (*entry relocate-inf expr 3)
+ .globl l0089
+l0089:
  sub $56,%rsp
  mov %r13,48(%rsp)
  mov %r13,40(%rsp)
@@ -948,72 +960,72 @@ l0084:
  add $56,%rsp
  ret
  .quad 4
-/ (*entry compute-relocation expr 4)
- .globl l0085
-l0085:
+# (*entry compute-relocation expr 4)
+ .globl l0090
+l0090:
  push %rbx
- cmp $0,%rax
- jne l0086
+ cmpq $0,%rax
+ jne l0091
  mov %rcx,%rax
  add %rbx,%rax
- jmp l0087
-l0086:
+ jmp l0092
+l0091:
  cmpq $2,%rax
- jne l0088
+ jne l0093
  cmpq $8150,%rbx
- jl l0089
+ jl l0094
  mov $-8156,%rax
  add %rbx,%rax
  shl $3,%rax
  add 2064(%r14),%rax               # argumentblock
- jmp l0087
-l0089:
+ jmp l0092
+l0094:
  cmpq $2048,%rbx
- jl l0090
+ jl l0095
  mov %rdx,%rbx
  mov (%rsp),%rax
  call *2984(%r15)                  # local-to-global-id
  shl $3,%rax
- jmp l0087
-l0090:
+ jmp l0092
+l0095:
  mov %rbx,%rax
  shl $3,%rax
- jmp l0087
-l0088:
+ jmp l0092
+l0093:
  cmpq $3,%rax
- jne l0091
+ jne l0096
  cmpq $2048,%rbx
- jl l0092
+ jl l0097
  mov %rdx,%rbx
  mov (%rsp),%rax
  call *2984(%r15)                  # local-to-global-id
  mov %rax,(%rsp)
-l0092:
+l0097:
  mov (%rsp),%rax
  shl $3,%rax
  add %r15,%rax
- jmp l0087
-l0091:
+ jmp l0092
+l0096:
  cmpq $1,%rax
- jne l0093
+ jne l0098
  cmpq $2048,%rbx
- jl l0094
+ jl l0099
  mov %rdx,%rbx
  mov (%rsp),%rax
  add $8,%rsp
  jmp *2984(%r15)                   # local-to-global-id
-l0094:
+l0099:
  mov %rbx,%rax
- jmp l0087
-l0093:
+ jmp l0092
+l0098:
  mov %r13,%rax
-l0087:
+l0092:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry local-to-global-id expr 2)
- .globl l0095
-l0095:
+# (*entry local-to-global-id expr 2)
+ .globl l0100
+l0100:
  add $-2047,%rax
  shl $3,%rax
  mov %rbx,%rcx
@@ -1023,9 +1035,9 @@ l0095:
  mov (%rax),%rax
  ret
  .quad 1
-/ (*entry read-id-table expr 1)
- .globl l0096
-l0096:
+# (*entry read-id-table expr 1)
+ .globl l0101
+l0101:
  sub $48,%rsp
  mov %r13,40(%rsp)
  mov %r13,32(%rsp)
@@ -1047,10 +1059,10 @@ l0096:
  xor %rax,%rax
  mov %rax,24(%rsp)
  mov %rbx,32(%rsp)
-l0097:
+l0102:
  mov 24(%rsp),%rdi
  cmp 32(%rsp),%rdi
- jg l0098
+ jg l0103
  mov (%rsp),%rax
  call *2664(%r15)                  # binaryread
  mov 2072(%r14),%rsi               # tokenbuffer
@@ -1086,13 +1098,13 @@ l0097:
  shr $8,%rcx
  mov %rcx,(%rax)
  addq $1,24(%rsp)
- jmp l0097
-l0098:
+ jmp l0102
+l0103:
  mov 16(%rsp),%rax
  add $48,%rsp
  ret
  .quad 3
-/ (*entry putentry expr 3)
+# (*entry putentry expr 3)
  .globl putentry
 putentry:
  add 2920(%r14),%rcx               # code-base-hack
@@ -1104,124 +1116,131 @@ putentry:
  mov $374,%rdi
  jmp *2992(%r15)                   # putd
  .quad 1
-/ (*entry faslin-bad-file expr 1)
- .globl l0101
-l0101:
- mov l0099,%rax
+# (*entry faslin-bad-file expr 1)
+ .globl l0107
+l0107:
+ mov $29,%rax
+ mov 0(%r9,%rax,8),%rax
  call *2576(%r15)                  # console-print-string
  jmp *2584(%r15)                   # console-newline
  .quad 1
-/ (*entry gtbps expr 1)
+# (*entry gtbps expr 1)
  .globl gtbps
 gtbps:
  sub $8,%rsp
-l0105:
+l0113:
  mov %rax,(%rsp)
  cmp %r13,%rax
- jne l0106
+ jne l0114
  call *3008(%r15)                  # gtbps-nil-error
-l0106:
+l0114:
  cmpq $10,(%rsp)
- jle l0107
+ jle l0115
  mov $15,%rax
  and 2296(%r14),%rax               # nextbps
- cmp $0,%rax
- je l0107
+ cmpq $0,%rax
+ je l0115
  mov 2296(%r14),%rbx               # nextbps
  shr $4,%rbx
  shl $4,%rbx
  add $16,%rbx
  mov %rbx,2296(%r14)               # nextbps
-l0107:
+l0115:
  mov 2296(%r14),%rax               # nextbps
  mov (%rsp),%rbx
  shl $3,%rbx
  add 2296(%r14),%rbx               # nextbps
  mov %rbx,2296(%r14)               # nextbps
  cmp 2272(%r14),%rbx               # lastbps
- jle l0108
+ jle l0116
  mov %rax,2296(%r14)               # nextbps
- mov l0102,%rax
+ mov $35,%rax
+ mov 0(%r9,%rax,8),%rax
  call *3016(%r15)                  # getd
  cmp %r13,%rax
- je l0109
+ je l0117
  mov (%rsp),%rax
  call *3024(%r15)                  # try-other-bps-spaces
  cmp %r13,%rax
- je l0109
+ je l0117
  mov (%rsp),%rax
- jmp l0105
-l0109:
- mov l0103,%rax
+ jmp l0113
+l0117:
+ mov $34,%rax
+ mov 0(%r9,%rax,8),%rax
  add $8,%rsp
  jmp *3032(%r15)                   # stderror
-l0108:
+l0116:
  add $8,%rsp
  ret
  .quad 0
-/ (*entry gtbps-nil-error expr 0)
- .globl l0112
-l0112:
- mov l0110,%rax
+# (*entry gtbps-nil-error expr 0)
+ .globl l0121
+l0121:
+ mov $41,%rax
+ mov 0(%r9,%rax,8),%rax
  jmp *3032(%r15)                   # stderror
  .quad 1
-/ (*entry bpsaddr-to-bpsaddr-rw expr 1)
- .globl l0113
-l0113:
+# (*entry bpsaddr-to-bpsaddr-rw expr 1)
+ .globl l0122
+l0122:
  add 2304(%r14),%rax               # bpsbaserw
  sub 2312(%r14),%rax               # bpsbaserx
  ret
  .quad 1
-/ (*entry gtstaticlisp expr 1)
+# (*entry gtstaticlisp expr 1)
  .globl gtstaticlisp
 gtstaticlisp:
  sub $8,%rsp
-l0119:
+l0131:
  mov %rax,(%rsp)
  cmp %r13,%rax
- jne l0120
- mov l0114,%rax
+ jne l0132
+ mov $48,%rax
+ mov 0(%r9,%rax,8),%rax
  call *3032(%r15)                  # stderror
-l0120:
+l0132:
  mov 2344(%r14),%rax               # nextstaticlisp
  mov (%rsp),%rbx
  shl $3,%rbx
  add 2344(%r14),%rbx               # nextstaticlisp
  mov %rbx,2344(%r14)               # nextstaticlisp
  cmp 2336(%r14),%rbx               # laststaticlisp
- jle l0121
+ jle l0133
  mov %rax,2344(%r14)               # nextstaticlisp
- mov l0115,%rax
+ mov $47,%rax
+ mov 0(%r9,%rax,8),%rax
  call *3016(%r15)                  # getd
  cmp %r13,%rax
- je l0122
+ je l0134
  mov (%rsp),%rax
  mov $380,%rdi
  call *3040(%r15)                  # try-other-staticlisp-spaces
  cmp %r13,%rax
- je l0122
+ je l0134
  mov (%rsp),%rax
- jmp l0119
-l0122:
- mov l0116,%rax
+ jmp l0131
+l0134:
+ mov $46,%rax
+ mov 0(%r9,%rax,8),%rax
  add $8,%rsp
  jmp *3032(%r15)                   # stderror
-l0121:
+l0133:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry gtheap expr 1)
+# (*entry gtheap expr 1)
  .globl gtheap
 gtheap:
  cmp %r13,%rax
- jne l0123
+ jne l0135
  jmp *3056(%r15)                   # known-free-space
-l0123:
+l0135:
  jmp *3064(%r15)                   # real-gtheap
  .quad 1
-/ (*entry real-gtheap expr 1)
- .globl l0124
-l0124:
+# (*entry real-gtheap expr 1)
+ .globl l0136
+l0136:
  mov %rax,%rcx
  mov %r10,%rax
  mov %rcx,%rbx
@@ -1229,29 +1248,31 @@ l0124:
  add %r10,%rbx
  mov %rbx,%r10
  cmp %r11,%rbx
- jl l0125
+ jl l0137
  mov %rcx,%rbx
  jmp *3072(%r15)                   # get-heap-trap
-l0125:
+l0137:
  ret
  .quad 1
-/ (*entry get-heap-trap expr 1)
- .globl l0128
-l0128:
- mov l0126,%rax
+# (*entry get-heap-trap expr 1)
+ .globl l0141
+l0141:
+ mov $59,%rax
+ mov 0(%r9,%rax,8),%rax
  jmp *2656(%r15)                   # kernel-fatal-error
  .quad 0
-/ (*entry gtid expr 0)
+# (*entry gtid expr 0)
  .globl gtid
 gtid:
- cmp $0,2712(%r14)                 # nextsymbol
- jne l0131
+ cmpq $0,2712(%r14)                # nextsymbol
+ jne l0145
  call *3080(%r15)                  # reclaim
- cmp $0,2712(%r14)                 # nextsymbol
- jne l0131
- mov l0129,%rax
+ cmpq $0,2712(%r14)                # nextsymbol
+ jne l0145
+ mov $65,%rax
+ mov 0(%r9,%rax,8),%rax
  call *2656(%r15)                  # kernel-fatal-error
-l0131:
+l0145:
  mov 2712(%r14),%rax               # nextsymbol
  mov %rax,%rbx
  shl $3,%rbx
@@ -1260,7 +1281,7 @@ l0131:
  mov %rdi,2712(%r14)               # nextsymbol
  ret
  .quad 1
-/ (*entry gtwrds expr 1)
+# (*entry gtwrds expr 1)
  .globl gtwrds
 gtwrds:
  push %rax
@@ -1276,7 +1297,7 @@ gtwrds:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry gtconststr expr 1)
+# (*entry gtconststr expr 1)
  .globl gtconststr
 gtconststr:
  sub $16,%rsp
@@ -1299,7 +1320,7 @@ gtconststr:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry subseq expr 3)
+# (*entry subseq expr 3)
  .globl subseq
 subseq:
  sub $64,%rsp
@@ -1314,10 +1335,11 @@ subseq:
  mov %rax,%rdi
  shr $56,%rdi
  cmp $4,%rdi
- je l0134
- mov l0132,%rax
+ je l0149
+ mov $70,%rax
+ mov 0(%r9,%rax,8),%rax
  call *2656(%r15)                  # kernel-fatal-error
-l0134:
+l0149:
  mov $-1,%rax
  add 16(%rsp),%rax
  sub 8(%rsp),%rax
@@ -1333,10 +1355,10 @@ l0134:
  xor %rax,%rax
  mov %rax,48(%rsp)
  mov %rbx,56(%rsp)
-l0135:
+l0150:
  mov 48(%rsp),%rdi
  cmp 56(%rsp),%rdi
- jg l0136
+ jg l0151
  mov 8(%rsp),%rbx
  add 48(%rsp),%rbx
  mov $8,%rax
@@ -1351,8 +1373,8 @@ l0135:
  add 40(%rsp),%rax
  movb %cl,0(%rbx,%rax,1)
  addq $1,48(%rsp)
- jmp l0135
-l0136:
+ jmp l0150
+l0151:
  mov 40(%rsp),%rax
  shl $8,%rax
  shr $8,%rax
@@ -1362,9 +1384,9 @@ l0136:
  add $64,%rsp
  ret
  .quad 2
-/ (*entry search-string-for-character expr 2)
- .globl l0137
-l0137:
+# (*entry search-string-for-character expr 2)
+ .globl l0152
+l0152:
  sub $32,%rsp
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
@@ -1376,13 +1398,13 @@ l0137:
  xor %rax,%rax
  mov %rax,16(%rsp)
  mov %rbx,24(%rsp)
-l0138:
+l0153:
  mov 16(%rsp),%rdi
  cmp 24(%rsp),%rdi
- jle l0139
+ jle l0154
  mov %r13,%rax
- jmp l0140
-l0139:
+ jmp l0155
+l0154:
  mov 16(%rsp),%rbx
  mov 8(%rsp),%rax
  shl $8,%rax
@@ -1393,19 +1415,19 @@ l0139:
  cwtl
  cdqe
  cmp (%rsp),%rax
- jne l0141
+ jne l0156
  mov 16(%rsp),%rax
- jmp l0140
-l0141:
+ jmp l0155
+l0156:
  addq $1,16(%rsp)
- jmp l0138
-l0140:
+ jmp l0153
+l0155:
  add $32,%rsp
  ret
  .quad 2
-/ (*entry unchecked-string-equal expr 2)
- .globl l0143
-l0143:
+# (*entry unchecked-string-equal expr 2)
+ .globl l0159
+l0159:
  sub $40,%rsp
  mov %r13,32(%rsp)
  mov %r13,24(%rsp)
@@ -1423,18 +1445,19 @@ l0143:
  shl $8,%rdx
  sar $8,%rdx
  cmp %rdx,%rcx
- je l0144
+ je l0160
  mov %r13,%rax
- jmp l0145
-l0144:
+ jmp l0161
+l0160:
  movq $0,24(%rsp)
-l0146:
+l0162:
  mov 24(%rsp),%rdi
  cmp 16(%rsp),%rdi
- jle l0147
- mov l0142,%rax
- jmp l0145
-l0147:
+ jle l0163
+ mov $76,%rax
+ mov 0(%r9,%rax,8),%rax
+ jmp l0161
+l0163:
  mov 24(%rsp),%rbx
  mov $8,%rax
  add (%rsp),%rax
@@ -1451,17 +1474,17 @@ l0147:
  cwtl
  cdqe
  cmp 32(%rsp),%rax
- je l0148
+ je l0164
  mov %r13,%rax
- jmp l0145
-l0148:
+ jmp l0161
+l0164:
  addq $1,24(%rsp)
- jmp l0146
-l0145:
+ jmp l0162
+l0161:
  add $40,%rsp
  ret
  .quad 2
-/ (*entry copystringtofrom expr 2)
+# (*entry copystringtofrom expr 2)
  .globl copystringtofrom
 copystringtofrom:
  sub $32,%rsp
@@ -1482,9 +1505,9 @@ copystringtofrom:
  shl $8,%rax
  sar $8,%rax
  cmp %rbp,%rax
- jge l0149
+ jge l0165
  mov %rax,(%rsp)
-l0149:
+l0165:
  mov $9,%rax
  add (%rsp),%rax
  mov %rax,%rbx
@@ -1497,9 +1520,9 @@ l0149:
  xor %rax,%rax
  mov %rax,%rdx
  mov %rbx,%rcx
-l0150:
+l0166:
  cmp %rcx,%rdx
- jg l0151
+ jg l0167
  mov $1,%rax
  add %rdx,%rax
  shl $3,%rax
@@ -1511,13 +1534,13 @@ l0150:
  mov (%rbx),%rdi
  mov %rdi,(%rax)
  add $1,%rdx
- jmp l0150
-l0151:
+ jmp l0166
+l0167:
  mov 24(%rsp),%rax
  add $32,%rsp
  ret
  .quad 2
-/ (*entry cons expr 2)
+# (*entry cons expr 2)
  .globl cons
 cons:
  push %rbx
@@ -1536,7 +1559,7 @@ cons:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry interrogate expr 1)
+# (*entry interrogate expr 1)
  .globl interrogate
 interrogate:
  shl $3,%rax
@@ -1544,7 +1567,7 @@ interrogate:
  mov (%rax),%rax
  ret
  .quad 2
-/ (*entry modify expr 2)
+# (*entry modify expr 2)
  .globl modify
 modify:
  shl $3,%rax
@@ -1553,14 +1576,14 @@ modify:
  mov %rbx,%rax
  ret
  .quad 3
-/ (*entry put expr 3)
+# (*entry put expr 3)
  .globl put
 put:
  jmp *3128(%r15)                   # unchecked-put
  .quad 3
-/ (*entry unchecked-put expr 3)
- .globl l0152
-l0152:
+# (*entry unchecked-put expr 3)
+ .globl l0168
+l0168:
  sub $32,%rsp
  mov %r13,24(%rsp)
  mov %rax,(%rsp)
@@ -1572,14 +1595,14 @@ l0152:
  mov 8(%rsp),%rax
  call *3144(%r15)                  # atsoc
  cmp %r13,%rax
- je l0153
+ je l0169
  mov %rax,%rsi
  shl $8,%rsi
  shr $8,%rsi
  mov 16(%rsp),%rdi
  mov %rdi,8(%rsi)
- jmp l0154
-l0153:
+ jmp l0170
+l0169:
  mov 16(%rsp),%rbx
  mov 8(%rsp),%rax
  mov %rax,0(%r10)
@@ -1589,11 +1612,11 @@ l0153:
  mov %rbx,8(%r10)
  add $16,%r10
  cmp %r11,%r10
- jl l0155
+ jl l0171
  push %rax
  call *3152(%r15)                  # %reclaim
  pop %rax
-l0155:
+l0171:
  mov 24(%rsp),%rbx
  mov %rax,0(%r10)
  mov $9,%rax
@@ -1602,37 +1625,37 @@ l0155:
  mov %rbx,8(%r10)
  add $16,%r10
  cmp %r11,%r10
- jl l0156
+ jl l0172
  push %rax
  call *3152(%r15)                  # %reclaim
  pop %rax
-l0156:
+l0172:
  mov %rax,%rbx
  mov (%rsp),%rax
  call *3160(%r15)                  # unchecked-setprop
-l0154:
+l0170:
  mov 16(%rsp),%rax
  add $32,%rsp
  ret
  .quad 2
-/ (*entry atsoc expr 2)
+# (*entry atsoc expr 2)
  .globl atsoc
 atsoc:
-l0157:
+l0173:
  mov %rbx,%rdi
  shr $56,%rdi
  cmp $9,%rdi
- je l0158
+ je l0174
  mov %r13,%rax
  ret
-l0158:
+l0174:
  mov %rbx,%rdi
  shl $8,%rdi
  shr $8,%rdi
  mov (%rdi),%rdi
  shr $56,%rdi
  cmp $9,%rdi
- jne l0159
+ jne l0175
  mov %rbx,%rsi
  shl $8,%rsi
  shr $8,%rsi
@@ -1640,21 +1663,21 @@ l0158:
  shl $8,%rsi
  shr $8,%rsi
  cmp (%rsi),%rax
- jne l0159
+ jne l0175
  mov %rbx,%rax
  shl $8,%rax
  shr $8,%rax
  mov (%rax),%rax
  ret
-l0159:
+l0175:
  shl $8,%rbx
  shr $8,%rbx
  mov 8(%rbx),%rbx
- jmp l0157
+ jmp l0173
  .quad 2
-/ (*entry unchecked-setprop expr 2)
- .globl l0160
-l0160:
+# (*entry unchecked-setprop expr 2)
+ .globl l0176
+l0176:
  shl $8,%rax
  shr $8,%rax
  shl $3,%rax
@@ -1663,9 +1686,9 @@ l0160:
  mov %rbx,%rax
  ret
  .quad 1
-/ (*entry unchecked-prop expr 1)
- .globl l0161
-l0161:
+# (*entry unchecked-prop expr 1)
+ .globl l0177
+l0177:
  shl $8,%rax
  shr $8,%rax
  shl $3,%rax
@@ -1673,14 +1696,14 @@ l0161:
  mov (%rax),%rax
  ret
  .quad 3
-/ (*entry putd expr 3)
+# (*entry putd expr 3)
  .globl putd
 putd:
  jmp *3168(%r15)                   # code-putd
  .quad 3
-/ (*entry code-putd expr 3)
- .globl l0166
-l0166:
+# (*entry code-putd expr 3)
+ .globl l0185
+l0185:
  sub $24,%rsp
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
@@ -1688,19 +1711,20 @@ l0166:
  mov %rax,%rdi
  shr $56,%rdi
  cmp $254,%rdi
- jne l0167
+ jne l0186
  mov %rbx,%rdi
  shr $56,%rdi
  cmp $254,%rdi
- jne l0167
+ jne l0186
  mov %rcx,%rdi
  shr $56,%rdi
  cmp $20,%rdi
- je l0168
-l0167:
- mov l0162,%rax
+ je l0187
+l0186:
+ mov $79,%rax
+ mov 0(%r9,%rax,8),%rax
  call *2656(%r15)                  # kernel-fatal-error
-l0168:
+l0187:
  mov 16(%rsp),%rbx
  shl $8,%rbx
  shr $8,%rbx
@@ -1709,19 +1733,20 @@ l0168:
  shr $8,%rax
  call *3176(%r15)                  # plantcodepointer
  mov 8(%rsp),%rdi
- cmp l0163,%rdi
- je l0169
+ cmp $78,%rdi
+ je l0188
  mov 8(%rsp),%rcx
- mov l0164,%rbx
+ mov $77,%rbx
+ mov 0(%r9,%rbx,8),%rbx
  mov (%rsp),%rax
  add $24,%rsp
  jmp *3120(%r15)                   # put
-l0169:
+l0188:
  mov %r13,%rax
  add $24,%rsp
  ret
  .quad 1
-/ (*entry fluid expr 1)
+# (*entry fluid expr 1)
  .globl fluid
 fluid:
  sub $24,%rsp
@@ -1733,24 +1758,24 @@ fluid:
  mov 8(%rsp),%rdi
  shr $56,%rdi
  cmp $9,%rdi
- jne l0170
+ jne l0189
  mov 8(%rsp),%rax
  shl $8,%rax
  shr $8,%rax
  mov (%rax),%rax
- jmp l0171
-l0170:
+ jmp l0190
+l0189:
  mov %r13,%rax
-l0171:
+l0190:
  mov %rax,16(%rsp)
-l0172:
+l0191:
  mov 8(%rsp),%rdi
  shr $56,%rdi
  cmp $9,%rdi
- je l0173
+ je l0192
  mov %r13,%rax
- jmp l0174
-l0173:
+ jmp l0193
+l0192:
  mov 16(%rsp),%rax
  call *3192(%r15)                  # fluid1
  mov 8(%rsp),%rax
@@ -1761,46 +1786,50 @@ l0173:
  mov %rax,%rdi
  shr $56,%rdi
  cmp $9,%rdi
- jne l0175
+ jne l0194
  shl $8,%rax
  shr $8,%rax
  mov (%rax),%rax
- jmp l0176
-l0175:
+ jmp l0195
+l0194:
  mov %r13,%rax
-l0176:
+l0195:
  mov %rax,16(%rsp)
- jmp l0172
-l0174:
+ jmp l0191
+l0193:
  add $24,%rsp
  ret
  .quad 1
-/ (*entry fluid1 expr 1)
- .globl l0179
-l0179:
- mov l0177,%rcx
- mov l0178,%rbx
+# (*entry fluid1 expr 1)
+ .globl l0200
+l0200:
+ mov $86,%rcx
+ mov 0(%r9,%rcx,8),%rcx
+ mov $85,%rbx
+ mov 0(%r9,%rbx,8),%rbx
  jmp *3120(%r15)                   # put
  .quad 1
-/ (*entry stderror expr 1)
+# (*entry stderror expr 1)
  .globl stderror
 stderror:
  jmp *2656(%r15)                   # kernel-fatal-error
  .quad 2
-/ (*entry *define-constant expr 2)
- .globl l0182
-l0182:
+# (*entry *define-constant expr 2)
+ .globl l0205
+l0205:
  mov %rax,%rcx
  shl $8,%rcx
  shr $8,%rcx
  shl $3,%rcx
  add %r14,%rcx
  mov %rbx,(%rcx)
- mov l0180,%rcx
- mov l0181,%rbx
+ mov $88,%rcx
+ mov 0(%r9,%rcx,8),%rcx
+ mov $87,%rbx
+ mov 0(%r9,%rbx,8),%rbx
  jmp *3120(%r15)                   # put
  .quad 1
-/ (*entry plantunbound expr 1)
+# (*entry plantunbound expr 1)
  .globl plantunbound
 plantunbound:
  add %rax,%rax
@@ -1808,14 +1837,14 @@ plantunbound:
  add %rsi,%rsi
  add %rsi,%rsi
  add %r15,%rsi
- mov l0183(%rip),%rdi
+ mov l0206(%rip),%rdi
  mov %rdi,0(%rsi)
  ret
  .quad 0
-l0183:
+l0206:
  .quad undefinedfunction
  .quad 2
-/ (*entry plantcodepointer expr 2)
+# (*entry plantcodepointer expr 2)
  .globl plantcodepointer
 plantcodepointer:
  add %rax,%rax
@@ -1826,7 +1855,7 @@ plantcodepointer:
  mov %rbx,0(%rsi)
  ret
  .quad 1
-/ (*entry plantlambdalink expr 1)
+# (*entry plantlambdalink expr 1)
  .globl plantlambdalink
 plantlambdalink:
  add %rax,%rax
@@ -1834,25 +1863,25 @@ plantlambdalink:
  add %rsi,%rsi
  add %rsi,%rsi
  add %r15,%rsi
- mov l0184(%rip),%rdi
+ mov l0207(%rip),%rdi
  mov %rdi,0(%rsi)
  ret
  .quad 0
-l0184:
+l0207:
  .quad compiledcallinginterpreted
  .quad 1
-/ (*entry addressapply0 expr 1)
- .globl l0185
-l0185:
+# (*entry addressapply0 expr 1)
+ .globl l0208
+l0208:
  jmp *%rax
  .quad 1
-/ (*entry addressapplyx expr 1)
+# (*entry addressapplyx expr 1)
  .globl addressapplyx
 addressapplyx:
  call *%rax
  ret
  .quad 2
-/ (*entry bittable expr 2)
+# (*entry bittable expr 2)
  .globl bittable
 bittable:
  push %rbx
@@ -1867,31 +1896,32 @@ bittable:
  add %rbx,%rbx
  add $-6,%rbx
  cmp $0,%rbx
- jge l0186
+ jge l0209
  neg %rbx
  xchg %rbx,%rcx
  shr %cl,%rax
- jmp l0187
-l0186:
+ jmp l0210
+l0209:
  xchg %rbx,%rcx
  shl %cl,%rax
-l0187:
+l0210:
  xchg %rbx,%rcx
  shl $30,%rax
  shr $62,%rax
  add $8,%rsp
  ret
  .quad 1
-/ (*entry undefinedfunction expr 1)
+# (*entry undefinedfunction expr 1)
  .globl undefinedfunction
 undefinedfunction:
  jmp *3232(%r15)                   # undefinedfunction-aux
  .quad 1
-/ (*entry undefinedfunction-aux expr 1)
- .globl l0190
-l0190:
+# (*entry undefinedfunction-aux expr 1)
+ .globl l0214
+l0214:
  push %rdi
- mov l0188,%rax
+ mov $89,%rax
+ mov 0(%r9,%rax,8),%rax
  call *2576(%r15)                  # console-print-string
  mov 2720(%r14),%rsi               # symnam
  pop %rdi
@@ -1902,7 +1932,7 @@ l0190:
  call *2520(%r15)                  # exit-with-status
  ret
  .quad 0
-/ (*entry compiledcallinginterpreted expr 0)
+# (*entry compiledcallinginterpreted expr 0)
  .globl compiledcallinginterpreted
 compiledcallinginterpreted:
  mov $254,%rsi
@@ -1913,11 +1943,12 @@ compiledcallinginterpreted:
  mov %rdi,3248(%r14)               # codeform*
  jmp *3256(%r15)                   # compiledcallinginterpretedaux
  .quad 1
-/ (*entry kernel-fatal-error expr 1)
- .globl l0193
-l0193:
+# (*entry kernel-fatal-error expr 1)
+ .globl l0218
+l0218:
  push %rax
- mov l0191,%rax
+ mov $95,%rax
+ mov 0(%r9,%rax,8),%rax
  call *2576(%r15)                  # console-print-string
  mov (%rsp),%rax
  call *2576(%r15)                  # console-print-string
@@ -1926,15 +1957,16 @@ l0193:
  add $8,%rsp
  jmp *2520(%r15)                   # exit-with-status
  .quad 0
-/ (*entry pslsignalhandler expr 0)
+# (*entry pslsignalhandler expr 0)
  .globl pslsignalhandler
 pslsignalhandler:
- mov l0194,%rax
+ mov $99,%rax
+ mov 0(%r9,%rax,8),%rax
  call *3032(%r15)                  # stderror
  .quad 0
-/ (*entry echooff expr 0)
- .globl l0196
-l0196:
+# (*entry echooff expr 0)
+ .globl l0222
+l0222:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -1960,9 +1992,9 @@ l0196:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 0
-/ (*entry echoon expr 0)
- .globl l0197
-l0197:
+# (*entry echoon expr 0)
+ .globl l0223
+l0223:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -1988,9 +2020,9 @@ l0197:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 1
-/ (*entry external_charsininputbuffer expr 1)
- .globl l0198
-l0198:
+# (*entry external_charsininputbuffer expr 1)
+ .globl l0224
+l0224:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2019,9 +2051,9 @@ l0198:
  add $8,%rsp
  ret
  .quad 0
-/ (*entry flushstdoutputbuffer expr 0)
- .globl l0199
-l0199:
+# (*entry flushstdoutputbuffer expr 0)
+ .globl l0225
+l0225:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -2047,9 +2079,9 @@ l0199:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 0
-/ (*entry external_user_homedir_string expr 0)
- .globl l0200
-l0200:
+# (*entry external_user_homedir_string expr 0)
+ .globl l0226
+l0226:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -2075,9 +2107,9 @@ l0200:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 1
-/ (*entry external_anyuser_homedir_string expr 1)
- .globl l0201
-l0201:
+# (*entry external_anyuser_homedir_string expr 1)
+ .globl l0227
+l0227:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2106,9 +2138,9 @@ l0201:
  add $8,%rsp
  ret
  .quad 0
-/ (*entry unexec expr 0)
- .globl l0202
-l0202:
+# (*entry unexec expr 0)
+ .globl l0228
+l0228:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -2134,9 +2166,9 @@ l0202:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 1
-/ (*entry alterheapsize expr 1)
- .globl l0203
-l0203:
+# (*entry alterheapsize expr 1)
+ .globl l0229
+l0229:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2165,9 +2197,9 @@ l0203:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry allocatemorebps expr 1)
- .globl l0204
-l0204:
+# (*entry allocatemorebps expr 1)
+ .globl l0230
+l0230:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2196,9 +2228,9 @@ l0204:
  add $8,%rsp
  ret
  .quad 0
-/ (*entry get_imagefilepath expr 0)
- .globl l0205
-l0205:
+# (*entry get_imagefilepath expr 0)
+ .globl l0231
+l0231:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -2224,9 +2256,9 @@ l0205:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 3
-/ (*entry get_file_status expr 3)
- .globl l0206
-l0206:
+# (*entry get_file_status expr 3)
+ .globl l0232
+l0232:
  push %rcx
  push %rbx
  push %rax
@@ -2259,9 +2291,9 @@ l0206:
  add $24,%rsp
  ret
  .quad 2
-/ (*entry os_startup_hook expr 2)
- .globl l0207
-l0207:
+# (*entry os_startup_hook expr 2)
+ .globl l0233
+l0233:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2292,9 +2324,9 @@ l0207:
  add $16,%rsp
  ret
  .quad 0
-/ (*entry os_cleanup_hook expr 0)
- .globl l0208
-l0208:
+# (*entry os_cleanup_hook expr 0)
+ .globl l0234
+l0234:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -2320,9 +2352,9 @@ l0208:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 0
-/ (*entry get_execfilepath expr 0)
- .globl l0209
-l0209:
+# (*entry get_execfilepath expr 0)
+ .globl l0235
+l0235:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -2348,9 +2380,9 @@ l0209:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 1
-/ (*entry external_alarm expr 1)
- .globl l0210
-l0210:
+# (*entry external_alarm expr 1)
+ .globl l0236
+l0236:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2379,9 +2411,9 @@ l0210:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry external_ualarm expr 2)
- .globl l0211
-l0211:
+# (*entry external_ualarm expr 2)
+ .globl l0237
+l0237:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2412,9 +2444,9 @@ l0211:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry external_time expr 1)
- .globl l0212
-l0212:
+# (*entry external_time expr 1)
+ .globl l0238
+l0238:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2443,9 +2475,9 @@ l0212:
  add $8,%rsp
  ret
  .quad 0
-/ (*entry external_timc expr 0)
- .globl l0213
-l0213:
+# (*entry external_timc expr 0)
+ .globl l0239
+l0239:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -2471,9 +2503,9 @@ l0213:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 2
-/ (*entry external_stat expr 2)
- .globl l0214
-l0214:
+# (*entry external_stat expr 2)
+ .globl l0240
+l0240:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2504,9 +2536,9 @@ l0214:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry external_mkdir expr 2)
- .globl l0215
-l0215:
+# (*entry external_mkdir expr 2)
+ .globl l0241
+l0241:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2537,9 +2569,9 @@ l0215:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry external_rmdir expr 1)
- .globl l0216
-l0216:
+# (*entry external_rmdir expr 1)
+ .globl l0242
+l0242:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2568,9 +2600,9 @@ l0216:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry external_link expr 2)
- .globl l0217
-l0217:
+# (*entry external_link expr 2)
+ .globl l0243
+l0243:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2601,9 +2633,9 @@ l0217:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry external_unlink expr 1)
- .globl l0218
-l0218:
+# (*entry external_unlink expr 1)
+ .globl l0244
+l0244:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2632,9 +2664,9 @@ l0218:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry external_strlen expr 1)
- .globl l0219
-l0219:
+# (*entry external_strlen expr 1)
+ .globl l0245
+l0245:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2663,9 +2695,9 @@ l0219:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry external_getenv expr 1)
- .globl l0220
-l0220:
+# (*entry external_getenv expr 1)
+ .globl l0246
+l0246:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2694,9 +2726,9 @@ l0220:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry external_setenv expr 2)
- .globl l0221
-l0221:
+# (*entry external_setenv expr 2)
+ .globl l0247
+l0247:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2727,9 +2759,9 @@ l0221:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry external_mkfifo expr 2)
- .globl l0222
-l0222:
+# (*entry external_mkfifo expr 2)
+ .globl l0248
+l0248:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2760,9 +2792,9 @@ l0222:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry external_flock expr 2)
- .globl l0223
-l0223:
+# (*entry external_flock expr 2)
+ .globl l0249
+l0249:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -2793,9 +2825,9 @@ l0223:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry external_fcntl expr 3)
- .globl l0224
-l0224:
+# (*entry external_fcntl expr 3)
+ .globl l0250
+l0250:
  push %rcx
  push %rbx
  push %rax
@@ -2828,9 +2860,9 @@ l0224:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry external_read expr 3)
- .globl l0225
-l0225:
+# (*entry external_read expr 3)
+ .globl l0251
+l0251:
  push %rcx
  push %rbx
  push %rax
@@ -2863,9 +2895,9 @@ l0225:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry external_write expr 3)
- .globl l0226
-l0226:
+# (*entry external_write expr 3)
+ .globl l0252
+l0252:
  push %rcx
  push %rbx
  push %rax
@@ -2898,9 +2930,9 @@ l0226:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry external_lseek expr 3)
- .globl l0227
-l0227:
+# (*entry external_lseek expr 3)
+ .globl l0253
+l0253:
  push %rcx
  push %rbx
  push %rax
@@ -2933,9 +2965,9 @@ l0227:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry external_open expr 3)
- .globl l0228
-l0228:
+# (*entry external_open expr 3)
+ .globl l0254
+l0254:
  push %rcx
  push %rbx
  push %rax
@@ -2968,9 +3000,9 @@ l0228:
  add $24,%rsp
  ret
  .quad 1
-/ (*entry external_close expr 1)
- .globl l0229
-l0229:
+# (*entry external_close expr 1)
+ .globl l0255
+l0255:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -2999,9 +3031,9 @@ l0229:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry uxfloat expr 2)
- .globl l0230
-l0230:
+# (*entry uxfloat expr 2)
+ .globl l0256
+l0256:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3032,9 +3064,9 @@ l0230:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry uxfix expr 1)
- .globl l0231
-l0231:
+# (*entry uxfix expr 1)
+ .globl l0257
+l0257:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -3063,9 +3095,9 @@ l0231:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry uxassign expr 2)
- .globl l0232
-l0232:
+# (*entry uxassign expr 2)
+ .globl l0258
+l0258:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3096,9 +3128,9 @@ l0232:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry uxplus2 expr 3)
- .globl l0233
-l0233:
+# (*entry uxplus2 expr 3)
+ .globl l0259
+l0259:
  push %rcx
  push %rbx
  push %rax
@@ -3131,9 +3163,9 @@ l0233:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry uxdifference expr 3)
- .globl l0234
-l0234:
+# (*entry uxdifference expr 3)
+ .globl l0260
+l0260:
  push %rcx
  push %rbx
  push %rax
@@ -3166,9 +3198,9 @@ l0234:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry uxtimes2 expr 3)
- .globl l0235
-l0235:
+# (*entry uxtimes2 expr 3)
+ .globl l0261
+l0261:
  push %rcx
  push %rbx
  push %rax
@@ -3201,9 +3233,9 @@ l0235:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry uxquotient expr 3)
- .globl l0236
-l0236:
+# (*entry uxquotient expr 3)
+ .globl l0262
+l0262:
  push %rcx
  push %rbx
  push %rax
@@ -3236,9 +3268,9 @@ l0236:
  add $24,%rsp
  ret
  .quad 2
-/ (*entry uxminus expr 2)
- .globl l0237
-l0237:
+# (*entry uxminus expr 2)
+ .globl l0263
+l0263:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3269,9 +3301,9 @@ l0237:
  add $16,%rsp
  ret
  .quad 4
-/ (*entry uxgreaterp expr 4)
- .globl l0238
-l0238:
+# (*entry uxgreaterp expr 4)
+ .globl l0264
+l0264:
  push %rdx
  push %rcx
  push %rbx
@@ -3306,9 +3338,9 @@ l0238:
  add $32,%rsp
  ret
  .quad 4
-/ (*entry uxlessp expr 4)
- .globl l0239
-l0239:
+# (*entry uxlessp expr 4)
+ .globl l0265
+l0265:
  push %rdx
  push %rcx
  push %rbx
@@ -3343,9 +3375,9 @@ l0239:
  add $32,%rsp
  ret
  .quad 3
-/ (*entry uxwritefloat expr 3)
- .globl l0240
-l0240:
+# (*entry uxwritefloat expr 3)
+ .globl l0266
+l0266:
  push %rcx
  push %rbx
  push %rax
@@ -3378,9 +3410,9 @@ l0240:
  add $24,%rsp
  ret
  .quad 4
-/ (*entry uxwritefloat8 expr 4)
- .globl l0241
-l0241:
+# (*entry uxwritefloat8 expr 4)
+ .globl l0267
+l0267:
  push %rdx
  push %rcx
  push %rbx
@@ -3415,9 +3447,9 @@ l0241:
  add $32,%rsp
  ret
  .quad 2
-/ (*entry uxdoubletofloat expr 2)
- .globl l0242
-l0242:
+# (*entry uxdoubletofloat expr 2)
+ .globl l0268
+l0268:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3448,9 +3480,9 @@ l0242:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxfloattodouble expr 2)
- .globl l0243
-l0243:
+# (*entry uxfloattodouble expr 2)
+ .globl l0269
+l0269:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3481,9 +3513,9 @@ l0243:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxsin expr 2)
- .globl l0244
-l0244:
+# (*entry uxsin expr 2)
+ .globl l0270
+l0270:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3514,9 +3546,9 @@ l0244:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxcos expr 2)
- .globl l0245
-l0245:
+# (*entry uxcos expr 2)
+ .globl l0271
+l0271:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3547,9 +3579,9 @@ l0245:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxtan expr 2)
- .globl l0246
-l0246:
+# (*entry uxtan expr 2)
+ .globl l0272
+l0272:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3580,9 +3612,9 @@ l0246:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxasin expr 2)
- .globl l0247
-l0247:
+# (*entry uxasin expr 2)
+ .globl l0273
+l0273:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3613,9 +3645,9 @@ l0247:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxacos expr 2)
- .globl l0248
-l0248:
+# (*entry uxacos expr 2)
+ .globl l0274
+l0274:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3646,9 +3678,9 @@ l0248:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxatan expr 2)
- .globl l0249
-l0249:
+# (*entry uxatan expr 2)
+ .globl l0275
+l0275:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3679,9 +3711,9 @@ l0249:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxsqrt expr 2)
- .globl l0250
-l0250:
+# (*entry uxsqrt expr 2)
+ .globl l0276
+l0276:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3712,9 +3744,9 @@ l0250:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxexp expr 2)
- .globl l0251
-l0251:
+# (*entry uxexp expr 2)
+ .globl l0277
+l0277:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3745,9 +3777,9 @@ l0251:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxlog expr 2)
- .globl l0252
-l0252:
+# (*entry uxlog expr 2)
+ .globl l0278
+l0278:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3778,9 +3810,9 @@ l0252:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry uxatan2 expr 3)
- .globl l0253
-l0253:
+# (*entry uxatan2 expr 3)
+ .globl l0279
+l0279:
  push %rcx
  push %rbx
  push %rax
@@ -3813,9 +3845,9 @@ l0253:
  add $24,%rsp
  ret
  .quad 2
-/ (*entry uxsinh expr 2)
- .globl l0254
-l0254:
+# (*entry uxsinh expr 2)
+ .globl l0280
+l0280:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3846,9 +3878,9 @@ l0254:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxcosh expr 2)
- .globl l0255
-l0255:
+# (*entry uxcosh expr 2)
+ .globl l0281
+l0281:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3879,9 +3911,9 @@ l0255:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry uxtanh expr 2)
- .globl l0256
-l0256:
+# (*entry uxtanh expr 2)
+ .globl l0282
+l0282:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -3912,9 +3944,9 @@ l0256:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry uxhypot expr 3)
- .globl l0257
-l0257:
+# (*entry uxhypot expr 3)
+ .globl l0283
+l0283:
  push %rcx
  push %rbx
  push %rax
@@ -3947,9 +3979,9 @@ l0257:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry uxpow expr 3)
- .globl l0258
-l0258:
+# (*entry uxpow expr 3)
+ .globl l0284
+l0284:
  push %rcx
  push %rbx
  push %rax
@@ -3982,9 +4014,9 @@ l0258:
  add $24,%rsp
  ret
  .quad 0
-/ (*entry external_pwd expr 0)
- .globl l0259
-l0259:
+# (*entry external_pwd expr 0)
+ .globl l0285
+l0285:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -4010,9 +4042,9 @@ l0259:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 2
-/ (*entry sun3_sigset expr 2)
- .globl l0260
-l0260:
+# (*entry sun3_sigset expr 2)
+ .globl l0286
+l0286:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -4043,9 +4075,9 @@ l0260:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry mask_signal expr 2)
- .globl l0261
-l0261:
+# (*entry mask_signal expr 2)
+ .globl l0287
+l0287:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -4076,9 +4108,9 @@ l0261:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry unixputc expr 1)
- .globl l0262
-l0262:
+# (*entry unixputc expr 1)
+ .globl l0288
+l0288:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4107,9 +4139,9 @@ l0262:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry unixputs expr 1)
- .globl l0263
-l0263:
+# (*entry unixputs expr 1)
+ .globl l0289
+l0289:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4138,9 +4170,9 @@ l0263:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry unixputn expr 1)
- .globl l0264
-l0264:
+# (*entry unixputn expr 1)
+ .globl l0290
+l0290:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4169,9 +4201,9 @@ l0264:
  add $8,%rsp
  ret
  .quad 0
-/ (*entry unixcleario expr 0)
- .globl l0265
-l0265:
+# (*entry unixcleario expr 0)
+ .globl l0291
+l0291:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -4197,9 +4229,9 @@ l0265:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 1
-/ (*entry expand_file_name expr 1)
- .globl l0266
-l0266:
+# (*entry expand_file_name expr 1)
+ .globl l0292
+l0292:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4228,9 +4260,9 @@ l0266:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry unixopen expr 2)
- .globl l0267
-l0267:
+# (*entry unixopen expr 2)
+ .globl l0293
+l0293:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -4261,9 +4293,9 @@ l0267:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry unixcd expr 1)
- .globl l0268
-l0268:
+# (*entry unixcd expr 1)
+ .globl l0294
+l0294:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4292,9 +4324,9 @@ l0268:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry ctime expr 1)
- .globl l0269
-l0269:
+# (*entry ctime expr 1)
+ .globl l0295
+l0295:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4323,9 +4355,9 @@ l0269:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry external_system expr 1)
- .globl l0270
-l0270:
+# (*entry external_system expr 1)
+ .globl l0296
+l0296:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4354,9 +4386,9 @@ l0270:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry external_fullpath expr 1)
- .globl l0271
-l0271:
+# (*entry external_fullpath expr 1)
+ .globl l0297
+l0297:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4385,9 +4417,9 @@ l0271:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry external_exit expr 1)
- .globl l0272
-l0272:
+# (*entry external_exit expr 1)
+ .globl l0298
+l0298:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4416,9 +4448,9 @@ l0272:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry fopen expr 2)
- .globl l0273
-l0273:
+# (*entry fopen expr 2)
+ .globl l0299
+l0299:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -4449,9 +4481,9 @@ l0273:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry fclose expr 1)
- .globl l0274
-l0274:
+# (*entry fclose expr 1)
+ .globl l0300
+l0300:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4480,9 +4512,9 @@ l0274:
  add $8,%rsp
  ret
  .quad 4
-/ (*entry fread expr 4)
- .globl l0275
-l0275:
+# (*entry fread expr 4)
+ .globl l0301
+l0301:
  push %rdx
  push %rcx
  push %rbx
@@ -4517,9 +4549,9 @@ l0275:
  add $32,%rsp
  ret
  .quad 2
-/ (*entry fputc expr 2)
- .globl l0276
-l0276:
+# (*entry fputc expr 2)
+ .globl l0302
+l0302:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -4550,9 +4582,9 @@ l0276:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry fgetc expr 1)
- .globl l0277
-l0277:
+# (*entry fgetc expr 1)
+ .globl l0303
+l0303:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4581,9 +4613,9 @@ l0277:
  add $8,%rsp
  ret
  .quad 3
-/ (*entry fgets expr 3)
- .globl l0278
-l0278:
+# (*entry fgets expr 3)
+ .globl l0304
+l0304:
  push %rcx
  push %rbx
  push %rax
@@ -4616,9 +4648,9 @@ l0278:
  add $24,%rsp
  ret
  .quad 4
-/ (*entry fwrite expr 4)
- .globl l0279
-l0279:
+# (*entry fwrite expr 4)
+ .globl l0305
+l0305:
  push %rdx
  push %rcx
  push %rbx
@@ -4653,9 +4685,9 @@ l0279:
  add $32,%rsp
  ret
  .quad 1
-/ (*entry fflush expr 1)
- .globl l0280
-l0280:
+# (*entry fflush expr 1)
+ .globl l0306
+l0306:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4684,9 +4716,9 @@ l0280:
  add $8,%rsp
  ret
  .quad 3
-/ (*entry fseek expr 3)
- .globl l0281
-l0281:
+# (*entry fseek expr 3)
+ .globl l0307
+l0307:
  push %rcx
  push %rbx
  push %rax
@@ -4719,9 +4751,9 @@ l0281:
  add $24,%rsp
  ret
  .quad 1
-/ (*entry clearerr expr 1)
- .globl l0282
-l0282:
+# (*entry clearerr expr 1)
+ .globl l0308
+l0308:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4750,9 +4782,9 @@ l0282:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry xgetw expr 1)
- .globl l0283
-l0283:
+# (*entry xgetw expr 1)
+ .globl l0309
+l0309:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4781,9 +4813,9 @@ l0283:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry putw expr 2)
- .globl l0284
-l0284:
+# (*entry putw expr 2)
+ .globl l0310
+l0310:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -4814,9 +4846,9 @@ l0284:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry signal expr 2)
- .globl l0285
-l0285:
+# (*entry signal expr 2)
+ .globl l0311
+l0311:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -4847,9 +4879,9 @@ l0285:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry sleep expr 1)
- .globl l0286
-l0286:
+# (*entry sleep expr 1)
+ .globl l0312
+l0312:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4878,9 +4910,9 @@ l0286:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry setlinebuf expr 1)
- .globl l0287
-l0287:
+# (*entry setlinebuf expr 1)
+ .globl l0313
+l0313:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -4909,9 +4941,9 @@ l0287:
  add $8,%rsp
  ret
  .quad 0
-/ (*entry getpid expr 0)
- .globl l0288
-l0288:
+# (*entry getpid expr 0)
+ .globl l0314
+l0314:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -4937,9 +4969,9 @@ l0288:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 0
-/ (*entry gethostid expr 0)
- .globl l0289
-l0289:
+# (*entry gethostid expr 0)
+ .globl l0315
+l0315:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -4965,9 +4997,9 @@ l0289:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 2
-/ (*entry unixsocketopen expr 2)
- .globl l0290
-l0290:
+# (*entry unixsocketopen expr 2)
+ .globl l0316
+l0316:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -4998,9 +5030,9 @@ l0290:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry getsocket expr 3)
- .globl l0291
-l0291:
+# (*entry getsocket expr 3)
+ .globl l0317
+l0317:
  push %rcx
  push %rbx
  push %rax
@@ -5033,9 +5065,9 @@ l0291:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry writesocket expr 3)
- .globl l0292
-l0292:
+# (*entry writesocket expr 3)
+ .globl l0318
+l0318:
  push %rcx
  push %rbx
  push %rax
@@ -5068,9 +5100,9 @@ l0292:
  add $24,%rsp
  ret
  .quad 1
-/ (*entry unixclosesocket expr 1)
- .globl l0293
-l0293:
+# (*entry unixclosesocket expr 1)
+ .globl l0319
+l0319:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -5099,9 +5131,9 @@ l0293:
  add $8,%rsp
  ret
  .quad 0
-/ (*entry fork expr 0)
- .globl l0294
-l0294:
+# (*entry fork expr 0)
+ .globl l0320
+l0320:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -5127,9 +5159,9 @@ l0294:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 1
-/ (*entry wait expr 1)
- .globl l0295
-l0295:
+# (*entry wait expr 1)
+ .globl l0321
+l0321:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -5158,9 +5190,9 @@ l0295:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry popen expr 2)
- .globl l0296
-l0296:
+# (*entry popen expr 2)
+ .globl l0322
+l0322:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -5191,9 +5223,9 @@ l0296:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry pclose expr 1)
- .globl l0297
-l0297:
+# (*entry pclose expr 1)
+ .globl l0323
+l0323:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -5222,9 +5254,9 @@ l0297:
  add $8,%rsp
  ret
  .quad 3
-/ (*entry shmctl expr 3)
- .globl l0298
-l0298:
+# (*entry shmctl expr 3)
+ .globl l0324
+l0324:
  push %rcx
  push %rbx
  push %rax
@@ -5257,9 +5289,9 @@ l0298:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry shmget expr 3)
- .globl l0299
-l0299:
+# (*entry shmget expr 3)
+ .globl l0325
+l0325:
  push %rcx
  push %rbx
  push %rax
@@ -5292,9 +5324,9 @@ l0299:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry shmat expr 3)
- .globl l0300
-l0300:
+# (*entry shmat expr 3)
+ .globl l0326
+l0326:
  push %rcx
  push %rbx
  push %rax
@@ -5327,9 +5359,9 @@ l0300:
  add $24,%rsp
  ret
  .quad 1
-/ (*entry shmdt expr 1)
- .globl l0301
-l0301:
+# (*entry shmdt expr 1)
+ .globl l0327
+l0327:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -5358,9 +5390,9 @@ l0301:
  add $8,%rsp
  ret
  .quad 4
-/ (*entry semctl expr 4)
- .globl l0302
-l0302:
+# (*entry semctl expr 4)
+ .globl l0328
+l0328:
  push %rdx
  push %rcx
  push %rbx
@@ -5395,9 +5427,9 @@ l0302:
  add $32,%rsp
  ret
  .quad 3
-/ (*entry semget expr 3)
- .globl l0303
-l0303:
+# (*entry semget expr 3)
+ .globl l0329
+l0329:
  push %rcx
  push %rbx
  push %rax
@@ -5430,9 +5462,9 @@ l0303:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry semop expr 3)
- .globl l0304
-l0304:
+# (*entry semop expr 3)
+ .globl l0330
+l0330:
  push %rcx
  push %rbx
  push %rax
@@ -5465,9 +5497,9 @@ l0304:
  add $24,%rsp
  ret
  .quad 2
-/ (*entry dlopen expr 2)
- .globl l0305
-l0305:
+# (*entry dlopen expr 2)
+ .globl l0331
+l0331:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -5498,9 +5530,9 @@ l0305:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry dlerror expr 1)
- .globl l0306
-l0306:
+# (*entry dlerror expr 1)
+ .globl l0332
+l0332:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -5529,9 +5561,9 @@ l0306:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry dlsym expr 2)
- .globl l0307
-l0307:
+# (*entry dlsym expr 2)
+ .globl l0333
+l0333:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -5562,9 +5594,9 @@ l0307:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry dlclose expr 1)
- .globl l0308
-l0308:
+# (*entry dlclose expr 1)
+ .globl l0334
+l0334:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -5593,9 +5625,9 @@ l0308:
  add $8,%rsp
  ret
  .quad 4
-/ (*entry unix-profile expr 4)
- .globl l0309
-l0309:
+# (*entry unix-profile expr 4)
+ .globl l0335
+l0335:
  push %rdx
  push %rcx
  push %rbx
@@ -5630,9 +5662,9 @@ l0309:
  add $32,%rsp
  ret
  .quad 4
-/ (*entry pthread_create expr 4)
- .globl l0310
-l0310:
+# (*entry pthread_create expr 4)
+ .globl l0336
+l0336:
  push %rdx
  push %rcx
  push %rbx
@@ -5667,9 +5699,9 @@ l0310:
  add $32,%rsp
  ret
  .quad 1
-/ (*entry pthread_exit expr 1)
- .globl l0311
-l0311:
+# (*entry pthread_exit expr 1)
+ .globl l0337
+l0337:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -5698,9 +5730,9 @@ l0311:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry pthread_join expr 2)
- .globl l0312
-l0312:
+# (*entry pthread_join expr 2)
+ .globl l0338
+l0338:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -5731,9 +5763,9 @@ l0312:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry pthread_detach expr 1)
- .globl l0313
-l0313:
+# (*entry pthread_detach expr 1)
+ .globl l0339
+l0339:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -5762,9 +5794,9 @@ l0313:
  add $8,%rsp
  ret
  .quad 0
-/ (*entry pthread_self expr 0)
- .globl l0314
-l0314:
+# (*entry pthread_self expr 0)
+ .globl l0340
+l0340:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -5790,9 +5822,9 @@ l0314:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 2
-/ (*entry pthread_equal expr 2)
- .globl l0315
-l0315:
+# (*entry pthread_equal expr 2)
+ .globl l0341
+l0341:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -5823,9 +5855,9 @@ l0315:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry pthread_attr_init expr 1)
- .globl l0316
-l0316:
+# (*entry pthread_attr_init expr 1)
+ .globl l0342
+l0342:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -5854,9 +5886,9 @@ l0316:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_attr_destroy expr 1)
- .globl l0317
-l0317:
+# (*entry pthread_attr_destroy expr 1)
+ .globl l0343
+l0343:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -5885,9 +5917,9 @@ l0317:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_setdetachstate expr 2)
- .globl l0318
-l0318:
+# (*entry pthread_attr_setdetachstate expr 2)
+ .globl l0344
+l0344:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -5918,9 +5950,9 @@ l0318:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_getguardsize expr 2)
- .globl l0319
-l0319:
+# (*entry pthread_attr_getguardsize expr 2)
+ .globl l0345
+l0345:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -5951,9 +5983,9 @@ l0319:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_setguardsize expr 2)
- .globl l0320
-l0320:
+# (*entry pthread_attr_setguardsize expr 2)
+ .globl l0346
+l0346:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -5984,9 +6016,9 @@ l0320:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_getschedparam expr 2)
- .globl l0321
-l0321:
+# (*entry pthread_attr_getschedparam expr 2)
+ .globl l0347
+l0347:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6017,9 +6049,9 @@ l0321:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_setschedparam expr 2)
- .globl l0322
-l0322:
+# (*entry pthread_attr_setschedparam expr 2)
+ .globl l0348
+l0348:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6050,9 +6082,9 @@ l0322:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_getschedpolicy expr 2)
- .globl l0323
-l0323:
+# (*entry pthread_attr_getschedpolicy expr 2)
+ .globl l0349
+l0349:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6083,9 +6115,9 @@ l0323:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_setschedpolicy expr 2)
- .globl l0324
-l0324:
+# (*entry pthread_attr_setschedpolicy expr 2)
+ .globl l0350
+l0350:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6116,9 +6148,9 @@ l0324:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_getinheritsched expr 2)
- .globl l0325
-l0325:
+# (*entry pthread_attr_getinheritsched expr 2)
+ .globl l0351
+l0351:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6149,9 +6181,9 @@ l0325:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_setinheritsched expr 2)
- .globl l0326
-l0326:
+# (*entry pthread_attr_setinheritsched expr 2)
+ .globl l0352
+l0352:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6182,9 +6214,9 @@ l0326:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_getscope expr 2)
- .globl l0327
-l0327:
+# (*entry pthread_attr_getscope expr 2)
+ .globl l0353
+l0353:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6215,9 +6247,9 @@ l0327:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_setscope expr 2)
- .globl l0328
-l0328:
+# (*entry pthread_attr_setscope expr 2)
+ .globl l0354
+l0354:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6248,9 +6280,9 @@ l0328:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry pthread_attr_getstack expr 3)
- .globl l0329
-l0329:
+# (*entry pthread_attr_getstack expr 3)
+ .globl l0355
+l0355:
  push %rcx
  push %rbx
  push %rax
@@ -6283,9 +6315,9 @@ l0329:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry pthread_attr_setstack expr 3)
- .globl l0330
-l0330:
+# (*entry pthread_attr_setstack expr 3)
+ .globl l0356
+l0356:
  push %rcx
  push %rbx
  push %rax
@@ -6318,9 +6350,9 @@ l0330:
  add $24,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_getstacksize expr 2)
- .globl l0331
-l0331:
+# (*entry pthread_attr_getstacksize expr 2)
+ .globl l0357
+l0357:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6351,9 +6383,9 @@ l0331:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_attr_setstacksize expr 2)
- .globl l0332
-l0332:
+# (*entry pthread_attr_setstacksize expr 2)
+ .globl l0358
+l0358:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6384,9 +6416,9 @@ l0332:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry pthread_setschedparam expr 3)
- .globl l0333
-l0333:
+# (*entry pthread_setschedparam expr 3)
+ .globl l0359
+l0359:
  push %rcx
  push %rbx
  push %rax
@@ -6419,9 +6451,9 @@ l0333:
  add $24,%rsp
  ret
  .quad 3
-/ (*entry pthread_getschedparam expr 3)
- .globl l0334
-l0334:
+# (*entry pthread_getschedparam expr 3)
+ .globl l0360
+l0360:
  push %rcx
  push %rbx
  push %rax
@@ -6454,9 +6486,9 @@ l0334:
  add $24,%rsp
  ret
  .quad 0
-/ (*entry pthread_getconcurrency expr 0)
- .globl l0335
-l0335:
+# (*entry pthread_getconcurrency expr 0)
+ .globl l0361
+l0361:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -6482,9 +6514,9 @@ l0335:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 0
-/ (*entry sched_yield expr 0)
- .globl l0336
-l0336:
+# (*entry sched_yield expr 0)
+ .globl l0362
+l0362:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -6510,7 +6542,7 @@ l0336:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 0
-/ (*entry pthread_yield expr 0)
+# (*entry pthread_yield expr 0)
  .globl pthread_yield
 pthread_yield:
  mov 2496(%r14),%rbx               # ebxsave*
@@ -6538,9 +6570,9 @@ pthread_yield:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 2
-/ (*entry pthread_once expr 2)
- .globl l0337
-l0337:
+# (*entry pthread_once expr 2)
+ .globl l0363
+l0363:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6571,9 +6603,9 @@ l0337:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_setcancelstate expr 2)
- .globl l0338
-l0338:
+# (*entry pthread_setcancelstate expr 2)
+ .globl l0364
+l0364:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6604,9 +6636,9 @@ l0338:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_setcanceltype expr 2)
- .globl l0339
-l0339:
+# (*entry pthread_setcanceltype expr 2)
+ .globl l0365
+l0365:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6637,9 +6669,9 @@ l0339:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry pthread_cancel expr 1)
- .globl l0340
-l0340:
+# (*entry pthread_cancel expr 1)
+ .globl l0366
+l0366:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -6668,9 +6700,9 @@ l0340:
  add $8,%rsp
  ret
  .quad 0
-/ (*entry pthread_testcancel expr 0)
- .globl l0341
-l0341:
+# (*entry pthread_testcancel expr 0)
+ .globl l0367
+l0367:
  mov 2496(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
@@ -6696,9 +6728,9 @@ l0341:
  mov %rbx,2496(%r14)               # ebxsave*
  ret
  .quad 2
-/ (*entry pthread_mutex_init expr 2)
- .globl l0342
-l0342:
+# (*entry pthread_mutex_init expr 2)
+ .globl l0368
+l0368:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -6729,9 +6761,9 @@ l0342:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry pthread_mutex_destroy expr 1)
- .globl l0343
-l0343:
+# (*entry pthread_mutex_destroy expr 1)
+ .globl l0369
+l0369:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -6760,9 +6792,9 @@ l0343:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_mutex_trylock expr 1)
- .globl l0344
-l0344:
+# (*entry pthread_mutex_trylock expr 1)
+ .globl l0370
+l0370:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -6791,9 +6823,9 @@ l0344:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_mutex_lock expr 1)
- .globl l0345
-l0345:
+# (*entry pthread_mutex_lock expr 1)
+ .globl l0371
+l0371:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -6822,9 +6854,9 @@ l0345:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_mutex_unlock expr 1)
- .globl l0346
-l0346:
+# (*entry pthread_mutex_unlock expr 1)
+ .globl l0372
+l0372:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -6853,9 +6885,9 @@ l0346:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_mutexattr_init expr 1)
- .globl l0347
-l0347:
+# (*entry pthread_mutexattr_init expr 1)
+ .globl l0373
+l0373:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -6884,9 +6916,9 @@ l0347:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_mutexattr_destroy expr 1)
- .globl l0348
-l0348:
+# (*entry pthread_mutexattr_destroy expr 1)
+ .globl l0374
+l0374:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -6915,9 +6947,9 @@ l0348:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_rwlock_unlock expr 1)
- .globl l0349
-l0349:
+# (*entry pthread_rwlock_unlock expr 1)
+ .globl l0375
+l0375:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -6946,9 +6978,9 @@ l0349:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_rwlockattr_init expr 1)
- .globl l0350
-l0350:
+# (*entry pthread_rwlockattr_init expr 1)
+ .globl l0376
+l0376:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -6977,9 +7009,9 @@ l0350:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_rwlockattr_destroy expr 1)
- .globl l0351
-l0351:
+# (*entry pthread_rwlockattr_destroy expr 1)
+ .globl l0377
+l0377:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -7008,9 +7040,9 @@ l0351:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry pthread_rwlockattr_getpshared expr 2)
- .globl l0352
-l0352:
+# (*entry pthread_rwlockattr_getpshared expr 2)
+ .globl l0378
+l0378:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -7041,9 +7073,9 @@ l0352:
  add $16,%rsp
  ret
  .quad 2
-/ (*entry pthread_rwlockattr_setpshared expr 2)
- .globl l0353
-l0353:
+# (*entry pthread_rwlockattr_setpshared expr 2)
+ .globl l0379
+l0379:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -7074,9 +7106,9 @@ l0353:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry pthread_cond_init expr 3)
- .globl l0354
-l0354:
+# (*entry pthread_cond_init expr 3)
+ .globl l0380
+l0380:
  push %rcx
  push %rbx
  push %rax
@@ -7109,9 +7141,9 @@ l0354:
  add $24,%rsp
  ret
  .quad 1
-/ (*entry pthread_cond_destroy expr 1)
- .globl l0355
-l0355:
+# (*entry pthread_cond_destroy expr 1)
+ .globl l0381
+l0381:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -7140,9 +7172,9 @@ l0355:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_cond_signal expr 1)
- .globl l0356
-l0356:
+# (*entry pthread_cond_signal expr 1)
+ .globl l0382
+l0382:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -7171,9 +7203,9 @@ l0356:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_cond_broadcast expr 1)
- .globl l0357
-l0357:
+# (*entry pthread_cond_broadcast expr 1)
+ .globl l0383
+l0383:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -7202,9 +7234,9 @@ l0357:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry pthread_cond_wait expr 2)
- .globl l0358
-l0358:
+# (*entry pthread_cond_wait expr 2)
+ .globl l0384
+l0384:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -7235,9 +7267,9 @@ l0358:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry pthread_cond_timedwait expr 3)
- .globl l0359
-l0359:
+# (*entry pthread_cond_timedwait expr 3)
+ .globl l0385
+l0385:
  push %rcx
  push %rbx
  push %rax
@@ -7270,9 +7302,9 @@ l0359:
  add $24,%rsp
  ret
  .quad 1
-/ (*entry pthread_condattr_init expr 1)
- .globl l0360
-l0360:
+# (*entry pthread_condattr_init expr 1)
+ .globl l0386
+l0386:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -7301,9 +7333,9 @@ l0360:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_condattr_destroy expr 1)
- .globl l0361
-l0361:
+# (*entry pthread_condattr_destroy expr 1)
+ .globl l0387
+l0387:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -7332,9 +7364,9 @@ l0361:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry pthread_key_create expr 2)
- .globl l0362
-l0362:
+# (*entry pthread_key_create expr 2)
+ .globl l0388
+l0388:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -7365,9 +7397,9 @@ l0362:
  add $16,%rsp
  ret
  .quad 1
-/ (*entry pthread_key_delete expr 1)
- .globl l0363
-l0363:
+# (*entry pthread_key_delete expr 1)
+ .globl l0389
+l0389:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -7396,9 +7428,9 @@ l0363:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry pthread_getspecific expr 1)
- .globl l0364
-l0364:
+# (*entry pthread_getspecific expr 1)
+ .globl l0390
+l0390:
  push %rax
  mov 0(%rsp),%rdi
  mov 2496(%r14),%rbx               # ebxsave*
@@ -7427,9 +7459,9 @@ l0364:
  add $8,%rsp
  ret
  .quad 2
-/ (*entry pthread_setspecific expr 2)
- .globl l0365
-l0365:
+# (*entry pthread_setspecific expr 2)
+ .globl l0391
+l0391:
  push %rbx
  push %rax
  mov 8(%rsp),%rsi
@@ -7460,9 +7492,9 @@ l0365:
  add $16,%rsp
  ret
  .quad 3
-/ (*entry pthread_atfork expr 3)
- .globl l0366
-l0366:
+# (*entry pthread_atfork expr 3)
+ .globl l0392
+l0392:
  push %rcx
  push %rbx
  push %rax
@@ -7495,9 +7527,9 @@ l0366:
  add $24,%rsp
  ret
  .quad 2
-/ (*entry psl-dlopen expr 2)
- .globl l0369
-l0369:
+# (*entry psl-dlopen expr 2)
+ .globl l0396
+l0396:
  sub $16,%rsp
  mov %r13,8(%rsp)
  mov %rax,(%rsp)
@@ -7507,35 +7539,37 @@ l0369:
  add $8,%rax
  call *4056(%r15)                  # dlopen
  mov %rax,8(%rsp)
- cmp $0,%rax
- jne l0370
+ cmpq $0,%rax
+ jne l0397
  mov (%rsp),%rbx
- mov l0367,%rax
+ mov $103,%rax
+ mov 0(%r9,%rax,8),%rax
  add $16,%rsp
  jmp *4568(%r15)                   # bldmsg
-l0370:
+l0397:
  mov 8(%rsp),%rax
  add $16,%rsp
  ret
  .quad 0
-/ (*entry psl-dlerror expr 0)
- .globl l0373
-l0373:
+# (*entry psl-dlerror expr 0)
+ .globl l0401
+l0401:
  mov $1,%rax
  call *4584(%r15)                  # gtwarray
- mov l0371,%rdi
+ mov $109,%rdi
+ mov 0(%r9,%rdi,8),%rdi
  mov %rdi,(%rax)
  ret
  .quad 2
-/ (*entry psl-dlsym expr 2)
- .globl l0374
-l0374:
+# (*entry psl-dlsym expr 2)
+ .globl l0402
+l0402:
  push %r13
  push %rax
  mov %rbx,%rdi
  shr $56,%rdi
  cmp $254,%rdi
- jne l0375
+ jne l0403
  mov %rbx,%rax
  call *4600(%r15)                  # id2string
  mov %rax,%rbx
@@ -7545,19 +7579,19 @@ l0374:
  mov (%rsp),%rax
  call *4072(%r15)                  # dlsym
  mov %rax,8(%rsp)
- jmp l0376
-l0375:
+ jmp l0404
+l0403:
  shl $8,%rbx
  shr $8,%rbx
  add $8,%rbx
  call *4072(%r15)                  # dlsym
  mov %rax,8(%rsp)
-l0376:
+l0404:
  mov 8(%rsp),%rax
  add $16,%rsp
  ret
  .quad 1
-/ (*entry dynloadhelper expr 1)
+# (*entry dynloadhelper expr 1)
  .globl dynloadhelper
 dynloadhelper:
  push %rbp
@@ -7592,7 +7626,7 @@ dynloadhelper:
  add $32,%rsp
  ret
  .quad 1
-/ (*entry dynloadhelper_float_float expr 1)
+# (*entry dynloadhelper_float_float expr 1)
  .globl dynloadhelper_float_float
 dynloadhelper_float_float:
  push %rbp
@@ -7629,75 +7663,81 @@ dynloadhelper_float_float:
  add $32,%rsp
  ret
  .quad 1
-/ (*entry psl-dlclose expr 1)
- .globl l0377
-l0377:
+# (*entry psl-dlclose expr 1)
+ .globl l0405
+l0405:
  jmp *4080(%r15)                   # dlclose
  .quad 1
-/ (*entry codeaddressp expr 1)
+# (*entry codeaddressp expr 1)
  .globl codeaddressp
 codeaddressp:
  sub $8,%rsp
  shl $8,%rax
  shr $8,%rax
  mov %rax,(%rsp)
- mov l0378,%rax
+ mov $114,%rax
+ mov 0(%r9,%rax,8),%rax
  call *4640(%r15)                  # getfcodepointer
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
- jle l0381
+ jle l0413
  mov %r13,%rax
- jmp l0382
-l0381:
- mov l0379,%rax
-l0382:
+ jmp l0414
+l0413:
+ mov $113,%rax
+ mov 0(%r9,%rax,8),%rax
+l0414:
  cmp %r13,%rax
- je l0383
- mov l0380,%rax
+ je l0415
+ mov $112,%rax
+ mov 0(%r9,%rax,8),%rax
  call *4640(%r15)                  # getfcodepointer
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
- jg l0384
+ jg l0416
  mov %r13,%rax
- jmp l0383
-l0384:
- mov l0379(%rip),%rax
-l0383:
+ jmp l0415
+l0416:
+ mov $113,%rax
+ mov 0(%r9,%rax,8),%rax
+l0415:
  cmp %r13,%rax
- jne l0385
+ jne l0417
  mov 2280(%r14),%rax               # bpslowerbound
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
- jle l0386
+ jle l0418
  mov %r13,%rax
- jmp l0387
-l0386:
- mov l0379(%rip),%rax
-l0387:
+ jmp l0419
+l0418:
+ mov $113,%rax
+ mov 0(%r9,%rax,8),%rax
+l0419:
  cmp %r13,%rax
- je l0385
+ je l0417
  mov 2296(%r14),%rax               # nextbps
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
- jg l0388
+ jg l0420
  mov %r13,%rax
- jmp l0385
-l0388:
- mov l0379(%rip),%rax
-l0385:
+ jmp l0417
+l0420:
+ mov $113,%rax
+ mov 0(%r9,%rax,8),%rax
+l0417:
  add $8,%rsp
  ret
  .quad 1
-/ (*entry lastkernel expr 1)
+# (*entry lastkernel expr 1)
  .globl lastkernel
 lastkernel:
  ret
  .quad 0
-/ (*entry initcode expr 0)
+# (*entry initcode expr 0)
  .globl initcode
 initcode:
  mov %r13,%rax
@@ -7708,93 +7748,59 @@ initcode:
  .globl symfnc
  .globl symget
  .globl staticlisp
- .globl l0008
- .globl l0007
  .globl l0009
- .globl l0010
- .globl l0016
- .globl l0015
+ .globl l0007
+ .globl l0011
+ .globl l0012
+ .globl l0019
  .globl l0017
- .globl l0018
- .globl l0034
- .globl l0033
- .globl l0032
- .globl l0035
- .globl l0045
- .globl l0044
- .globl l0046
- .globl l0099
- .globl l0100
- .globl l0103
- .globl l0102
+ .globl l0021
+ .globl l0022
+ .globl l0038
+ .globl l0036
+ .globl l0040
+ .globl l0049
+ .globl l0051
  .globl l0104
+ .globl l0106
  .globl l0110
- .globl l0111
- .globl l0116
- .globl l0115
- .globl l0114
- .globl l0117
+ .globl l0108
+ .globl l0112
  .globl l0118
- .globl l0126
+ .globl l0120
  .globl l0127
+ .globl l0125
+ .globl l0123
  .globl l0129
  .globl l0130
- .globl l0132
- .globl l0133
+ .globl l0138
+ .globl l0140
  .globl l0142
- .globl l0164
- .globl l0163
- .globl l0162
- .globl l0165
- .globl l0178
- .globl l0177
- .globl l0181
+ .globl l0144
+ .globl l0146
+ .globl l0148
+ .globl l0157
+ .globl l0182
  .globl l0180
- .globl l0188
- .globl l0189
- .globl l0191
- .globl l0192
- .globl l0194
- .globl l0195
- .globl l0367
- .globl l0368
- .globl l0371
- .globl l0372
- .globl l0380
- .globl l0379
- .globl l0378
- .globl l0389
- .globl l0390
- .globl l0391
- .globl l0392
+ .globl l0178
+ .globl l0184
+ .globl l0198
+ .globl l0196
+ .globl l0203
+ .globl l0201
+ .globl l0211
+ .globl l0213
+ .globl l0215
+ .globl l0217
+ .globl l0219
+ .globl l0221
  .globl l0393
- .globl l0394
  .globl l0395
- .globl l0396
- .globl l0397
  .globl l0398
- .globl l0399
  .globl l0400
- .globl l0401
- .globl l0402
- .globl l0403
- .globl l0404
- .globl l0405
- .globl l0406
- .globl l0407
- .globl l0408
- .globl l0409
  .globl l0410
- .globl l0411
- .globl l0412
- .globl l0413
- .globl l0414
- .globl l0415
- .globl l0416
- .globl l0417
- .globl l0418
- .globl l0419
- .globl l0420
+ .globl l0408
+ .globl l0406
  .globl l0421
  .globl l0422
  .globl l0423
@@ -8345,5 +8351,37 @@ initcode:
  .globl l0968
  .globl l0969
  .globl l0970
+ .globl l0971
+ .globl l0972
+ .globl l0973
+ .globl l0974
+ .globl l0975
+ .globl l0976
+ .globl l0977
+ .globl l0978
+ .globl l0979
+ .globl l0980
+ .globl l0981
+ .globl l0982
+ .globl l0983
+ .globl l0984
+ .globl l0985
+ .globl l0986
+ .globl l0987
+ .globl l0988
+ .globl l0989
+ .globl l0990
+ .globl l0991
+ .globl l0992
+ .globl l0993
+ .globl l0994
+ .globl l0995
+ .globl l0996
+ .globl l0997
+ .globl l0998
+ .globl l0999
+ .globl l1000
+ .globl l1001
+ .globl l1002
  .globl endinitstaticlisp
  .globl laststaticlisp
