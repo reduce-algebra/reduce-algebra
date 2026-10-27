@@ -1,6 +1,6 @@
 # Web REDUCE
 
-## Francis Wright, July 2021 - April 2024
+## Francis Wright, July 2021 - April 2025
 
 **This project is highly experimental!**
 
@@ -12,14 +12,15 @@ The `typescript` directory is not used to run Web REDUCE.
 
 The WebAssembly version of REDUCE is built in the directory `csl/new-embedded/for-emscripten/`. Run `make webreduce` and then copy the two files `reduce.web.js` and `reduce.web.wasm` to the directory `web/htdocs/web-reduce/generated/`. Check that the file `for-emscripten/package.map` is appropriate, run `make mini-webreduce` and then copy the two files `reduce.web.js` and `reduce.web.wasm` to the directory `web/htdocs/web-reduce/mobile/`.
 
-15 April 2024: The version currently on the REDUCE web site is the latest revision of REDUCE built using Emscripten 2.0.34, because I have had problems using later Emscripten versions.
-
 Web REDUCE is available online as [https://reduce-algebra.sourceforge.io/web-reduce/](https://reduce-algebra.sourceforge.io/web-reduce/). See [About Web REDUCE](https://reduce-algebra.sourceforge.io/web-reduce/about.html) for further details, including limitations of the WebAssembly version of REDUCE that I am aware of so far. (But, once downloaded, it's surprisingly fast!)
+
+15 April 2024: The version currently on the REDUCE web site is the latest revision of REDUCE built using Emscripten 2.0.34, because I have had problems using later Emscripten versions.
 
 ## TO DO
 
 - Arrange to wait for an asynchronous load_package to have happened before sending further input to REDUCE. (Fixed for input via the menus.)
 - Load package and switch menu items? Could use loadable!-packages!_ and switches!_ defined in "packages/support/cslrend.red".
+
 
 ## Web Gnuplot, April 2024
 
@@ -52,3 +53,10 @@ describes the [canvas](http://gnuplot.info/docs_6.0/loc19528.html) terminal type
 - Support multiple plots.
 - Investigate why turtle examples are so slow and aspect ratio is wrong: the plots should be square.
 - Fix some bugs, e.g. why does `plot(cos x)` cause an error whereas `plot (cos x)` doesn't?
+
+<!-- Local Variables: -->
+<!-- fill-column: 1000 -->
+<!-- eval: (auto-fill-mode -1) -->
+<!-- eval: (visual-line-mode 1) -->
+<!-- eval: (visual-wrap-prefix-mode 1) -->
+<!-- End: -->
