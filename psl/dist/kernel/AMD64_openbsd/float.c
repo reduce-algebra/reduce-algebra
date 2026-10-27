@@ -43,7 +43,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  $Id: float.c 7252 2026-01-11 14:28:54Z schoepf $
+%  $Id: float.c 7274 2026-01-23 12:26:10Z schoepf $
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
@@ -260,10 +260,17 @@ uxwritefloat8(LispString* buf, double* flt, char* convstr, int dummy)
 
 /* Tag( uxdoubletofloat )
  */
-void
+int
 uxdoubletofloat (double *dbl,float *flt)
 {
+  feclearexcept(FE_OVERFLOW | FE_INVALID);
   *flt = (float) *dbl;
+  if(fetestexcept(FE_OVERFLOW | FE_INVALID) != 0)
+    {
+      feclearexcept(FE_OVERFLOW | FE_INVALID);
+      return (0);
+    }
+  return (1);
 }
 
 void
