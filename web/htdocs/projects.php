@@ -92,10 +92,10 @@ include './include/begin-body.php';
     these projects and so probably cannot help users with them.
 </p>
 <ul>
-    <li>
+    <!-- <li>
         <a href="http://www.alltypes.de/">ALLTYPES</a> is an algebraic
-        language and type system; <!-- MAY BE DEAD! -->
-    </li>
+        language and type system;
+    </li> -->
     <li>
         <a href="http://mtt.sourceforge.net/">MTT</a> is a set of tools
         for modeling dynamic physical systems using the bond-graph
