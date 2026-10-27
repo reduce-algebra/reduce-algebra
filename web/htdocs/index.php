@@ -38,18 +38,18 @@ include './include/begin-body.php';
     illustrated in the screenshot below) but also provides a full
     programming language, with a syntax similar to other modern
     programming languages. REDUCE supports alternative
-    <a href="support.php#interfaces">user interfaces</a> including
+    <a href="support.html#interfaces">user interfaces</a> including
     <a href="https://fjwright.github.io/Run-REDUCE/">Run-REDUCE</a>,
     <a href="https://www.texmacs.org/">TeXmacs</a> and
     <a href="reduce-ide/">GNU Emacs</a>.
 </p>
 <p>
     REDUCE (and its complete source code) is
-    <a href="obtaining.php">available free of charge</a> for most
-    common computing systems, in some cases in <a href="versions.php">more
+    <a href="obtaining.html">available free of charge</a> for most
+    common computing systems, in some cases in <a href="versions.html">more
         than one version</a> for the same machine. The
-    <a href="documentation.php">manual and other support documents</a> and
-    <a href="tutorials.php">tutorials</a> are also included in the
+    <a href="documentation.html">manual and other support documents</a> and
+    <a href="tutorials.html">tutorials</a> are also included in the
     distributions.
 </p>
 <a href="images/reduce_screenshot_1.png">
@@ -59,10 +59,10 @@ include './include/begin-body.php';
 <p>
     REDUCE has a long and distinguished place in the history of
     computer algebra systems (see the
-    <a href="bibliography.php">bibliography</a>). Other systems that
+    <a href="bibliography.html">bibliography</a>). Other systems that
     address some of the same issues but sometimes with rather
     different emphasis are
-    <a href="http://www.axiom-developer.org/">Axiom</a>,
+    <a href="https://www.nongnu.org/axiom/">Axiom</a>,
     Macsyma (<a href="https://maxima.sourceforge.io/">Maxima</a>),
     <a href="https://www.maplesoft.com/products/Maple/">Maple</a>
     and <a href="https://www.wolfram.com/mathematica/">Mathematica</a>.
@@ -70,7 +70,7 @@ include './include/begin-body.php';
 <p id="versions">
     REDUCE is implemented in Lisp (as are Axiom and Macsyma), but this
     is completely hidden from the casual user. REDUCE primarily runs
-    on either <a href="versions.php">Portable Standard Lisp (PSL) or
+    on either <a href="versions.html">Portable Standard Lisp (PSL) or
         Codemist Standard Lisp (CSL)</a>, both of which are available in
     the distributions. PSL is long-established and compiles to machine
     code, whereas CSL is newer and compiles to byte code. Hence, PSL
@@ -103,7 +103,7 @@ include './include/begin-body.php';
                 Project Activity</a>
             <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/discussion/"
                 rel="nofollow" role="button" title="Read or contribute to online discussions">Discussion Fora</a>
-            <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/mailman/" rel="nofollow"
+            <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/bugs/" rel="nofollow"
                 role="button" title="Report a bug/request/suggestion, or read about previous bugs">Bug Tracker</a>
             <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/mailman/" rel="nofollow"
                 role="button" title="Read, search or subscribe to the REDUCE mailing list">Mailing List</a>

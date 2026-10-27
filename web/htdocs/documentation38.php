@@ -31,7 +31,7 @@ include './include/begin-body.php';
     for the symbolic mode of REDUCE and the
     <a href="reduce38-docs/sl.pdf">Standard Lisp Report</a> are also
     online.  (Expand the <code>reduce38-docs</code> folder in the
-    <a href="sitemap.php">Site Map</a> for a complete listing of
+    <a href="sitemap.html">Site Map</a> for a complete listing of
     REDUCE 3.8 documentation available here, which includes a couple
     more HTML files.)
 </p>

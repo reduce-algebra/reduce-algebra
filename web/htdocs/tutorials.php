@@ -93,17 +93,17 @@ include './include/begin-body.php';
     REDUCE, but you are recommended to try your own solutions first.
 </p>
 <p>
-    <a href="tutorials/em-tutorial.php">Pre-university algebra tutorial</a>
+    <a href="tutorials/em-tutorial.html">Pre-university algebra tutorial</a>
 </p>
 <p>
     Undergraduate mathematics tutorials on &hellip;
 </p>
 <ul>
-    <li><a href="tutorials/calculus-tutorial.php">calculus</a></li>
-    <li><a href="tutorials/veclinalg-tutorial.php">vectors and linear algebra</a></li>
-    <li><a href="tutorials/pure-tutorial.php">pure mathematics</a></li>
-    <li><a href="tutorials/complex-tutorial.php">complex variables</a></li>
-    <li><a href="tutorials/ode-tutorial.php">ordinary differential equations</a></li>
+    <li><a href="tutorials/calculus-tutorial.html">calculus</a></li>
+    <li><a href="tutorials/veclinalg-tutorial.html">vectors and linear algebra</a></li>
+    <li><a href="tutorials/pure-tutorial.html">pure mathematics</a></li>
+    <li><a href="tutorials/complex-tutorial.html">complex variables</a></li>
+    <li><a href="tutorials/ode-tutorial.html">ordinary differential equations</a></li>
 </ul>
 
 <h2><em>Statistics with REDUCE</em> by Wolfgang Lindner</h2>
@@ -130,8 +130,8 @@ include './include/begin-body.php';
     available here are those that were used as demonstrations for <em>Symbolic</em>.
     Other scripts relate to Dieter&apos;s research in curved space-time.
     A brief description of all his scripts, with links to them, is
-    available in either <a href="tutorials/EggerScripts.php">German</a>
-    (his original version) or <a href="tutorials/EggerScripts.en.php">English</a>,
+    available in either <a href="tutorials/EggerScripts.html">German</a>
+    (his original version) or <a href="tutorials/EggerScripts.en.html">English</a>,
     although the scripts themselves are all in English. The whole
     collection of scripts is also available as a
     <a href="tutorials/EggerReduceScripts.zip">zip archive</a>.

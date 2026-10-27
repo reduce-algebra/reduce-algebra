@@ -141,7 +141,7 @@ sub(t=0, sub(x=soln(1,1), y=soln(2,1), dxy));</pre>
 
     <div>
         <!-- Problem -->
-        (Suggested by Tony Roberts from <a href="/books.php#roberts">his book</a>.)<br />
+        (Suggested by Tony Roberts from <a href="/books.html#roberts">his book</a>.)<br />
         Find the power series solution \(y(x)\) up to degree
         \(x^7\) to the differential equation
         \[ y''+(1+x)y'-6y^2=0 \] such that

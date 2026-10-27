@@ -4,7 +4,7 @@ include '../include/begin-head.php';
 include '../include/begin-body.php';
 ?>
 
-<p style="text-align: center"><a href="EggerScripts.php">Deutsche Originalversion</a></p>
+<p style="text-align: center"><a href="EggerScripts.html">Deutsche Originalversion</a></p>
 <p>
     Here are some examples of REDUCE scripts.  You can either click
     the links below to read the scripts in a web browser or you can

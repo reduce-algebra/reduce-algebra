@@ -16,7 +16,7 @@ include './include/begin-body.php';
     The main documentation is included in a standard REDUCE installation; it
     is available on Microsoft Windows via the <em>Start</em> menu and
     on other platforms in <code>/usr/share/doc/reduce</code>.
-    (The <a href="/documentation38.php">documentation for
+    (The <a href="/documentation38.html">documentation for
         REDUCE 3.8</a>, the last commercial version of REDUCE released in
     2004, is also still available for historical interest.)
 </p>
@@ -28,16 +28,19 @@ include './include/begin-body.php';
             <a href="manual.pdf">PDF</a> ]</small> &ndash;
         a comprehensive guide to the REDUCE language and the supported packages.
         It can be accessed via the <em>Help</em> menu in the
-        <a href="/versions.php#csl">CSL REDUCE GUI</a>
-        (and in <a href="https://fjwright.github.io/Run-REDUCE/">Run-REDUCE</a>)
-        <small> [<a href="/manual-lookup.php">note on external linking</a>]</small>;
+        <a href="/versions.html#csl">CSL REDUCE GUI</a>
+        (and in <a href="https://fjwright.github.io/Run-REDUCE/">Run-REDUCE</a>);
+        <sup><small><span title="Internal links within the HTML version of the REDUCE manual should
+not be used externally because they may change when the manual is
+rebuilt from source, which typically happens a few times a year."
+                    style="cursor:help">hover for help on external linking</span></small></sup>
     </li>
     <li>
-        <strong><a href="/switches.php">Switch Summary</a></strong> &ndash;
+        <strong><a href="/switches.html">Switch Summary</a></strong> &ndash;
         an overview of the switches that control REDUCE.
     </li>
     <li>
-        <strong><a href="/directories.php">Working Directories</a></strong> &ndash;
+        <strong><a href="/directories.html">Working Directories</a></strong> &ndash;
         an overview of working directory support in PSL and CSL REDUCE.
     </li>
     <li>
@@ -109,7 +112,7 @@ include './include/begin-body.php';
             // but without conversion the output is mangled!
             // June 2026: Something has changed and now this conversion mangles the output!
             // $sectionAnchorString = mb_convert_encoding($doc->saveHTML($sectionAnchor), 'ISO-8859-1', 'UTF-8');
-            $sectionAnchorString =$doc->saveHTML($sectionAnchor);
+            $sectionAnchorString = $doc->saveHTML($sectionAnchor);
             // Embolden the package name (before the colon):
             $sectionAnchorString = preg_replace('/>(.*):/', '><b>$1</b>:', $sectionAnchorString);
             echo "&emsp;&emsp;$sectionAnchorString<br/>\n";

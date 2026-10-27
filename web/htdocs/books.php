@@ -53,10 +53,10 @@ include './include/begin-body.php';
 <p>
     The definitive guide to using REDUCE, namely the REDUCE User&#39;s
     Manual, and other user guides are distributed with REDUCE and also
-    <a href="documentation.php">available online</a>. In
+    <a href="documentation.html">available online</a>. In
     addition, the following books are available, sorted by publication
     date from newest to oldest. (They should also be included in the
-    <a href="bibliography.php">bibliography</a>,
+    <a href="bibliography.html">bibliography</a>,
     but may be hard to find there.) Book titles and front cover images
     link to the publisher or to a bookseller such as Amazon (whichever
     seems more useful).

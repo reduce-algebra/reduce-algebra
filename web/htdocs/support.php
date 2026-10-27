@@ -31,7 +31,7 @@ numerical problems (exactly or approximately) and plot graphs.'
 <ol>
   <li>Casual users wishing to solve straightforward problems can use
     REDUCE interactively and may want to use some of
-    the <a href="documentation.php#contributed">contributed REDUCE
+    the <a href="documentation.html#contributed">contributed REDUCE
     packages</a> that are not automatically loaded, which extend the
     domain of applicability of REDUCE beyond that of the core
     system.</li>
@@ -64,7 +64,7 @@ tab. For full and historical REDUCE-related source code (for REDUCE
 itself, Lisp systems, user interfaces, documentation, etc.) click on
 the <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/">Code</a>
 tab to access the Subversion repository.
-See <a href="obtaining.php">How to Obtain and Run REDUCE</a> for
+See <a href="obtaining.html">How to Obtain and Run REDUCE</a> for
 further details.'
   ),
 
@@ -75,21 +75,21 @@ further details.'
 named something like CSL REDUCE and/or PSL REDUCE in your application
 menu; click on one of them. CSL REDUCE provides a graphical user
 interface (by default) and PSL REDUCE provides a command-line
-interface.  See <a href="obtaining.php">How to Obtain and Run
+interface.  See <a href="obtaining.html">How to Obtain and Run
 REDUCE</a> for further details.  But unless you are already familiar
 with REDUCE you should probably first browse the REDUCE User&#39;s
 Manual, either as <a href="../manual/manual.html">HTML</a>
 or <a href="../manual/manual.pdf">PDF</a>.  A number
-of <a href="books.php">published books</a> about REDUCE and related
+of <a href="books.html">published books</a> about REDUCE and related
 topics are also available.'
   ),
 
   array(
     'Q' => 'Why are there two versions of REDUCE?',
 
-    'A' => 'REDUCE runs on <a href="documentation.php">Standard Lisp</a>
+    'A' => 'REDUCE runs on <a href="documentation.html">Standard Lisp</a>
 and there are two versions of Standard Lisp that were developed
-primarily to support REDUCE, namely <a href="versions.php">PSL and
+primarily to support REDUCE, namely <a href="versions.html">PSL and
 CSL</a> (in that order chronologically). We only release distributions
 of REDUCE based on these two Lisps, although REDUCE can be implemented
 on other versions of Standard Lisp (and there is some experimental
@@ -115,7 +115,7 @@ provides a GUI for PSL and CSL REDUCE via
 the <a href="reduce-ide/">REDUCE IDE</a> package.  The Redfront
 versions of PSL and CSL REDUCE both provide the same consistent CLI
 with input history and text colouring.  See
-<a href="obtaining.php">How to Obtain and Run REDUCE</a> for further
+<a href="obtaining.html">How to Obtain and Run REDUCE</a> for further
 details.  (There is also code in the repository for
 <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/psl/xr/">XR</a>,
 an X Window GUI for PSL, but it is not currently distributed as a
@@ -130,7 +130,7 @@ existence of a user&apos;s <a href="/manual/manualse77.html">REDUCE
 startup ﬁle</a>, and executes the REDUCE statements in it.  For CSL
 REDUCE (only), running <code>redcsl --nogui --help</code> at a command
 prompt lists the start-up options (assuming <code>redcsl</code> is on
-your search path &ndash; see <a href="obtaining.php">How to Obtain and
+your search path &ndash; see <a href="obtaining.html">How to Obtain and
 Run REDUCE</a>).'
   ),
 
@@ -141,9 +141,9 @@ Run REDUCE</a>).'
 Manual</strong> <small>[ <a href="manual/manual.html">HTML</a>
 | <a href="manual/manual.pdf">PDF</a> ]</small> is the obvious
 starting point and there are also a number of
-<a href="books.php">published books</a> covering various aspects of
+<a href="books.html">published books</a> covering various aspects of
 REDUCE.  You may like to work through
-the <a href="tutorials.php#lessons">REDUCE interactive lessons</a>.
+the <a href="tutorials.html#lessons">REDUCE interactive lessons</a>.
 Many of the
 <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/">REDUCE
 packages</a> have one or more associated test files (with extension
@@ -176,7 +176,7 @@ Manual</strong> <small>[ <a href="http://localhost/REDUCE/web/htdocs/lisp-docs/a
 ]</small> and
 the <a href="http://localhost/REDUCE/web/htdocs/lisp-docs/csl.html"><strong>CSL
 Reference</strong></a> all provide useful background. Some of
-the <a href="books.php">published books</a> on REDUCE discuss
+the <a href="books.html">published books</a> on REDUCE discuss
 algorithms and implementation, and the references in them will take
 you further. Ultimately, you will have to read the
 REDUCE <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/">source
