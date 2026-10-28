@@ -2,13 +2,32 @@
 $header_title = 'Features';
 include './include/begin-head.php';
 include './include/begin-body.php';
+
+function manual_lookup($queryString)
+{
+    // Print the URL to access the appropriate manual page (without quotes).
+    $doc = new DOMDocument();
+    libxml_use_internal_errors(true);
+    if ($doc->loadHTMLFile('manual/manual.html')) {
+        // $queryString = urldecode($queryString);
+        // Use XPath to extract the href attribute of the contents item containing the query string:
+        $xpath = new DOMXpath($doc);
+        $href = $xpath->query("/html/body/div[@class='tableofcontents']/span/a[starts-with(.,'$queryString')]/@href");
+        if ($href->length == 1) {
+            // If precisely one contents item is found, display the corresponding page:
+            return print("manual/{$href->item(0)->nodeValue}");
+        }
+    }
+    // If anything fails, display the contents page:
+    print('manual/manual.html');
+}
 ?>
 
 <p>
     REDUCE is a system for general algebraic computations of interest
     to mathematicians, scientists and engineers, which is normally
     used interactively. It has been produced by a collaborative effort
-    involving many <a href="about.php#contributors">contributors</a>.
+    involving many <a href="about.html#contributors">contributors</a>.
 </p>
 <h2>Basic features</h2>
 <p>
@@ -102,9 +121,9 @@ include './include/begin-body.php';
         rather than depend on just one system to provide
         everything. To this end, REDUCE provides facilities for
         writing results in a form compatible
-        <a href="manual-lookup.php?GENTRAN">with common numerical
+        <a href="<?php manual_lookup('GENTRAN') ?>">with common numerical
             programming languages</a> (such as C or Fortran) or
-        <a href="manual-lookup.php?RLFI">document processors</a> such
+        <a href="<?php manual_lookup('RLFI') ?>">document processors</a> such
         as <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span>.
     </dd>
     <dt>State-of-the-art algorithms</dt>
@@ -115,11 +134,11 @@ include './include/begin-body.php';
         development. At the present time, we believe REDUCE has
         superior code for solving non-linear polynomial equations
         using
-        <a href="manual-lookup.php?GROEBNER">Gr&ouml;bner bases</a>,
-        real and complex <a href="manual-lookup.php?Finding Roots">root finding</a>
-        to any precision, <a href="manual-lookup.php?EXCALC">exterior
+        <a href="<?php manual_lookup('GROEBNER') ?>">Gr&ouml;bner bases</a>,
+        real and complex <a href="<?php manual_lookup('Finding Roots') ?>">root finding</a>
+        to any precision, <a href="<?php manual_lookup('EXCALC') ?>">exterior
             calculus</a> calculations and
-        <a href="manual-lookup.php?SCOPE">optimized numerical code
+        <a href="<?php manual_lookup('SCOPE') ?>">optimized numerical code
             generation</a> among others. Its simplification strategy,
         using a combination of efficient polynomial manipulation and
         flexible pattern matching is focused on giving users as
@@ -134,7 +153,7 @@ include './include/begin-body.php';
     in a particular application area, with existing packages and
     templates being used to speed up problem solving. As evidenced by
     approximately 1000 reports listed in the current
-    <a href="bibliography.php">bibliography</a>, REDUCE has a large and
+    <a href="bibliography.html">bibliography</a>, REDUCE has a large and
     dedicated user community working in just about every branch of
     computational science and engineering. A large number of special
     purpose packages are available in support of this, with many

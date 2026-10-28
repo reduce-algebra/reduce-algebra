@@ -1,23 +1,18 @@
+# Exclude from rsync -*-conf-*-
+# Line-end comments are not allowed!
 .*
 *.json
-copy-manual.sh
-rsync-web.sh
+*.db
+*.php
 README*
 LICENSE
-# Temporarily exclude all web-reduce:
-htdocs/web-reduce/
-htdocs/web-reduce/Notes.md
-htdocs/web-reduce/emscripten/
-htdocs/web-reduce/gnuplot/Makefile
-htdocs/web-reduce/node_modules/
-htdocs/web-reduce/tests/
-htdocs/web-reduce/tsconfig.json
-htdocs/web-reduce/typescript/
-search/
-sitemap/
+include/
+web-reduce/
 
-# Include only extra-docs/{*.pdf,index.php}:
-+ extra-docs/twolf/
+# Include only extra-docs/{*.pdf,index.html}:
+# exclude everything ...
+- extra-docs/
+# but include ...
 + extra-docs/*.pdf
-+ extra-docs/index.php
-- extra-docs/*
++ extra-docs/index.html
+# + extra-docs/twolf/

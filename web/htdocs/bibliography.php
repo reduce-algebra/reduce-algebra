@@ -639,7 +639,7 @@ include './include/begin-body.php';
         <dt>Dieter Egger.</dt>
         <dd><em><a href="http://www.shaker.eu/shop/OND-00000-0000140">Hyper-Kugeln und ihre Oberfl&auml;chen.</a></em> (OND-00000-0000140) 69 pages, 41 figures, <a href="http://www.shaker.eu/">Shaker Verlag</a>, July 2012.</dd>
         <dt>Dieter Egger.</dt>
-        <dd><em><a href="http://www.shaker.eu/shop/OND-00000-0000142">&Uuml;ber eine Spezielle Metrik</a></em> (OND-00000-0000142) 26 pages, 1 figure, <a href="http://www.shaker.eu/">Shaker Verlag</a>, August 2012. (See also the bottom of our <a href="/tutorials.php#egger">tutorials page</a>.)
+        <dd><em><a href="http://www.shaker.eu/shop/OND-00000-0000142">&Uuml;ber eine Spezielle Metrik</a></em> (OND-00000-0000142) 26 pages, 1 figure, <a href="http://www.shaker.eu/">Shaker Verlag</a>, August 2012. (See also the bottom of our <a href="/tutorials.html#egger">tutorials page</a>.)
         <dt id="Eisenberger:90"><!--[Eisenberger:90] -->Moshe Eisenberger.</dt>
         <dd><a href="http://dx.doi.org/10.1016/S0747-7171(08)80030-2">Application of symbolic algebra to the analysis of plates on variable elastic foundation</a>. <em>Journal of Symbolic Computation</em> <strong>9</strong> no. 2, pages 207&ndash;213, February 1990.</dd>
         <dt id="Eissfeller:86"><!--[Eissfeller:86] -->Bernd Ei&szlig;feller and G&uuml;nter&nbsp;W. Hein.</dt>

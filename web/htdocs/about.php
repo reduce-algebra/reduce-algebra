@@ -25,7 +25,7 @@ include './include/begin-body.php';
     various researchers throughout the world. Forty years later, there
     is still an active community of users.  In order to encourage
     further development, I have decided to make the software freely
-    available under a <a href="license.php">modified BSD license</a>.
+    available under a <a href="license.html">modified BSD license</a>.
 </blockquote>
 <p>
     The Open Source version of the REDUCE algebra system was
@@ -36,7 +36,7 @@ include './include/begin-body.php';
     a more complete history.
 </p>
 <p>
-    The <a href="documentation38.php">documentation for REDUCE 3.8</a>,
+    The <a href="documentation38.html">documentation for REDUCE 3.8</a>,
     the last commercial version of REDUCE released in 2004, and the
     <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/historical/">source
         code for versions 3.3 to 3.8</a> are all still available.

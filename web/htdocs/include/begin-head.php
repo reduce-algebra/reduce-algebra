@@ -13,7 +13,7 @@
     </title>
     <?php
     $script_name = $_SERVER['SCRIPT_NAME'];
-    if (str_ends_with($script_name, 'index.php')) $script_name = substr($script_name, 0, strlen($script_name) - 9);
+    if (str_ends_with($script_name, 'index.html')) $script_name = substr($script_name, 0, strlen($script_name) - 9);
     ?>
     <link rel="canonical" href="https://reduce-algebra.sourceforge.io<?= $script_name ?>" />
     <link rel="icon" type="image/png" href="/images/icon.png" />

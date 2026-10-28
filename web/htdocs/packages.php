@@ -16,7 +16,7 @@ include './include/begin-body.php';
 
 <p>
     REDUCE distributions include a wide variety of
-    <a href="documentation.php#contributed">specialized packages</a>.
+    <a href="documentation.html#contributed">specialized packages</a>.
     The external packages listed below use REDUCE but are not included
     in the REDUCE repository or in REDUCE distributions.
 </p>
@@ -31,14 +31,14 @@ include './include/begin-body.php';
         Authors: James Sherring, Geoff Prince and Michael Jerie
     </dd>
     <dt>
-        <a href="grg32/grg32.php">GRG 3.2</a> &ndash; differential
+        <a href="grg32/grg32.html">GRG 3.2</a> &ndash; differential
         geometry, gravitation and field theory
     </dt>
     <dd>
         Author: Vadim V. Zhytnikov
     </dd>
     <dt>
-        <a href="https://www.utsc.utoronto.ca/~harper/redten.html">REDTEN</a>
+        <a href="https://github.com/reduce-algebra/redten">REDTEN</a>
         &ndash; tensor and tensor-like objects and manipulation
         functions for work in general relativity
     </dt>

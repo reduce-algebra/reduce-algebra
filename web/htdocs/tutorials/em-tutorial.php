@@ -7,7 +7,7 @@ include '../include/begin-body.php';
 <p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018</p>
 <p>
     The problems on this page are taken from
-    <a href="http://www.maths.qmul.ac.uk/~fvivaldi/books/em/">essential
+    <a href="https://webspace.maths.qmul.ac.uk/f.vivaldi/books/em/">essential
         mathematics</a>, a free web-book by franco vivaldi.  I include
     the answers essentially as given in the web-book to show precisely
     what simplification I am aiming at using REDUCE.

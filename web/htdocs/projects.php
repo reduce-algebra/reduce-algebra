@@ -31,9 +31,9 @@ include './include/begin-body.php';
     </li>
 </ul>
 <h2>REDUCE for mobile devices</h2>
-<p>
-    <a href="/web-reduce/about.php?start">Web REDUCE</a> should work on most mobile devices.
-</p>
+<!-- <p>
+    <a href="/web-reduce/about.html?start">Web REDUCE</a> should work on most mobile devices.
+</p> -->
 <p>
     As of July 2024 there appear to be no REDUCE mobile apps available
     from the Google or Apple app stores, but there are other options.
@@ -92,10 +92,10 @@ include './include/begin-body.php';
     these projects and so probably cannot help users with them.
 </p>
 <ul>
-    <li>
+    <!-- <li>
         <a href="http://www.alltypes.de/">ALLTYPES</a> is an algebraic
         language and type system;
-    </li>
+    </li> -->
     <li>
         <a href="http://mtt.sourceforge.net/">MTT</a> is a set of tools
         for modeling dynamic physical systems using the bond-graph

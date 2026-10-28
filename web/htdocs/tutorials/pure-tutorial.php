@@ -26,7 +26,7 @@ symbolic$
 gcd(426, 330);
 
 % This implementation of the extended Euclidean algorithm
-% is based on <a href="/books.php#Davenport-Siret-Tournier">Davenport, Siret &amp; Tournier</a>, page 214.
+% is based on <a href="/books.html#Davenport-Siret-Tournier">Davenport, Siret &amp; Tournier</a>, page 214.
 q := 426;  r := 330;
 qq := {1,0};  rr := {0,1};
 while r neq 0 do <<

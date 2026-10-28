@@ -38,7 +38,7 @@ include './include/begin-body.php';
     lists several other mirrors, and the
     <a href="https://github.com/reduce-algebra">GitHub REDUCE
     organization</a> page provides alternative access to a number of
-    closely <a href="projects.php">related projects</a>.
+    closely <a href="projects.html">related projects</a>.
 </p>
 
 <h2>Microsoft Windows</h2>

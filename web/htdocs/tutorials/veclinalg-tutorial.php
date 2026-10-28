@@ -314,7 +314,7 @@ solve(ws, {a2,a1,a0});
         Compute \(\dim H\), \(\dim H^\perp\), and a basis for \(H^\perp\).
         <!-- Solution -->
         <pre>% First, ensure that arbitrary constants have the expected indices:
-% (See <a href="/books.php#MacCallum-Wright">MacCallum and Wright</a>, footnote 31 on page 35.)
+% (See <a href="/books.html#MacCallum-Wright">MacCallum and Wright</a>, footnote 31 on page 35.)
 symbolic(!!arbint := 0);
 solve({x+2y-3z=0, 3y+2z-t=0}, {x,y,z,t});
 h := for each el in first ws collect rhs el;
