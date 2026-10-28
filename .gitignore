@@ -402,10 +402,12 @@
 /vsl/modules
 
 # /web/
+/web/htdocs/*.html
 /web/htdocs/lisp-docs
 /web/htdocs/manual
 /web/htdocs/reduce38-docs
 /web/htdocs/reduce40.pdf
+/web/htdocs/*/*.html
 
 # /web/htdocs/manpages/
 /web/htdocs/manpages/*.html *.pdf
