@@ -43,25 +43,25 @@ module ghyper;   % Generalized Hypergeometric Functions.
 flag('(hypergeometic), 'specfn);
 put('hypergeomtric, 'number!-of!-args, 3);
 
- put('ghf,'simpfn,'simpghf)$
+put('ghf,'simpfn,'simpghf)$
 
-   symbolic procedure simpghf u;
+symbolic procedure simpghf u;
    if null cddr u then
-        rerror('specialf,125,
-              "WRONG NUMBER OF ARGUMENTS TO GHF-FUNCTION")
-       else
-   if or(not numberp car u,not numberp cadr u) then
-        rerror('specialf,126,"INVALID AS INTEGER")
-       else
-   begin scalar vv,v;
-   v:=redpar1(cddr u,car u);
-   vv:=redpar1(cdr v,cadr u);
-   if null cddr vv then return
-      ghfsq(list(car u,cadr u),listsq car v,
-      listsq car vv, simp cadr vv);
-      return rerror ('specialf,127,
-        "WRONG NUMBER OF ARGUMENTS TO GHF-FUNCTION");
-   end$
+      rerror('specialf,125,
+	 "WRONG NUMBER OF ARGUMENTS TO GHF-FUNCTION")
+   else
+      if or(not numberp car u,not numberp cadr u) then
+         rerror('specialf,126,"INVALID AS INTEGER")
+      else
+      begin scalar vv,v;
+   	 v:=redpar1(cddr u,car u);
+   	 vv:=redpar1(cdr v,cadr u);
+   	 if null cddr vv then return
+      	    ghfsq(list(car u,cadr u),listsq car v,
+      	       listsq car vv, simp cadr vv);
+      	 return rerror ('specialf,127,
+            "WRONG NUMBER OF ARGUMENTS TO GHF-FUNCTION");
+      end$
 
  symbolic procedure ghfexit(a,b,z);
  begin scalar aa,bb;
@@ -497,7 +497,7 @@ symbolic procedure hypergeom(u);
 
       if not (length(u) = 3) then
  	   rerror('specialf,140,"Wrong number of arguments to hypergeometric");
-      if pairp u then list1 :=car u
+      if pairp u then list1 := car u
       else ghyper_fehlerf();
 
       if pairp cdr u then list2 := cadr u
@@ -508,13 +508,17 @@ symbolic procedure hypergeom(u);
       
       if not eqcar(list1,'list) or not eqcar(list2,'list) then
 	 ghyper_fehlerf();
-
+      
+      u := caddr u; 
+      if !*rounded and not !*complex and evalnumberp u and
+	     evalnumlistp(list1) and evalnumlistp(list2) then
+	 return num_hypergeo(list1,list2,u);
+      
       if not !*rounded then 
       	 offrounded := t
       else
       	 off1 'rounded;
-
-      u := caddr u; 
+     
       res := errorset!*({'ghfsq1, mkquote(list1), mkquote(list2),
 	                  mkquote(u)}, nil);
       if not offrounded then on1 'rounded;

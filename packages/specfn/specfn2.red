@@ -53,7 +53,7 @@ module specfn2;  % Part 2 of the Special functions package for REDUCE.
 %  ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  %
 
 
-create!-package ('(specfn2 ghyper MeijerG),
+create!-package ('(specfn2 ghyper numhyper MeijerG),
                  '(contrib specfn));
 
 load_package specfn;
