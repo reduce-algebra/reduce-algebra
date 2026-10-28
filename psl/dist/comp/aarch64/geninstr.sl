@@ -713,6 +713,8 @@
 (instr MVN   (reg32 reg32-shifter)     OP-regd-shifter 2#00101010001)
 (instr MVN   (reg reg-shifter)         OP-regd-shifter 2#10101010001)
 
+(instr MOVK  (reg32 imm16-shifted)     OP-reg-imm16    2#011100101)
+(instr MOVK  (reg imm16-shifted)       OP-reg-imm16    2#111100101)
 (instr MOVN  (reg32 imm16-shifted)     OP-reg-imm16    2#000100101)
 (instr MOVN  (reg imm16-shifted)       OP-reg-imm16    2#100100101)
 (instr MOVZ  (reg32 imm16-shifted)     OP-reg-imm16    2#010100101)

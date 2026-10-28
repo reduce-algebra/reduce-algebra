@@ -51,5 +51,8 @@
 	ccmp    x22, #8, #12, le
 	ccmp    x22, x3, #12, le
 
+	movz	x22, #34
+	movk	x22, #22, LSL #16
+
 	br	lr
 

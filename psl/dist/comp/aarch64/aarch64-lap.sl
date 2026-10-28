@@ -443,7 +443,7 @@
 		     X16 X17 X18 X19 X20 X21 X22 X23 X24 X25 X26 X27 X28 X29 X30
                      W0 W1 W2 W3 W4 W5 W6 W7 W8 W9 W10 W11 W12 W13 W14 W15
 		     W16 W17 W18 W19 W20 W21 W22 W23 W24 W25 W26 W27 W28 W29 W30
-		     fp lr Xzr Wzr
+		     st sp fp lr Xzr Wzr
 		     t1 t2 t3 t4 t5
              nil heaplast heaptrapbound symfnc symval
 	     bndstkptr bndstklowerbound bndstkupperbound
@@ -697,9 +697,11 @@
 
 (de imm16-shiftedp (x)
     (or (and (fixp x) (eq x (land x 16#ffff)))
-	(and (pairp x) (fixp (car x)) (eq (car x) (land (car x) 16#ffff))
-	     (eqcar (cdr x) 'LSL)
-	     (pairp (cddr x)) (memq (caddr x) '(0 16 32 48)))))
+	(and (pairp x)
+	     (let ((n (WConstEvaluable (car x))))
+	       (and (fixp n) (eq n (land n 16#ffff))
+		    (eqcar (cdr x) 'LSL)
+		    (pairp (cddr x)) (memq (caddr x) '(0 16 32 48)))))))
 
 (de imm-lg-repeated (x)
   (let ((size 64) (mask))
@@ -1321,7 +1323,7 @@
       (if (or (and (fixp imm16-shifted) (eq imm16-shifted (wand imm16-shifted 16#ffff))
 		   (setq imm16 imm16-shifted))
 	      (and (pairp imm16-shifted) (pairp (cddr imm16-shifted)) (eq (caddr imm16-shifted) 0)
-		   (setq imm16 (caddr imm16-shifted))))
+		   (setq imm16 (car imm16-shifted))))
 	  (setq sh 0)
 	(setq sh 1))
       (cond ((fixp imm16-shifted)
@@ -1337,7 +1339,7 @@
 		    (setq sh 1)
 		    (setq imm16 (lsh imm16-shifted -16)))
 		   (t (setq sh 0) (setq imm16 imm16-shifted))))
-	    (t (setq imm16 (car imm16-shifted))
+	    (t (setq imm16 (WConstevaluable (car imm16-shifted)))
 	       (setq sh (lsh (caddr imm16-shifted) -4))))
       (DepositInstructionBytes
        (lsh opcode -1)
@@ -2441,10 +2443,11 @@
     (Times2 (Quotient (Plus2 (Size (second X)) 9) 8) 8))
 
 (DefList '((fullword InlineConstantLength) 
-	  (halfword InlineConstantLength) 
-	  (byte ByteConstantLength) 
-	  (float 8) 
-	  (string LapStringLength)) 'InstructionLength)
+	   (halfword InlineConstantLength) 
+	   (byte ByteConstantLength) 
+	   (float 8) 
+	   (string LapStringLength))
+         'InstructionLength)
 
 
 (put '*entry 'InstructionLength 0)

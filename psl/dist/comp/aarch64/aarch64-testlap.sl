@@ -80,6 +80,8 @@
 %%   4709437A 		ccmp    W10, #3, #7, eq
 %%   CCDA48FA 		ccmp    x22, #8, #12, le
 %%   CCD243FA 		ccmp    x22, x3, #12, le
+%%   560480D2           movz	x22, #34
+%%   D602A0F2           movk	x22, #22, LSL #16
 %%   C0031FD6 		br	lr
 %%
 
@@ -151,6 +153,9 @@
        (ccmp (reg w10) (wconst 3) (wconst 7) eq)
        (ccmp (reg x22) (wconst 8) (wconst 12) le)
        (ccmp (reg x22) (reg x3) (wconst 12) le)
+
+       (movz (reg x22) (wconst 34))
+       (movk (reg x22) ((wconst 22) LSL 16))
 
        (br (reg lr))
 ))
