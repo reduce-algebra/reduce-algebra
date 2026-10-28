@@ -99,7 +99,8 @@
   (uxassign x y))
 
 (de *doubletofloat (x y)
-  (uxdoubletofloat (inf x) (inf y)))
+  (when (and (eq (uxdoubletofloat (inf x) (inf y)) 0) (not (eq fp-except-mode* 0)))
+    (stderror "Floating point error in doubletofloat")))
 
 (de *floattodouble (x y)
   (uxfloattodouble (inf x) (inf y)))
