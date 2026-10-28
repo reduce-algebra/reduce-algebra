@@ -268,18 +268,30 @@
            (setq REX? (plus codebase!* currentoffset* -1))
            (setq allowextrarexprefix* 0)
            (rplaca x 'mov))
-          ((eqcar x 'addq) (Depositbyte  16#48)  % REX Prefix
-                          (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix* 0)
-                          (rplaca x 'add))
-          ((eqcar x 'subq) (Depositbyte  16#48)  % REX Prefix
-                          (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix* 0)
-                          (rplaca x 'sub))
-          ((eqcar x 'cmpq) (Depositbyte  16#48)  % REX Prefix
-                          (setq REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix* 0)
-                          (rplaca x 'cmp))
+          ((eqcar x 'movabsq)
+	   (Depositbyte  16#48)  % REX Prefix
+           (SETQ REX? (plus codebase!* currentoffset* -1))
+           (setq allowextrarexprefix* 0)
+           (rplaca x 'movabs))
+          ((or (eqcar x 'movsxd) (eqcar x 'movzxd) (eqcar x 'movsx) (eqcar x 'movzx))
+	   (Depositbyte  16#48)  % REX Prefix
+           (SETQ REX? (plus codebase!* currentoffset* -1))
+           (setq allowextrarexprefix* 0))
+          ((eqcar x 'addq)
+	   (Depositbyte 16#48)  % REX Prefix
+           (SETQ REX? (plus codebase!* currentoffset* -1))
+           (setq allowextrarexprefix* 0)
+           (rplaca x 'add))
+          ((eqcar x 'subq)
+	   (Depositbyte 16#48)  % REX Prefix
+           (SETQ REX? (plus codebase!* currentoffset* -1))
+           (setq allowextrarexprefix* 0)
+           (rplaca x 'sub))
+          ((eqcar x 'cmpq)
+	   (Depositbyte 16#48)  % REX Prefix
+           (setq REX? (plus codebase!* currentoffset* -1))
+           (setq allowextrarexprefix* 0)
+           (rplaca x 'cmp))
           ((and (pairp x) (flagp (car x) 'norexprefix)) NIL)
           ((and (pairp x) (flagp (car x) 'onlyupperregrexprefix))
            (cond ((upperreg64p x)
@@ -289,7 +301,7 @@
                   (setq allowextrarexprefix* 0))))
           ((reg64bitp x)
 	   %% requires REX Prefix
-	   (Depositbyte  16#48)
+	   (Depositbyte 16#48)
            (setq REX? (plus codebase!* currentoffset* -1))))
     (cond ((setq Y (get (first X) 'InstructionDepositFunction)) 
            (Apply Y (list X))) 
@@ -764,6 +776,13 @@
 (de LTH-imm8-effa (code op1 op2)
     (plus 2 (lthmodR/M (cadr code) op2)))
 
+(de OP-imm64-reg (code op1 op2)
+    (depositbyte (lor (car code) (reg2int op2 'REXB)))
+    (depositword (unimmediate op1)))
+
+(de LTH-imm64-reg (code op1 op2)
+    10)
+
 (de OP2-imm8-effa (code op1 op2)
     (depositbyte (car code))
     (depositbyte (cadr code))
@@ -774,7 +793,8 @@
    (plus 3 (lthmodR/M (cadr code) op2)))
 
 %------------------------------------------------------------------------
-% code is two bytes (prefix+opcode) with an optional rex prefix in between,
+% code is two or more bytes (prefix+opcode)
+%  with an optional rex prefix in between,
 % op1 is a register, op2 is an effective address
 (de OP-reg-effa-2 (code op1 op2)
     (prog (need_rex)
@@ -837,11 +857,11 @@
 
 (de LTH-effa (code op1) (LTH-reg-effa code (cadr code) op1))
 
-(de OP2-effa(code op1)
+(de OP2-effa (code op1)
     (depositbyte (car code))
     (OP-effa (cdr code) op1))
 
-(de LTH2-effa(code op1) (add1 (LTH-effa(cdr code) op1)))
+(de LTH2-effa (code op1) (add1 (LTH-effa (cdr code) op1)))
 
 %-----------------------------------------------------------------------
 % immediate to EAX
@@ -888,13 +908,13 @@
 
 %---------------------------------------------------------------------
 % push/pop with register: code is one byte modified with reg number
-(de OP-Push-Reg(code op1) (depositbyte (lor (car code) (reg2int op1 'REXB))))
-(de LTH-Push-Reg(code op1) 1)
+(de OP-push-reg (code op1) (depositbyte (lor (car code) (reg2int op1 'REXB))))
+(de LTH-push-reg (code op1) 1)
 
 %---------------------------------------------------------------------
 % jump to absolute address
 % 386 has only relative jumps
-(de OP-jump (code op1)
+(de OP-Jump (code op1)
   (prog(n)
    (depositbyte (car code))
    (when (cdr code) (depositbyte (cadr code)))

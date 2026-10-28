@@ -64,6 +64,7 @@
       (OP-imm-EAX  . LTH-imm-EAX)
       (OP-imm-effa . LTH-imm-effa)
       (OP-imm8-effa. LTH-imm8-effa)
+      (OP-imm64-reg . LTH-imm64-reg)
       (OP2-imm8-effa. LTH2-imm8-effa)
       (OP-mem-EAX  . LTH-mem-EAX)
       (OP-push-reg . LTH-push-reg)
@@ -339,6 +340,8 @@
 (instr MOVL (reg effa)  OP-reg-effa 2#10001001)
 (instI MOVL (effa reg)  OP-reg-effa 2#10001011)
 
+(instr MOVABS (imm reg) OP-imm64-reg 2#10111000)
+
 (instI CMOVA   (effa reg) OP-reg-effa-2 16#0f 16#47)
 (instI CMOVAE  (effa reg) OP-reg-effa-2 16#0f 16#43)
 (instI CMOVB   (effa reg) OP-reg-effa-2 16#0f 16#42)
@@ -370,8 +373,10 @@
 (instI CMOVS   (effa reg) OP-reg-effa-2 16#0f 16#48)
 (instI CMOVZ   (effa reg) OP-reg-effa-2 16#0f 16#44)
 
-(instr MOVSX (reg reg) OP-reg-effa-2 2#00001111 rex 2#10111111)  % only reg-reg
-(instr MOVZX (reg reg) OP-reg-effa-2 2#00001111 rex 2#10110111)  % only reg-reg
+(instI MOVSXD  (effa reg) OP-reg-effa 16#63)
+(instI MOVZXD  (effa reg) OP-reg-effa 16#63)
+(instI MOVSX   (effa reg) OP-reg-effa-2 16#0f 16#be)
+(instI MOVZX   (effa reg) OP-reg-effa-2 16#0f 16#b6)
  
 (instr PUSH (reg)     OP-push-reg   2#01010000)
 (instr PUSH (effa)    OP-effa       2#11111111 2#00110000)
