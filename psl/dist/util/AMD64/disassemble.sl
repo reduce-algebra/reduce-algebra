@@ -215,8 +215,8 @@
 (fi 16#b0 mov (AL (I b))(CL (I b))(DL (I b))(BL (I b))
               (AH (I b))(CH (I b))(DH (I b))(BH (I b)))
 
-(fi 16#b8 mov (EAX (I v))(ECX (I v))(EDX (I v))(EBX (I v))
-              (ESP (I v))(EBP (I v))(ESI (I v))(EDI (I v)))
+(fi 16#b8 mov (EAX (I vq))(ECX (I vq))(EDX (I vq))(EBX (I vq))
+              (ESP (I vq))(EBP (I vq))(ESI (I vq))(EDI (I vq)))
 
 (fi 16#c0 shift ((E b)(I b)) ((E v)(I b)))
 
@@ -447,7 +447,7 @@
 
 (deflist '((eax rax) (ebx rbx) (ecx rcx) (edx rdx) (ebp rbp) (esp rsp) (esi rsi) (edi rsi)) 'reg64)
 
-(de decode-operand1(p firstop)
+(de decode-operand1 (p firstop)
  (let(w)
   (cond ((and rex_w (setq w (get p 'reg64)))
 	 (if *gassyntax (bldmsg "%%%w" w) w))
@@ -468,6 +468,14 @@
         ((equal p '(I v)) 
          (setq  lth* (plus 4 lth*))
          (bytes2word))
+           % immediate word or quad
+        ((equal p '(I vq))
+	 (cond (rex_w
+		(setq lth* (plus 8 lth*))
+		(quad2word))
+	       (t
+		(setq  lth* (plus 4 lth*))
+		(bytes2word))))
            % absolute address
         ((equal p '(A b)) 
          (setq  lth* (add1 lth*))
@@ -905,7 +913,7 @@
 	((eq p2 16#ff) 'fcos)
 	))
 
-(de bytes2word()
+(de bytes2word ()
   (prog(w)
     (when (lessp (length bytes*) 4)
           (stderror (bldmsg "operands %w too short at %w: %w"
@@ -926,6 +934,14 @@
 %     (when (eq (wand w 16#ffffff) 8) (return 'CDR))
      (return (sys2int w))))
 
+(de bytes2word ()
+    (sys2int (bytes2word1)))
+
+(de quad2word ()
+    (let ((lower (bytes2word))
+	  (upper (bytes2word)))
+      (plus (lshift upper 32) (land 16#ffffffff lower))))
+	  
 (de xgreaterp(a b)(and (numberp a)(numberp b)(greaterp a b)))
 
 (de namegrp1()

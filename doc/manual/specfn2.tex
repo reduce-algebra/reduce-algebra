@@ -38,6 +38,11 @@ where $(a)_{n}$ is the Pochhammer symbol
  (a)_{n} = \prod_{k=0}^{n-1} (a+k).
 \]
 
+The hypergeometric function is currently pretty-printed in \REDUCE{} as
+\[
+_pF_q \left( \{a_1, \ldots , a_p\},\{b_1, \ldots ,b_q\} \vert z \right).
+\]
+
 The function 
 \[
 G_{p q}^{m n} \left( z \  \Bigg\vert \  \genfrac{}{}{0pt}{}{(a_p)}{(b_q)} \right)
@@ -87,6 +92,39 @@ rules to the \REDUCE{} system, e.g.
 let {hypergeometric({1/2,1/2},{3/2},-(~x)^2)
         => asinh(x)/x};
 \end{verbatim}
+
+\subsection{Numerical Evaluation}
+If the switch ROUNDED is ON and the switch COMPLEX is OFF and all the
+parameters are real and numeric then the system will attempt to evalaute the
+generalised hypergeometric function numerically.  If one or more of the
+parameters $a_j$ is a negative integer, the hypergeometric function is a
+polynomial. If one or more of the parameters $b_j$ is a negative integer, terms
+of the series develop a zero denominator and the numerical evaluation fails.
+Otherwise the technique used is a fairly naive summation of the defining power
+series. If $p<q$ the series converges for all values of $z$; however and if
+some of the parameters are large the convergence may be slow and prone to
+cancellation errors. If $p>q+1$ the series diverges for all non-zero values of
+$z$ except when it degenerates to a polynomial.  For $p=q+1$ the radius of
+convergence of the series is $1$. If $|z|=1$ the series is absolutely convergent
+if $\gamma_q >0$, convergent at $z=-1$ if $-1<\gamma_q \leq 0$ and divergent
+otherwise, where
+\[
+\gamma_q = (b_1 + \cdots + b_q) - (a_1 + \cdots + a_{q+1}).
+\]
+For the special case $_2F_1$, it is possible, in many cases, to use a
+transformation of the variable $z$ to express the result as a linear
+combination of two functions $_2F_1$ in a variable $z_1$ such that
+$|z_1|\leq 1/2$. See Chapters 15 and 16 of \href{https://dlmf.nist.gov/}
+{DLMF:NIST} for more details.
+
+The work on numerical evaluation is at a fairly preliminary stage and it may be
+possible in some cases to improve the efficiency of the algorithms used.
+Currently numerical evaluation is only implemented when all the parameters are
+real although it should be possible in the future to extend the work to include
+complex values of the parameters. Outside the radius of convergence of the
+defining power series the generalised hypergeometric function becomes
+multivalued and is defined by analytic extension wrt $z$. The principal branch
+is obtained by introducing a cut along the real axis from $1$ to $+\infty$.
 
 \ttindex{MeijerG}
 \subsection{Meijer's G Function}

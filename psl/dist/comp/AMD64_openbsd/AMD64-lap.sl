@@ -267,31 +267,26 @@
     (setq REX-Prefix 16#48)
     (when *WritingFaslFile (setq offs currentoffset*))
     (cond ((and (eqcar x 'movq) (not (xmmregp (cadr x))) (not (xmmregp (caddr x))))
-                          (Depositbyte  16#48)  % REX Prefix
-                          (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix* 0)
-                          (rplaca x 'mov))
-          ((eqcar x 'addq) (Depositbyte  16#48)  % REX Prefix
-                          (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix* 0)
-                          (rplaca x 'add))
-          ((eqcar x 'subq) (Depositbyte  16#48)  % REX Prefix
-                          (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix* 0)
-                          (rplaca x 'sub))
-          ((eqcar x 'cmpq) (Depositbyte  16#48)  % REX Prefix
-                          (SETQ REX? (plus codebase!* currentoffset* -1))
-                          (setq allowextrarexprefix* 0)
-                          (rplaca x 'cmp))
+           (Depositbyte  16#48)  % REX Prefix
+           (SETQ REX? (plus codebase!* currentoffset* -1))
+           (setq allowextrarexprefix* 0)
+           (rplaca x 'mov))
+	  ((and (pairp x) (setq Y (get (car x) 'add-REX.W-and-replace)))
+	   (Depositbyte 16#48)  % REX Prefix
+           (setq REX? (plus codebase!* currentoffset* -1))
+           (setq allowextrarexprefix* 0)
+	   (rplaca x Y))
           ((and (pairp x) (flagp (car x) 'norexprefix)) NIL)
           ((and (pairp x) (flagp (car x) 'onlyupperregrexprefix))
            (cond ((upperreg64p x)
                   (setq REX-prefix 16#40)
                   (Depositbyte 16#40)
-                  (SETQ REX? (plus codebase!* currentoffset* -1))
+                  (setq REX? (plus codebase!* currentoffset* -1))
                   (setq allowextrarexprefix* 0))))
-          ((reg64bitp x) (Depositbyte  16#48)    % REX Prefix
-                         (SETQ REX? (plus codebase!* currentoffset* -1))))
+          ((reg64bitp x)
+	   %% requires REX Prefix
+	   (Depositbyte 16#48)
+           (setq REX? (plus codebase!* currentoffset* -1))))
     (cond ((setq Y (get (first X) 'InstructionDepositFunction)) 
            (Apply Y (list X))) 
           ((setq Y (get (first X) 'InstructionDepositMacro))
@@ -316,15 +311,25 @@
         CVTTPS2PI CVTTPD2PI CVTTSS2SI CVTTSD2SI 
         CVTPS2PI CVTPD2PI CVTSS2SI CVTSD2SI
         UCOMISS UCOMISD COMISS COMISD
-        MOVW MOVSX MOVZX
+        MOVW
         ADDSD MULsd subsd divsd sqrtsd
         movd movq ldmxcsr stmxcsr
         pand pandn por pxor andpd andnpd orpd xorpd
         ) 'norexprefix)
 
+% Instructions that always need a REX.W prefix
+(deflist '((addq add) (adcq adc) (subq sub) (sbbq sbb)
+	   (cmpq cmp) (andq and) (orq or) (xorq xor)
+	   (movabsq movabs) (movsxd movsxd) (movzxd movzxd)
+	   (movsx movsx) (movzx movzx))
+    'add-REX.W-and-replace)
+
 % Instructions that need a REX.B prefix only if using upper 8 registers
-(flag '(push pop movl movb) 'onlyupperregrexprefix)
-(flag '(setc) 'onlyupperregrexprefix)
+(flag '(push pop movl movb andl) 'onlyupperregrexprefix)
+(flag '(seta setae setb setbe setc sete setg setge setl setle
+	setna setnae setnb setnbe setnc setne setng setnge setnl setnle
+	setno setnp setns setnz seto setp setpe setpo sets setz)
+      'onlyupperregrexprefix)
 
 (de DepositLabel (x) 
     (when *testlap (prin2 currentoffset*) (tab 10) (print x))
@@ -590,6 +595,7 @@
     % calculate the length of the address part by modR/M
     (prog (OpFn mode base ireg n)
 
+          (when (or (regp op1) (xmmregp op1)) (setq op1 (lsh (reg2int op1 'REXR) 3)))
           (when (pairp op2) (setq mode (car op2)))
 
           % case: reg - reg
@@ -760,6 +766,13 @@
 (de LTH-imm8-effa (code op1 op2)
     (plus 2 (lthmodR/M (cadr code) op2)))
 
+(de OP-imm64-reg (code op1 op2)
+    (depositbyte (lor (car code) (reg2int op2 'REXB)))
+    (depositword (unimmediate op1)))
+
+(de LTH-imm64-reg (code op1 op2)
+    10)
+
 (de OP2-imm8-effa (code op1 op2)
     (depositbyte (car code))
     (depositbyte (cadr code))
@@ -770,7 +783,8 @@
    (plus 3 (lthmodR/M (cadr code) op2)))
 
 %------------------------------------------------------------------------
-% code is two bytes (prefix+opcode) with an optional rex prefix in between,
+% code is two or more bytes (prefix+opcode)
+%  with an optional rex prefix in between,
 % op1 is a register, op2 is an effective address
 (de OP-reg-effa-2 (code op1 op2)
     (prog (need_rex)
@@ -788,7 +802,9 @@
                    (SETQ REX? (plus codebase!* currentoffset* -1))
                    (setq allowextrarexprefix* (if (eqcar code 'rex) 0 1) )))
                 ))
-          (depositbyte (car code)))
+          (while (car code)
+            (depositbyte (car code))
+	    (setq code (cdr code))))
     (modR/M op1 op2))
 
 (de LTH-reg-effa-2 (code op1 op2)
@@ -833,11 +849,11 @@
 
 (de LTH-effa (code op1) (LTH-reg-effa code (cadr code) op1))
 
-(de OP2-effa(code op1)
+(de OP2-effa (code op1)
     (depositbyte (car code))
     (OP-effa (cdr code) op1))
 
-(de LTH2-effa(code op1) (add1 (LTH-effa(cdr code) op1)))
+(de LTH2-effa (code op1) (add1 (LTH-effa (cdr code) op1)))
 
 %-----------------------------------------------------------------------
 % immediate to EAX
@@ -884,8 +900,8 @@
 
 %---------------------------------------------------------------------
 % push/pop with register: code is one byte modified with reg number
-(de OP-Push-Reg(code op1) (depositbyte (lor (car code) (reg2int op1 'REXB))))
-(de LTH-Push-Reg(code op1) 1)
+(de OP-push-reg (code op1) (depositbyte (lor (car code) (reg2int op1 'REXB))))
+(de LTH-push-reg (code op1) 1)
 
 %---------------------------------------------------------------------
 % jump to absolute address
@@ -895,7 +911,7 @@
    (depositbyte (car code))
    (when (cdr code) (depositbyte (cadr code)))
    (setq op1 (saniere-Sprungziel op1))
-   (setq n(MakeExpressionrelative op1 4)) % offset wrt next instr
+   (setq n (MakeExpressionrelative op1 4)) % offset wrt next instr
    (depositliteralword n)
    (when *testlap (tab 15)(prin2 "-> ")
          (prin2 n) (prin2 " rel = ")
@@ -970,6 +986,15 @@
    (depositbyte 0))  % support for level 0 only
 
 (de LTH-enter (code op1) 4)
+
+%-------------------------------------------------------------
+% PUSH imm8
+(de OP-imm8  (code op1)
+   (depositbyte (car code))
+   (depositbyte (bytep op1)))
+
+(de LTH-imm8  (code op1) 2)
+ 
 
 %-------------------------------------------------------------
 % PUSH imm32
@@ -1119,9 +1144,9 @@
                      (difference offset 
                       (plus2 currentoffset* offsetfromhere))))
                   (progn
-                    (setq forwardinternalreferences* 
+                    (setq ForwardInternalReferences* 
                      (cons (cons currentoffset* nam) 
-                      forwardinternalreferences*))
+                      ForwardInternalReferences*))
                     0)))))
         % will be fixed in SystemFasl...
 
@@ -1539,7 +1564,7 @@
     (setq CurrentOffset* (plus CurrentOffset* 2))))
 
 (compiletime (put 'put_a_halfword 'opencode '(
-   (mov (reg ebx) (displacement (reg rax) 0)))))
+   (movl (reg ebx) (displacement (reg rax) 0)))))
 
 (de deposit32bitword (x) %% cross
   (put_a_halfword (wplus2 codebase* currentoffset*) x)
@@ -1584,9 +1609,9 @@
          (if offset
              (deposit-relocated-word offset)
              (progn
-               (setq forwardinternalreferences*
+               (setq ForwardInternalReferences*
                      (cons (cons currentoffset* (second x))
-                           forwardinternalreferences*))
+                           ForwardInternalReferences*))
                (deposit-relocated-word 0)))))
       ((equal (first x) 'idloc) (depositwordidnumber (second x)))
       ((equal (first x) 'entry) (depositentry x))
@@ -1603,9 +1628,9 @@
          (if offset
              (deposit-relocated-word offset)
              (progn
-               (setq forwardinternalreferences*
+               (setq ForwardInternalReferences*
                      (cons (cons currentoffset* (second x))
-                           forwardinternalreferences*))
+                           ForwardInternalReferences*))
                (deposit-relocated-word 0)))))
       ((and (eq (car x) 'mkitem)
             (eq (cadr x) id-tag)
@@ -1703,19 +1728,19 @@
      % THIS VERSION ASSUMES 32 bit RELATIVE ADDESSES, HM.
      (setq x (remainder currentoffset* 16))
      (while (greaterp x 0) (depositbyte 0) (setq x (sub1 x)))
-     (while forwardinternalreferences*
-       (setq x (get (cdr (first forwardinternalreferences*)) 
+     (while ForwardInternalReferences*
+       (setq x (get (cdr (first ForwardInternalReferences*)) 
                     'internalentryoffset))
        (when (null x) 
               (errorprintf "***** %r not defined in this module, call incorrect" 
-                           (cdr (first forwardinternalreferences*))))
+                           (cdr (first ForwardInternalReferences*))))
                % calculate the offset
        (setq x (plus -4             % offset to next word
-             (difference x (car (first forwardinternalreferences*)))))
+             (difference x (car (first ForwardInternalReferences*)))))
                          % insert the fixup
        (put_a_halfword 
-            (iplus2 codebase* (car (first forwardinternalreferences*))) x)
-       (setq forwardinternalreferences* (cdr forwardinternalreferences*)))
+            (iplus2 codebase* (car (first ForwardInternalReferences*))) x)
+       (setq ForwardInternalReferences* (cdr ForwardInternalReferences*)))
               % Now remove the InternalEntry offsets from everyone
    (mapobl 'remove-ieo-property)))
 

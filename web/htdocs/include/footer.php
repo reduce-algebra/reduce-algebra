@@ -26,8 +26,9 @@
             <a href="https://en.wikipedia.org/wiki/XHTML#XHTML5">XHTML5</a>.
         </p>
         <p>
-            Microsoft Internet Explorer does not display this web site
-            correctly; please use a current web browser.
+            This web site is hosted by SourceForge and the primary URL is 
+            <a href="https://reduce-algebra.sourceforge.io">https://reduce-algebra.sourceforge.io</a>.
+            Any other URLs that provide access are aliases for the primary URL.
         </p>
         <div style="display: flex; flex-wrap: wrap-reverse; justify-content: space-around;">
             <!-- Begin SF Tag -->

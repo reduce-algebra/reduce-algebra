@@ -378,12 +378,13 @@
 
 (de codefileheader ()
   (binarywrite codeout* (compiler-constant 'faslout-magic))
+  (binarywrite codeout* (external_time 0))
   (allocatefaslspaces))
 
 
 (de findidnumber (u)
   (prog (i)
-        (return (cond ((ileq (setq i (idinf u)) 128) i)
+        (return (cond ((ileq (setq i (idinf u)) 256) i)
                       ((setq i (get u fasl-idnumber-property*)) i)
                       (t
 		       (if (extraargumentp nextidnumber*)

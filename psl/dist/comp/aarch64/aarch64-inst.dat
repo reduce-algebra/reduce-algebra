@@ -2988,6 +2988,23 @@ par1
 par2))        ((and (regp par1) (imm16-shiftedp par2)) (lth-reg-imm16 '(421) 
 par1                                                                  par2)))
 
+ (defopcode movk (par1 par2) ((and (reg32p par1) (imm16-shiftedp par2)) (
+op-reg-imm16                                                                          
+'                                                                                      
+(                                                                                       
+229)                                                                                  
+par1                                                                                  
+par2))      ((and (regp par1) (imm16-shiftedp par2)) (op-reg-imm16 '(485) par1 
+par2)))
+ (defoplength movk (par1 par2) ((and (reg32p par1) (imm16-shiftedp par2)) (
+lth-reg-imm16                                                                            
+'                                                                                         
+(                                                                                          
+229)                                                                                     
+par1                                                                                     
+par2))        ((and (regp par1) (imm16-shiftedp par2)) (lth-reg-imm16 '(485) 
+par1                                                                  par2)))
+
  (defopcode movn (par1 par2) ((and (reg32p par1) (imm16-shiftedp par2)) (
 op-reg-imm16                                                                          
 '                                                                                      

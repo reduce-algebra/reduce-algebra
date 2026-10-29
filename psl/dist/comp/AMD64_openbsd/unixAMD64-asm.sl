@@ -107,7 +107,7 @@
 (setq NumericRegisterNames* '[nil "%rax" "%rbx" "%rcx" "%rdx" "%rbp" ])
 
 (setq LabelFormat* "%w:%n")             % Labels are in the first column
-(setq CommentFormat* "/ %p%n")          % Comments begin with a slash
+(setq CommentFormat* "# %p%n")          % Comments begin with a hash mark
                                         % will group alphabetically
 
 (setq ExportedDeclarationFormat* " .globl %w%n")

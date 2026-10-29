@@ -89,6 +89,7 @@
 	 CurrentStaticOffset*
 	 Pass1SLIndexList
          ForwardInternalReferences*
+	 CommentFormat*
          ))
 
 (setq *NewMemoryModel t)
@@ -413,16 +414,16 @@
 			     (Ass (function equal_wo_zeroequal)
 		% dont intermix 0 and 0.0
 				  Expression Pass1ConstantList))
-		       (cond ((and !*NewMemoryModel (not (InumP Expression)))
-			      (get-SL-index (cdr TableEntry) (car TableEntry)))
+		       (cond %((and !*NewMemoryModel (not (InumP Expression)))
+			     % (get-SL-index (cdr TableEntry) (car TableEntry)))
 			     (t (cdr TableEntry))))
 		      (t (progn (setq TableEntry (GenerateLabel))
 				(setq Pass1ConstantList
 				      (cons (cons Expression
 						  TableEntry)
 					    Pass1ConstantList))
-				(cond ((and !*NewMemoryModel (not (InumP Expression)))
-				       (get-SL-index TableEntry Expression))
+				(cond %((and !*NewMemoryModel (not (InumP Expression)))
+				      % (get-SL-index TableEntry Expression))
 				      (t TableEntry))))
 		      ))))
 
@@ -467,9 +468,9 @@
 				(cond% (!*NewMemoryModel (list 'SLLoc TableEntry))
 				      (t TableEntry))))))))
 
-(de asmslloc (x) (prin2 (cadr x)))    
-
-(put 'SLLoc 'asmexpressionfunction 'asmslloc)
+%(de asmslloc (x) (prin2 (cadr x)))    
+%
+%(put 'SLLoc 'asmexpressionfunction 'asmslloc)
 
 
 (de AppendOneConstant (ExpressionLabelPair)
@@ -597,9 +598,13 @@
     (print (list 'Pass1CodeList (car Pass1CodeList)))
     (print (list 'Pass1SLIndexList (car Pass1SLIndexList)))
     (print (list 'GlobalStaticLispList* GlobalStaticLispList*))
-  (foreach sl-index in (car Pass1SLIndexList) do
-	   (AddCodeLabel (cdr sl-index))
-	   (AddFullWord (SLLabelOffset (car sl-index)))))
+    (let ((repl
+	   (car GlobalStaticLispList*)))
+%	   (foreach sl-index in (car Pass1SLIndexList) collect
+%		    (cons (cdr sl-index) (SLLabelOffset (car sl-index))))))
+%      (print (list 'repl repl))
+      (setq Pass1CodeList (sublis repl Pass1CodeList)))
+    (print (list 'Pass1CodeList (car Pass1CodeList))) )
 
 (de get-sl-offset nil
     (cond ((or *WritingFaslFile *WritingAsmFile) staticlispcount*)
@@ -701,39 +706,6 @@
 	(PrintExpression 0) 
 	(PrintByte!, 0) 
 	(Terpri) nil)))))
-
-(remprop 'T4 'registercode)
-(put 'staticlisp 'registercode 9)
-(put 'staticlisp 'RegisterName "%r9")
-
-(remprop 'bndstklowerbound 'registercode)
-(remprop 'bndstkupperbound 'registercode)
-(put 'nil 'registercode 13)
-(put 'symval 'registercode 14)
-(put 'symfnc 'registercode 15)
-(put 'nil 'RegisterName "%r13")
-(put 'symval 'RegisterName "%r14")
-(put 'symfnc 'RegisterName "%r15")
-
-(setq !64bitregs '((reg 1) (reg 2) (reg 3) (reg 4) (reg 5) (reg st)
-                  (reg rax) (reg rbx) (reg rcx) (reg rdx)
-                  (reg t3) (reg NIL) (reg heaplast) 
-                  (reg bndstkptr) (reg symval) (reg staticlisp)
-                  (reg symfnc)  (reg heaptrapbound) 
-                  (reg t1) (reg t2) (reg esp) (reg rdi) (reg rsi)
-                  (reg r8) (reg r9) (reg r10) (reg r11)
-                  (reg r12) (reg r13)(reg r14) (reg r15)
-                  ))
-
-(setq upper64bitregs '(
-                  (reg t3) (reg NIL) (reg heaplast) 
-                  (reg bndstkptr) (reg symval) (reg staticlisp) 
-                  (reg symfnc)  (reg heaptrapbound)
-                  (reg r8) (reg r9) (reg r10) (reg r11)
-                  (reg r12) (reg r13)(reg r14) (reg r15)
-                  (reg xmm8) (reg xmm9) (reg xmm10) (reg xmm11)
-                  (reg xmm12) (reg xmm13) (reg xmm15) (reg xmm15)
-                  ))
 
 
 (DefCMacro *Move                          %  (*Move Source Destination)
@@ -1020,14 +992,39 @@
   (when *asmprintids (setq *comment (cadr x)))
   )
 
+(loadtime (progn
 (remprop 'nil-t-diff* 'constant?)
 (setq nil-t-diff* 140)
 (put 'nil-t-diff* 'constant? t)
+))
+
+(de quoted-inum-p (x)
+    (and (quotep x) (InumP (cadr x))))
+
+(de *Move (Source Destination)            % redefined from COMMON-CMACROS
+  (let (resultingcode* r)
+    (CMacroPatternExpand
+      (list
+	 (cond ((and 
+		 (pairp Source)
+		 (memq (car Source) '(car cdr))
+		 (pairp (setq r (regp Destination)))
+		 (numberp (car r))
+		 ) 
+		(ResolveOperand Destination Source))
+	       ((quoted-inum-p Source)
+		(ResolveOperand Destination (cadr Source)))
+	       (t (ResolveOperand '(REG t1) Source)))
+	    (ResolveOperand '(REG t2) Destination))
+      (get '*Move 'CMacroPatternTable)
+ )))
+
 
 (DefCMacro *Move                          %  (*Move Source Destination)
    ( Equal              )                  % if source=dest then do nothing
    ((fixzerop   regp) (xor ArgTwo ArgTwo))
    ((InumP      regp) (mov Argone Argtwo))
+   ((quoted-inum-p regp) (mov (cadr ArgOne) ArgTwo))
    ((quotep     regp) (*LoadSLIndex ArgTwo ArgOne)
                       (mov (indexed (times ArgTwo 8) (displacement (reg staticlisp) 0)) ArgTwo))
    ((AnyP       regP) (mov ARGONE ARGTWO))
@@ -1037,7 +1034,45 @@
    (                  (*Move argone (reg t1))
 		      (*Move (reg t1) argtwo))
    )
- 
+
+(De *JumpIf (ARG1 ARG2 LABEL INSTRUCTIONS)
+   (prog (resultingcode*)
+    (return
+     (CMacroPatternExpand
+      (list
+       (ResolveOperand '(reg t1)
+		       (if (quoted-inum-p ARG1) (cadr ARG1) ARG1))
+       (ResolveOperand '(reg t2)
+		       (if (quoted-inum-p ARG2) (cadr ARG2) ARG2))
+       (ResolveOperand '(reg error) LABEL)
+	       (car INSTRUCTIONS)
+	       (cdr INSTRUCTIONS))
+	 (get '*JumpIf 'CMacroPatternTable)))))
+
+(de Int31P (Expression) (and (InumP Expression)
+			     (Geq Expression 0)
+			     (Leq Expression 16#7fffffff)))
+
+(de Int32P (Expression) (and (InumP Expression)
+			     (Geq Expression 0)
+			     (Leq Expression 16#ffffffff)))
+
+(DefCMacro *JumpIf                  %( JumpIF a b lbl jmp rev-jmp)
+    ((INumP INumP    ) (!*Move ARGONE (reg t1))
+		       (cmp ARGTWO (reg t1)) (ARGFOUR ARGTHREE))
+    ((INumP AnyP     ) (*JumpIf ARGTWO ARGONE ARGTHREE (ARGFIVE . ARGFOUR)))
+    ((AnyP  ZeroP    ) (cmpq 0 ARGONE)          (ARGFOUR ARGTHREE))
+    ((AnyP  Int31P)    (cmpq ArgTWO ARGONE)  (ARGFOUR ARGTHREE))
+    ((AnyP  Int32P)    (movq ARGTWO (reg t1))
+                       (cmpq (reg t1) ARGONE)  (ARGFOUR ARGTHREE))
+    ((AnyP  InumP)     (movabsq ARGTWO (reg t1))
+                       (cmpq (reg t1) ARGONE)  (ARGFOUR ARGTHREE))
+    ((regP AnyP     )  (cmp ARGTWO ARGONE)   (ARGFOUR ARGTHREE))
+    ((AnyP  regP    )  (cmp ARGONE ARGTWO)   (ARGFIVE ARGTHREE))
+    ((AnyP  InumP    ) (cmp ARGTWO ARGONE)  (ARGFOUR ARGTHREE))
+    (                  (*Move ARGONE (reg t1))
+		       (cmp ARGTWO (reg t1)) (ARGFOUR ARGTHREE)))
+
 (de *LoadSLIndex (dest expr)
     `( (mov (slloc ,(cadr expr)) ,dest))
 )
@@ -1049,3 +1084,40 @@
     (ExpandQuote1 (cadr Expression)))
 
 (put 'slloc 'Pass1PseudoOp 'ExpandSLLoc)
+
+(setq CommentFormat* "# %p%n")
+
+(remprop 'T4 'registercode)
+(put 'staticlisp 'registercode 9)
+(put 'staticlisp 'RegisterName "%r9")
+
+(remprop 'bndstklowerbound 'registercode)
+(remprop 'bndstkupperbound 'registercode)
+
+(put 'nil 'registercode 13)
+(put 'symval 'registercode 14)
+(put 'symfnc 'registercode 15)
+(put 'nil 'RegisterName "%r13")
+(put 'symval 'RegisterName "%r14")
+(put 'symfnc 'RegisterName "%r15")
+
+(setq !64bitregs '((reg 1) (reg 2) (reg 3) (reg 4) (reg 5) (reg st)
+                  (reg rax) (reg rbx) (reg rcx) (reg rdx)
+                  (reg t3) (reg NIL) (reg heaplast) 
+                  (reg bndstkptr) (reg symval) (reg staticlisp)
+                  (reg symfnc)  (reg heaptrapbound) 
+                  (reg t1) (reg t2) (reg esp) (reg rdi) (reg rsi)
+                  (reg r8) (reg r9) (reg r10) (reg r11)
+                  (reg r12) (reg r13)(reg r14) (reg r15)
+                  ))
+
+(setq upper64bitregs '(
+                  (reg t3) (reg NIL) (reg heaplast) 
+                  (reg bndstkptr) (reg symval) (reg staticlisp) 
+                  (reg symfnc)  (reg heaptrapbound)
+                  (reg r8) (reg r9) (reg r10) (reg r11)
+                  (reg r12) (reg r13)(reg r14) (reg r15)
+                  (reg xmm8) (reg xmm9) (reg xmm10) (reg xmm11)
+                  (reg xmm12) (reg xmm13) (reg xmm15) (reg xmm15)
+                  ))
+

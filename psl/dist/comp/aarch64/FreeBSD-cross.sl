@@ -242,16 +242,16 @@
 			     (Ass (function equal_wo_zeroequal)
 		% dont intermix 0 and 0.0
 				  Expression Pass1ConstantList))
-		       (cond ((and !*NewMemoryModel (not (InumP Expression)))
-			      (get-SL-index (cdr TableEntry) (car TableEntry)))
+		       (cond% ((and !*NewMemoryModel (not (InumP Expression)))
+			     % (get-SL-index (cdr TableEntry) (car TableEntry)))
 			     (t (cdr TableEntry))))
 		      (t (progn (setq TableEntry (GenerateLabel))
 				(setq Pass1ConstantList
 				      (cons (cons Expression
 						  TableEntry)
 					    Pass1ConstantList))
-				(cond ((and !*NewMemoryModel (not (InumP Expression)))
-				       (get-SL-index TableEntry Expression))
+				(cond% ((and !*NewMemoryModel (not (InumP Expression)))
+%				       (get-SL-index TableEntry Expression))
 				      (t TableEntry))))
 		      ))))
 
@@ -304,7 +304,8 @@
 
 
 (de AppendOneConstant (ExpressionLabelPair)
-  (cond ((and !*NewMemoryModel (not (Inump (car ExpressionLabelPair))))
+  (cond (%(and !*NewMemoryModel (not (Inump (car ExpressionLabelPair))))
+	 !*NewMemoryModel
 	 (AddStaticLispLabel (cdr ExpressionLabelPair))
 	 (AppendStaticItem (car ExpressionLabelPair)))
 	(t
@@ -427,10 +428,21 @@
 (de AppendSLIndexes ()
     (print (list 'Pass1CodeList (car Pass1CodeList)))
     (print (list 'Pass1SLIndexList (car Pass1SLIndexList)))
-    (print (list 'GlobalStaticLispList* GlobalStaticLispList*))
-  (foreach sl-index in (car Pass1SLIndexList) do
-	   (AddCodeLabel (cdr sl-index))
-	   (AddFullWord (SLLabelOffset (car sl-index)))))
+    (print (list 'GlobalStaticLispList* (car GlobalStaticLispList*)))
+    (let ((repl (car GlobalStaticLispList*)))
+%	   (foreach sl-index in (car Pass1SLIndexList) conc
+%		    (let ((offset (SLLabelOffset (car sl-index))))
+%		      (list
+%		       (cons (list 'slloclow (cdr sl-index))
+%			     (wand offset 16#ffff))
+%		       (cons (list 'sllochigh (cdr sl-index) 'LSL 16)
+%			     (wshift offset -16)))))))
+%      (print (list 'repl repl))
+      (setq Pass1CodeList (sublis repl Pass1CodeList)))
+    (print (list 'Pass1CodeList (car Pass1CodeList))) )
+%  (foreach sl-index in (car Pass1SLIndexList) do
+%	   (AddCodeLabel (cdr sl-index))
+%	   (AddFullWord (SLLabelOffset (car sl-index)))))
 
 (de get-sl-offset nil
     (cond ((or *WritingFaslFile *WritingAsmFile) staticlispcount*)
@@ -622,17 +634,140 @@
 
 (de *LoadString (dest string)
 %    `( (LDR (reg t3) (slloc ,(SaveContents (cadr string))))
-    `( (LDR (reg t3) (slloc ,(cadr string)))
+%    `( (LDR (reg t3) (slloc ,(cadr string)))
+%    `( (MOV32 (reg t3) (slloc ,(cadr string)))
+%    `( (MOV32 (reg t3) ,(cadr string))
+    `( (MOV32 (reg t3) ,string)
+%    `( (MOV (reg t3) (slloclow ,(cadr string)))
+%       (MOVK ,dest (sllochigh ,(cadr string)) LSL 16)
        (LDR ,dest (indexed (reg staticlisp) (regshifted t3 LSL 3)))
-       (*MkItem ,dest (quote 4)))
+%       (*MkItem ,dest (quote 4))
+       )
 )
 
 (de *LoadSLIndex (dest expr)
 %    `( (LDR (reg t3) (slloc ,(SaveStaticContents (cadr expr)))))
-    `( (LDR ,dest (slloc ,(cadr expr))))
-)
+%    `( (LDR ,dest (slloc ,(cadr expr))))
+    `( (MOV32 ,dest ,expr))
+%    `( (MOV ,dest (slloclow ,(cadr expr)))
+%       (MOVK ,dest (sllochigh ,(cadr expr)) LSL 16))
+    )
 
 (DefCMacro *LoadSLIndex)
+
+(de *LoadConstant (dest cst)
+    (cond ((sixteenbit-p cst)
+           `( (MOV ,dest ,(land 16#ffff cst))))
+          ((sixteenbit-p (lnot cst))
+           `( (MOVN ,dest ,(land 16#ffff (lnot cst)))))
+          ((InumP cst)
+%           `( (MOV64 ,dest (sysint ,cst))))
+           `( (MOV64 ,dest ,cst)))
+          (t
+           `( (LDR ,dest (quote ,cst))))
+          )
+    )
+
+(de *LoadIDLoc (dest src)
+  (let ((idnumber (WConstEvaluable src))
+        (comment (if *writingasmfile `((comment ,@src)))))
+    (append comment
+      (cond ((and (fixp idnumber) (wlessp idnumber 257))
+             (*LoadConstant dest (id2int (cadr src))))
+            ((and *writingasmfile (fixp idnumber))
+             `( (MOV ,dest ,idnumber)))
+            (t
+             `( (MOV32 ,dest ,(SaveConstant `(saveidloc ,(cadr src))))))
+    ))))
+
+
+(de *LoadIdNumber (load-or-store reg nonlocal)
+  (let ((idnumber
+         (WConstEvaluable `(idloc ,(cadr nonlocal))))
+        (comment (if *writingasmfile `((comment ,@nonlocal)))))
+    (append comment
+      (if (and idnumber (fixp idnumber) (lessp idnumber 257) (greaterp idnumber -1))
+        `( (,load-or-store ,reg (displacement (reg symval) ,(times 8 idnumber))) )
+       `( (MOV32 (reg t3) ,(if (null idnumber) (SaveConstant `(saveidloc ,(cadr nonlocal))) idnumber))
+         (,load-or-store ,reg (indexed (reg symval) (regshifted t3 LSL 3))) )
+      ))))
+
+(de asmprintMOV32 (x)
+    (prin2 '! )
+    (printopcode 'movz)
+    (prin2 '! )
+    (printoperand (cadr x))
+    (prin2 '!,)
+    (printoperand (land (caddr x) 16#ffff))
+    (prin2 !$eol!$)
+    (if (not (eq 0 (lshift (caddr x) -16)))
+	(progn
+	  (prin2 '! )
+	  (printopcode 'movk)
+	  (prin2 '! )
+	  (printoperand (cadr x))
+	  (prin2 '!,)
+	  (printoperand (lshift (caddr x) -16))
+	  (printoperand ",lsl #16")
+	  (prin2 !$eol!$)
+	  )
+	)
+    )
+
+(put 'mov32 'asmpseudoop 'asmprintMOV32)
+
+(de asmprintMOV64 (x)
+  (prog (part)
+    (setq part (land (caddr x) 16#ffff))
+    (prin2 '! )
+    (printopcode 'movz)
+    (prin2 '! )
+    (printoperand (cadr x))
+    (prin2 '!,)
+    (printoperand part)
+    (prin2 !$eol!$)
+    (for (from sh 16 48 16)
+	 (do
+	  (setq part (land (lshift (caddr x) (minus sh)) 16#ffff))
+	  (if (not (eq 0 part))
+	      (progn
+		(prin2 '! )
+		(printopcode 'movk)
+		(prin2 '! )
+		(printoperand (cadr x))
+		(prin2 '!,)
+		(printoperand part)
+		(printoperand (bldmsg ",lsl #%d" sh))
+		(prin2 !$eol!$))
+	  )))
+     )
+  )
+
+(put 'mov64 'asmpseudoop 'asmprintMOV64)
+
+(de Deposit32BitLoad (X)
+    (prog (src dest)
+       (print (list 'Deposit32BitLoad X))
+       (setq src (caddr X) dest (cadr X)) 
+       (DepositInstruction `(MOVZ ,dest (slloclow ,src)))
+       (DepositInstruction `(MOVK ,dest ((sllochigh ,src) LSL 16))))
+    )
+
+(de Deposit64BitLoad (X)
+    (prog (src dest)
+       (print (list 'Deposit32BitLoad X))
+       (setq src (caddr X) dest (cadr X)) 
+       (DepositInstruction `(MOVZ ,dest (slloclow ,src)))
+       (DepositInstruction `(MOVK ,dest ((sllochigh ,src) LSL 16))))
+    )
+
+(put 'MOV32 'InstructionDepositFunction 'Deposit32BitLoad)
+
+(put 'MOV32 'InstructionLength 8)
+
+(put 'MOV64 'InstructionDepositFunction 'Deposit64BitLoad)
+
+(put 'MOV64 'InstructionLength 16)
 
 (de ExpandSLLoc (Expression)
 %    (list 'SLIndex (ExpandQuote1 (cadr Expression))))

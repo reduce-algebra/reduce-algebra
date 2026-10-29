@@ -11,10 +11,7 @@
 # But it *must* run PHP in each subdirectory, not in this directory,
 # hence we must use the find action -execdir, not -exec.
 
-# Note that the 0 as a bash argument is required to provide a value
-# for ‘$0’, so that '{}' provides a value for ‘$1’ (not ‘$0’).
-
 find htdocs -path 'htdocs/include' -prune -o \
      -path 'htdocs/web-reduce' -prune -o \
      -name '*.php' \
-     -execdir bash -c 'php -f $1 > ${1%.php}.html' 0 '{}' ';'
+     -execdir bash -c 'php -f $0 > ${0%.php}.html' '{}' ';'

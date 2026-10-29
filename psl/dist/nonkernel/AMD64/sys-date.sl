@@ -56,19 +56,19 @@
 (fluid '(datebuffer))
 (setq datebuffer (gtwarray 1))
 
-(de date ()                             % current date, as "12-Sep-55"
+(de date ()                             % current date, as "12-Sep-1955"
   (external_time datebuffer)            % get the current time
   (sub (datebuffer-to-string) 0 10))
 
-(de date-and-time ()                    % current date, as "12-Sep-55 13:35:22"
+(de date-and-time ()                    % current date, as "12-Sep-1955 13:35:22"
   (external_time datebuffer)            % get the current time
   (datebuffer-to-string))
 
-(de date-int-to-string (dateint)        % convert date, as "12-Sep-55 13:35:22"
+(de date-int-to-string (dateint)        % convert date, as "12-Sep-1955 13:35:22"
   (setf (wgetv datebuffer 0) dateint)   % put time in datebuffer
   (datebuffer-to-string))
 
-(de datebuffer-to-string ()             % convert date, as "12-Sep-55 13:35:22"
+(de datebuffer-to-string ()             % convert date, as "12-Sep-1955 13:35:22"
   (prog (s tm)
         (setq s (gtstr 19))             % allocate 20 characters
         (setq tm (ctime datebuffer))    % get Unix' strange date string
