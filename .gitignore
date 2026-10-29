@@ -409,13 +409,31 @@
 /web/htdocs/reduce40.pdf
 /web/htdocs/*/*.html
 
+# /web/htdocs/
+/web/htdocs/lisp-docs
+/web/htdocs/manual
+/web/htdocs/reduce38-docs
+/web/htdocs/reduce40.pdf
+/web/htdocs/*.html
+
+# /web/htdocs/extra-docs/
+/web/htdocs/extra-docs/*.html
+
+# /web/htdocs/grg32/
+/web/htdocs/grg32/*.html
+
 # /web/htdocs/manpages/
-/web/htdocs/manpages/*.html *.pdf
+/web/htdocs/manpages/breduce.pdf
+/web/htdocs/manpages/*.html
 
 # /web/htdocs/reduce-ide/
 /web/htdocs/reduce-ide/packages
 /web/htdocs/reduce-ide/reduce-ide.pdf
 /web/htdocs/reduce-ide/reduce-ide_html
+/web/htdocs/reduce-ide/index.html
+
+# /web/htdocs/tutorials/
+/web/htdocs/tutorials/*.html
 
 # /winbuild64/
 /winbuild64/Output
