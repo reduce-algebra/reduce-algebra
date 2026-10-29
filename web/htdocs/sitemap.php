@@ -59,11 +59,11 @@ include './include/begin-body.php';
 // which each row is an array of the form
 // [ isfile:bool, level:int, file:string, title:string|null, date:int|null ].
 
-function processDir(string $dir, int $level)
+function processDir(string $dir, int $level) : void
+// Create $sitemap by processing all files and directories in directory $dir recursively.
 {
-    // Process all files in each directory recursively.
     global $sitemap;
-    foreach (glob($dir) as $file) {
+    foreach (glob($dir) as $file) { // pathnames are sorted alphabetically: .html before .php
         if (is_dir($file)) {
             if ($file != 'images' and $file != 'include' and $file != 'web-reduce') {
                 $sitemap[] = array(false, $level, $file);
@@ -75,9 +75,10 @@ function processDir(string $dir, int $level)
     }
 }
 
-function processFile(string $file, int $level)
+function processFile(string $file, int $level) : void
+// Append details of file $file to $sitemap.
 {
-    global $sitemap, $recache;
+    global $sitemap;
     $date = filemtime($file);
 
     // Determine the page title or description for
@@ -120,20 +121,23 @@ function processFile(string $file, int $level)
                 }
                 fclose($handle);
             }
+            // A PHP file *must* have generated the preceding HTML file,  so delete the
+            // previous entry in $sitemap and change ".php" to ".html" in this entry:
+            array_splice($sitemap, count($sitemap)-1);
+            $file = substr_replace($file, 'html', -3);
             break;
         default: // GZ, PDF, PS, RED, TAR, TXT, ZIP, ...
             $title = '&mdash; <i>' . $ext . ' file</i> &mdash;';
     }
     $sitemap[] = array(true, $level, $file, $title, $date);
-    $recache = true;
 }
 
-$time = microtime(true);
+// $time = microtime(true);
 // Build $sitemap:
 processDir('*', 0);
 // Time to build $sitemap in seconds as a float (double) accurate to the nearest micro-second:
-$time = microtime(true) - $time;
-error_log("Time to build sitemap in seconds: $time", 4);
+// $time = microtime(true) - $time;
+// fwrite(STDERR, "Time to build sitemap $time seconds\n");
 ?>
 
 <nav>
@@ -172,11 +176,11 @@ error_log("Time to build sitemap in seconds: $time", 4);
             // [ isfile:bool, level:int, file:string, title:string|null, date:int|null ].
             reset($sitemap);
             foreach ($sitemap as $row) {
-                if ($row[0]) {
+                if ($row[0]) { // $sitemap entry is a file
                     echo "<tr data-level='$row[1]'><td><a href='$row[2]'>$row[2]</a></td>";
                     $date = date('d M Y', $row[4]);
                     echo "<td>$row[3]</td><td>$date</td></tr>\n";
-                } else {
+                } else { // $sitemap entry is a directory (folder)
                     echo "<tr data-level='$row[1]' class='folder'><td><b>$row[2]</b></td>";
                     echo "<td>&mdash; <i>folder</i> &mdash;</td><td></td></tr>\n";
                 }
@@ -228,7 +232,6 @@ error_log("Time to build sitemap in seconds: $time", 4);
         </table>
     </div>
 </div>
-<?php if (isset($time)) printf("<p>Time to build site map: %.3f seconds</p>\n", $time); ?>
 
 </div><!-- opened in begin-body.php -->
 
