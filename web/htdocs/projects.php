@@ -94,29 +94,35 @@ include './include/begin-body.php';
 <ul>
     <!-- <li>
         <a href="http://www.alltypes.de/">ALLTYPES</a> is an algebraic
-        language and type system;
+        language and type system.
     </li> -->
     <li>
-        <a href="http://mtt.sourceforge.net/">MTT</a> is a set of tools
+        <a href="https://mtt.sourceforge.net/">MTT</a> is a set of tools
         for modeling dynamic physical systems using the bond-graph
-        methodology;
+        methodology.
     </li>
     <li>
         <a href="https://github.com/chakravala/Reduce.jl">Reduce.jl</a> is
         an interface for calling REDUCE from the Julia language for
-        symbolic manipulation;
+        symbolic manipulation.
     </li>
     <li>
         <a href="https://github.com/agraef/pure-lang/wiki/ScientificComputing">Pure</a>
         is a programming language, which has bindings for REDUCE, providing
         a very interesting environment for doing computer-powered
-        science;
+        science.
     </li>
     <li>
         <a href="https://daisy.dei.unipd.it/">DAISY</a>
         (Differential Algebra for Identifiability of SYstems)
         is a software tool to perform structural identifiability analysis for linear
         and nonlinear dynamic models described by polynomial or rational ODE equations.
+    </li>
+    <li>
+        <a href="https://cran.r-project.org/package=redcas">redcas</a>
+        is an interface for calling REDUCE from the
+        <a href="https://www.r-project.org/">R software environment</a>
+        for statistical computing and graphics.
     </li>
 </ul>
 

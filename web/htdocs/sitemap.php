@@ -1,37 +1,6 @@
 <?php
-
 declare(strict_types=1);
 $header_title = 'Site Map / Recent Updates';
-define('CACHE_DIR', '../sitemap');
-define('CACHE_FILE', '../sitemap/cache');
-if ($_SERVER['QUERY_STRING'] == 'show-time') :
-    $time = 0;
-elseif ($_SERVER['QUERY_STRING'] == 'show-cache') :
-?>
-    <!DOCTYPE html>
-    <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-
-    <head>
-        <meta charset="utf-8" />
-        <title>REDUCE Site Map Cache</title>
-    </head>
-
-    <body>
-        <pre><?php
-                if ($handle = @fopen(CACHE_FILE, 'r')) {
-                    if ($cache = fread($handle, filesize(CACHE_FILE)))
-                        $cache = unserialize($cache);
-                    fclose($handle);
-                }
-                if (isset($cache)) print_r($cache);
-                else echo "Cannot read cache file!"
-                ?></pre>
-    </body>
-
-    </html>
-<?php
-    exit;
-endif;
 include './include/begin-head.php';
 ?>
 
@@ -96,7 +65,7 @@ function processDir(string $dir, int $level)
     global $sitemap;
     foreach (glob($dir) as $file) {
         if (is_dir($file)) {
-            if ($file != 'images' and $file != 'include' and $file != 'manual.old') {
+            if ($file != 'images' and $file != 'include' and $file != 'web-reduce') {
                 $sitemap[] = array(false, $level, $file);
                 processDir("$file/*", $level + 1); // recurse!
             }
@@ -106,20 +75,12 @@ function processDir(string $dir, int $level)
     }
 }
 
-// $cache is an associative array keyed by filename of arrays of title and date (for files only).
-
 function processFile(string $file, int $level)
 {
-    global $sitemap, $cache, $recache;
+    global $sitemap, $recache;
     $date = filemtime($file);
 
-    // If this file is in the cache and up to date then use the cached title:
-    if (array_key_exists($file, (array) $cache) and $date == ($c = $cache[$file])[1]) {
-        $sitemap[] = array(true, $level, $file, $c[0], $date);
-        return;
-    }
-
-    // Otherwise, determine the page title or description for
+    // Determine the page title or description for
     // the file $file with extension $ext:
     preg_match('/^[^.]+$|\.([^.]+)$/', $file, $matches);
     $ext = (count($matches) == 2 ? strtoupper($matches[1]) : '');
@@ -167,33 +128,12 @@ function processFile(string $file, int $level)
     $recache = true;
 }
 
-if (isset($time)) $time = microtime(true);
-// Try to read the cache file:
-if ($handle = @fopen(CACHE_FILE, 'r')) {
-    if ($cache = fread($handle, filesize(CACHE_FILE))) $cache = unserialize($cache);
-    fclose($handle);
-}
-if (!isset($cache) || !$cache) $cache = array();
-
-// Build or update $sitemap:
+$time = microtime(true);
+// Build $sitemap:
 processDir('*', 0);
-
-// Re-write the cache if necessary:
-if ($recache) {
-    if (!file_exists(CACHE_DIR)) mkdir(CACHE_DIR, 0700);
-    if ($handle = @fopen(CACHE_FILE, 'w')) {
-        $cache = array();
-        reset($sitemap);
-        foreach ($sitemap as $row)
-            if ($row[0]) $cache[$row[2]] = array($row[3], $row[4]);
-        $written = fwrite($handle, serialize($cache));
-        fclose($handle);
-    }
-    if (!isset($written) || !$written) echo "<p>WARNING: Cannot write cache file!</p>\n";
-}
-
 // Time to build $sitemap in seconds as a float (double) accurate to the nearest micro-second:
-if (isset($time)) $time = microtime(true) - $time;
+$time = microtime(true) - $time;
+error_log("Time to build sitemap in seconds: $time", 4);
 ?>
 
 <nav>
