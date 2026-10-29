@@ -1659,16 +1659,6 @@ par1)))
 par2                                                                            
 par1)))
 
- (defopcode movzxd (par1 par2) ((and (effap par1) (regp par2)) (op-reg-effa '(99
-)                                                                           par2
-                                                                            par1
-)))
- (defoplength movzxd (par1 par2) ((and (effap par1) (regp par2)) (lth-reg-effa '
-(                                                                                
-99)                                                                            
-par2                                                                           
-par1)))
-
  (defopcode mul (par1 par2) ((effap par1) (op-mul '(247 32) par1)))
  (defoplength mul (par1 par2) ((effap par1) (lth-mul '(247 32) par1)))
 

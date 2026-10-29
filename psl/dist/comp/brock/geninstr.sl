@@ -374,7 +374,6 @@
 (instI CMOVZ   (effa reg) OP-reg-effa-2 16#0f 16#44)
 
 (instI MOVSXD  (effa reg) OP-reg-effa 16#63)
-(instI MOVZXD  (effa reg) OP-reg-effa 16#63)
 (instI MOVSX   (effa reg) OP-reg-effa-2 16#0f 16#be)
 (instI MOVZX   (effa reg) OP-reg-effa-2 16#0f 16#b6)
  

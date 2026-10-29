@@ -160,6 +160,8 @@
 
 (fi 16#58 pop  (rax) (rcx) (rdx) (rbx) (rsp) (rbp) (rsi) (rdi))
 
+(fi 16#63 movsxd ((G v) (E v)))
+
 (fi 16#68 push ((I v)))
 
 (fi 16#69 imul ((G v) (E v) (I v)))
@@ -338,12 +340,17 @@
 
 (fi 16#ae Grp15 ((M)))
 
-(fi 16#af imul ((G v)(E v)))
+(fi 16#af imul  ((G v)(E v)))
 
-(fi 16#a3 bt   ((E v)(G v)))
-(fi 16#ba bt   ((E v)(I b)))
-(fi 16#bc bsf  ((G v)(E v)))
-(fi 16#bd bsr  ((G v)(E v)))
+(fi 16#a3 bt    ((E v)(G v)))
+
+(fi 16#b6 movsd ((E b) (G v)))
+
+(fi 16#ba bt    ((E v)(I b)))
+(fi 16#bc bsf   ((G v)(E v)))
+(fi 16#bd bsr   ((G v)(E v)))
+
+(fi 16#be movsx ((E b) (G v)))
 
 (fi 16#d6 (sse movq) ((W) (V)))
 (fi 16#db (sse pand) ((V) (W)))
@@ -933,9 +940,6 @@
 %     (when (eq (wand w 16#ffffff) 0) (return 'CAR))
 %     (when (eq (wand w 16#ffffff) 8) (return 'CDR))
      (return (sys2int w))))
-
-(de bytes2word ()
-    (sys2int (bytes2word1)))
 
 (de quad2word ()
     (let ((lower (bytes2word))
