@@ -1,0 +1,10 @@
+% partial fractions
+b:=(x+1)^2*(x+2);
+a:=2/b;
+pf (a, x);
+c:=ws;
+first (c)+second (c)+third (c);
+off exp;
+ws;
+first (c)+second (c)+third (c);
+end;

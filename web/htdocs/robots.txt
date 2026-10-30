@@ -1,7 +1,6 @@
 User-agent: *
+Disallow: /documentation38.html
 Disallow: /images/
-Disallow: /include/
-Disallow: /sitemap.php
-Disallow: /web-reduce/
-Disallow: /documentation38.php
 Disallow: /reduce38-docs/
+Disallow: /sitemap.html
+Disallow: /web-reduce/

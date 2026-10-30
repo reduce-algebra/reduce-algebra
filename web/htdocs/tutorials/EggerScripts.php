@@ -20,7 +20,7 @@ include '../include/begin-body.php';
 </p>
 <p>
     Funktionen analysieren:
-    <a href="EggerReduceScripts/analyze.red">analyze.red</a>
+    <a href="EggerReduceScripts/analyze.red.txt">analyze.red</a>
     <br />
     Vereinbaren Sie vorher die zu analysierende Funktion,
     beispielsweise "f:=x**3 - 2*x**2;"
@@ -35,29 +35,29 @@ include '../include/begin-body.php';
 </p>
 <p>
     <b>Physikalische Konstante</b>: Definitionen bereitstellen:
-    <a href="EggerReduceScripts/constants.red">constants.red</a>;
+    <a href="EggerReduceScripts/constants.red.txt">constants.red</a>;
     Definitionen l&ouml;schen:
-    <a href="EggerReduceScripts/clear_constants.red">clear_constants.red</a>
+    <a href="EggerReduceScripts/clear_constants.red.txt">clear_constants.red</a>
 </p>
 <p>
     Sinus, Cosinus, Tangens:
-    <a href="EggerReduceScripts/example01.red">example01.red</a>
+    <a href="EggerReduceScripts/example01.red.txt">example01.red</a>
 </p>
 <p>
     Binom, Trigo, Rechengenauigkeit:
-    <a href="EggerReduceScripts/example02.red">example02.red</a>
+    <a href="EggerReduceScripts/example02.red.txt">example02.red</a>
 </p>
 <p>
     Einfache Funktionsanalyse:
-    <a href="EggerReduceScripts/example03.red">example03.red</a>
+    <a href="EggerReduceScripts/example03.red.txt">example03.red</a>
 </p>
 <p>
     Einfache Ableitung:
-    <a href="EggerReduceScripts/example04.red">example04.red</a>
+    <a href="EggerReduceScripts/example04.red.txt">example04.red</a>
 </p>
 <p>
     Binome, Regeln:
-    <a href="EggerReduceScripts/example05.red">example05.red</a>
+    <a href="EggerReduceScripts/example05.red.txt">example05.red</a>
 </p>
 <p>
     Verschachtelte Klammern:
@@ -71,7 +71,7 @@ include '../include/begin-body.php';
 </p>
 <p>
     Integration, Limits:
-    <a href="EggerReduceScripts/integLimit.red">integLimit.red</a>
+    <a href="EggerReduceScripts/integLimit.red.txt">integLimit.red</a>
 </p>
 <p>
     Integration:
@@ -87,26 +87,26 @@ include '../include/begin-body.php';
 </p>
 <p>
     Matrix Inversion:
-    <a href="EggerReduceScripts/mat.red">mat.red</a>
+    <a href="EggerReduceScripts/mat.red.txt">mat.red</a>
 </p>
 <p>
     <b>Berechnungen zur Raum-Zeit Metrik</b>
     <br />
     Metrik-Tensor aus Gleichung der Hyperoberfl&auml;che einer
     Hyperkugel, 2-dim:
-    <a href="EggerReduceScripts/metric2calc.red">metric2calc.red</a>,
+    <a href="EggerReduceScripts/metric2calc.red.txt">metric2calc.red</a>,
     3-dim:
-    <a href="EggerReduceScripts/metric3calc.red">metric3calc.red</a>,
+    <a href="EggerReduceScripts/metric3calc.red.txt">metric3calc.red</a>,
     4-dim:
-    <a href="EggerReduceScripts/metric4calc.red">metric4calc.red</a>
+    <a href="EggerReduceScripts/metric4calc.red.txt">metric4calc.red</a>
     <br />
     Riemann-, Ricci-, Einstein-Tensoren und L&ouml;sung der
     Feldgleichungen, 2-dim:
-    <a href="EggerReduceScripts/metric2d.red">metric2d.red</a>,
+    <a href="EggerReduceScripts/metric2d.red.txt">metric2d.red</a>,
     3-dim:
-    <a href="EggerReduceScripts/metric3d.red">metric3d.red</a>,
+    <a href="EggerReduceScripts/metric3d.red.txt">metric3d.red</a>,
     4-dim:
-    <a href="EggerReduceScripts/metric4d.red">metric4d.red</a>
+    <a href="EggerReduceScripts/metric4d.red.txt">metric4d.red</a>
 </p>
 <p>
     Dynamische Variablennamen:
@@ -118,8 +118,8 @@ include '../include/begin-body.php';
 </p>
 <p>
     Energie eines Photons (ben&ouml;tigt
-    <a href="EggerReduceScripts/constants.red">constants.red</a>
-    und <a href="EggerReduceScripts/clear_constants.red">clear_constants.red</a>):
+    <a href="EggerReduceScripts/constants.red.txt">constants.red</a>
+    und <a href="EggerReduceScripts/clear_constants.red.txt">clear_constants.red</a>):
     <a href="EggerReduceScripts/photonenergy.txt">photonenergy.txt</a>
 </p>
 <p>
@@ -132,11 +132,11 @@ include '../include/begin-body.php';
 </p>
 <p>
     Einfache Regeln:
-    <a href="EggerReduceScripts/rules.red">rules.red</a>
+    <a href="EggerReduceScripts/rules.red.txt">rules.red</a>
 </p>
 <p>
     Definition einer Funktion:
-    <a href="EggerReduceScripts/scalprod.red">scalprod.red</a>
+    <a href="EggerReduceScripts/scalprod.red.txt">scalprod.red</a>
 </p>
 <p>
     Lichtgeschwindigkeit:

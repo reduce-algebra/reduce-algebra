@@ -1,0 +1,2 @@
+c:=1/sqrt (epsilon0*mu0);
+end;
