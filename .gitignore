@@ -415,9 +415,15 @@
 /web/htdocs/reduce38-docs
 /web/htdocs/reduce40.pdf
 /web/htdocs/*.html
+/web/htdocs/web-reduce
+/web/htdocs/.prettierrc
 
 # /web/htdocs/extra-docs/
 /web/htdocs/extra-docs/*.html
+/web/htdocs/extra-docs/atensor.pdf
+/web/htdocs/extra-docs/gentran.pdf
+/web/htdocs/extra-docs/scope.pdf
+/web/htdocs/extra-docs/tri.pdf
 
 # /web/htdocs/grg32/
 /web/htdocs/grg32/*.html
