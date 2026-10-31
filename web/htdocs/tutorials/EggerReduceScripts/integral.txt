@@ -1,0 +1,11 @@
+y:=e^(-x)*sin (x);
+int (y, x, 0, infinity);
+int (e^(-x)*sin (x), x, 0, infinity);
+y;
+df (y, x);
+int (y, x);
+g:=ws;
+gup:=limit (g, x, infinity);
+glw:=sub (x=0, g);
+f:=gup-glw;
+end;

@@ -1,0 +1,5 @@
+% dynamical identifiers
+for i:=1:5 do set (mkid (z, i), i);
+for i:=1:5 do write mkid (z, i);
+for i:=1:5 sum mkid (z, i);
+end;

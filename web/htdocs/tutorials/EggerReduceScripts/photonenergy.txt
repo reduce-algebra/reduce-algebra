@@ -1,0 +1,10 @@
+% define full path to desired Reduce input file
+in "/storage/extSdCard/Reduce/constants.red";
+lambda0:=5*10^(-6);
+nu:=c/lambda0;
+lambda0:=5*10^(-7);
+nu:=c/lambda0;
+h*nu/c;
+h*nu;
+h*nu/el;
+end;

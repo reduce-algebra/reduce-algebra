@@ -1,0 +1,20 @@
+% Introduction to Reduce
+%
+(x+y+z)^2;
+for i:= 1:40 product i;
+factorial 40;
+u := (x+y+z)^2;
+df(ws,x);
+int(ws,y);
+matrix m(2,2);
+m := mat((a,b),(c,d));
+%
+(sin(a+b)+cos(a+b))*(sin(a-b)-cos(a-b))
+where cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2,
+cos(~x)*sin(~y) => (sin(x+y)-sin(x-y))/2,
+sin(~x)*sin(~y) => (cos(x-y)-cos(x+y))/2;
+%
+on fort;
+df(log(x)*(sin(x)+cos(x))/sqrt(x),x,2);
+off fort;
+%

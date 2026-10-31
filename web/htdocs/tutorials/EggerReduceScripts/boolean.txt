@@ -1,0 +1,26 @@
+n:=3;
+if (evenp(n)) then write n," is even" else write n, " is odd";
+if (fixp(n)) then write n," is Integer" else write n, " is not Integer";
+n:=pi;
+if (fixp(n)) then write n," is Integer" else write n, " is not Integer";
+n:=3.1;
+if (fixp(n)) then write n," is Integer" else write n, " is not Integer";
+%
+a:=(b+c)^2;
+if (freeof(a,b)) then write b," not in ",a else write b," is in ",a;
+a:=(c+d)^2;
+if (freeof(a,b)) then write b," not in ",a else write b," is in ",a;
+%
+n:=pi;
+if (numberp(n)) then write n," is a number" else write n, " is not a number";
+n:=3.1;
+if (numberp(n)) then write n," is a number" else write n, " is not a number";
+%
+if (ordp(n,c)) then write n," before ",c else write n, " after ",c;
+n:=z;
+if (ordp(n,c)) then write n," before ",c else write n, " after ",c;
+%
+n:=10;
+if (primep(n)) then write n," is prime" else write n, " is not prime";
+n:=11;
+if (primep(n)) then write n," is prime" else write n, " is not prime";

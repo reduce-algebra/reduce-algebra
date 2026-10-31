@@ -1,0 +1,7 @@
+a*(b+c*(d+e*(f+g*(h+j*(k+l*(m+n*(o+p*(q+r))))))));
+z:=ws;
+off factor;
+z;
+on factor;
+z;
+end;
