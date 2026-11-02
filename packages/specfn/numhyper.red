@@ -59,12 +59,16 @@ symbolic procedure num_hypergeo(l1,l2,z);
       l2 := cadr tmp;
       ml1 := max_negint l1;
       ml2 := max_negint l2;
-      if (ml1 neq 0) and (ml2 neq 0) then
-	 if ml2 > ml1 then
+      if ml2 neq 0  then
+	 if  ml1 = 0 or ml2 > ml1 then
 	    rerror(specfn, 3,
 	       "Hypergeometric: zero in the denominator of terms in series.")
-	 else % polynomial case
+         else if ml1 > ml2 then
+	    % polynomial case
 	    return simp n_hyper1(l1, l2, z, -ml1);
+      if ml1 neq 0 then
+      	 % polynomial case
+	 return simp n_hyper1(l1, l2, z, -ml1);
 
       ml1 := length l1; ml2 := length l2;
       if ml1=2 and ml2=1 then
@@ -101,8 +105,8 @@ symbolic procedure n_hyper21(a,b,c,z);
       if !:minusp z then <<
 	 % z < -1   -- DLMF 15.8.2
 	 tmp := !:difference(b,a);
-	 if atom tmp then << % if difference is an integer (I hope)
-	    prin2t("specfn 7 DLMF formula 15.8.2 not valid");
+	 if atom tmp then << % if difference is an integer
+	    % DLMF formula 15.8.2 not valid"
 	    % fall back on direct series evaluation 
 	    return  n_hyper2({a,b},{c},z);
 	 >>;
@@ -130,15 +134,20 @@ symbolic procedure n_hyper21(a,b,c,z);
         if not !:minusp  arg  or !:zerop arg then <<
 	 % 1/2 < z <= 1  -- DLMF 15.8.4
 	 tmp := !:difference(c,!:plus(a,b));
-         if atom tmp then  << % if difference is an integer (I hope)
-	    prin2t("specfn 8 DLMF formula 15.8,4 not valid");
-	    % fall back on direct series evaluation 
-	    return  n_hyper2({a,b},{c},z);
-	 >>;
+	 if !:minusp !:minus tmp and z = 1 then
+            % Gauss's summation formula
+	    return !:quotient(!:times(!:gamma2f(c), !:gamma2f(tmp)),
+	                      !:times(!:gamma2f !:difference(c,a),
+	                              !:gamma2f !:difference(c,b)));
+	    if atom tmp then 
+	       % if difference is an integer
+	       % DLMF formula 15.8,4 not valid
+	       % fall back on direct series evaluation 
+	       return  n_hyper2({a,b},{c},z);
  	 f0 := !:quotient(rdpi!*(),rdsin!* (!:times(rdpi!*(),tmp)));
     	 res := n_hyper1({a, b}, {!:difference(!:plus(a, !:plus(b, 1)), c)},
 	                  arg, 0);
-	 tmp := !:times(!:gamma2f !:difference(c,a),
+ 	 tmp := !:times(!:gamma2f !:difference(c,a),
 	    !:times(!:gamma2f !:difference(c,b),
 	    !:gamma2f !:difference(!:plus(a,!:plus(b,1)), c)));
 	 tmp:=!:quotient(!:gamma2f c,tmp);
