@@ -1,14 +1,14 @@
-
 \setcounter{examplectr}{0}
 
 \index{Harper, David}\index{People!Harper, David}
 
 \subsection{Introduction}
 
-A set of vector calculus operators are provided for use with any
-orthogonal curvilinear coordinate system. These operators are
-gradient, divergence, curl and del-squared (Laplacian).  The Laplacian
-operator can take scalar or vector arguments.
+In addition to vector algebra, a set of vector calculus operators is
+provided for use with any orthogonal curvilinear coordinate system.
+These operators are gradient, divergence, curl and del-squared
+(Laplacian).  The Laplacian operator can take scalar or vector
+arguments.
 
 Several important coordinate systems are pre-defined and can be
 invoked by name. It is also possible to create new coordinate systems
@@ -21,21 +21,21 @@ to execute the command
    load_package avector;
 \end{verbatim}
 
+
 \subsection{Vector declaration and initialisation}
 
-Any name may be declared to be a vector, provided that it has
-not previously been declared as a matrix or an array. To
-declare a list of names to be vectors use the \f{vec} command:
+Any name may be declared to be a vector, provided that it has not
+previously been declared as a matrix or an array.  To declare one or
+more names to be vectors use the \f{vec} command:
 \ttindextype[AVECTOR]{vec}{command}
 \hypertarget{command:VEC}{}
 \begin{verbatim}
    vec a,b,c;
 \end{verbatim}
-declares the variables \texttt{a}, \texttt{b} and \texttt{c} to be vectors.
-If they have already been assigned (scalar) values, these will be lost.
-
-When a vector is declared using the \f{vec} command, it does not
-have an initial value.
+declares the variables \texttt{a}, \texttt{b} and \texttt{c} to be
+vectors.  If they have already been assigned (scalar) values, these
+will be lost.  When a vector is declared using the \f{vec} command,
+its components are initially zero.
 
 If a vector value is assigned to a scalar variable, then that
 variable will automatically be declared as a vector and the
@@ -49,7 +49,47 @@ from those scalars. For example
 \begin{verbatim}
    a := avec(a1, a2, a3);
 \end{verbatim}
-sets the components of the vector \texttt{a} to \texttt{a1}, \texttt{a2} and \texttt{a3}.
+sets the components of the vector \texttt{a}
+to \texttt{a1}, \texttt{a2} and \texttt{a3}, and displays the output
+\begin{verbatim}
+   vec(x) := a1
+
+   vec(y) := a2
+
+   vec(z) := a3
+\end{verbatim}
+As illustrated above, vectors are displayed in the form of assignments
+to their components indexed by the coordinates for the current
+coordinate system (see below).  (Beware that indexing by coordinates
+cannot be used for input!)
+
+Components may be extracted from any vector using zero-based index
+notation in the same way as for an array:
+
+\begin{tabular}{l|l}
+\texttt{v := avec(ax, ay, az);} \\
+\texttt{v(0);} & yields \texttt{ax} \\
+\texttt{v(1);} & yields \texttt{ay} \\
+\texttt{v(2);} & yields \texttt{az}
+\end{tabular}
+
+It is also possible to set values of individual components.  Following
+from above:
+\begin{verbatim}
+   v(1) := b;
+\end{verbatim}
+The vector \texttt{v} now has
+components \texttt{ax}, \texttt{b}, \texttt{az}.
+
+The predicate \f{vecp} returns \texttt{t} is its argument is a vector,
+and \texttt{nil} (which displays as nothing or 0 in algebraic mode)
+otherwise.  It can be used in tests, for example:
+\begin{verbatim}
+   write "The variable v is",
+      if vecp v then "" else " not",
+      " a vector.";
+\end{verbatim}
+
 
 \subsection{Vector algebra}
 
@@ -76,14 +116,14 @@ but it is an error to multiply or divide one vector by another.
 \hypertarget{operator:DOT}{}
 \hypertarget{operator:CROSS}{}
 \index{Cross product}
-\noindent Vector multiplication is carried out using the infix
-operators \f{dot} and \f{cross}. These are defined to have
-higher precedence than scalar multiplication and
-division.
+Vector multiplication is carried out using the infix operators \f{dot}
+(or \f{.}) and \f{cross}.  These are defined to have higher precedence
+than scalar multiplication and division.
 
 \begin{tabular}{l|l}
-\texttt{v := v1 cross v2;} & Cross product \\
-\texttt{s := v1 dot v2;} & Dot product \\
+\texttt{v := v1 cross v2;} & Vector (cross) product \\
+\texttt{s := v1 dot v2;} & Scalar (dot) product \\
+\texttt{s := v1~.~v2;} & Scalar (dot) product \\
 \texttt{v := v1 cross v2 + v3;} \\
 \texttt{v := (v1 cross v2) + v3;}
 \end{tabular}
@@ -91,38 +131,46 @@ division.
 The last two expressions are equivalent due to the precedence of
 the \texttt{cross} operator.
 
+Note that the vector triple product
+\begin{verbatim}
+   v1 cross v2 cross v3
+\end{verbatim}
+parses as
+\begin{verbatim}
+   (v1 cross v2) cross v3
+\end{verbatim}
+(by left-associativity), and is (generally) not equal to
+\begin{verbatim}
+   v1 cross (v2 cross v3)
+\end{verbatim}
+whereas the scalar triple product
+\begin{verbatim}
+   v1 cross v2 dot v3
+\end{verbatim}
+is equal to
+\begin{verbatim}
+   v1 dot v2 cross v3
+\end{verbatim}
+and neither requires parentheses (because \f{cross} has higher
+precedence that \f{dot}).
+
 \ttindextype[AVECTOR]{vmod}{operator}
 \hypertarget{operator:VMOD}{}
-The modulus of a vector may be calculated using the \f{vmod} operator.
+The modulus (or magniture) of a vector may be calculated using
+the \f{vmod} operator:
 \begin{verbatim}
    s := vmod v;
 \end{verbatim}
 A unit vector may be generated from any vector using the \texttt{vmod}
-operator.
+operator:
 \begin{verbatim}
    v1 := v/(vmod v);
 \end{verbatim}
-Components may be extracted from any vector using index notation
-in the same way as for an array.
-
-\begin{tabular}{l|l}
-\texttt{v := avec(ax, ay, az);} \\
-\texttt{v(0);} & yields \texttt{ax} \\
-\texttt{v(1);} & yields \texttt{ay} \\
-\texttt{v(2);} & yields \texttt{az}
-\end{tabular}
-
-It is also possible to set values of individual components. Following
-from above:
-\begin{verbatim}
-   v(1) := b;
-\end{verbatim}
-The vector \texttt{v} now has components \texttt{ax}, \texttt{b}, \texttt{az}.
 
 \index{Vector!differentiation} \index{Vector!integration}
 \index{Differentiation!vector} \index{Differentiation!vector}
-Vectors may be used as arguments in the differentiation and
-integration routines in place of the dependent expression.
+Vectors may be used as operands in the differentiation and integration
+operators in place of the dependent expression.
 
 \begin{tabular}{l|l}
 \verb|v := avec(x^2, sin(x), y);| \\
@@ -138,6 +186,7 @@ applying the function component-wise to the argument vector.
 \texttt{v := avec(a1, a2, a3);} \\
 \texttt{sin(v);} & yields \texttt{(sin(a1),sin(a2),sin(a3))} \\
 \end{tabular}
+
 
 \subsection{ Vector calculus}
 
@@ -176,25 +225,25 @@ contains the values of the scale factors.
 
 \ttindextype[AVECTOR]{coordinates}{command}
 \hypertarget{operator:COORDINATES}{}
-The coordinate names may be changed using the \f{coordinates}
+The current coordinate names may be changed using the \f{coordinates}
 command.
 \begin{verbatim}
-   coordinates r,theta,phi;
+   coordinates r, theta, phi;
 \end{verbatim}
 This command changes the coordinate names to $r$, $\theta$ and $\phi$.
 
 \ttindextype[AVECTOR]{scalefactors}{operator}
 \hypertarget{operator:SCALEFACTORS}{}
-The scale factors may be altered using the \f{scalefactors} operator.
+The current scale factors may be altered using the \f{scalefactors}
+command.
 \begin{verbatim}
-   scalefactors(1,r,r*sin(theta));
+   scalefactors 1, r, r*sin(theta);
 \end{verbatim}
 This command changes the scale factors to $1$, $r$ and
 $r\sin(\theta)$.
 
-Note that the arguments of \f{scalefactors} must be enclosed in
-parentheses. This is not necessary with the \f{coordinates} command.
-
+The arguments to \f{coordinates} and \f{scalefactors} can be enclosed
+in parentheses, but this is not necessary.
 
 When vector differential operators are applied to an expression,
 the current set of coordinates is used as the independent
@@ -202,13 +251,12 @@ variables and the scale factors are employed in the calculation.
 (See, for example, Batchelor G.~K. \textit{An Introduction to Fluid
 Mechanics}, Appendix 2.)
 
-
-\ttindextype[AVECTOR]{"!*csystems}{global (AVECTOR)}
-\hypertarget{reserved:!*CSYSTEMS}{}
+\ttindextype[AVECTOR]{csystems}{command}
+\hypertarget{command:CSYSTEMS}{}
 Several coordinate systems are pre-defined and may be invoked by
-name. To see a list of valid names enter
+name. To see a list of valid names execute the command
 \begin{verbatim}
-   symbolic !*csystems;
+   csystems;
 \end{verbatim}
 and \REDUCE will respond with something like
 \begin{verbatim}
@@ -220,14 +268,12 @@ and \REDUCE will respond with something like
 To choose a coordinate system by name, use the command \texttt{getcsystem}.
 For example, to choose the Cartesian coordinate system:
 \begin{verbatim}
-   getcsystem 'cartesian;
+   getcsystem cartesian;
 \end{verbatim}
 \ttindextype[AVECTOR]{putcsystem}{command}
 \hypertarget{command:PUTCSYSTEM}{}
-Note the quote which prefixes the name of the coordinate system. This
-is required because \texttt{getcsystem} (and its complement \texttt{putcsystem})
-is a \texttt{symbolic} procedure which requires a literal
-argument.
+The argument to \texttt{getcsystem} should be an identifier (which,
+for backward compatibility, may be preceded by a single quote).
 
 \REDUCE responds by displaying a list of the coordinate names in that
 coordinate system. The example above would produce the response
@@ -236,7 +282,7 @@ coordinate system. The example above would produce the response
 \end{verbatim}
 whilst
 \begin{verbatim}
-   getcsystem 'spherical;
+   getcsystem spherical;
 \end{verbatim}
 would produce
 \begin{verbatim}
@@ -255,24 +301,20 @@ command \texttt{putcsystem}. It may then be re-invoked at a later stage using
 \example\index{Avector package!example}
 
 We define a general coordinate system with coordinate
-names \texttt{x}, \texttt{y}, \texttt{z} and scale
+names \texttt{c1}, \texttt{c2}, \texttt{c3} and scale
 factors \texttt{h1}, \texttt{h2}, \texttt{h3}:
 \begin{verbatim}
-   coordinates x,y,z;
-   scalefactors(h1,h2,h3);
-   putcsystem 'general;
+   coordinates c1, c2, c3;
+   scalefactors h1, h2, h3;
+   putcsystem general;
 \end{verbatim}
 This system may later be invoked by entering
 \begin{verbatim}
-   getcsystem 'general;
+   getcsystem general;
 \end{verbatim}
 
-\subsection{Volume and line integration}
 
-Several functions are provided to perform volume and line integrals.
-These operate in any orthogonal curvilinear coordinate system and
-make use of the scale factors described in the previous section.
-
+\subsection{Integration}
 
 Definite integrals of scalar and vector expressions may be calculated
 using the \f{defint} function.
@@ -291,13 +333,20 @@ This function is a simple extension of the \f{int} operator taking
 two extra arguments, the lower and upper bounds of integration
 respectively.
 
+Several functions are provided to perform volume, line and surface
+integrals.  These operate in any orthogonal curvilinear coordinate
+system and make use of the scale factors described in the previous
+section.
+
+\subsubsection{Volume integrals}
+
 \ttindextype[AVECTOR]{volintegral}{function} \index{Integration!volume}
 \hypertarget{operator:VOLINTEGRAL}{}
 Definite volume integrals may be calculated using the \f{volintegral}
 function whose syntax is as follows:
 \begin{syntax}
   \f{volintegral}(\meta{integrand:expression},\\
-  \hphantom{\f{volintegral}(}\meta{lower-bound:vector},\meta{upper-bound:vector})
+  \hphantom{\f{volintegral}(}\meta{lower-bound:vector}, \meta{upper-bound:vector})
 \end{syntax}
 
 \example\index{Avector package!example}
@@ -308,7 +357,7 @@ the range $r=0$ to $\mathit{rr}$, $\theta=0$ to $\pi$, $\phi=0$ to
 $2\pi$ as follows:
 
 \begin{tabular}{l|l}
-\texttt{getcsystem 'spherical;} \\
+\texttt{getcsystem spherical;} \\
 \texttt{vlb := avec(0,0,0);} & Lower bound \\
 \texttt{vub := avec(rr,pi,2pi);} & Upper bound in $r, \theta, \phi$
  respectively \\
@@ -348,7 +397,7 @@ circular disks of constant $z$-value. The integration is thus
 performed in the order: $\phi$ from 0 to $2\pi$, $r$ from 0 to $pz$,
 $z$ from 0 to $h$.  The order of the indices is thus 2, 0, 1.
 \begin{verbatim}
-   getcsystem 'cylindrical;
+   getcsystem cylindrical;
    volintorder := avec(2,0,1);
    vlb := avec(0,0,0);
    vub := avec(p*z,h,2pi);
@@ -357,6 +406,7 @@ $z$ from 0 to $h$.  The order of the indices is thus 2, 0, 1.
 (At this stage, we could replace \texttt{p*h} by \texttt{rr}, the base
 radius of the cone, to obtain the result in its more familiar form.)
 
+\subsubsection{Line integrals}
 
 \ttindextype[AVECTOR]{lineint}{function} \ttindextype[AVECTOR]{deflineint}{function}
 \hypertarget{operator:LINEINT}{}\hypertarget{operator:DEFLINEINT}{}
@@ -364,9 +414,9 @@ radius of the cone, to obtain the result in its more familiar form.)
 Line integrals may be calculated using the \f{lineint} and \f{deflineint}
 operators. Their general syntax is
 \begin{syntax}
-  \f{lineint}(\meta{vector-function},\meta{vector-curve},\meta{variable:kernel}) \\
-  \f{deflineint}(\meta{vector-function},\meta{vector-curve},\meta{variable:kernel},\\
-  \hphantom{\f{deflineint}(}\meta{lower-bound},\meta{upper-bound})
+  \f{lineint}(\meta{vector-function}, \meta{vector-curve}, \meta{variable:kernel}) \\
+  \f{deflineint}(\meta{vector-function}, \meta{vector-curve}, \meta{variable:kernel},\\
+  \hphantom{\f{deflineint}(}\meta{lower-bound}, \meta{upper-bound})
 \end{syntax}
 where:
 \begin{description}
@@ -391,9 +441,44 @@ whereas latitude is measured up from the `Equator'.} and $\phi$ is the
 independent variable.  We show how to obtain the definite integral,
 i.e.\ from $\phi=0$ to $2\pi$:
 \begin{verbatim}
-getcsystem 'spherical;
+getcsystem spherical;
 deflineint(avec(0,0,1), avec(rr,lat,phi), phi, 0, 2pi);
 \end{verbatim}
+
+\subsubsection{Surface integrals}
+
+Finally, the surface integral of a vector field $\mathbf{v}$ over a
+finite surface $S$ specified by the vector function $\mathbf{r}(s,t)$
+of two (scalar) parameters $s \in [s_\mathit{min},s_\mathit{max}]$ and
+$t \in [t_\mathit{min},t_\mathit{max}]$, namely
+\[
+\iint_S\mathbf{v}\cdot\mathrm{d}\mathbf{s}=
+\iint_S\mathbf{v}(\mathbf{r}(s,t))\cdot
+\left(\frac{\partial\mathbf{r}}{\partial{s}} \times
+\frac{\partial\mathbf{r}}{\partial{t}}\right)
+\mathrm{d}s\,\mathrm{d}t,
+\]
+(see e.g.\ \href{https://en.wikipedia.org/wiki/Surface_integral}{Wikipedia})
+can be computed using
+\begin{verbatim}
+   surfint(v, r, s, s_min, s_max, t, t_min, t_max)
+\end{verbatim}
+
+\example\index{Avector package!example}
+
+As a trivial example, the integral of the unit radial vector field
+over the surface of a sphere of radius $\mathit{rr}$ gives the area of
+the sphere:
+\begin{verbatim}
+getcsystem spherical;
+surfint(avec(1,0,0), avec(rr,theta,phi),
+   theta, 0, pi,
+   phi, 0, 2pi);
+
+       2
+4*pi*rr
+\end{verbatim}
+
 
 \subsection{Defining new functions and procedures}
 
@@ -404,6 +489,7 @@ procedures which accept or return vector values in algebraic mode.
 This is a consequence of the way in which the \REDUCE interpreter
 operates and it affects other non-scalar data types as well: arrays
 cannot be passed as algebraic procedure arguments, for example.
+
 
 \subsection{Acknowledgements}
 

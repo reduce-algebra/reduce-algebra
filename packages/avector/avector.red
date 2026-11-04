@@ -131,7 +131,7 @@ symbolic procedure getvectorindex(u,flg);
   vindx := u;
   if not fixp vindx then vindx:=locate(vindx,!*coords);
   if ((null vindx) or (fixp vindx and (vindx<0 or vindx>2)))
-    and flg then rerror(avector,1,list(u,"not a valid vector index"));
+    and flg then rerror(avector,1,list(u,"invalid as a vector index"));
   return vindx
   end;
 
@@ -142,13 +142,6 @@ symbolic procedure locate(u,v);
   if not (u memq v) then nil
   else if u=car v then 0
   else 1+locate(u,cdr v);
-
-% We may as well define some utility operators here too. Hah I have these
-% in cslrend as well, and the versions there must match exactly, including
-% using "u" as the name of the formal argument.
-symbolic inline procedure first u; car u;
-symbolic inline procedure second u; cadr u;
-symbolic inline procedure third u; caddr u;
 
 % Here we redefine getrtype1 and getrtype2 to handle vectors.
 
@@ -314,7 +307,7 @@ symbolic procedure vecsm!* u;
   begin scalar y,vecopr,vargs,v;
   !*vectortracelevel!* := !*vectortracelevel!* + 1;
   if !*vtrace then <<prtblanks(!*vectortracelevel!*);
-                     write("VECSM called with args ",u);
+                     write("VECSM called with arguments ",u);
                      terpri()>>;
   if atom u then v := (if vectorp u then u else getavalue u)
   else if threevectorp u then v := u
@@ -346,7 +339,7 @@ symbolic procedure vecsm!* u;
     >>
     else <<!*vectortracelevel!* := 0;
            rerror(avector,4,
-                  list(vecopr,"is not a valid vector operator"))>>;
+                  list(vecopr,"invalid as a vector operator"))>>;
   >>;
   if !*vtrace then <<
     y := threevectorp v;
@@ -574,7 +567,7 @@ symbolic procedure vectoravec vargs;
   begin scalar x;
   % Build a vector from the argument list
   if not eqn(length(vargs),3) then
-            rerror(avector,10,"Incorrect number of args in AVEC");
+            rerror(avector,10,"Wrong number of arguments to AVEC");
   x := mkvect(2);
   putv(x,0,aeval first vargs);
   putv(x,1,aeval second vargs);
@@ -758,7 +751,7 @@ symbolic procedure scalarapply(op,v,args);
 symbolic procedure coordinates u;
   begin scalar x;
   if not eqn(length(u),3)
-    then rerror(avector,11,"Wrong number of args");
+    then rerror(avector,11,"Wrong number of arguments to COORDINATES");
   for each y in u do if (x := gettype y) and not(x eq 'operator) then
     rerror(avector,12,
         list("Name declared as coordinate is not a kernel:", y, "type", x));
@@ -772,18 +765,18 @@ symbolic procedure coordinates u;
   return u
   end;
 
+symbolic procedure scalefactors u;
+   <<
+      if not eqn(length(u),3) then
+         rerror(avector,11,"Wrong number of arguments to SCALEFACTORS");
+      u := revlis u;
+      remflag('(dvolume hfactors), 'reserved);
+      setk('hfactors, aeval('avec . u));
+      setk('dvolume, aeval('times . u));
+      flag('(dvolume hfactors), 'reserved);
+   >>;
 
-symbolic operator coordinates;
-
-remflag('(dvolume hfactors),'reserved);
-
-algebraic procedure scalefactors(h1,h2,h3);
-begin
-  remflag('(dvolume hfactors),'reserved);
-  hfactors := avec(h1,h2,h3);
-  dvolume := h1*h2*h3;
-  flag('(dvolume hfactors),'reserved);
- end;
+rlistat '(coordinates scalefactors);
 
 flag('(dvolume hfactors),'reserved);
 
@@ -796,46 +789,65 @@ symbolic procedure !*hfac n;
 % Now we define two useful operators that allow us to define and
 % refer to a coordinate system by name
 
+put('getcsystem, 'psopfn, 'getcsystem);
+
 symbolic procedure getcsystem u;
-  begin scalar x,y;
-  if not atom u
-    then rerror(avector,14,"Invalid name for coordinate system");
-  if not flagp(u,'coordinatesystem)
-    then rerror(avector,15,"Unknown system");
-  x := get(u,'coordinates);
-  y := get(u,'scalefactors);
-  if x and y then
-  << % Put the coordinates and scalefactors in place
-    remflag(!*coords,'reserved);
-    !*coords := x;
-    remflag('(coords),'reserved);
-    setk('coords,aeval list('avec,first x, second x, third x));
-    flag('(coords),'reserved);
-    %flag(x,'reserved);
-    put('hfactors,'avalue,list('!3vector,y));
-    remflag('(dvolume),'reserved);
-    setk('dvolume,aeval list('times, !*hfac 0, !*hfac 1, !*hfac 2));
-    flag('(dvolume),'reserved);
-    return x
-  >>
-  else rerror(avector,16,"Incompletely specified coordinate system")
-  end;
+   begin scalar x,y;
+      if not atom u then <<
+         % Assume called in algebraic mode, so...
+         u := carx(u, 'getcsystem);
+         u := if stringp u then intern u else !*a2k u;
+      >>;
+      if not idp u then
+         rerror(avector,14,"Invalid name for coordinate system in GETCSYSTEM");
+      if not flagp(u,'coordinatesystem)
+      then rerror(avector,15,"Unknown coordinate system in GETCSYSTEM");
+      x := get(u,'coordinates);
+      y := get(u,'scalefactors);
+      if x and y then
+      << % Put the coordinates and scalefactors in place
+         remflag(!*coords,'reserved);
+         !*coords := x;
+         remflag('(coords),'reserved);
+         setk('coords,aeval list('avec,first x, second x, third x));
+         flag('(coords),'reserved);
+         %flag(x,'reserved);
+         put('hfactors,'avalue,list('!3vector,y));
+         remflag('(dvolume),'reserved);
+         setk('dvolume,aeval list('times, !*hfac 0, !*hfac 1, !*hfac 2));
+         flag('(dvolume),'reserved);
+         terpri(); print x;
+      >>
+      else rerror(avector,16,
+         "Incompletely specified coordinate system in GETCSYSTEM")
+   end;
+
+put('putcsystem, 'psopfn, 'putcsystem);
 
 symbolic procedure putcsystem u;
-  begin
-  if not atom u
-    then rerror(avector,17,"Invalid name for coordinate system");
-  flag(list u,'coordinatesystem);
-  put(u,'coordinates,!*coords);
-  put(u,'scalefactors,getavalue 'hfactors);
-  !*csystems := union(list u,!*csystems);
-  return u
-  end;
+   <<
+      if not atom u then <<
+         % Assume called in algebraic mode, so...
+         u := carx(u, 'putcsystem);
+         u := if stringp u then intern u else !*a2k u;
+      >>;
+      if not idp u then
+         rerror(avector,17,"Invalid name for coordinate system in PUTCSYSTEM");
+      flag(list u,'coordinatesystem);
+      put(u,'coordinates,!*coords);
+      put(u,'scalefactors,getavalue 'hfactors);
+      !*csystems := union(list u,!*csystems);
+      terpri(); print u;
+   >>;
 
 
-deflist('((coordinates rlis)),'stat);
 !*coords := '(x y z);
 !*csystems := nil;
+
+symbolic procedure csystems;
+   << terpri(); print !*csystems; >>;
+
+put('csystems, 'stat, 'endstat);
 
 % The following procedure calculates the derivative of a vector
 % function of a scalar variable, including the scale factors in
@@ -853,8 +865,8 @@ symbolic procedure vectordf u;
   begin scalar v,idv,x;
   v := vecsm!* car u;
   idv := cadr u;
-  if not vecp v then rerror(avector,18,"First arg is not a vector");
-  if not atom idv then rerror(avector,19,"Second arg is not an atom");
+  if not vecp v then rerror(avector,18,"First argument is not a vector");
+  if not atom idv then rerror(avector,19,"Second argument is not an atom");
   x := mkvect(2);
   for k:=0:2 do
   << % Calculate components one at a time
@@ -874,8 +886,10 @@ algebraic;
 vec coords,hfactors;
 % flag('(coords hfactors),'reserved); % Interferes with EXCALC.
 infix dot,cross;
-precedence dot,*;
-precedence cross,*;
+% Cross must have higher precedence than dot so that `v1 cross v2 dot
+% v3' and `v1 dot v2 cross v3' parse correctly without parentheses.
+precedence dot, *;
+precedence cross, dot;
 
 coordinates x,y,z;
 scalefactors(1,1,1);
@@ -909,7 +923,7 @@ vectormapping 'defint;  % DEFINT is now a vector function too
 % of vectors which are arguments to algebraic procedures
 
 symbolic procedure component(v,n);
-  if not vecp v then rerror(avector,20,"Argument is not a vector")
+  if not vecp v then rerror(avector,20,"Argument is not a vector in COMPONENT")
   else getv(vecsm!* v,n);
 
 symbolic operator component,vecp;
@@ -999,36 +1013,47 @@ vectorfn('cons,'vectordot);
 flag('(surfint vecsub),'vectorfn);
 vectorfn('surfint,'vsurfint);
 symbolic procedure vsurfint vargs;
- begin scalar sivar1, sivar2, sivar3, sivar4, sivar5 ;
+ % Takes 8 arguments:
+ % 1: v1 (integrand vector);
+ % 2: v2 (surface vector parameterised by variables p1 and p2);
+ % 3-5: p1, p1_from, p1_to (p1 = p1_from .. p1_t);
+ % 6-8: p2, p2_from, p2_to (p2 = p2_from .. p2_t).
+ begin scalar sivar1, sivar2, sivar3, sivar4, sivar5;
   if not (length vargs = 8) then rerror(avector,21,
-             "Wrong number of args to SURFINT");
-  if not (vecp(sivar1 := car vargs) and
-          vecp(sivar2 := cadr vargs) and
-          idp car(sivar3 := cddr vargs) and
-          idp car(sivar4 := cdddr sivar3))
+             "Wrong number of arguments to SURFINT");
+  if not (vecp(sivar1 := car vargs) and % sivar1 = v1
+          vecp(sivar2 := cadr vargs) and % sivar2 = v2
+          idp car(sivar3 := cddr vargs) and % sivar3 = (p1 ... p2 ...)
+          idp car(sivar4 := cdddr sivar3)) % sivar4 = (p2 p2_from p2_to)
      then rerror(avector,22,
-                 "Wrong type(s) of arguments supplied to SURFINT");
-  sivar2 := vecsm!* sivar2 ;
-  sivar3 := reverse cdddr reverse sivar3 ;
-  sivar5 := aeval list('cross,
+                 "Wrong type(s) of arguments to SURFINT");
+  sivar2 := vecsm!* sivar2;
+  sivar3 := reverse cdddr reverse sivar3; % sivar3 = (p1 p1_from p1_to)
+  sivar5 := aeval list('cross,      % sivar5 = df(v2, p1) X df(v2, p2)
                        list('vecdf, sivar2, car sivar3),
-                       list('vecdf, sivar2, car sivar4)) ;
-  sivar1 := vecsm!* sivar1 ;
-  sivar5 := aeval list('dot, sivar1, sivar5) ;
-  sivar5 := aeval list('vecsub,'coords,sivar2,sivar5);
+                       list('vecdf, sivar2, car sivar4));
+  sivar1 := vecsm!* sivar1;
+  sivar5 := aeval list('dot, sivar1, sivar5); % v1 . surface_normal
+  sivar5 := aeval list('vecsub,'coords,sivar2,sivar5); % eval on surface
   return aeval append(list('defint,
                       append(list('defint, sivar5), sivar3)),
-                      sivar4) ;
- end ;
+                      sivar4);
+ end;
 
 vectorfn('vecsub,'vvecsub);
-symbolic procedure vvecsub vargs ;
+symbolic procedure vvecsub vargs;
+ % Takes 3 arguments: v1 (vector), v2 (vector), s3 (*SQ form).
+ % Return sub(v1 = v2, s3)
+ % i.e. replace each component of v1 with the corresponding component
+ % of v2 in s3.
+ % NB: Despite the code below, this only works for scalar third
+ % argument because no substitution defined for type 3vector!
  begin scalar vsarg1, vsarg2, vsarg3;
   if not (length vargs = 3) then rerror(avector,23,
                            "Wrong number of arguments to VECSUB");
   if not (vecp car vargs and vecp cadr vargs) then
         rerror(avector,24,
-               "First two arguments to VECSUBS must be vectors");
+               "First two arguments to VECSUB must be vectors");
   vsarg1 := vecsm!* car vargs;
   vsarg2 := vecsm!* cadr vargs;
   vsarg3 := caddr vargs;
@@ -1041,9 +1066,8 @@ symbolic procedure vvecsub vargs ;
              list('equal, !*a2k component(vsarg1, 2),
                           component(vsarg2, 2)),
              vsarg3);
- end ;
+ end;
 
 endmodule;
-
 
 end;
