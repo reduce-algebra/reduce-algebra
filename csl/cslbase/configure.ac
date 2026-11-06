@@ -1885,7 +1885,7 @@ then
 #                       introduction of ARM-based Macs start to mean that
 #                       the importance of Intel ones begins to fade. 
 # 26.x  Tahoe           This is the last version that will support Intel macs.
-# 27.x  Golden Gate     Expected release September 2026. 
+# 27.x  Golden Gate     Released 3Q 2026. 
 
   AC_MSG_NOTICE([CC=$CC CXX=$CXX CPP=$CPP CXXCPP=$CXXCPP])
   CC="$ENVP $CC"
@@ -1958,7 +1958,8 @@ then
     `findlib libbrotlidec.a` \
     `findlib libbrotlidec-static.a` \
     -lpthread \
-    -ldl"
+    -ldl \
+    -lhvf"
   AC_MSG_NOTICE([LIBS = $LIBS])
 fi
 
