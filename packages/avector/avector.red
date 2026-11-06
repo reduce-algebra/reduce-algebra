@@ -776,7 +776,7 @@ symbolic procedure scalefactors u;
       flag('(dvolume hfactors), 'reserved);
    >>;
 
-rlistat '(coordinates scalefactors);
+deflist('((coordinates rlis) (scalefactors rlis)),'stat);
 
 flag('(dvolume hfactors),'reserved);
 
@@ -792,12 +792,13 @@ symbolic procedure !*hfac n;
 put('getcsystem, 'psopfn, 'getcsystem);
 
 symbolic procedure getcsystem u;
+   % Takes a single argument, which should be an identifier.
+   % It may be quoted (for backward compatibility).
+   % The argument is not evaluated.
    begin scalar x,y;
-      if not atom u then <<
+      if not atom u then
          % Assume called in algebraic mode, so...
          u := carx(u, 'getcsystem);
-         u := if stringp u then intern u else !*a2k u;
-      >>;
       if not idp u then
          rerror(avector,14,"Invalid name for coordinate system in GETCSYSTEM");
       if not flagp(u,'coordinatesystem)
@@ -825,12 +826,13 @@ symbolic procedure getcsystem u;
 put('putcsystem, 'psopfn, 'putcsystem);
 
 symbolic procedure putcsystem u;
+   % Takes a single argument, which should be an identifier.
+   % It may be quoted (for backward compatibility).
+   % The argument is not evaluated.
    <<
-      if not atom u then <<
+      if not atom u then
          % Assume called in algebraic mode, so...
-         u := carx(u, 'putcsystem);
-         u := if stringp u then intern u else !*a2k u;
-      >>;
+         u := carx(u, 'getcsystem);
       if not idp u then
          rerror(avector,17,"Invalid name for coordinate system in PUTCSYSTEM");
       flag(list u,'coordinatesystem);
@@ -839,10 +841,6 @@ symbolic procedure putcsystem u;
       !*csystems := union(list u,!*csystems);
       terpri(); print u;
    >>;
-
-
-!*coords := '(x y z);
-!*csystems := nil;
 
 symbolic procedure csystems;
    << terpri(); print !*csystems; >>;
@@ -1012,33 +1010,56 @@ vectorfn('cons,'vectordot);
 % Rest added by M. MacCallum
 flag('(surfint vecsub),'vectorfn);
 vectorfn('surfint,'vsurfint);
-symbolic procedure vsurfint vargs;
- % Takes 8 arguments:
- % 1: v1 (integrand vector);
- % 2: v2 (surface vector parameterised by variables p1 and p2);
- % 3-5: p1, p1_from, p1_to (p1 = p1_from .. p1_t);
- % 6-8: p2, p2_from, p2_to (p2 = p2_from .. p2_t).
- begin scalar sivar1, sivar2, sivar3, sivar4, sivar5;
-  if not (length vargs = 8) then rerror(avector,21,
-             "Wrong number of arguments to SURFINT");
-  if not (vecp(sivar1 := car vargs) and % sivar1 = v1
-          vecp(sivar2 := cadr vargs) and % sivar2 = v2
-          idp car(sivar3 := cddr vargs) and % sivar3 = (p1 ... p2 ...)
-          idp car(sivar4 := cdddr sivar3)) % sivar4 = (p2 p2_from p2_to)
-     then rerror(avector,22,
-                 "Wrong type(s) of arguments to SURFINT");
-  sivar2 := vecsm!* sivar2;
-  sivar3 := reverse cdddr reverse sivar3; % sivar3 = (p1 p1_from p1_to)
-  sivar5 := aeval list('cross,      % sivar5 = df(v2, p1) X df(v2, p2)
-                       list('vecdf, sivar2, car sivar3),
-                       list('vecdf, sivar2, car sivar4));
-  sivar1 := vecsm!* sivar1;
-  sivar5 := aeval list('dot, sivar1, sivar5); % v1 . surface_normal
-  sivar5 := aeval list('vecsub,'coords,sivar2,sivar5); % eval on surface
-  return aeval append(list('defint,
-                      append(list('defint, sivar5), sivar3)),
-                      sivar4);
- end;
+symbolic procedure vsurfint u;
+   % Takes 4 or more arguments:
+   % f (scalar or vector field);
+   % r (surface vector parameterised by variables s and t);
+   % s = s_min .. s_max, or s, s_min, s_max
+   % t = t_min .. t_max, or t, t_min, t_max
+   begin scalar f, r, ss, tt, nrml;
+      if not (length u >= 4) then rerror(avector,21,
+         "Wrong number of arguments to SURFINT");
+      f := car u;
+      r := car(u := cdr u);
+      ss := car(u := cdr u);            % (= s (.. s_min s_max)) or s
+      if eqcar(ss, 'equal) then
+         if eqcar(caddr ss, '!*interval!*) then
+            ss := cadr ss . cdaddr ss
+         else rerror(avector,22,
+            "Wrong type(s) of arguments to SURFINT")
+      else <<
+         if not (length u >= 4) then rerror(avector,21,
+            "Wrong number of arguments to SURFINT");
+         ss := {ss, car(u := cdr u), car(u := cdr u)};
+      >>;                               % ss = (s s_min s_max)
+      tt := car(u := cdr u);            % (= t (.. t_min t_max)) or t
+      if eqcar(tt, 'equal) then
+         if eqcar(caddr tt, '!*interval!*) then
+            tt := cadr tt . cdaddr tt
+         else rerror(avector,22,
+            "Wrong type(s) of arguments to SURFINT")
+      else <<
+         if not (length u = 3) then rerror(avector,21,
+            "Wrong number of arguments to SURFINT");
+         tt := {tt, car(u := cdr u), cadr u};
+      >>;                               % tt = (t t_min t_max)
+      r := vecsm!* r;
+      nrml := aeval {'cross,    % surface_normal = df(r, s) X df(r, t)
+         {'vecdf, r, car ss},
+         {'vecdf, r, car tt}};
+      if vecp f then <<                 % vector field
+         f := vecsm!* f;
+         f := aeval {'dot, f, nrml};          % f . surface_normal
+         f := aeval {'vecsub, 'coords, r, f}; % eval f on surface
+      >> else <<                              % scalar field
+         f := aeval f;
+         f := aeval {'vecsub, 'coords, r, f}; % eval f on surface
+         f := aeval {'times, f, {'vmod, nrml}}; % f * |surface_normal|
+      >>;
+      return aeval
+         append({'defint, append({'defint, f}, ss)}, tt);
+   end;
+
 
 vectorfn('vecsub,'vvecsub);
 symbolic procedure vvecsub vargs;
@@ -1057,7 +1078,7 @@ symbolic procedure vvecsub vargs;
   vsarg1 := vecsm!* car vargs;
   vsarg2 := vecsm!* cadr vargs;
   vsarg3 := caddr vargs;
-  if not vecp vsarg3 then vsarg3 := prepsq cadr vsarg3;
+  if not vecp vsarg3 then vsarg3 := prepsq simp vsarg3;
   return  aeval list('sub,
              list('equal, !*a2k component(vsarg1, 0),
                           component(vsarg2, 0)),
