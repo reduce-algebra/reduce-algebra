@@ -363,7 +363,7 @@
 
 
 (de AppendStaticLisp ()
-    (if (not *writingasmfile)
+    (if (and (not *writingasmfile) (not *writingfaslfile))
 	(let* ((sl-size (plus2 (cdr (cdr GlobalStaticLispList*)) nextstaticlisp))
 	       (oldslbase (gtstaticlisp 0))
 	       (newslbase (gtstaticlisp sl-size)))
