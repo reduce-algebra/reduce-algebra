@@ -281,6 +281,15 @@
 %% the beginning, and set to t as seen as (initsymval1 (int2id 256)) is called.
 %%
 
+(de findidnumber (u)
+  (prog (i)
+        (return (cond ((null u) 256)
+		      ((leq (setq i (id2int u)) 256) i)
+                      ((setq i (get u 'idnumber)) i)
+                      (t (put u 'idnumber (setq i nextidnumber*))
+                         (setq orderedidlist* (tconc orderedidlist* u))
+                         (setq nextidnumber* (plus nextidnumber* 1)) i)))))
+
 (global '(**nil-seen**))
 
 (de initsymval1 (x)
@@ -532,8 +541,10 @@
 
 
 (de AppendStaticLisp ()
-    (if (not *writingasmfile)
-	(let* ((sl-size (plus2 (cdr (cdr GlobalStaticLispList*)) nextstaticlisp))
+    (print (list 'GlobalStaticLispList* GlobalStaticLispList*))
+    (print (list 'cdadr 'GlobalStaticLispList* (cdadr GlobalStaticLispList*)))
+    (if (and (not *writingasmfile) (not *writingfaslfile))
+	(let* ((sl-size (plus2 (or (cdr (cadr GlobalStaticLispList*)) 0) nextstaticlisp))
 	       (oldslbase (gtstaticlisp 0))
 	       (newslbase (gtstaticlisp sl-size)))
 	  (foreach sl-item in (car GlobalStaticLispList*) do
