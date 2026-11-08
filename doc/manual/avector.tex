@@ -4,6 +4,10 @@
 
 \subsection{Introduction}
 
+In this chapter, the word \emph{vector} means a physical vector in
+three dimensions.  The dimensions cannot be changed; this package
+supports vectors in three dimensions only.
+
 In addition to vector algebra, a set of vector calculus operators is
 provided for use with any orthogonal curvilinear coordinate system.
 These operators are gradient, divergence, curl and del-squared
@@ -59,22 +63,26 @@ to \texttt{a1}, \texttt{a2} and \texttt{a3}, and displays the output
    vec(z) := a3
 \end{verbatim}
 As illustrated above, vectors are displayed in the form of assignments
-to their components indexed by the coordinates for the current
-coordinate system (see below).  (Beware that indexing by coordinates
-cannot be used for input!)
+to their components indexed by the coordinate names for the current
+coordinate system (see below).
 
-Components may be extracted from any vector using zero-based index
-notation in the same way as for an array:
+The components of any vector may be accessed naturally by indexing
+using the coordinate names, or by using zero-based index notation in
+the same way as for an array:
 
 \begin{tabular}{l|l}
 \texttt{v := avec(ax, ay, az);} \\
-\texttt{v(0);} & yields \texttt{ax} \\
-\texttt{v(1);} & yields \texttt{ay} \\
-\texttt{v(2);} & yields \texttt{az}
+\texttt{v(x); v(0);} & both yield \texttt{ax} \\
+\texttt{v(y); v(1);} & both yield \texttt{ay} \\
+\texttt{v(z); v(2);} & both yield \texttt{az}
 \end{tabular}
 
 It is also possible to set values of individual components.  Following
 from above:
+\begin{verbatim}
+   v(y) := b;
+\end{verbatim}
+or equivalently
 \begin{verbatim}
    v(1) := b;
 \end{verbatim}
@@ -167,6 +175,23 @@ operator:
    v1 := v/(vmod v);
 \end{verbatim}
 
+Vectors may be given as arguments to unary functions such as \texttt{sin},
+\texttt{log} and \texttt{tan}. The result is a vector obtained by
+applying the function component-wise to the argument vector.
+
+\begin{tabular}{l|l}
+\texttt{v := avec(a1, a2, a3);} \\
+\texttt{sin(v);} & yields \texttt{(sin(a1),sin(a2),sin(a3))} \\
+\end{tabular}
+
+A vector may be pre-multiplied by a $3\times3$ matrix, or a matrix
+expression that evaluates to a $3\times3$ matrix.  In such a product,
+the vector behaves like a $3\times1$ column matrix, but the result is
+a vector.
+
+
+\subsection{Vector calculus}
+
 \index{Vector!differentiation} \index{Vector!integration}
 \index{Differentiation!vector} \index{Differentiation!vector}
 Vectors may be used as operands in the differentiation and integration
@@ -177,18 +202,6 @@ operators in place of the dependent expression.
 \texttt{df(v,x);} & yields \texttt{(2*x,cos(x),0)} \\
 \texttt{int(v,x);} & yields \verb|(x^3/3,-cos(x),y*x)|
 \end{tabular}
-
-Vectors may be given as arguments to unary functions such as \texttt{sin},
-\texttt{log} and \texttt{tan}. The result is a vector obtained by
-applying the function component-wise to the argument vector.
-
-\begin{tabular}{l|l}
-\texttt{v := avec(a1, a2, a3);} \\
-\texttt{sin(v);} & yields \texttt{(sin(a1),sin(a2),sin(a3))} \\
-\end{tabular}
-
-
-\subsection{ Vector calculus}
 
 \ttindextype[AVECTOR]{div}{operator} \index{Divergence!vector field}
 \ttindextype[AVECTOR]{grad}{operator} \index{Gradient!vector field}
@@ -273,7 +286,8 @@ For example, to choose the Cartesian coordinate system:
 \ttindextype[AVECTOR]{putcsystem}{command}
 \hypertarget{command:PUTCSYSTEM}{}
 The argument to \texttt{getcsystem} should be an identifier (which,
-for backward compatibility, may be preceded by a single quote).
+for backward compatibility, may be preceded by a single quote).  It is
+not evaluated and must be a literal coordinate system name.
 
 \REDUCE responds by displaying a list of the coordinate names in that
 coordinate system. The example above would produce the response
@@ -295,8 +309,10 @@ coordinate names has been assigned a value, and the previous coordinate
 system remains in effect.
 
 A user-defined coordinate system can be assigned a name using the
-command \texttt{putcsystem}. It may then be re-invoked at a later stage using
-\texttt{getcsystem}.
+command \texttt{putcsystem}.  It may then be re-invoked at a later
+stage using \texttt{getcsystem}.  The argument to \texttt{putcsystem}
+is as for \texttt{getcsystem}.
+
 
 \example\index{Avector package!example}
 
@@ -317,35 +333,46 @@ This system may later be invoked by entering
 \subsection{Integration}
 
 Definite integrals of scalar and vector expressions may be calculated
-using the \f{defint} function.
+using the \f{defint} function.  In general, definite integrals with
+respect to an independent variable $x$ between the limits
+$x_\mathit{min}$ and $x_\mathit{max}$ can be specified by using the
+syntax \texttt{x = x\_min~..~x\_max}, and this syntax will generally
+be used below, but for backward compatibility the independent variable
+and limits can also always be given as the sequence \texttt{x, x\_min,
+x\_max}.
 
 \example\index{Avector package!example}
 
 \ttindextype[AVECTOR]{defint}{function} \index{Integration!definite (simple)}
 \hypertarget{operator:DEFINT}{}
 \index{Definite integration (simple)}
-\noindent To calculate the definite integral of $\sin(x)^2$ between 0 and
-2$\pi$ we enter
+To calculate the definite integral of $\sin(x)^2$ between $0$ and
+$2\pi$ we enter either
+\begin{verbatim}
+   defint(sin(x)^2, x = 0 .. 2pi);
+\end{verbatim}
+or equivalently
 \begin{verbatim}
    defint(sin(x)^2, x, 0, 2pi);
 \end{verbatim}
-This function is a simple extension of the \f{int} operator taking
-two extra arguments, the lower and upper bounds of integration
-respectively.
+This function simply calls the extension of the \f{int} operator
+taking two extra arguments, the lower and upper bounds of integration,
+after checking that the independent integration variable and limits
+are not vectors.
 
 Several functions are provided to perform volume, line and surface
 integrals.  These operate in any orthogonal curvilinear coordinate
 system and make use of the scale factors described in the previous
 section.
 
-\subsubsection{Volume integrals}
+\subsubsection{Volume integrals of scalar fields}
 
 \ttindextype[AVECTOR]{volintegral}{function} \index{Integration!volume}
 \hypertarget{operator:VOLINTEGRAL}{}
-Definite volume integrals may be calculated using the \f{volintegral}
-function whose syntax is as follows:
+Definite volume integrals of scalar fields may be calculated using
+the \f{volintegral} function whose syntax is as follows:
 \begin{syntax}
-  \f{volintegral}(\meta{integrand:expression},\\
+  \f{volintegral}(\meta{integrand:scalar expression},\\
   \hphantom{\f{volintegral}(}\meta{lower-bound:vector}, \meta{upper-bound:vector})
 \end{syntax}
 
@@ -415,8 +442,10 @@ Line integrals may be calculated using the \f{lineint} and \f{deflineint}
 operators. Their general syntax is
 \begin{syntax}
   \f{lineint}(\meta{vector-function}, \meta{vector-curve}, \meta{variable:kernel}) \\
-  \f{deflineint}(\meta{vector-function}, \meta{vector-curve}, \meta{variable:kernel},\\
-  \hphantom{\f{deflineint}(}\meta{lower-bound}, \meta{upper-bound})
+  \f{lineint}(\meta{vector-function}, \meta{vector-curve}, \meta{variable:kernel} =\\
+  \hphantom{\f{deflineint}(}\meta{lower-bound}~..~\meta{upper-bound})\\
+  \f{deflineint}(\meta{vector-function}, \meta{vector-curve}, \meta{variable:kernel} =\\
+  \hphantom{\f{deflineint}(}\meta{lower-bound}~..~\meta{upper-bound})
 \end{syntax}
 where:
 \begin{description}
@@ -427,6 +456,10 @@ integration in terms of the independent variable;
 \item[\meta{lower-bound}, \meta{upper-bound}] are the bounds of
 integration in terms of the independent variable.
 \end{description}
+The operator \f{lineint} performs either indefinite or definite
+integration, depending on whether it is given limits.  The
+operator \f{deflineint} is a synonym for \f{lineint}, and is retained
+mainly for backward compatibility.
 
 \example\index{Avector package!example}
 
@@ -438,31 +471,45 @@ is $(\mathit{rr},\mathit{lat},\phi)$ where $\mathit{lat}$ is
 the \emph{complement} of the latitude\footnote{Note that the spherical
 polar coordinate $\theta$ is measured down from the `North Pole',
 whereas latitude is measured up from the `Equator'.} and $\phi$ is the
-independent variable.  We show how to obtain the definite integral,
-i.e.\ from $\phi=0$ to $2\pi$:
+independent variable.  The length of the line as a function of $\phi$
+is given by the indefinite integral:
 \begin{verbatim}
 getcsystem spherical;
-deflineint(avec(0,0,1), avec(rr,lat,phi), phi, 0, 2pi);
+lineint(avec(0,0,1), avec(rr,lat,phi), phi);
+
+sin(lat)*phi*rr
+\end{verbatim}
+The length of the whole line of latitude is given by the definite
+integral from $\phi=0$ to $2\pi$:
+\begin{verbatim}
+lineint(avec(0,0,1), avec(rr,lat,phi), phi = 0 .. 2pi);
+
+2*sin(lat)*pi*rr
 \end{verbatim}
 
-\subsubsection{Surface integrals}
+\subsubsection{Surface integrals of vector and scalar fields}
 
-Finally, the surface integral of a vector field $\mathbf{v}$ over a
+For background, see e.g.\
+\href{https://en.wikipedia.org/wiki/Surface_integral}{Wikipedia}.
+
+Consider the surface integral of a vector field $\mathbf{v}$ over a
 finite surface $S$ specified by the vector function $\mathbf{r}(s,t)$
 of two (scalar) parameters $s \in [s_\mathit{min},s_\mathit{max}]$ and
-$t \in [t_\mathit{min},t_\mathit{max}]$, namely
+$t \in [t_\mathit{min},t_\mathit{max}]$, $(s,t)\in T$, namely
 \[
 \iint_S\mathbf{v}\cdot\mathrm{d}\mathbf{s}=
-\iint_S\mathbf{v}(\mathbf{r}(s,t))\cdot
+\iint_T\mathbf{v}(\mathbf{r}(s,t))\cdot
 \left(\frac{\partial\mathbf{r}}{\partial{s}} \times
 \frac{\partial\mathbf{r}}{\partial{t}}\right)
-\mathrm{d}s\,\mathrm{d}t,
+\mathrm{d}s\,\mathrm{d}t.
 \]
-(see e.g.\ \href{https://en.wikipedia.org/wiki/Surface_integral}{Wikipedia})
-can be computed using
+It can be computed using
 \begin{verbatim}
-   surfint(v, r, s, s_min, s_max, t, t_min, t_max)
+surfint(v, r, s = s_min .. s_max, t = t_min .. t_max)
 \end{verbatim}
+Note that the order of the integration variables affects the sign of
+the integral, because it determines the order of the tangent vectors
+in the cross product, and hence its sign, in the integrand.
 
 \example\index{Avector package!example}
 
@@ -472,12 +519,53 @@ the sphere:
 \begin{verbatim}
 getcsystem spherical;
 surfint(avec(1,0,0), avec(rr,theta,phi),
-   theta, 0, pi,
-   phi, 0, 2pi);
+   theta = 0 .. pi, phi = 0 .. 2pi);
 
        2
 4*pi*rr
 \end{verbatim}
+
+Now consider the related surface integral of a scalar field $f$,
+namely
+\[
+\iint_Sf\mathrm{d}\mathbf{s}=
+\iint_Tf(\mathbf{r}(s,t))
+\left\|\frac{\partial\mathbf{r}}{\partial{s}} \times
+\frac{\partial\mathbf{r}}{\partial{t}}\right\|
+\mathrm{d}s\,\mathrm{d}t.
+\]
+It can be computed using
+\begin{verbatim}
+surfint(f, r, s = s_min .. s_max, t = t_min .. t_max)
+\end{verbatim}
+Note that, in this case, the order of the integration variables has no
+effect mathematically (although it might affect the computation).
+
+\example\index{Avector package!example}
+
+As a trivial example, the integral of the unit scalar field over the
+surface of a sphere of radius $\mathit{rr}$ gives the area of the
+sphere:
+\begin{verbatim}
+getcsystem spherical;
+surfint(1, avec(rr,theta,phi),
+   theta = 0 .. pi, phi = 0 .. 2pi);
+
+       2
+2*pi*rr *(sub(theta=pi,int(abs(sin(theta)),theta))
+
+           - sub(theta=0,int(abs(sin(theta)),theta)))
+
+ws where abs ~x => x;
+
+       2
+4*pi*rr
+\end{verbatim}
+This example produces an integrand involving the absolute value
+function (from the magnitude of the cross product), which REDUCE
+cannot integrate.  But fortunately it is irrelevant in this example,
+hence the second input statement above, which tells REDUCE to ignore
+the absolute value.
 
 
 \subsection{Defining new functions and procedures}
@@ -493,5 +581,6 @@ cannot be passed as algebraic procedure arguments, for example.
 
 \subsection{Acknowledgements}
 
-This package was written whilst the author was the U.K. Computer
-Algebra Support Officer at the University of Liverpool Computer Laboratory.
+This package was originally written whilst the author was the
+U.K. Computer Algebra Support Officer at the University of Liverpool
+Computer Laboratory.
