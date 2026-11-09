@@ -203,13 +203,13 @@ symbolic procedure makenewvector u;
   put('!3vector,'prifn,'vecpri!*);         % Printing function
   flag('(!3vector),'sprifn);
 
-  symbolic procedure vecpri!*(u,v,w);
-    vecpri(u,v);
+symbolic procedure vecpri!*(u,v,w);
+   vecpri(u,v);
 
 % The following routine prints out a vector in a neat way (cf.
 % the way in which matrices are printed !)
 
-  symbolic procedure vecpri(u,x);
+symbolic procedure vecpri(u,x);
   begin scalar y,v0,v1,v2,xx;
   y:= if vectorp u then u else getavalue u;
     xx := x;
@@ -904,16 +904,48 @@ putcsystem 'cylindrical;
 % And we choose to use Cartesians initially ...
 
 getcsystem 'cartesian;
+symbolic;
 
 % Extensions to REDUCE vector package
 
+symbolic procedure getintvarlist(u, procname, indefok);
+   % Assume U is a list that begins with code resulting from input of
+   % the form s = s_min .. s_max, or s, s_min, s_max, possibly
+   % followed by further input, i.e.
+   % ((= s (.. s_min s_max)) ...) or (s s_min s_max ...).
+   % Check that none of s, s_min, s_max is a vector.
+   % Return cons: (s s_min s_max) . rest of u.
+   % PROCNAME is the name of the procedure to use in error messages.
+   % If INDEFOK then accept just (s) for an indefinite integral.
+   begin scalar ss;
+      if null u then rerror(avector,22,
+         {"Wrong type(s) of arguments to", procname});
+      ss := car u;                 % ss := (= s (.. s_min s_max)) or s
+      if eqcar(ss, 'equal) then
+         if eqcar(caddr ss, '!*interval!*) then
+            ss := cadr ss . cdaddr ss
+         else rerror(avector,22,
+            {"Wrong type(s) of arguments to", procname})
+      else if null cdr u and indefok then ss := ss . nil
+      else <<
+         if not (length u >= 3) then rerror(avector,21,
+            {"Wrong number of arguments to", procname});
+         ss := {ss, car(u := cdr u), car(u := cdr u)};
+      >>;                               % ss := (s s_min s_max)
+      for each el in ss do
+         if vecp el then typerr(el, "scalar integration variable or limit");
+      return ss . cdr u
+   end;
+
 % Definite-integral routine ... trivially simple
 
-algebraic procedure defint(fn,x,xlower,xupper);
-  begin scalar indefint;
-  indefint:=int(fn,x);
-  return sub(x=xupper,indefint)-sub(x=xlower,indefint)
-  end;
+put('defint, 'psopfn, 'defint);
+
+symbolic procedure defint u;            % (fn, x = xlower .. xupper)
+   <<
+      u := revlis u;
+      aeval ('int . car u . car getintvarlist(cdr u, "DEFINT", nil))
+   >>;
 
 vectormapping 'defint;  % DEFINT is now a vector function too
 
@@ -921,8 +953,9 @@ vectormapping 'defint;  % DEFINT is now a vector function too
 % of vectors which are arguments to algebraic procedures
 
 symbolic procedure component(v,n);
-  if not vecp v then rerror(avector,20,"Argument is not a vector in COMPONENT")
-  else getv(vecsm!* v,n);
+   if not vecp v then
+      rerror(avector,20,"First argument is not a vector in COMPONENT")
+   else getv(vecsm!* v,n);
 
 symbolic operator component,vecp;
 
@@ -943,34 +976,37 @@ algebraic procedure volintegral(fn,vlower,vupper);
 
 % Define the initial setting of VOLINTORDER
 
-volintorder := avec(0,1,2);
+algebraic (volintorder := avec(0,1,2));
 
 % Line integral
 
-algebraic procedure lineint(v,curve,ivar);
-  begin scalar scalfn,vcomp,hcomp,dcurve;
-  scalfn := 0;
-  for k:=0:2 do
-  << % Form the integrand
-    vcomp := component(v,k);
-    hcomp := hfactors(k);
-    dcurve := df(component(curve,k),ivar);
-    scalfn := scalfn + vcomp*hcomp*dcurve
-  >>;
-  scalfn := vecsub(coords,curve,scalfn) ;     % Added by M. MacCallum
-  return int(scalfn,ivar)
-  end;
+put('lineint, 'psopfn, 'lineint);
 
-algebraic procedure deflineint(v,curve,ivar,ilb,iub);
-  begin scalar indfint;
-  indfint := lineint(v,curve,ivar);
-  return sub(ivar=iub,indfint)-sub(ivar=ilb,indfint)
-  end;
+symbolic procedure lineint u;           % (v, curve, ivar...)
+   begin scalar v, curve, intvarlist, ivar,
+         scalfn, vcomp, hcomp, dcurve;
+      u := revlis u;
+      v := car u;
+      curve := cadr u;
+      intvarlist := car getintvarlist(cddr u, "LINEINT", t);
+      ivar := car intvarlist;
+      algebraic <<                      % Form the integrand
+         scalfn := for k:=0:2 sum <<
+            vcomp := component(v,k);
+            hcomp := hfactors(k);
+            dcurve := df(component(curve,k), ivar);
+            vcomp*hcomp*dcurve
+         >>;
+         scalfn := vecsub(coords,curve,scalfn); % Added by M. MacCallum
+      >>;
+      return aeval ('int . scalfn . intvarlist)
+   end;
+
+% For backward compatibility:
+define deflineint = lineint;
 
 % Attempt to implement dot and cross as single-character infix
 %  operators upon vectors
-
-symbolic;
 
 % Cross-product is easy : we simply tell Reduce that up-arrow is a
 %  synonym for CROSS
@@ -1013,51 +1049,33 @@ vectorfn('surfint,'vsurfint);
 symbolic procedure vsurfint u;
    % Takes 4 or more arguments:
    % f (scalar or vector field);
-   % r (surface vector parameterised by variables s and t);
+   % rvec (surface vector parameterised by variables s and t);
    % s = s_min .. s_max, or s, s_min, s_max
    % t = t_min .. t_max, or t, t_min, t_max
-   begin scalar f, r, ss, tt, nrml;
+   begin scalar f, rvec, ss, tt, nrml;
       if not (length u >= 4) then rerror(avector,21,
          "Wrong number of arguments to SURFINT");
       f := car u;
-      r := car(u := cdr u);
-      ss := car(u := cdr u);            % (= s (.. s_min s_max)) or s
-      if eqcar(ss, 'equal) then
-         if eqcar(caddr ss, '!*interval!*) then
-            ss := cadr ss . cdaddr ss
-         else rerror(avector,22,
-            "Wrong type(s) of arguments to SURFINT")
-      else <<
-         if not (length u >= 4) then rerror(avector,21,
-            "Wrong number of arguments to SURFINT");
-         ss := {ss, car(u := cdr u), car(u := cdr u)};
-      >>;                               % ss = (s s_min s_max)
-      tt := car(u := cdr u);            % (= t (.. t_min t_max)) or t
-      if eqcar(tt, 'equal) then
-         if eqcar(caddr tt, '!*interval!*) then
-            tt := cadr tt . cdaddr tt
-         else rerror(avector,22,
-            "Wrong type(s) of arguments to SURFINT")
-      else <<
-         if not (length u = 3) then rerror(avector,21,
-            "Wrong number of arguments to SURFINT");
-         tt := {tt, car(u := cdr u), cadr u};
-      >>;                               % tt = (t t_min t_max)
-      r := vecsm!* r;
-      nrml := aeval {'cross,    % surface_normal = df(r, s) X df(r, t)
-         {'vecdf, r, car ss},
-         {'vecdf, r, car tt}};
+      rvec := car(u := cdr u);
+      ss := getintvarlist(cdr u, "SURFINT", nil);
+      u := cdr ss; ss := car ss;             % ss := (s s_min s_max)
+      % print ss;
+      tt := car getintvarlist(u, "SURFINT", nil); % tt := (t t_min t_max)
+      % print tt;
+      rvec := vecsm!* rvec;
+      nrml := aeval {'cross, % surface_normal = df(rvec, s) X df(rvec, t)
+         {'vecdf, rvec, car ss},
+         {'vecdf, rvec, car tt}};
       if vecp f then <<                 % vector field
          f := vecsm!* f;
-         f := aeval {'dot, f, nrml};          % f . surface_normal
-         f := aeval {'vecsub, 'coords, r, f}; % eval f on surface
-      >> else <<                              % scalar field
+         f := aeval {'dot, f, nrml};             % f . surface_normal
+         f := aeval {'vecsub, 'coords, rvec, f}; % eval f on surface
+      >> else <<                                 % scalar field
          f := aeval f;
-         f := aeval {'vecsub, 'coords, r, f}; % eval f on surface
          f := aeval {'times, f, {'vmod, nrml}}; % f * |surface_normal|
+         f := aeval {'vecsub, 'coords, rvec, f}; % eval f on surface
       >>;
-      return aeval
-         append({'defint, append({'defint, f}, ss)}, tt);
+      return aeval append({'int, append({'int, f}, ss)}, tt)
    end;
 
 
