@@ -510,9 +510,9 @@ symbolic procedure hypergeom(u);
 	 ghyper_fehlerf();
       
       u := caddr u; 
-      if !*rounded and not !*complex and evalnumberp u and
-	     evalnumlistp(list1) and evalnumlistp(list2) then
-	 return num_hypergeo(list1,list2,u);
+      if !*rounded and evalnumberp u and
+	 evalnumlistp(list1) and evalnumlistp(list2) then
+	    return num_hypergeo(list1,list2,u);
       
       if not !*rounded then 
       	 offrounded := t
