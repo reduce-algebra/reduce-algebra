@@ -47,21 +47,19 @@ user will be notified that this has happened.
 
 \ttindextype[AVECTOR]{avec}{operator}
 \hypertarget{operator:AVEC}{}
-A vector may be initialised using the \f{avec} function which
-takes three scalar arguments and returns a vector made up
-from those scalars. For example
+A vector may be initialised using the \f{avec} function which takes
+three scalar arguments and returns a vector made up from those
+scalars. The following example sets the components of the
+vector \texttt{a} to \texttt{a1}, \texttt{a2} and \texttt{a3}, and
+displays the result:
 \begin{verbatim}
    a := avec(a1, a2, a3);
 \end{verbatim}
-sets the components of the vector \texttt{a}
-to \texttt{a1}, \texttt{a2} and \texttt{a3}, and displays the output
-\begin{verbatim}
-   vec(x) := a1
-
-   vec(y) := a2
-
-   vec(z) := a3
-\end{verbatim}
+\begin{gather*}
+vec(x)\,:=\,\mathit{a_{1}}\\
+vec(y)\,:=\,\mathit{a_{2}}\\
+vec(z)\,:=\,\mathit{a_{3}}
+\end{gather*}
 As illustrated above, vectors are displayed in the form of assignments
 to their components indexed by the coordinate names for the current
 coordinate system (see below).
@@ -71,7 +69,7 @@ using the coordinate names, or by using zero-based index notation in
 the same way as for an array:
 
 \begin{tabular}{l|l}
-\texttt{v := avec(ax, ay, az);} \\
+\multicolumn{1}{l}{\texttt{v := avec(ax, ay, az);}} \\
 \texttt{v(x); v(0);} & both yield \texttt{ax} \\
 \texttt{v(y); v(1);} & both yield \texttt{ay} \\
 \texttt{v(z); v(2);} & both yield \texttt{az}
@@ -131,7 +129,10 @@ than scalar multiplication and division.
 \begin{tabular}{l|l}
 \texttt{v := v1 cross v2;} & Vector (cross) product \\
 \texttt{s := v1 dot v2;} & Scalar (dot) product \\
-\texttt{s := v1~.~v2;} & Scalar (dot) product \\
+\texttt{s := v1~.~v2;} & Scalar (dot) product
+\end{tabular}
+
+\begin{tabular}{l}
 \texttt{v := v1 cross v2 + v3;} \\
 \texttt{v := (v1 cross v2) + v3;}
 \end{tabular}
@@ -177,12 +178,16 @@ operator:
 
 Vectors may be given as arguments to unary functions such as \texttt{sin},
 \texttt{log} and \texttt{tan}. The result is a vector obtained by
-applying the function component-wise to the argument vector.
-
-\begin{tabular}{l|l}
-\texttt{v := avec(a1, a2, a3);} \\
-\texttt{sin(v);} & yields \texttt{(sin(a1),sin(a2),sin(a3))} \\
-\end{tabular}
+applying the function component-wise to the argument vector, e.g.
+\begin{verbatim}
+   v := avec(a1, a2, a3)$
+   sin(v);
+\end{verbatim}
+\begin{gather*}
+vec(x)\,:=\,\sin(a_{1})\\
+vec(y)\,:=\,\sin(a_{2})\\
+vec(z)\,:=\,\sin(a_{3})
+\end{gather*}
 
 A vector may be pre-multiplied by a $3\times3$ matrix, or a matrix
 expression that evaluates to a $3\times3$ matrix.  In such a product,
@@ -197,11 +202,30 @@ a vector.
 Vectors may be used as operands in the differentiation and integration
 operators in place of the dependent expression.
 
-\begin{tabular}{l|l}
-\verb|v := avec(x^2, sin(x), y);| \\
-\texttt{df(v,x);} & yields \texttt{(2*x,cos(x),0)} \\
-\texttt{int(v,x);} & yields \verb|(x^3/3,-cos(x),y*x)|
-\end{tabular}
+\begin{verbatim}
+v := avec(x^2, sin(x), y);
+\end{verbatim}
+\begin{gather*}
+vec(x)\,:=\,x^2\\
+vec(y)\,:=\,\sin(x)\\
+vec(z)\,:=\,y
+\end{gather*}
+\begin{verbatim}
+df(v,x);
+\end{verbatim}
+\begin{gather*}
+vec(x)\,:=\,2\,x\\
+vec(y)\,:=\,\cos(x)\\
+vec(z)\,:=\,0
+\end{gather*}
+\begin{verbatim}
+int(v,x);
+\end{verbatim}
+\begin{gather*}
+vec(x)\,:=\,\frac{x^3}{3}\\
+vec(y)\,:=\,\,-\,\cos(x)\\
+vec(z)\,:=\,x\,y
+\end{gather*}
 
 \ttindextype[AVECTOR]{div}{operator} \index{Divergence!vector field}
 \ttindextype[AVECTOR]{grad}{operator} \index{Gradient!vector field}
@@ -341,6 +365,14 @@ be used below, but for backward compatibility the independent variable
 and limits can also always be given as the sequence \texttt{x, x\_min,
 x\_max}.
 
+\hypertarget{switch:TRAVECINT}
+If the switch \sw{travecint}\ttindexswitch[AVECTOR]{travecint} is
+turned on then the functions \f{defint}, \f{lineint}, \f{surfint}
+and \f{volint} described below display the final unevaluated
+(multiple) integral before evaluating and returning it.  (The legacy
+function \f{volintegral} displays three single unevaluated integrals
+because it calls \f{defint} three times.)
+
 \example\index{Avector package!example}
 
 \ttindextype[AVECTOR]{defint}{function} \index{Integration!definite (simple)}
@@ -351,23 +383,268 @@ $2\pi$ we enter either
 \begin{verbatim}
    defint(sin(x)^2, x = 0 .. 2pi);
 \end{verbatim}
+\[ \pi \]
 or equivalently
 \begin{verbatim}
    defint(sin(x)^2, x, 0, 2pi);
 \end{verbatim}
+\[ \pi \]
 This function simply calls the extension of the \f{int} operator
 taking two extra arguments, the lower and upper bounds of integration,
 after checking that the independent integration variable and limits
 are not vectors.
 
-Several functions are provided to perform volume, line and surface
+Several functions are provided to perform line, surface and volume
 integrals.  These operate in any orthogonal curvilinear coordinate
 system and make use of the scale factors described in the previous
 section.
 
-\subsubsection{Volume integrals of scalar fields}
+\subsubsection{Line integrals of vector and scalar fields}
 
-\ttindextype[AVECTOR]{volintegral}{function} \index{Integration!volume}
+\ttindextype[AVECTOR]{lineint}{function} \ttindextype[AVECTOR]{deflineint}{function}
+\hypertarget{operator:LINEINT}{}\hypertarget{operator:DEFLINEINT}{}
+\index{Integration!line} \index{Line integrals}
+For background, see e.g.\
+\href{https://en.wikipedia.org/wiki/Line_integral}{Wikipedia}.
+
+Consider the line integral of a vector field $\mathbf{v}$ over a
+finite curve $C$ specified by the vector function $\mathbf{r}(t)$
+of the (scalar) parameter $t \in [t_\mathit{min},t_\mathit{max}]$, namely
+\[
+\int_C \mathbf{v} \cdot \mathrm{d}\mathbf{r} =
+\int_{t_\mathit{min}}^{t_\mathit{max}}
+\mathbf{v}(\mathbf{r}(t)) \cdot \mathbf{r}'(t) \, \mathrm{d}t
+\]
+and the related line integral of a scalar field $f$, namely
+\[
+\int_C f \,\mathrm{d}s =
+\int_{t_\mathit{min}}^{t_\mathit{max}}
+f(\mathbf{r}(t)) \, \|\mathbf{r}'(t)\| \, \mathrm{d}t.
+\]
+They can both be computed using
+\begin{verbatim}
+   lineint(v_or_f, r, t = t_min .. t_max)
+\end{verbatim}
+or equivalently
+\begin{verbatim}
+   deflineint(v_or_f, r, t = t_min .. t_max)
+\end{verbatim}
+and the related indefinite integrals can both be computed using
+\begin{verbatim}
+   lineint(v_or_f, r, t)
+\end{verbatim}
+where \texttt{v\_or\_f} is a vector or scalar expression, as
+appropriate.  The operator \f{lineint} performs either indefinite or
+definite integration, depending on whether it is given limits.  The
+operator \f{deflineint} is a synonym for \f{lineint}, retained for
+backward compatibility.
+
+\example\index{Avector package!example}
+
+In spherical polar coordinates $(r,\theta,\phi)$ we may integrate
+round a line of constant $\theta$ (`latitude') on a sphere of radius
+$\mathit{rr}$ to find the length of such a line.\footnote{Note that we
+cannot use the variable $r$ for the radius of the sphere because it is
+already being used for the radial coordinate.  The variable $R$ might
+be a natural choice, but (by default) REDUCE is case-insensitive, so
+$R$ is the same as $r$.}  The vector function is thus the tangent to
+the `line of latitude' $(0,0,1)$ and the path is
+$(\mathit{rr},\mathit{lat},\phi)$ where $\mathit{lat}$ is
+the \emph{complement} of the latitude\footnote{Note that the spherical
+polar coordinate $\theta$ is measured down from the `North Pole',
+whereas latitude is measured up from the `Equator'.} and $\phi$ is the
+independent variable.  The length of the line as a function of $\phi$
+is given by the indefinite integral:
+\begin{verbatim}
+getcsystem spherical;
+lineint(avec(0,0,1), avec(rr,lat,phi), phi);
+\end{verbatim}
+\[ \sin(lat)\,\phi\,rr \]
+The length of the whole line of latitude is given by the definite
+integral from $\phi=0$ to $2\pi$:
+\begin{verbatim}
+lineint(avec(0,0,1), avec(rr,lat,phi), phi = 0 .. 2pi);
+\end{verbatim}
+\[ 2\,\sin(lat)\,\pi\,rr \]
+
+Perhaps more obviously, we can find the length of a line of latitude
+by integrating the constant unit scalar field 1:
+\begin{verbatim}
+lineint(1, avec(rr,lat,phi), phi);
+\end{verbatim}
+\[ |\sin(lat)|\,|rr|\,\phi \]
+\begin{verbatim}
+ws where abs ~x => x;
+\end{verbatim}
+\[ \sin(lat)\,\phi\,rr \]
+\begin{verbatim}
+lineint(1, avec(rr,lat,phi), phi = 0 .. 2pi);
+\end{verbatim}
+\[ 2\,|\sin(lat)|\,|rr|\,\pi \]
+\begin{verbatim}
+ws where abs ~x => x;
+\end{verbatim}
+\[ 2\,sin(lat)\,\pi\,rr \]
+This example produces an integrand involving the absolute value
+function (from the magnitude of the tangent vector).  But we know that
+the arguments of the absolute value function cannot be negative, hence
+the second and fourth input statements above, which tell REDUCE to
+ignore the absolute value function.
+
+\subsubsection{Surface integrals of vector and scalar fields}
+
+For background, see e.g.\
+\href{https://en.wikipedia.org/wiki/Surface_integral}{Wikipedia}.
+
+Consider the surface integral of a vector field $\mathbf{v}$ over a
+finite surface $S$ specified by the vector function $\mathbf{r}(s,t)$
+of two (scalar) parameters $s \in [s_\mathit{min},s_\mathit{max}]$ and
+$t \in [t_\mathit{min},t_\mathit{max}]$, $(s,t)\in T$, namely
+\[
+\iint_S\mathbf{v} \cdot \mathrm{d}\mathbf{s} =
+\iint_T\mathbf{v}(\mathbf{r}(s,t))\cdot
+\left(\frac{\partial\mathbf{r}}{\partial{s}} \times
+\frac{\partial\mathbf{r}}{\partial{t}}\right)
+\mathrm{d}s\,\mathrm{d}t.
+\]
+The $s$ limits $s_\mathit{min},s_\mathit{max}$ can depend on the
+parameter $t$, so the region in parameter space need not be
+rectangular.  The integral can be computed using
+\begin{verbatim}
+surfint(v, r, s = s_min .. s_max, t = t_min .. t_max)
+\end{verbatim}
+Integration is performed in the order that the integration variables
+are specified, i.e.\ with respect to \texttt{s} first and then with
+respect to \texttt{t}.  Note that the order of the integration
+variables affects the sign of the integral, because it determines the
+order of the tangent vectors in the cross product, and hence its sign,
+in the integrand.
+
+\example\index{Avector package!example}
+
+As a trivial example, the integral of the unit radial vector field
+over the surface of a sphere of radius $\mathit{rr}$ gives the area of
+the sphere:
+\begin{verbatim}
+getcsystem spherical;
+surfint(avec(1,0,0), avec(rr,theta,phi),
+   theta = 0 .. pi, phi = 0 .. 2pi);
+\end{verbatim}
+\[ 4\,\pi\,rr^2 \]
+Now consider the related surface integral of a scalar field $f$,
+namely
+\[
+\iint_Sf\mathrm{d}\mathbf{s}=
+\iint_Tf(\mathbf{r}(s,t))
+\left\|\frac{\partial\mathbf{r}}{\partial{s}} \times
+\frac{\partial\mathbf{r}}{\partial{t}}\right\|
+\mathrm{d}s\,\mathrm{d}t.
+\]
+It can be computed using
+\begin{verbatim}
+surfint(f, r, s = s_min .. s_max, t = t_min .. t_max)
+\end{verbatim}
+As above, integration is performed in the order that the integration
+variables are specified, i.e.\ with respect to \texttt{s} first and
+then with respect to \texttt{t}.  But, in this case, the order of the
+integration variables has no effect mathematically (although it might
+affect the computation).
+
+\example\index{Avector package!example}
+
+As a trivial example, the integral of the unit scalar field 1 over the
+surface of a sphere of radius $\mathit{rr}$ gives the area of the
+sphere:
+\begin{verbatim}
+getcsystem spherical;
+surfint(1, avec(rr,theta,phi),
+   theta = 0 .. pi, phi = 0 .. 2pi);
+\end{verbatim}
+\[
+2\,\pi\,rr^2\,\left(\left.
+\left(\int|(\sin(\theta)|\,d\,\theta\right)
+\right|_{\theta=\pi}\,-\,\left.
+\left(\int|\sin(\theta)|\,d\,\theta\right)
+\right|_{\theta=0}\right)
+\]
+\begin{verbatim}
+ws where abs ~x => x;
+\end{verbatim}
+\[ 4\,\pi\,rr^2 \]
+This example produces an integrand involving the absolute value
+function (from the magnitude of the cross product), which REDUCE
+cannot integrate.  But fortunately it is irrelevant in this example,
+hence the second input statement above, which tells REDUCE to ignore
+the absolute value and allows it to evaluate the integral.
+
+\subsubsection{Volume integrals of scalar and vector fields}
+
+\ttindextype[AVECTOR]{volint}{function} \index{Integration!volume}
+\hypertarget{operator:VOLINT}{}
+For background, see e.g.\
+\href{https://en.wikipedia.org/wiki/Volume_integral}{Wikipedia}.
+
+Consider the volume integral of a scalar or vector field $f$ over a
+finite volume $V$ corresponding to the region in coordinate space
+$x \in [x_\mathit{min},x_\mathit{max}]$, $y \in
+[y_\mathit{min},y_\mathit{max}]$, and $z \in
+[z_\mathit{min},z_\mathit{max}]$, $(x,y,z)\in W$, namely
+\[
+\iiint_V f\,\mathrm{d}v =
+\iiint_W f(x,y,z)\,\mathrm{d}x\,\mathrm{d}y\,\mathrm{d}z.
+\]
+If the coordinate system $(x,y,z)$ is curvilinear then the required
+scale factors are included automatically, but they are not shown here
+for simplicity.  The $x$ limits $x_\mathit{min},x_\mathit{max}$ can
+depend on $y,z$ and the $y$ limits $y_\mathit{min},y_\mathit{max}$ can
+depend on $z$, so the region in parameter space need not be
+rectangular.  The volume integral can be computed using
+\begin{verbatim}
+volint(f, x = x_min .. x_max,
+          y = y_min .. y_max,
+          z = z_min .. z_max)
+\end{verbatim}
+If \texttt{f} is a vector field then \texttt{volint} maps over the
+components; there is no other special processing.  Integration is
+performed in the order that the integration variables are specified,
+which matters if limits are functions of other coordinates.
+
+\example\index{Avector package!example}
+
+In spherical polar coordinates $(r,\theta,\phi)$ we may calculate the
+volume of a sphere of radius $\mathit{rr}$ by integrating unity over
+the range $r=0$ to $\mathit{rr}$, $\theta=0$ to $\pi$, $\phi=0$ to
+$2\pi$ as follows:
+\begin{verbatim}
+getcsystem spherical;
+volint(1, r = 0 .. rr,
+          theta = 0 .. pi,
+          phi = 0 .. 2pi);
+\end{verbatim}
+\[ \frac{4\,\pi\,rr^3}{3} \]
+The integration order makes no difference in this example.
+
+\example\index{Avector package!example}
+
+In cylindrical polar coordinates $(r,z,\phi)$ we may calculate the
+volume of a right circular cone of base radius $\mathit{rr}$ and
+height $h$ sitting on the plane $z=0$ by integrating unity over the
+range $r=0$ to $\frac{h-z}{h}\mathit{rr}$, $z=0$ to $h$, $\phi=0$ to
+$2\pi$ as follows:
+\begin{verbatim}
+getcsystem cylindrical;
+volint(1, r = 0 .. (h-z)/h*rr,
+          z = 0 .. h,
+          phi = 0 .. 2pi);
+\end{verbatim}
+\[ \frac{h\,\pi\,rr^2}{3} \]
+In this example, the $z$ integration must be performed after the $r$
+integration because the upper $r$ limit depends on $z$, but apart from
+that the integration order makes no difference.
+
+\subsubsection{Legacy volume integration function}
+
+\ttindextype[AVECTOR]{volintegral}{function}
 \hypertarget{operator:VOLINTEGRAL}{}
 Definite volume integrals of scalar fields may be calculated using
 the \f{volintegral} function whose syntax is as follows:
@@ -375,6 +652,14 @@ the \f{volintegral} function whose syntax is as follows:
   \f{volintegral}(\meta{integrand:scalar expression},\\
   \hphantom{\f{volintegral}(}\meta{lower-bound:vector}, \meta{upper-bound:vector})
 \end{syntax}
+\ttindextype[AVECTOR]{volintorder}{vector}%
+\hypertarget{reserved:VOLINTORDER}{}%
+However, it is first necessary to specify the order of integration by
+assigning one of the three numbers $0,1,2$ to each of the components
+of the special vector \texttt{volintorder} (where $(0,1,2)$ is the
+default).  Integration is performed first with respect to the
+component assigned $0$, then the component assigned $1$, then the
+component assigned $2$.
 
 \example\index{Avector package!example}
 
@@ -384,24 +669,14 @@ the range $r=0$ to $\mathit{rr}$, $\theta=0$ to $\pi$, $\phi=0$ to
 $2\pi$ as follows:
 
 \begin{tabular}{l|l}
-\texttt{getcsystem spherical;} \\
-\texttt{vlb := avec(0,0,0);} & Lower bound \\
-\texttt{vub := avec(rr,pi,2pi);} & Upper bound in $r, \theta, \phi$
+\multicolumn{1}{l}{\texttt{getcsystem spherical;}} \\
+\texttt{vlb := avec(0,0,0)\$} & Lower bound \\
+\texttt{vub := avec(rr,pi,2pi)\$} & Upper bound in $r, \theta, \phi$
  respectively \\
-\texttt{volintorder := avec(0,1,2);} & The order of integration \\
-\texttt{volintegral(1,vlb,vub);}
+\texttt{volintorder := avec(0,1,2)\$} & The order of integration \\
+\multicolumn{1}{l}{\texttt{volintegral(1,vlb,vub);}}
 \end{tabular}
-
-\ttindextype[AVECTOR]{volintorder}{vector}
-\hypertarget{reserved:VOLINTORDER}{}
-Note the use of the special vector \var{volintorder} which controls
-the order in which the integrations are carried out. This vector
-should be set to contain the numbers 0, 1 and 2 in the required order
-(which is the default).
-The first component of \var{volintorder} contains the index of the
-first integration variable, the second component is the index of the
-second integration variable and the third component is the index of
-the third integration variable.
+\[ \frac{4\,\pi\,rr^3}{3} \]
 
 \example\index{Avector package!example}
 
@@ -425,147 +700,34 @@ performed in the order: $\phi$ from 0 to $2\pi$, $r$ from 0 to $pz$,
 $z$ from 0 to $h$.  The order of the indices is thus 2, 0, 1.
 \begin{verbatim}
    getcsystem cylindrical;
-   volintorder := avec(2,0,1);
-   vlb := avec(0,0,0);
-   vub := avec(p*z,h,2pi);
+   vlb := avec(0,0,0)$
+   vub := avec(p*z,h,2pi)$
+   volintorder := avec(2,0,1)$
    volintegral(1,vlb,vub);
 \end{verbatim}
+\[ \frac{h^3\,p^2\,\pi}{3} \]
 (At this stage, we could replace \texttt{p*h} by \texttt{rr}, the base
 radius of the cone, to obtain the result in its more familiar form.)
 
-\subsubsection{Line integrals}
+\subsubsection{Numerical integration}
 
-\ttindextype[AVECTOR]{lineint}{function} \ttindextype[AVECTOR]{deflineint}{function}
-\hypertarget{operator:LINEINT}{}\hypertarget{operator:DEFLINEINT}{}
-\index{Integration!line} \index{Line integrals}
-Line integrals may be calculated using the \f{lineint} and \f{deflineint}
-operators. Their general syntax is
-\begin{syntax}
-  \f{lineint}(\meta{vector-function}, \meta{vector-curve}, \meta{variable:kernel}) \\
-  \f{lineint}(\meta{vector-function}, \meta{vector-curve}, \meta{variable:kernel} =\\
-  \hphantom{\f{deflineint}(}\meta{lower-bound}~..~\meta{upper-bound})\\
-  \f{deflineint}(\meta{vector-function}, \meta{vector-curve}, \meta{variable:kernel} =\\
-  \hphantom{\f{deflineint}(}\meta{lower-bound}~..~\meta{upper-bound})
-\end{syntax}
-where:
-\begin{description}
-\item[\meta{vector-function}] is any vector-valued expression;
-\item[\meta{vector-curve}] is a vector expression which describes the path of
-integration in terms of the independent variable;
-\item[\meta{variable}] is the independent variable;
-\item[\meta{lower-bound}, \meta{upper-bound}] are the bounds of
-integration in terms of the independent variable.
-\end{description}
-The operator \f{lineint} performs either indefinite or definite
-integration, depending on whether it is given limits.  The
-operator \f{deflineint} is a synonym for \f{lineint}, and is retained
-mainly for backward compatibility.
+If the switch \texttt{rounded} is \texttt{on} then the
+functions \texttt{defint}, \texttt{lineint} and \texttt{surfint}
+perform approximate numerical integration by
+calling \hyperlink{operator:NUM_INT}{\texttt{num\_int}} instead
+of \hyperlink{operator:INT}{\texttt{int}}.  \emph{This works only if
+the result will be a pure number, with no symbolic content.}  Provided
+this is the case, it works well for \texttt{defint} and
+\texttt{lineint}.  For \texttt{surfint}, it produces noticeable
+numerical error, even for simple problems, but may still be useful.
+If one of these integrals fails to evaluate symbolically (as for
+the \texttt{surfint} examples above involving absolute values) then
+numerical approximation may provide a way forwards.
 
-\example\index{Avector package!example}
-
-In spherical polar coordinates $(r,\theta,\phi)$ we may integrate
-round a line of constant $\theta$ (`latitude') on a sphere of radius
-$\mathit{rr}$ to find the length of such a line. The vector function
-is thus the tangent to the `line of latitude' $(0,0,1)$ and the path
-is $(\mathit{rr},\mathit{lat},\phi)$ where $\mathit{lat}$ is
-the \emph{complement} of the latitude\footnote{Note that the spherical
-polar coordinate $\theta$ is measured down from the `North Pole',
-whereas latitude is measured up from the `Equator'.} and $\phi$ is the
-independent variable.  The length of the line as a function of $\phi$
-is given by the indefinite integral:
-\begin{verbatim}
-getcsystem spherical;
-lineint(avec(0,0,1), avec(rr,lat,phi), phi);
-
-sin(lat)*phi*rr
-\end{verbatim}
-The length of the whole line of latitude is given by the definite
-integral from $\phi=0$ to $2\pi$:
-\begin{verbatim}
-lineint(avec(0,0,1), avec(rr,lat,phi), phi = 0 .. 2pi);
-
-2*sin(lat)*pi*rr
-\end{verbatim}
-
-\subsubsection{Surface integrals of vector and scalar fields}
-
-For background, see e.g.\
-\href{https://en.wikipedia.org/wiki/Surface_integral}{Wikipedia}.
-
-Consider the surface integral of a vector field $\mathbf{v}$ over a
-finite surface $S$ specified by the vector function $\mathbf{r}(s,t)$
-of two (scalar) parameters $s \in [s_\mathit{min},s_\mathit{max}]$ and
-$t \in [t_\mathit{min},t_\mathit{max}]$, $(s,t)\in T$, namely
-\[
-\iint_S\mathbf{v}\cdot\mathrm{d}\mathbf{s}=
-\iint_T\mathbf{v}(\mathbf{r}(s,t))\cdot
-\left(\frac{\partial\mathbf{r}}{\partial{s}} \times
-\frac{\partial\mathbf{r}}{\partial{t}}\right)
-\mathrm{d}s\,\mathrm{d}t.
-\]
-It can be computed using
-\begin{verbatim}
-surfint(v, r, s = s_min .. s_max, t = t_min .. t_max)
-\end{verbatim}
-Note that the order of the integration variables affects the sign of
-the integral, because it determines the order of the tangent vectors
-in the cross product, and hence its sign, in the integrand.
-
-\example\index{Avector package!example}
-
-As a trivial example, the integral of the unit radial vector field
-over the surface of a sphere of radius $\mathit{rr}$ gives the area of
-the sphere:
-\begin{verbatim}
-getcsystem spherical;
-surfint(avec(1,0,0), avec(rr,theta,phi),
-   theta = 0 .. pi, phi = 0 .. 2pi);
-
-       2
-4*pi*rr
-\end{verbatim}
-
-Now consider the related surface integral of a scalar field $f$,
-namely
-\[
-\iint_Sf\mathrm{d}\mathbf{s}=
-\iint_Tf(\mathbf{r}(s,t))
-\left\|\frac{\partial\mathbf{r}}{\partial{s}} \times
-\frac{\partial\mathbf{r}}{\partial{t}}\right\|
-\mathrm{d}s\,\mathrm{d}t.
-\]
-It can be computed using
-\begin{verbatim}
-surfint(f, r, s = s_min .. s_max, t = t_min .. t_max)
-\end{verbatim}
-Note that, in this case, the order of the integration variables has no
-effect mathematically (although it might affect the computation).
-
-\example\index{Avector package!example}
-
-As a trivial example, the integral of the unit scalar field over the
-surface of a sphere of radius $\mathit{rr}$ gives the area of the
-sphere:
-\begin{verbatim}
-getcsystem spherical;
-surfint(1, avec(rr,theta,phi),
-   theta = 0 .. pi, phi = 0 .. 2pi);
-
-       2
-2*pi*rr *(sub(theta=pi,int(abs(sin(theta)),theta))
-
-           - sub(theta=0,int(abs(sin(theta)),theta)))
-
-ws where abs ~x => x;
-
-       2
-4*pi*rr
-\end{verbatim}
-This example produces an integrand involving the absolute value
-function (from the magnitude of the cross product), which REDUCE
-cannot integrate.  But fortunately it is irrelevant in this example,
-hence the second input statement above, which tells REDUCE to ignore
-the absolute value.
+(For \texttt{volintegral}, numerical integration appears to fail, so
+it is not currently supported.  Numerical integration in more than one
+dimension is difficult; see e.g.\
+\href{https://en.wikipedia.org/wiki/Numerical_integration#Multidimensional_integrals}{Wikipedia}!)
 
 
 \subsection{Defining new functions and procedures}
