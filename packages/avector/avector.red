@@ -66,6 +66,8 @@ avector!-loaded!* := t;   % To keep CSL happy.
 %  ***************  the Standard Lisp interpreter.    ***************  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                      %
 %              VECTOR DECLARATIONS MODULE                              %
@@ -80,7 +82,7 @@ avector!-loaded!* := t;   % To keep CSL happy.
 
 
 fluid '(!*coords !*csystems !*vectorfunctionlist
-        !*vtrace !*vectortracelevel!*);
+        !*vtrace !*vectortracelevel!* !*rounded);
 
 switch vtrace;
 
@@ -271,6 +273,8 @@ symbolic procedure setvectortozero(u,utype);
   for k:=0:2 do putv(x,k,aeval 0);
   return veclet(u,x,utype,t,'!3vector)
   end;
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                      %
@@ -739,6 +743,8 @@ symbolic procedure scalarapply(op,v,args);
   if null args then aeval list(op,v)
                else aeval append(list(op,v),args);
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                      %
 %                     COORDINATE SYSTEM MODULE                         %
@@ -906,7 +912,15 @@ putcsystem 'cylindrical;
 getcsystem 'cartesian;
 symbolic;
 
-% Extensions to REDUCE vector package
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                      %
+%                   INTEGRATION and other extensions                   %
+%                                                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+switch travecint;
 
 symbolic procedure getintvarlist(u, procname, indefok);
    % Assume U is a list that begins with code resulting from input of
@@ -942,10 +956,17 @@ symbolic procedure getintvarlist(u, procname, indefok);
 put('defint, 'psopfn, 'defint);
 
 symbolic procedure defint u;            % (fn, x = xlower .. xupper)
-   <<
+   begin scalar xx;
       u := revlis u;
-      aeval ('int . car u . car getintvarlist(cdr u, "DEFINT", nil))
-   >>;
+      xx := car getintvarlist(cdr u, "DEFINT", nil);
+      u := if !*rounded then
+         {'num_int, car u,
+            {'equal, car xx, '!*interval!* . cdr xx}}
+      else
+         'int . car u . xx;
+      if !*travecint then mathprint u;
+      return aeval u
+   end;
 
 vectormapping 'defint;  % DEFINT is now a vector function too
 
@@ -959,6 +980,7 @@ symbolic procedure component(v,n);
 
 symbolic operator component,vecp;
 
+% Retained for backward compatibility:
 algebraic procedure volintegral(fn,vlower,vupper);
   begin scalar integrand,idpvar,xlower,xupper,kindex;
   integrand := fn*hfactors(0)*hfactors(1)*hfactors(2);
@@ -978,28 +1000,77 @@ algebraic procedure volintegral(fn,vlower,vupper);
 
 algebraic (volintorder := avec(0,1,2));
 
+put('volint, 'psopfn, 'volint);
+
+symbolic procedure volint u;
+   % Takes 4 or more arguments:
+   % f (scalar field);
+   % s = s_min .. s_max, or s, s_min, s_max;
+   % t = t_min .. t_max, or t, t_min, t_max.
+   % u = u_min .. u_max, or u, u_min, u_max.
+   begin scalar f, intvarlists;
+      if not (length u >= 4) then rederr
+         "Wrong number of arguments to VOLINT";
+      u := revlis u;
+      f := car u;  u := cdr u;
+      while u do <<
+         u := getintvarlist(u, "VOLINT", nil);
+         intvarlists := car u . intvarlists;
+         u := cdr u
+      >>;
+      intvarlists := reversip intvarlists;
+      algebraic(f := f*hfactors(0)*hfactors(1)*hfactors(2));
+      % Even trivial numerical volume integrals using num_int fail!
+      % if !*rounded then
+      %    f := ('num_int . f .
+      %       for each intvarlist in intvarlists collect
+      %          {'equal, cadr intvarlist, '!*interval!* . cddr intvarlist})
+      % else
+      for each intvarlist in intvarlists do
+         f := ('int . f . intvarlist);
+      if !*travecint then mathprint f;
+      return aeval f
+   end;
+
+vectormapping 'volint;                  % Volint maps over a vector
+
 % Line integral
 
 put('lineint, 'psopfn, 'lineint);
 
-symbolic procedure lineint u;           % (v, curve, ivar...)
-   begin scalar v, curve, intvarlist, ivar,
-         scalfn, vcomp, hcomp, dcurve;
+symbolic procedure lineint u;
+   % Takes 3 or more arguments:
+   % f (scalar or vector field);
+   % curve (line vector parameterised by variable s);
+   % ivar, `ivar = ivars_min .. ivar_max', or `ivar, ivar_min, ivar_max'.
+   begin scalar f, curve, intvarlist, ivar;
+      if not (length u >= 3) then
+         rederr "Wrong number of arguments to LINEINT";
       u := revlis u;
-      v := car u;
+      f := car u;
       curve := cadr u;
       intvarlist := car getintvarlist(cddr u, "LINEINT", t);
       ivar := car intvarlist;
-      algebraic <<                      % Form the integrand
-         scalfn := for k:=0:2 sum <<
-            vcomp := component(v,k);
-            hcomp := hfactors(k);
-            dcurve := df(component(curve,k), ivar);
-            vcomp*hcomp*dcurve
-         >>;
-         scalfn := vecsub(coords,curve,scalfn); % Added by M. MacCallum
-      >>;
-      return aeval ('int . scalfn . intvarlist)
+      % Form the integrand:
+      f := if vecp f
+      then algebraic               % vector field f: compute f(r) . r'
+         for k:=0:2 sum
+            component(f,k)*hfactors(k)*df(component(curve,k), ivar)
+      else algebraic                  % scalar field f: compute f |r'|
+         (f * sqrt for k:=0:2 sum
+            <<hfactors(k)*df(component(curve,k), ivar)>>^2);
+      % Without << >> above get
+      % ***** expt invalid as a vector operator
+      % Bug in vector simplifier?
+      % Evaluate integrand on curve (added by M. MacCallum):
+      f := aeval {'vecsub, 'coords, curve, f};
+      f := if !*rounded and cdr intvarlist then
+         {'num_int, f,
+            {'equal, car intvarlist, '!*interval!* . cdr intvarlist}}
+      else
+         'int . f . intvarlist;
+      if !*travecint then mathprint f;
+      return aeval f
    end;
 
 % For backward compatibility:
@@ -1050,32 +1121,36 @@ symbolic procedure vsurfint u;
    % Takes 4 or more arguments:
    % f (scalar or vector field);
    % rvec (surface vector parameterised by variables s and t);
-   % s = s_min .. s_max, or s, s_min, s_max
-   % t = t_min .. t_max, or t, t_min, t_max
+   % s = s_min .. s_max, or s, s_min, s_max;
+   % t = t_min .. t_max, or t, t_min, t_max.
    begin scalar f, rvec, ss, tt, nrml;
       if not (length u >= 4) then rerror(avector,21,
          "Wrong number of arguments to SURFINT");
       f := car u;
       rvec := car(u := cdr u);
       ss := getintvarlist(cdr u, "SURFINT", nil);
-      u := cdr ss; ss := car ss;             % ss := (s s_min s_max)
-      % print ss;
+      u := cdr ss; ss := car ss;        % ss := (s s_min s_max)
       tt := car getintvarlist(u, "SURFINT", nil); % tt := (t t_min t_max)
-      % print tt;
       rvec := vecsm!* rvec;
       nrml := aeval {'cross, % surface_normal = df(rvec, s) X df(rvec, t)
          {'vecdf, rvec, car ss},
          {'vecdf, rvec, car tt}};
-      if vecp f then <<                 % vector field
+      if vecp f then <<                 % vector field f
          f := vecsm!* f;
-         f := aeval {'dot, f, nrml};             % f . surface_normal
-         f := aeval {'vecsub, 'coords, rvec, f}; % eval f on surface
-      >> else <<                                 % scalar field
+         f := aeval {'dot, f, nrml};    % f . surface_normal
+      >> else <<                        % scalar field f
          f := aeval f;
          f := aeval {'times, f, {'vmod, nrml}}; % f * |surface_normal|
-         f := aeval {'vecsub, 'coords, rvec, f}; % eval f on surface
       >>;
-      return aeval append({'int, append({'int, f}, ss)}, tt)
+      f := aeval {'vecsub, 'coords, rvec, f}; % eval integrand on surface
+      f := if !*rounded then <<
+         ss := {'equal, car ss, '!*interval!* . cdr ss};
+         tt := {'equal, car tt, '!*interval!* . cdr tt};
+         {'num_int, f, ss, tt}
+      >> else
+         'int . ('int . f . ss) . tt;
+      if !*travecint then mathprint f;
+      return aeval f
    end;
 
 
