@@ -186,6 +186,8 @@
    unixnull
    unixeof
    unixtty
+   UndefinedFunctionInstruction
+   LambdaLinkInstruction
    ))
 
 (internal-global
@@ -260,6 +262,8 @@
   (setq staticlisp nil)
   (setq laststaticlisp nil)
   (setq nextstaticlisp nil)
+  (setq UndefinedFunctionInstruction (symfnc UndefinedFunction))
+  (setq LambdaLinkInstruction (symfnc CompiledCallingInterpreted))
   (setq oldheapupperbound nil)
   (setq oldheaplowerbound nil)
   (setq stackupperbound nil)
