@@ -240,8 +240,6 @@
   % most of the heap pointers are set up in the C world..
   % i.e. heaplowerbound, heaptrapbound, heaplast, heapupperbound, heaptrapbound.
   (setq heap heaplowerbound)
-  (setq UndefinedFunctionInstruction UndefinedFunction)
-  (setq LambdaLinkInstruction CompiledCallingInterpreted)
 )
 
 (de init-fluids ()
@@ -318,6 +316,11 @@
        (*move (frame 1) (fluid argc))
        (*move (frame 2) (fluid argv))
        (*move (frame 3) (fluid ebxsave!*))
+
+       (lea "undefinedfunction(%rip)" (reg t1))
+       (*move (reg t1) ($global UndefinedFunctionInstruction))
+       (lea "compiledcallinginterpreted(%rip)" (reg t1))
+       (*move (reg t1) ($global LambdaLinkInstruction))
 
        (*call init-pointers)
 

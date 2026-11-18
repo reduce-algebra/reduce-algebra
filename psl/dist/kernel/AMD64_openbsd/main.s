@@ -24,48 +24,44 @@ l0002:
  mov %rax,2176(%r14)               # bndstkupperbound
  mov 2072(%r14),%rdi               # bndstk
  mov %rdi,2184(%r14)               # bndstkptr
- mov 2192(%r14),%rdi               # heaplowerbound
- mov %rdi,2200(%r14)               # heap
- mov 2208(%r14),%rdi               # undefinedfunction
- mov %rdi,2216(%r14)               # undefinedfunctioninstruction
- mov 2224(%r14),%rax               # compiledcallinginterpreted
- mov %rax,2232(%r14)               # lambdalinkinstruction
+ mov 2192(%r14),%rax               # heaplowerbound
+ mov %rax,2200(%r14)               # heap
  ret
  .quad 0
 # (*entry init-fluids expr 0)
  .globl l0003
 l0003:
  mov %r13,%rax
- mov %rax,2248(%r14)               # gcarraylowerbound
- mov %rax,2256(%r14)               # gcarrayupperbound
+ mov %rax,2216(%r14)               # gcarraylowerbound
+ mov %rax,2224(%r14)               # gcarrayupperbound
  mov %rax,2136(%r14)               # heaplast
- mov %rax,2264(%r14)               # oldheaplast
+ mov %rax,2232(%r14)               # oldheaplast
  mov %rax,2144(%r14)               # heaptrapbound
- mov %rax,2272(%r14)               # oldheaptrapbound
- mov %rax,2280(%r14)               # heapupperbound
- mov %rax,2288(%r14)               # _infbitlength_
- mov %rax,2296(%r14)               # lastbps
- mov %rax,2304(%r14)               # bpslowerbound
- mov %rax,2312(%r14)               # mainstartinitialize
- mov %rax,2320(%r14)               # nextbps
- mov %rax,2328(%r14)               # bpsbaserw
- mov %rax,2336(%r14)               # bpsbaserx
- mov %rax,2344(%r14)               # bpsoffset
- mov %rax,2352(%r14)               # staticlisp
- mov %rax,2360(%r14)               # laststaticlisp
- mov %rax,2368(%r14)               # nextstaticlisp
- mov %rax,2376(%r14)               # oldheapupperbound
- mov %rax,2384(%r14)               # oldheaplowerbound
- mov %rax,2392(%r14)               # stackupperbound
- mov %rax,2400(%r14)               # unixstdin
- mov %rax,2408(%r14)               # unixstdout
- mov %rax,2416(%r14)               # unixstderr
- mov %rax,2424(%r14)               # unixnull
- mov %rax,2432(%r14)               # unixeof
- mov %rax,2440(%r14)               # unixtty
- mov %rax,2448(%r14)               # ***must-be-nil***
- mov %rax,2456(%r14)               # ***must-be-nil-too***
- mov %rax,2464(%r14)               # *fastcar
+ mov %rax,2240(%r14)               # oldheaptrapbound
+ mov %rax,2248(%r14)               # heapupperbound
+ mov %rax,2256(%r14)               # _infbitlength_
+ mov %rax,2264(%r14)               # lastbps
+ mov %rax,2272(%r14)               # bpslowerbound
+ mov %rax,2280(%r14)               # mainstartinitialize
+ mov %rax,2288(%r14)               # nextbps
+ mov %rax,2296(%r14)               # bpsbaserw
+ mov %rax,2304(%r14)               # bpsbaserx
+ mov %rax,2312(%r14)               # bpsoffset
+ mov %rax,2320(%r14)               # staticlisp
+ mov %rax,2328(%r14)               # laststaticlisp
+ mov %rax,2336(%r14)               # nextstaticlisp
+ mov %rax,2344(%r14)               # oldheapupperbound
+ mov %rax,2352(%r14)               # oldheaplowerbound
+ mov %rax,2360(%r14)               # stackupperbound
+ mov %rax,2368(%r14)               # unixstdin
+ mov %rax,2376(%r14)               # unixstdout
+ mov %rax,2384(%r14)               # unixstderr
+ mov %rax,2392(%r14)               # unixnull
+ mov %rax,2400(%r14)               # unixeof
+ mov %rax,2408(%r14)               # unixtty
+ mov %rax,2416(%r14)               # ***must-be-nil***
+ mov %rax,2424(%r14)               # ***must-be-nil-too***
+ mov %rax,2432(%r14)               # *fastcar
  ret
  .quad 0
 # (*entry psl_main expr 0)
@@ -78,10 +74,10 @@ psl_main:
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rdx,%r14
- mov %r14,2480(%r14)               # symval
- mov 2488(%r14),%r15               # symfnc
- call *2496(%r15)                  # os_startup_hook
- mov 2352(%r14),%r9                # staticlisp
+ mov %r14,2448(%r14)               # symval
+ mov 2456(%r14),%r15               # symfnc
+ call *2464(%r15)                  # os_startup_hook
+ mov 2320(%r14),%r9                # staticlisp
  mov 2136(%r14),%r10               # heaplast
  mov 2144(%r14),%r11               # heaptrapbound
  mov $256,%r13
@@ -91,27 +87,31 @@ psl_main:
  shl $56,%rdi
  or %rdi,%r13
  mov (%rsp),%rdi
- mov %rdi,2504(%r14)               # argc
+ mov %rdi,2472(%r14)               # argc
  mov 8(%rsp),%rdi
- mov %rdi,2512(%r14)               # argv
+ mov %rdi,2480(%r14)               # argv
  mov 16(%rsp),%rdi
- mov %rdi,2520(%r14)               # ebxsave*
+ mov %rdi,2488(%r14)               # ebxsave*
+ lea undefinedfunction(%rip),%rdi
+ mov %rdi,2496(%r14)               # undefinedfunctioninstruction
+ lea compiledcallinginterpreted(%rip),%rdi
+ mov %rdi,2504(%r14)               # lambdalinkinstruction
  call *2152(%r15)                  # init-pointers
  mov %rsp,%rdx
  shr $5,%rdx
- mov %rdx,2528(%r14)               # stacklowerbound
- call *2536(%r15)                  # pre-main
+ mov %rdx,2512(%r14)               # stacklowerbound
+ call *2520(%r15)                  # pre-main
 l0004:
  xor %rax,%rax
  add $24,%rsp
- jmp *2544(%r15)                   # exit-with-status
+ jmp *2528(%r15)                   # exit-with-status
 # (*entry exit-with-status expr 1)
  .globl l0005
 l0005:
  push %rax
- call *2552(%r15)                  # os_cleanup_hook
+ call *2536(%r15)                  # os_cleanup_hook
  pop %rax
- call *2560(%r15)                  # external_exit
+ call *2544(%r15)                  # external_exit
  ret
  .quad 0
 # (*entry init-gcarray expr 0)
@@ -123,17 +123,17 @@ l0006:
 # (*entry pre-main expr 0)
  .globl l0011
 l0011:
- call *2576(%r15)                  # unixcleario
- call *2584(%r15)                  # initialize-symbol-table
- call *2592(%r15)                  # initcode
+ call *2560(%r15)                  # unixcleario
+ call *2568(%r15)                  # initialize-symbol-table
+ call *2576(%r15)                  # initcode
  mov $1,%rax
  mov 0(%r9,%rax,8),%rax
- call *2600(%r15)                  # console-print-string
- call *2608(%r15)                  # console-newline
+ call *2584(%r15)                  # console-print-string
+ call *2592(%r15)                  # console-newline
  mov $0,%rax
  mov 0(%r9,%rax,8),%rax
- call *2616(%r15)                  # faslin
- jmp *2624(%r15)                   # loader-main
+ call *2600(%r15)                  # faslin
+ jmp *2608(%r15)                   # loader-main
  .quad 1
 # (*entry console-print-string expr 1)
  .globl l0012
@@ -141,18 +141,18 @@ l0012:
  shl $8,%rax
  shr $8,%rax
  add $8,%rax
- jmp *2632(%r15)                   # unixputs
+ jmp *2616(%r15)                   # unixputs
  .quad 1
 # (*entry console-print-number expr 1)
  .globl l0013
 l0013:
- jmp *2648(%r15)                   # unixputn
+ jmp *2632(%r15)                   # unixputn
  .quad 0
 # (*entry console-newline expr 0)
  .globl l0014
 l0014:
  mov $10,%rax
- jmp *2656(%r15)                   # unixputc
+ jmp *2640(%r15)                   # unixputc
  .quad 1
 # (*entry binaryopenread expr 1)
  .globl binaryopenread
@@ -165,19 +165,19 @@ binaryopenread:
  shl $8,%rax
  shr $8,%rax
  add $8,%rax
- call *2672(%r15)                  # unixopen
+ call *2656(%r15)                  # unixopen
  cmpq $0,%rax
  jne l0019
  mov $9,%rax
  mov 0(%r9,%rax,8),%rax
- jmp *2680(%r15)                   # kernel-fatal-error
+ jmp *2664(%r15)                   # kernel-fatal-error
 l0019:
  ret
  .quad 1
 # (*entry binaryread expr 1)
  .globl binaryread
 binaryread:
- jmp *2696(%r15)                   # xgetw
+ jmp *2680(%r15)                   # xgetw
  .quad 3
 # (*entry binaryreadblock expr 3)
  .globl binaryreadblock
@@ -186,12 +186,12 @@ binaryreadblock:
  mov %rax,%rdx
  mov $8,%rbx
  mov %rbp,%rax
- jmp *2712(%r15)                   # fread
+ jmp *2696(%r15)                   # fread
  .quad 1
 # (*entry binaryclose expr 1)
  .globl binaryclose
 binaryclose:
- jmp *2728(%r15)                   # fclose
+ jmp *2712(%r15)                   # fclose
 l0020:
 # (*entry initialize-symbol-table expr 0)
  .globl l0021
@@ -200,7 +200,7 @@ l0021:
  mov %r13,8(%rsp)
  mov %r13,(%rsp)
  mov $300000,%rbx
- mov 2736(%r14),%rax               # nextsymbol
+ mov 2720(%r14),%rax               # nextsymbol
  mov %rax,%rdx
  mov %rbx,%rcx
 l0022:
@@ -208,14 +208,14 @@ l0022:
  jg l0023
  mov %rdx,%rax
  shl $3,%rax
- add 2744(%r14),%rax               # symnam
+ add 2728(%r14),%rax               # symnam
  mov $1,%rbx
  add %rdx,%rbx
  mov %rbx,(%rax)
  add $1,%rdx
  jmp l0022
 l0023:
- mov 2744(%r14),%rsi               # symnam
+ mov 2728(%r14),%rsi               # symnam
  movq $0,2400000(%rsi)
  mov $393241,%rbx
  xor %rax,%rax
@@ -233,16 +233,16 @@ l0024:
  addq $1,(%rsp)
  jmp l0024
 l0025:
- mov 2744(%r14),%rdi               # symnam
+ mov 2728(%r14),%rdi               # symnam
  mov 2048(%rdi),%rax
- call *2752(%r15)                  # hash-into-table
+ call *2736(%r15)                  # hash-into-table
  mov $256,%rcx
  mov %rax,%rbx
  mov 2088(%r14),%rax               # hashtable
  shl $2,%rbx
  movl %ecx,0(%rbx,%rax,1)
  mov $-1,%rbx
- add 2736(%r14),%rbx               # nextsymbol
+ add 2720(%r14),%rbx               # nextsymbol
  mov $256,%rax
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
@@ -252,9 +252,9 @@ l0026:
  jg l0027
  mov (%rsp),%rax
  shl $3,%rax
- add 2744(%r14),%rax               # symnam
+ add 2728(%r14),%rax               # symnam
  mov (%rax),%rax
- call *2752(%r15)                  # hash-into-table
+ call *2736(%r15)                  # hash-into-table
  mov (%rsp),%rcx
  mov %rax,%rbx
  mov 2088(%r14),%rax               # hashtable
@@ -264,7 +264,7 @@ l0026:
  jmp l0026
 l0027:
  mov %r13,%rax
- mov %rax,2760(%r14)               # show-new-ids
+ mov %rax,2744(%r14)               # show-new-ids
  add $16,%rsp
  ret
  .quad 1
@@ -277,13 +277,13 @@ l0028:
  mov %rax,(%rsp)
  mov %rax,%rbx
  xor %rax,%rax
- call *2776(%r15)                  # search-string-for-character
+ call *2760(%r15)                  # search-string-for-character
  mov %rax,8(%rsp)
  cmp %r13,%rax
  jne l0029
  mov (%rsp),%rax
  add $24,%rsp
- jmp *2784(%r15)                   # intern
+ jmp *2768(%r15)                   # intern
 l0029:
  mov (%rsp),%rax
  shl $8,%rax
@@ -324,15 +324,15 @@ l0031:
  mov $1,%rbx
  add 8(%rsp),%rbx
  mov (%rsp),%rax
- call *2792(%r15)                  # subseq
+ call *2776(%r15)                  # subseq
 l0032:
  add $24,%rsp
- jmp *2784(%r15)                   # intern
+ jmp *2768(%r15)                   # intern
  .quad 1
 # (*entry intern expr 1)
  .globl intern
 intern:
- jmp *2800(%r15)                   # unchecked-string-intern
+ jmp *2784(%r15)                   # unchecked-string-intern
  .quad 1
 # (*entry unchecked-string-intern expr 1)
  .globl l0036
@@ -371,7 +371,7 @@ l0036:
  jmp l0038
 l0037:
  mov (%rsp),%rax
- call *2752(%r15)                  # hash-into-table
+ call *2736(%r15)                  # hash-into-table
  mov %rax,%rbx
  mov %rbx,24(%rsp)
  mov 2088(%r14),%rax               # hashtable
@@ -412,16 +412,16 @@ l0041:
  or %rdi,%rax
  jmp l0038
 l0042:
- cmp 2760(%r14),%rax               # show-new-ids
+ cmp 2744(%r14),%rax               # show-new-ids
  je l0043
  mov $19,%rax
  mov 0(%r9,%rax,8),%rax
- call *2600(%r15)                  # console-print-string
+ call *2584(%r15)                  # console-print-string
  mov (%rsp),%rax
- call *2600(%r15)                  # console-print-string
- call *2608(%r15)                  # console-newline
+ call *2584(%r15)                  # console-print-string
+ call *2592(%r15)                  # console-newline
 l0043:
- call *2808(%r15)                  # gtid
+ call *2792(%r15)                  # gtid
  mov %rax,40(%rsp)
  mov %rax,%rcx
  mov 24(%rsp),%rbx
@@ -429,10 +429,10 @@ l0043:
  shl $2,%rbx
  movl %ecx,0(%rbx,%rax,1)
  mov 16(%rsp),%rax
- call *2816(%r15)                  # gtconststr
+ call *2800(%r15)                  # gtconststr
  mov %rax,32(%rsp)
  mov 8(%rsp),%rbx
- call *2824(%r15)                  # copystringtofrom
+ call *2808(%r15)                  # copystringtofrom
  mov 32(%rsp),%rbx
  shl $8,%rbx
  shr $8,%rbx
@@ -441,7 +441,7 @@ l0043:
  or %rdi,%rbx
  mov 40(%rsp),%rax
  add $48,%rsp
- jmp *2832(%r15)                   # initialize-new-id
+ jmp *2816(%r15)                   # initialize-new-id
 l0038:
  add $48,%rsp
  ret
@@ -454,7 +454,7 @@ l0046:
  mov %r13,16(%rsp)
  mov %r13,8(%rsp)
  mov %rax,(%rsp)
- call *2840(%r15)                  # hash-function
+ call *2824(%r15)                  # hash-function
  mov %rax,8(%rsp)
  mov %rax,16(%rsp)
  movq $-1,24(%rsp)
@@ -502,9 +502,9 @@ l0052:
  shl $32,%rax
  shr $32,%rax
  shl $3,%rax
- add 2744(%r14),%rax               # symnam
+ add 2728(%r14),%rax               # symnam
  mov (%rax),%rax
- call *2848(%r15)                  # unchecked-string-equal
+ call *2832(%r15)                  # unchecked-string-equal
  cmp %r13,%rax
  je l0053
  mov 16(%rsp),%rax
@@ -523,7 +523,7 @@ l0055:
  jne l0047
  mov $24,%rax
  mov 0(%r9,%rax,8),%rax
- call *2680(%r15)                  # kernel-fatal-error
+ call *2664(%r15)                  # kernel-fatal-error
  jmp l0047
 l0051:
  add $32,%rsp
@@ -542,16 +542,16 @@ l0056:
  mov %rax,8(%rsp)
  mov (%rsp),%rcx
  shl $3,%rcx
- add 2744(%r14),%rcx               # symnam
+ add 2728(%r14),%rcx               # symnam
  mov %rbx,(%rcx)
  mov (%rsp),%rdx
  shl $3,%rdx
- add 2856(%r14),%rdx               # symprp
+ add 2840(%r14),%rdx               # symprp
  mov %r13,%rbp
  mov %rbp,(%rdx)
  mov (%rsp),%rax
  shl $3,%rax
- add 2864(%r14),%rax               # symget
+ add 2848(%r14),%rax               # symget
  mov %rbp,(%rax)
  mov (%rsp),%rax
  shl $3,%rax
@@ -564,7 +564,7 @@ l0056:
  or %rdi,%rbx
  mov %rbx,(%rax)
  mov (%rsp),%rax
- call *2872(%r15)                  # plantunbound
+ call *2856(%r15)                  # plantunbound
  mov 8(%rsp),%rax
  add $16,%rsp
  ret
@@ -646,61 +646,61 @@ faslin:
  mov %r13,16(%rsp)
  mov %r13,48(%rsp)
  mov %r13,80(%rsp)
- call *2664(%r15)                  # binaryopenread
+ call *2648(%r15)                  # binaryopenread
  mov %rax,24(%rsp)
- call *2688(%r15)                  # binaryread
+ call *2672(%r15)                  # binaryread
  mov %rax,32(%rsp)
  mov $65535,%rbx
  and %rax,%rbx
  cmpq $399,%rbx
  je l0063
  mov 24(%rsp),%rax
- call *2720(%r15)                  # binaryclose
+ call *2704(%r15)                  # binaryclose
  mov (%rsp),%rax
- call *2896(%r15)                  # faslin-bad-file
+ call *2880(%r15)                  # faslin-bad-file
  jmp l0064
 l0063:
  mov 32(%rsp),%rax
  shr $16,%rax
  mov %rax,32(%rsp)
  mov 24(%rsp),%rax
- call *2688(%r15)                  # binaryread
+ call *2672(%r15)                  # binaryread
  mov 24(%rsp),%rax
- call *2904(%r15)                  # read-id-table
+ call *2888(%r15)                  # read-id-table
  mov %rax,40(%rsp)
  mov 8(%rsp),%rax
- mov $360,%rdi
- call *2880(%r15)                  # gtstaticlisp
+ mov $358,%rdi
+ call *2864(%r15)                  # gtstaticlisp
  mov 8(%rsp),%rcx
  xor %rbx,%rbx
  add %rax,%rbx
  mov 24(%rsp),%rax
- call *2704(%r15)                  # binaryreadblock
+ call *2688(%r15)                  # binaryreadblock
  mov 24(%rsp),%rax
- call *2688(%r15)                  # binaryread
+ call *2672(%r15)                  # binaryread
  mov %rax,56(%rsp)
- call *2912(%r15)                  # gtbps
+ call *2896(%r15)                  # gtbps
  mov %rax,64(%rsp)
  xor %rax,%rax
- call *2912(%r15)                  # gtbps
+ call *2896(%r15)                  # gtbps
  mov %rax,80(%rsp)
  mov 24(%rsp),%rax
- call *2688(%r15)                  # binaryread
+ call *2672(%r15)                  # binaryread
  mov 64(%rsp),%rbx
  add %rax,%rbx
  mov %rbx,88(%rsp)
  mov 64(%rsp),%rax
- mov $361,%rdi
- call *2888(%r15)                  # bpsaddr-to-bpsaddr-rw
+ mov $359,%rdi
+ call *2872(%r15)                  # bpsaddr-to-bpsaddr-rw
  mov 56(%rsp),%rcx
  xor %rbx,%rbx
  add %rax,%rbx
  mov 24(%rsp),%rax
- call *2704(%r15)                  # binaryreadblock
+ call *2688(%r15)                  # binaryreadblock
  mov 24(%rsp),%rax
- call *2688(%r15)                  # binaryread
+ call *2672(%r15)                  # binaryread
  mov %rax,16(%rsp)
- call *2920(%r15)                  # gtwrds
+ call *2904(%r15)                  # gtwrds
  mov %rax,%rbx
  shl $8,%rbx
  shr $8,%rbx
@@ -713,9 +713,9 @@ l0063:
  shr $8,%rbx
  add $8,%rbx
  mov 24(%rsp),%rax
- call *2704(%r15)                  # binaryreadblock
+ call *2688(%r15)                  # binaryreadblock
  mov 24(%rsp),%rax
- call *2720(%r15)                  # binaryclose
+ call *2704(%r15)                  # binaryclose
  mov $1,%rax
  and 32(%rsp),%rax
  cmpq $1,%rax
@@ -724,26 +724,26 @@ l0063:
  mov 48(%rsp),%rcx
  mov 56(%rsp),%rbx
  mov 64(%rsp),%rax
- call *2928(%r15)                  # do-relocation-new
+ call *2912(%r15)                  # do-relocation-new
  jmp l0066
 l0065:
  mov 40(%rsp),%rdx
  mov 48(%rsp),%rcx
  mov 56(%rsp),%rbx
  mov 64(%rsp),%rax
- call *2936(%r15)                  # do-relocation
+ call *2920(%r15)                  # do-relocation
 l0066:
- mov 2944(%r14),%rax               # code-base-hack
+ mov 2928(%r14),%rax               # code-base-hack
  mov %rax,72(%rsp)
  mov 64(%rsp),%rdi
- mov %rdi,2944(%r14)               # code-base-hack
+ mov %rdi,2928(%r14)               # code-base-hack
  mov 88(%rsp),%rax
- call *2952(%r15)                  # addressapply0
+ call *2936(%r15)                  # addressapply0
  mov 72(%rsp),%rdi
- mov %rdi,2944(%r14)               # code-base-hack
+ mov %rdi,2928(%r14)               # code-base-hack
  mov 80(%rsp),%rbx
  mov 88(%rsp),%rax
- call *2960(%r15)                  # delbps
+ call *2944(%r15)                  # delbps
 l0064:
  mov %r13,%rax
  add $96,%rsp
@@ -782,8 +782,8 @@ l0069:
  shl $8,%rax
  shr $8,%rax
  add $8,%rax
- mov $371,%rdi
- call *2968(%r15)                  # bittable
+ mov $369,%rdi
+ call *2952(%r15)                  # bittable
  mov 24(%rsp),%rbx
  add 40(%rsp),%rbx
  mov %rbx,32(%rsp)
@@ -798,20 +798,20 @@ l0071:
  mov 16(%rsp),%rcx
  mov 24(%rsp),%rbx
  mov 32(%rsp),%rax
- call *2984(%r15)                  # relocate-word
+ call *2968(%r15)                  # relocate-word
  jmp l0074
 l0073:
  mov 16(%rsp),%rcx
  mov 24(%rsp),%rbx
  mov 32(%rsp),%rax
- call *2992(%r15)                  # relocate-inf
+ call *2976(%r15)                  # relocate-inf
  jmp l0074
 l0072:
  mov 16(%rsp),%rcx
  mov 24(%rsp),%rbx
  mov 32(%rsp),%rax
- mov $372,%rdi
- call *2976(%r15)                  # relocate-right-half
+ mov $370,%rdi
+ call *2960(%r15)                  # relocate-right-half
 l0074:
  addq $1,40(%rsp)
  jmp l0068
@@ -871,20 +871,20 @@ l0079:
  mov 24(%rsp),%rcx
  mov 32(%rsp),%rbx
  mov 40(%rsp),%rax
- call *2984(%r15)                  # relocate-word
+ call *2968(%r15)                  # relocate-word
  jmp l0076
 l0081:
  mov 24(%rsp),%rcx
  mov 32(%rsp),%rbx
  mov 40(%rsp),%rax
- call *2992(%r15)                  # relocate-inf
+ call *2976(%r15)                  # relocate-inf
  jmp l0076
 l0080:
  mov 24(%rsp),%rcx
  mov 32(%rsp),%rbx
  mov 40(%rsp),%rax
- mov $372,%rdi
- call *2976(%r15)                  # relocate-right-half
+ mov $370,%rdi
+ call *2960(%r15)                  # relocate-right-half
  jmp l0076
 l0078:
  add $48,%rsp
@@ -913,14 +913,14 @@ l0082:
  mov %rax,24(%rsp)
  mov %rbx,32(%rsp)
  mov (%rsp),%rax
- mov $361,%rdi
- call *2888(%r15)                  # bpsaddr-to-bpsaddr-rw
+ mov $359,%rdi
+ call *2872(%r15)                  # bpsaddr-to-bpsaddr-rw
  mov %rax,40(%rsp)
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rcx
  mov 32(%rsp),%rbx
  mov 24(%rsp),%rax
- call *3000(%r15)                  # compute-relocation
+ call *2984(%r15)                  # compute-relocation
  mov %rax,%rbx
  mov 40(%rsp),%rax
  add $48,%rsp
@@ -945,14 +945,14 @@ l0083:
  mov %rax,24(%rsp)
  mov %rbx,32(%rsp)
  mov (%rsp),%rax
- mov $361,%rdi
- call *2888(%r15)                  # bpsaddr-to-bpsaddr-rw
+ mov $359,%rdi
+ call *2872(%r15)                  # bpsaddr-to-bpsaddr-rw
  mov %rax,40(%rsp)
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rcx
  mov 32(%rsp),%rbx
  mov 24(%rsp),%rax
- call *3000(%r15)                  # compute-relocation
+ call *2984(%r15)                  # compute-relocation
  mov %rax,48(%rsp)
  mov (%rsp),%rsi
  mov (%rsi),%rax
@@ -988,7 +988,7 @@ l0088:
  jl l0089
  mov %rdx,%rbx
  mov (%rsp),%rax
- call *3008(%r15)                  # local-to-global-id
+ call *2992(%r15)                  # local-to-global-id
  shl $3,%rax
  jmp l0086
 l0089:
@@ -1002,7 +1002,7 @@ l0087:
  jl l0091
  mov %rdx,%rbx
  mov (%rsp),%rax
- call *3008(%r15)                  # local-to-global-id
+ call *2992(%r15)                  # local-to-global-id
  mov %rax,(%rsp)
 l0091:
  mov (%rsp),%rax
@@ -1017,7 +1017,7 @@ l0090:
  mov %rdx,%rbx
  mov (%rsp),%rax
  add $8,%rsp
- jmp *3008(%r15)                   # local-to-global-id
+ jmp *2992(%r15)                   # local-to-global-id
 l0093:
  mov %rbx,%rax
  jmp l0086
@@ -1049,10 +1049,10 @@ l0095:
  mov %r13,16(%rsp)
  mov %r13,8(%rsp)
  mov %rax,(%rsp)
- call *2688(%r15)                  # binaryread
+ call *2672(%r15)                  # binaryread
  mov %rax,8(%rsp)
  add $1,%rax
- call *2920(%r15)                  # gtwrds
+ call *2904(%r15)                  # gtwrds
  shl $8,%rax
  shr $8,%rax
  mov $7,%rdi
@@ -1068,7 +1068,7 @@ l0096:
  cmp 32(%rsp),%rdi
  jg l0097
  mov (%rsp),%rax
- call *2688(%r15)                  # binaryread
+ call *2672(%r15)                  # binaryread
  mov 2064(%r14),%rsi               # tokenbuffer
  mov %rax,(%rsi)
  mov $9,%rcx
@@ -1080,7 +1080,7 @@ l0096:
  mov $8,%rbx
  add 2064(%r14),%rbx               # tokenbuffer
  mov (%rsp),%rax
- call *2704(%r15)                  # binaryreadblock
+ call *2688(%r15)                  # binaryreadblock
  xor %rax,%rax
  add 2064(%r14),%rax               # tokenbuffer
  shl $8,%rax
@@ -1088,7 +1088,7 @@ l0096:
  mov $4,%rdi
  shl $56,%rdi
  or %rdi,%rax
- call *2768(%r15)                  # faslin-intern
+ call *2752(%r15)                  # faslin-intern
  mov %rax,40(%rsp)
  mov $1,%rax
  add 24(%rsp),%rax
@@ -1111,22 +1111,22 @@ l0097:
 # (*entry putentry expr 3)
  .globl putentry
 putentry:
- add 2944(%r14),%rcx               # code-base-hack
+ add 2928(%r14),%rcx               # code-base-hack
  shl $8,%rcx
  shr $8,%rcx
  mov $20,%rdi
  shl $56,%rdi
  or %rdi,%rcx
- mov $377,%rdi
- jmp *3016(%r15)                   # putd
+ mov $375,%rdi
+ jmp *3000(%r15)                   # putd
  .quad 1
 # (*entry faslin-bad-file expr 1)
  .globl l0100
 l0100:
  mov $29,%rax
  mov 0(%r9,%rax,8),%rax
- call *2600(%r15)                  # console-print-string
- jmp *2608(%r15)                   # console-newline
+ call *2584(%r15)                  # console-print-string
+ jmp *2592(%r15)                   # console-newline
  .quad 1
 # (*entry gtbps expr 1)
  .globl gtbps
@@ -1136,35 +1136,35 @@ l0104:
  mov %rax,(%rsp)
  cmp %r13,%rax
  jne l0105
- call *3032(%r15)                  # gtbps-nil-error
+ call *3016(%r15)                  # gtbps-nil-error
 l0105:
  cmpq $10,(%rsp)
  jle l0106
  mov $15,%rax
- and 2320(%r14),%rax               # nextbps
+ and 2288(%r14),%rax               # nextbps
  cmpq $0,%rax
  je l0106
- mov 2320(%r14),%rbx               # nextbps
+ mov 2288(%r14),%rbx               # nextbps
  shr $4,%rbx
  shl $4,%rbx
  add $16,%rbx
- mov %rbx,2320(%r14)               # nextbps
+ mov %rbx,2288(%r14)               # nextbps
 l0106:
- mov 2320(%r14),%rax               # nextbps
+ mov 2288(%r14),%rax               # nextbps
  mov (%rsp),%rbx
  shl $3,%rbx
- add 2320(%r14),%rbx               # nextbps
- mov %rbx,2320(%r14)               # nextbps
- cmp 2296(%r14),%rbx               # lastbps
+ add 2288(%r14),%rbx               # nextbps
+ mov %rbx,2288(%r14)               # nextbps
+ cmp 2264(%r14),%rbx               # lastbps
  jle l0107
- mov %rax,2320(%r14)               # nextbps
+ mov %rax,2288(%r14)               # nextbps
  mov $35,%rax
  mov 0(%r9,%rax,8),%rax
- call *3040(%r15)                  # getd
+ call *3024(%r15)                  # getd
  cmp %r13,%rax
  je l0108
  mov (%rsp),%rax
- call *3048(%r15)                  # try-other-bps-spaces
+ call *3032(%r15)                  # try-other-bps-spaces
  cmp %r13,%rax
  je l0108
  mov (%rsp),%rax
@@ -1173,7 +1173,7 @@ l0108:
  mov $34,%rax
  mov 0(%r9,%rax,8),%rax
  add $8,%rsp
- jmp *3056(%r15)                   # stderror
+ jmp *3040(%r15)                   # stderror
 l0107:
  add $8,%rsp
  ret
@@ -1183,13 +1183,13 @@ l0111:
 l0112:
  mov $41,%rax
  mov 0(%r9,%rax,8),%rax
- jmp *3056(%r15)                   # stderror
+ jmp *3040(%r15)                   # stderror
  .quad 1
 # (*entry bpsaddr-to-bpsaddr-rw expr 1)
  .globl l0113
 l0113:
- add 2328(%r14),%rax               # bpsbaserw
- sub 2336(%r14),%rax               # bpsbaserx
+ add 2296(%r14),%rax               # bpsbaserw
+ sub 2304(%r14),%rax               # bpsbaserx
  ret
  .quad 1
 # (*entry gtstaticlisp expr 1)
@@ -1202,24 +1202,24 @@ l0119:
  jne l0120
  mov $48,%rax
  mov 0(%r9,%rax,8),%rax
- call *3056(%r15)                  # stderror
+ call *3040(%r15)                  # stderror
 l0120:
- mov 2368(%r14),%rax               # nextstaticlisp
+ mov 2336(%r14),%rax               # nextstaticlisp
  mov (%rsp),%rbx
  shl $3,%rbx
- add 2368(%r14),%rbx               # nextstaticlisp
- mov %rbx,2368(%r14)               # nextstaticlisp
- cmp 2360(%r14),%rbx               # laststaticlisp
+ add 2336(%r14),%rbx               # nextstaticlisp
+ mov %rbx,2336(%r14)               # nextstaticlisp
+ cmp 2328(%r14),%rbx               # laststaticlisp
  jle l0121
- mov %rax,2368(%r14)               # nextstaticlisp
+ mov %rax,2336(%r14)               # nextstaticlisp
  mov $47,%rax
  mov 0(%r9,%rax,8),%rax
- call *3040(%r15)                  # getd
+ call *3024(%r15)                  # getd
  cmp %r13,%rax
  je l0122
  mov (%rsp),%rax
- mov $383,%rdi
- call *3064(%r15)                  # try-other-staticlisp-spaces
+ mov $381,%rdi
+ call *3048(%r15)                  # try-other-staticlisp-spaces
  cmp %r13,%rax
  je l0122
  mov (%rsp),%rax
@@ -1228,7 +1228,7 @@ l0122:
  mov $46,%rax
  mov 0(%r9,%rax,8),%rax
  add $8,%rsp
- jmp *3056(%r15)                   # stderror
+ jmp *3040(%r15)                   # stderror
 l0121:
  add $8,%rsp
  ret
@@ -1238,9 +1238,9 @@ l0121:
 gtheap:
  cmp %r13,%rax
  jne l0123
- jmp *3080(%r15)                   # known-free-space
+ jmp *3064(%r15)                   # known-free-space
 l0123:
- jmp *3088(%r15)                   # real-gtheap
+ jmp *3072(%r15)                   # real-gtheap
  .quad 1
 # (*entry real-gtheap expr 1)
  .globl l0124
@@ -1254,7 +1254,7 @@ l0124:
  cmp %r11,%rbx
  jl l0125
  mov %rcx,%rbx
- jmp *3096(%r15)                   # get-heap-trap
+ jmp *3080(%r15)                   # get-heap-trap
 l0125:
  ret
  .quad 1
@@ -1263,26 +1263,26 @@ l0125:
 l0128:
  mov $59,%rax
  mov 0(%r9,%rax,8),%rax
- jmp *2680(%r15)                   # kernel-fatal-error
+ jmp *2664(%r15)                   # kernel-fatal-error
 l0131:
 # (*entry gtid expr 0)
  .globl gtid
 gtid:
- cmpq $0,2736(%r14)                # nextsymbol
+ cmpq $0,2720(%r14)                # nextsymbol
  jne l0132
- call *3104(%r15)                  # reclaim
- cmpq $0,2736(%r14)                # nextsymbol
+ call *3088(%r15)                  # reclaim
+ cmpq $0,2720(%r14)                # nextsymbol
  jne l0132
  mov $65,%rax
  mov 0(%r9,%rax,8),%rax
- call *2680(%r15)                  # kernel-fatal-error
+ call *2664(%r15)                  # kernel-fatal-error
 l0132:
- mov 2736(%r14),%rax               # nextsymbol
+ mov 2720(%r14),%rax               # nextsymbol
  mov %rax,%rbx
  shl $3,%rbx
- add 2744(%r14),%rbx               # symnam
+ add 2728(%r14),%rbx               # symnam
  mov (%rbx),%rdi
- mov %rdi,2736(%r14)               # nextsymbol
+ mov %rdi,2720(%r14)               # nextsymbol
  ret
  .quad 1
 # (*entry gtwrds expr 1)
@@ -1290,7 +1290,7 @@ l0132:
 gtwrds:
  push %rax
  add $2,%rax
- call *3072(%r15)                  # gtheap
+ call *3056(%r15)                  # gtheap
  mov (%rsp),%rbx
  shl $8,%rbx
  shr $8,%rbx
@@ -1313,8 +1313,8 @@ gtconststr:
  sar $3,%rax
  mov %rax,8(%rsp)
  add $1,%rax
- mov $360,%rdi
- call *2880(%r15)                  # gtstaticlisp
+ mov $358,%rdi
+ call *2864(%r15)                  # gtstaticlisp
  mov (%rsp),%rdi
  mov %rdi,(%rax)
  mov 8(%rsp),%rbx
@@ -1342,7 +1342,7 @@ subseq:
  je l0135
  mov $70,%rax
  mov 0(%r9,%rax,8),%rax
- call *2680(%r15)                  # kernel-fatal-error
+ call *2664(%r15)                  # kernel-fatal-error
 l0135:
  mov $-1,%rax
  add 16(%rsp),%rax
@@ -1353,7 +1353,7 @@ l0135:
  shr $8,%rax
  mov %rax,32(%rsp)
  mov 24(%rsp),%rax
- call *3112(%r15)                  # gtstr
+ call *3096(%r15)                  # gtstr
  mov %rax,40(%rsp)
  mov 24(%rsp),%rbx
  xor %rax,%rax
@@ -1550,7 +1550,7 @@ cons:
  push %rbx
  push %rax
  mov $2,%rax
- call *3072(%r15)                  # gtheap
+ call *3056(%r15)                  # gtheap
  mov (%rsp),%rdi
  mov %rdi,(%rax)
  mov 8(%rsp),%rdi
@@ -1583,7 +1583,7 @@ modify:
 # (*entry put expr 3)
  .globl put
 put:
- jmp *3152(%r15)                   # unchecked-put
+ jmp *3136(%r15)                   # unchecked-put
  .quad 3
 # (*entry unchecked-put expr 3)
  .globl l0153
@@ -1593,11 +1593,11 @@ l0153:
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rcx,16(%rsp)
- call *3160(%r15)                  # unchecked-prop
+ call *3144(%r15)                  # unchecked-prop
  mov %rax,24(%rsp)
  mov %rax,%rbx
  mov 8(%rsp),%rax
- call *3168(%r15)                  # atsoc
+ call *3152(%r15)                  # atsoc
  cmp %r13,%rax
  je l0154
  mov %rax,%rsi
@@ -1618,7 +1618,7 @@ l0154:
  cmp %r11,%r10
  jl l0156
  push %rax
- call *3176(%r15)                  # %reclaim
+ call *3160(%r15)                  # %reclaim
  pop %rax
 l0156:
  mov 24(%rsp),%rbx
@@ -1631,12 +1631,12 @@ l0156:
  cmp %r11,%r10
  jl l0157
  push %rax
- call *3176(%r15)                  # %reclaim
+ call *3160(%r15)                  # %reclaim
  pop %rax
 l0157:
  mov %rax,%rbx
  mov (%rsp),%rax
- call *3184(%r15)                  # unchecked-setprop
+ call *3168(%r15)                  # unchecked-setprop
 l0155:
  mov 16(%rsp),%rax
  add $32,%rsp
@@ -1685,7 +1685,7 @@ l0161:
  shl $8,%rax
  shr $8,%rax
  shl $3,%rax
- add 2856(%r14),%rax               # symprp
+ add 2840(%r14),%rax               # symprp
  mov %rbx,(%rax)
  mov %rbx,%rax
  ret
@@ -1696,14 +1696,14 @@ l0162:
  shl $8,%rax
  shr $8,%rax
  shl $3,%rax
- add 2856(%r14),%rax               # symprp
+ add 2840(%r14),%rax               # symprp
  mov (%rax),%rax
  ret
  .quad 3
 # (*entry putd expr 3)
  .globl putd
 putd:
- jmp *3192(%r15)                   # code-putd
+ jmp *3176(%r15)                   # code-putd
  .quad 3
 # (*entry code-putd expr 3)
  .globl l0167
@@ -1727,7 +1727,7 @@ l0167:
 l0168:
  mov $79,%rax
  mov 0(%r9,%rax,8),%rax
- call *2680(%r15)                  # kernel-fatal-error
+ call *2664(%r15)                  # kernel-fatal-error
 l0169:
  mov 16(%rsp),%rbx
  shl $8,%rbx
@@ -1735,7 +1735,7 @@ l0169:
  mov (%rsp),%rax
  shl $8,%rax
  shr $8,%rax
- call *3200(%r15)                  # plantcodepointer
+ call *3184(%r15)                  # plantcodepointer
  mov 8(%rsp),%rdi
  cmp $78,%rdi
  je l0170
@@ -1744,7 +1744,7 @@ l0169:
  mov 0(%r9,%rbx,8),%rbx
  mov (%rsp),%rax
  add $24,%rsp
- jmp *3144(%r15)                   # put
+ jmp *3128(%r15)                   # put
 l0170:
  mov %r13,%rax
  add $24,%rsp
@@ -1781,7 +1781,7 @@ l0173:
  jmp l0175
 l0174:
  mov 16(%rsp),%rax
- call *3216(%r15)                  # fluid1
+ call *3200(%r15)                  # fluid1
  mov 8(%rsp),%rax
  shl $8,%rax
  shr $8,%rax
@@ -1811,12 +1811,12 @@ l0180:
  mov 0(%r9,%rcx,8),%rcx
  mov $85,%rbx
  mov 0(%r9,%rbx,8),%rbx
- jmp *3144(%r15)                   # put
+ jmp *3128(%r15)                   # put
  .quad 1
 # (*entry stderror expr 1)
  .globl stderror
 stderror:
- jmp *2680(%r15)                   # kernel-fatal-error
+ jmp *2664(%r15)                   # kernel-fatal-error
  .quad 2
 # (*entry *define-constant expr 2)
  .globl l0183
@@ -1831,7 +1831,7 @@ l0183:
  mov 0(%r9,%rcx,8),%rcx
  mov $87,%rbx
  mov 0(%r9,%rbx,8),%rbx
- jmp *3144(%r15)                   # put
+ jmp *3128(%r15)                   # put
  .quad 1
 # (*entry plantunbound expr 1)
  .globl plantunbound
@@ -1841,7 +1841,7 @@ plantunbound:
  add %rsi,%rsi
  add %rsi,%rsi
  add %r15,%rsi
- mov 2216(%r14),%rdi               # undefinedfunctioninstruction
+ mov 2496(%r14),%rdi               # undefinedfunctioninstruction
  mov %rdi,0(%rsi)
  ret
 l0184:
@@ -1865,7 +1865,7 @@ plantlambdalink:
  add %rsi,%rsi
  add %rsi,%rsi
  add %r15,%rsi
- mov 2232(%r14),%rdi               # lambdalinkinstruction
+ mov 2504(%r14),%rdi               # lambdalinkinstruction
  mov %rdi,0(%rsi)
  ret
 l0185:
@@ -1914,7 +1914,7 @@ l0188:
 # (*entry undefinedfunction expr 1)
  .globl undefinedfunction
 undefinedfunction:
- jmp *3248(%r15)                   # undefinedfunction-aux
+ jmp *3240(%r15)                   # undefinedfunction-aux
  .quad 1
 # (*entry undefinedfunction-aux expr 1)
  .globl l0191
@@ -1922,14 +1922,14 @@ l0191:
  push %rdi
  mov $89,%rax
  mov 0(%r9,%rax,8),%rax
- call *2600(%r15)                  # console-print-string
- mov 2744(%r14),%rsi               # symnam
+ call *2584(%r15)                  # console-print-string
+ mov 2728(%r14),%rsi               # symnam
  pop %rdi
  shl $3,%rdi
  mov 0(%rsi,%rdi,1),%rax
- call *2600(%r15)                  # console-print-string
+ call *2584(%r15)                  # console-print-string
  xor %rax,%rax
- call *2544(%r15)                  # exit-with-status
+ call *2528(%r15)                  # exit-with-status
  ret
 l0192:
 # (*entry compiledcallinginterpreted expr 0)
@@ -1949,25 +1949,25 @@ l0195:
  push %rax
  mov $95,%rax
  mov 0(%r9,%rax,8),%rax
- call *2600(%r15)                  # console-print-string
+ call *2584(%r15)                  # console-print-string
  mov (%rsp),%rax
- call *2600(%r15)                  # console-print-string
- call *2608(%r15)                  # console-newline
+ call *2584(%r15)                  # console-print-string
+ call *2592(%r15)                  # console-newline
  mov $-1,%rax
  add $8,%rsp
- jmp *2544(%r15)                   # exit-with-status
+ jmp *2528(%r15)                   # exit-with-status
 l0198:
 # (*entry pslsignalhandler expr 0)
  .globl pslsignalhandler
 pslsignalhandler:
  mov $99,%rax
  mov 0(%r9,%rax,8),%rax
- call *3056(%r15)                  # stderror
+ call *3040(%r15)                  # stderror
 l0199:
 # (*entry echooff expr 0)
  .globl l0200
 l0200:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -1989,13 +1989,13 @@ l0200:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
 l0201:
 # (*entry echoon expr 0)
  .globl l0202
 l0202:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2017,7 +2017,7 @@ l0202:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 1
 # (*entry external_charsininputbuffer expr 1)
@@ -2025,7 +2025,7 @@ l0202:
 l0203:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2047,14 +2047,14 @@ l0203:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
 l0204:
 # (*entry flushstdoutputbuffer expr 0)
  .globl l0205
 l0205:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2076,13 +2076,13 @@ l0205:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
 l0206:
 # (*entry external_user_homedir_string expr 0)
  .globl l0207
 l0207:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2104,7 +2104,7 @@ l0207:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 1
 # (*entry external_anyuser_homedir_string expr 1)
@@ -2112,7 +2112,7 @@ l0207:
 l0208:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2134,14 +2134,14 @@ l0208:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
 l0209:
 # (*entry unexec expr 0)
  .globl l0210
 l0210:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2163,7 +2163,7 @@ l0210:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 1
 # (*entry alterheapsize expr 1)
@@ -2171,7 +2171,7 @@ l0210:
 l0211:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2193,7 +2193,7 @@ l0211:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -2202,7 +2202,7 @@ l0211:
 l0212:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2224,14 +2224,14 @@ l0212:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
 l0213:
 # (*entry get_imagefilepath expr 0)
  .globl l0214
 l0214:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2253,7 +2253,7 @@ l0214:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 3
 # (*entry get_file_status expr 3)
@@ -2265,7 +2265,7 @@ l0215:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2287,7 +2287,7 @@ l0215:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 2
@@ -2298,7 +2298,7 @@ l0216:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2320,14 +2320,14 @@ l0216:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
 l0217:
 # (*entry os_cleanup_hook expr 0)
  .globl l0218
 l0218:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2349,13 +2349,13 @@ l0218:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
 l0219:
 # (*entry get_execfilepath expr 0)
  .globl l0220
 l0220:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2377,7 +2377,7 @@ l0220:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 1
 # (*entry external_alarm expr 1)
@@ -2385,7 +2385,7 @@ l0220:
 l0221:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2407,7 +2407,7 @@ l0221:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -2418,7 +2418,7 @@ l0222:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2440,7 +2440,7 @@ l0222:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -2449,7 +2449,7 @@ l0222:
 l0223:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2471,14 +2471,14 @@ l0223:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
 l0224:
 # (*entry external_timc expr 0)
  .globl l0225
 l0225:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2500,7 +2500,7 @@ l0225:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 2
 # (*entry external_stat expr 2)
@@ -2510,7 +2510,7 @@ l0226:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2532,7 +2532,7 @@ l0226:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -2543,7 +2543,7 @@ l0227:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2565,7 +2565,7 @@ l0227:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -2574,7 +2574,7 @@ l0227:
 l0228:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2596,7 +2596,7 @@ l0228:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -2607,7 +2607,7 @@ l0229:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2629,7 +2629,7 @@ l0229:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -2638,7 +2638,7 @@ l0229:
 l0230:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2660,7 +2660,7 @@ l0230:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -2669,7 +2669,7 @@ l0230:
 l0231:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2691,7 +2691,7 @@ l0231:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -2700,7 +2700,7 @@ l0231:
 l0232:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2722,7 +2722,7 @@ l0232:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -2733,7 +2733,7 @@ l0233:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2755,7 +2755,7 @@ l0233:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -2766,7 +2766,7 @@ l0234:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2788,7 +2788,7 @@ l0234:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -2799,7 +2799,7 @@ l0235:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2821,7 +2821,7 @@ l0235:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 3
@@ -2834,7 +2834,7 @@ l0236:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2856,7 +2856,7 @@ l0236:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -2869,7 +2869,7 @@ l0237:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2891,7 +2891,7 @@ l0237:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -2904,7 +2904,7 @@ l0238:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2926,7 +2926,7 @@ l0238:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -2939,7 +2939,7 @@ l0239:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2961,7 +2961,7 @@ l0239:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -2974,7 +2974,7 @@ l0240:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -2996,7 +2996,7 @@ l0240:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 1
@@ -3005,7 +3005,7 @@ l0240:
 l0241:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3027,7 +3027,7 @@ l0241:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -3038,7 +3038,7 @@ l0242:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3060,7 +3060,7 @@ l0242:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -3069,7 +3069,7 @@ l0242:
 l0243:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3091,7 +3091,7 @@ l0243:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -3102,7 +3102,7 @@ l0244:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3124,7 +3124,7 @@ l0244:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 3
@@ -3137,7 +3137,7 @@ l0245:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3159,7 +3159,7 @@ l0245:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -3172,7 +3172,7 @@ l0246:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3194,7 +3194,7 @@ l0246:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -3207,7 +3207,7 @@ l0247:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3229,7 +3229,7 @@ l0247:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -3242,7 +3242,7 @@ l0248:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3264,7 +3264,7 @@ l0248:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 2
@@ -3275,7 +3275,7 @@ l0249:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3297,7 +3297,7 @@ l0249:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 4
@@ -3312,7 +3312,7 @@ l0250:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3334,7 +3334,7 @@ l0250:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $32,%rsp
  ret
  .quad 4
@@ -3349,7 +3349,7 @@ l0251:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3371,7 +3371,7 @@ l0251:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $32,%rsp
  ret
  .quad 3
@@ -3384,7 +3384,7 @@ l0252:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3406,7 +3406,7 @@ l0252:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 4
@@ -3421,7 +3421,7 @@ l0253:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3443,7 +3443,7 @@ l0253:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $32,%rsp
  ret
  .quad 2
@@ -3454,7 +3454,7 @@ l0254:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3476,7 +3476,7 @@ l0254:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3487,7 +3487,7 @@ l0255:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3509,7 +3509,7 @@ l0255:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3520,7 +3520,7 @@ l0256:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3542,7 +3542,7 @@ l0256:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3553,7 +3553,7 @@ l0257:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3575,7 +3575,7 @@ l0257:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3586,7 +3586,7 @@ l0258:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3608,7 +3608,7 @@ l0258:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3619,7 +3619,7 @@ l0259:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3641,7 +3641,7 @@ l0259:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3652,7 +3652,7 @@ l0260:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3674,7 +3674,7 @@ l0260:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3685,7 +3685,7 @@ l0261:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3707,7 +3707,7 @@ l0261:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3718,7 +3718,7 @@ l0262:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3740,7 +3740,7 @@ l0262:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3751,7 +3751,7 @@ l0263:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3773,7 +3773,7 @@ l0263:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3784,7 +3784,7 @@ l0264:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3806,7 +3806,7 @@ l0264:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 3
@@ -3819,7 +3819,7 @@ l0265:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3841,7 +3841,7 @@ l0265:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 2
@@ -3852,7 +3852,7 @@ l0266:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3874,7 +3874,7 @@ l0266:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3885,7 +3885,7 @@ l0267:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3907,7 +3907,7 @@ l0267:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -3918,7 +3918,7 @@ l0268:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3940,7 +3940,7 @@ l0268:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 3
@@ -3953,7 +3953,7 @@ l0269:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -3975,7 +3975,7 @@ l0269:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -3988,7 +3988,7 @@ l0270:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4010,14 +4010,14 @@ l0270:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
 l0271:
 # (*entry external_pwd expr 0)
  .globl l0272
 l0272:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4039,7 +4039,7 @@ l0272:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 2
 # (*entry sun3_sigset expr 2)
@@ -4049,7 +4049,7 @@ l0273:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4071,7 +4071,7 @@ l0273:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -4082,7 +4082,7 @@ l0274:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4104,7 +4104,7 @@ l0274:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -4113,7 +4113,7 @@ l0274:
 l0275:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4135,7 +4135,7 @@ l0275:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -4144,7 +4144,7 @@ l0275:
 l0276:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4166,7 +4166,7 @@ l0276:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -4175,7 +4175,7 @@ l0276:
 l0277:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4197,14 +4197,14 @@ l0277:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
 l0278:
 # (*entry unixcleario expr 0)
  .globl l0279
 l0279:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4226,7 +4226,7 @@ l0279:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 1
 # (*entry expand_file_name expr 1)
@@ -4234,7 +4234,7 @@ l0279:
 l0280:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4256,7 +4256,7 @@ l0280:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -4267,7 +4267,7 @@ l0281:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4289,7 +4289,7 @@ l0281:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -4298,7 +4298,7 @@ l0281:
 l0282:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4320,7 +4320,7 @@ l0282:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -4329,7 +4329,7 @@ l0282:
 l0283:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4351,7 +4351,7 @@ l0283:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -4360,7 +4360,7 @@ l0283:
 l0284:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4382,7 +4382,7 @@ l0284:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -4391,7 +4391,7 @@ l0284:
 l0285:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4413,7 +4413,7 @@ l0285:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -4422,7 +4422,7 @@ l0285:
 l0286:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4444,7 +4444,7 @@ l0286:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -4455,7 +4455,7 @@ l0287:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4477,7 +4477,7 @@ l0287:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -4486,7 +4486,7 @@ l0287:
 l0288:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4508,7 +4508,7 @@ l0288:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 4
@@ -4523,7 +4523,7 @@ l0289:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4545,7 +4545,7 @@ l0289:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $32,%rsp
  ret
  .quad 2
@@ -4556,7 +4556,7 @@ l0290:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4578,7 +4578,7 @@ l0290:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -4587,7 +4587,7 @@ l0290:
 l0291:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4609,7 +4609,7 @@ l0291:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 3
@@ -4622,7 +4622,7 @@ l0292:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4644,7 +4644,7 @@ l0292:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 4
@@ -4659,7 +4659,7 @@ l0293:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4681,7 +4681,7 @@ l0293:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $32,%rsp
  ret
  .quad 1
@@ -4690,7 +4690,7 @@ l0293:
 l0294:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4712,7 +4712,7 @@ l0294:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 3
@@ -4725,7 +4725,7 @@ l0295:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4747,7 +4747,7 @@ l0295:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 1
@@ -4756,7 +4756,7 @@ l0295:
 l0296:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4778,7 +4778,7 @@ l0296:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -4787,7 +4787,7 @@ l0296:
 l0297:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4809,7 +4809,7 @@ l0297:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -4820,7 +4820,7 @@ l0298:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4842,7 +4842,7 @@ l0298:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -4853,7 +4853,7 @@ l0299:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4875,7 +4875,7 @@ l0299:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -4884,7 +4884,7 @@ l0299:
 l0300:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4906,7 +4906,7 @@ l0300:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -4915,7 +4915,7 @@ l0300:
 l0301:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4937,14 +4937,14 @@ l0301:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
 l0302:
 # (*entry getpid expr 0)
  .globl l0303
 l0303:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4966,13 +4966,13 @@ l0303:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
 l0304:
 # (*entry gethostid expr 0)
  .globl l0305
 l0305:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -4994,7 +4994,7 @@ l0305:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 2
 # (*entry unixsocketopen expr 2)
@@ -5004,7 +5004,7 @@ l0306:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5026,7 +5026,7 @@ l0306:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 3
@@ -5039,7 +5039,7 @@ l0307:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5061,7 +5061,7 @@ l0307:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -5074,7 +5074,7 @@ l0308:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5096,7 +5096,7 @@ l0308:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 1
@@ -5105,7 +5105,7 @@ l0308:
 l0309:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5127,14 +5127,14 @@ l0309:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
 l0310:
 # (*entry fork expr 0)
  .globl l0311
 l0311:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5156,7 +5156,7 @@ l0311:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 1
 # (*entry wait expr 1)
@@ -5164,7 +5164,7 @@ l0311:
 l0312:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5186,7 +5186,7 @@ l0312:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -5197,7 +5197,7 @@ l0313:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5219,7 +5219,7 @@ l0313:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -5228,7 +5228,7 @@ l0313:
 l0314:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5250,7 +5250,7 @@ l0314:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 3
@@ -5263,7 +5263,7 @@ l0315:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5285,7 +5285,7 @@ l0315:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -5298,7 +5298,7 @@ l0316:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5320,7 +5320,7 @@ l0316:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -5333,7 +5333,7 @@ l0317:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5355,7 +5355,7 @@ l0317:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 1
@@ -5364,7 +5364,7 @@ l0317:
 l0318:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5386,7 +5386,7 @@ l0318:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 4
@@ -5401,7 +5401,7 @@ l0319:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5423,7 +5423,7 @@ l0319:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $32,%rsp
  ret
  .quad 3
@@ -5436,7 +5436,7 @@ l0320:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5458,7 +5458,7 @@ l0320:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -5471,7 +5471,7 @@ l0321:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5493,7 +5493,7 @@ l0321:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 2
@@ -5504,7 +5504,7 @@ l0322:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5526,7 +5526,7 @@ l0322:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -5535,7 +5535,7 @@ l0322:
 l0323:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5557,7 +5557,7 @@ l0323:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -5568,7 +5568,7 @@ l0324:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5590,7 +5590,7 @@ l0324:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -5599,7 +5599,7 @@ l0324:
 l0325:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5621,7 +5621,7 @@ l0325:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 4
@@ -5636,7 +5636,7 @@ l0326:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5658,7 +5658,7 @@ l0326:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $32,%rsp
  ret
  .quad 4
@@ -5673,7 +5673,7 @@ l0327:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5695,7 +5695,7 @@ l0327:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $32,%rsp
  ret
  .quad 1
@@ -5704,7 +5704,7 @@ l0327:
 l0328:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5726,7 +5726,7 @@ l0328:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -5737,7 +5737,7 @@ l0329:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5759,7 +5759,7 @@ l0329:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -5768,7 +5768,7 @@ l0329:
 l0330:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5790,14 +5790,14 @@ l0330:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
 l0331:
 # (*entry pthread_self expr 0)
  .globl l0332
 l0332:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5819,7 +5819,7 @@ l0332:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 2
 # (*entry pthread_equal expr 2)
@@ -5829,7 +5829,7 @@ l0333:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5851,7 +5851,7 @@ l0333:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -5860,7 +5860,7 @@ l0333:
 l0334:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5882,7 +5882,7 @@ l0334:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -5891,7 +5891,7 @@ l0334:
 l0335:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5913,7 +5913,7 @@ l0335:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -5924,7 +5924,7 @@ l0336:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5946,7 +5946,7 @@ l0336:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -5957,7 +5957,7 @@ l0337:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -5979,7 +5979,7 @@ l0337:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -5990,7 +5990,7 @@ l0338:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6012,7 +6012,7 @@ l0338:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6023,7 +6023,7 @@ l0339:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6045,7 +6045,7 @@ l0339:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6056,7 +6056,7 @@ l0340:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6078,7 +6078,7 @@ l0340:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6089,7 +6089,7 @@ l0341:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6111,7 +6111,7 @@ l0341:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6122,7 +6122,7 @@ l0342:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6144,7 +6144,7 @@ l0342:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6155,7 +6155,7 @@ l0343:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6177,7 +6177,7 @@ l0343:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6188,7 +6188,7 @@ l0344:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6210,7 +6210,7 @@ l0344:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6221,7 +6221,7 @@ l0345:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6243,7 +6243,7 @@ l0345:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6254,7 +6254,7 @@ l0346:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6276,7 +6276,7 @@ l0346:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 3
@@ -6289,7 +6289,7 @@ l0347:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6311,7 +6311,7 @@ l0347:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -6324,7 +6324,7 @@ l0348:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6346,7 +6346,7 @@ l0348:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 2
@@ -6357,7 +6357,7 @@ l0349:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6379,7 +6379,7 @@ l0349:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6390,7 +6390,7 @@ l0350:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6412,7 +6412,7 @@ l0350:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 3
@@ -6425,7 +6425,7 @@ l0351:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6447,7 +6447,7 @@ l0351:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 3
@@ -6460,7 +6460,7 @@ l0352:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6482,14 +6482,14 @@ l0352:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
 l0353:
 # (*entry pthread_getconcurrency expr 0)
  .globl l0354
 l0354:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6511,13 +6511,13 @@ l0354:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
 l0355:
 # (*entry sched_yield expr 0)
  .globl l0356
 l0356:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6539,13 +6539,13 @@ l0356:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
 l0357:
 # (*entry pthread_yield expr 0)
  .globl pthread_yield
 pthread_yield:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6567,7 +6567,7 @@ pthread_yield:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 2
 # (*entry pthread_once expr 2)
@@ -6577,7 +6577,7 @@ l0358:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6599,7 +6599,7 @@ l0358:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6610,7 +6610,7 @@ l0359:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6632,7 +6632,7 @@ l0359:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -6643,7 +6643,7 @@ l0360:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6665,7 +6665,7 @@ l0360:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -6674,7 +6674,7 @@ l0360:
 l0361:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6696,14 +6696,14 @@ l0361:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
 l0362:
 # (*entry pthread_testcancel expr 0)
  .globl l0363
 l0363:
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6725,7 +6725,7 @@ l0363:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  ret
  .quad 2
 # (*entry pthread_mutex_init expr 2)
@@ -6735,7 +6735,7 @@ l0364:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6757,7 +6757,7 @@ l0364:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -6766,7 +6766,7 @@ l0364:
 l0365:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6788,7 +6788,7 @@ l0365:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -6797,7 +6797,7 @@ l0365:
 l0366:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6819,7 +6819,7 @@ l0366:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -6828,7 +6828,7 @@ l0366:
 l0367:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6850,7 +6850,7 @@ l0367:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -6859,7 +6859,7 @@ l0367:
 l0368:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6881,7 +6881,7 @@ l0368:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -6890,7 +6890,7 @@ l0368:
 l0369:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6912,7 +6912,7 @@ l0369:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -6921,7 +6921,7 @@ l0369:
 l0370:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6943,7 +6943,7 @@ l0370:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -6952,7 +6952,7 @@ l0370:
 l0371:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -6974,7 +6974,7 @@ l0371:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -6983,7 +6983,7 @@ l0371:
 l0372:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7005,7 +7005,7 @@ l0372:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -7014,7 +7014,7 @@ l0372:
 l0373:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7036,7 +7036,7 @@ l0373:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -7047,7 +7047,7 @@ l0374:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7069,7 +7069,7 @@ l0374:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 2
@@ -7080,7 +7080,7 @@ l0375:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7102,7 +7102,7 @@ l0375:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 3
@@ -7115,7 +7115,7 @@ l0376:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7137,7 +7137,7 @@ l0376:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 1
@@ -7146,7 +7146,7 @@ l0376:
 l0377:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7168,7 +7168,7 @@ l0377:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -7177,7 +7177,7 @@ l0377:
 l0378:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7199,7 +7199,7 @@ l0378:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -7208,7 +7208,7 @@ l0378:
 l0379:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7230,7 +7230,7 @@ l0379:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -7241,7 +7241,7 @@ l0380:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7263,7 +7263,7 @@ l0380:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 3
@@ -7276,7 +7276,7 @@ l0381:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7298,7 +7298,7 @@ l0381:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 1
@@ -7307,7 +7307,7 @@ l0381:
 l0382:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7329,7 +7329,7 @@ l0382:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -7338,7 +7338,7 @@ l0382:
 l0383:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7360,7 +7360,7 @@ l0383:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -7371,7 +7371,7 @@ l0384:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7393,7 +7393,7 @@ l0384:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 1
@@ -7402,7 +7402,7 @@ l0384:
 l0385:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7424,7 +7424,7 @@ l0385:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 1
@@ -7433,7 +7433,7 @@ l0385:
 l0386:
  push %rax
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7455,7 +7455,7 @@ l0386:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $8,%rsp
  ret
  .quad 2
@@ -7466,7 +7466,7 @@ l0387:
  push %rax
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7488,7 +7488,7 @@ l0387:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $16,%rsp
  ret
  .quad 3
@@ -7501,7 +7501,7 @@ l0388:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7523,7 +7523,7 @@ l0388:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $24,%rsp
  ret
  .quad 2
@@ -7602,7 +7602,7 @@ dynloadhelper:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7622,7 +7622,7 @@ dynloadhelper:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $32,%rsp
  ret
  .quad 1
@@ -7637,7 +7637,7 @@ dynloadhelper_float_float:
  mov 16(%rsp),%rdx
  mov 8(%rsp),%rsi
  mov 0(%rsp),%rdi
- mov 2520(%r14),%rbx               # ebxsave*
+ mov 2488(%r14),%rbx               # ebxsave*
  push %r13
  push %r10
  push %r11
@@ -7659,7 +7659,7 @@ dynloadhelper_float_float:
  pop %r11
  pop %r10
  pop %r13
- mov %rbx,2520(%r14)               # ebxsave*
+ mov %rbx,2488(%r14)               # ebxsave*
  add $32,%rsp
  ret
  .quad 1
@@ -7705,7 +7705,7 @@ l0407:
 l0406:
  cmp %r13,%rax
  jne l0408
- mov 2304(%r14),%rax               # bpslowerbound
+ mov 2272(%r14),%rax               # bpslowerbound
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
@@ -7718,7 +7718,7 @@ l0409:
 l0410:
  cmp %r13,%rax
  je l0408
- mov 2320(%r14),%rax               # nextbps
+ mov 2288(%r14),%rax               # nextbps
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
