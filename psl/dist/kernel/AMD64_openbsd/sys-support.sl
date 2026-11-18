@@ -57,13 +57,15 @@
        (add   (reg t2) (reg t2))             % ID*8
 
        (*WPLUS2 (reg t2) (fluid SYMFNC))       
-       (mov UndefinedFunctionInstruction (reg t1))
+%       (leaq "UndefinedFunctionInstruction(%rip)" (reg t1))
+%       (*move (displacement (reg t1) 0) (reg t1))
+       (*move ($global UndefinedFunctionInstruction) (reg t1))
        (*move (reg t1) (displacement (reg t2) 0))
        (!*EXIT 0)
        (fullword 0) 
-    UndefinedFunctionInstruction
-       (fullword UndefinedFunction))
-       )
+%    "UndefinedFunctionInstruction"
+%       (fullword UndefinedFunction)
+       ))
 
 
 (lap '((!*entry PlantCodePointer expr 2)
@@ -88,12 +90,13 @@
        (add (reg t2) (reg t2))             % ID*8
 
        (*WPLUS2 (reg t2) (fluid SYMFNC))                        
-       (mov  LambdaLinkInstruction (reg t1))
+       (mov ($global LambdaLinkInstruction) (reg t1))
        (*move (reg t1) (displacement (reg t2) 0))
        (!*EXIT 0)
        (fullword 0)
-    LambdaLinkInstruction
-       (fullword CompiledCallingInterpreted)))
+%    LambdaLinkInstruction
+%       (fullword CompiledCallingInterpreted)
+       ))
 
 
 (lap '((*entry addressapply0 expr 1)

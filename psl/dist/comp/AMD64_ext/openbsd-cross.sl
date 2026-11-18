@@ -541,8 +541,10 @@
 
 
 (de AppendStaticLisp ()
+    (print (list '*writingasmfile *writingasmfile))
+    (print (list '*writingfaslfile *writingfaslfile))
     (print (list 'GlobalStaticLispList* GlobalStaticLispList*))
-    (print (list 'cdadr 'GlobalStaticLispList* (cdadr GlobalStaticLispList*)))
+%    (print (list 'cdadr 'GlobalStaticLispList* (cdadr GlobalStaticLispList*)))
     (if (and (not *writingasmfile) (not *writingfaslfile))
 	(let* ((sl-size (plus2 (or (cdr (cadr GlobalStaticLispList*)) 0) nextstaticlisp))
 	       (oldslbase (gtstaticlisp 0))
