@@ -240,6 +240,8 @@
   % most of the heap pointers are set up in the C world..
   % i.e. heaplowerbound, heaptrapbound, heaplast, heapupperbound, heaptrapbound.
   (setq heap heaplowerbound)
+  (setq UndefinedFunctionInstruction UndefinedFunction)
+  (setq LambdaLinkInstruction CompiledCallingInterpreted)
 )
 
 (de init-fluids ()
@@ -262,8 +264,6 @@
   (setq staticlisp nil)
   (setq laststaticlisp nil)
   (setq nextstaticlisp nil)
-  (setq UndefinedFunctionInstruction (symfnc UndefinedFunction))
-  (setq LambdaLinkInstruction (symfnc CompiledCallingInterpreted))
   (setq oldheapupperbound nil)
   (setq oldheaplowerbound nil)
   (setq stackupperbound nil)

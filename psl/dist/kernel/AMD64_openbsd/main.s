@@ -24,54 +24,48 @@ l0002:
  mov %rax,2176(%r14)               # bndstkupperbound
  mov 2072(%r14),%rdi               # bndstk
  mov %rdi,2184(%r14)               # bndstkptr
- mov 2192(%r14),%rax               # heaplowerbound
- mov %rax,2200(%r14)               # heap
+ mov 2192(%r14),%rdi               # heaplowerbound
+ mov %rdi,2200(%r14)               # heap
+ mov 2208(%r14),%rdi               # undefinedfunction
+ mov %rdi,2216(%r14)               # undefinedfunctioninstruction
+ mov 2224(%r14),%rax               # compiledcallinginterpreted
+ mov %rax,2232(%r14)               # lambdalinkinstruction
  ret
  .quad 0
 # (*entry init-fluids expr 0)
  .globl l0003
 l0003:
  mov %r13,%rax
- mov %rax,2216(%r14)               # gcarraylowerbound
- mov %rax,2224(%r14)               # gcarrayupperbound
+ mov %rax,2248(%r14)               # gcarraylowerbound
+ mov %rax,2256(%r14)               # gcarrayupperbound
  mov %rax,2136(%r14)               # heaplast
- mov %rax,2232(%r14)               # oldheaplast
+ mov %rax,2264(%r14)               # oldheaplast
  mov %rax,2144(%r14)               # heaptrapbound
- mov %rax,2240(%r14)               # oldheaptrapbound
- mov %rax,2248(%r14)               # heapupperbound
- mov %rax,2256(%r14)               # _infbitlength_
- mov %rax,2264(%r14)               # lastbps
- mov %rax,2272(%r14)               # bpslowerbound
- mov %rax,2280(%r14)               # mainstartinitialize
- mov %rax,2288(%r14)               # nextbps
- mov %rax,2296(%r14)               # bpsbaserw
- mov %rax,2304(%r14)               # bpsbaserx
- mov %rax,2312(%r14)               # bpsoffset
- mov %rax,2320(%r14)               # staticlisp
- mov %rax,2328(%r14)               # laststaticlisp
- mov %rax,2336(%r14)               # nextstaticlisp
- mov 2344(%r14),%rbx               # undefinedfunction
- shl $3,%rbx
- add 2352(%r14),%rbx               # symfnc
- mov (%rbx),%rdi
- mov %rdi,2360(%r14)               # undefinedfunctioninstruction
- mov 2368(%r14),%rcx               # compiledcallinginterpreted
- shl $3,%rcx
- add 2352(%r14),%rcx               # symfnc
- mov (%rcx),%rdi
- mov %rdi,2376(%r14)               # lambdalinkinstruction
- mov %rax,2384(%r14)               # oldheapupperbound
- mov %rax,2392(%r14)               # oldheaplowerbound
- mov %rax,2400(%r14)               # stackupperbound
- mov %rax,2408(%r14)               # unixstdin
- mov %rax,2416(%r14)               # unixstdout
- mov %rax,2424(%r14)               # unixstderr
- mov %rax,2432(%r14)               # unixnull
- mov %rax,2440(%r14)               # unixeof
- mov %rax,2448(%r14)               # unixtty
- mov %rax,2456(%r14)               # ***must-be-nil***
- mov %rax,2464(%r14)               # ***must-be-nil-too***
- mov %rax,2472(%r14)               # *fastcar
+ mov %rax,2272(%r14)               # oldheaptrapbound
+ mov %rax,2280(%r14)               # heapupperbound
+ mov %rax,2288(%r14)               # _infbitlength_
+ mov %rax,2296(%r14)               # lastbps
+ mov %rax,2304(%r14)               # bpslowerbound
+ mov %rax,2312(%r14)               # mainstartinitialize
+ mov %rax,2320(%r14)               # nextbps
+ mov %rax,2328(%r14)               # bpsbaserw
+ mov %rax,2336(%r14)               # bpsbaserx
+ mov %rax,2344(%r14)               # bpsoffset
+ mov %rax,2352(%r14)               # staticlisp
+ mov %rax,2360(%r14)               # laststaticlisp
+ mov %rax,2368(%r14)               # nextstaticlisp
+ mov %rax,2376(%r14)               # oldheapupperbound
+ mov %rax,2384(%r14)               # oldheaplowerbound
+ mov %rax,2392(%r14)               # stackupperbound
+ mov %rax,2400(%r14)               # unixstdin
+ mov %rax,2408(%r14)               # unixstdout
+ mov %rax,2416(%r14)               # unixstderr
+ mov %rax,2424(%r14)               # unixnull
+ mov %rax,2432(%r14)               # unixeof
+ mov %rax,2440(%r14)               # unixtty
+ mov %rax,2448(%r14)               # ***must-be-nil***
+ mov %rax,2456(%r14)               # ***must-be-nil-too***
+ mov %rax,2464(%r14)               # *fastcar
  ret
  .quad 0
 # (*entry psl_main expr 0)
@@ -84,10 +78,10 @@ psl_main:
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rdx,%r14
- mov %r14,2488(%r14)               # symval
- mov 2352(%r14),%r15               # symfnc
+ mov %r14,2480(%r14)               # symval
+ mov 2488(%r14),%r15               # symfnc
  call *2496(%r15)                  # os_startup_hook
- mov 2320(%r14),%r9                # staticlisp
+ mov 2352(%r14),%r9                # staticlisp
  mov 2136(%r14),%r10               # heaplast
  mov 2144(%r14),%r11               # heaptrapbound
  mov $256,%r13
@@ -1147,23 +1141,23 @@ l0105:
  cmpq $10,(%rsp)
  jle l0106
  mov $15,%rax
- and 2288(%r14),%rax               # nextbps
+ and 2320(%r14),%rax               # nextbps
  cmpq $0,%rax
  je l0106
- mov 2288(%r14),%rbx               # nextbps
+ mov 2320(%r14),%rbx               # nextbps
  shr $4,%rbx
  shl $4,%rbx
  add $16,%rbx
- mov %rbx,2288(%r14)               # nextbps
+ mov %rbx,2320(%r14)               # nextbps
 l0106:
- mov 2288(%r14),%rax               # nextbps
+ mov 2320(%r14),%rax               # nextbps
  mov (%rsp),%rbx
  shl $3,%rbx
- add 2288(%r14),%rbx               # nextbps
- mov %rbx,2288(%r14)               # nextbps
- cmp 2264(%r14),%rbx               # lastbps
+ add 2320(%r14),%rbx               # nextbps
+ mov %rbx,2320(%r14)               # nextbps
+ cmp 2296(%r14),%rbx               # lastbps
  jle l0107
- mov %rax,2288(%r14)               # nextbps
+ mov %rax,2320(%r14)               # nextbps
  mov $35,%rax
  mov 0(%r9,%rax,8),%rax
  call *3040(%r15)                  # getd
@@ -1194,8 +1188,8 @@ l0112:
 # (*entry bpsaddr-to-bpsaddr-rw expr 1)
  .globl l0113
 l0113:
- add 2296(%r14),%rax               # bpsbaserw
- sub 2304(%r14),%rax               # bpsbaserx
+ add 2328(%r14),%rax               # bpsbaserw
+ sub 2336(%r14),%rax               # bpsbaserx
  ret
  .quad 1
 # (*entry gtstaticlisp expr 1)
@@ -1210,14 +1204,14 @@ l0119:
  mov 0(%r9,%rax,8),%rax
  call *3056(%r15)                  # stderror
 l0120:
- mov 2336(%r14),%rax               # nextstaticlisp
+ mov 2368(%r14),%rax               # nextstaticlisp
  mov (%rsp),%rbx
  shl $3,%rbx
- add 2336(%r14),%rbx               # nextstaticlisp
- mov %rbx,2336(%r14)               # nextstaticlisp
- cmp 2328(%r14),%rbx               # laststaticlisp
+ add 2368(%r14),%rbx               # nextstaticlisp
+ mov %rbx,2368(%r14)               # nextstaticlisp
+ cmp 2360(%r14),%rbx               # laststaticlisp
  jle l0121
- mov %rax,2336(%r14)               # nextstaticlisp
+ mov %rax,2368(%r14)               # nextstaticlisp
  mov $47,%rax
  mov 0(%r9,%rax,8),%rax
  call *3040(%r15)                  # getd
@@ -1847,7 +1841,7 @@ plantunbound:
  add %rsi,%rsi
  add %rsi,%rsi
  add %r15,%rsi
- mov 2360(%r14),%rdi               # undefinedfunctioninstruction
+ mov 2216(%r14),%rdi               # undefinedfunctioninstruction
  mov %rdi,0(%rsi)
  ret
 l0184:
@@ -1871,7 +1865,7 @@ plantlambdalink:
  add %rsi,%rsi
  add %rsi,%rsi
  add %r15,%rsi
- mov 2376(%r14),%rdi               # lambdalinkinstruction
+ mov 2232(%r14),%rdi               # lambdalinkinstruction
  mov %rdi,0(%rsi)
  ret
 l0185:
@@ -7711,7 +7705,7 @@ l0407:
 l0406:
  cmp %r13,%rax
  jne l0408
- mov 2272(%r14),%rax               # bpslowerbound
+ mov 2304(%r14),%rax               # bpslowerbound
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
@@ -7724,7 +7718,7 @@ l0409:
 l0410:
  cmp %r13,%rax
  je l0408
- mov 2288(%r14),%rax               # nextbps
+ mov 2320(%r14),%rax               # nextbps
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
