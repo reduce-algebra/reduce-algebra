@@ -52,13 +52,13 @@
 
 (lap '((!*entry PlantUnbound expr 1)
        (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
-       (LDR (reg t1) UndefinedFunctionInstruction)
+       (*Move ($global UndefinedFunctionInstruction) (reg t1))
        (STR (reg t1) (indexed (reg SYMFNC) (regshifted 1 LSL 3)))
        (!*EXIT 0)
        (fullword 0) 
-    UndefinedFunctionInstruction
-       (fullword UndefinedFunction))
-       )
+%    UndefinedFunctionInstruction
+%       (fullword UndefinedFunction)
+       ))
 
 
 (lap '((!*entry PlantCodePointer expr 2)
@@ -73,12 +73,13 @@
 
 (lap '((!*entry PlantLambdaLink expr 1)
        (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
-       (LDR (reg t1) LambdaLinkInstruction)
+       (*Move ($global LambdaLinkInstruction) (reg t1))
        (STR (reg t1) (indexed (reg SYMFNC) (regshifted 1 LSL 3)))
        (!*EXIT 0)
        (fullword 0)
-    LambdaLinkInstruction
-       (fullword CompiledCallingInterpreted)))
+%    LambdaLinkInstruction
+%       (fullword CompiledCallingInterpreted)
+       ))
 
 
 (lap '((*entry addressapply0 expr 1)

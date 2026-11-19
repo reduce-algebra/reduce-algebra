@@ -262,8 +262,6 @@
   (setq staticlisp nil)
   (setq laststaticlisp nil)
   (setq nextstaticlisp nil)
-  (setq UndefinedFunctionInstruction (symfnc UndefinedFunction))
-  (setq LambdaLinkInstruction (symfnc CompiledCallingInterpreted))
   (setq oldheapupperbound nil)
   (setq oldheaplowerbound nil)
   (setq stackupperbound nil)
@@ -318,6 +316,11 @@
        (*move (frame 1) (fluid argc))
        (*move (frame 2) (fluid argv))
        (*move (frame 3) (fluid ebxsave!*))
+
+       (lea "undefinedfunction(%rip)" (reg t1))
+       (*move (reg t1) ($global UndefinedFunctionInstruction))
+       (lea "compiledcallinginterpreted(%rip)" (reg t1))
+       (*move (reg t1) ($global LambdaLinkInstruction))
 
        (*call init-pointers)
 

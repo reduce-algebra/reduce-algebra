@@ -187,6 +187,8 @@
    unixnull
    unixeof
    unixtty
+   UndefinedFunctionInstruction
+   LambdaLinkInstruction
    ))
 
 (internal-global
@@ -283,6 +285,14 @@
 (compiletime
   (setq mainentrypointname* '!_!p!s!l!_!m!a!i!n))
 
+(compiletime
+ (progn
+   (put 'UndefinedFunction 'symbol 'UndefinedFunction)
+   (put 'UndefinedFunction 'entrypoint 'UndefinedFunction)
+   (put 'CompiledCallingInterpreted 'symbol 'CompiledCallingInterpreted)
+   (put 'CompiledCallingInterpreted 'entrypoint 'CompiledCallingInterpreted)
+   ))
+ 
 (lap '((*entry !_!p!s!l!_!m!a!i!n expr 0)
 
        (*alloc 3) % changes Stack pointer
@@ -308,6 +318,11 @@
        (*Move (frame 1) (fluid argc))
        (*Move (frame 2) (fluid argv))
        (*Move (frame 3) (fluid ebxsave!*))
+
+       (LDR (reg t1) undefinedfunction)
+       (*move (reg t1) ($global UndefinedFunctionInstruction))
+       (LDR (reg t1) compiledcallinginterpreted)
+       (*move (reg t1) ($global LambdaLinkInstruction))
 
        (*call init-pointers)
 
