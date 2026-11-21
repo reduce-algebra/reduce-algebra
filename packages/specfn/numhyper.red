@@ -113,8 +113,8 @@ symbolic smacro procedure !:arg(u)$
 symbolic smacro procedure !:gamma2f(x)$
    numr simp {'gamma, x}$
 
-symbolic smacro procedure !:sin2f(x)$
-   numr simp {'sin, x}$
+%% symbolic smacro procedure !:sin2f(x)$
+%%    numr simp {'sin, x}$
 
 symbolic procedure minarg(z);
    % decide which variable change to use in DLMF 15.8.1-5
@@ -134,7 +134,7 @@ symbolic procedure minarg(z);
    end;
 
 symbolic procedure n_hyper21(a,b,c,z);
-   begin scalar tmp, pos;
+   begin scalar tmp, tmp1, pos;
       tmp := !:difference(c,!:plus(a,b));
       if z=1 then
 	 if !:minusp !:minus !:repart tmp then
@@ -142,73 +142,80 @@ symbolic procedure n_hyper21(a,b,c,z);
 	    return !:quotient(!:times(!:gamma2f(c), !:gamma2f(tmp)),
 	       !:times(!:gamma2f !:difference(c,a),
 	       !:gamma2f !:difference(c,b)))
-	 else rerror(specfn, 10, "Series diverges");
+	 else
+	    rerror(specfn, 10, "Series diverges");
+
+      tmp := !:difference( '(!:rd!: . 0.5) , !:abs z);
+      if not !:minusp tmp then
+	 % -1/2 <= |z| <= 1/2  -- Direct series summation
+	 return n_hyper1({a,b},{c},z);
 
       if !:zerop !:impart z then <<
-      	 tmp := !:difference( '(!:rd!: . 0.5) , !:abs z);
+      	 tmp :=  !:plus(z, '(!:rd!:  . 0.5));
+      	 if not !:minusp !:plus(z,1) and (!:minusp tmp or !:zerop tmp) then
+	    % -1 <= z <=-1/2  -- DLMF 15.8.1
+	    return n_hyper1581(a,b,c,z);
+
+      	 if !:minusp z then
+	    % z < -1   -- DLMF 15.8.3
+	    return n_hyper1583(a,b,c,z);
+
+      	 tmp := !:difference(1, z);
+      	 if not !:minusp  tmp  then
+	    % 1/2 < z < 1  -- DLMF 15.8.4
+	    return n_hyper1584(a,b,c,z);
+
+      	 tmp :=!:difference(z,2);
       	 if not !:minusp tmp then
-	    % -1/2 <= z <= 1/2  -- Direct series summation
-	    return n_hyper1({a,b},{c},z);
-      
-      tmp :=  !:plus(z, '(!:rd!:  . 0.5));
-      if not !:minusp !:plus(z,1) and (!:minusp tmp or !:zerop tmp) then
-	 % -1 <= z <=-1/2  -- DLMF 15.8.1
-	 return n_hyper1581(a,b,c,z);
+	    % z >= 2
+	    %  -- DLMF 15.8.2   ?? seems to work for real a,b & c
+	    return n_hyper1582(a,b,c,z);
 
-      if !:minusp z then
-	 % z < -1   -- DLMF 15.8.2
-	 return n_hyper1582(a,b,c,z);
-
-      tmp := !:difference(1, z);
-      if not !:minusp  tmp  or !:zerop tmp then
-	 % 1/2 < z <= 1  -- DLMF 15.8.4
-	 return n_hyper1584(a,b,c,z);
-
-      tmp :=!:difference(z,3);
-      if not !:minusp tmp then
-	 % z >= 3
-	 %  -- DLMF 15.8.3   ??   seems to work
-	 return n_hyper1583(a,b,c,z);
-      
-      if !:minusp !:difference(1,z) and !:minusp !:difference(z,3) then
-	 % 1 < z < 3
-	 %  -- DLMF 15.8.5   ?? seems to work
-	 return n_hyper1585(a,b,c,z);
+      	 if !:minusp !:difference(1,z) and
+	    !:minusp !:difference(z,2) then
+	       % 1 < z < 2
+	       %  -- DLMF 15.8.5   ??
+	       % real part differs from Maple
+	       return n_hyper1585(a,b,c,z);
       >>;
+
+      % z is now complex
       
-       % z is now complex
       tmp := minarg z;
       pos := car tmp;
- 
-      if pos = 0 then  
+
+      if tmp = 1 then  % z = exp(+/-i*pi/3)
+	 return n_hyper2({a,b},{c},z);
+      
+      if pos = 0 then
 	 return n_hyper1({a,b},{c},z);
 
       if pos = 1 and not
 	 !:zerop !:difference(rdpi!*(), !:abs !:arg !:difference(1,z)) then
-         return n_hyper1581(a,b,c,z);
- 
+            return n_hyper1581(a,b,c,z);
+
       if pos = 2 and not
-	  !:zerop !:difference(!:abs !:arg !:minus z, rdpi!*()) then 
-	 return n_hyper1582(a,b,c,z);
-	 
+	 !:zerop !:difference(!:abs !:arg !:minus z, rdpi!*()) then
+	    return n_hyper1582(a,b,c,z);
+
       if pos = 3 and not
- 	   !:zerop !:difference(!:abs !:arg !:minus z, rdpi!*()) then 
-    	 %  -- DLMF 15.8.3
-	 return n_hyper1583(a,b,c,z);
-	
-       if pos = 4 and not
-	  !:zerop !:difference(rdpi!*(),!:abs !:arg !:difference(1,z)) then
-     	 %  -- DLMF 15.8.4
- 	 return n_hyper1584(a,b,c,z);
+	 !:zerop !:difference(!:abs !:arg !:minus z, rdpi!*()) then
+    	    %  -- DLMF 15.8.3
+	    return n_hyper1583(a,b,c,z);
 
-       if pos = 5 and not
-       	  !:zerop !:difference(rdpi!*(),!:abs !:arg !:difference(1,z)) then
-    	 %  -- DLMF 15.8.5
-	 return n_hyper1585(a,b,c,z);
+      if pos = 4 and not
+	 !:zerop !:difference(rdpi!*(),!:abs !:arg !:difference(1,z)) then
+     	    %  -- DLMF 15.8.4
+ 	    return n_hyper1584(a,b,c,z);
+
+      if pos = 5 and not
+	 !:zerop !:difference(rdpi!*(),!:abs !:arg !:difference(1,z)) then
+    	    %  -- DLMF 15.8.5
+	    return n_hyper1585(a,b,c,z);
 
 
-       % fall back on direct series evaluation 
-	return  n_hyper2({a,b},{c},z);
+      % fall back on direct series evaluation
+      return  n_hyper2({a,b},{c},z);
    end;
 
 
@@ -251,7 +258,7 @@ symbolic procedure n_hyper2(l1,l2,z);
 	    rerror(specfn, 5,
 	       "Hypergeometric: numerical evaluation not yet supported for |z|=1")
 	 else if not (!:minusp gamq or !:zerop gamq) % gamq > 0
-	    or  %  -1 < gamq <= 0 and z = -1
+	    or  %  -1 < gamq <= 0 and z /= 1
 	       (not !:minusp tmp and not !:zerop  !:difference(z,1)) then
 	       return  n_hyper1(l1,l2,z)
 	 else
@@ -269,9 +276,11 @@ symbolic procedure n_hyper1581(a,b,c,z);
       return !:times(tmp,res);
    end;
 
+% The following are equivalent to DLMF eqns 15.82 -- 15.85
+% but are marginally more efficient
 symbolic procedure n_hyper1582(a,b,c,z);
-   % DLMF 15.8.2
-   begin scalar tmp, res, f0, res1, arg;
+   % Abramowitz & Stegun 15.3.7   -- DLMF 15.8.2
+   begin scalar tmp, res, res1, arg;
       tmp := !:difference(b,a);
       if atom tmp then
  	 % if difference is an integer
@@ -280,60 +289,54 @@ symbolic procedure n_hyper1582(a,b,c,z);
 	 return  n_hyper2({a,b},{c},z);
 
       arg := !:recip z;
-      f0 := !:quotient(rdpi!*(), !:sin2f(!:times(rdpi!*(),tmp)));
       res := n_hyper1({a, !:difference(!:plus(a, 1),c)},
-	 {!:difference(!:plus(a,1), b)}, arg);
-      tmp := !:times(!:gamma2f !:difference(c, a),
-	 !:gamma2f !:difference(!:plus(a,1),b));
-      tmp := !:quotient(!:gamma2f c, !:times(!:gamma2f b, tmp));
+	              {!:difference(!:plus(a,1), b)}, arg);
+      tmp := !:times(!:gamma2f b,!:gamma2f !:difference(c,a));
+      tmp := !:quotient(!:times(!:gamma2f c, !:gamma2f !:difference(b,a)), tmp);
       res := !:times(res, tmp);
       res := !:times(numr(simpexpt{!:minus z, !:minus a}), res);
 
       res1 := n_hyper1({b, !:difference(!:plus(b, 1),c)},
-	 {!:difference(!:plus(b,1), a)}, arg);
-      tmp := !:times(!:gamma2f !:difference(c, b),
-	 !:gamma2f !:difference(!:plus(b,1),a));
-      tmp := !:quotient(!:gamma2f c, !:times(!:gamma2f a, tmp));
+	               {!:difference(!:plus(b,1), a)}, arg);
+      tmp := !:times(!:gamma2f a,!:gamma2f !:difference(c, b));
+      tmp := !:quotient(!:times(!:gamma2f c, !:gamma2f !:difference(a,b)), tmp);
       res1 := !:times(res1, tmp);
-      res1 := !:minus !:times(numr(simpexpt{!:minus z, !:minus b}), res1);
-      return !:times(!:plus(res, res1), f0);
+      res1 :=  !:times(numr(simpexpt{!:minus z, !:minus b}), res1);
+      return !:plus(res, res1);
    end;
 
 symbolic procedure n_hyper1583(a,b,c,z);
-   % DLMF 15.8.3
-   begin scalar tmp, arg, res, f0, res1;
-	 tmp := !:difference(b,a);
-	 if atom tmp then 
-	    % if difference is an integer
-	    % DLMF formula 15.8.3 not valid
-	    % fall back on direct series evaluation 
-	    return  n_hyper2({a,b},{c},z);
+   % Abramowitz & Stegun 15.3.8  -- DLMF 15.8.3
+   begin scalar tmp, arg, res, res1;
+      tmp := !:difference(b,a);
+      if atom tmp then
+	 % if difference is an integer
+	 % DLMF formula 15.8.3 not valid
+	 % fall back on direct series evaluation
+	 return  n_hyper2({a,b},{c},z);
 
-	 arg := !:difference(1, z);
-         f0 := !:quotient(rdpi!*(), !:sin2f(!:times(rdpi!*(), tmp)));
-    	 res := n_hyper1({a, !:difference(c,b)},
-	    {!:difference(!:plus(a, 1), b)}, !:recip arg);
-	 tmp := numr simpexpt {arg, !:minus a};
-	 res := !:times(tmp,res);
- 	 tmp := !:times(!:gamma2f !:difference(c,a),
-	    !:times(!:gamma2f b, !:gamma2f(!:difference(!:plus(a,1),b))));
-	 tmp := !:quotient(!:gamma2f c, tmp);
-	 res := !:times(res, tmp);
-	 
-	 res1 := n_hyper1({b, !:difference(c, a)},
- 	                  {!:difference(!:plus(b,1), a)}, !:recip arg);
- 	 tmp := numr simpexpt {arg, !:minus b};
-         res1:= !:minus !:times(tmp,res1);
-	 tmp := !:times(!:times(!:gamma2f a, !:gamma2f !:difference(c,b)),
-	                !:gamma2f !:difference(!:plus(b,1), a));
-	 tmp := !:quotient(!:gamma2f c,tmp);
-	 res1 := !:times(res1,tmp);
-         return !:times(f0, !:plus(res, res1));
+      arg := !:difference(1, z);
+      res := n_hyper1({a, !:difference(c,b)},
+	 {!:difference(!:plus(a, 1), b)}, !:recip arg);
+      tmp := numr simpexpt {arg, !:minus a};
+      res := !:times(tmp,res);
+      tmp := !:times(!:gamma2f !:difference(c,a), !:gamma2f b);
+      tmp := !:quotient(!:times(!:gamma2f c, !:gamma2f !:difference(b,a)),tmp);
+      res := !:times(res, tmp);
+
+      res1 := n_hyper1({b, !:difference(c, a)},
+	 {!:difference(!:plus(b,1), a)}, !:recip arg);
+      tmp := numr simpexpt {arg, !:minus b};
+      res1:= !:times(tmp,res1);
+      tmp := !:times(!:gamma2f a, !:gamma2f !:difference(c,b));
+      tmp := !:quotient(!:times(!:gamma2f c, !:gamma2f !:difference(a,b)),tmp);
+      res1 := !:times(res1,tmp);
+      return !:plus(res, res1);
    end;
 
 symbolic procedure n_hyper1584(a,b,c,z);
-   % DLMF 15.8.4
-   begin scalar tmp, res, f0, res1, arg;
+   % Abramowitz & Stegun 15.3.6  -- DLMF 15.8.4
+   begin scalar tmp, res, res1, arg;
       tmp := !:difference(c,!:plus(a,b));
       if atom tmp then 
 	 % if difference is an integer
@@ -341,65 +344,58 @@ symbolic procedure n_hyper1584(a,b,c,z);
 	 % fall back on direct series evaluation 
 	 return  n_hyper2({a,b},{c},z);
       
-      f0 := !:quotient(rdpi!*(), !:sin2f(!:times(rdpi!*(),tmp)));
       arg := !:difference(1,z);
-    	 res := n_hyper1({a, b}, {!:difference(!:plus(a, !:plus(b, 1)), c)},
-	                  arg);
- 	 tmp := !:times(!:gamma2f !:difference(c,a),
-	    !:times(!:gamma2f !:difference(c,b),
-	    !:gamma2f !:difference(!:plus(a,!:plus(b,1)), c)));
-	 tmp:=!:quotient(!:gamma2f c,tmp);
-	 res := !:times(res, tmp);
+      res := n_hyper1({a, b}, {!:difference(!:plus(a, !:plus(b, 1)), c)},arg);
+      tmp := !:times(!:gamma2f !:difference(c,a),!:gamma2f !:difference(c,b));
+      tmp:=!:quotient(!:times(!:gamma2f c,
+	                      !:gamma2f !:difference(c, !:plus(a,b))),tmp);
+      res := !:times(res, tmp);
 	 
-	 res1 := n_hyper1({!:difference(c,a), !:difference(c, b)},
- 	                  {!:difference(!:plus(c,1), !:plus(a, b))},
-   	                  arg);
- 	 tmp := numr simpexpt {arg, !:difference(c, !:plus(a,b))};
-         res1:= !:minus !:times(tmp,res1);
-	 tmp := !:times(!:times(!:gamma2f a, !:gamma2f b),
-	                !:gamma2f !:difference(!:plus(c,1),!:plus(b,a)));
-	 tmp:=!:quotient(!:gamma2f c,tmp);
-	 res1 := !:times(res1,tmp);
-         return !:times(f0, !:plus(res, res1));
+      res1 := n_hyper1({!:difference(c,a), !:difference(c, b)},
+	               {!:difference(!:plus(c,1), !:plus(a, b))}, arg);
+      tmp := numr simpexpt {arg, !:difference(c, !:plus(a,b))};
+      res1:= !:times(tmp,res1);
+      tmp := !:times(!:gamma2f a, !:gamma2f b);
+      tmp:=!:quotient(!:times(!:gamma2f c,
+	                      !:gamma2f !:difference(!:plus(a,b),c)),tmp);
+      res1 := !:times(res1,tmp);
+      return !:plus(res, res1);
    end;
 
 symbolic procedure n_hyper1585(a,b,c,z);
-   % DLMF 15.8.5
-   begin scalar tmp, res, f0, res1, arg;
-	 tmp := !:difference(c,!:plus(a,b));
-	 if atom tmp then 
-	    % if difference is an integer
-	    % DLMF formula 15.8.5 not valid
-	    % fall back on direct series evaluation 
-	    return  n_hyper2({a,b},{c},z);
-      
-	 f0 := !:quotient(rdpi!*(),
-	            !:sin2f(!:times(rdpi!*(),!:difference(c,!:plus(a,b)))));
-	 arg :=!:difference(1,!:recip z);
-    	 res := n_hyper1({a, !:difference(!:plus(a,1),c)},
-	    {!:difference(!:plus(a, !:plus(b, 1)), c)}, arg);
-	 tmp := numr simpexpt {z, !:minus a};
-	 res := !:quotient(res, tmp);
- 	 tmp := !:times(!:gamma2f !:difference(c,a),
-	    !:times(!:gamma2f !:difference(c,b),
-	    !:gamma2f !:difference(!:plus(a,!:plus(b,1)), c)));
-	 tmp:=!:quotient(!:gamma2f c,tmp);
-	 res := !:times(res, tmp);
-	 
-	 res1 := n_hyper1({!:difference(c,a), !:difference(1,a)},
- 	                  {!:difference(!:plus(c,1), !:plus(a, b))}, arg);
- 	 tmp := numr simpexpt
-	    {!:difference(1, z), !:difference(c, !:plus(a,b))};
-	 tmp := !:times(tmp, numr simpexpt {z, !:difference(a, c)});
-         res1:= !:minus !:times(tmp,res1);
-	 tmp := !:times(!:times(!:gamma2f a, !:gamma2f b),
-	                !:gamma2f !:difference(!:plus(c,1),!:plus(b,a)));
-	 tmp:=!:quotient(!:gamma2f c,tmp);
-	 res1 := !:times(res1,tmp);
-         return !:times(f0, !:plus(res, res1));
+   % Abramowitz & Stegun 15.3.9 -- DLMF 15.8.5
+   begin scalar tmp, res, res1, arg;
+      tmp := !:difference(c,!:plus(a,b));
+      if atom tmp then
+	 % if difference is an integer
+	 % DLMF formula 15.8.5 not valid
+	 % fall back on direct series evaluation
+	 return  n_hyper2({a,b},{c},z);
+
+      arg :=!:difference(1,!:recip z);
+      res := n_hyper1({a, !:difference(!:plus(a,1),c)},
+	              {!:difference(!:plus(a, !:plus(b, 1)), c)}, arg);
+      tmp := numr simpexpt {z, !:minus a};
+      res := !:quotient(res, tmp);
+      tmp := !:times(!:gamma2f !:difference(c,a), !:gamma2f !:difference(c,b));
+      tmp:=!:quotient(!:times(!:gamma2f c,
+	                      !:gamma2f !:difference(c,!:plus(a,b))),tmp);
+      res := !:times(res, tmp);
+
+      res1 := n_hyper1({!:difference(c,a), !:difference(1,a)},
+	               {!:difference(!:plus(c,1), !:plus(a, b))}, arg);
+      tmp := numr simpexpt
+	 {!:difference(1, z), !:difference(c, !:plus(a,b))};
+      tmp := !:times(tmp, numr simpexpt {z, !:difference(a, c)});
+      res1:= !:times(tmp,res1);
+      tmp := !:times(!:gamma2f a, !:gamma2f b);
+      tmp:=!:quotient(!:times(!:gamma2f c,
+	                      !:gamma2f(!:difference(!:plus(a,b),c))),tmp);
+      res1 := !:times(res1,tmp);
+      return !:plus(res, res1);
    end;
 
-algebraic procedure discont(a,b,c,z);
+algebraic procedure hyper_discont(a,b,c,z);
    % calculates the discontinuity of 2F1 across the cut from 1 .. infty
    % see DLMF 15.2.3.  z must be real and >1
    begin scalar tmp, tmp1;
@@ -408,6 +404,157 @@ algebraic procedure discont(a,b,c,z);
       return tmp1*tmp;
    end;
 
-;end;
-   
+algebraic procedure test1581(a,b,c,z);
+   % should always return zero 
+   hypergeometric({a,b},{c},z)-(1-z)^(c-a-b)*hypergeometric({c-a,c-b},{c},z);
 
+algebraic procedure absargs(z);
+   % decide which variable change to use in DLMF 15.8.1-5
+   begin scalar lst, pos, n, min;
+      n := 0; pos := 0; min := abs z;
+      lst := foreach arg in {z/(z-1), 1/z, 1/(1-z), 1-z, 1-1/z}
+	  collect abs arg;
+      foreach num in lst do <<
+	 n := n+1;
+	 if num < min then <<
+	    pos := n; min := num;
+	 >>;
+      >>;
+      return {pos,  lst};
+   end;
+
+
+;end;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% symbolic procedure n_hyper1582(a,b,c,z);
+%%    % DLMF 15.8.2
+%%    begin scalar tmp, res, f0, res1, arg;
+%%       tmp := !:difference(b,a);
+%%       if atom tmp then
+%%  	 % if difference is an integer
+%% 	 % DLMF formula 15.8.2 not valid"
+%% 	 % fall back on direct series evaluation
+%% 	 return  n_hyper2({a,b},{c},z);
+%% 
+%%       arg := !:recip z;
+%%       f0 := !:quotient(rdpi!*(), !:sin2f(!:times(rdpi!*(),tmp)));
+%%       res := n_hyper1({a, !:difference(!:plus(a, 1),c)},
+%% 	 {!:difference(!:plus(a,1), b)}, arg);
+%%       tmp := !:times(!:gamma2f !:difference(c, a),
+%% 	 !:gamma2f !:difference(!:plus(a,1),b));
+%%       tmp := !:quotient(!:gamma2f c, !:times(!:gamma2f b, tmp));
+%%       res := !:times(res, tmp);
+%%       res := !:times(numr(simpexpt{!:minus z, !:minus a}), res);
+%% 
+%%       res1 := n_hyper1({b, !:difference(!:plus(b, 1),c)},
+%% 	 {!:difference(!:plus(b,1), a)}, arg);
+%%       tmp := !:times(!:gamma2f !:difference(c, b),
+%% 	 !:gamma2f !:difference(!:plus(b,1),a));
+%%       tmp := !:quotient(!:gamma2f c, !:times(!:gamma2f a, tmp));
+%%       res1 := !:times(res1, tmp);
+%%       res1 := !:minus !:times(numr(simpexpt{!:minus z, !:minus b}), res1);
+%%       return !:times(!:plus(res, res1), f0);
+%%    end;
+%% 
+%% symbolic procedure n_hyper1583(a,b,c,z);
+%%    % DLMF 15.8.3
+%%    begin scalar tmp, arg, res, f0, res1;
+%% 	 tmp := !:difference(b,a);
+%% 	 if atom tmp then 
+%% 	    % if difference is an integer
+%% 	    % DLMF formula 15.8.3 not valid
+%% 	    % fall back on direct series evaluation 
+%% 	    return  n_hyper2({a,b},{c},z);
+%% 
+%% 	 arg := !:difference(1, z);
+%%          f0 := !:quotient(rdpi!*(), !:sin2f(!:times(rdpi!*(), tmp)));
+%%     	 res := n_hyper1({a, !:difference(c,b)},
+%% 	    {!:difference(!:plus(a, 1), b)}, !:recip arg);
+%% 	 tmp := numr simpexpt {arg, !:minus a};
+%% 	 res := !:times(tmp,res);
+%%  	 tmp := !:times(!:gamma2f !:difference(c,a),
+%% 	    !:times(!:gamma2f b, !:gamma2f(!:difference(!:plus(a,1),b))));
+%% 	 tmp := !:quotient(!:gamma2f c, tmp);
+%% 	 res := !:times(res, tmp);
+%% 	 
+%% 	 res1 := n_hyper1({b, !:difference(c, a)},
+%%  	                  {!:difference(!:plus(b,1), a)}, !:recip arg);
+%%  	 tmp := numr simpexpt {arg, !:minus b};
+%%          res1:= !:minus !:times(tmp,res1);
+%% 	 tmp := !:times(!:times(!:gamma2f a, !:gamma2f !:difference(c,b)),
+%% 	                !:gamma2f !:difference(!:plus(b,1), a));
+%% 	 tmp := !:quotient(!:gamma2f c,tmp);
+%% 	 res1 := !:times(res1,tmp);
+%%          return !:times(f0, !:plus(res, res1));
+%%    end;
+%% 
+%% symbolic procedure n_hyper1584(a,b,c,z);
+%%    % DLMF 15.8.4
+%%    begin scalar tmp, res, f0, res1, arg;
+%%       tmp := !:difference(c,!:plus(a,b));
+%%       if atom tmp then 
+%% 	 % if difference is an integer
+%% 	 % DLMF formula 15.8,4 not valid
+%% 	 % fall back on direct series evaluation 
+%% 	 return  n_hyper2({a,b},{c},z);
+%%       
+%%       f0 := !:quotient(rdpi!*(), !:sin2f(!:times(rdpi!*(),tmp)));
+%%       arg := !:difference(1,z);
+%%     	 res := n_hyper1({a, b}, {!:difference(!:plus(a, !:plus(b, 1)), c)},
+%% 	                  arg);
+%%  	 tmp := !:times(!:gamma2f !:difference(c,a),
+%% 	    !:times(!:gamma2f !:difference(c,b),
+%% 	    !:gamma2f !:difference(!:plus(a,!:plus(b,1)), c)));
+%% 	 tmp:=!:quotient(!:gamma2f c,tmp);
+%% 	 res := !:times(res, tmp);
+%% 	 
+%% 	 res1 := n_hyper1({!:difference(c,a), !:difference(c, b)},
+%%  	                  {!:difference(!:plus(c,1), !:plus(a, b))},
+%%    	                  arg);
+%%  	 tmp := numr simpexpt {arg, !:difference(c, !:plus(a,b))};
+%%          res1:= !:minus !:times(tmp,res1);
+%% 	 tmp := !:times(!:times(!:gamma2f a, !:gamma2f b),
+%% 	                !:gamma2f !:difference(!:plus(c,1),!:plus(b,a)));
+%% 	 tmp:=!:quotient(!:gamma2f c,tmp);
+%% 	 res1 := !:times(res1,tmp);
+%%          return !:times(f0, !:plus(res, res1));
+%%    end;
+%% 
+%% symbolic procedure n_hyper1585(a,b,c,z);
+%%    % DLMF 15.8.5
+%%    begin scalar tmp, res, f0, res1, arg;
+%% 	 tmp := !:difference(c,!:plus(a,b));
+%% 	 if atom tmp then 
+%% 	    % if difference is an integer
+%% 	    % DLMF formula 15.8.5 not valid
+%% 	    % fall back on direct series evaluation 
+%% 	    return  n_hyper2({a,b},{c},z);
+%%       
+%% 	 f0 := !:quotient(rdpi!*(),
+%% 	            !:sin2f(!:times(rdpi!*(),!:difference(c,!:plus(a,b)))));
+%% 	 arg :=!:difference(1,!:recip z);
+%%     	 res := n_hyper1({a, !:difference(!:plus(a,1),c)},
+%% 	    {!:difference(!:plus(a, !:plus(b, 1)), c)}, arg);
+%% 	 tmp := numr simpexpt {z, !:minus a};
+%% 	 res := !:quotient(res, tmp);
+%%  	 tmp := !:times(!:gamma2f !:difference(c,a),
+%% 	    !:times(!:gamma2f !:difference(c,b),
+%% 	    !:gamma2f !:difference(!:plus(a,!:plus(b,1)), c)));
+%% 	 tmp:=!:quotient(!:gamma2f c,tmp);
+%% 	 res := !:times(res, tmp);
+%% 	 
+%% 	 res1 := n_hyper1({!:difference(c,a), !:difference(1,a)},
+%%  	                  {!:difference(!:plus(c,1), !:plus(a, b))}, arg);
+%%  	 tmp := numr simpexpt
+%% 	    {!:difference(1, z), !:difference(c, !:plus(a,b))};
+%% 	 tmp := !:times(tmp, numr simpexpt {z, !:difference(a, c)});
+%%          res1:= !:minus !:times(tmp,res1);
+%% 	 tmp := !:times(!:times(!:gamma2f a, !:gamma2f b),
+%% 	                !:gamma2f !:difference(!:plus(c,1),!:plus(b,a)));
+%% 	 tmp:=!:quotient(!:gamma2f c,tmp);
+%% 	 res1 := !:times(res1,tmp);
+%%          return !:times(f0, !:plus(res, res1));
+%%    end;
+%% 
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
