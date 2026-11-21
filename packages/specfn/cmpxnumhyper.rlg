@@ -7,8 +7,6 @@ clear z;
 off complex,rounded;
 
 
-*** Domain mode complex-rounded changed to rounded 
-
 % polynomial cases
 p1 := hypergeometric({-6, 3, 2}, {-7, 1, 5}, z);
 
@@ -76,50 +74,43 @@ p3 where z => 1.1i;
 (hypergeometric({0.5,0.5},{1.5},z^2)-asin z/z) where z=>0.6i;
 
 
-1.14575016141e-13
+1.15907283771e-13
 
 
 (hypergeometric({0.5,1},{1.5},-z^2) -atan z/z) where z=>0.5+0.5i;
 
 
- - 1.61648472385e-13 - 3.31290550548e-13*i
+ - 1.61315405478e-13 - 3.31540350729e-13*i
 
 
 (hypergeometric({1,1},{2},z) +log(1-z)/z )where z=> -0.3i;
 
 
-1.26121335597e-13 - 3.8635761257e-14*i
+1.2578826869e-13 - 3.6609604237e-14*i
 
 
 % Miscellaneous examples compared with Maple results.
 % 2F1
-tmp := hypergeometric({0.5, 0.7},{1.5},1.3);
+hypergeometric({0.5, 0.7},{1.5},1.3);
 
 
-tmp := 2.01617332442 - 0.798657608015*i
-   % real part differs from Maple
-% but is consistent with nearby results below
+1.41699669935 + 0.798657608016*i
+   % value on upper edge of the cut
 hypergeometric({0.5, 0.7},{1.5},1.3+0.0000001i);
 
 
-2.01617328286 + 0.798657677683*i
+1.41699665779 + 0.798657501003*i
 
 hypergeometric({0.5, 0.7},{1.5},1.3-0.0000001i);
 
 
-2.01617328286 - 0.798657677683*i
+1.41699665779 - 0.798657501003*i
 
-hyper_discont(0.5,0.7,1.5,1.3)+tmp;
-
-
-2.01617332442 + 0.798657608016*i
-
-% value on upper edge of the cut
-tmp := hypergeometric({0.5, 0.7},{1.5},2.8);
+hypergeometric({0.5, 0.7},{1.5},2.8);
 
 
-tmp := 0.750920536712 - 0.839564938534*i
-  
+0.750920536712 + 0.839564938534*i
+  % value on upper edge of the cut
 hypergeometric({0.5, 0.7},{1.5},2.8+0.0000001i);
 
 
@@ -130,16 +121,11 @@ hypergeometric({0.5, 0.7},{1.5},2.8-0.0000001i);
 
 0.75092054213 - 0.83956491817*i
 
-hyper_discont(0.5,0.7,1.5,2.8)+tmp;
+hypergeometric({0.5, 0.7},{1.5},4);
 
 
-0.750920536712 + 0.839564938534*i
-
-tmp := hypergeometric({0.5, 0.7},{1.5},4);
-
-
-tmp := 0.575300175546 - 0.775330520556*i
-   
+0.575300175546 + 0.775330520555*i
+  % value on upper edge of the cut 
 hypergeometric({0.5, 0.7},{1.5},4+0.0000001i);
 
 
@@ -150,11 +136,6 @@ hypergeometric({0.5, 0.7},{1.5},4-0.0000001i);
 
 0.575300180551 - 0.775330509959*i
 
-hyper_discont(0.5,0.7,1.5,4)+tmp;
-
-
-0.575300175546 + 0.775330520555*i
-
 hypergeometric({0.5, 0.7},{1.5},-2i);
 
 
@@ -163,38 +144,33 @@ hypergeometric({0.5, 0.7},{1.5},-2i);
 hypergeometric({0.5, 0.7},{1.5},1+i);
 
 
-0.994135710008 + 0.381255528518*i
+0.994135710012 + 0.381255528517*i
 
 hypergeometric({0.5, 0.7},{1.2}, 3i);
 
 
 0.654730564062 + 0.292261048809*i
 
-tmp := hypergeometric({0.5i, 1+0.7i},{1.1},2);
+hypergeometric({0.5i, 1+0.7i},{1.1},1.3);
 
 
-tmp := 7.90180384078 + 6.4055797101*i
+0.401062833093 - 0.106992336028*i
+ % value on upper edge of the cut
+hypergeometric({0.5i, 1+0.7i},{1.1},1.3+0.0000001i);
 
-hypergeometric({0.5i, 1+0.7i},{1.1},2+0.0000001i);
 
-
-0.362169246289 - 0.172308403375*i
+0.401062844839 - 0.106992341172*i
  
-hypergeometric({0.5i, 1+0.7i},{1.1},2-0.0000001i);
+hypergeometric({0.5i, 1+0.7i},{1.1},1.3-0.0000001i);
 
 
-7.90180310583 + 6.40557911817*i
+ - 3.2547215457 + 9.12724560752*i
 
-hyper_discont(0.5i,1+0.7i,1.1,2)+tmp;
-
-
-0.362169239096 - 0.172308398003*i
-
-tmp := hypergeometric({0.5i, 1+0.7i},{1.1},4);
+hypergeometric({0.5i, 1+0.7i},{1.1},4);
 
 
-tmp := 9.47094570493 - 2.30712875638*i
-
+0.27611982783 - 0.259687417348*i
+ % value on upper edge of the cut
 hypergeometric({0.5i, 1+0.7i},{1.1},4+0.0000001i);
 
 
@@ -204,11 +180,6 @@ hypergeometric({0.5i, 1+0.7i},{1.1},4-0.0000001i);
 
 
 9.47094547312 - 2.30712867782*i
-
-hyper_discont(0.5i,1+0.7i,1.1,4)+tmp;
-
-
-0.27611982783 - 0.259687417348*i
 
 hypergeometric({0.5, 0.7},{1.3},-3i);
 
@@ -262,19 +233,19 @@ precision 12;
 hypergeometric({0.5, 0.7},{5.5},exp(i*pi/3));
 
 
-1.0217360916 + 0.0643272186106*i
+1.0217361019 + 0.0643272177972*i
    % OK
 hypergeometric({0.5+i, 0.7-i},{5.9},exp(i*pi/3));
 
 
-1.0280338931 + 0.246819968981*i
+1.0280339249 + 0.246819975539*i
    % OK
 
 % Other F's
 hypergeometric({0.5+i, 1+0.7i, 0.9i},{1.9, 1.5},(1+i)/2);
 
 
-0.876012077423 - 0.21242660335*i
+0.876012077459 - 0.212426603373*i
 
 hypergeometric({0.5, 0.7},{1.1, 1.2},1.5);
 

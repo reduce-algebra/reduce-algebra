@@ -24,31 +24,24 @@ p3 where z => 1.1i;
 
 % Miscellaneous examples compared with Maple results.
 % 2F1
-tmp := hypergeometric({0.5, 0.7},{1.5},1.3);   % real part differs from Maple
-% but is consistent with nearby results below
+hypergeometric({0.5, 0.7},{1.5},1.3);   % value on upper edge of the cut
 hypergeometric({0.5, 0.7},{1.5},1.3+0.0000001i);
 hypergeometric({0.5, 0.7},{1.5},1.3-0.0000001i);
-hyper_discont(0.5,0.7,1.5,1.3)+tmp;
-% value on upper edge of the cut
-tmp := hypergeometric({0.5, 0.7},{1.5},2.8);  
+hypergeometric({0.5, 0.7},{1.5},2.8);  % value on upper edge of the cut
 hypergeometric({0.5, 0.7},{1.5},2.8+0.0000001i);
 hypergeometric({0.5, 0.7},{1.5},2.8-0.0000001i);
-hyper_discont(0.5,0.7,1.5,2.8)+tmp;
-tmp := hypergeometric({0.5, 0.7},{1.5},4);   
+hypergeometric({0.5, 0.7},{1.5},4);  % value on upper edge of the cut 
 hypergeometric({0.5, 0.7},{1.5},4+0.0000001i);
 hypergeometric({0.5, 0.7},{1.5},4-0.0000001i);
-hyper_discont(0.5,0.7,1.5,4)+tmp;
 hypergeometric({0.5, 0.7},{1.5},-2i);
 hypergeometric({0.5, 0.7},{1.5},1+i);
 hypergeometric({0.5, 0.7},{1.2}, 3i);
-tmp := hypergeometric({0.5i, 1+0.7i},{1.1},2);
-hypergeometric({0.5i, 1+0.7i},{1.1},2+0.0000001i); 
-hypergeometric({0.5i, 1+0.7i},{1.1},2-0.0000001i);
-hyper_discont(0.5i,1+0.7i,1.1,2)+tmp;
-tmp := hypergeometric({0.5i, 1+0.7i},{1.1},4);
+hypergeometric({0.5i, 1+0.7i},{1.1},1.3); % value on upper edge of the cut
+hypergeometric({0.5i, 1+0.7i},{1.1},1.3+0.0000001i); 
+hypergeometric({0.5i, 1+0.7i},{1.1},1.3-0.0000001i);
+hypergeometric({0.5i, 1+0.7i},{1.1},4); % value on upper edge of the cut
 hypergeometric({0.5i, 1+0.7i},{1.1},4+0.0000001i); 
 hypergeometric({0.5i, 1+0.7i},{1.1},4-0.0000001i);
-hyper_discont(0.5i,1+0.7i,1.1,4)+tmp;
 hypergeometric({0.5, 0.7},{1.3},-3i);
 hypergeometric({0.5i, 0.7i},{1.3},-3i);
 hypergeometric({0.5, 0.7},{2},0.6+0.3i);  

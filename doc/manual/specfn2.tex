@@ -133,10 +133,10 @@ possible in some cases to improve the efficiency of the algorithms used.
 Outside the radius of convergence of the defining power series the
 hypergeometric function $_2F_1$ becomes multivalued and is defined by analytic
 extension wrt $z$. The principal branch is obtained by introducing a branch cut
-along the real axis from $1$ to $+\infty$.  One might expect that the numerical value returned  when
-$z$ is real and $z>1$ would be the value on the \emph{upper} side of the cut, that is
-taking $\arg z=0$.  However, currently in common with Maple, the algorithms used return the value on the
- \emph{lower} side of the cut. 
+along the real axis from $1$ to $+\infty$.  as one might expect the numerical value returned  when
+$z$ is real and $z>1$ is the value on the \emph{upper} side of the cut, that is
+regarding the cut as belonging to the first (rather than fourth) quadrant.
+This differs from Maple which returns the value on the \emph{lower} side of the cut. 
 
 The discontinuity between the values of the principal branch on the two sides of the cut may
 be expressed as an hypergeometric function (see \href{https://dlmf.nist.gov/15.2} {DLMF:NIST 15.2.3}).  
