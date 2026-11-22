@@ -134,7 +134,7 @@ symbolic procedure minarg(z);
    end;
 
 symbolic procedure n_hyper21(a,b,c,z);
-   begin scalar tmp, tmp1, pos;
+   begin scalar tmp,  pos;
       tmp := !:difference(c,!:plus(a,b));
       if z=1 then
 	 if !:minusp !:minus !:repart tmp then
@@ -168,15 +168,13 @@ symbolic procedure n_hyper21(a,b,c,z);
       	 tmp :=!:difference(z,2);
       	 if not !:minusp tmp then
 	    % z >= 2
-	    %  -- DLMF 15.8.2   ?? seems to work for real a,b & c
-	    return n_hyper1582(a,b,c,z);
+	    %  -- DLMF 15.8.2
+	    return !:plus(n_hyper1582(a,b,c,z), discont(a,b,c,z));
 
-      	 if !:minusp !:difference(1,z) and
-	    !:minusp !:difference(z,2) then
+      	 if !:minusp !:difference(1,z) and !:minusp tmp then
 	       % 1 < z < 2
-	       %  -- DLMF 15.8.5   ??
-	       % real part differs from Maple
-	       return n_hyper1585(a,b,c,z);
+	       %  -- DLMF 15.8.5   
+	    return !:plus(n_hyper1585(a,b,c,z), discont(a,b,c,z));
       >>;
 
       % z is now complex
@@ -185,6 +183,7 @@ symbolic procedure n_hyper21(a,b,c,z);
       pos := car tmp;
 
       if tmp = 1 then  % z = exp(+/-i*pi/3)
+	 % needs work
 	 return n_hyper2({a,b},{c},z);
       
       if pos = 0 then
@@ -201,7 +200,7 @@ symbolic procedure n_hyper21(a,b,c,z);
       if pos = 3 and not
 	 !:zerop !:difference(!:abs !:arg !:minus z, rdpi!*()) then
     	    %  -- DLMF 15.8.3
-	    return n_hyper1583(a,b,c,z);
+ 	    return n_hyper1583(a,b,c,z);
 
       if pos = 4 and not
 	 !:zerop !:difference(rdpi!*(),!:abs !:arg !:difference(1,z)) then
@@ -265,6 +264,18 @@ symbolic procedure n_hyper2(l1,l2,z);
 	    rerror(specfn, 6,
 	       "Hypergeometric: numerical evaluation not yet supported for z=1");
       >>;
+   end;
+
+symbolic procedure discont(a,b,c,z);
+   begin scalar tmp,tmp1,tmp2;
+      tmp := n_hyper21(!:difference(c,a), !:difference(c,b),
+	            !:difference(!:plus(c,1),!:plus(a,b)), !:difference(1,z));
+      tmp1 := !:times(!:times(rdpi!*(),'(!:crn!: . (0 . 1))), !:gamma2f c);
+      tmp2 := numr simpexpt {!:difference(z,1), !:difference(c, !:plus(a,b))};
+      tmp1 := !:times(2, !:times(tmp1, tmp2));
+      tmp2 := !:times(!:gamma2f a,!:times(!:gamma2f b,
+ 	              !:gamma2f !:difference(!:plus(c,1),!:plus(a,b))));	    
+      return !:times(tmp, !:quotient(tmp1, tmp2));
    end;
 
 symbolic procedure n_hyper1581(a,b,c,z);
@@ -376,7 +387,7 @@ symbolic procedure n_hyper1585(a,b,c,z);
       res := n_hyper1({a, !:difference(!:plus(a,1),c)},
 	              {!:difference(!:plus(a, !:plus(b, 1)), c)}, arg);
       tmp := numr simpexpt {z, !:minus a};
-      res := !:quotient(res, tmp);
+      res := !:times(res, tmp);
       tmp := !:times(!:gamma2f !:difference(c,a), !:gamma2f !:difference(c,b));
       tmp:=!:quotient(!:times(!:gamma2f c,
 	                      !:gamma2f !:difference(c,!:plus(a,b))),tmp);
@@ -536,7 +547,7 @@ algebraic procedure absargs(z);
 %%     	 res := n_hyper1({a, !:difference(!:plus(a,1),c)},
 %% 	    {!:difference(!:plus(a, !:plus(b, 1)), c)}, arg);
 %% 	 tmp := numr simpexpt {z, !:minus a};
-%% 	 res := !:quotient(res, tmp);
+%% 	 res := !:times(res, tmp);
 %%  	 tmp := !:times(!:gamma2f !:difference(c,a),
 %% 	    !:times(!:gamma2f !:difference(c,b),
 %% 	    !:gamma2f !:difference(!:plus(a,!:plus(b,1)), c)));
