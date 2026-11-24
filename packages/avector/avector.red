@@ -21,7 +21,6 @@ module avector;   % Vector algebra and calculus package.
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
-%
 
 % $Id$
 
@@ -59,12 +58,8 @@ avector!-loaded!* := t;   % To keep CSL happy.
 %   End of copyright notice                                            %
 %                                                                      %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                      %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  ***************  This code is designed to operate  ***************  %
-%  ***************  with version 3.4 of REDUCE and    ***************  %
-%  ***************  the Standard Lisp interpreter.    ***************  %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Other contributors: Malcolm MacCallum and Francis Wright
 
 
 
@@ -907,6 +902,8 @@ coordinates r,z,phi;
 scalefactors(1,1,r);
 putcsystem 'cylindrical;
 
+let sign r => 1;                        % radial coordinate r >= 0
+
 % And we choose to use Cartesians initially ...
 
 getcsystem 'cartesian;
@@ -1056,9 +1053,11 @@ symbolic procedure lineint u;
       then algebraic               % vector field f: compute f(r) . r'
          for k:=0:2 sum
             component(f,k)*hfactors(k)*df(component(curve,k), ivar)
-      else algebraic                  % scalar field f: compute f |r'|
+      else (algebraic                  % scalar field f: compute f |r'|
          (f * sqrt for k:=0:2 sum
-            <<hfactors(k)*df(component(curve,k), ivar)>>^2);
+            <<hfactors(k)*df(component(curve,k), ivar)>>^2))
+               % abs resulting from sqrt messes up integration, so...
+               where !*precise = nil;
       % Without << >> above get
       % ***** expt invalid as a vector operator
       % Bug in vector simplifier?
@@ -1115,8 +1114,10 @@ symbolic procedure rcons u;
 vectorfn('cons,'vectordot);
 
 % Rest added by M. MacCallum
-flag('(surfint vecsub),'vectorfn);
-vectorfn('surfint,'vsurfint);
+flag('(vecsub),'vectorfn);
+
+put('surfint, 'psopfn, 'vsurfint);      % FJW
+
 symbolic procedure vsurfint u;
    % Takes 4 or more arguments:
    % f (scalar or vector field);
@@ -1140,7 +1141,9 @@ symbolic procedure vsurfint u;
          f := aeval {'dot, f, nrml};    % f . surface_normal
       >> else <<                        % scalar field f
          f := aeval f;
-         f := aeval {'times, f, {'vmod, nrml}}; % f * |surface_normal|
+         % abs resulting from sqrt messes up integration, so...
+         nrml := (vectormod {nrml} where !*precise = nil);
+         f := aeval {'times, f, nrml};  % f * |surface_normal|
       >>;
       f := aeval {'vecsub, 'coords, rvec, f}; % eval integrand on surface
       f := if !*rounded then <<
