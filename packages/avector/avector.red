@@ -517,6 +517,10 @@ symbolic procedure vectorcrossprod vargs;
   return x
   end;
 
+% Support the operator name "><", which is more like "cross" ("X").
+% (It is also used for the cross product in Orthovec.)
+newtok '((!> !< ) cross) where !*msg = nil;
+
 % Vector modulus
 
 vectorfn('vmod,'vectormod);
@@ -555,6 +559,43 @@ symbolic procedure vectordot vargs;
                     list('times,u1,v1),
                     list('times,u2,v2))
   end;
+
+infix dot,cross;
+% Cross must have higher precedence than dot so that `v1 cross v2 dot
+% v3' and `v1 dot v2 cross v3' parse correctly without parentheses.
+% However, `.' parses as cons, so...
+precedence dot, cons;
+precedence cross, dot;
+
+% Support the operator name ".".
+%  This is tricky because the period (.) is already defined as the
+%  CONS function, and unfortunately REVAL1 spots this before it
+%  checks the type of the arguments, so declaring CONS to be
+%  VECTORMAPPING won't work. What is required is a hack to the
+%  routine that carries out CONS at SYMBOLIC level.
+
+% We now redefine RCONS which is the function invoked when CONS is used
+% in Reduce.
+
+remflag('(rcons),'lose);   % We must use this definition.
+
+symbolic procedure rcons u;
+   begin scalar x,y,z;
+      argnochk ('cons . u);
+      if (y := getrtypeor(x := revlis u)) eq 'hvector
+        then return if get('cons,'opmtch) and (z := opmtch('cons . x))
+                   then reval z
+                 else prepsq subs2 simpdot x
+% The following line was added to enable . to be used as vector product
+% (Amended by M. MacCallum)
+       else if (y eq '!3vector)
+         then return apply('vectordot,
+                           {for each j in u collect vecsimp!* j})
+       else if not(getrtype cadr x eq 'list) then typerr(x,"list")
+       else return 'list . car x . cdadr x
+   end;
+
+vectorfn('cons,'vectordot);
 
 % Component-wise assignment of a vector (AVEC)
 
@@ -884,11 +925,8 @@ symbolic procedure vectordf u;
 algebraic;
 vec coords,hfactors;
 % flag('(coords hfactors),'reserved); % Interferes with EXCALC.
-infix dot,cross;
-% Cross must have higher precedence than dot so that `v1 cross v2 dot
-% v3' and `v1 dot v2 cross v3' parse correctly without parentheses.
-precedence dot, *;
-precedence cross, dot;
+
+write "Defined coordinate systems are:";
 
 coordinates x,y,z;
 scalefactors(1,1,1);
@@ -904,7 +942,7 @@ putcsystem 'cylindrical;
 
 let sign r => 1;                        % radial coordinate r >= 0
 
-% And we choose to use Cartesians initially ...
+write "Default coordinate system is Cartesian with coordinates:";
 
 getcsystem 'cartesian;
 symbolic;
@@ -1058,7 +1096,7 @@ symbolic procedure lineint u;
             <<hfactors(k)*df(component(curve,k), ivar)>>^2))
                % abs resulting from sqrt messes up integration, so...
                where !*precise = nil;
-      % Without << >> above get
+      % FJW: Without << >> above get
       % ***** expt invalid as a vector operator
       % Bug in vector simplifier?
       % Evaluate integrand on curve (added by M. MacCallum):
@@ -1074,44 +1112,6 @@ symbolic procedure lineint u;
 
 % For backward compatibility:
 define deflineint = lineint;
-
-% Attempt to implement dot and cross as single-character infix
-%  operators upon vectors
-
-% Cross-product is easy : we simply tell Reduce that up-arrow is a
-%  synonym for CROSS
-
-%% Commented out since it interferes with exponentiation
-%%newtok '((!^) cross);
-
-% Dot is more difficult : the period (.) is already defined as the
-%  CONS function, and unfortunately REVAL1 spots this before it
-%  checks the type of the arguments, so declaring CONS to be
-%  VECTORMAPPING won't work. What is required is a hack to the
-%  routine that carries out CONS at SYMBOLIC level.
-
-% We now redefine RCONS which is the function invoked when CONS is used
-% in Reduce.
-
-remflag('(rcons),'lose);   % We must use this definition.
-
-symbolic procedure rcons u;
-   begin scalar x,y,z;
-      argnochk ('cons . u);
-      if (y := getrtypeor(x := revlis u)) eq 'hvector
-        then return if get('cons,'opmtch) and (z := opmtch('cons . x))
-                   then reval z
-                 else prepsq subs2 simpdot x
-% The following line was added to enable . to be used as vector product
-% (Amended by M. MacCallum)
-       else if (y eq '!3vector)
-         then return apply('vectordot,
-                           {for each j in u collect vecsimp!* j})
-       else if not(getrtype cadr x eq 'list) then typerr(x,"list")
-       else return 'list . car x . cdadr x
-   end;
-
-vectorfn('cons,'vectordot);
 
 % Rest added by M. MacCallum
 flag('(vecsub),'vectorfn);

@@ -132,18 +132,20 @@ but it is an error to multiply or divide one vector by another.
 \hypertarget{operator:CROSS}{}
 \index{Cross product}
 Vector multiplication is carried out using the infix operators \f{dot}
-(or \f{.}) and \f{cross}.  These are defined to have higher precedence
-than scalar multiplication and division.
+or \f{.}, and \f{cross} or \f{><}.  These are defined to have higher
+precedence than scalar multiplication and division, and \f{cross} has
+higher precedence than \f{dot}.
 
 \begin{tabular}{l|l}
 \texttt{v := v1 cross v2;} & Vector (cross) product \\
+\texttt{v := v1 >< v2;} & Vector (cross) product \\
 \texttt{s := v1 dot v2;} & Scalar (dot) product \\
 \texttt{s := v1~.~v2;} & Scalar (dot) product
 \end{tabular}
 
 \begin{tabular}{l}
-\texttt{v := v1 cross v2 + v3;} \\
-\texttt{v := (v1 cross v2) + v3;}
+\texttt{v := v1 >< v2 + v3;} \\
+\texttt{v := (v1 >< v2) + v3;}
 \end{tabular}
 
 The last two expressions are equivalent due to the precedence of
@@ -151,23 +153,23 @@ the \texttt{cross} operator.
 
 Note that the vector triple product
 \begin{verbatim}
-   v1 cross v2 cross v3
+   v1 >< v2 >< v3
 \end{verbatim}
 parses as
 \begin{verbatim}
-   (v1 cross v2) cross v3
+   (v1 >< v2) >< v3
 \end{verbatim}
 (by left-associativity), and is (generally) not equal to
 \begin{verbatim}
-   v1 cross (v2 cross v3)
+   v1 >< (v2 >< v3)
 \end{verbatim}
 whereas the scalar triple product
 \begin{verbatim}
-   v1 cross v2 dot v3
+   v1 >< v2 . v3
 \end{verbatim}
 is equal to
 \begin{verbatim}
-   v1 dot v2 cross v3
+   v1 . v2 >< v3
 \end{verbatim}
 and neither requires parentheses (because \f{cross} has higher
 precedence that \f{dot}).
