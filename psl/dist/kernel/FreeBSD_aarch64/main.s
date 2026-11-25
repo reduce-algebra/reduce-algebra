@@ -498,10 +498,10 @@ binaryclose:
  mov X11,#347
  ldr X10,[X23, X11, lsl #3]
  br X10
-l0020:
+ .quad 0
 // (*entry initialize-symbol-table expr 0)
- .globl l0021
-l0021:
+ .globl l0020
+l0020:
  stp X29,X30,[sp, #-32]!
  mov X29,sp
  str X28,[sp, #24]
@@ -513,9 +513,9 @@ l0021:
  ldr X0,[X24, X11, lsl #3]
  mov X3,X0
  mov X2,X1
-l0022:
+l0021:
  cmp X3,X2
- b.gt l0023
+ b.gt l0022
  mov X0,X3
  lsl X0,X0,#3
 // ($global symnam)
@@ -526,8 +526,8 @@ l0022:
  add X1,X1,X3
  str X1,[X0]
  add X3,X3,#1
- b l0022
-l0023:
+ b l0021
+l0022:
 // ($global symnam)
  movz X11,#350
  ldr X10,[X24, X11, lsl #3]
@@ -541,11 +541,11 @@ l0023:
  mov X0,#0
  str X0,[sp, #16]
  str X1,[sp, #24]
-l0024:
+l0023:
  ldr X9,[sp, #16]
  ldr X10,[sp, #24]
  cmp X9,X10
- b.gt l0025
+ b.gt l0024
  mov X2,#0
  ldr X1,[sp, #16]
 // ($fluid hashtable)
@@ -555,8 +555,8 @@ l0024:
  ldr X12,[sp, #16]
  add X12,X12,#1
  str X12,[sp, #16]
- b l0024
-l0025:
+ b l0023
+l0024:
 // ($global symnam)
  movz X11,#350
  ldr X0,[X24, X11, lsl #3]
@@ -579,11 +579,11 @@ l0025:
  mov X0,#256
  str X0,[sp, #16]
  str X1,[sp, #24]
-l0026:
+l0025:
  ldr X9,[sp, #16]
  ldr X10,[sp, #24]
  cmp X9,X10
- b.gt l0027
+ b.gt l0026
  ldr X0,[sp, #16]
  lsl X0,X0,#3
 // ($global symnam)
@@ -604,8 +604,8 @@ l0026:
  ldr X12,[sp, #16]
  add X12,X12,#1
  str X12,[sp, #16]
- b l0026
-l0027:
+ b l0025
+l0026:
  mov X0,X28
 // ($global show-new-ids)
  movz X11,#352
@@ -614,8 +614,8 @@ l0027:
  ret
  .quad 1
 // (*entry faslin-intern expr 1)
- .globl l0028
-l0028:
+ .globl l0027
+l0027:
  stp X29,X30,[sp, #-48]!
  mov X29,sp
  str X28,[sp, #40]
@@ -630,14 +630,14 @@ l0028:
  blr X10
  str X0,[sp, #24]
  cmp X0,X28
- b.ne l0029
+ b.ne l0028
  ldr X0,[sp, #16]
  ldp X29,X30,[sp], #48
 // (idloc intern)
  mov X11,#354
  ldr X10,[X23, X11, lsl #3]
  br X10
-l0029:
+l0028:
  ldr X0,[sp, #16]
  ubfx X0,X0,#0,#56
  ldr X0,[X0]
@@ -645,7 +645,7 @@ l0029:
  str X0,[sp, #32]
  ldr X11,[sp, #24]
  cmp X0,X11
- b.le l0030
+ b.le l0029
  mov X1,#1
  ldr X13,[sp, #24]
  add X1,X1,X13
@@ -653,18 +653,18 @@ l0029:
  ubfx X0,X0,#0,#56
  add X0,X0,#8
  ldrsb X0,[X0, X1]
- cbnz X0,l0030
+ cbnz X0,l0029
  ldr X12,[sp, #24]
  add X12,X12,#1
  str X12,[sp, #24]
-l0030:
+l0029:
  ldr X9,[sp, #24]
  ldr X10,[sp, #32]
  cmp X9,X10
- b.lt l0031
+ b.lt l0030
  ldr X0,[sp, #16]
- b l0032
-l0031:
+ b l0031
+l0030:
  ldr X2,[sp, #16]
  ubfx X2,X2,#0,#56
  ldr X2,[X2]
@@ -678,7 +678,7 @@ l0031:
  mov X11,#355
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0032:
+l0031:
  ldp X29,X30,[sp], #48
 // (idloc intern)
  mov X11,#354
@@ -697,8 +697,8 @@ intern:
  br X10
  .quad 1
 // (*entry unchecked-string-intern expr 1)
- .globl l0036
-l0036:
+ .globl l0035
+l0035:
  stp X29,X30,[sp, #-64]!
  mov X29,sp
  str X0,[sp, #16]
@@ -714,14 +714,14 @@ l0036:
  str X2,[sp, #40]
  str X3,[sp, #48]
  str X4,[sp, #56]
- cbnz X1,l0037
+ cbnz X1,l0036
  add X0,X0,#8
  ldrsb X0,[X0, X1]
  and X0,X0,#255
  mov X11,#254
  bfi X0,X11,#56,#8
- b l0038
-l0037:
+ b l0037
+l0036:
  ldr X0,[sp, #16]
 // (idloc hash-into-table)
  mov X11,#351
@@ -737,23 +737,23 @@ l0037:
  movz X11,#65535
  movk X11,#65535,lsl #16
  cmp X0,X11
- b.lt l0039
+ b.lt l0038
  mov X0,X28
- b l0040
-l0039:
+ b l0039
+l0038:
  movz X11,#20
  ldr X0,[X20, X11, lsl #3]
-l0040:
+l0039:
  cmp X0,X28
- b.eq l0041
+ b.eq l0040
  movz X11,#20
  ldr X0,[X20, X11, lsl #3]
  cmp X1,#0
- b.gt l0041
+ b.gt l0040
  add X0,X0,#140
-l0041:
+l0040:
  cmp X0,X28
- b.eq l0042
+ b.eq l0041
  ldr X1,[sp, #40]
 // ($fluid hashtable)
  movz X11,#263
@@ -761,13 +761,13 @@ l0041:
  ldr W0,[X0, X1, lsl #2]
  mov X11,#254
  bfi X0,X11,#56,#8
- b l0038
-l0042:
+ b l0037
+l0041:
 // ($global show-new-ids)
  movz X11,#352
  ldr X11,[X24, X11, lsl #3]
  cmp X0,X11
- b.eq l0043
+ b.eq l0042
  movz X11,#19
  ldr X0,[X20, X11, lsl #3]
 // (idloc console-print-string)
@@ -783,7 +783,7 @@ l0042:
  mov X11,#333
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0043:
+l0042:
 // (idloc gtid)
  mov X11,#358
  ldr X10,[X23, X11, lsl #3]
@@ -815,14 +815,14 @@ l0043:
  mov X11,#361
  ldr X10,[X23, X11, lsl #3]
  br X10
-l0038:
+l0037:
  ldp X29,X30,[sp], #64
  ret
  nop
  .quad 1
 // (*entry hash-into-table expr 1)
- .globl l0046
-l0046:
+ .globl l0045
+l0045:
  stp X29,X30,[sp, #-48]!
  mov X29,sp
  str X28,[sp, #40]
@@ -837,23 +837,23 @@ l0046:
  str X0,[sp, #32]
  movn X9,#0
  str X9,[sp, #40]
-l0047:
+l0046:
  ldr X1,[sp, #32]
 // ($fluid hashtable)
  movz X11,#263
  ldr X0,[X24, X11, lsl #3]
  ldr W0,[X0, X1, lsl #2]
- cbnz X0,l0048
+ cbnz X0,l0047
  ldr X11,[sp, #40]
  cmn X11,#1
- b.eq l0049
+ b.eq l0048
  ldr X0,[sp, #40]
- b l0050
-l0049:
- ldr X0,[sp, #32]
-l0050:
- b l0051
+ b l0049
 l0048:
+ ldr X0,[sp, #32]
+l0049:
+ b l0050
+l0047:
  ldr X1,[sp, #32]
 // ($fluid hashtable)
  movz X11,#263
@@ -862,14 +862,14 @@ l0048:
  movz X11,#65535
  movk X11,#65535,lsl #16
  cmp X0,X11
- b.ne l0052
+ b.ne l0051
  ldr X11,[sp, #40]
  cmn X11,#1
- b.ne l0053
+ b.ne l0052
  ldr X9,[sp, #32]
  str X9,[sp, #40]
- b l0053
-l0052:
+ b l0052
+l0051:
  ldr X1,[sp, #32]
 // ($fluid hashtable)
  movz X11,#263
@@ -887,41 +887,41 @@ l0052:
  ldr X10,[X23, X11, lsl #3]
  blr X10
  cmp X0,X28
- b.eq l0053
+ b.eq l0052
  ldr X0,[sp, #32]
- b l0051
-l0053:
+ b l0050
+l0052:
  ldr X9,[sp, #32]
  movz X10,#25
  movk X10,#6,lsl #16
  cmp X9,X10
- b.ne l0054
+ b.ne l0053
  mov X0,#0
- b l0055
-l0054:
+ b l0054
+l0053:
  mov X0,#1
  ldr X13,[sp, #32]
  add X0,X0,X13
-l0055:
+l0054:
  str X0,[sp, #32]
  ldr X11,[sp, #24]
  cmp X0,X11
- b.ne l0047
+ b.ne l0046
  movz X11,#24
  ldr X0,[X20, X11, lsl #3]
 // (idloc kernel-fatal-error)
  mov X11,#341
  ldr X10,[X23, X11, lsl #3]
  blr X10
- b l0047
-l0051:
+ b l0046
+l0050:
  ldp X29,X30,[sp], #48
  ret
  nop
  .quad 2
 // (*entry initialize-new-id expr 2)
- .globl l0056
-l0056:
+ .globl l0055
+l0055:
  stp X29,X30,[sp, #-32]!
  mov X29,sp
  str X0,[sp, #16]
@@ -967,8 +967,8 @@ l0056:
  ret
  .quad 1
 // (*entry hash-function expr 1)
- .globl l0059
-l0059:
+ .globl l0058
+l0058:
  stp X29,X30,[sp, #-48]!
  mov X29,sp
  str X28,[sp, #40]
@@ -981,17 +981,17 @@ l0059:
  str X0,[sp, #32]
  ldr X11,[sp, #16]
  cmp X11,#20
- b.le l0060
+ b.le l0059
  mov X9,#20
  str X9,[sp, #16]
-l0060:
+l0059:
  ldr X1,[sp, #16]
  mov X0,#0
  mov X4,X0
  mov X3,X1
-l0061:
+l0060:
  cmp X4,X3
- b.gt l0062
+ b.gt l0061
  mov X1,X4
  mov X0,#8
  ldr X13,[sp, #24]
@@ -999,19 +999,19 @@ l0061:
  ldrsb X0,[X0, X1]
  mov X2,#56
  subs X2,X2,X1
- b.ge l0057
+ b.ge l0056
  neg X10,X2
  lsr X0,X0,X10
- b l0058
-l0057:
+ b l0057
+l0056:
  lsl X0,X0,X2
-l0058:
+l0057:
  ldr X12,[sp, #32]
  eor X0,X0,X12
  str X0,[sp, #32]
  add X4,X4,#1
- b l0061
-l0062:
+ b l0060
+l0061:
  movz X1,#25
  movk X1,#6,lsl #16
  ldr X0,[sp, #32]
@@ -1051,7 +1051,7 @@ faslin:
  mov X1,#65535
  and X1,X1,X0
  cmp X1,#399
- b.eq l0063
+ b.eq l0062
  ldr X0,[sp, #40]
 // (idloc binaryclose)
  mov X11,#348
@@ -1062,8 +1062,8 @@ faslin:
  mov X11,#367
  ldr X10,[X23, X11, lsl #3]
  blr X10
- b l0064
-l0063:
+ b l0063
+l0062:
  ldr X0,[sp, #48]
  lsr X0,X0,#16
  str X0,[sp, #48]
@@ -1160,7 +1160,7 @@ l0063:
  ldr X12,[sp, #48]
  and X0,X0,X12
  cmp X0,#1
- b.ne l0065
+ b.ne l0064
  ldr X3,[sp, #56]
  ldr X2,[sp, #64]
  ldr X1,[sp, #72]
@@ -1169,8 +1169,8 @@ l0063:
  mov X11,#373
  ldr X10,[X23, X11, lsl #3]
  blr X10
- b l0066
-l0065:
+ b l0065
+l0064:
  ldr X3,[sp, #56]
  ldr X2,[sp, #64]
  ldr X1,[sp, #72]
@@ -1179,7 +1179,7 @@ l0065:
  mov X11,#374
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0066:
+l0065:
  ldr X1,[sp, #72]
  lsl X1,X1,#3
  ldr X13,[sp, #80]
@@ -1212,7 +1212,7 @@ l0066:
  mov X11,#378
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0064:
+l0063:
  mov X0,X28
  ldp X29,X30,[sp], #112
  ret
@@ -1229,8 +1229,8 @@ delbps:
  nop
  .quad 4
 // (*entry do-relocation expr 4)
- .globl l0067
-l0067:
+ .globl l0066
+l0066:
  stp X29,X30,[sp, #-64]!
  mov X29,sp
  str X28,[sp, #48]
@@ -1244,14 +1244,14 @@ l0067:
  mov X0,#0
  str X0,[sp, #56]
  str X1,[sp, #16]
-l0068:
+l0067:
  ldr X9,[sp, #56]
  ldr X10,[sp, #16]
  cmp X9,X10
- b.le l0069
+ b.le l0068
  mov X0,X28
- b l0070
-l0069:
+ b l0069
+l0068:
  ldr X1,[sp, #56]
  ldr X0,[sp, #24]
  mov X11,#1
@@ -1266,13 +1266,13 @@ l0069:
  add X1,X1,X13
  str X1,[sp, #48]
  cmp X0,#1
- b.eq l0071
+ b.eq l0070
  cmp X0,#2
- b.eq l0072
+ b.eq l0071
  cmp X0,#3
- b.eq l0073
- b l0074
-l0071:
+ b.eq l0072
+ b l0073
+l0070:
  ldr X2,[sp, #32]
  ldr X1,[sp, #40]
  ldr X0,[sp, #48]
@@ -1280,8 +1280,8 @@ l0071:
  mov X11,#380
  ldr X10,[X23, X11, lsl #3]
  blr X10
- b l0074
-l0073:
+ b l0073
+l0072:
  ldr X2,[sp, #32]
  ldr X1,[sp, #40]
  ldr X0,[sp, #48]
@@ -1289,8 +1289,8 @@ l0073:
  mov X11,#381
  ldr X10,[X23, X11, lsl #3]
  blr X10
- b l0074
-l0072:
+ b l0073
+l0071:
  ldr X2,[sp, #32]
  ldr X1,[sp, #40]
  ldr X0,[sp, #48]
@@ -1298,18 +1298,18 @@ l0072:
  mov X11,#382
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0074:
+l0073:
  ldr X12,[sp, #56]
  add X12,X12,#1
  str X12,[sp, #56]
- b l0068
-l0070:
+ b l0067
+l0069:
  ldp X29,X30,[sp], #64
  ret
  .quad 4
 // (*entry do-relocation-new expr 4)
- .globl l0075
-l0075:
+ .globl l0074
+l0074:
  stp X29,X30,[sp, #-64]!
  mov X29,sp
  str X28,[sp, #32]
@@ -1325,16 +1325,16 @@ l0075:
  ubfx X4,X4,#0,#56
  add X4,X4,#8
  str X4,[sp, #16]
-l0076:
+l0075:
  ldr X1,[sp, #24]
  ldr X0,[sp, #16]
  ldrsb X0,[X0, X1]
  and X0,X0,#255
  str X0,[sp, #32]
- cbnz X0,l0077
+ cbnz X0,l0076
  mov X0,X28
- b l0078
-l0077:
+ b l0077
+l0076:
  ldr X12,[sp, #24]
  add X12,X12,#1
  str X12,[sp, #24]
@@ -1349,13 +1349,13 @@ l0077:
  str X1,[sp, #32]
  mov X0,X1
  cmp X0,#1
- b.eq l0079
+ b.eq l0078
  cmp X0,#2
- b.eq l0080
+ b.eq l0079
  cmp X0,#3
- b.eq l0081
- b l0076
-l0079:
+ b.eq l0080
+ b l0075
+l0078:
  ldr X2,[sp, #40]
  ldr X1,[sp, #48]
  ldr X0,[sp, #56]
@@ -1363,8 +1363,8 @@ l0079:
  mov X11,#380
  ldr X10,[X23, X11, lsl #3]
  blr X10
- b l0076
-l0081:
+ b l0075
+l0080:
  ldr X2,[sp, #40]
  ldr X1,[sp, #48]
  ldr X0,[sp, #56]
@@ -1372,8 +1372,8 @@ l0081:
  mov X11,#381
  ldr X10,[X23, X11, lsl #3]
  blr X10
- b l0076
-l0080:
+ b l0075
+l0079:
  ldr X2,[sp, #40]
  ldr X1,[sp, #48]
  ldr X0,[sp, #56]
@@ -1381,14 +1381,14 @@ l0080:
  mov X11,#382
  ldr X10,[X23, X11, lsl #3]
  blr X10
- b l0076
-l0078:
+ b l0075
+l0077:
  ldp X29,X30,[sp], #64
  ret
  .quad 3
 // (*entry relocate-word expr 3)
- .globl l0082
-l0082:
+ .globl l0081
+l0081:
  stp X29,X30,[sp, #-64]!
  mov X29,sp
  str X28,[sp, #56]
@@ -1421,8 +1421,8 @@ l0082:
  ret
  .quad 3
 // (*entry relocate-inf expr 3)
- .globl l0083
-l0083:
+ .globl l0082
+l0082:
  stp X29,X30,[sp, #-48]!
  mov X29,sp
  str X28,[sp, #40]
@@ -1455,8 +1455,8 @@ l0083:
  nop
  .quad 3
 // (*entry relocate-right-half expr 3)
- .globl l0084
-l0084:
+ .globl l0083
+l0083:
  stp X29,X30,[sp, #-48]!
  mov X29,sp
  str X28,[sp, #40]
@@ -1489,22 +1489,22 @@ l0084:
  nop
  .quad 4
 // (*entry compute-relocation expr 4)
- .globl l0085
-l0085:
+ .globl l0084
+l0084:
  stp X29,X30,[sp, #-32]!
  mov X29,sp
  str X28,[sp, #24]
  str X1,[sp, #16]
- cbnz X0,l0086
+ cbnz X0,l0085
  mov X0,X2
  add X0,X0,X1
- b l0087
-l0086:
+ b l0086
+l0085:
  cmp X0,#2
- b.ne l0088
+ b.ne l0087
  mov X11,#65510
  cmp X1,X11
- b.lt l0089
+ b.lt l0088
  movn X0,#65518
  add X0,X0,X1
  lsl X0,X0,#3
@@ -1512,10 +1512,10 @@ l0086:
  movz X11,#259
  ldr X13,[X24, X11, lsl #3]
  add X0,X0,X13
- b l0087
-l0089:
+ b l0086
+l0088:
  cmp X1,#2048
- b.lt l0090
+ b.lt l0089
  mov X1,X3
  ldr X0,[sp, #16]
 // (idloc local-to-global-id)
@@ -1524,17 +1524,17 @@ l0089:
  blr X10
  lsl X0,X0,#3
  add X0,X0,X24
- b l0087
-l0090:
+ b l0086
+l0089:
  mov X0,X1
  lsl X0,X0,#3
  add X0,X0,X24
- b l0087
-l0088:
+ b l0086
+l0087:
  cmp X0,#3
- b.ne l0091
+ b.ne l0090
  cmp X1,#2048
- b.lt l0092
+ b.lt l0091
  mov X1,X3
  ldr X0,[sp, #16]
 // (idloc local-to-global-id)
@@ -1542,16 +1542,16 @@ l0088:
  ldr X10,[X23, X11, lsl #3]
  blr X10
  str X0,[sp, #16]
-l0092:
+l0091:
  ldr X0,[sp, #16]
  lsl X0,X0,#3
  add X0,X0,X23
- b l0087
-l0091:
+ b l0086
+l0090:
  cmp X0,#1
- b.ne l0093
+ b.ne l0092
  cmp X1,#2048
- b.lt l0094
+ b.lt l0093
  mov X1,X3
  ldr X0,[sp, #16]
  ldp X29,X30,[sp], #32
@@ -1559,18 +1559,18 @@ l0091:
  mov X11,#384
  ldr X10,[X23, X11, lsl #3]
  br X10
-l0094:
- mov X0,X1
- b l0087
 l0093:
+ mov X0,X1
+ b l0086
+l0092:
  mov X0,X28
-l0087:
+l0086:
  ldp X29,X30,[sp], #32
  ret
  .quad 2
 // (*entry local-to-global-id expr 2)
- .globl l0095
-l0095:
+ .globl l0094
+l0094:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  sub X0,X0,#2047
@@ -1583,8 +1583,8 @@ l0095:
  nop
  .quad 1
 // (*entry read-id-table expr 1)
- .globl l0096
-l0096:
+ .globl l0095
+l0095:
  stp X29,X30,[sp, #-64]!
  mov X29,sp
  str X28,[sp, #56]
@@ -1610,11 +1610,11 @@ l0096:
  mov X0,#0
  str X0,[sp, #40]
  str X1,[sp, #48]
-l0097:
+l0096:
  ldr X9,[sp, #40]
  ldr X10,[sp, #48]
  cmp X9,X10
- b.gt l0098
+ b.gt l0097
  ldr X0,[sp, #16]
 // (idloc binaryread)
  mov X11,#344
@@ -1665,8 +1665,8 @@ l0097:
  ldr X12,[sp, #40]
  add X12,X12,#1
  str X12,[sp, #40]
- b l0097
-l0098:
+ b l0096
+l0097:
  ldr X0,[sp, #32]
  ldp X29,X30,[sp], #64
  ret
@@ -1689,8 +1689,8 @@ putentry:
  br X10
  .quad 1
 // (*entry faslin-bad-file expr 1)
- .globl l0101
-l0101:
+ .globl l0100
+l0100:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  movz X11,#29
@@ -1711,24 +1711,24 @@ gtbps:
  stp X29,X30,[sp, #-32]!
  mov X29,sp
  str X28,[sp, #24]
-l0105:
+l0104:
  str X0,[sp, #16]
  cmp X0,X28
- b.ne l0106
+ b.ne l0105
 // (idloc gtbps-nil-error)
  mov X11,#387
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0106:
+l0105:
  ldr X11,[sp, #16]
  cmp X11,#10
- b.le l0107
+ b.le l0106
  mov X0,#15
 // ($global nextbps)
  movz X11,#287
  ldr X12,[X24, X11, lsl #3]
  and X0,X0,X12
- cbz X0,l0107
+ cbz X0,l0106
 // ($global nextbps)
  movz X11,#287
  ldr X1,[X24, X11, lsl #3]
@@ -1738,7 +1738,7 @@ l0106:
 // ($global nextbps)
  movz X11,#287
  str X1,[X24, X11, lsl #3]
-l0107:
+l0106:
 // ($global nextbps)
  movz X11,#287
  ldr X0,[X24, X11, lsl #3]
@@ -1755,7 +1755,7 @@ l0107:
  movz X11,#284
  ldr X11,[X24, X11, lsl #3]
  cmp X1,X11
- b.le l0108
+ b.le l0107
 // ($global nextbps)
  movz X11,#287
  str X0,[X24, X11, lsl #3]
@@ -1766,17 +1766,17 @@ l0107:
  ldr X10,[X23, X11, lsl #3]
  blr X10
  cmp X0,X28
- b.eq l0109
+ b.eq l0108
  ldr X0,[sp, #16]
 // (idloc try-other-bps-spaces)
  mov X11,#389
  ldr X10,[X23, X11, lsl #3]
  blr X10
  cmp X0,X28
- b.eq l0109
+ b.eq l0108
  ldr X0,[sp, #16]
- b l0105
-l0109:
+ b l0104
+l0108:
  movz X11,#34
  ldr X0,[X20, X11, lsl #3]
  ldp X29,X30,[sp], #32
@@ -1784,13 +1784,13 @@ l0109:
  mov X11,#390
  ldr X10,[X23, X11, lsl #3]
  br X10
-l0108:
+l0107:
  ldp X29,X30,[sp], #32
  ret
  .quad 1
 // (*entry gtbps-nil-error expr 1)
- .globl l0112
-l0112:
+ .globl l0111
+l0111:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  movz X11,#41
@@ -1803,8 +1803,8 @@ l0112:
  nop
  .quad 1
 // (*entry bpsaddr-to-bpsaddr-rw expr 1)
- .globl l0113
-l0113:
+ .globl l0112
+l0112:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
 // ($global bpsbaserw)
@@ -1824,17 +1824,17 @@ gtstaticlisp:
  stp X29,X30,[sp, #-32]!
  mov X29,sp
  str X28,[sp, #24]
-l0119:
+l0118:
  str X0,[sp, #16]
  cmp X0,X28
- b.ne l0120
+ b.ne l0119
  movz X11,#48
  ldr X0,[X20, X11, lsl #3]
 // (idloc stderror)
  mov X11,#390
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0120:
+l0119:
 // ($global nextstaticlisp)
  movz X11,#294
  ldr X0,[X24, X11, lsl #3]
@@ -1851,7 +1851,7 @@ l0120:
  movz X11,#293
  ldr X11,[X24, X11, lsl #3]
  cmp X1,X11
- b.le l0121
+ b.le l0120
 // ($global nextstaticlisp)
  movz X11,#294
  str X0,[X24, X11, lsl #3]
@@ -1862,17 +1862,17 @@ l0120:
  ldr X10,[X23, X11, lsl #3]
  blr X10
  cmp X0,X28
- b.eq l0122
+ b.eq l0121
  ldr X0,[sp, #16]
 // (idloc try-other-staticlisp-spaces)
  mov X11,#391
  ldr X10,[X23, X11, lsl #3]
  blr X10
  cmp X0,X28
- b.eq l0122
+ b.eq l0121
  ldr X0,[sp, #16]
- b l0119
-l0122:
+ b l0118
+l0121:
  movz X11,#46
  ldr X0,[X20, X11, lsl #3]
  ldp X29,X30,[sp], #32
@@ -1880,7 +1880,7 @@ l0122:
  mov X11,#390
  ldr X10,[X23, X11, lsl #3]
  br X10
-l0121:
+l0120:
  ldp X29,X30,[sp], #32
  ret
  nop
@@ -1891,13 +1891,13 @@ gtheap:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  cmp X0,X28
- b.ne l0123
+ b.ne l0122
  ldp X29,X30,[sp], #16
 // (idloc known-free-space)
  mov X11,#392
  ldr X10,[X23, X11, lsl #3]
  br X10
-l0123:
+l0122:
  ldp X29,X30,[sp], #16
 // (idloc real-gtheap)
  mov X11,#393
@@ -1905,8 +1905,8 @@ l0123:
  br X10
  .quad 1
 // (*entry real-gtheap expr 1)
- .globl l0124
-l0124:
+ .globl l0123
+l0123:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  mov X2,X0
@@ -1916,21 +1916,21 @@ l0124:
  add X1,X1,X21
  mov X21,X1
  cmp X1,X22
- b.lt l0125
+ b.lt l0124
  mov X1,X2
  ldp X29,X30,[sp], #16
 // (idloc get-heap-trap)
  mov X11,#395
  ldr X10,[X23, X11, lsl #3]
  br X10
-l0125:
+l0124:
  ldp X29,X30,[sp], #16
  ret
  nop
  .quad 2
 // (*entry get-heap-trap expr 2)
- .globl l0128
-l0128:
+ .globl l0127
+l0127:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  movz X11,#59
@@ -1941,7 +1941,7 @@ l0128:
  ldr X10,[X23, X11, lsl #3]
  br X10
  nop
-l0131:
+ .quad 0
 // (*entry gtid expr 0)
  .globl gtid
 gtid:
@@ -1950,7 +1950,7 @@ gtid:
 // ($global nextsymbol)
  movz X11,#349
  ldr X11,[X24, X11, lsl #3]
- cbnz X11,l0132
+ cbnz X11,l0130
 // (idloc reclaim)
  mov X11,#396
  ldr X10,[X23, X11, lsl #3]
@@ -1958,14 +1958,14 @@ gtid:
 // ($global nextsymbol)
  movz X11,#349
  ldr X11,[X24, X11, lsl #3]
- cbnz X11,l0132
+ cbnz X11,l0130
  movz X11,#65
  ldr X0,[X20, X11, lsl #3]
 // (idloc kernel-fatal-error)
  mov X11,#341
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0132:
+l0130:
 // ($global nextsymbol)
  movz X11,#349
  ldr X0,[X24, X11, lsl #3]
@@ -2041,14 +2041,14 @@ subseq:
  str X2,[sp, #32]
  ubfx X11,X0,#56,#8
  cmp X11,#4
- b.eq l0135
+ b.eq l0133
  movz X11,#70
  ldr X0,[X20, X11, lsl #3]
 // (idloc kernel-fatal-error)
  mov X11,#341
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0135:
+l0133:
  movn X0,#0
  ldr X13,[sp, #32]
  add X0,X0,X13
@@ -2068,9 +2068,9 @@ l0135:
  mov X0,#0
  mov X4,X0
  mov X3,X1
-l0136:
+l0134:
  cmp X4,X3
- b.gt l0137
+ b.gt l0135
  ldr X1,[sp, #24]
  add X1,X1,X4
  mov X0,#8
@@ -2084,8 +2084,8 @@ l0136:
  add X0,X0,X13
  strb W2,[X0, X1]
  add X4,X4,#1
- b l0136
-l0137:
+ b l0134
+l0135:
  ldr X0,[sp, #56]
  mov X11,#4
  bfi X0,X11,#56,#8
@@ -2093,8 +2093,8 @@ l0137:
  ret
  .quad 2
 // (*entry search-string-for-character expr 2)
- .globl l0138
-l0138:
+ .globl l0136
+l0136:
  stp X29,X30,[sp, #-32]!
  mov X29,sp
  str X28,[sp, #24]
@@ -2106,31 +2106,31 @@ l0138:
  mov X0,#0
  mov X3,X0
  mov X2,X1
-l0139:
+l0137:
  cmp X3,X2
- b.le l0140
+ b.le l0138
  mov X0,X28
- b l0141
-l0140:
+ b l0139
+l0138:
  mov X1,X3
  ubfx X0,X4,#0,#56
  add X0,X0,#8
  ldrsb X0,[X0, X1]
  ldr X11,[sp, #16]
  cmp X11,X0
- b.ne l0142
+ b.ne l0140
  mov X0,X1
- b l0141
-l0142:
- add X3,X3,#1
  b l0139
-l0141:
+l0140:
+ add X3,X3,#1
+ b l0137
+l0139:
  ldp X29,X30,[sp], #32
  ret
  .quad 2
 // (*entry unchecked-string-equal expr 2)
- .globl l0144
-l0144:
+ .globl l0142
+l0142:
  stp X29,X30,[sp, #-48]!
  mov X29,sp
  str X28,[sp, #40]
@@ -2145,20 +2145,20 @@ l0144:
  ldr X3,[X1]
  sbfx X3,X3,#0,#56
  cmp X2,X3
- b.eq l0145
+ b.eq l0143
  mov X0,X28
- b l0146
-l0145:
+ b l0144
+l0143:
  mov X9,#0
  str X9,[sp, #32]
-l0147:
+l0145:
  ldr X11,[sp, #32]
  cmp X11,X4
- b.le l0148
+ b.le l0146
  movz X11,#76
  ldr X0,[X20, X11, lsl #3]
- b l0146
-l0148:
+ b l0144
+l0146:
  ldr X1,[sp, #32]
  mov X0,#8
  ldr X13,[sp, #16]
@@ -2170,15 +2170,15 @@ l0148:
  add X0,X0,X13
  ldrsb X0,[X0, X1]
  cmp X2,X0
- b.eq l0149
+ b.eq l0147
  mov X0,X28
- b l0146
-l0149:
+ b l0144
+l0147:
  ldr X12,[sp, #32]
  add X12,X12,#1
  str X12,[sp, #32]
- b l0147
-l0146:
+ b l0145
+l0144:
  ldp X29,X30,[sp], #48
  ret
  .quad 2
@@ -2198,9 +2198,9 @@ copystringtofrom:
  ldr X0,[X2]
  sbfx X0,X0,#0,#56
  cmp X0,X4
- b.ge l0150
+ b.ge l0148
  str X0,[sp, #16]
-l0150:
+l0148:
  mov X0,#9
  ldr X13,[sp, #16]
  add X0,X0,X13
@@ -2214,9 +2214,9 @@ l0150:
  mov X0,#0
  mov X3,X0
  mov X2,X1
-l0151:
+l0149:
  cmp X3,X2
- b.gt l0152
+ b.gt l0150
  mov X0,#1
  add X0,X0,X3
  lsl X0,X0,#3
@@ -2230,8 +2230,8 @@ l0151:
  ldr X9,[X1]
  str X9,[X0]
  add X3,X3,#1
- b l0151
-l0152:
+ b l0149
+l0150:
  ldr X0,[sp, #40]
  ldp X29,X30,[sp], #48
  ret
@@ -2294,8 +2294,8 @@ put:
  br X10
  .quad 3
 // (*entry unchecked-put expr 3)
- .globl l0153
-l0153:
+ .globl l0151
+l0151:
  stp X29,X30,[sp, #-48]!
  mov X29,sp
  str X28,[sp, #40]
@@ -2314,12 +2314,12 @@ l0153:
  ldr X10,[X23, X11, lsl #3]
  blr X10
  cmp X0,X28
- b.eq l0154
+ b.eq l0152
  ubfx X10,X0,#0,#56
  ldr X9,[sp, #32]
  str X9,[X10, #8]
- b l0155
-l0154:
+ b l0153
+l0152:
  ldr X1,[sp, #32]
  ldr X0,[sp, #24]
  str X0,[X21]
@@ -2328,14 +2328,14 @@ l0154:
  str X1,[X21, #8]
  add X21,X21,#16
  cmp X21,X22
- b.lt l0156
+ b.lt l0154
  stp X0,X1,[sp, #-16]!
 // (idloc !%reclaim)
  mov X11,#405
  ldr X10,[X23, X11, lsl #3]
  blr X10
  ldp X0,X1,[sp], #16
-l0156:
+l0154:
  ldr X1,[sp, #40]
  str X0,[X21]
  mov X0,#9
@@ -2343,21 +2343,21 @@ l0156:
  str X1,[X21, #8]
  add X21,X21,#16
  cmp X21,X22
- b.lt l0157
+ b.lt l0155
  stp X0,X1,[sp, #-16]!
 // (idloc !%reclaim)
  mov X11,#405
  ldr X10,[X23, X11, lsl #3]
  blr X10
  ldp X0,X1,[sp], #16
-l0157:
+l0155:
  mov X1,X0
  ldr X0,[sp, #16]
 // (idloc unchecked-setprop)
  mov X11,#406
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0155:
+l0153:
  ldr X0,[sp, #32]
  ldp X29,X30,[sp], #48
  ret
@@ -2367,37 +2367,37 @@ l0155:
 atsoc:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
-l0158:
+l0156:
  ubfx X11,X1,#56,#8
  cmp X11,#9
- b.eq l0159
+ b.eq l0157
  mov X0,X28
  ldp X29,X30,[sp], #16
  ret
-l0159:
+l0157:
  ubfx X9,X1,#0,#56
  ldr X11,[X9]
  ubfx X11,X11,#56,#8
  cmp X11,#9
- b.ne l0160
+ b.ne l0158
  ubfx X10,X1,#0,#56
  ldr X10,[X10]
  ubfx X10,X10,#0,#56
  ldr X11,[X10]
  cmp X0,X11
- b.ne l0160
+ b.ne l0158
  ubfx X0,X1,#0,#56
  ldr X0,[X0]
  ldp X29,X30,[sp], #16
  ret
-l0160:
+l0158:
  ubfx X1,X1,#0,#56
  ldr X1,[X1, #8]
- b l0158
+ b l0156
  .quad 2
 // (*entry unchecked-setprop expr 2)
- .globl l0161
-l0161:
+ .globl l0159
+l0159:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ubfx X0,X0,#0,#56
@@ -2412,8 +2412,8 @@ l0161:
  ret
  .quad 1
 // (*entry unchecked-prop expr 1)
- .globl l0162
-l0162:
+ .globl l0160
+l0160:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ubfx X0,X0,#0,#56
@@ -2439,8 +2439,8 @@ putd:
  br X10
  .quad 3
 // (*entry code-putd expr 3)
- .globl l0167
-l0167:
+ .globl l0165
+l0165:
  stp X29,X30,[sp, #-48]!
  mov X29,sp
  str X28,[sp, #40]
@@ -2449,21 +2449,21 @@ l0167:
  str X2,[sp, #32]
  ubfx X11,X0,#56,#8
  cmp X11,#254
- b.ne l0168
+ b.ne l0166
  ubfx X11,X1,#56,#8
  cmp X11,#254
- b.ne l0168
+ b.ne l0166
  ubfx X11,X2,#56,#8
  cmp X11,#20
- b.eq l0169
-l0168:
+ b.eq l0167
+l0166:
  movz X11,#79
  ldr X0,[X20, X11, lsl #3]
 // (idloc kernel-fatal-error)
  mov X11,#341
  ldr X10,[X23, X11, lsl #3]
  blr X10
-l0169:
+l0167:
  ldr X1,[sp, #32]
  ubfx X1,X1,#0,#56
  ldr X0,[sp, #16]
@@ -2476,7 +2476,7 @@ l0169:
  movz X11,#78
  ldr X10,[X20, X11, lsl #3]
  cmp X9,X10
- b.eq l0170
+ b.eq l0168
  ldr X2,[sp, #24]
  movz X11,#77
  ldr X1,[X20, X11, lsl #3]
@@ -2486,7 +2486,7 @@ l0169:
  mov X11,#402
  ldr X10,[X23, X11, lsl #3]
  br X10
-l0170:
+l0168:
  mov X0,X28
  ldp X29,X30,[sp], #48
  ret
@@ -2505,23 +2505,23 @@ fluid:
  mov X11,X9
  ubfx X11,X11,#56,#8
  cmp X11,#9
- b.ne l0171
+ b.ne l0169
  ldr X0,[sp, #24]
  ubfx X0,X0,#0,#56
  ldr X0,[X0]
- b l0172
-l0171:
+ b l0170
+l0169:
  mov X0,X28
-l0172:
+l0170:
  str X0,[sp, #32]
-l0173:
+l0171:
  ldr X11,[sp, #24]
  ubfx X11,X11,#56,#8
  cmp X11,#9
- b.eq l0174
+ b.eq l0172
  mov X0,X28
- b l0175
-l0174:
+ b l0173
+l0172:
  ldr X0,[sp, #32]
 // (idloc fluid1)
  mov X11,#409
@@ -2533,23 +2533,23 @@ l0174:
  str X0,[sp, #24]
  ubfx X11,X0,#56,#8
  cmp X11,#9
- b.ne l0176
+ b.ne l0174
  ubfx X0,X0,#0,#56
  ldr X0,[X0]
- b l0177
-l0176:
+ b l0175
+l0174:
  mov X0,X28
-l0177:
- str X0,[sp, #32]
- b l0173
 l0175:
+ str X0,[sp, #32]
+ b l0171
+l0173:
  ldp X29,X30,[sp], #48
  ret
  nop
  .quad 1
 // (*entry fluid1 expr 1)
- .globl l0180
-l0180:
+ .globl l0178
+l0178:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  movz X11,#86
@@ -2574,8 +2574,8 @@ stderror:
  br X10
  .quad 2
 // (*entry *define-constant expr 2)
- .globl l0183
-l0183:
+ .globl l0181
+l0181:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ubfx X2,X0,#0,#56
@@ -2603,7 +2603,7 @@ plantunbound:
  str X9,[X23, X0, lsl #3]
  ldp X29,X30,[sp], #16
  ret
-l0184:
+ .quad 0
  .quad 2
 // (*entry plantcodepointer expr 2)
  .globl plantcodepointer
@@ -2626,11 +2626,11 @@ plantlambdalink:
  str X9,[X23, X0, lsl #3]
  ldp X29,X30,[sp], #16
  ret
-l0185:
+ .quad 0
  .quad 1
 // (*entry addressapply0 expr 1)
- .globl l0186
-l0186:
+ .globl l0182
+l0182:
  br X0
  nop
  .quad 2
@@ -2645,13 +2645,13 @@ bittable:
  ubfx X2,X3,#32,#2
  lsl X2,X2,#1
  subs X2,X2,#6
- b.ge l0187
+ b.ge l0183
  neg X10,X2
  lsr X0,X0,X10
- b l0188
-l0187:
+ b l0184
+l0183:
  lsl X0,X0,X2
-l0188:
+l0184:
  ubfx X0,X0,#32,#2
  ldp X29,X30,[sp], #16
  ret
@@ -2668,8 +2668,8 @@ undefinedfunction:
  br X10
  .quad 1
 // (*entry undefinedfunction-aux expr 1)
- .globl l0191
-l0191:
+ .globl l0187
+l0187:
  stp X29,X30,[sp, #-32]!
  mov X29,sp
  str X28,[sp, #24]
@@ -2701,7 +2701,7 @@ l0191:
  ldp X29,X30,[sp], #32
  ret
  nop
-l0192:
+ .quad 0
 // (*entry compiledcallinginterpreted expr 0)
  .globl compiledcallinginterpreted
 compiledcallinginterpreted:
@@ -2718,8 +2718,8 @@ compiledcallinginterpreted:
  nop
  .quad 1
 // (*entry kernel-fatal-error expr 1)
- .globl l0195
-l0195:
+ .globl l0190
+l0190:
  stp X29,X30,[sp, #-32]!
  mov X29,sp
  str X28,[sp, #24]
@@ -2745,10 +2745,10 @@ l0195:
  mov X11,#319
  ldr X10,[X23, X11, lsl #3]
  br X10
-l0196:
+ .quad 0
 // (*entry echooff expr 0)
- .globl l0197
-l0197:
+ .globl l0191
+l0191:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2767,10 +2767,10 @@ l0197:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0198:
+ .quad 0
 // (*entry echoon expr 0)
- .globl l0199
-l0199:
+ .globl l0192
+l0192:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2791,8 +2791,8 @@ l0199:
  ret
  .quad 1
 // (*entry external_charsininputbuffer expr 1)
- .globl l0200
-l0200:
+ .globl l0193
+l0193:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2811,10 +2811,10 @@ l0200:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0201:
+ .quad 0
 // (*entry flushstdoutputbuffer expr 0)
- .globl l0202
-l0202:
+ .globl l0194
+l0194:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2833,10 +2833,10 @@ l0202:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0203:
+ .quad 0
 // (*entry external_user_homedir_string expr 0)
- .globl l0204
-l0204:
+ .globl l0195
+l0195:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2857,8 +2857,8 @@ l0204:
  ret
  .quad 1
 // (*entry external_anyuser_homedir_string expr 1)
- .globl l0205
-l0205:
+ .globl l0196
+l0196:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2877,10 +2877,10 @@ l0205:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0206:
+ .quad 0
 // (*entry unexec expr 0)
- .globl l0207
-l0207:
+ .globl l0197
+l0197:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2901,8 +2901,8 @@ l0207:
  ret
  .quad 1
 // (*entry alterheapsize expr 1)
- .globl l0208
-l0208:
+ .globl l0198
+l0198:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2923,8 +2923,8 @@ l0208:
  ret
  .quad 1
 // (*entry allocatemorebps expr 1)
- .globl l0209
-l0209:
+ .globl l0199
+l0199:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2943,10 +2943,10 @@ l0209:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0210:
+ .quad 0
 // (*entry get_imagefilepath expr 0)
- .globl l0211
-l0211:
+ .globl l0200
+l0200:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2967,8 +2967,8 @@ l0211:
  ret
  .quad 3
 // (*entry get_file_status expr 3)
- .globl l0212
-l0212:
+ .globl l0201
+l0201:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -2989,8 +2989,8 @@ l0212:
  ret
  .quad 2
 // (*entry os_startup_hook expr 2)
- .globl l0213
-l0213:
+ .globl l0202
+l0202:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3009,10 +3009,10 @@ l0213:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0214:
+ .quad 0
 // (*entry os_cleanup_hook expr 0)
- .globl l0215
-l0215:
+ .globl l0203
+l0203:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3031,10 +3031,10 @@ l0215:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0216:
+ .quad 0
 // (*entry get_execfilepath expr 0)
- .globl l0217
-l0217:
+ .globl l0204
+l0204:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3055,8 +3055,8 @@ l0217:
  ret
  .quad 2
 // (*entry clear_cache expr 2)
- .globl l0218
-l0218:
+ .globl l0205
+l0205:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3077,8 +3077,8 @@ l0218:
  ret
  .quad 4
 // (*entry wxquotientdouble expr 4)
- .globl l0219
-l0219:
+ .globl l0206
+l0206:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3099,8 +3099,8 @@ l0219:
  ret
  .quad 1
 // (*entry external_alarm expr 1)
- .globl l0220
-l0220:
+ .globl l0207
+l0207:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3121,8 +3121,8 @@ l0220:
  ret
  .quad 2
 // (*entry external_ualarm expr 2)
- .globl l0221
-l0221:
+ .globl l0208
+l0208:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3143,8 +3143,8 @@ l0221:
  ret
  .quad 1
 // (*entry external_time expr 1)
- .globl l0222
-l0222:
+ .globl l0209
+l0209:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3163,10 +3163,10 @@ l0222:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0223:
+ .quad 0
 // (*entry external_timc expr 0)
- .globl l0224
-l0224:
+ .globl l0210
+l0210:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3187,8 +3187,8 @@ l0224:
  ret
  .quad 2
 // (*entry external_stat expr 2)
- .globl l0225
-l0225:
+ .globl l0211
+l0211:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3209,8 +3209,8 @@ l0225:
  ret
  .quad 2
 // (*entry external_mkdir expr 2)
- .globl l0226
-l0226:
+ .globl l0212
+l0212:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3231,8 +3231,8 @@ l0226:
  ret
  .quad 1
 // (*entry external_rmdir expr 1)
- .globl l0227
-l0227:
+ .globl l0213
+l0213:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3253,8 +3253,8 @@ l0227:
  ret
  .quad 2
 // (*entry external_link expr 2)
- .globl l0228
-l0228:
+ .globl l0214
+l0214:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3275,8 +3275,8 @@ l0228:
  ret
  .quad 1
 // (*entry external_unlink expr 1)
- .globl l0229
-l0229:
+ .globl l0215
+l0215:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3297,8 +3297,8 @@ l0229:
  ret
  .quad 1
 // (*entry external_strlen expr 1)
- .globl l0230
-l0230:
+ .globl l0216
+l0216:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3319,8 +3319,8 @@ l0230:
  ret
  .quad 1
 // (*entry external_getenv expr 1)
- .globl l0231
-l0231:
+ .globl l0217
+l0217:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3341,8 +3341,8 @@ l0231:
  ret
  .quad 2
 // (*entry external_setenv expr 2)
- .globl l0232
-l0232:
+ .globl l0218
+l0218:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3363,8 +3363,8 @@ l0232:
  ret
  .quad 2
 // (*entry external_mkfifo expr 2)
- .globl l0233
-l0233:
+ .globl l0219
+l0219:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3385,8 +3385,8 @@ l0233:
  ret
  .quad 2
 // (*entry external_flock expr 2)
- .globl l0234
-l0234:
+ .globl l0220
+l0220:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3407,8 +3407,8 @@ l0234:
  ret
  .quad 3
 // (*entry external_fcntl expr 3)
- .globl l0235
-l0235:
+ .globl l0221
+l0221:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3429,8 +3429,8 @@ l0235:
  ret
  .quad 3
 // (*entry external_read expr 3)
- .globl l0236
-l0236:
+ .globl l0222
+l0222:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3451,8 +3451,8 @@ l0236:
  ret
  .quad 3
 // (*entry external_write expr 3)
- .globl l0237
-l0237:
+ .globl l0223
+l0223:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3473,8 +3473,8 @@ l0237:
  ret
  .quad 3
 // (*entry external_lseek expr 3)
- .globl l0238
-l0238:
+ .globl l0224
+l0224:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3495,8 +3495,8 @@ l0238:
  ret
  .quad 3
 // (*entry external_open expr 3)
- .globl l0239
-l0239:
+ .globl l0225
+l0225:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3517,8 +3517,8 @@ l0239:
  ret
  .quad 1
 // (*entry external_close expr 1)
- .globl l0240
-l0240:
+ .globl l0226
+l0226:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3539,8 +3539,8 @@ l0240:
  ret
  .quad 2
 // (*entry uxfloat expr 2)
- .globl l0241
-l0241:
+ .globl l0227
+l0227:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3561,8 +3561,8 @@ l0241:
  ret
  .quad 1
 // (*entry uxfix expr 1)
- .globl l0242
-l0242:
+ .globl l0228
+l0228:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3583,8 +3583,8 @@ l0242:
  ret
  .quad 2
 // (*entry uxassign expr 2)
- .globl l0243
-l0243:
+ .globl l0229
+l0229:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3605,8 +3605,8 @@ l0243:
  ret
  .quad 3
 // (*entry uxplus2 expr 3)
- .globl l0244
-l0244:
+ .globl l0230
+l0230:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3627,8 +3627,8 @@ l0244:
  ret
  .quad 3
 // (*entry uxdifference expr 3)
- .globl l0245
-l0245:
+ .globl l0231
+l0231:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3649,8 +3649,8 @@ l0245:
  ret
  .quad 3
 // (*entry uxtimes2 expr 3)
- .globl l0246
-l0246:
+ .globl l0232
+l0232:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3671,8 +3671,8 @@ l0246:
  ret
  .quad 3
 // (*entry uxquotient expr 3)
- .globl l0247
-l0247:
+ .globl l0233
+l0233:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3693,8 +3693,8 @@ l0247:
  ret
  .quad 2
 // (*entry uxminus expr 2)
- .globl l0248
-l0248:
+ .globl l0234
+l0234:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3715,8 +3715,8 @@ l0248:
  ret
  .quad 4
 // (*entry uxgreaterp expr 4)
- .globl l0249
-l0249:
+ .globl l0235
+l0235:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3737,8 +3737,8 @@ l0249:
  ret
  .quad 4
 // (*entry uxlessp expr 4)
- .globl l0250
-l0250:
+ .globl l0236
+l0236:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3759,8 +3759,8 @@ l0250:
  ret
  .quad 3
 // (*entry uxwritefloat expr 3)
- .globl l0251
-l0251:
+ .globl l0237
+l0237:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3781,8 +3781,8 @@ l0251:
  ret
  .quad 2
 // (*entry uxdoubletofloat expr 2)
- .globl l0252
-l0252:
+ .globl l0238
+l0238:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3803,8 +3803,8 @@ l0252:
  ret
  .quad 2
 // (*entry uxfloattodouble expr 2)
- .globl l0253
-l0253:
+ .globl l0239
+l0239:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3825,8 +3825,8 @@ l0253:
  ret
  .quad 2
 // (*entry uxsin expr 2)
- .globl l0254
-l0254:
+ .globl l0240
+l0240:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3847,8 +3847,8 @@ l0254:
  ret
  .quad 2
 // (*entry uxcos expr 2)
- .globl l0255
-l0255:
+ .globl l0241
+l0241:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3869,8 +3869,8 @@ l0255:
  ret
  .quad 2
 // (*entry uxtan expr 2)
- .globl l0256
-l0256:
+ .globl l0242
+l0242:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3891,8 +3891,8 @@ l0256:
  ret
  .quad 2
 // (*entry uxasin expr 2)
- .globl l0257
-l0257:
+ .globl l0243
+l0243:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3913,8 +3913,8 @@ l0257:
  ret
  .quad 2
 // (*entry uxacos expr 2)
- .globl l0258
-l0258:
+ .globl l0244
+l0244:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3935,8 +3935,8 @@ l0258:
  ret
  .quad 2
 // (*entry uxatan expr 2)
- .globl l0259
-l0259:
+ .globl l0245
+l0245:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3957,8 +3957,8 @@ l0259:
  ret
  .quad 2
 // (*entry uxsqrt expr 2)
- .globl l0260
-l0260:
+ .globl l0246
+l0246:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -3979,8 +3979,8 @@ l0260:
  ret
  .quad 2
 // (*entry uxexp expr 2)
- .globl l0261
-l0261:
+ .globl l0247
+l0247:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4001,8 +4001,8 @@ l0261:
  ret
  .quad 2
 // (*entry uxlog expr 2)
- .globl l0262
-l0262:
+ .globl l0248
+l0248:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4023,8 +4023,8 @@ l0262:
  ret
  .quad 3
 // (*entry uxatan2 expr 3)
- .globl l0263
-l0263:
+ .globl l0249
+l0249:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4045,8 +4045,8 @@ l0263:
  ret
  .quad 2
 // (*entry uxsinh expr 2)
- .globl l0264
-l0264:
+ .globl l0250
+l0250:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4067,8 +4067,8 @@ l0264:
  ret
  .quad 2
 // (*entry uxcosh expr 2)
- .globl l0265
-l0265:
+ .globl l0251
+l0251:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4089,8 +4089,8 @@ l0265:
  ret
  .quad 2
 // (*entry uxtanh expr 2)
- .globl l0266
-l0266:
+ .globl l0252
+l0252:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4111,8 +4111,8 @@ l0266:
  ret
  .quad 3
 // (*entry uxhypot expr 3)
- .globl l0267
-l0267:
+ .globl l0253
+l0253:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4133,8 +4133,8 @@ l0267:
  ret
  .quad 3
 // (*entry uxpow expr 3)
- .globl l0268
-l0268:
+ .globl l0254
+l0254:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4153,10 +4153,10 @@ l0268:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0269:
+ .quad 0
 // (*entry external_pwd expr 0)
- .globl l0270
-l0270:
+ .globl l0255
+l0255:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4177,8 +4177,8 @@ l0270:
  ret
  .quad 2
 // (*entry sun3_sigset expr 2)
- .globl l0271
-l0271:
+ .globl l0256
+l0256:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4199,8 +4199,8 @@ l0271:
  ret
  .quad 2
 // (*entry sun3_sigrelse expr 2)
- .globl l0272
-l0272:
+ .globl l0257
+l0257:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4243,8 +4243,8 @@ sigrelse:
  ret
  .quad 2
 // (*entry mask_signal expr 2)
- .globl l0273
-l0273:
+ .globl l0258
+l0258:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4265,8 +4265,8 @@ l0273:
  ret
  .quad 1
 // (*entry unixputc expr 1)
- .globl l0274
-l0274:
+ .globl l0259
+l0259:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4287,8 +4287,8 @@ l0274:
  ret
  .quad 1
 // (*entry unixputs expr 1)
- .globl l0275
-l0275:
+ .globl l0260
+l0260:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4309,8 +4309,8 @@ l0275:
  ret
  .quad 1
 // (*entry unixputn expr 1)
- .globl l0276
-l0276:
+ .globl l0261
+l0261:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4329,10 +4329,10 @@ l0276:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0277:
+ .quad 0
 // (*entry unixcleario expr 0)
- .globl l0278
-l0278:
+ .globl l0262
+l0262:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4353,8 +4353,8 @@ l0278:
  ret
  .quad 1
 // (*entry expand_file_name expr 1)
- .globl l0279
-l0279:
+ .globl l0263
+l0263:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4375,8 +4375,8 @@ l0279:
  ret
  .quad 2
 // (*entry unixopen expr 2)
- .globl l0280
-l0280:
+ .globl l0264
+l0264:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4397,8 +4397,8 @@ l0280:
  ret
  .quad 1
 // (*entry unixcd expr 1)
- .globl l0281
-l0281:
+ .globl l0265
+l0265:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4419,8 +4419,8 @@ l0281:
  ret
  .quad 1
 // (*entry ctime expr 1)
- .globl l0282
-l0282:
+ .globl l0266
+l0266:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4441,8 +4441,8 @@ l0282:
  ret
  .quad 1
 // (*entry external_system expr 1)
- .globl l0283
-l0283:
+ .globl l0267
+l0267:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4463,8 +4463,8 @@ l0283:
  ret
  .quad 1
 // (*entry external_fullpath expr 1)
- .globl l0284
-l0284:
+ .globl l0268
+l0268:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4485,8 +4485,8 @@ l0284:
  ret
  .quad 1
 // (*entry external_exit expr 1)
- .globl l0285
-l0285:
+ .globl l0269
+l0269:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4507,8 +4507,8 @@ l0285:
  ret
  .quad 2
 // (*entry fopen expr 2)
- .globl l0286
-l0286:
+ .globl l0270
+l0270:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4529,8 +4529,8 @@ l0286:
  ret
  .quad 1
 // (*entry fclose expr 1)
- .globl l0287
-l0287:
+ .globl l0271
+l0271:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4551,8 +4551,8 @@ l0287:
  ret
  .quad 4
 // (*entry fread expr 4)
- .globl l0288
-l0288:
+ .globl l0272
+l0272:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4573,8 +4573,8 @@ l0288:
  ret
  .quad 2
 // (*entry fputc expr 2)
- .globl l0289
-l0289:
+ .globl l0273
+l0273:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4595,8 +4595,8 @@ l0289:
  ret
  .quad 1
 // (*entry fgetc expr 1)
- .globl l0290
-l0290:
+ .globl l0274
+l0274:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4617,8 +4617,8 @@ l0290:
  ret
  .quad 3
 // (*entry fgets expr 3)
- .globl l0291
-l0291:
+ .globl l0275
+l0275:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4639,8 +4639,8 @@ l0291:
  ret
  .quad 4
 // (*entry fwrite expr 4)
- .globl l0292
-l0292:
+ .globl l0276
+l0276:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4661,8 +4661,8 @@ l0292:
  ret
  .quad 1
 // (*entry fflush expr 1)
- .globl l0293
-l0293:
+ .globl l0277
+l0277:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4683,8 +4683,8 @@ l0293:
  ret
  .quad 3
 // (*entry fseek expr 3)
- .globl l0294
-l0294:
+ .globl l0278
+l0278:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4705,8 +4705,8 @@ l0294:
  ret
  .quad 1
 // (*entry clearerr expr 1)
- .globl l0295
-l0295:
+ .globl l0279
+l0279:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4727,8 +4727,8 @@ l0295:
  ret
  .quad 1
 // (*entry xgetw expr 1)
- .globl l0296
-l0296:
+ .globl l0280
+l0280:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4749,8 +4749,8 @@ l0296:
  ret
  .quad 2
 // (*entry putw expr 2)
- .globl l0297
-l0297:
+ .globl l0281
+l0281:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4771,8 +4771,8 @@ l0297:
  ret
  .quad 2
 // (*entry signal expr 2)
- .globl l0298
-l0298:
+ .globl l0282
+l0282:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4793,8 +4793,8 @@ l0298:
  ret
  .quad 1
 // (*entry sleep expr 1)
- .globl l0299
-l0299:
+ .globl l0283
+l0283:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4815,8 +4815,8 @@ l0299:
  ret
  .quad 4
 // (*entry ieee_flags expr 4)
- .globl l0300
-l0300:
+ .globl l0284
+l0284:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4837,8 +4837,8 @@ l0300:
  ret
  .quad 1
 // (*entry setlinebuf expr 1)
- .globl l0301
-l0301:
+ .globl l0285
+l0285:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4857,10 +4857,10 @@ l0301:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0302:
+ .quad 0
 // (*entry getpid expr 0)
- .globl l0303
-l0303:
+ .globl l0286
+l0286:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4879,10 +4879,10 @@ l0303:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0304:
+ .quad 0
 // (*entry gethostid expr 0)
- .globl l0305
-l0305:
+ .globl l0287
+l0287:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4903,8 +4903,8 @@ l0305:
  ret
  .quad 2
 // (*entry unixsocketopen expr 2)
- .globl l0306
-l0306:
+ .globl l0288
+l0288:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4925,8 +4925,8 @@ l0306:
  ret
  .quad 3
 // (*entry getsocket expr 3)
- .globl l0307
-l0307:
+ .globl l0289
+l0289:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4947,8 +4947,8 @@ l0307:
  ret
  .quad 3
 // (*entry writesocket expr 3)
- .globl l0308
-l0308:
+ .globl l0290
+l0290:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4969,8 +4969,8 @@ l0308:
  ret
  .quad 1
 // (*entry unixclosesocket expr 1)
- .globl l0309
-l0309:
+ .globl l0291
+l0291:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -4989,10 +4989,10 @@ l0309:
  ldp X19,X20,[sp, #80]
  ldp X29,X30,[sp], #80
  ret
-l0310:
+ .quad 0
 // (*entry fork expr 0)
- .globl l0311
-l0311:
+ .globl l0292
+l0292:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5013,8 +5013,8 @@ l0311:
  ret
  .quad 1
 // (*entry wait expr 1)
- .globl l0312
-l0312:
+ .globl l0293
+l0293:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5035,8 +5035,8 @@ l0312:
  ret
  .quad 2
 // (*entry popen expr 2)
- .globl l0313
-l0313:
+ .globl l0294
+l0294:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5057,8 +5057,8 @@ l0313:
  ret
  .quad 1
 // (*entry pclose expr 1)
- .globl l0314
-l0314:
+ .globl l0295
+l0295:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5079,8 +5079,8 @@ l0314:
  ret
  .quad 3
 // (*entry shmctl expr 3)
- .globl l0315
-l0315:
+ .globl l0296
+l0296:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5101,8 +5101,8 @@ l0315:
  ret
  .quad 3
 // (*entry shmget expr 3)
- .globl l0316
-l0316:
+ .globl l0297
+l0297:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5123,8 +5123,8 @@ l0316:
  ret
  .quad 3
 // (*entry shmat expr 3)
- .globl l0317
-l0317:
+ .globl l0298
+l0298:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5145,8 +5145,8 @@ l0317:
  ret
  .quad 1
 // (*entry shmdt expr 1)
- .globl l0318
-l0318:
+ .globl l0299
+l0299:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5167,8 +5167,8 @@ l0318:
  ret
  .quad 4
 // (*entry semctl expr 4)
- .globl l0319
-l0319:
+ .globl l0300
+l0300:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5189,8 +5189,8 @@ l0319:
  ret
  .quad 3
 // (*entry semget expr 3)
- .globl l0320
-l0320:
+ .globl l0301
+l0301:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5211,8 +5211,8 @@ l0320:
  ret
  .quad 3
 // (*entry semop expr 3)
- .globl l0321
-l0321:
+ .globl l0302
+l0302:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5233,8 +5233,8 @@ l0321:
  ret
  .quad 2
 // (*entry dlopen expr 2)
- .globl l0322
-l0322:
+ .globl l0303
+l0303:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5255,8 +5255,8 @@ l0322:
  ret
  .quad 1
 // (*entry dlerror expr 1)
- .globl l0323
-l0323:
+ .globl l0304
+l0304:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5277,8 +5277,8 @@ l0323:
  ret
  .quad 2
 // (*entry dlsym expr 2)
- .globl l0324
-l0324:
+ .globl l0305
+l0305:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5299,8 +5299,8 @@ l0324:
  ret
  .quad 1
 // (*entry dlclose expr 1)
- .globl l0325
-l0325:
+ .globl l0306
+l0306:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5321,8 +5321,8 @@ l0325:
  ret
  .quad 4
 // (*entry unix-profile expr 4)
- .globl l0326
-l0326:
+ .globl l0307
+l0307:
  stp X29,X30,[sp, #-16]!
  mov X29,sp
  ldp X29,X30,[sp], #16
@@ -5359,15 +5359,15 @@ codeaddressp:
  ubfx X0,X0,#0,#56
  ldr X11,[sp, #16]
  cmp X0,X11
- b.le l0330
+ b.le l0311
  mov X0,X28
- b l0331
-l0330:
+ b l0312
+l0311:
  movz X11,#100
  ldr X0,[X20, X11, lsl #3]
-l0331:
+l0312:
  cmp X0,X28
- b.eq l0332
+ b.eq l0313
  movz X11,#99
  ldr X0,[X20, X11, lsl #3]
 // (idloc getfcodepointer)
@@ -5377,43 +5377,43 @@ l0331:
  ubfx X0,X0,#0,#56
  ldr X11,[sp, #16]
  cmp X11,X0
- b.lt l0333
+ b.lt l0314
  mov X0,X28
- b l0332
-l0333:
+ b l0313
+l0314:
  movz X11,#100
  ldr X0,[X20, X11, lsl #3]
-l0332:
+l0313:
  cmp X0,X28
- b.ne l0334
+ b.ne l0315
 // ($global bpslowerbound)
  movz X11,#285
  ldr X0,[X24, X11, lsl #3]
  ubfx X0,X0,#0,#56
  ldr X11,[sp, #16]
  cmp X0,X11
- b.le l0335
+ b.le l0316
  mov X0,X28
- b l0336
-l0335:
+ b l0317
+l0316:
  movz X11,#100
  ldr X0,[X20, X11, lsl #3]
-l0336:
+l0317:
  cmp X0,X28
- b.eq l0334
+ b.eq l0315
 // ($global nextbps)
  movz X11,#287
  ldr X0,[X24, X11, lsl #3]
  ubfx X0,X0,#0,#56
  ldr X11,[sp, #16]
  cmp X11,X0
- b.lt l0337
+ b.lt l0318
  mov X0,X28
- b l0334
-l0337:
+ b l0315
+l0318:
  movz X11,#100
  ldr X0,[X20, X11, lsl #3]
-l0334:
+l0315:
  ldp X29,X30,[sp], #32
  ret
  nop
@@ -5425,7 +5425,7 @@ lastkernel:
  mov X29,sp
  ldp X29,X30,[sp], #16
  ret
-l0338:
+ .quad 0
 // (*entry initcode expr 0)
  .globl initcode
 initcode:
@@ -5449,45 +5449,65 @@ initcode:
  .globl l0015
  .globl l0017
  .globl l0018
- .globl l0034
  .globl l0033
- .globl l0035
+ .globl l0032
+ .globl l0034
+ .globl l0043
  .globl l0044
- .globl l0045
+ .globl l0098
  .globl l0099
- .globl l0100
- .globl l0103
  .globl l0102
- .globl l0104
+ .globl l0101
+ .globl l0103
+ .globl l0109
  .globl l0110
- .globl l0111
- .globl l0116
  .globl l0115
  .globl l0114
+ .globl l0113
+ .globl l0116
  .globl l0117
- .globl l0118
+ .globl l0125
  .globl l0126
- .globl l0127
+ .globl l0128
  .globl l0129
- .globl l0130
- .globl l0133
- .globl l0134
- .globl l0143
- .globl l0165
- .globl l0164
+ .globl l0131
+ .globl l0132
+ .globl l0141
  .globl l0163
- .globl l0166
+ .globl l0162
+ .globl l0161
+ .globl l0164
+ .globl l0177
+ .globl l0176
+ .globl l0180
  .globl l0179
- .globl l0178
- .globl l0182
- .globl l0181
+ .globl l0185
+ .globl l0186
+ .globl l0188
  .globl l0189
- .globl l0190
- .globl l0193
- .globl l0194
- .globl l0329
- .globl l0328
+ .globl l0310
+ .globl l0309
+ .globl l0308
+ .globl l0319
+ .globl l0320
+ .globl l0321
+ .globl l0322
+ .globl l0323
+ .globl l0324
+ .globl l0325
+ .globl l0326
  .globl l0327
+ .globl l0328
+ .globl l0329
+ .globl l0330
+ .globl l0331
+ .globl l0332
+ .globl l0333
+ .globl l0334
+ .globl l0335
+ .globl l0336
+ .globl l0337
+ .globl l0338
  .globl l0339
  .globl l0340
  .globl l0341
@@ -5995,25 +6015,5 @@ initcode:
  .globl l0843
  .globl l0844
  .globl l0845
- .globl l0846
- .globl l0847
- .globl l0848
- .globl l0849
- .globl l0850
- .globl l0851
- .globl l0852
- .globl l0853
- .globl l0854
- .globl l0855
- .globl l0856
- .globl l0857
- .globl l0858
- .globl l0859
- .globl l0860
- .globl l0861
- .globl l0862
- .globl l0863
- .globl l0864
- .globl l0865
  .globl endinitstaticlisp
  .globl laststaticlisp

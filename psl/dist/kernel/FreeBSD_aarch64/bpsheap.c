@@ -408,7 +408,16 @@ setupbps()
   fd = mkstemp(filename);
   ftruncate(fd,bpssize);
   void * bpsbaserw = mmap(NULL,bpssize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  void * bpsbaserx =  mmap((void *) nextbpsw,bpssize, PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED, fd,0);
+  if (bpsbaserw == MAP_FAILED)
+    {
+      perror("bps RW alloc failed");
+    }
+  /*  void * bpsbaserx =  mmap((void *) nextbpsw,bpssize, PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED, fd,0);*/
+  void * bpsbaserx =  mmap(NULL,bpssize, PROT_READ | PROT_EXEC, MAP_SHARED, fd,0);
+  if (bpsbaserx == MAP_FAILED)
+    {
+      perror("bps RX alloc failed");
+    }
   nextbps = (long long int) bpsbaserx;
 
   bpslowerbound = nextbps;
