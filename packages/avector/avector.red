@@ -21,7 +21,6 @@ module avector;   % Vector algebra and calculus package.
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
-%
 
 % $Id$
 
@@ -59,12 +58,8 @@ avector!-loaded!* := t;   % To keep CSL happy.
 %   End of copyright notice                                            %
 %                                                                      %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                      %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  ***************  This code is designed to operate  ***************  %
-%  ***************  with version 3.4 of REDUCE and    ***************  %
-%  ***************  the Standard Lisp interpreter.    ***************  %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Other contributors: Malcolm MacCallum and Francis Wright
 
 
 
@@ -522,6 +517,10 @@ symbolic procedure vectorcrossprod vargs;
   return x
   end;
 
+% Support the operator name "><", which is more like "cross" ("X").
+% (It is also used for the cross product in Orthovec.)
+newtok '((!> !< ) cross) where !*msg = nil;
+
 % Vector modulus
 
 vectorfn('vmod,'vectormod);
@@ -560,6 +559,43 @@ symbolic procedure vectordot vargs;
                     list('times,u1,v1),
                     list('times,u2,v2))
   end;
+
+infix dot,cross;
+% Cross must have higher precedence than dot so that `v1 cross v2 dot
+% v3' and `v1 dot v2 cross v3' parse correctly without parentheses.
+% However, `.' parses as cons, so...
+precedence dot, cons;
+precedence cross, dot;
+
+% Support the operator name ".".
+%  This is tricky because the period (.) is already defined as the
+%  CONS function, and unfortunately REVAL1 spots this before it
+%  checks the type of the arguments, so declaring CONS to be
+%  VECTORMAPPING won't work. What is required is a hack to the
+%  routine that carries out CONS at SYMBOLIC level.
+
+% We now redefine RCONS which is the function invoked when CONS is used
+% in Reduce.
+
+remflag('(rcons),'lose);   % We must use this definition.
+
+symbolic procedure rcons u;
+   begin scalar x,y,z;
+      argnochk ('cons . u);
+      if (y := getrtypeor(x := revlis u)) eq 'hvector
+        then return if get('cons,'opmtch) and (z := opmtch('cons . x))
+                   then reval z
+                 else prepsq subs2 simpdot x
+% The following line was added to enable . to be used as vector product
+% (Amended by M. MacCallum)
+       else if (y eq '!3vector)
+         then return apply('vectordot,
+                           {for each j in u collect vecsimp!* j})
+       else if not(getrtype cadr x eq 'list) then typerr(x,"list")
+       else return 'list . car x . cdadr x
+   end;
+
+vectorfn('cons,'vectordot);
 
 % Component-wise assignment of a vector (AVEC)
 
@@ -889,11 +925,8 @@ symbolic procedure vectordf u;
 algebraic;
 vec coords,hfactors;
 % flag('(coords hfactors),'reserved); % Interferes with EXCALC.
-infix dot,cross;
-% Cross must have higher precedence than dot so that `v1 cross v2 dot
-% v3' and `v1 dot v2 cross v3' parse correctly without parentheses.
-precedence dot, *;
-precedence cross, dot;
+
+write "Defined coordinate systems are:";
 
 coordinates x,y,z;
 scalefactors(1,1,1);
@@ -907,7 +940,9 @@ coordinates r,z,phi;
 scalefactors(1,1,r);
 putcsystem 'cylindrical;
 
-% And we choose to use Cartesians initially ...
+let sign r => 1;                        % radial coordinate r >= 0
+
+write "Default coordinate system is Cartesian with coordinates:";
 
 getcsystem 'cartesian;
 symbolic;
@@ -1056,10 +1091,12 @@ symbolic procedure lineint u;
       then algebraic               % vector field f: compute f(r) . r'
          for k:=0:2 sum
             component(f,k)*hfactors(k)*df(component(curve,k), ivar)
-      else algebraic                  % scalar field f: compute f |r'|
+      else (algebraic                  % scalar field f: compute f |r'|
          (f * sqrt for k:=0:2 sum
-            <<hfactors(k)*df(component(curve,k), ivar)>>^2);
-      % Without << >> above get
+            <<hfactors(k)*df(component(curve,k), ivar)>>^2))
+               % abs resulting from sqrt messes up integration, so...
+               where !*precise = nil;
+      % FJW: Without << >> above get
       % ***** expt invalid as a vector operator
       % Bug in vector simplifier?
       % Evaluate integrand on curve (added by M. MacCallum):
@@ -1076,47 +1113,11 @@ symbolic procedure lineint u;
 % For backward compatibility:
 define deflineint = lineint;
 
-% Attempt to implement dot and cross as single-character infix
-%  operators upon vectors
-
-% Cross-product is easy : we simply tell Reduce that up-arrow is a
-%  synonym for CROSS
-
-%% Commented out since it interferes with exponentiation
-%%newtok '((!^) cross);
-
-% Dot is more difficult : the period (.) is already defined as the
-%  CONS function, and unfortunately REVAL1 spots this before it
-%  checks the type of the arguments, so declaring CONS to be
-%  VECTORMAPPING won't work. What is required is a hack to the
-%  routine that carries out CONS at SYMBOLIC level.
-
-% We now redefine RCONS which is the function invoked when CONS is used
-% in Reduce.
-
-remflag('(rcons),'lose);   % We must use this definition.
-
-symbolic procedure rcons u;
-   begin scalar x,y,z;
-      argnochk ('cons . u);
-      if (y := getrtypeor(x := revlis u)) eq 'hvector
-        then return if get('cons,'opmtch) and (z := opmtch('cons . x))
-                   then reval z
-                 else prepsq subs2 simpdot x
-% The following line was added to enable . to be used as vector product
-% (Amended by M. MacCallum)
-       else if (y eq '!3vector)
-         then return apply('vectordot,
-                           {for each j in u collect vecsimp!* j})
-       else if not(getrtype cadr x eq 'list) then typerr(x,"list")
-       else return 'list . car x . cdadr x
-   end;
-
-vectorfn('cons,'vectordot);
-
 % Rest added by M. MacCallum
-flag('(surfint vecsub),'vectorfn);
-vectorfn('surfint,'vsurfint);
+flag('(vecsub),'vectorfn);
+
+put('surfint, 'psopfn, 'vsurfint);      % FJW
+
 symbolic procedure vsurfint u;
    % Takes 4 or more arguments:
    % f (scalar or vector field);
@@ -1140,7 +1141,9 @@ symbolic procedure vsurfint u;
          f := aeval {'dot, f, nrml};    % f . surface_normal
       >> else <<                        % scalar field f
          f := aeval f;
-         f := aeval {'times, f, {'vmod, nrml}}; % f * |surface_normal|
+         % abs resulting from sqrt messes up integration, so...
+         nrml := (vectormod {nrml} where !*precise = nil);
+         f := aeval {'times, f, nrml};  % f * |surface_normal|
       >>;
       f := aeval {'vecsub, 'coords, rvec, f}; % eval integrand on surface
       f := if !*rounded then <<

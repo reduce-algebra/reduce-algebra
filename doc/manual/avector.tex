@@ -19,6 +19,15 @@ invoked by name. It is also possible to create new coordinate systems
 by specifying the names of the coordinates and the values of the scale
 factors.
 
+%% There are several test files in the directory
+%% \href{https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/avector/}
+%% {\texttt{packages/avector}} in a standard REDUCE distribution that
+%% also provide useful examples:
+%% \texttt{avector.tst} is David Harper's original test file;
+%% \texttt{manual.tst} includes some of the examples in this manual
+%% section; \texttt{stokes.tst} illustrates Stokes' Theorem,
+%% and \texttt{gauss.tst} illustrates Gauss's Theorem.
+
 This package is not auto-loaded, so in order to use it you first need
 to execute the command
 \begin{verbatim}
@@ -123,18 +132,20 @@ but it is an error to multiply or divide one vector by another.
 \hypertarget{operator:CROSS}{}
 \index{Cross product}
 Vector multiplication is carried out using the infix operators \f{dot}
-(or \f{.}) and \f{cross}.  These are defined to have higher precedence
-than scalar multiplication and division.
+or \f{.}, and \f{cross} or \f{><}.  These are defined to have higher
+precedence than scalar multiplication and division, and \f{cross} has
+higher precedence than \f{dot}.
 
 \begin{tabular}{l|l}
 \texttt{v := v1 cross v2;} & Vector (cross) product \\
+\texttt{v := v1 >< v2;} & Vector (cross) product \\
 \texttt{s := v1 dot v2;} & Scalar (dot) product \\
 \texttt{s := v1~.~v2;} & Scalar (dot) product
 \end{tabular}
 
 \begin{tabular}{l}
-\texttt{v := v1 cross v2 + v3;} \\
-\texttt{v := (v1 cross v2) + v3;}
+\texttt{v := v1 >< v2 + v3;} \\
+\texttt{v := (v1 >< v2) + v3;}
 \end{tabular}
 
 The last two expressions are equivalent due to the precedence of
@@ -142,23 +153,23 @@ the \texttt{cross} operator.
 
 Note that the vector triple product
 \begin{verbatim}
-   v1 cross v2 cross v3
+   v1 >< v2 >< v3
 \end{verbatim}
 parses as
 \begin{verbatim}
-   (v1 cross v2) cross v3
+   (v1 >< v2) >< v3
 \end{verbatim}
 (by left-associativity), and is (generally) not equal to
 \begin{verbatim}
-   v1 cross (v2 cross v3)
+   v1 >< (v2 >< v3)
 \end{verbatim}
 whereas the scalar triple product
 \begin{verbatim}
-   v1 cross v2 dot v3
+   v1 >< v2 . v3
 \end{verbatim}
 is equal to
 \begin{verbatim}
-   v1 dot v2 cross v3
+   v1 . v2 >< v3
 \end{verbatim}
 and neither requires parentheses (because \f{cross} has higher
 precedence that \f{dot}).
@@ -472,24 +483,11 @@ by integrating the constant unit scalar field 1:
 \begin{verbatim}
 lineint(1, avec(rr,lat,phi), phi);
 \end{verbatim}
-\[ |\sin(lat)|\,|rr|\,\phi \]
-\begin{verbatim}
-ws where abs ~x => x;
-\end{verbatim}
 \[ \sin(lat)\,\phi\,rr \]
 \begin{verbatim}
 lineint(1, avec(rr,lat,phi), phi = 0 .. 2pi);
 \end{verbatim}
-\[ 2\,|\sin(lat)|\,|rr|\,\pi \]
-\begin{verbatim}
-ws where abs ~x => x;
-\end{verbatim}
-\[ 2\,sin(lat)\,\pi\,rr \]
-This example produces an integrand involving the absolute value
-function (from the magnitude of the tangent vector).  But we know that
-the arguments of the absolute value function cannot be negative, hence
-the second and fourth input statements above, which tell REDUCE to
-ignore the absolute value function.
+\[ 2\,\sin(lat)\,\pi\,rr \]
 
 \subsubsection{Surface integrals of vector and scalar fields}
 
@@ -560,22 +558,7 @@ getcsystem spherical;
 surfint(1, avec(rr,theta,phi),
    theta = 0 .. pi, phi = 0 .. 2pi);
 \end{verbatim}
-\[
-2\,\pi\,rr^2\,\left(\left.
-\left(\int|(\sin(\theta)|\,d\,\theta\right)
-\right|_{\theta=\pi}\,-\,\left.
-\left(\int|\sin(\theta)|\,d\,\theta\right)
-\right|_{\theta=0}\right)
-\]
-\begin{verbatim}
-ws where abs ~x => x;
-\end{verbatim}
 \[ 4\,\pi\,rr^2 \]
-This example produces an integrand involving the absolute value
-function (from the magnitude of the cross product), which REDUCE
-cannot integrate.  But fortunately it is irrelevant in this example,
-hence the second input statement above, which tells REDUCE to ignore
-the absolute value and allows it to evaluate the integral.
 
 \subsubsection{Volume integrals of scalar and vector fields}
 
@@ -720,8 +703,7 @@ the result will be a pure number, with no symbolic content.}  Provided
 this is the case, it works well for \texttt{defint} and
 \texttt{lineint}.  For \texttt{surfint}, it produces noticeable
 numerical error, even for simple problems, but may still be useful.
-If one of these integrals fails to evaluate symbolically (as for
-the \texttt{surfint} examples above involving absolute values) then
+If one of these integrals fails to evaluate symbolically then
 numerical approximation may provide a way forwards.
 
 (For \texttt{volintegral}, numerical integration appears to fail, so
