@@ -1,7 +1,7 @@
 <?php
 $header_title = 'Features';
-include './include/begin-head.php';
-include './include/begin-body.php';
+include '../include/begin-head.php';
+include '../include/begin-body.php';
 
 function manual_lookup($queryString)
 {
@@ -162,7 +162,7 @@ function manual_lookup($queryString)
 </div><!-- opened in begin-body.php -->
 
 <?php
-include './include/footer.php';
+include '../include/footer.php';
 ?>
 
 </body>

@@ -1,6 +1,6 @@
 <?php
 $header_title = 'Tutorials';
-include './include/begin-head.php';
+include '../include/begin-head.php';
 ?>
 
 <style type="text/css">
@@ -10,7 +10,7 @@ include './include/begin-head.php';
 </style>
 
 <?php
-include './include/begin-body.php';
+include '../include/begin-body.php';
 ?>
 
 <h2 id="lessons">The REDUCE interactive lessons</h2>
@@ -106,22 +106,49 @@ include './include/begin-body.php';
     <li><a href="tutorials/ode-tutorial.html">ordinary differential equations</a></li>
 </ul>
 
-<h2><em>Statistics with REDUCE</em> by Wolfgang Lindner</h2>
-<p><a href="https://lindnerdrwg.github.io/Statistics-with-Reduce.pdf">
-        This is a free 179-page book available online as a single PDF file</a>.</p>
-<p>ABSTRACT</p>
+<h2>Books by Wolfgang Lindner</h2>
 <p>
-    Fundamental statistical concepts are programed using the CAS Web
-    REDUCE, always accompanied by short theoretical descriptions,
-    mental images and 50 prototypical examples. We treat descriptive
-    statistics from variance to kurtosis, discrete and continuous
-    distributions from binomial to Weibull and statistical tests
-    ranging from One sample GAUSS to the FISHER and McNEMAR test. We
-    handle correlation, one way analysis of variance, confidence
-    intervals etc. as well as bootstrap and jackknife methods. The
-    book contains 269 exercises, mostly with complete solutions as
-    REDUCE scripts.
+    Each book is available for free online as a single PDF file.
 </p>
+<ul>
+    <li>
+        <p><a href="https://lindnerdrwg.github.io/Statistics-with-Reduce.pdf">
+                <em>Statistics with REDUCE</em></a></p>
+        <p>
+            Fundamental statistical concepts are programed using the CAS
+            REDUCE, always accompanied by short theoretical descriptions,
+            mental images and 50 prototypical examples. We treat descriptive
+            statistics from variance to kurtosis, discrete and continuous
+            distributions from binomial to Weibull and statistical tests
+            ranging from One sample GAUSS to the FISHER and McNEMAR test. We
+            handle correlation, one way analysis of variance, confidence
+            intervals etc. as well as bootstrap and jackknife methods. The
+            book contains 269 exercises, mostly with complete solutions as
+            REDUCE scripts.
+        </p>
+    </li>
+    <li>
+        <p><a href="https://lindnerdrwg.github.io/REDUCE-Differential-Forms.pdf">
+                <em>Differential Forms with REDUCE</em></a></p>
+        <p>
+            This book gives a concrete introduction to the praxis of
+            differential forms with short mathematical descriptions.
+        </p>
+        <p>
+            To facilitate the transition from a classical vector-analysis treatment
+            of concepts to a representation based on differential forms, solutions
+            of example problems are first presented using a classical vector analysis
+            description with the REDUCE package <code>avector</code> and afterwards
+            repeated with the use of differential forms and the package <code>excalc</code>.
+        </p>
+        <p>
+            Applications include the vector operators grad, curl, div, laplace
+            from a Hodge &starf; view. Integration on manifolds treats arc length,
+            line-, surface- and volume integrals and culminates with the three
+            famous theorems by Green, Stokes and Gauss.
+        </p>
+    </li>
+</ul>
 
 <h2 id="egger">Example scripts by Dieter (Olli) Egger</h2>
 <p>
@@ -154,20 +181,23 @@ include './include/begin-body.php';
 <h2>Course texts by Hans-Gert Gräbe (in German)</h2>
 <ul>
     <li>
-        <a href="tutorials/Graebe/Graebe-red.pdf">Scriptum zum REDUCE -Praktikum</a>
+        <a href="tutorials/Graebe/Graebe-red.pdf">
+            <span lang="de">Scriptum zum REDUCE-Praktikum</span></a>
     </li>
     <li>
-        <a href="tutorials/Graebe/eca97.pdf">Skript zum Kurs Einführung in die Computeralgebra Wintersemester 1997/98</a>
+        <a href="tutorials/Graebe/eca97.pdf">
+            <span lang="de">Skript zum Kurs Einführung in die Computeralgebra Wintersemester 1997/98</span></a>
     </li>
     <li>
-        <a href="tutorials/Graebe/ca_intro98.pdf">Kurzeinführung in die CAS Maple, MuPAD und Reduce</a>
+        <a href="tutorials/Graebe/ca_intro98.pdf">
+            <span lang="de">Kurzeinführung in die CAS Maple, MuPAD und Reduce</span></a>
     </li>
 </ul>
 
 </div><!-- opened in begin-body.php -->
 
 <?php
-include './include/footer.php';
+include '../include/footer.php';
 ?>
 
 </body>

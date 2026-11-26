@@ -1,7 +1,7 @@
 <?php
 $header_title = 'Tutorial: Essential Mathematics';
-include '../include/begin-head.php';
-include '../include/begin-body.php';
+include '../../include/begin-head.php';
+include '../../include/begin-body.php';
 ?>
 
 <p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018</p>
@@ -230,5 +230,5 @@ solve ws;
 </div>
 
 <?php
-include '../include/end-tutorial.php';
+include '../../include/end-tutorial.php';
 ?>
