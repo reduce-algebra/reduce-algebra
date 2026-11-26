@@ -356,6 +356,9 @@
 # /psl/dist/kernel/macintel/
 /psl/dist/kernel/macintel/tmp.sl
 
+# /psl/dist/kernel/macintel64/
+/psl/dist/kernel/macintel64/tmp.sl
+
 # /psl/dist/kernel/win32/
 /psl/dist/kernel/win32/main.s.orig
 
