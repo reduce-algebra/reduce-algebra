@@ -114,6 +114,12 @@
              bndstkptr bndstklowerbound bndstkupperbound
              ))))
 
+(de DepositFloat (X)
+  (progn
+    (setq X (FltInf (second X))) 
+    (DepositWord (FloatlowOrder X))
+    (DepositWord 0)))
+
 
 (de DepositItem (TagPart InfPart) 
     (cond ((not *WritingFaslFile) 
@@ -398,18 +404,18 @@
 	       (progn (AppendStaticItem (car Expression))
 		      (AppendStaticItem (cdr Expression))))
 	      ((StringP Expression)
-	       (progn (AddFullStaticWord (Size Expression))
+	       (progn (AddFullStaticWord (MakeMkItem hbytes-tag (Size Expression)))
 		      (AddStaticLisp (list 'STRING Expression))))
 	      ((or (VectorP Expression) (EVectorP Expression))
 	       (progn (setq UpperBound (ISizeV Expression))
-		      (AddFullStaticWord UpperBound)
+		      (AddFullStaticWord (MakeMkItem hvect-tag UpperBound))
 		      (setq I 0)
 		      (while (ILEQ I UpperBound)
 			     (progn (AppendStaticItem (IGetV Expression I))
 				    (setq I (IAdd1 I))))))
 	      ((BigP Expression)
 	       (progn (setq UpperBound (ISizeV Expression))
-		      (AddFullStaticWord UpperBound)
+		      (AddFullStaticWord (MakeMkItem hwords-tag UpperBound))
 		      (AppendStaticItem (IGetV Expression 0)) % sign is an id
                       (setq I 1)
 		      (while (ILEQ I UpperBound)
@@ -417,10 +423,10 @@
                           (progn (AddFullStaticWord (sys2fixn (IGetV Expression I)))
 				    (setq I (IAdd1 I))))))
 	      ((FixP Expression)
-	       (progn (AddFullStaticWord 0)	% Header of full word fixnum.
+	       (progn (AddFullStaticWord (MakeMkItem hwords-tag (difference (fixpack) 1)))	% Header of full word fixnum.
 		      (AddFullStaticWord Expression)))
 	      ((FloatP Expression)
-	       (progn (AddFullStaticWord 1)	% Header of float.
+	       (progn (AddFullStaticWord (MakeMkItem hwords-tag (difference (floatpack) 1))) % Header of float.
 		      (AddStaticLisp (list 'FLOAT Expression)))))
 	(return (list 'staticlisp offset))
      ))
