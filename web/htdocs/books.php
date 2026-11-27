@@ -1,6 +1,6 @@
 <?php
 $header_title = 'Books';
-include './include/begin-head.php';
+include '../include/begin-head.php';
 ?>
 
 <style type="text/css">
@@ -47,7 +47,7 @@ include './include/begin-head.php';
 </style>
 
 <?php
-include './include/begin-body.php';
+include '../include/begin-body.php';
 ?>
 
 <p>
@@ -60,6 +60,8 @@ include './include/begin-body.php';
     but may be hard to find there.) Book titles and front cover images
     link to the publisher or to a bookseller such as Amazon (whichever
     seems more useful).
+    (See also the <a href="https://www.math.utah.edu/pub/tex/bib/redbooks.html">
+        bibliography by Nelson Beebe</a>.)
 </p>
 
 <h2>Books primarily about REDUCE</h2>
@@ -252,7 +254,7 @@ foreach ($secondary_books as $book): ?>
 </div><!-- opened in begin-body.php -->
 
 <?php
-include './include/footer.php';
+include '../include/footer.php';
 ?>
 
 </body>

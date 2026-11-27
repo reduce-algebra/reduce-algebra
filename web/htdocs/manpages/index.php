@@ -1,6 +1,6 @@
 <?php
 $header_title = 'Unix-style Man Pages';
-include '../include/begin-head.php';
+include '../../include/begin-head.php';
 ?>
 
 <style>
@@ -18,7 +18,7 @@ include '../include/begin-head.php';
 </style>
 
 <?php
-include '../include/begin-body.php';
+include '../../include/begin-body.php';
 ?>
 
 <p>
@@ -68,7 +68,7 @@ include '../include/begin-body.php';
 </div><!-- opened in begin-body.php -->
 
 <?php
-include '../include/footer.php';
+include '../../include/footer.php';
 ?>
 
 </body>

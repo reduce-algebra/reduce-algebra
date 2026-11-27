@@ -1,7 +1,7 @@
 <?php
 $header_title = 'Support Questions and Answers';
-include './include/begin-head.php';
-include './include/begin-body.php';
+include '../include/begin-head.php';
+include '../include/begin-body.php';
 
 $Q_A = array(
 
@@ -442,7 +442,7 @@ but you should be registered with SourceForge before you do this.'
 </div><!-- opened in begin-body.php -->
 
 <?php
-include './include/footer.php';
+include '../include/footer.php';
 ?>
 
 </body>

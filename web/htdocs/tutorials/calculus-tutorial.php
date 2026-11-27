@@ -1,7 +1,7 @@
 <?php
 $header_title = 'Tutorial: Calculus';
-include '../include/begin-head.php';
-include '../include/begin-body.php';
+include '../../include/begin-head.php';
+include '../../include/begin-body.php';
 ?>
 
 <p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018</p>
@@ -298,5 +298,5 @@ taylor(f, x, 0, 6);</pre>
 </div>
 
 <?php
-include '../include/end-tutorial.php';
+include '../../include/end-tutorial.php';
 ?>

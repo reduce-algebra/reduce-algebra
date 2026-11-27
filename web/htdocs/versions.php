@@ -1,7 +1,7 @@
 <?php
 $header_title = 'Versions';
-include './include/begin-head.php';
-include './include/begin-body.php';
+include '../include/begin-head.php';
+include '../include/begin-body.php';
 ?>
 
 <p>
@@ -54,17 +54,48 @@ include './include/begin-body.php';
         CSL REDUCE offers both a graphical and a command-line interface.
     </dd>
     <dt>
+        Common Lisp
+    </dt>
+    <dd>
+        REDUCE can also be
+        <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/common-lisp/README.md">
+            built on Common Lisp</a>,
+        which is the current standard definition of the Lisp language.
+        This works by emulating Standard Lisp in Common Lisp.
+        The build details are slightly different for different implementations of Common Lisp.
+        Currently,
+        <a href="http://www.sbcl.org/">Steel Bank Common Lisp</a> (SBCL),
+        <a href="https://clisp.sourceforge.io/">CLISP</a> and
+        <a href="https://ccl.clozure.com/">Clozure Common Lisp</a> (CCL) are supported.
+        Common Lisp (CL) is not included in the SourceForge REDUCE repository and,
+        if not already available, must be installed separately.
+        Then building REDUCE on CL is straightforward and very fast.
+        However, REDUCE on CL runs slower than on PSL or CSL,
+        and a few obscure features may not work correctly on all implementations of CL.
+        REDUCE on SBCL is the fastest and most complete version of REDUCE on CL,
+        and it is unlikely that a casual user would notice any difference between this and REDUCE on PSL or CSL.
+        REDUCE on CL itself provided only a command-line interface, but it runs well in
+        <a href="https://fjwright.github.io/Run-REDUCE/">Run-REDUCE</a>
+        (which supports typeset mathematical output) and
+        <a href="reduce-ide/">REDUCE IDE</a> for the
+        <a href="https://www.gnu.org/software/emacs/emacs.html">GNU Emacs</a> editor.
+    </dd>
+    <dt>
         Other Lisps
     </dt>
     <dd>
         There is also experimental code in the SourceForge Subversion
         repository to build REDUCE on several other Lisps, including
         <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/emacs/REDUCE/">GNU
-            Emacs Lisp</a>, several versions of
-        <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/common-lisp/">Common
-            Lisp</a> (SBCL, CLISP, CCL and ABCL), and a
+            Emacs Lisp</a>,
+        <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/jlisp/">Jlisp</a>
+        (which is in effect a clone of CSL coded in Java),
+        <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/jslisp/">JSlisp</a>
+        (which is an experimental version of Jlisp designed to be compiled into JavaScript),
+        <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/vsl/">the VSL Lisp system</a>
+        (the key attribute of which is that it is SMALL), and a
         <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/new-embedded/for-emscripten/">version
-            of CSL compiled to Javascript and webassemply</a> (to run
+            of CSL compiled to Javascript and WebAssembly</a> (to run
         using Node.js or in a web browser).
     </dd>
 </dl>
@@ -75,10 +106,10 @@ include './include/begin-body.php';
     of REDUCE available since 2008 do not have version numbers, but
     are now identified by their Subversion revision numbers. A REDUCE release includes
     all necessary binary files for a specific platform and releases
-    are currently provided irregularly every few months for Microsoft
-    Windows, Apple macOS and GNU/Linux (all at the same time). Every
-    so often there may also be a release for a more esoteric platform,
-    such as the Raspberry Pi!
+    are currently provided irregularly every year or so for Microsoft
+    Windows, Apple macOS and GNU/Linux.
+    Every so often there may also be a release for a more esoteric
+    platform, such as the Raspberry Pi!
 </p>
 <p>
     A release is essentially a set of files built from a snapshot of
@@ -93,7 +124,7 @@ include './include/begin-body.php';
 </div><!-- opened in begin-body.php -->
 
 <?php
-include './include/footer.php';
+include '../include/footer.php';
 ?>
 
 </body>

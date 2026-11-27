@@ -3,7 +3,7 @@
 <?php
 $page_title = 'REDUCE Computer Algebra System';
 $header_title = 'What is REDUCE?';
-include './include/begin-head.php';
+include '../include/begin-head.php';
 ?>
 <meta name="google-site-verification" content="pKr8xVCb35NVMHejjhvma4js1wsSweNQ_8vTVJqWFeA" />
 
@@ -20,13 +20,24 @@ include './include/begin-head.php';
         width: auto;
         border: none;
     }
-
 </style>
 
 <?php
 $main_class = 'col-md-6 col-xl-6';
-include './include/begin-body.php';
+include '../include/begin-body.php';
 ?>
+
+<div style="background-color: black; color: white; padding: 1ex;" class="text-center">
+    <p style="font-size: x-large;">IN MEMORIAM</p>
+    <p>It is with great sadness that we announce the death of</p>
+    <p style="font-size: x-large;">Tony Hearn</p>
+    <p>
+        Tony was one of the pioneers of computer algebra, and the principal developer of REDUCE.
+        He died peacefully on Friday 30th October 2026, and is survived by his wife, children and granddaughters.
+        He will be greatly missed, not only by his family, but also by the many users of REDUCE worldwide.
+    </p>
+    <p><a href="https://neptunesociety.com/obituaries/sherman-oaks-ca/anthony-hearn-13104510">OBITUARY</a></p>
+</div>
 
 <p>
     REDUCE is a <strong>portable general-purpose computer algebra
@@ -112,8 +123,8 @@ include './include/begin-body.php';
 </aside>
 
 <?php
-$footer_class='col-xl-2';
-include './include/footer.php';
+$footer_class = 'col-xl-2';
+include '../include/footer.php';
 ?>
 
 </body>

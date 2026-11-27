@@ -1,7 +1,7 @@
 <?php
 $header_title = 'Scripts von Dieter Egger';
-include '../include/begin-head.php';
-include '../include/begin-body.php';
+include '../../include/begin-head.php';
+include '../../include/begin-body.php';
 ?>
 
 <p style="text-align: center"><a href="EggerScripts.en.html">English translation</a></p>
@@ -146,7 +146,7 @@ include '../include/begin-body.php';
 </div><!-- opened in begin-body.php -->
 
 <?php
-include '../include/footer.php';
+include '../../include/footer.php';
 ?>
 
 </body>

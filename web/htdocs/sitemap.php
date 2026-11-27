@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 $header_title = 'Site Map / Recent Updates';
-include './include/begin-head.php';
+include '../include/begin-head.php';
 ?>
 
 <style>
@@ -53,7 +53,7 @@ include './include/begin-head.php';
 </style>
 
 <?php
-include './include/begin-body.php';
+include '../include/begin-body.php';
 
 // $sitemap is an array of arrays that stores the site map table, in
 // which each row is an array of the form
@@ -235,9 +235,7 @@ processDir('*', 0);
 
 </div><!-- opened in begin-body.php -->
 
-<!-- The slim version of jQuery does not include ajax (or effects)
-         and I use ajax on the documentation page! -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-4.1.0.slim.min.js" integrity="sha256-0zreENPUQQKIbGBKGJ6WF289jZz9S3Y63TURDQTChnc=" crossorigin="anonymous"></script>
 <script>
     // Strip leading folders from file names:
     $("#SiteMap tr[data-level=1],tr[data-level=2]")
@@ -268,7 +266,7 @@ processDir('*', 0);
 </script>
 
 <?php
-include './include/footer.php';
+include '../include/footer.php';
 ?>
 
 </body>

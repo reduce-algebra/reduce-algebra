@@ -1,12 +1,17 @@
 <?php
 $header_title = 'Bibliography';
-include './include/begin-head.php';
-include './include/begin-body.php';
+include '../include/begin-head.php';
+include '../include/begin-body.php';
 ?>
 
 <p>
-    This document contains a list of all known references to REDUCE
+    This document contains a list of many known references to REDUCE
     sorted by first-author surname.
+    (See also the bibliographies
+    <a href="https://www.math.utah.edu/pub/tex/bib/red-a-f.html">A&ndash;F</a>,
+    <a href="https://www.math.utah.edu/pub/tex/bib/red-g-l.html">G&ndash;L</a>,
+    <a href="https://www.math.utah.edu/pub/tex/bib/red-m-z.html">M&ndash;Z</a>,
+    <a href="https://www.math.utah.edu/pub/tex/bib/redextra.html">extra</a> by Nelson Beebe.)
 </p>
 
 <!-- See https://getbootstrap.com/docs/5.0/components/navs-tabs/#javascript-behavior -->
@@ -2312,9 +2317,7 @@ include './include/begin-body.php';
 
 </div><!-- opened in begin-body.php -->
 
-<!-- The slim version of jQuery does not include ajax (or effects)
-     and I use ajax on the documentation page! -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-4.1.0.slim.min.js" integrity="sha256-0zreENPUQQKIbGBKGJ6WF289jZz9S3Y63TURDQTChnc=" crossorigin="anonymous"></script>
 <script>
     // Complete the set-up of the tabbed header and content:
     $("#TabbedContent > dl")
@@ -2336,7 +2339,7 @@ include './include/begin-body.php';
 </script>
 
 <?php
-include './include/footer.php';
+include '../include/footer.php';
 ?>
 
 </body>

@@ -1,7 +1,7 @@
 <?php
 $header_title = 'Tutorial: Complex Variables';
-include '../include/begin-head.php';
-include '../include/begin-body.php';
+include '../../include/begin-head.php';
+include '../../include/begin-body.php';
 ?>
 
 <p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018</p>
@@ -132,5 +132,5 @@ z0 := rhs second poles;  abs z0;  % > 1 so outside C
 </div>
 
 <?php
-include '../include/end-tutorial.php';
+include '../../include/end-tutorial.php';
 ?>
